@@ -49,7 +49,7 @@ Run the four files against the plant, and record the reading. Then remove the pl
 
 **Host.**
 - Windows 11 with Git Bash. Chromium 153 is installed for Playwright.
-- The worktree `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/motion-proofs-b` is cut from Veneer `main` BASE_COMMIT, which holds J-SAMEWAY-ENGINES-A and J-MOTION-PROOFS-A. `node_modules` is installed.
+- The worktree `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/motion-proofs-b` is cut from Veneer `main` `1290162`, which holds J-SAMEWAY-ENGINES-A (the `HostWrite` returns), J-MOTION-PROOFS-A (`readDuration` in `tests/setupBrowser.ts`), and the styles session's E-ID-MOTION-FADE (`.fade` on `ease-out`, and `sampleTransition`). `node_modules` is installed.
 - A foreground call is capped at 10 minutes. Write each program to a file under `tmp/j-motion-proofs-b/` and run the file: no heredoc, no `python -`, no `node -e`.
 - Run one file at a time: `npx vitest run --config vite.config.ts --no-cache --project src:browser <file>`.
 
@@ -107,7 +107,7 @@ Follow § Deviation protocol in `C:/Users/mikes/WebstormProjects/scaffold/.agent
 1. `npm run check`, `npm run lint:check`, and `npm run format:check` exit 0.
 2. No owned test pins a duration, an easing, or a transitioned property list, and every declared duration a proof reads comes through `readDuration`.
 3. The Toast proof reads no running animation on the toast at `shown` and at `hidden`.
-4. The four owned test files pass in scoped runs, unplanted and against the plant.
+4. The four owned test files pass in scoped runs, unplanted and against the plant. So does `npm run test:app`, because the showcase drives these engines and reads their completion. A case there that reads an engine's state right after awaiting an element's animations races the engine's settle; J-MOTION-PROOFS-A round 5 found one in `EngineSection.test.ts`. Such a case waits for the engine's completion event. Where you do not own the file, return a patch.
 5. Every mutation in the table reddens its proof by an assertion.
 
 **Observations, not criteria.** The whole suite, which the Orchestrator runs after you exit.

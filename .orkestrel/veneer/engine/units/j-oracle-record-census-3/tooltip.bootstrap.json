@@ -1,0 +1,1833 @@
+{
+	"version": "5.3.8",
+	"plugin": "tooltip",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "tooltip.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.hover.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							},
+							{
+								"element": "+.tooltip[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.tooltip[0]",
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					},
+					"+.tooltip[0]": {
+						"tag": "div",
+						"classes": [
+							"bs-tooltip-auto",
+							"fade",
+							"show",
+							"tooltip"
+						],
+						"attributes": {
+							"data-popper-placement": "top",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "+.tooltip-arrow[0]"
+							},
+							{
+								"element": "+.tooltip-inner[0]"
+							}
+						],
+						"parent": "body"
+					},
+					"+.tooltip-arrow[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.tooltip[0]"
+					},
+					"+.tooltip-inner[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover tip"
+							}
+						],
+						"parent": "+.tooltip[0]"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.hover.away",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.focus.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							},
+							{
+								"element": "+.tooltip[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.tooltip[0]",
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					},
+					"+.tooltip[0]": {
+						"tag": "div",
+						"classes": [
+							"bs-tooltip-auto",
+							"fade",
+							"show",
+							"tooltip"
+						],
+						"attributes": {
+							"data-popper-placement": "top",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "+.tooltip-arrow[0]"
+							},
+							{
+								"element": "+.tooltip-inner[0]"
+							}
+						],
+						"parent": "body"
+					},
+					"+.tooltip-arrow[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.tooltip[0]"
+					},
+					"+.tooltip-inner[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus tip"
+							}
+						],
+						"parent": "+.tooltip[0]"
+					}
+				},
+				"focus": "focus-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.focus.away",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.call.show",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							},
+							{
+								"element": "+.tooltip[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.tooltip[0]",
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					},
+					"+.tooltip[0]": {
+						"tag": "div",
+						"classes": [
+							"bs-tooltip-auto",
+							"fade",
+							"show",
+							"tooltip"
+						],
+						"attributes": {
+							"data-popper-placement": "top",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "+.tooltip-arrow[0]"
+							},
+							{
+								"element": "+.tooltip-inner[0]"
+							}
+						],
+						"parent": "body"
+					},
+					"+.tooltip-arrow[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.tooltip[0]"
+					},
+					"+.tooltip-inner[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover tip"
+							}
+						],
+						"parent": "+.tooltip[0]"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.call.hide",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.hover.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							},
+							{
+								"element": "+.tooltip[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.tooltip[0]",
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					},
+					"+.tooltip[0]": {
+						"tag": "div",
+						"classes": [
+							"bs-tooltip-auto",
+							"fade",
+							"show",
+							"tooltip"
+						],
+						"attributes": {
+							"data-popper-placement": "top",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "+.tooltip-arrow[0]"
+							},
+							{
+								"element": "+.tooltip-inner[0]"
+							}
+						],
+						"parent": "body"
+					},
+					"+.tooltip-arrow[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.tooltip[0]"
+					},
+					"+.tooltip-inner[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover tip"
+							}
+						],
+						"parent": "+.tooltip[0]"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.hover.away",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.focus.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							},
+							{
+								"element": "+.tooltip[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.tooltip[0]",
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					},
+					"+.tooltip[0]": {
+						"tag": "div",
+						"classes": [
+							"bs-tooltip-auto",
+							"fade",
+							"show",
+							"tooltip"
+						],
+						"attributes": {
+							"data-popper-placement": "top",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "+.tooltip-arrow[0]"
+							},
+							{
+								"element": "+.tooltip-inner[0]"
+							}
+						],
+						"parent": "body"
+					},
+					"+.tooltip-arrow[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.tooltip[0]"
+					},
+					"+.tooltip-inner[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus tip"
+							}
+						],
+						"parent": "+.tooltip[0]"
+					}
+				},
+				"focus": "focus-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.focus.away",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.call.show",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							},
+							{
+								"element": "+.tooltip[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.tooltip[0]",
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					},
+					"+.tooltip[0]": {
+						"tag": "div",
+						"classes": [
+							"bs-tooltip-auto",
+							"fade",
+							"show",
+							"tooltip"
+						],
+						"attributes": {
+							"data-popper-placement": "top",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "+.tooltip-arrow[0]"
+							},
+							{
+								"element": "+.tooltip-inner[0]"
+							}
+						],
+						"parent": "body"
+					},
+					"+.tooltip-arrow[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.tooltip[0]"
+					},
+					"+.tooltip-inner[0]": {
+						"tag": "div",
+						"classes": [
+							"tooltip-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover tip"
+							}
+						],
+						"parent": "+.tooltip[0]"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "tooltip.reduced.call.hide",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "stage"
+							}
+						],
+						"parent": "html"
+					},
+					"stage": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "hover-trigger"
+							},
+							{
+								"element": "focus-trigger"
+							},
+							{
+								"element": "away"
+							}
+						],
+						"parent": "body"
+					},
+					"hover-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-title": "Hover tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Hover"
+							}
+						],
+						"parent": "stage"
+					},
+					"focus-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-original-title": "Focus tip",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Focus"
+							}
+						],
+						"parent": "stage"
+					},
+					"away": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Away"
+							}
+						],
+						"parent": "stage"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		}
+	]
+}

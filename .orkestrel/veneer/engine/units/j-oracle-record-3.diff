@@ -1,0 +1,901 @@
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index c579293..1fae667 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -49,6 +49,7 @@ import {
+ 	PLUGIN_SAMPLE_REPORT,
+ 	PLUGIN_SAMPLE_SCENARIO,
+ 	PLUGIN_SCENARIOS,
++	PLUGIN_WITNESSES,
+ 	LAYER_COMPONENTS,
+ 	SHARED_LONGHANDS,
+ 	SheetReader,
+@@ -87,6 +88,7 @@ import {
+ 	readBuildOutput,
+ 	readPluginFixture,
+ 	readPluginState,
++	readPluginWitness,
+ 	recordPluginOracle,
+ 	reportPluginPage,
+ 	scanPluginFixture,
+@@ -546,6 +548,7 @@ describe('server setup', () => {
+ 			'PLUGIN_SCENARIOS',
+ 			'PLUGIN_SETTLE_BUDGET',
+ 			'PLUGIN_SETTLE_INTERVAL',
++			'PLUGIN_WITNESSES',
+ 			'SHARED_LONGHANDS',
+ 			'SheetReader',
+ 			'SpecifierReader',
+@@ -618,6 +621,7 @@ describe('server setup', () => {
+ 			'readOracleInventory',
+ 			'readPluginFixture',
+ 			'readPluginState',
++			'readPluginWitness',
+ 			'readValueCell',
+ 			'readVeneerGuide',
+ 			'recordButtonOracle',
+@@ -1176,7 +1180,7 @@ describe('server setup', () => {
+ 			}
+ 		})
+ 
+-		it('labels authored, root, and inserted elements, and reads each one own text, parent, and scroll offsets', () => {
++		it('labels authored, root, and inserted elements, and reads the tag, content, parent, and scroll offsets of each', () => {
+ 			const inferred = inferPluginState(PLUGIN_SAMPLE_REPORT, ['trigger', 'panel', '__proto__'])
+ 			expect(Object.keys(inferred.elements)).toEqual([
+ 				'html',
+@@ -1189,18 +1193,23 @@ describe('server setup', () => {
+ 				'+span[0]',
+ 			])
+ 			expect(inferred.elements.html).toStrictEqual({
++				tag: 'html',
+ 				classes: [],
+ 				attributes: { lang: 'en' },
+ 				visible: true,
++				content: [{ element: 'body' }],
+ 				scroll: { top: 0, left: 0 },
+ 			})
+ 			expect(inferred.elements.body).toStrictEqual({
++				tag: 'body',
+ 				classes: ['modal-open'],
+ 				attributes: {},
+ 				visible: true,
++				content: [{ element: 'trigger' }, { element: 'panel' }, { element: '+.tooltip[0]' }],
+ 				parent: 'html',
+ 			})
+ 			expect(inferred.elements.trigger).toStrictEqual({
++				tag: 'button',
+ 				classes: ['alpha', 'zeta'],
+ 				attributes: {
+ 					'aria-describedby': '+.tooltip[0] panel ?',
+@@ -1208,7 +1217,7 @@ describe('server setup', () => {
+ 					type: 'button',
+ 				},
+ 				visible: true,
+-				text: 'Toggle',
++				content: [{ text: 'Toggle' }],
+ 				parent: 'body',
+ 			})
+ 			expect(Object.keys(inferred.elements.trigger?.attributes ?? {})).toEqual([
+@@ -1217,21 +1226,26 @@ describe('server setup', () => {
+ 				'type',
+ 			])
+ 			expect(inferred.elements.panel).toStrictEqual({
++				tag: 'div',
+ 				classes: [],
+ 				attributes: { 'aria-labelledby': 'trigger' },
+ 				visible: true,
+-				text: 'Panel body',
++				content: [{ text: 'Panel body' }, { element: '__proto__' }],
+ 				parent: 'body',
+-				scroll: { top: 40, left: 0 },
++				scroll: { top: 40.5, left: 0 },
+ 			})
+ 			expect(inferred.elements['+.tooltip[0]']?.attributes).toEqual({ role: 'tooltip' })
++			expect(inferred.elements['+.tooltip[0]']?.content).toEqual([{ element: '+.tooltip[1]' }])
+ 			expect(inferred.elements['+.tooltip[1]']).toStrictEqual({
++				tag: 'div',
+ 				classes: ['tooltip-inner'],
+ 				attributes: {},
+ 				visible: true,
+-				text: 'Tip',
++				content: [{ text: 'Tip' }, { element: '+span[0]' }],
+ 				parent: '+.tooltip[0]',
+ 			})
++			expect(inferred.elements['+span[0]']?.tag).toBe('span')
++			expect(Object.hasOwn(inferred.elements['+span[0]'] ?? {}, 'content')).toBe(false)
+ 			expect(inferred.elements['+span[0]']?.visible).toBe(false)
+ 			expect(inferred.elements['+span[0]']?.parent).toBe('+.tooltip[1]')
+ 			expect(inferred.focus).toBe('trigger')
+@@ -1249,21 +1263,33 @@ describe('server setup', () => {
+ 			).toThrow('Plugin reading labels two elements trigger')
+ 		})
+ 
++		it.for(PLUGIN_WITNESSES)(
++			'reports $name between two readings',
++			{ timeout: PLUGIN_ORACLE_TIMEOUT },
++			async (witness) => {
++				const departures = await launchOracleBrowser(async (browser) =>
++					readPluginWitness(browser, witness),
++				)
++				expect(departures).toStrictEqual(witness.departures)
++			},
++		)
++
+ 		it('keeps an authored __proto__ label as an own element through serialization', () => {
+ 			const inferred = inferPluginState(PLUGIN_SAMPLE_REPORT, ['trigger', 'panel', '__proto__'])
+ 			expect(Object.hasOwn(inferred.elements, '__proto__')).toBe(true)
+ 			expect(JSON.stringify(inferred)).toContain(
+-				'"__proto__":{"classes":["collapse"],"attributes":{},"visible":true,"parent":"panel"}',
++				'"__proto__":{"tag":"div","classes":["collapse"],"attributes":{},"visible":true,"parent":"panel"}',
+ 			)
+ 		})
+ 
+-		it('reports each differing element, class, attribute, visibility, text, parent, scroll offset, focus, and lock, and nothing for identical recordings', () => {
++		it('reports each differing element, tag, class, attribute, visibility, content, parent, scroll offset, focus, and lock, and nothing for identical recordings', () => {
+ 			expect(collectEngineDepartures(PLUGIN_SAMPLE_OFFICIAL, PLUGIN_SAMPLE_OFFICIAL)).toEqual([])
+ 			const row = { plugin: 'sample', step: 'sample.initial' }
+ 			const panel = { ...row, subject: 'panel' }
+ 			expect(
+ 				collectEngineDepartures(PLUGIN_SAMPLE_OFFICIAL, PLUGIN_SAMPLE_DIVERGENT),
+ 			).toStrictEqual([
++				{ ...panel, facet: 'tag', name: undefined, bootstrap: 'div', veneer: 'section' },
+ 				{ ...panel, facet: 'class', name: 'open', bootstrap: false, veneer: true },
+ 				{ ...panel, facet: 'class', name: 'show', bootstrap: true, veneer: false },
+ 				{
+@@ -1276,9 +1302,15 @@ describe('server setup', () => {
+ 				{ ...panel, facet: 'attribute', name: 'data-state', bootstrap: undefined, veneer: 'open' },
+ 				{ ...panel, facet: 'attribute', name: 'role', bootstrap: 'region', veneer: 'group' },
+ 				{ ...panel, facet: 'visibility', name: undefined, bootstrap: true, veneer: false },
+-				{ ...panel, facet: 'text', name: undefined, bootstrap: 'Panel', veneer: 'Pane' },
++				{
++					...panel,
++					facet: 'content',
++					name: undefined,
++					bootstrap: '[{"text":"Panel"}]',
++					veneer: '[{"text":"Pane"}]',
++				},
+ 				{ ...panel, facet: 'parent', name: undefined, bootstrap: 'body', veneer: 'html' },
+-				{ ...panel, facet: 'scroll', name: 'top', bootstrap: 40, veneer: 0 },
++				{ ...panel, facet: 'scroll', name: 'top', bootstrap: 40, veneer: 40.25 },
+ 				{
+ 					...row,
+ 					subject: '+div[0]',
+@@ -1426,21 +1458,38 @@ describe('server setup', () => {
+ 			expect(isPluginState(collapse.steps[0]?.state)).toBe(true)
+ 			expect(
+ 				isPluginState({
+-					elements: { panel: { classes: [], attributes: { role: 1 }, visible: true } },
++					elements: { panel: { tag: 'div', classes: [], attributes: { role: 1 }, visible: true } },
++					focus: 'body',
++					locked: false,
++				}),
++			).toBe(false)
++			expect(
++				isPluginState({
++					elements: {
++						panel: {
++							tag: 'div',
++							classes: [],
++							attributes: {},
++							visible: true,
++							content: [{ text: 1 }],
++						},
++					},
+ 					focus: 'body',
+ 					locked: false,
+ 				}),
+ 			).toBe(false)
+ 			expect(
+ 				isPluginState({
+-					elements: { panel: { classes: [], attributes: {}, visible: true, text: 1 } },
++					elements: {
++						panel: { tag: 'div', classes: [], attributes: {}, visible: true, scroll: { top: 1 } },
++					},
+ 					focus: 'body',
+ 					locked: false,
+ 				}),
+ 			).toBe(false)
+ 			expect(
+ 				isPluginState({
+-					elements: { panel: { classes: [], attributes: {}, visible: true, scroll: { top: 1 } } },
++					elements: { panel: { classes: [], attributes: {}, visible: true } },
+ 					focus: 'body',
+ 					locked: false,
+ 				}),
+@@ -1522,7 +1571,7 @@ describe('server setup', () => {
+ 				await launchOracleBrowser(async (browser) => {
+ 					const page = await browser.newPage()
+ 					await page.setContent(
+-						'<!doctype html><body style="overflow: hidden"><button id="trigger" type="button" aria-controls="panel">Toggle</button><div id="panel" hidden>Panel</div><div id="list" style="height: 50px; overflow: auto"><p id="row" style="height: 200px; margin: 0">Row  one</p></div></body>',
++						'<!doctype html><body style="overflow: hidden"><button id="trigger" type="button" aria-controls="panel">Toggle</button><div id="panel" hidden>Panel</div><div id="list" style="height: 50px; overflow: auto"><p id="row" style="height: 200px; margin: 0">Row <!--note--> one</p></div></body>',
+ 					)
+ 					await page.focus('#trigger')
+ 					await page.locator('#list').evaluate((element) => {
+@@ -1544,19 +1593,27 @@ describe('server setup', () => {
+ 					expect(read.focus).toBe('trigger')
+ 					expect(read.locked).toBe(true)
+ 					expect(read.elements.html?.scroll).toEqual({ top: 0, left: 0 })
++					expect(read.elements.html?.content).toEqual([{ element: 'body' }])
++					expect(read.elements.body?.content).toEqual([
++						{ element: 'trigger' },
++						{ element: 'panel' },
++						{ element: 'list' },
++					])
+ 					expect(read.elements.panel).toStrictEqual({
++						tag: 'div',
+ 						classes: [],
+ 						attributes: { hidden: '' },
+ 						visible: false,
+-						text: 'Panel',
++						content: [{ text: 'Panel' }],
+ 						parent: 'body',
+ 					})
+ 					expect(read.elements.list?.scroll).toEqual({ top: 30, left: 0 })
+ 					expect(read.elements.row).toStrictEqual({
++						tag: 'p',
+ 						classes: [],
+ 						attributes: {},
+ 						visible: true,
+-						text: 'Row one',
++						content: [{ text: 'Row one' }],
+ 						parent: 'list',
+ 					})
+ 					expect(read.elements.trigger?.attributes['aria-controls']).toBe('panel')
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index cd7dff7..ca5e9de 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -424,28 +424,55 @@ export interface PluginScenario {
+ 	readonly actions: readonly PluginAction[]
+ }
+ 
+-/** Describes an element's settled scroll offsets, in whole pixels. */
++/**
++ * Describes one entry of an element's content: a text run, with its whitespace collapsed, or a
++ * child element, by label.
++ */
++export type PluginContent = { readonly text: string } | { readonly element: string }
++
++/**
++ * Describes one entry of an element's content as the page reports it: a text run, with its
++ * whitespace collapsed, or a child element, by its position in the report's `nodes` member.
++ */
++export type PluginNodeContent = { readonly text: string } | { readonly position: number }
++
++/**
++ * Describes one reader witness: the same ids laid out two ways, as a full page for each side of a
++ * comparison, a setup script for each side, and the departures the comparator must report between
++ * the two readings.
++ */
++export interface PluginWitness {
++	readonly name: string
++	readonly pages: Readonly<Record<PluginLibrary, string>>
++	readonly setup: Readonly<Record<PluginLibrary, string>>
++	readonly authored: readonly string[]
++	readonly departures: readonly EngineDeparture[]
++}
++
++/** Describes an element's settled scroll offsets, as the platform reports them. */
+ export interface PluginOffset {
+ 	readonly top: number
+ 	readonly left: number
+ }
+ 
+ /**
+- * Describes one element's settled classes, attributes, visibility, own text, parent, and scroll
++ * Describes one element's settled tag, classes, attributes, visibility, content, parent, and scroll
+  * offsets.
+  *
+  * @remarks
+- * The `text` member is the element's direct text nodes joined with their whitespace collapsed, and
+- * is undefined where that text is empty. The `parent` member is the label of the parent element, and
+- * is undefined for the root element. The `scroll` member is defined for the document's scrolling
++ * The `content` member is the ordered sequence of the element's child nodes: each run of adjacent
++ * text nodes with its whitespace collapsed, and each child element the report covers, by label. It
++ * is undefined where that sequence is empty. The `parent` member is the label of the parent element,
++ * and is undefined for the root element. The `scroll` member is defined for the document's scrolling
+  * element and for each element whose content overflows it on an axis its computed overflow lets it
+  * scroll.
+  */
+ export interface PluginElement {
++	readonly tag: string
+ 	readonly classes: readonly string[]
+ 	readonly attributes: Readonly<Record<string, string>>
+ 	readonly visible: boolean
+-	readonly text?: string
++	readonly content?: readonly PluginContent[]
+ 	readonly parent?: string
+ 	readonly scroll?: PluginOffset
+ }
+@@ -472,8 +499,8 @@ export interface PluginState {
+  *
+  * @remarks
+  * The `parent` member is the position of the parent element in the report's `nodes` member, and is
+- * undefined for the root element. The `text` member is the collapsed direct text, empty where the
+- * element has none.
++ * undefined for the root element. The `content` member is the ordered sequence of the element's
++ * child nodes, each child element by its position in the `nodes` member.
+  */
+ export interface PluginNode {
+ 	readonly tag: string
+@@ -481,7 +508,7 @@ export interface PluginNode {
+ 	readonly key: string
+ 	readonly classes: readonly string[]
+ 	readonly attributes: Readonly<Record<string, string>>
+-	readonly text: string
++	readonly content: readonly PluginNodeContent[]
+ 	readonly parent: number | undefined
+ 	readonly visible: boolean
+ 	readonly focused: boolean
+@@ -529,10 +556,11 @@ export interface PluginRecording {
+ /** Names the facet of a settled state an engine departure differs in. */
+ export type EngineFacet =
+ 	| 'element'
++	| 'tag'
+ 	| 'class'
+ 	| 'attribute'
+ 	| 'visibility'
+-	| 'text'
++	| 'content'
+ 	| 'parent'
+ 	| 'scroll'
+ 	| 'focus'
+@@ -546,8 +574,10 @@ export type EngineFacet =
+  * The `name` member is the class token, the attribute name, or the scroll axis, `top` or `left`, and
+  * undefined for the other facets. Each side's value is:
+  * - whether the element or the token is present, for the `element` and `class` facets;
+- * - the attribute's value, the own text, the parent's label, or the scroll offset, each undefined
+- *   where that side has none, for the `attribute`, `text`, `parent`, and `scroll` facets;
++ * - the tag, for the `tag` facet;
++ * - the attribute's value, the content written as JSON, the parent's label, or the scroll offset,
++ *   each undefined where that side has none, for the `attribute`, `content`, `parent`, and `scroll`
++ *   facets;
+  * - the visibility or the lock, for the `visibility` and `lock` facets;
+  * - the focused label, for the `focus` facet.
+  */
+@@ -1064,6 +1094,17 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				bootstrap: true,
+ 				veneer: false,
+ 			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'body',
++				facet: 'content',
++				name: undefined,
++				bootstrap:
++					'[{"element":"trigger"},{"element":"static-trigger"},{"element":"modal"},{"element":"static"},{"element":"+.modal-backdrop[0]"}]',
++				veneer:
++					'[{"element":"trigger"},{"element":"static-trigger"},{"element":"modal"},{"element":"static"}]',
++			},
+ 			{
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+@@ -1284,7 +1325,9 @@ export const PLUGIN_SAMPLE_RECORDING: PluginRecording = Object.freeze<PluginReco
+ 		{
+ 			name: `sample.${prefix}initial`,
+ 			state: {
+-				elements: { panel: { classes: ['collapse'], attributes: {}, visible: false } },
++				elements: {
++					panel: { tag: 'div', classes: ['collapse'], attributes: {}, visible: false },
++				},
+ 				focus: 'body',
+ 				locked: false,
+ 			},
+@@ -1292,7 +1335,9 @@ export const PLUGIN_SAMPLE_RECORDING: PluginRecording = Object.freeze<PluginReco
+ 		...['click.trigger', 'press.trigger'].map((action) => ({
+ 			name: `sample.${prefix}${action}`,
+ 			state: {
+-				elements: { panel: { classes: ['collapse', 'show'], attributes: {}, visible: true } },
++				elements: {
++					panel: { tag: 'div', classes: ['collapse', 'show'], attributes: {}, visible: true },
++				},
+ 				focus: 'trigger',
+ 				locked: false,
+ 			},
+@@ -1306,8 +1351,8 @@ export const PLUGIN_SAMPLE_RECORDING: PluginRecording = Object.freeze<PluginReco
+  *
+  * @remarks
+  * The trigger's `aria-describedby` value names the tip by its generated id, the panel, and an id no
+- * element carries; the body carries the omitted `class` and `style` attributes; and the panel
+- * scrolls.
++ * element carries; the body carries the omitted `class` and `style` attributes; the panel scrolls;
++ * and the panel's and the inner tip element's content each mix a text run with a child element.
+  */
+ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 	nodes: [
+@@ -1317,7 +1362,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: 'html',
+ 			classes: [],
+ 			attributes: { lang: 'en' },
+-			text: '',
++			content: [{ position: 1 }],
+ 			parent: undefined,
+ 			visible: true,
+ 			focused: false,
+@@ -1329,7 +1374,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: 'body',
+ 			classes: ['modal-open'],
+ 			attributes: { class: 'modal-open', style: 'overflow: hidden' },
+-			text: '',
++			content: [{ position: 2 }, { position: 3 }, { position: 5 }],
+ 			parent: 0,
+ 			visible: true,
+ 			focused: false,
+@@ -1346,7 +1391,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 				'data-bs-target': '#panel',
+ 				type: 'button',
+ 			},
+-			text: 'Toggle',
++			content: [{ text: 'Toggle' }],
+ 			parent: 1,
+ 			visible: true,
+ 			focused: true,
+@@ -1358,11 +1403,11 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: 'div',
+ 			classes: [],
+ 			attributes: { id: 'panel', 'aria-labelledby': 'trigger' },
+-			text: 'Panel body',
++			content: [{ text: 'Panel body' }, { position: 4 }],
+ 			parent: 1,
+ 			visible: true,
+ 			focused: false,
+-			scroll: { top: 40, left: 0 },
++			scroll: { top: 40.5, left: 0 },
+ 		},
+ 		{
+ 			tag: 'div',
+@@ -1370,7 +1415,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: 'div',
+ 			classes: ['collapse'],
+ 			attributes: { id: '__proto__' },
+-			text: '',
++			content: [],
+ 			parent: 3,
+ 			visible: true,
+ 			focused: false,
+@@ -1382,7 +1427,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: '.tooltip',
+ 			classes: ['tooltip'],
+ 			attributes: { id: 'tip-81', role: 'tooltip' },
+-			text: '',
++			content: [{ position: 6 }],
+ 			parent: 1,
+ 			visible: true,
+ 			focused: false,
+@@ -1394,7 +1439,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: '.tooltip',
+ 			classes: ['tooltip-inner'],
+ 			attributes: {},
+-			text: 'Tip',
++			content: [{ text: 'Tip' }, { position: 7 }],
+ 			parent: 5,
+ 			visible: true,
+ 			focused: false,
+@@ -1406,7 +1451,7 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ 			key: 'span',
+ 			classes: [],
+ 			attributes: {},
+-			text: '',
++			content: [],
+ 			parent: 6,
+ 			visible: false,
+ 			focused: false,
+@@ -1419,8 +1464,8 @@ export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
+ })
+ 
+ /**
+- * Records one planted step as Bootstrap might: a shown panel with text, a parent, and a scroll
+- * offset, an inserted backdrop, and an element labelled `constructor`.
++ * Records one planted step as Bootstrap might: a shown panel with a tag, content, a parent, and a
++ * scroll offset, an inserted backdrop, and an element labelled `constructor`.
+  */
+ export const PLUGIN_SAMPLE_OFFICIAL: PluginRecording = Object.freeze<PluginRecording>({
+ 	version: BOOTSTRAP_VERSION,
+@@ -1432,15 +1477,16 @@ export const PLUGIN_SAMPLE_OFFICIAL: PluginRecording = Object.freeze<PluginRecor
+ 			state: {
+ 				elements: {
+ 					panel: {
++						tag: 'div',
+ 						classes: ['collapse', 'show'],
+ 						attributes: { 'aria-hidden': 'false', role: 'region' },
+ 						visible: true,
+-						text: 'Panel',
++						content: [{ text: 'Panel' }],
+ 						parent: 'body',
+ 						scroll: { top: 40, left: 0 },
+ 					},
+-					'+div[0]': { classes: ['backdrop'], attributes: {}, visible: true },
+-					constructor: { classes: [], attributes: {}, visible: true },
++					'+div[0]': { tag: 'div', classes: ['backdrop'], attributes: {}, visible: true },
++					constructor: { tag: 'div', classes: [], attributes: {}, visible: true },
+ 				},
+ 				focus: 'panel',
+ 				locked: true,
+@@ -1450,9 +1496,9 @@ export const PLUGIN_SAMPLE_OFFICIAL: PluginRecording = Object.freeze<PluginRecor
+ })
+ 
+ /**
+- * Records the same planted step with every facet the comparator reads changed: the panel's classes,
+- * attributes, visibility, text, parent, and scroll offset, another backdrop, no `constructor`
+- * element, the focus, and the lock.
++ * Records the same planted step with every facet the comparator reads changed: the panel's tag,
++ * classes, attributes, visibility, content, parent, and scroll offset, another backdrop, no
++ * `constructor` element, the focus, and the lock.
+  */
+ export const PLUGIN_SAMPLE_DIVERGENT: PluginRecording = Object.freeze<PluginRecording>({
+ 	version: BOOTSTRAP_VERSION,
+@@ -1464,14 +1510,15 @@ export const PLUGIN_SAMPLE_DIVERGENT: PluginRecording = Object.freeze<PluginReco
+ 			state: {
+ 				elements: {
+ 					panel: {
++						tag: 'section',
+ 						classes: ['collapse', 'open'],
+ 						attributes: { role: 'group', 'data-state': 'open' },
+ 						visible: false,
+-						text: 'Pane',
++						content: [{ text: 'Pane' }],
+ 						parent: 'html',
+-						scroll: { top: 0, left: 0 },
++						scroll: { top: 40.25, left: 0 },
+ 					},
+-					'+div[1]': { classes: ['backdrop'], attributes: {}, visible: true },
++					'+div[1]': { tag: 'div', classes: ['backdrop'], attributes: {}, visible: true },
+ 				},
+ 				focus: 'body',
+ 				locked: false,
+@@ -1480,6 +1527,110 @@ export const PLUGIN_SAMPLE_DIVERGENT: PluginRecording = Object.freeze<PluginReco
+ 	],
+ })
+ 
++/**
++ * Lists the reader witnesses: each lays the same ids out two ways, one page for each side of a
++ * comparison, and names every departure the comparator must report between the two readings.
++ *
++ * @remarks
++ * The scroll witness scrolls a scroller zoomed threefold, because Chromium snaps an unzoomed
++ * element's scroll offset to whole pixels and reports the zoomed one in its own coordinates: a
++ * write of `10.25` there reads back as `10.333333015441895`, which the platform reports and the
++ * reader must keep.
++ */
++export const PLUGIN_WITNESSES: readonly PluginWitness[] = Object.freeze<PluginWitness[]>([
++	{
++		name: 'a fractional scroll offset',
++		pages: {
++			bootstrap:
++				'<!doctype html><html lang="en"><body><div id="list" style="zoom: 3; height: 50px; overflow: auto"><p id="row" style="height: 400px; margin: 0">Row</p></div></body></html>',
++			veneer:
++				'<!doctype html><html lang="en"><body><div id="list" style="zoom: 3; height: 50px; overflow: auto"><p id="row" style="height: 400px; margin: 0">Row</p></div></body></html>',
++		},
++		setup: {
++			bootstrap: 'document.getElementById("list").scrollTop = 10',
++			veneer: 'document.getElementById("list").scrollTop = 10.25',
++		},
++		authored: ['list', 'row'],
++		departures: [
++			{
++				plugin: 'witness',
++				step: 'witness.initial',
++				subject: 'list',
++				facet: 'scroll',
++				name: 'top',
++				bootstrap: 10,
++				veneer: 10.333333015441895,
++			},
++		],
++	},
++	{
++		name: 'a button replaced by a div under the same id',
++		pages: {
++			bootstrap:
++				'<!doctype html><html lang="en"><body><button id="target" type="button">Go</button></body></html>',
++			veneer:
++				'<!doctype html><html lang="en"><body><div id="target" type="button">Go</div></body></html>',
++		},
++		setup: { bootstrap: '', veneer: '' },
++		authored: ['target'],
++		departures: [
++			{
++				plugin: 'witness',
++				step: 'witness.initial',
++				subject: 'target',
++				facet: 'tag',
++				name: undefined,
++				bootstrap: 'button',
++				veneer: 'div',
++			},
++		],
++	},
++	{
++		name: 'swapped siblings',
++		pages: {
++			bootstrap:
++				'<!doctype html><html lang="en"><body><div id="menu"><button id="first" type="button">A</button><button id="second" type="button">B</button></div></body></html>',
++			veneer:
++				'<!doctype html><html lang="en"><body><div id="menu"><button id="second" type="button">B</button><button id="first" type="button">A</button></div></body></html>',
++		},
++		setup: { bootstrap: '', veneer: '' },
++		authored: ['menu', 'first', 'second'],
++		departures: [
++			{
++				plugin: 'witness',
++				step: 'witness.initial',
++				subject: 'menu',
++				facet: 'content',
++				name: undefined,
++				bootstrap: '[{"element":"first"},{"element":"second"}]',
++				veneer: '[{"element":"second"},{"element":"first"}]',
++			},
++		],
++	},
++	{
++		name: 'text placed after a child element instead of around it',
++		pages: {
++			bootstrap:
++				'<!doctype html><html lang="en"><body><div id="tip">A<span id="mark">X</span>B</div></body></html>',
++			veneer:
++				'<!doctype html><html lang="en"><body><div id="tip"><span id="mark">X</span>AB</div></body></html>',
++		},
++		setup: { bootstrap: '', veneer: '' },
++		authored: ['tip', 'mark'],
++		departures: [
++			{
++				plugin: 'witness',
++				step: 'witness.initial',
++				subject: 'tip',
++				facet: 'content',
++				name: undefined,
++				bootstrap: '[{"text":"A"},{"element":"mark"},{"text":"B"}]',
++				veneer: '[{"element":"mark"},{"text":"AB"}]',
++			},
++		],
++	},
++])
++
+ /**
+  * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
+  *
+@@ -4701,7 +4852,7 @@ export function readBuildOutput(
+ }
+ 
+ /**
+- * Reports a plugin page in one pass: every element's classes, attributes, own text, parent,
++ * Reports a plugin page in one pass: every element's tag, classes, attributes, content, parent,
+  * visibility, focus, and scroll offsets, the scroll lock, and the motion the settle reads.
+  * @param spawned - The selectors whose first match keys an inserted element.
+  * @returns The page's report, in document order: the root, the body, and every element in the body.
+@@ -4710,9 +4861,12 @@ export function readBuildOutput(
+  * only its parameter and the page's globals, never a module import or constant. An element is
+  * visible when its `checkVisibility` method, reading opacity and the `visibility` property, returns
+  * `true`. The lock reads the root's computed `overflow-y`, or the body's where the root's is
+- * `visible`, because the platform then propagates the body's to the viewport. An element reports
+- * scroll offsets when it is the document's scrolling element, or when its content overflows it on an
+- * axis whose computed overflow is `auto`, `scroll`, or `hidden`.
++ * `visible`, because the platform then propagates the body's to the viewport. An element's content
++ * lists its child nodes in order: each run of adjacent text nodes with its whitespace collapsed, a run
++ * that is empty left out, and each child element the report covers; a comment and the `head` element
++ * are left out. An element reports scroll offsets, unrounded, when it is the document's scrolling
++ * element, or when its content overflows it on an axis whose computed overflow is `auto`, `scroll`,
++ * or `hidden`.
+  *
+  * The report stays out of these, each a limit of the oracle: the contents of shadow trees, inline
+  * styles and geometry, form state no attribute reflects, and hit testing.
+@@ -4740,18 +4894,24 @@ export function reportPluginPage(spawned: readonly string[]): PluginReport {
+ 				attributes: Object.fromEntries(
+ 					[...element.attributes].map((attribute) => [attribute.name, attribute.value]),
+ 				),
+-				text: [...element.childNodes]
+-					.filter((child) => child.nodeType === Node.TEXT_NODE)
+-					.map((child) => child.textContent ?? '')
+-					.join('')
+-					.replaceAll(/\s+/gu, ' ')
+-					.trim(),
++				content: [...element.childNodes]
++					.reduce<Array<{ text: string } | { position: number }>>((entries, child) => {
++						const last = entries.at(-1)
++						if (child.nodeType === Node.TEXT_NODE) {
++							if (last !== undefined && 'text' in last) last.text += child.textContent ?? ''
++							else entries.push({ text: child.textContent ?? '' })
++							return entries
++						}
++						const position = child instanceof Element ? positions.get(child) : undefined
++						if (position !== undefined) entries.push({ position })
++						return entries
++					}, [])
++					.map((entry) => ('text' in entry ? { text: entry.text.replaceAll(/\s+/gu, ' ') } : entry))
++					.filter((entry) => !('text' in entry) || entry.text !== ''),
+ 				parent: element.parentElement === null ? undefined : positions.get(element.parentElement),
+ 				visible: element.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
+ 				focused: element === document.activeElement,
+-				scroll: scrolls
+-					? { top: Math.round(element.scrollTop), left: Math.round(element.scrollLeft) }
+-					: undefined,
++				scroll: scrolls ? { top: element.scrollTop, left: element.scrollLeft } : undefined,
+ 			}
+ 		}),
+ 		locked: used === 'hidden' || used === 'clip',
+@@ -4802,11 +4962,12 @@ export async function readPluginState(
+ 
+ /**
+  * Derives a plugin page's labelled state from the page's report.
+- * @param report - The elements the page reported, in document order, and its lock reading.
++ * @param report - What one evaluation of the page reported, as the {@link reportPluginPage} function
++ * returns it.
+  * @param authored - The ids the scenario's markup carries.
+- * @returns Each element keyed by its label as an own property, with sorted classes and attributes,
+- * the omitted attributes left out, every id reference written as the label it names, its own text,
+- * its parent's label, and its scroll offsets.
++ * @returns Each element keyed by its label as an own property, with its tag, sorted classes and
++ * attributes, the omitted attributes left out, every id reference written as the label it names, its
++ * content with each child element written as its label, its parent's label, and its scroll offsets.
+  * @throws When two elements share a label, which a markup id carried twice produces.
+  * @remarks
+  * The `html` and `body` elements take their tag as their label and an element whose id the markup
+@@ -4855,13 +5016,17 @@ export function inferPluginState(report: PluginReport, authored: readonly string
+ 				]
+ 			})
+ 		const parent = node.parent === undefined ? undefined : labels[node.parent]
++		const content = node.content.map((entry): PluginContent =>
++			'text' in entry ? { text: entry.text } : { element: labels[entry.position] ?? '?' },
++		)
+ 		entries.push([
+ 			label,
+ 			{
++				tag: node.tag,
+ 				classes: [...node.classes].sort(),
+ 				attributes: Object.fromEntries(attributes),
+ 				visible: node.visible,
+-				...(node.text === '' ? {} : { text: node.text }),
++				...(content.length === 0 ? {} : { content }),
+ 				...(parent === undefined ? {} : { parent }),
+ 				...(node.scroll === undefined ? {} : { scroll: node.scroll }),
+ 			},
+@@ -4888,7 +5053,7 @@ export function inferPluginState(report: PluginReport, authored: readonly string
+  * libraries and names no event.
+  *
+  * These sit outside the oracle's contract, and the settle does not see them: motion inside a shadow
+- * tree; engine work scheduled past the quiet interval, such as a tooltip `delay`, whose unchanged
++ * tree; work a plugin schedules past the quiet interval, such as a tooltip `delay`, whose unchanged
+  * step the {@link scanPluginSteps} helper refuses; inline styles and geometry; form state no
+  * attribute reflects; and hit testing.
+  */
+@@ -4955,6 +5120,14 @@ export async function drivePluginAction(
+ 			return
+ 		case 'call':
+ 			await page.addScriptTag({ content: action.call[library] })
++			return
++		default: {
++			// A `PluginAction` member added later fails to compile here until a case sends its input.
++			const unhandled: never = action
++			throw new Error(
++				`Plugin action ${JSON.stringify(unhandled)} names no gesture the driver sends`,
++			)
++		}
+ 	}
+ }
+ 
+@@ -5093,9 +5266,9 @@ export function scanPluginFixture(
+ }
+ 
+ /**
+- * Checks whether a value is a plugin state: labelled elements with string classes, string
+- * attributes, a visibility, and an optional own text, parent label, and pair of scroll offsets,
+- * beside a focus label and a lock reading.
++ * Checks whether a value is a plugin state: labelled elements with a tag, string classes, string
++ * attributes, a visibility, and an optional content sequence, parent label, and pair of scroll
++ * offsets, beside a focus label and a lock reading.
+  * @param value - The value to check.
+  * @returns True if the value has that shape; false otherwise.
+  */
+@@ -5108,12 +5281,19 @@ export function isPluginState(value: unknown): value is PluginState {
+ 		Object.values(value.elements).every(
+ 			(element) =>
+ 				isRecord(element) &&
++				typeof element.tag === 'string' &&
+ 				Array.isArray(element.classes) &&
+ 				element.classes.every((token) => typeof token === 'string') &&
+ 				isRecord(element.attributes) &&
+ 				Object.values(element.attributes).every((attribute) => typeof attribute === 'string') &&
+ 				typeof element.visible === 'boolean' &&
+-				(element.text === undefined || typeof element.text === 'string') &&
++				(element.content === undefined ||
++					(Array.isArray(element.content) &&
++						element.content.every(
++							(entry) =>
++								isRecord(entry) &&
++								(typeof entry.text === 'string' || typeof entry.element === 'string'),
++						))) &&
+ 				(element.parent === undefined || typeof element.parent === 'string') &&
+ 				(element.scroll === undefined ||
+ 					(isRecord(element.scroll) &&
+@@ -5157,9 +5337,9 @@ export function readPluginFixture(
+  * Collects every difference between Bootstrap's recording of a plugin and Veneer's.
+  * @param bootstrap - Bootstrap's recording, such as a saved fixture.
+  * @param veneer - Veneer's recording of the same scenario.
+- * @returns One departure per step for each element one side lacks, each class token one side
+- * carries alone, each attribute, own text, parent, and scroll offset whose value differs, each
+- * visibility that differs, and a differing focus or lock, in step order.
++ * @returns One departure per step for each element one side lacks, each tag that differs, each class
++ * token one side carries alone, each attribute, content, parent, and scroll offset whose value
++ * differs, each visibility that differs, and a differing focus or lock, in step order.
+  * @throws When the two recordings carry different step names.
+  * @remarks
+  * An element one side lacks reports that alone, not its other facets. Every lookup by label reads
+@@ -5205,6 +5385,14 @@ export function collectEngineDepartures(
+ 				})
+ 				continue
+ 			}
++			if (official.tag !== own.tag)
++				departures.push({
++					...subject,
++					facet: 'tag',
++					name: undefined,
++					bootstrap: official.tag,
++					veneer: own.tag,
++				})
+ 			for (const token of [...new Set([...official.classes, ...own.classes])].sort()) {
+ 				if (official.classes.includes(token) !== own.classes.includes(token))
+ 					departures.push({
+@@ -5239,13 +5427,13 @@ export function collectEngineDepartures(
+ 					bootstrap: official.visible,
+ 					veneer: own.visible,
+ 				})
+-			if (official.text !== own.text)
++			if (!isDeepStrictEqual(official.content ?? [], own.content ?? []))
+ 				departures.push({
+ 					...subject,
+-					facet: 'text',
++					facet: 'content',
+ 					name: undefined,
+-					bootstrap: official.text,
+-					veneer: own.text,
++					bootstrap: official.content === undefined ? undefined : JSON.stringify(official.content),
++					veneer: own.content === undefined ? undefined : JSON.stringify(own.content),
+ 				})
+ 			if (official.parent !== own.parent)
+ 				departures.push({
+@@ -5342,3 +5530,44 @@ export function filterAddedDepartures(
+ 		(departure) => !baseline.some((candidate) => isDeepStrictEqual(candidate, departure)),
+ 	)
+ }
++
++/**
++ * Reads one reader witness: loads each side's page in a page of its own, runs that side's setup,
++ * reads it in one evaluation of the {@link reportPluginPage} function, and compares the two
++ * readings.
++ * @param browser - The browser to open the witness pages in.
++ * @param witness - The witness to read.
++ * @returns The departures the {@link collectEngineDepartures} helper reports between the Bootstrap
++ * side's reading and the Veneer side's, at one step named `witness.initial`.
++ * @throws When a page fails to load or its setup reports an error.
++ */
++export async function readPluginWitness(
++	browser: Browser,
++	witness: PluginWitness,
++): Promise<readonly EngineDeparture[]> {
++	const readings: PluginRecording[] = []
++	for (const library of ['bootstrap', 'veneer'] as const) {
++		const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
++		try {
++			await page.setContent(witness.pages[library])
++			const setup = witness.setup[library]
++			if (setup !== '') await page.addScriptTag({ content: setup })
++			readings.push({
++				version: BOOTSTRAP_VERSION,
++				plugin: 'witness',
++				browser: browser.version(),
++				steps: [
++					{
++						name: 'witness.initial',
++						state: inferPluginState(await page.evaluate(reportPluginPage, []), witness.authored),
++					},
++				],
++			})
++		} finally {
++			await page.close()
++		}
++	}
++	const [official, own] = readings
++	if (official === undefined || own === undefined) throw new Error('A witness side was not read')
++	return collectEngineDepartures(official, own)
++}

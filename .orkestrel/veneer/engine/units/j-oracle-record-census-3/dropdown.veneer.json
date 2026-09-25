@@ -1,0 +1,3657 @@
+{
+	"version": "5.3.8",
+	"plugin": "dropdown",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "dropdown.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.click.toggle",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "toggle",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.press.down",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "one",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.press.down.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "three",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.press.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "toggle",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.press.toggle",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "one",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.click.outside",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "outside",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.click.toggle.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "toggle",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.click.one",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.click.toggle",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "toggle",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.press.down",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "one",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.press.down.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "three",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.press.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "toggle",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.press.toggle",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "one",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.click.outside",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "outside",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.click.toggle.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle",
+							"show"
+						],
+						"attributes": {
+							"aria-expanded": "true",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "bottom",
+							"popover": "manual"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "toggle",
+				"locked": false
+			}
+		},
+		{
+			"name": "dropdown.reduced.click.one",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "dropdown"
+							},
+							{
+								"element": "outside"
+							}
+						],
+						"parent": "html"
+					},
+					"dropdown": {
+						"tag": "div",
+						"classes": [
+							"dropdown"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "toggle"
+							},
+							{
+								"element": "menu"
+							}
+						],
+						"parent": "body"
+					},
+					"toggle": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary",
+							"dropdown-toggle"
+						],
+						"attributes": {
+							"aria-expanded": "false",
+							"data-bs-toggle": "dropdown",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Menu"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"menu": {
+						"tag": "ul",
+						"classes": [
+							"dropdown-menu"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one-item"
+							},
+							{
+								"element": "two-item"
+							},
+							{
+								"element": "three-item"
+							}
+						],
+						"parent": "dropdown"
+					},
+					"one-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "one"
+							}
+						],
+						"parent": "menu"
+					},
+					"one": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#one-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "One"
+							}
+						],
+						"parent": "one-item"
+					},
+					"two-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "two"
+							}
+						],
+						"parent": "menu"
+					},
+					"two": {
+						"tag": "a",
+						"classes": [
+							"disabled",
+							"dropdown-item"
+						],
+						"attributes": {
+							"aria-disabled": "true"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Two"
+							}
+						],
+						"parent": "two-item"
+					},
+					"three-item": {
+						"tag": "li",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "three"
+							}
+						],
+						"parent": "menu"
+					},
+					"three": {
+						"tag": "a",
+						"classes": [
+							"dropdown-item"
+						],
+						"attributes": {
+							"href": "#three-target"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Three"
+							}
+						],
+						"parent": "three-item"
+					},
+					"outside": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Outside"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		}
+	]
+}

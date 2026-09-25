@@ -1,0 +1,2337 @@
+{
+	"version": "5.3.8",
+	"plugin": "scrollspy",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "scrollspy.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.wheel.second",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 300,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.wheel.third",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 600,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.wheel.first",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.click.third",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 600,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "third-link",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.reduced.wheel.second",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 300,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.reduced.wheel.third",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 600,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.reduced.wheel.first",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "scrollspy.reduced.click.third",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "navbar"
+							},
+							{
+								"element": "spy"
+							}
+						],
+						"parent": "html"
+					},
+					"navbar": {
+						"tag": "nav",
+						"classes": [
+							"bg-body-tertiary",
+							"navbar",
+							"px-3"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "nav"
+							}
+						],
+						"parent": "body"
+					},
+					"nav": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-pills"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-item"
+							},
+							{
+								"element": "second-item"
+							},
+							{
+								"element": "third-item"
+							}
+						],
+						"parent": "navbar"
+					},
+					"first-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "first-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"first-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#first"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "first-item"
+					},
+					"second-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "second-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"second-link": {
+						"tag": "a",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#second"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "second-item"
+					},
+					"third-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "third-link"
+							}
+						],
+						"parent": "nav"
+					},
+					"third-link": {
+						"tag": "a",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"href": "#third"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "third-item"
+					},
+					"spy": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {
+							"data-bs-root-margin": "0px 0px -40%",
+							"data-bs-smooth-scroll": "true",
+							"data-bs-spy": "scroll",
+							"data-bs-target": "#navbar",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "first"
+							},
+							{
+								"element": "second"
+							},
+							{
+								"element": "third"
+							}
+						],
+						"parent": "body",
+						"scroll": {
+							"top": 600,
+							"left": 0
+						}
+					},
+					"first": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First section"
+							}
+						],
+						"parent": "spy"
+					},
+					"second": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second section"
+							}
+						],
+						"parent": "spy"
+					},
+					"third": {
+						"tag": "div",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third section"
+							}
+						],
+						"parent": "spy"
+					}
+				},
+				"focus": "third-link",
+				"locked": false
+			}
+		}
+	]
+}

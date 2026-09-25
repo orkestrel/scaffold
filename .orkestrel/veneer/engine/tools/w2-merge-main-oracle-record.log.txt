@@ -1,0 +1,18 @@
+# J-ORACLE-RECORD landing: the merge of main into unit/oracle-record (2026-09-24)
+6880e63 Record tags, ordered content, and exact scroll offsets in the plugin oracle (J-ORACLE-RECORD round 3)
+c66e317 Read text, parents, and scroll offsets in the plugin oracle, look labels up as own properties, and name the oracle's vocabulary (J-ORACLE-RECORD round 2)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+1290162 Merge branch 'main' into unit/motion-proofs-a
+Auto-merging tests/conformance.test.ts
+Auto-merging tests/setupServer.test.ts
+CONFLICT (content): Merge conflict in tests/setupServer.test.ts
+Auto-merging tests/setupServer.ts
+CONFLICT (content): Merge conflict in tests/setupServer.ts
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/oracle-record exit=1
+conflicts: tests/setupServer.test.ts
+tests/setupServer.ts

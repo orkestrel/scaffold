@@ -1,0 +1,1180 @@
+[
+	{
+		"plugin": "scrollspy",
+		"step": "scrollspy.click.third",
+		"subject": "spy",
+		"facet": "scroll",
+		"name": "top",
+		"bootstrap": 544,
+		"veneer": 600
+	},
+	{
+		"plugin": "scrollspy",
+		"step": "scrollspy.reduced.click.third",
+		"subject": "spy",
+		"facet": "scroll",
+		"name": "top",
+		"bootstrap": 544,
+		"veneer": 600
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.click.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.click.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.press.down",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.press.down",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.press.down.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.press.down.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.press.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.press.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.click.toggle.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.click.toggle.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.click.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.click.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.press.down",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.press.down",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.press.down.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.press.down.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.press.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.press.toggle",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.click.toggle.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "data-popper-placement",
+		"bootstrap": "bottom-start",
+		"veneer": "bottom"
+	},
+	{
+		"plugin": "dropdown",
+		"step": "dropdown.reduced.click.toggle.again",
+		"subject": "menu",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.click.next",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.click.next.again",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.click.next.wrap",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.click.previous",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.click.indicator",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.press.left",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.reduced.click.next",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.reduced.click.next.again",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.reduced.click.next.wrap",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.reduced.click.previous",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.reduced.click.indicator",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "carousel",
+		"step": "carousel.reduced.press.left",
+		"subject": "carousel",
+		"facet": "class",
+		"name": "pointer-event",
+		"bootstrap": false,
+		"veneer": true
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger",
+		"subject": "static",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.again",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.again",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.again",
+		"subject": "static",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.again",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.third",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.third",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.third",
+		"subject": "static",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.trigger.third",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.static",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.static",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.static",
+		"subject": "modal",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.click.static",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.press.static.escape",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.press.static.escape",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.press.static.escape",
+		"subject": "modal",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.press.static.escape",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.point.static.backdrop",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.point.static.backdrop",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.point.static.backdrop",
+		"subject": "modal",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.point.static.backdrop",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger",
+		"subject": "static",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.again",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.again",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.again",
+		"subject": "static",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.again",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.third",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.third",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.third",
+		"subject": "static",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.trigger.third",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.static",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.static",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.static",
+		"subject": "modal",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.click.static",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.press.static.escape",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.press.static.escape",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.press.static.escape",
+		"subject": "modal",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.press.static.escape",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.point.static.backdrop",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.point.static.backdrop",
+		"subject": "static-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.point.static.backdrop",
+		"subject": "modal",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "modal",
+		"step": "modal.reduced.point.static.backdrop",
+		"subject": "+.modal-backdrop[0]",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger",
+		"subject": "scroll-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger",
+		"subject": "scrolling",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger.again",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger.again",
+		"subject": "scroll-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger.again",
+		"subject": "scrolling",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger.third",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger.third",
+		"subject": "scroll-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.click.trigger.third",
+		"subject": "scrolling",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger",
+		"subject": "scroll-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger",
+		"subject": "scrolling",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger.again",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger.again",
+		"subject": "scroll-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger.again",
+		"subject": "scrolling",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger.third",
+		"subject": "trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger.third",
+		"subject": "scroll-trigger",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.click.trigger.third",
+		"subject": "scrolling",
+		"facet": "attribute",
+		"name": "inert",
+		"veneer": ""
+	},
+	{
+		"plugin": "offcanvas",
+		"step": "offcanvas.reduced.point.backdrop",
+		"subject": "document",
+		"facet": "focus",
+		"bootstrap": "trigger",
+		"veneer": "body"
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.click.close",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.call.hide",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.call.still",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.click.still.close",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.click.still.close",
+		"subject": "still",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.reduced.click.close",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.reduced.call.hide",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.reduced.call.still",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.reduced.click.still.close",
+		"subject": "toast",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "toast",
+		"step": "toast.reduced.click.still.close",
+		"subject": "still",
+		"facet": "class",
+		"name": "hide",
+		"bootstrap": true,
+		"veneer": false
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.initial",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.hover.trigger",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.hover.trigger",
+		"subject": "+.tooltip[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "hint"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.hover.away",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.focus.trigger",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.focus.trigger",
+		"subject": "+.tooltip[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "hint"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.focus.away",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.call.show",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.call.show",
+		"subject": "+.tooltip[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "hint"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.call.hide",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.initial",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.hover.trigger",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.hover.trigger",
+		"subject": "+.tooltip[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "hint"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.hover.away",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.focus.trigger",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.focus.trigger",
+		"subject": "+.tooltip[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "hint"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.focus.away",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.call.show",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.call.show",
+		"subject": "+.tooltip[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "hint"
+	},
+	{
+		"plugin": "tooltip",
+		"step": "tooltip.reduced.call.hide",
+		"subject": "focus-trigger",
+		"facet": "attribute",
+		"name": "data-bs-original-title",
+		"bootstrap": "Focus tip"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.click.trigger",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.press.trigger",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.click.away",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.click.body",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.click.body",
+		"subject": "+.popover[1]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.click.trigger.close",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.reduced.click.trigger",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.reduced.press.trigger",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.reduced.click.away",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.reduced.click.body",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.reduced.click.body",
+		"subject": "+.popover[1]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	},
+	{
+		"plugin": "popover",
+		"step": "popover.reduced.click.trigger.close",
+		"subject": "+.popover[0]",
+		"facet": "attribute",
+		"name": "popover",
+		"veneer": "manual"
+	}
+]
