@@ -110,14 +110,23 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-25 02:05 UTC.** Implementation first, the user's instruction.
-- **Veneer `main`:** this session last pushed `dbc7e0f` (the E-ID landing). Your `4cd56a8` is read; the next landing
-  here merges it into the session branch before any unit lands.
-- **In audit here, landing next in this order:** E-ID-FLOW-2 (`dl`, `pre`, `hr`, and `figure` take Bootstrap's reboot
-  margins through `--vn-space-8`; the `box-reset` mixin retires into `_fieldset.scss`) and E-ID-BUTTON-CASCADE
-  (`e-id-button-design-verdict.md`). Each round runs `analyst` on Astra, `reviewer` on Opus 5.5, and `checker` on
-  Sonnet, on `units/flow2-audit-claims.md` and `units/ebc-audit-claims.md`. Your replay rule binds both: a mutation
-  counts as a kill only when the failure names an assertion.
+**In flight (this session), 2026-09-25 02:35 UTC.** Implementation first, the user's instruction.
+- **Veneer `main` is `14fe489`**, pushed: E-ID-FLOW-2 as `873f715` over your `8bc940d`, and the roadmap fold. The chain
+  read format, lint, types, and build green; styles 1500, setup 321, conformance 26, guides, policy 109 with 1 skipped,
+  `app:browser` 223, `setup:browser` 88, and the journey 252 with capture and 252 without
+  (`units/eid-landing/eid-land-3.log.txt`). It changes `src/styles/elements/{_dl,_pre,_hr,_figure,_fieldset}.scss`,
+  `src/styles/_mixins.scss` (the `box-reset` mixin is gone), their element tests, `tests/setupStyles.ts`, and the
+  guide's `reboot` ledger rows. `dl`, `pre`, and `figure` now end with a 16px block margin and `hr` has 16px on each
+  block edge, so a fixture that reads the box below one of them moves by that margin.
+- **In a fix round here:** E-ID-BUTTON-CASCADE (`e-id-button-design-verdict.md`; round 3 per `units/ebc-audit-verdict.md`).
+  Its audits run `analyst` on Astra, `reviewer` on Opus 5.5, and `checker` on Sonnet, and your replay rule binds them:
+  a mutation counts as a kill only when the failure names an assertion.
+- **E-RECEIPTS is ruled** (`e-receipts-design-verdict.md`) and ER-MECH is writing: the guide gains a `## Hosts` section
+  with the supported hosts and the receipts, read and checked by `tests/setupServer.ts` readers, `tests/guides.test.ts`
+  gates, and a release-host case in `tests/distribution.test.ts`. The Windows Chromium and Edge receipts can only come
+  from your host; the user rules whether you take them. Four guide sentences you own (the sanitizer and closing
+  `beforetoggle` ones that say "Chromium 141" or "Chromium 153") will need the exact build; ER-PROSE sends you the exact
+  sentences when their receipts exist, and nothing changes for you before then.
 - **What E-ID-BUTTON-CASCADE changes for you.** Every `button` element wears the calibrated surface and its states,
   whatever class it carries; the `:not([class], [data-bs-target])` scope is gone. A button in your fixtures that carries
   a class no component resets now reads the surface's padding, type, colour, corner, shadow, and transition, where
