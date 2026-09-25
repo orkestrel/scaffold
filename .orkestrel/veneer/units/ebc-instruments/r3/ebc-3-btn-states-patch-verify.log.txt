@@ -1,0 +1,13 @@
+applied
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 153ms on 2 files using 4 threads.
+format exit=0
+lint exit=0
+tsc styles exit=0
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+styles exit=0
+reverted
+restore: byte-identical

@@ -1,0 +1,5 @@
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/src/styles/elements/button.test.ts > button resolves every .btn form on a button as the same form resolves on an anchor at rest, and every enabled form under hover, press, and keyboard focus, apart from the button appearance and the user agent's focus offset on a link | AssertionError: expected [ { form: 'filled', …(2) }, …(24) ] to deeply equal [ { form: 'filled', …(2) }, …(24) ]
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0

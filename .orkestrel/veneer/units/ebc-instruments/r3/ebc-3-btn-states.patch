@@ -1,0 +1,185 @@
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3144,12 +3144,15 @@
+ 
+ /**
+  * Lists the `.btn` forms written once on a `button` element and once on an anchor, each with the
+- * markup that mounts the pair.
++ * accessible name both elements carry, whether the form is disabled, and the markup that mounts
++ * the pair.
+  *
+  * @remarks
+  * Each form carries the same label on both elements, so the two boxes lay out alike and every
+- * longhand the browser resolves can be compared. The checked form follows a checked `.btn-check`
+- * input, which is the sibling the release's checked rule reads.
++ * longhand the browser resolves can be compared, and each form's label differs from every other
++ * form's, so a pointer or keyboard verb reaches one element by its role and name. The checked form
++ * follows a checked `.btn-check` input, which is the sibling the release's checked rule reads. The
++ * disabled form takes no pointer and no focus on either element.
+  */
+ export const BUTTON_FORM_CASES = Object.freeze(
+ 	[
+@@ -3168,17 +3171,30 @@
+ 	].map(({ form, prefix, classes, disabled }) =>
+ 		Object.freeze({
+ 			form,
+-			button: `<div>${prefix}<button type="button" class="${classes}"${disabled ? ' disabled' : ''}>Harbor form</button></div>`,
+-			anchor: `<div>${prefix}<a href="#harbor" class="${classes}${disabled ? ' disabled' : ''}"${disabled ? ' aria-disabled="true"' : ''}>Harbor form</a></div>`,
++			name: `Harbor ${form}`,
++			disabled,
++			button: `<div>${prefix}<button type="button" class="${classes}"${disabled ? ' disabled' : ''}>Harbor ${form}</button></div>`,
++			anchor: `<div>${prefix}<a href="#harbor" class="${classes}${disabled ? ' disabled' : ''}"${disabled ? ' aria-disabled="true"' : ''}>Harbor ${form}</a></div>`,
+ 		}),
+ 	),
+ )
+ 
+ /**
+- * Lists the longhands a `button` element resolves apart from an anchor carrying the same `.btn`
+- * classes: the button appearance the release's reboot writes on every button.
++ * Holds, for each state a `.btn` form is read in, the longhands a `button` element resolves apart
++ * from an anchor carrying the same `.btn` classes.
++ *
++ * @remarks
++ * In every state the difference is the button appearance the release's reboot writes on every
++ * button. Under keyboard focus the difference also holds the `outline-offset` longhand: the user
++ * agent offsets a focused link's outline by `1px` and a focused button's by `0px`, with no
++ * stylesheet, under the release's own stylesheet, and under this one, and no rule here writes it.
+  */
+-export const BUTTON_FORM_DIFFERENCES = Object.freeze(['appearance'])
++export const BUTTON_FORM_DIFFERENCES = Object.freeze({
++	rest: Object.freeze(['appearance']),
++	hovered: Object.freeze(['appearance']),
++	pressed: Object.freeze(['appearance']),
++	focused: Object.freeze(['appearance', 'outline-offset']),
++})
+ 
+ /**
+  * Lists the selectors the `elements` layer writes the button surface and its states on.
+--- a/tests/src/styles/elements/button.test.ts
++++ b/tests/src/styles/elements/button.test.ts
+@@ -194,31 +194,108 @@
+ 			host.remove()
+ 		}
+ 	})
+-	it('resolves every .btn form on a button as the same form resolves on an anchor, apart from the button appearance', () => {
++	it("resolves every .btn form on a button as the same form resolves on an anchor at rest, and every enabled form under hover, press, and keyboard focus, apart from the button appearance and the user agent's focus offset on a link", async () => {
+ 		// The surface reaches the button form and never the anchor form, and the button class writes
+-		// every property the surface writes, so a surface property the class leaves unset shows as a
+-		// longhand the two forms resolve apart.
++		// every property the surface writes in each state, so a surface property the class leaves
++		// unset, at rest or in a state, shows as a longhand the two forms resolve apart in that state.
+ 		const host = scene.mount(
+ 			`<div style="${BUTTON_HOLDER_STYLE}">${BUTTON_FORM_CASES.map(({ form, button, anchor }) => `<div data-form="${form}">${button}${anchor}</div>`).join('')}</div>`,
+ 		)
+-		expect(
+-			BUTTON_FORM_CASES.map(({ form }) => {
+-				const button = requireValue(
+-					host.querySelector(`[data-form="${form}"] button.btn`),
+-					`No ${form} button`,
++		const pairs = BUTTON_FORM_CASES.map(({ form, name, disabled }) => ({
++			form,
++			name,
++			disabled,
++			button: requireValue(
++				host.querySelector<HTMLButtonElement>(`[data-form="${form}"] button.btn`),
++				`No ${form} button`,
++			),
++			anchor: requireValue(
++				host.querySelector<HTMLAnchorElement>(`[data-form="${form}"] a.btn`),
++				`No ${form} anchor`,
++			),
++		}))
++		const readings = pairs.map(({ form, button, anchor }) => ({
++			form,
++			state: 'rest',
++			longhands: Array.from(getComputedStyle(button)).filter(
++				(longhand) => readStyle(button, longhand) !== readStyle(anchor, longhand),
++			),
++		}))
++		// Every state is read with motion reduced, so no reading lands partway through a transition.
++		// Each element is driven into a state on its own and compared with its pair in the same state.
++		// The pointer release parks the pointer outside the page, so no keyboard reading carries a
++		// hover.
++		await stageMedia({ motion: false })
++		for (const { form, name, button, anchor } of pairs.filter(({ disabled }) => !disabled)) {
++			const buttonValues = new Map<string, Record<string, string>>()
++			const anchorValues = new Map<string, Record<string, string>>()
++			for (const [role, element, values] of [
++				['button', button, buttonValues],
++				['link', anchor, anchorValues],
++			] as const) {
++				await hoverAccessible(role, name)
++				expect(element.matches(':hover')).toBe(true)
++				values.set(
++					'hovered',
++					Object.fromEntries(
++						Array.from(getComputedStyle(element), (longhand) => [
++							longhand,
++							readStyle(element, longhand),
++						]),
++					),
++				)
++				await holdAccessible(role, name)
++				expect(element.matches(':active')).toBe(true)
++				values.set(
++					'pressed',
++					Object.fromEntries(
++						Array.from(getComputedStyle(element), (longhand) => [
++							longhand,
++							readStyle(element, longhand),
++						]),
++					),
+ 				)
+-				const anchor = requireValue(
+-					host.querySelector(`[data-form="${form}"] a.btn`),
+-					`No ${form} anchor`,
++				await releasePointer()
++				element.blur()
++				element.focus()
++				await pressKeys('{ArrowRight}')
++				expect(element.matches(':focus-visible')).toBe(true)
++				values.set(
++					'focused',
++					Object.fromEntries(
++						Array.from(getComputedStyle(element), (longhand) => [
++							longhand,
++							readStyle(element, longhand),
++						]),
++					),
+ 				)
+-				return {
++				element.blur()
++			}
++			for (const [state, reading] of buttonValues) {
++				const paired = requireValue(anchorValues.get(state), `No ${form} anchor ${state} reading`)
++				readings.push({
+ 					form,
+-					longhands: Array.from(getComputedStyle(button)).filter(
+-						(longhand) => readStyle(button, longhand) !== readStyle(anchor, longhand),
++					state,
++					longhands: Object.keys(reading).filter(
++						(longhand) => reading[longhand] !== paired[longhand],
+ 					),
+-				}
+-			}),
+-		).toEqual(BUTTON_FORM_CASES.map(({ form }) => ({ form, longhands: BUTTON_FORM_DIFFERENCES })))
++				})
++			}
++		}
++		expect(readings).toEqual([
++			...BUTTON_FORM_CASES.map(({ form }) => ({
++				form,
++				state: 'rest',
++				longhands: BUTTON_FORM_DIFFERENCES.rest,
++			})),
++			...BUTTON_FORM_CASES.filter(({ disabled }) => !disabled).flatMap(({ form }) =>
++				(['hovered', 'pressed', 'focused'] as const).map((state) => ({
++					form,
++					state,
++					longhands: BUTTON_FORM_DIFFERENCES[state],
++				})),
++			),
++		])
+ 	})
+ 	it("writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow", () => {
+ 		const host = scene.mount(

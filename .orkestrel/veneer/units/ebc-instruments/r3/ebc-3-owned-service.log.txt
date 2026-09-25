@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-ebc
+
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  02:34:02
+   Duration  16.13s (transform 601ms, setup 1.89s, import 653ms, tests 13.41s, environment 0ms)
+
+exit=0
