@@ -27,3 +27,17 @@
 - The fix's design round follows the 141 reading, and the fix lands after J-SAMEWAY-ENGINES-B, which owns `Placement`, `Dropdown`, and their tests.
 
 DIAGNOSIS: Chromium 141 does not anchor a dropdown menu that sits inside a scroller, before any scroll; the probe separates ancestry, hidden placement, the area or fallback, and the name list.
+
+## The Chromium 141 reading (2026-09-25)
+
+The styles session ran `units/j-placement-141-probe.test.ts` (SHA-256 `28e0cd12…`) on Chromium 141.0.7390.37 at Veneer `main` `21c821a`: 14 tests passed, and every control read `ok`. Its log is the styles session's `units/native141/j-placement-141-probe-141.log.txt`, at scaffold `da4d6fa4`.
+- The baseline fails as in round 3: `top: 2` in every phase.
+- Only `display` and `noClick` anchor the menu.
+- `body`, `plainArea`, `noFallback`, `anchorInsets`, `singleName`, `entryFocus`, `prescrolled`, and `restyle` fail.
+- No listed cause is consistent: `consistentCauses=[]`.
+
+**The Orchestrator's ruling.**
+- The failure needs two conditions together: a menu placed while its cascade still hides it (`display: none` until `.show`), and a trusted pointer press before the show. Removing either one anchors the menu. The failure does not depend on the menu's DOM ancestry, since `body` fails, or on the area, the fallback, or a later restyle.
+- The fix renders the menu before it is placed. That repairs 141 at the condition the engine controls, and every variant anchors on 153.
+- The fix's shape is J-PLACEMENT-141-FIX's design question, with both lanes. The two candidates are that `Dropdown` writes its shown token before `Placement` promotes the menu, or that `Placement` refuses to anchor an element it cannot measure.
+- The fix lands after J-SAMEWAY-ENGINES-B. Its proof is this probe's `baseline` variant passing on Chromium 141, read by the styles session, and a case in `Dropdown.test.ts` that reads the menu's gap on this host.

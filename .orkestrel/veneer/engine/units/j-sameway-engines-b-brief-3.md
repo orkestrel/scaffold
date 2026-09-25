@@ -6,7 +6,12 @@ Successor of `j-sameway-engines-b-brief-2.md` and `j-sameway-engines-b-brief.md`
 
 ## The obligations
 
-- **P1: prior-value returns.** Route Dropdown's and Tooltip's returns (Popover inherits Tooltip's) through the shared leaves in `src/browser/helpers.ts`. Each returned target goes back to the value it held before the call's first changing write. A write that changes nothing records nothing. The return runs in reverse order of those first writes. Dropdown's `aria-expanded` and the toggle token follow the rule.
+- **P1: prior-value returns.** Route Dropdown's and Tooltip's returns (Popover inherits Tooltip's) through the shared leaves in `src/browser/helpers.ts`: `recordHostWrite` and `rewindHostWrites` over `HostWrite` records `{ target, value, priority }`, with `readHostValue`, `readHostPriority`, and `writeHostValue`. These are J-SAMEWAY-ENGINES-A round 5's names (`units/j-sameway-engines-a-audit-4-verdict.md`; E24's wording amendment of 2026-09-25).
+  - Each returned target goes back to the value and priority it held before the call's first changing write.
+  - A write that changes nothing records nothing.
+  - The return writes the targets back in reverse order of those first writes.
+  - Dropdown's `aria-expanded` and the toggle token follow the rule.
+  - In your class remarks, the returning step "writes each target back". "Restore" stays `HostSnapshot`'s term.
 - **P2: `aria-describedby` is a token list.** A taken-over show removes only the id it added. It removes the attribute only when the attribute was absent before the call and the list is then empty, following E25's presence rule. Whitespace normalisation is not returned. Cases:
   - the lane's `aria-describedby=""` witness, where the attribute stays present and empty;
   - a popover's id added during the tooltip's change, which stays.

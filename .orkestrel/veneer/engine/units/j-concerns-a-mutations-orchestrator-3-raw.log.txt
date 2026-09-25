@@ -1,0 +1,332 @@
+=== scrollspy-cancel against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-cancel to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:68:2 > ScrollSpy > activates the lower entering section scrolling down and the higher one scrolling up, dispatching a bubbling activate event for each
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "activate.vn.scrollspy",
+      true,
+-     false,
++     true,
+    ],
+    [
+      "activate.vn.scrollspy",
+--
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:166:2 > ScrollSpy > activates every entering link of a delivery when a listener prevents each activate event, reading none as prevented
+AssertionError: expected [ [ …(3) ], …(1) ] to deeply equal [ [ …(3) ], …(2) ]
+
+- Expected
++ Received
+
+@@ -4,29 +4,19 @@
+        class="nav-link"
+        href="#spy-one"
+      >
+        One
+      </a>,
+-     false,
+-     false,
++     true,
+--
+ Test Files  1 failed (1)
+      Tests  2 failed | 30 passed (32)
+   Start at  00:43:09
+   Duration  4.89s (transform 0ms, setup 596ms, import 336ms, tests 2.86s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== scrollspy-focus-link against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-focus-link to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:217:2 > ScrollSpy > leaves focus on the element that held it when a scroll activates another link
+AssertionError: expected [ <a …(2)></a>, <a …(2)></a> ] to deeply equal [ <a …(2)></a>, …(1) ]
+
+- Expected
++ Received
+
+@@ -4,11 +4,11 @@
+      href="#spy-two"
+    >
+      Two
+    </a>,
+    <a
+-     class="nav-link"
+-     href="#spy-one"
++     class="nav-link active"
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  00:43:15
+   Duration  4.83s (transform 0ms, setup 625ms, import 319ms, tests 2.69s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== scrollspy-focus-section against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-focus-section to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:549:2 > ScrollSpy > keeps focus on the link a keyboard activation of the smooth scroll pressed, running no fragment navigation
+AssertionError: expected <section id="spy-four" …(2)></section> to be <a class="nav-link active" …(1)></a> // Object.is equality
+
+- Expected
++ Received
+
+- <a
+-   class="nav-link active"
+-   href="#spy-four"
+- >
+-   Four
+- </a>
++ <section
++   id="spy-four"
++   style="height: 300px"
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  00:43:22
+   Duration  4.71s (transform 0ms, setup 544ms, import 274ms, tests 2.89s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== scrollspy-navigate against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-navigate to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:446:2 > ScrollSpy > scrolls the host smoothly to the section a clicked link names, preventing the click, and leaves a section outside the host alone
+AssertionError: expected [ [ '#spy-four', false ] ] to deeply equal [ [ '#spy-four', true ] ]
+
+- Expected
++ Received
+
+  [
+    [
+      "#spy-four",
+-     true,
++     false,
+    ],
+  ]
+
+--
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:501:2 > ScrollSpy > scrolls the document smoothly when the host does not clip its overflow
+AssertionError: expected [ [ false ] ] to deeply equal [ [ true ] ]
+
+- Expected
++ Received
+
+  [
+    [
+-     true,
++     false,
+    ],
+  ]
+
+--
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:549:2 > ScrollSpy > keeps focus on the link a keyboard activation of the smooth scroll pressed, running no fragment navigation
+AssertionError: expected '#spy-four' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ #spy-four
+
+--
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:622:2 > ScrollSpy > reads its target, smooth scroll, margin, and threshold from the host attributes, the constructor winning per key
+AssertionError: expected [ [ false ], [ false ] ] to deeply equal [ [ true ], [ false ] ]
+
+- Expected
++ Received
+
+  [
+    [
+-     true,
++     false,
+    ],
+    [
+      false,
+    ],
+  ]
+--
+ Test Files  1 failed (1)
+      Tests  4 failed | 28 passed (32)
+   Start at  00:43:28
+   Duration  4.04s (transform 0ms, setup 486ms, import 261ms, tests 2.33s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== scrollspy-instant-host against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-instant-host to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:446:2 > ScrollSpy > scrolls the host smoothly to the section a clicked link names, preventing the click, and leaves a section outside the host alone
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  00:43:34
+   Duration  4.05s (transform 0ms, setup 477ms, import 262ms, tests 2.06s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== scrollspy-instant-view against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-instant-view to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:501:2 > ScrollSpy > scrolls the document smoothly when the host does not clip its overflow
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  00:43:40
+   Duration  4.28s (transform 0ms, setup 534ms, import 261ms, tests 2.42s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== scrollspy-ungated against tests/src/browser/ScrollSpy.test.ts
+applied scrollspy-ungated to scrollspy
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:587:2 > ScrollSpy > scrolls the host to the section instantly under staged reduced motion, passing no intermediate position
+AssertionError: expected [ [ 3 ], [ 14 ], [ 50 ], …(10) ] to deeply equal [ [ 200 ] ]
+
+- Expected
++ Received
+
+  [
+    [
++     3,
++   ],
++   [
++     14,
++   ],
++   [
++     50,
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  00:43:46
+   Duration  5.07s (transform 0ms, setup 557ms, import 318ms, tests 3.07s, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== button-focus against tests/src/browser/Button.test.ts
+applied button-focus to button
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:480:2 > Button > leaves focus where it is at each toggle, on its host or on another control
+AssertionError: expected <button type="button" …(2)></button> to be <button type="button"></button> // Object.is equality
+
+- Expected
++ Received
+
+  <button
++   aria-pressed="false"
++   class=""
+    type="button"
+  >
+-   Italic
++   Bold
+  </button>
+
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 passed (47)
+   Start at  00:43:52
+   Duration  1.98s (transform 0ms, setup 531ms, import 382ms, tests 34ms, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== button-blur against tests/src/browser/Button.test.ts
+applied button-blur to button
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:480:2 > Button > leaves focus where it is at each toggle, on its host or on another control
+AssertionError: expected <body><div>…(2)</div></body> to be <button type="button" …(2)></button> // Object.is equality
+
+- Expected
++ Received
+
++ <body>
++   
++   
++
++
++   <div>
+      <button
+        aria-pressed="true"
+        class="active"
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 passed (47)
+   Start at  00:43:56
+   Duration  1.93s (transform 0ms, setup 487ms, import 414ms, tests 35ms, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== button-motion against tests/src/browser/Button.test.ts
+applied button-motion to button
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:501:2 > Button > completes a toggle and dispatches its event while the shipped cascade still transitions the host
+AssertionError: expected [] to deeply equal [ [ true, true, 'true' ] ]
+
+- Expected
++ Received
+
+- [
+-   [
+-     true,
+-     true,
+-     "true",
+-   ],
+- ]
++ []
+
+--
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 passed (47)
+   Start at  00:44:00
+   Duration  1.92s (transform 0ms, setup 488ms, import 390ms, tests 30ms, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+=== button-stale-return against tests/src/browser/Button.test.ts
+applied button-stale-return to button
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:676:2 > Button > returns the state the host carries when a listener toggles again, delivering each event in the order its call dispatched it
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+--
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:705:2 > Button > preserves destruction performed by a listener during a toggle and returns the state the host carries
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+--
+ Test Files  1 failed (1)
+      Tests  2 failed | 45 passed (47)
+   Start at  00:44:03
+   Duration  1.89s (transform 0ms, setup 486ms, import 376ms, tests 30ms, environment 0ms)
+
+exit=1
+restored scrollspy 367a1d0cb3ccbd546696d2fc70b3b5a7f1fe29746b16a82cd74088f6638a6502
+restored button 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4

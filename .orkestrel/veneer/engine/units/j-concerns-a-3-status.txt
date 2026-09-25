@@ -1,0 +1,5 @@
+M	guides/veneer.md
+M	src/browser/ScrollSpy.ts
+M	src/browser/types.ts
+M	tests/src/browser/Button.test.ts
+M	tests/src/browser/ScrollSpy.test.ts

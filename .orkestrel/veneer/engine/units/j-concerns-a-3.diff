@@ -1,0 +1,199 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3afa3ac..fe81f6d 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1455,10 +1455,12 @@ undefined otherwise; a refresh that no longer observes that link's section forge
+ 
+ With the `smooth` option, a click on a link inside the target whose section the scrollspy observes
+ prevents the click's navigation and scrolls the root to that section with a `smooth` scroll
+-behavior. The host scrolls until the section's top meets the host's top padding edge, and with the
+-viewport as the root the document scrolls until the section's top meets the viewport's top. The
+-click is read from the nearest ancestor of the clicked element that carries an `href` attribute, so
+-a click on text inside the link counts.
++behavior. While the view prefers reduced motion, which the `matchesReducedMotion` function reads at
++each click, the scroll takes the `instant` behavior instead, because the platform animates a
++`smooth` scroll whatever that preference. The host scrolls until the section's top meets the host's
++top padding edge, and with the viewport as the root the document scrolls until the section's top
++meets the viewport's top. The click is read from the nearest ancestor of the clicked element that
++carries an `href` attribute, so a click on text inside the link counts.
+ 
+ The `intersection` group has no top-level option key of its own, so the scrollspy resolves it as its
+ own layer: the group's defaults, then the attributes its `margin` and `threshold` keys name, then
+diff --git a/src/browser/ScrollSpy.ts b/src/browser/ScrollSpy.ts
+index f8e5cfa..9c72cd4 100644
+--- a/src/browser/ScrollSpy.ts
++++ b/src/browser/ScrollSpy.ts
+@@ -17,6 +17,7 @@ import {
+ 	bindEventMap,
+ 	emitEvent,
+ 	matchesDisabled,
++	matchesReducedMotion,
+ 	readClosest,
+ 	readSiblings,
+ 	readTag,
+@@ -51,7 +52,8 @@ import { isAttributeName, isClassToken, isScrollSpyEvent, isSelector } from './v
+  * made, a removed token back, or the link without its token stops, writing and dispatching nothing
+  * more, and reads no further entry.
+  * With `smooth`, a click on a link inside the target whose section is observed scrolls the root
+- * smoothly to that section and prevents the click's navigation. Destruction disconnects the
++ * smoothly to that section, or instantly while the view prefers reduced motion, and prevents the
++ * click's navigation. Destruction disconnects the
+  * observer and restores every `active` token the scrollspy wrote or removed. An aborted `signal`
+  * destroys the scrollspy.
+  *
+@@ -368,24 +370,27 @@ export class ScrollSpy implements ScrollSpyInterface {
+ 		return this.#holds(observer, present, absent)
+ 	}
+ 
+-	// Scrolls the observer's root smoothly to the section the clicked link names, and prevents the
+-	// click's navigation; a click on any other link inside the target is left alone.
++	// Scrolls the observer's root to the section the clicked link names, and prevents the click's
++	// navigation; a click on any other link inside the target is left alone. The scroll is smooth
++	// unless the view prefers reduced motion: the platform animates a smooth request whatever the
++	// preference, so the scrollspy reads it and scrolls instantly to the same section.
+ 	#scrollTo(event: Event): void {
+ 		const origin = event.target
+ 		const link = isInstance(origin, Element) ? readClosest(origin, '[href]') : undefined
+ 		const section = link === undefined ? undefined : this.#sections.get(link)
+ 		if (section === undefined) return
+ 		event.preventDefault()
++		const behavior = matchesReducedMotion(this.#host) ? 'instant' : 'smooth'
+ 		const root = this.#observer?.root
+ 		const top = section.getBoundingClientRect().top
+ 		if (isInstance(root, HTMLElement)) {
+ 			root.scrollTo({
+ 				top: top - root.getBoundingClientRect().top - root.clientTop + root.scrollTop,
+-				behavior: 'smooth',
++				behavior,
+ 			})
+ 			return
+ 		}
+ 		const view = this.#host.ownerDocument.defaultView
+-		view?.scrollTo({ top: top + view.scrollY, behavior: 'smooth' })
++		view?.scrollTo({ top: top + view.scrollY, behavior })
+ 	}
+ }
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 5a395db..0b2c980 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -1296,7 +1296,7 @@ export interface ScrollSpySelectorMap {
+ export interface ScrollSpyOptions {
+ 	/** Carries the navigation whose links follow the scroll, mirroring Bootstrap's `target` option. Default: the document body. */
+ 	readonly target?: HTMLElement
+-	/** If `true`, a link click scrolls smoothly to its section, mirroring Bootstrap's `smoothScroll` option; if `false`, it jumps. Default: `false`. */
++	/** If `true`, a link click scrolls smoothly to its section, or instantly while the view prefers reduced motion, mirroring Bootstrap's `smoothScroll` option; if `false`, it jumps. Default: `false`. */
+ 	readonly smooth?: boolean
+ 	/** Configures the observer that decides which section is in view. */
+ 	readonly intersection?: {
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index 93058ce..da8b1cf 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -673,6 +673,35 @@ describe('Button', () => {
+ 		expect(Button.find(host)).toBe(replacement)
+ 	})
+ 
++	it('returns the state the host carries when a listener toggles again, delivering each event in the order its call dispatched it', () => {
++		const host = build('button')
++		const events = createRecorder<readonly [boolean, boolean, string | null]>()
++		const inner = createRecorder<readonly [boolean]>()
++		const button: ButtonInterface = new Button(host, {
++			on: {
++				toggle: (event) => {
++					events.handler(
++						event.detail.pressed,
++						host.classList.contains('active'),
++						host.getAttribute('aria-pressed'),
++					)
++					// Only the first event's listener toggles again, so the nested call's event ends the chain.
++					if (events.count === 1) inner.handler(button.toggle())
++				},
++			},
++		})
++		onTestFinished(() => button.destroy())
++		expect(button.toggle()).toBe(false)
++		expect(inner.calls).toEqual([[false]])
++		expect(events.calls).toEqual([
++			[true, true, 'true'],
++			[false, false, 'false'],
++		])
++		expect(button.pressed).toBe(false)
++		expect(host.classList.contains('active')).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
++	})
++
+ 	it('preserves destruction performed by a listener during a toggle and returns the state the host carries', () => {
+ 		const host = build('button')
+ 		const button = new Button(host, { on: { toggle: () => button.destroy() } })
+diff --git a/tests/src/browser/ScrollSpy.test.ts b/tests/src/browser/ScrollSpy.test.ts
+index 8a3e70d..59fbda7 100644
+--- a/tests/src/browser/ScrollSpy.test.ts
++++ b/tests/src/browser/ScrollSpy.test.ts
+@@ -544,21 +544,15 @@ describe('ScrollSpy', () => {
+ 		expect(positions.calls.some(([top]) => top > 1 && top < expected - 1)).toBe(true)
+ 	})
+ 
+-	// The fragment navigation the smooth scroll prevents moves focus off the link, which the link
+-	// outside the host shows, because the scrollspy leaves its click alone.
+-	it('keeps focus on the link a keyboard activation of the smooth scroll pressed, where the fragment navigation it prevents moves it', async () => {
+-		onTestFinished(() =>
+-			history.replaceState(history.state, '', location.pathname + location.search),
+-		)
+-		onTestFinished(() => window.scrollTo({ top: 0, behavior: 'instant' }))
++	// A fragment navigation, which the smooth scroll prevents, would move focus off the link and add a
++	// session-history entry.
++	it('keeps focus on the link a keyboard activation of the smooth scroll pressed, running no fragment navigation', async () => {
+ 		mountTraversalStart()
+ 		const root = scene.mount(`
+ 			<nav id="spy-nav" class="nav">
+ 				<a class="nav-link" href="#spy-one">One</a>
+ 				<a class="nav-link" href="#spy-four">Four</a>
+-				<a class="nav-link" href="#spy-outside">Outside</a>
+ 			</nav>
+-			<section id="spy-outside" style="height: 10px"></section>
+ 			<div id="spy-host" style="position: relative; height: 100px; overflow-y: auto">
+ 				<section id="spy-one" style="height: 100px"></section>
+ 				<div style="height: 100px"></div>
+@@ -573,25 +567,24 @@ describe('ScrollSpy', () => {
+ 		onTestFinished(() => spy.destroy())
+ 		await waitForCondition('the first link activates', () => spy.link !== undefined)
+ 		const four = await traverseAccessible('Four')
++		const entries = history.length
++		const hash = location.hash
+ 		const settled = waitForEvent<readonly [Event]>((listener) => {
+ 			host.addEventListener('scrollend', listener, { once: true, signal: controller.signal })
+ 		}, 'the host settles')
+ 		await pressKeys('{Enter}')
+ 		await settled
+ 		expect(host.scrollTop).toBe(section.offsetTop)
+-		expect(location.hash).toBe('')
++		expect(location.hash).toBe(hash)
++		expect(history.length).toBe(entries)
+ 		expect(document.activeElement).toBe(four)
+ 		await waitForCondition('the fourth link activates', () => spy.link === four)
+ 		expect(document.activeElement).toBe(four)
+-		const outside = await traverseAccessible('Outside')
+-		await pressKeys('{Enter}')
+-		await waitForCondition('the fragment navigation runs', () => location.hash === '#spy-outside')
+-		expect(document.activeElement).not.toBe(outside)
+ 	})
+ 
+-	// Chromium animates a smooth scroll request whatever the motion preference, and Bootstrap makes the
+-	// same request, so the end state under reduced motion is a smooth scroll in both.
+-	it('scrolls the host smoothly under staged reduced motion, reading no motion preference', async () => {
++	// Chromium animates a smooth scroll request whatever the motion preference, so the scrollspy reads
++	// the preference itself and asks for an instant scroll to the same section.
++	it('scrolls the host to the section instantly under staged reduced motion, passing no intermediate position', async () => {
+ 		onTestFinished(() => releaseMedia())
+ 		await stageMedia({ motion: false })
+ 		expect(matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true)
+@@ -623,7 +616,7 @@ describe('ScrollSpy', () => {
+ 		await clickAccessible('link', 'Four')
+ 		await settled
+ 		expect(host.scrollTop).toBe(section.offsetTop)
+-		expect(positions.calls.some(([top]) => top > 0 && top < section.offsetTop)).toBe(true)
++		expect(positions.calls).toEqual([[section.offsetTop]])
+ 	})
+ 
+ 	it('reads its target, smooth scroll, margin, and threshold from the host attributes, the constructor winning per key', async () => {

@@ -1,0 +1,61 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 6e5899f..cd785eb 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1110,7 +1110,7 @@ own token write, each door also reads the token there, and a panel that moves it
+ change over. Until that moment no door reads the `shown` token.
+ 
+ A call the panel took over resolves `false`, dispatches nothing, and takes one further step that
+-returns what the change wrote. The step restores each target the call changed to the value that
++returns what the change wrote. The step writes each target the call changed back to the value that
+ target held before the call's first write to it, in reverse order of those first writes: the
+ panel's `transition` and `host` tokens and inline size, and each trigger's `collapsed` token and
+ `aria-expanded` value. A write that changes nothing records nothing, so a trigger that was already
+@@ -1397,14 +1397,14 @@ lacks it, completes every other write in its order, dispatches its completed eve
+ or at its own token write, each door also reads the token there. A control that loses the token
+ then, while no other control of the list is active, takes the swap over: the call resolves `false`,
+ dispatches nothing more, and takes one further step that returns what the swap wrote. The step
+-restores each target the swap changed to the value that target held before the swap's first write
+-to it, in reverse order of those first writes: the sibling's `active` token, its pane's `active` and
+-`shown` tokens, each control's `aria-selected` value and tab stop, the toggle, menu, and wrapper
+-state of each dropdown that holds a control, and the control's pane tokens. A write that changes
+-nothing records nothing, so a closed dropdown that holds the sibling stays closed, and a target the
+-swap writes more than once, such as a dropdown that holds both controls, goes back to the value it
+-held before the first of those writes. The list then shows the sibling again. The control's `active`
+-token stays as the host moved it, and the sibling's blur is not returned. The step reads no door;
++writes each target the swap changed back to the value that target held before the swap's first
++write to it, in reverse order of those first writes: the sibling's `active` token, its pane's
++`active` and `shown` tokens, each control's `aria-selected` value and tab stop, the toggle, menu,
++and wrapper state of each dropdown that holds a control, and the control's pane tokens. A write
++that changes nothing records nothing, so a closed dropdown that holds the sibling stays closed, and
++a target the swap writes more than once, such as a dropdown that holds both controls, goes back to
++the value it held before the first of those writes. The list then shows the sibling again. The
++control's `active` token stays as the host moved it, and the sibling's blur is not returned. The step reads no door;
+ before each of its writes it reads the call's identity, the tab's lifetime, and the target's
+ value, and it writes nothing to a target that already holds the recorded value. Destruction
+ aborts the wait, so a call awaiting the fade resolves `false`
+@@ -1996,11 +1996,11 @@ resolves `true`. From the moment the slide finds the token on the incoming item,
+ `slide.vn.carousel` dispatch or at its own token write, each door also reads the token there. A host
+ that takes the token off the incoming item then takes the slide over: the slide resolves `false`,
+ dispatches nothing more, and takes one further step that returns what the slide wrote. The step
+-restores each target the slide changed to the value that target held before the slide's first
++writes each target the slide changed back to the value that target held before the slide's first
+ write to it, in reverse order of those first writes: each indicator's `active` token and
+ `aria-current` value, both items' order and direction tokens, and the outgoing item's `active`
+ token. A write that changes nothing records nothing, and an order or direction token that an item
+-carried before the slide and the completion removes comes back as well. The carousel then shows the
++carried before the slide and the completion removes is written back as well. The carousel then shows the
+ outgoing item again, and the incoming item's `active` token stays as the host moved it. The step
+ reads no door; before each of its writes it reads the carousel's lifetime, the slide in flight,
+ and the target's value, and it writes nothing to a target that already holds the recorded value.
+@@ -2503,8 +2503,8 @@ the token there, and a toast that moves it back takes the change over. A hide wh
+ token, and leaves the toast accepting later calls.
+ 
+ A call the toast took over resolves `false`, dispatches nothing, and takes one further step that
+-returns what the change wrote. The step restores each token the call changed to the presence it had
+-before the call's first write to it, in reverse order of those first writes: a show taken over
++returns what the change wrote. The step writes each token the call changed back to the presence it
++had before the call's first write to it, in reverse order of those first writes: a show taken over
+ removes the `transition` token while the show holds it and then the `fade` token when the show
+ added it, and a hide taken over removes the `transition` token while the hide holds it. A write that
+ changes nothing records nothing, so a `fade` token the toast carried before the show stays. The
