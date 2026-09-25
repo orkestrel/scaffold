@@ -1,0 +1,770 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index e914514..734dc55 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2163,12 +2163,15 @@ stands, and a `show` or `hide` call a reaction starts inside one supersedes the
+ nothing more, so the host and the backdrop end in that call's state whether it completes at once or
+ waits. A hide the host took over after it removed the `shown` token writes the host's `display`,
+ `aria-hidden`, `aria-modal`, and `role` back to the values the show wrote, as far as the hide had
+-written them, and shows the backdrop again when the hide had faded it, inserting it again when the
+-hide had already removed it, with or without the `fade` token. A show the host took over writes the
+-host's `display: none` and `aria-hidden="true"`, removes its `aria-modal` and `role`, as far as the
+-show had written them, and removes the backdrop when the show had found it without the `shown`
+-token. A backdrop already shown or already hidden refuses the backdrop's own show or hide and writes
+-nothing, so the step leaves such a backdrop where it is. The backdrop's show reads the call's
++written them. It puts the backdrop back in the page when the hide had removed it, and adds the
++backdrop's token back when the hide had removed that, with or without the `fade` token. A show the
++host took over writes the host's `display: none` and `aria-hidden="true"` and removes its
++`aria-modal` and `role`, as far as the show had written them. It removes the backdrop when the
++show had inserted it, and otherwise removes the backdrop's token when the show had added it. The
++backdrop's connection and its token are two writes, and the step returns only the ones the call
++made: a backdrop already shown or already hidden refuses the backdrop's own show or hide, so the
++call writes no token there, and a hide that removes a backdrop it did not fade puts it back
++without the token. The backdrop's show reads the call's
+ identity after it inserts the element, so a call a reaction inside that insertion starts finds the
+ backdrop without the `shown` token. The doors end when the call dispatches its completed event: a
+ listener to that event that shows or hides the modal starts a new change, and the call whose event
+@@ -2561,12 +2564,15 @@ stands, and a `show` or `hide` call a reaction starts inside one supersedes the
+ nothing more, so the panel and the backdrop end in that call's state. A hide the host took over
+ after it removed the `shown` token removes the `hiding` token while the hide still holds it, writes
+ `aria-modal` and `role` back to the values the show wrote as far as the hide had removed them, and
+-shows the backdrop again when the hide had faded it, inserting it again when the hide had already
+-removed it, so the panel sits on screen with its backdrop beside it. A show the host took over
+-removes the `showing` token while the show still holds it and removes `aria-modal` and `role`, as
+-far as the show had written them, and removes the backdrop with its press listener when the show had
+-found it without the `shown` token. A backdrop already shown or already hidden refuses the
+-backdrop's own show or hide and writes nothing, so the step leaves such a backdrop where it is. The
++puts the backdrop back in the page when the hide had removed it and adds the backdrop's token back
++when the hide had removed that, so the panel sits on screen with its backdrop beside it. A show the
++host took over removes the `showing` token while the show still holds it and removes `aria-modal`
++and `role`, as far as the show had written them. It removes the backdrop with its press listener
++when the show had inserted it, and otherwise removes the backdrop's token when the show had added
++it. The backdrop's connection and its token are two writes, and the step returns only the ones the
++call made: a backdrop already shown or already hidden refuses the backdrop's own show or hide, so
++the call writes no token there, and a hide that removes a backdrop it did not fade puts it back
++without the token. The
+ backdrop's show reads the call's identity after it inserts the element, so a call a reaction inside
+ that insertion starts finds the backdrop without the `shown` token. The doors end when the call
+ dispatches its completed event: a listener to that event that shows or hides the panel starts a new
+diff --git a/src/browser/Modal.ts b/src/browser/Modal.ts
+index 6a33e5f..d9a8d05 100644
+--- a/src/browser/Modal.ts
++++ b/src/browser/Modal.ts
+@@ -69,10 +69,11 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * also reads the token there. A host that moves the token back from that end takes the change over:
+  * the call ends the change in flight, resolves `false`, and takes one further step that returns what
+  * the change wrote to the state the host chose. A stopped hide writes the host's `display` and ARIA
+- * state back to the values the show wrote and shows the backdrop again when the hide had faded it,
+- * inserting it again when the hide had removed it, and a stopped show writes the host's hidden
+- * `display` and ARIA state and removes the backdrop when the show had found it hidden, each as far as
+- * the call had written them. The step dispatches nothing and reads only the call's identity and the
++ * state back to the values the show wrote, puts the backdrop back in the page when the hide had
++ * removed it, and adds the backdrop's token back when the hide had removed that. A stopped show
++ * writes the host's hidden `display` and ARIA state, removes the backdrop when the show had
++ * inserted it, and otherwise removes the backdrop's token when the show had added it. Each returns
++ * only what the call wrote. The step dispatches nothing and reads only the call's identity and the
+  * modal's lifetime before each write, so a call a reaction starts inside the step supersedes it. The
+  * scroll lock, the `open` token, and the isolation the call left acquired stay held until a later
+  * show and its hide, a hide after the host carries the `shown` token again, or destruction releases
+@@ -273,36 +274,39 @@ export class Modal implements ModalInterface {
+ 		}
+ 		if (!this.#apply(change, expected, () => this.#holdOpen(document))) return false
+ 		if (!this.#apply(change, expected, () => this.#adjust())) return false
+-		// The backdrop this call shows, which its returning step removes. A shown backdrop refuses the
+-		// show and writes nothing, so the call shows only a backdrop it finds without the token.
+-		let backdrop: BackdropInterface | undefined
++		// The backdrop writes this call makes, each an entry its returning step returns on its own: the
++		// connection when the call finds the backdrop outside the page, and the token when it finds the
++		// backdrop without the token. A shown backdrop refuses the show before it inserts anything.
++		let shade: ReadonlyArray<'connection' | 'token'> = []
+ 		if (this.#options.backdrop) {
+ 			const held = (this.#backdrop ??= new Backdrop({
+ 				classes: { host: this.#classes.backdrop, shown, fade },
+ 				parent: document.body,
+ 				animated: host.classList.contains(fade),
+ 			}))
+-			if (!held.element.classList.contains(shown)) backdrop = held
++			if (!held.element.classList.contains(shown)) {
++				shade = held.element.isConnected ? ['token'] : ['connection', 'token']
++			}
+ 			await held.show(() => this.#owns(change))
+-			if (!this.#holds(change, expected)) return this.#rehide(change, [], backdrop)
++			if (!this.#holds(change, expected)) return this.#rehide(change, shade)
+ 		}
+ 		if (!document.body.contains(host)) {
+ 			if (!this.#apply(change, expected, () => document.body.append(host))) {
+-				return this.#rehide(change, [], backdrop)
++				return this.#rehide(change, shade)
+ 			}
+ 		}
+ 		if (!this.#apply(change, expected, () => host.style.setProperty('display', 'block'))) {
+-			return this.#rehide(change, ['display'], backdrop)
++			return this.#rehide(change, ['display', ...shade])
+ 		}
+ 		if (!this.#apply(change, expected, () => host.removeAttribute('aria-hidden'))) {
+-			return this.#rehide(change, ['display', 'aria-hidden'], backdrop)
++			return this.#rehide(change, ['display', 'aria-hidden', ...shade])
+ 		}
+ 		if (!this.#apply(change, expected, () => host.setAttribute('aria-modal', 'true'))) {
+-			return this.#rehide(change, ['display', 'aria-hidden', 'aria-modal'], backdrop)
++			return this.#rehide(change, ['display', 'aria-hidden', 'aria-modal', ...shade])
+ 		}
+-		const written = ['display', 'aria-hidden', 'aria-modal', 'role'] as const
++		const written = ['display', 'aria-hidden', 'aria-modal', 'role', ...shade] as const
+ 		if (!this.#apply(change, expected, () => host.setAttribute('role', 'dialog'))) {
+-			return this.#rehide(change, written, backdrop)
++			return this.#rehide(change, written)
+ 		}
+ 		host.scrollTop = 0
+ 		const body = this.#dialog?.querySelector(this.#selectors.body)
+@@ -312,10 +316,10 @@ export class Modal implements ModalInterface {
+ 		const marked = this.#apply(change, true, () => {
+ 			if (!this.shown) host.classList.add(shown)
+ 		})
+-		if (!marked) return this.#rehide(change, written, backdrop)
++		if (!marked) return this.#rehide(change, written)
+ 		if (host.classList.contains(fade)) {
+ 			await settleAnimations(this.#dialog ?? host, this.#controller.signal)
+-			if (!this.#holds(change, true)) return this.#rehide(change, written, backdrop)
++			if (!this.#holds(change, true)) return this.#rehide(change, written)
+ 		}
+ 		if (this.#options.focus) {
+ 			if (this.#isolation === undefined) {
+@@ -327,13 +331,11 @@ export class Modal implements ModalInterface {
+ 				// so the isolation it leaves behind is destroyed here rather than kept.
+ 				if (!this.#holds(change, true)) {
+ 					isolation.destroy()
+-					return this.#rehide(change, written, backdrop)
++					return this.#rehide(change, written)
+ 				}
+ 				this.#isolation = isolation
+ 			}
+-			if (!this.#apply(change, true, () => host.focus())) {
+-				return this.#rehide(change, written, backdrop)
+-			}
++			if (!this.#apply(change, true, () => host.focus())) return this.#rehide(change, written)
+ 		}
+ 		this.#changing = false
+ 		emitEvent(host, MODAL_EVENTS.shown, { relatedTarget: trigger }, false)
+@@ -363,58 +365,61 @@ export class Modal implements ModalInterface {
+ 		const cleared = this.#apply(change, false, () => {
+ 			if (this.shown) host.classList.remove(shown)
+ 		})
+-		if (!cleared) return this.#reshow(change, [], undefined)
++		if (!cleared) return this.#reshow(change, [], null)
+ 		if (host.classList.contains(fade)) {
+ 			await settleAnimations(host, this.#controller.signal)
+-			if (!this.#holds(change, false)) return this.#reshow(change, [], undefined)
++			if (!this.#holds(change, false)) return this.#reshow(change, [], null)
+ 		}
+ 		if (!this.#apply(change, false, () => host.style.setProperty('display', 'none'))) {
+-			return this.#reshow(change, ['display'], undefined)
++			return this.#reshow(change, ['display'], null)
+ 		}
+ 		if (!this.#apply(change, false, () => host.setAttribute('aria-hidden', 'true'))) {
+-			return this.#reshow(change, ['display', 'aria-hidden'], undefined)
++			return this.#reshow(change, ['display', 'aria-hidden'], null)
+ 		}
+ 		if (!this.#apply(change, false, () => host.removeAttribute('aria-modal'))) {
+-			return this.#reshow(change, ['display', 'aria-hidden', 'aria-modal'], undefined)
++			return this.#reshow(change, ['display', 'aria-hidden', 'aria-modal'], null)
+ 		}
+ 		const written = ['display', 'aria-hidden', 'aria-modal', 'role'] as const
+ 		if (!this.#apply(change, false, () => host.removeAttribute('role'))) {
+-			return this.#reshow(change, written, undefined)
++			return this.#reshow(change, written, null)
+ 		}
+ 		// The backdrop stays this modal's until the hide completes, so a hide the host takes over after
+-		// the backdrop left inserts it again, and a destruction on the way removes it. A hidden backdrop
+-		// refuses the hide and writes nothing, so the returning step shows only a backdrop this call
+-		// found with the token.
++		// the backdrop left puts it back, and a destruction on the way removes it. Its token and its
++		// connection are two writes, each an entry the returning step returns on its own: a hidden
++		// backdrop refuses the hide and writes no token, and one outside the page loses no connection.
+ 		const held = this.#backdrop
+-		const backdrop = held?.element.classList.contains(shown) === true ? held : undefined
++		const faded: ReadonlyArray<'token'> =
++			held?.element.classList.contains(shown) === true ? ['token'] : []
+ 		if (held !== undefined) {
+ 			await held.hide()
+-			if (!this.#holds(change, false)) return this.#reshow(change, written, backdrop)
+-			// An element the backdrop holds reacts inside its removal, so the door follows it.
+-			if (!this.#apply(change, false, () => held.element.remove())) {
+-				return this.#reshow(change, written, backdrop)
+-			}
++			if (!this.#holds(change, false)) return this.#reshow(change, [...written, ...faded], null)
++		}
++		const place = held?.element.parentNode ?? null
++		const removed = [...written, ...(place === null ? [] : ['connection' as const]), ...faded]
++		// An element the backdrop holds reacts inside its removal, so the door follows it.
++		if (!this.#apply(change, false, () => held?.element.remove())) {
++			return this.#reshow(change, removed, place)
+ 		}
+ 		const lock = this.#lock
+ 		if (lock !== undefined && !this.#apply(change, false, () => this.#releaseOpen(lock.document))) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, removed, place)
+ 		}
+ 		if (!this.#apply(change, false, () => host.style.removeProperty('padding-left'))) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, removed, place)
+ 		}
+ 		if (!this.#apply(change, false, () => host.style.removeProperty('padding-right'))) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, removed, place)
+ 		}
+ 		this.#lock = undefined
+ 		if (!this.#apply(change, false, () => lock?.destroy())) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, removed, place)
+ 		}
+ 		// A consumer can put the removed element back, and an element it holds then reacts inside the
+ 		// removal the destruction makes, so the door follows it. A destroyed backdrop shows no more, so a
+ 		// hide the host takes over there returns its host writes alone.
+ 		this.#backdrop = undefined
+ 		if (!this.#apply(change, false, () => held?.destroy())) {
+-			return this.#reshow(change, written, undefined)
++			return this.#reshow(change, written, null)
+ 		}
+ 		this.#changing = false
+ 		emitEvent(host, MODAL_EVENTS.hidden, { relatedTarget: undefined }, false)
+@@ -477,16 +482,19 @@ export class Modal implements ModalInterface {
+ 		return this.#holds(change, shown)
+ 	}
+ 
+-	// Ends a hide the host took over by carrying the `shown` token again: returns each host write the
+-	// hide made, named in its order, to the value the show wrote, and shows the backdrop the hide faded
+-	// again, in place or inserted again when the hide had removed it. The step dispatches nothing and
+-	// reads no door; it reads only whether the call that set `change` still owns the modal before each
+-	// write, so a destruction inside one writes nothing more and the snapshot's restoration stands, and
+-	// a show or hide a reaction starts inside one supersedes the step, the backdrop's show included.
++	// Ends a hide the host took over by carrying the `shown` token again: returns each write the hide
++	// made, named in its order, to the value the show wrote. It puts the backdrop back into `place`
++	// when the hide had removed it from there, and adds the backdrop's token when the hide had removed
++	// that, so it adds no token the hide never removed. The step dispatches nothing and reads no door;
++	// it reads only whether the call that set `change` still owns the modal before each write, so a
++	// destruction inside one writes nothing more and the snapshot's restoration stands, and a show or
++	// hide a reaction starts inside one supersedes the step, the backdrop's show included.
+ 	#reshow(
+ 		change: object,
+-		written: ReadonlyArray<'display' | 'aria-hidden' | 'aria-modal' | 'role'>,
+-		backdrop: BackdropInterface | undefined,
++		written: ReadonlyArray<
++			'display' | 'aria-hidden' | 'aria-modal' | 'role' | 'connection' | 'token'
++		>,
++		place: ParentNode | null,
+ 	): false {
+ 		const host = this.#host
+ 		for (const name of written) {
+@@ -495,23 +503,26 @@ export class Modal implements ModalInterface {
+ 				if (name === 'aria-hidden') host.removeAttribute('aria-hidden')
+ 				if (name === 'aria-modal') host.setAttribute('aria-modal', 'true')
+ 				if (name === 'role') host.setAttribute('role', 'dialog')
++				const backdrop = this.#backdrop
++				if (backdrop === undefined) return
++				if (name === 'connection') place?.append(backdrop.element)
++				if (name === 'token') void backdrop.show(() => this.#owns(change))
+ 			})
+ 		}
+-		if (backdrop !== undefined) {
+-			this.#revert(change, () => void backdrop.show(() => this.#owns(change)))
+-		}
+ 		return false
+ 	}
+ 
+-	// Ends a show the host took over by dropping the `shown` token: returns each host write the show
+-	// made, named in its order, to the hidden state a hide writes, and removes the backdrop the show
+-	// showed. The step dispatches nothing and reads no door; it reads only whether the call that set
+-	// `change` still owns the modal before each write. The scroll lock, the `open` token, and the
+-	// isolation stay held until a later change releases them.
++	// Ends a show the host took over by dropping the `shown` token: returns each write the show made,
++	// named in its order, to the hidden state a hide writes. It removes the backdrop when the show had
++	// inserted it, and otherwise removes the backdrop's token when the show had added that, leaving the
++	// backdrop in the page. The step dispatches nothing and reads no door; it reads only whether the
++	// call that set `change` still owns the modal before each write. The scroll lock, the `open` token,
++	// and the isolation stay held until a later change releases them.
+ 	#rehide(
+ 		change: object,
+-		written: ReadonlyArray<'display' | 'aria-hidden' | 'aria-modal' | 'role'>,
+-		backdrop: BackdropInterface | undefined,
++		written: ReadonlyArray<
++			'display' | 'aria-hidden' | 'aria-modal' | 'role' | 'connection' | 'token'
++		>,
+ 	): false {
+ 		const host = this.#host
+ 		for (const name of written) {
+@@ -520,12 +531,13 @@ export class Modal implements ModalInterface {
+ 				if (name === 'aria-hidden') host.setAttribute('aria-hidden', 'true')
+ 				if (name === 'aria-modal') host.removeAttribute('aria-modal')
+ 				if (name === 'role') host.removeAttribute('role')
+-			})
+-		}
+-		if (backdrop !== undefined) {
+-			this.#revert(change, () => {
+-				this.#backdrop = undefined
+-				backdrop.destroy()
++				const backdrop = this.#backdrop
++				if (backdrop === undefined) return
++				if (name === 'connection') {
++					this.#backdrop = undefined
++					backdrop.destroy()
++				}
++				if (name === 'token') void backdrop.hide()
+ 			})
+ 		}
+ 		return false
+diff --git a/src/browser/Offcanvas.ts b/src/browser/Offcanvas.ts
+index 93e1757..9ccf497 100644
+--- a/src/browser/Offcanvas.ts
++++ b/src/browser/Offcanvas.ts
+@@ -74,10 +74,11 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * also reads the token there. A host that moves the token back from that end takes the change over:
+  * the call ends the change in flight, resolves `false`, and takes one further step that returns what
+  * the change wrote to the state the host chose. A stopped hide removes its `hiding` token, writes
+- * `aria-modal` and `role` back to the values the show wrote, and shows the backdrop again when the
+- * hide had faded it, inserting it again when the hide had removed it, and a stopped show removes its
+- * `showing` token, `aria-modal`, and `role` and removes the backdrop when the show had found it
+- * hidden, each as far as the call had written them. The step dispatches nothing and reads only the
++ * `aria-modal` and `role` back to the values the show wrote, puts the backdrop back in the page
++ * when the hide had removed it, and adds the backdrop's token back when the hide had removed that.
++ * A stopped show removes its `showing` token, `aria-modal`, and `role`, removes the backdrop when
++ * the show had inserted it, and otherwise removes the backdrop's token when the show had added it.
++ * Each returns only what the call wrote. The step dispatches nothing and reads only the
+  * call's identity and the panel's lifetime before each write, so a call a reaction starts inside
+  * the step supersedes it. The scroll lock and the isolation the call left acquired stay held until
+  * a later show and its hide, a hide after the host carries the `shown` token again, or destruction
+@@ -259,9 +260,10 @@ export class Offcanvas implements OffcanvasInterface {
+ 			if (!this.#holds(change, expected)) return false
+ 		}
+ 		let appearing: Promise<boolean> | undefined
+-		// The backdrop this call shows, which its returning step removes. A shown backdrop refuses the
+-		// show and writes nothing, so the call shows only a backdrop it finds without the token.
+-		let backdrop: BackdropInterface | undefined
++		// The backdrop writes this call makes, each an entry its returning step returns on its own: the
++		// connection when the call finds the backdrop outside the page, and the token when it finds the
++		// backdrop without the token. A shown backdrop refuses the show before it inserts anything.
++		let shade: ReadonlyArray<'connection' | 'token'> = []
+ 		if (this.#options.backdrop) {
+ 			if (this.#backdrop === undefined) {
+ 				const created = new Backdrop({
+@@ -279,36 +281,38 @@ export class Offcanvas implements OffcanvasInterface {
+ 				this.#listening = listening
+ 			}
+ 			const held = this.#backdrop
+-			if (!held.element.classList.contains(shown)) backdrop = held
++			if (!held.element.classList.contains(shown)) {
++				shade = held.element.isConnected ? ['token'] : ['connection', 'token']
++			}
+ 			// The backdrop fades in beside the slide, as Bootstrap's does, and the show waits for both. An
+ 			// element the backdrop holds reacts inside its insertion, so the backdrop reads this call's
+ 			// identity before its token write and the door follows the call. Nothing runs inside that
+ 			// write, because the backdrop is a plain `div` element, and an observer of it runs inside the
+ 			// wait, whose door follows it.
+ 			appearing = held.show(() => this.#owns(change))
+-			if (!this.#holds(change, expected)) return this.#rehide(change, [], backdrop)
++			if (!this.#holds(change, expected)) return this.#rehide(change, shade)
+ 		}
+ 		if (!this.#apply(change, expected, () => host.setAttribute('aria-modal', 'true'))) {
+-			return this.#rehide(change, ['aria-modal'], backdrop)
++			return this.#rehide(change, ['aria-modal', ...shade])
+ 		}
+ 		if (!this.#apply(change, expected, () => host.setAttribute('role', 'dialog'))) {
+-			return this.#rehide(change, ['aria-modal', 'role'], backdrop)
++			return this.#rehide(change, ['aria-modal', 'role', ...shade])
+ 		}
+ 		reflow(host)
+-		const written = ['showing', 'aria-modal', 'role'] as const
++		const written = ['showing', 'aria-modal', 'role', ...shade] as const
+ 		if (!this.#apply(change, expected, () => host.classList.add(showing))) {
+-			return this.#rehide(change, written, backdrop)
++			return this.#rehide(change, written)
+ 		}
+ 		// A host that added the token first has made this write for the call.
+ 		const marked = this.#apply(change, true, () => {
+ 			if (!this.shown) host.classList.add(shown)
+ 		})
+-		if (!marked) return this.#rehide(change, written, backdrop)
++		if (!marked) return this.#rehide(change, written)
+ 		await Promise.all([settleAnimations(host, signal), appearing])
+-		if (!this.#holds(change, true)) return this.#rehide(change, written, backdrop)
+-		const settled = ['aria-modal', 'role'] as const
++		if (!this.#holds(change, true)) return this.#rehide(change, written)
++		const settled = ['aria-modal', 'role', ...shade] as const
+ 		if (!this.#apply(change, true, () => host.classList.remove(showing))) {
+-			return this.#rehide(change, settled, backdrop)
++			return this.#rehide(change, settled)
+ 		}
+ 		if (this.#options.backdrop || !this.#options.scroll) {
+ 			if (this.#isolation === undefined) {
+@@ -321,13 +325,11 @@ export class Offcanvas implements OffcanvasInterface {
+ 				// so the isolation it leaves behind is destroyed here rather than kept.
+ 				if (!this.#holds(change, true)) {
+ 					isolation.destroy()
+-					return this.#rehide(change, settled, backdrop)
++					return this.#rehide(change, settled)
+ 				}
+ 				this.#isolation = isolation
+ 			}
+-			if (!this.#apply(change, true, () => host.focus())) {
+-				return this.#rehide(change, settled, backdrop)
+-			}
++			if (!this.#apply(change, true, () => host.focus())) return this.#rehide(change, settled)
+ 		}
+ 		this.#changing = false
+ 		emitEvent(host, OFFCANVAS_EVENTS.shown, { relatedTarget: trigger }, false)
+@@ -358,45 +360,49 @@ export class Offcanvas implements OffcanvasInterface {
+ 		this.#isolation = undefined
+ 		if (!this.#apply(change, expected, () => isolation?.destroy())) return false
+ 		if (!this.#apply(change, expected, () => host.classList.add(hiding))) {
+-			return this.#reshow(change, ['hiding'], undefined)
++			return this.#reshow(change, ['hiding'], null)
+ 		}
+ 		// The backdrop fades out beside the slide, as Bootstrap's does, and the hide waits for both.
+ 		// Nothing runs inside the backdrop's token write, because the backdrop is a plain `div` element,
+-		// and an observer of that write runs inside the wait, whose door follows it. A hidden backdrop
+-		// refuses the hide and writes nothing, so the returning step shows only a backdrop this call
+-		// found with the token.
++		// and an observer of that write runs inside the wait, whose door follows it. The backdrop's token
++		// and its connection are two writes, each an entry the returning step returns on its own: a
++		// hidden backdrop refuses the hide and writes no token, and one outside the page loses no
++		// connection.
+ 		const held = this.#backdrop
+-		const backdrop = held?.element.classList.contains(shown) === true ? held : undefined
++		const faded: ReadonlyArray<'token'> =
++			held?.element.classList.contains(shown) === true ? ['token'] : []
+ 		const vanishing = held?.hide()
+ 		// A host that removed the token first has made this write for the call.
+ 		const cleared = this.#apply(change, false, () => {
+ 			if (this.shown) host.classList.remove(shown)
+ 		})
+-		if (!cleared) return this.#reshow(change, ['hiding'], backdrop)
++		if (!cleared) return this.#reshow(change, ['hiding', ...faded], null)
+ 		await Promise.all([settleAnimations(host, this.#controller.signal), vanishing])
+-		if (!this.#holds(change, false)) return this.#reshow(change, ['hiding'], backdrop)
++		if (!this.#holds(change, false)) return this.#reshow(change, ['hiding', ...faded], null)
+ 		// A show the host took over can leave its `showing` token behind, so the hide clears it too.
+ 		if (!this.#apply(change, false, () => host.classList.remove(hiding, showing))) {
+-			return this.#reshow(change, [], backdrop)
++			return this.#reshow(change, faded, null)
+ 		}
+ 		if (!this.#apply(change, false, () => host.removeAttribute('aria-modal'))) {
+-			return this.#reshow(change, ['aria-modal'], backdrop)
++			return this.#reshow(change, ['aria-modal', ...faded], null)
+ 		}
+ 		const written = ['aria-modal', 'role'] as const
+ 		if (!this.#apply(change, false, () => host.removeAttribute('role'))) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, [...written, ...faded], null)
+ 		}
+ 		// The backdrop's fade wrote nothing past its settle, so its removal is a step of this hide, taken
+ 		// only while the hide still holds its change. The backdrop and its press listener stay this
+-		// panel's until the hide completes, so a hide the host takes over after the removal inserts the
+-		// backdrop again, and a destruction on the way removes it.
++		// panel's until the hide completes, so a hide the host takes over after the removal puts the
++		// backdrop back, and a destruction on the way removes it.
++		const place = held?.element.parentNode ?? null
++		const removed = [...written, ...(place === null ? [] : ['connection' as const]), ...faded]
+ 		if (!this.#apply(change, false, () => held?.element.remove())) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, removed, place)
+ 		}
+ 		const lock = this.#lock
+ 		this.#lock = undefined
+ 		if (!this.#apply(change, false, () => lock?.destroy())) {
+-			return this.#reshow(change, written, backdrop)
++			return this.#reshow(change, removed, place)
+ 		}
+ 		// A consumer can put the removed element back, and an element it holds then reacts inside the
+ 		// removal the destruction makes, so the door follows it. A destroyed backdrop shows no more, so a
+@@ -405,7 +411,7 @@ export class Offcanvas implements OffcanvasInterface {
+ 		this.#listening = undefined
+ 		this.#backdrop = undefined
+ 		if (!this.#apply(change, false, () => held?.destroy())) {
+-			return this.#reshow(change, written, undefined)
++			return this.#reshow(change, written, null)
+ 		}
+ 		this.#changing = false
+ 		emitEvent(host, OFFCANVAS_EVENTS.hidden, { relatedTarget: undefined }, false)
+@@ -464,17 +470,18 @@ export class Offcanvas implements OffcanvasInterface {
+ 		return this.#holds(change, shown)
+ 	}
+ 
+-	// Ends a hide the host took over by carrying the `shown` token again: returns each host write the
+-	// hide made, named in its order, to the shown state (the `hiding` token leaves, `aria-modal` and
+-	// `role` return to the values the show wrote), and shows the backdrop the hide faded again, in
+-	// place or inserted again when the hide had removed it. The step dispatches nothing and reads no
+-	// door; it reads only whether the call that set `change` still owns the panel before each write,
+-	// so a destruction inside one writes nothing more and the snapshot's restoration stands, and a show
+-	// or hide a reaction starts inside one supersedes the step, the backdrop's show included.
++	// Ends a hide the host took over by carrying the `shown` token again: returns each write the hide
++	// made, named in its order, to the shown state (the `hiding` token leaves, `aria-modal` and `role`
++	// return to the values the show wrote). It puts the backdrop back into `place` when the hide had
++	// removed it from there, and adds the backdrop's token when the hide had removed that, so it adds
++	// no token the hide never removed. The step dispatches nothing and reads no door; it reads only
++	// whether the call that set `change` still owns the panel before each write, so a destruction
++	// inside one writes nothing more and the snapshot's restoration stands, and a show or hide a
++	// reaction starts inside one supersedes the step, the backdrop's show included.
+ 	#reshow(
+ 		change: object,
+-		written: ReadonlyArray<'hiding' | 'aria-modal' | 'role'>,
+-		backdrop: BackdropInterface | undefined,
++		written: ReadonlyArray<'hiding' | 'aria-modal' | 'role' | 'connection' | 'token'>,
++		place: ParentNode | null,
+ 	): false {
+ 		const host = this.#host
+ 		for (const name of written) {
+@@ -482,24 +489,26 @@ export class Offcanvas implements OffcanvasInterface {
+ 				if (name === 'hiding') host.classList.remove(this.#classes.hiding)
+ 				if (name === 'aria-modal') host.setAttribute('aria-modal', 'true')
+ 				if (name === 'role') host.setAttribute('role', 'dialog')
++				const backdrop = this.#backdrop
++				if (backdrop === undefined) return
++				if (name === 'connection') place?.append(backdrop.element)
++				if (name === 'token') void backdrop.show(() => this.#owns(change))
+ 			})
+ 		}
+-		if (backdrop !== undefined) {
+-			this.#revert(change, () => void backdrop.show(() => this.#owns(change)))
+-		}
+ 		return false
+ 	}
+ 
+-	// Ends a show the host took over by dropping the `shown` token: returns each host write the show
+-	// made, named in its order, clearing the `showing` token while the show still holds it and
+-	// removing the `aria-modal` and `role` attributes, then ends the press listener of the backdrop the
+-	// show showed and removes that backdrop. The step dispatches nothing and reads no door; it reads
+-	// only whether the call that set `change` still owns the panel before each write. The scroll lock
+-	// and the isolation stay held until a later change releases them.
++	// Ends a show the host took over by dropping the `shown` token: returns each write the show made,
++	// named in its order, clearing the `showing` token while the show still holds it and removing the
++	// `aria-modal` and `role` attributes. It ends the backdrop's press listener and removes the
++	// backdrop when the show had inserted it, and otherwise removes the backdrop's token when the show
++	// had added that, leaving the backdrop and its press listener in the page. The step dispatches
++	// nothing and reads no door; it reads only whether the call that set `change` still owns the panel
++	// before each write. The scroll lock and the isolation stay held until a later change releases
++	// them.
+ 	#rehide(
+ 		change: object,
+-		written: ReadonlyArray<'showing' | 'aria-modal' | 'role'>,
+-		backdrop: BackdropInterface | undefined,
++		written: ReadonlyArray<'showing' | 'aria-modal' | 'role' | 'connection' | 'token'>,
+ 	): false {
+ 		const host = this.#host
+ 		for (const name of written) {
+@@ -507,14 +516,15 @@ export class Offcanvas implements OffcanvasInterface {
+ 				if (name === 'showing') host.classList.remove(this.#classes.showing)
+ 				if (name === 'aria-modal') host.removeAttribute('aria-modal')
+ 				if (name === 'role') host.removeAttribute('role')
+-			})
+-		}
+-		if (backdrop !== undefined) {
+-			this.#revert(change, () => {
+-				this.#backdrop = undefined
+-				this.#listening?.abort()
+-				this.#listening = undefined
+-				backdrop.destroy()
++				const backdrop = this.#backdrop
++				if (backdrop === undefined) return
++				if (name === 'connection') {
++					this.#backdrop = undefined
++					this.#listening?.abort()
++					this.#listening = undefined
++					backdrop.destroy()
++				}
++				if (name === 'token') void backdrop.hide()
+ 			})
+ 		}
+ 		return false
+diff --git a/tests/src/browser/Modal.test.ts b/tests/src/browser/Modal.test.ts
+index 35da55f..26f0cac 100644
+--- a/tests/src/browser/Modal.test.ts
++++ b/tests/src/browser/Modal.test.ts
+@@ -3231,4 +3231,87 @@ describe('Modal', () => {
+ 			]),
+ 		)
+ 	})
++
++	// A consumer takes the `shown` token off a shown modal's backdrop, so the next hide finds it hidden
++	// and fades nothing, yet removes it from the page. A custom element the backdrop holds adds the
++	// modal's token back inside that removal, so the host takes the hide over. The hide removed the
++	// backdrop's connection and never its token, so its returning step puts the backdrop back in the
++	// page without the token.
++	it('puts back a backdrop the hide removed, adding no token it never removed, when the host takes that hide over', async () => {
++		const name = 'vn-modal-connection-returned'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				disconnectedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount('<div class="modal"><div class="modal-dialog"></div></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.modal'), 'No modal')
++		const modal = new Modal(host, { focus: false })
++		onTestFinished(() => modal.destroy())
++		expect(await modal.show()).toBe(true)
++		const backdrop = requireValue(
++			document.querySelector<HTMLElement>('body > .modal-backdrop'),
++			'No backdrop',
++		)
++		backdrop.classList.remove('show')
++		const child = document.createElement(name)
++		backdrop.append(child)
++		reactions.set(child, () => {
++			reactions.delete(child)
++			host.classList.add('show')
++		})
++		expect(await modal.hide()).toBe(false)
++		expect({
++			shown: modal.shown,
++			display: host.style.display,
++			modal: host.getAttribute('aria-modal'),
++			parent: backdrop.parentElement === document.body,
++			tokens: Array.from(backdrop.classList),
++		}).toEqual({
++			shown: true,
++			display: 'block',
++			modal: 'true',
++			parent: true,
++			tokens: ['modal-backdrop'],
++		})
++	})
++
++	// A consumer takes the `shown` tokens off a shown modal and its backdrop and leaves the backdrop in
++	// the page, so the next show adds the backdrop's token without inserting it. A listener to the show
++	// event adds the modal's token back, and a microtask it queues removes it while the show waits on
++	// the backdrop, so the host takes the show over. The show wrote the backdrop's token and not its
++	// connection, so its returning step removes the token and leaves the backdrop in the page.
++	it('removes only the backdrop token the show added when the host takes that show over', async () => {
++		const root = scene.mount('<div class="modal"><div class="modal-dialog"></div></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.modal'), 'No modal')
++		const modal = new Modal(host, { focus: false })
++		onTestFinished(() => modal.destroy())
++		expect(await modal.show()).toBe(true)
++		const backdrop = requireValue(
++			document.querySelector<HTMLElement>('body > .modal-backdrop'),
++			'No backdrop',
++		)
++		host.classList.remove('show')
++		backdrop.classList.remove('show')
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		host.addEventListener(
++			MODAL_EVENTS.show,
++			() => {
++				host.classList.add('show')
++				queueMicrotask(() => host.classList.remove('show'))
++			},
++			{ once: true, signal: controller.signal },
++		)
++		expect(await modal.show()).toBe(false)
++		expect({
++			shown: modal.shown,
++			parent: backdrop.parentElement === document.body,
++			tokens: Array.from(backdrop.classList),
++		}).toEqual({ shown: false, parent: true, tokens: ['modal-backdrop'] })
++	})
+ })
+diff --git a/tests/src/browser/Offcanvas.test.ts b/tests/src/browser/Offcanvas.test.ts
+index f2f74f9..22fb6c5 100644
+--- a/tests/src/browser/Offcanvas.test.ts
++++ b/tests/src/browser/Offcanvas.test.ts
+@@ -3529,4 +3529,96 @@ describe('Offcanvas', () => {
+ 			]),
+ 		)
+ 	})
++
++	// A consumer takes the `shown` token off a shown panel's backdrop, so the next hide finds it hidden
++	// and fades nothing, yet removes it from the page. A custom element the backdrop holds adds the
++	// panel's token back inside that removal, so the host takes the hide over. The hide removed the
++	// backdrop's connection and never its token, so its returning step puts the backdrop back in the
++	// page without the token, its press listener still the panel's.
++	it('puts back a backdrop the hide removed, adding no token it never removed, when the host takes that hide over', async () => {
++		const name = 'vn-offcanvas-connection-returned'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				disconnectedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount('<div class="offcanvas" tabindex="-1"></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.offcanvas'), 'No panel')
++		const offcanvas = new Offcanvas(host)
++		onTestFinished(() => offcanvas.destroy())
++		expect(await offcanvas.show()).toBe(true)
++		const backdrop = requireValue(
++			root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++			'No backdrop',
++		)
++		backdrop.classList.remove('show')
++		const child = document.createElement(name)
++		backdrop.append(child)
++		reactions.set(child, () => {
++			reactions.delete(child)
++			host.classList.add('show')
++		})
++		expect(await offcanvas.hide()).toBe(false)
++		const reading = {
++			tokens: Array.from(host.classList),
++			modal: host.getAttribute('aria-modal'),
++			parent: backdrop.parentElement === root,
++			backdrop: Array.from(backdrop.classList),
++		}
++		backdrop.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
++		expect({ ...reading, hid: !offcanvas.shown }).toEqual({
++			tokens: ['offcanvas', 'show'],
++			modal: 'true',
++			parent: true,
++			backdrop: ['offcanvas-backdrop', 'fade'],
++			hid: true,
++		})
++	})
++
++	// A consumer takes the `shown` tokens off a shown panel and its backdrop and leaves the backdrop in
++	// the page, so the next show adds the backdrop's token without inserting it. A listener to the show
++	// event adds the panel's token back, and a microtask it queues removes it while the show waits, so
++	// the host takes the show over. The show wrote the backdrop's token and not its connection, so its
++	// returning step removes the token and leaves the backdrop and its press listener in the page.
++	it('removes only the backdrop token the show added when the host takes that show over', async () => {
++		const root = scene.mount('<div class="offcanvas" tabindex="-1"></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.offcanvas'), 'No panel')
++		const offcanvas = new Offcanvas(host)
++		onTestFinished(() => offcanvas.destroy())
++		expect(await offcanvas.show()).toBe(true)
++		const backdrop = requireValue(
++			root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++			'No backdrop',
++		)
++		host.classList.remove('show')
++		backdrop.classList.remove('show')
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		host.addEventListener(
++			OFFCANVAS_EVENTS.show,
++			() => {
++				host.classList.add('show')
++				queueMicrotask(() => host.classList.remove('show'))
++			},
++			{ once: true, signal: controller.signal },
++		)
++		expect(await offcanvas.show()).toBe(false)
++		const reading = {
++			shown: offcanvas.shown,
++			parent: backdrop.parentElement === root,
++			backdrop: Array.from(backdrop.classList),
++		}
++		host.classList.add('show')
++		backdrop.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
++		expect({ ...reading, hid: !offcanvas.shown }).toEqual({
++			shown: false,
++			parent: true,
++			backdrop: ['offcanvas-backdrop', 'fade'],
++			hid: true,
++		})
++	})
+ })

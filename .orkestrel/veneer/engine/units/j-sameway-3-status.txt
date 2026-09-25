@@ -1,0 +1,5 @@
+M	guides/veneer.md
+M	src/browser/Modal.ts
+M	src/browser/Offcanvas.ts
+M	tests/src/browser/Modal.test.ts
+M	tests/src/browser/Offcanvas.test.ts

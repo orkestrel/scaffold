@@ -1,0 +1,6 @@
+State that the shipped fade times the Alert, Tab, and Toast waits under the root's motion factor
+
+The Alert, Tab, and Toast sections said the shipped cascade declares no fade, which `_fade.scss` has contradicted since B-CROSS FADE. They now state that the shipped fade partial times each wait over `--vn-motion-feedback`, which `--vn-factor-motion` on the root rescales. These are J-CASCADE's report-only patches (`units/j-cascade-report.md`), applied exactly as returned by the Orchestrator's integration.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

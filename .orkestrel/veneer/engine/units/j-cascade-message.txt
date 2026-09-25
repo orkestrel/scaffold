@@ -1,0 +1,10 @@
+Prove the fade engines on the shipped fade and the motion factor, and swipe the carousel with a trusted touch drag
+
+The Alert, Tab, Toast, and Tooltip proofs waited on a test-local `.fade` rule whose comments said the shipped cascade had none. Each now loads the shipped `_tokens.scss` and `_fade.scss` with its component's sheet. The Toast cases that relied on the stand-in displaying a hidden toast move to the path the shipped cascade does fade. A Popover case runs the default animated path on trusted clicks.
+
+Alert, Tab, Toast, Tooltip, and Popover each gain a case proving the completed event follows `--vn-factor-motion` on the root: at a zero factor the event arrives with no transition, and at a large one only after the lengthened fade finishes. A Carousel case drags with trusted `Input.dispatchTouchEvent` points and slides in the drag's direction.
+
+The instrument killed every seam (the settle wait, the fade's token read, and the swipe direction) through assertions, and refused a planted unbound identifier. No source changed.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
