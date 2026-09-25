@@ -1,0 +1,6 @@
+# The Orchestrator's red reading of J-HOLDERS' cases on 4cd56a8's sources (2026-09-25, Chromium 153.0.8010.12), tests at ef320ca Route Modal's open token and Isolation's write-back through the shared snapshot record, and name the record's shapes
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:655:2 > Modal > adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found
+AssertionError: expected [ 'page' ] to deeply equal [ 'page', 'modal-open' ]
+      Tests  1 failed | 94 passed (95)
+restored byte for byte (the Orchestrator's digest)

@@ -1,0 +1,44 @@
+# The Orchestrator's re-run of the J-HOLDERS mutations (2026-09-25, Chromium 153.0.8010.12), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/holders at ef320ca Route Modal's open token and Isolation's write-back through the shared snapshot record, and name the record's shapes
+instrument: the worktree copy equals the retained copy (ad71506a88a293d2616cb7ab3cd00e9efaae0476e468c535c3df82758d6c024f)
+--- results (the instrument's stdout)
+digest src/browser/Modal.ts 15b550f149cde09fe898872394423fecb72ba0727805296288e4b97ba97b0d51
+digest src/browser/Isolation.ts 88fa9828002d74f90f08c4bcb2447a97f2dfd8c49e85ff05249c2a220e77086b
+digest src/browser/ScrollLock.ts cfc2ab1deaf9e7facba222fe8e2dbeb49b29fe8d727d224696c98dd8bc50cb45
+digest src/browser/ColorMode.ts 7b9269f3d9a1540422da4fc0ea771eebff00011e79a686954ffc770d8bb7f956
+| Row | Obligation | Mutation | Case | Expected | Reading | Failure message | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| H1-LAST | H1 | the last modal to hide relinquishes the open record without writing the body back | tests/src/browser/Modal.test.ts > Modal adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found | KILLED | KILLED | AssertionError: expected 'page modal-open' to be 'page' // Object.is equality | PASS |
+| H2-LAST | H2 | the last isolation to release an element never writes the inert record back | tests/src/browser/Isolation.test.ts > Isolation keeps an inert ancestor clear while any isolation inside it lives, and restores it at the last release | KILLED | KILLED | AssertionError: expected null to be '' // Object.is equality | PASS |
+| H2-ORDER | H2 | a release leaves the element to the shared record alone, handing it to no remaining claim | tests/src/browser/Isolation.test.ts > Isolation keeps an element another live isolation claimed inert interactive while a sparing isolation lives, and hands it back when that isolation ends | KILLED | KILLED | AssertionError: expected false to be true // Object.is equality | PASS |
+| H3-MEASURE | H3 | every lock measures and writes its own targets instead of joining the first lock | tests/src/browser/ScrollLock.test.ts > ScrollLock compensates the elements the selectors of the lock that wrote match, and refuses a selector that fails to parse | KILLED | KILLED | AssertionError: expected '0px' to be '' // Object.is equality | PASS |
+| H5-SIGNAL | H5 | a lock refused for a missing body keeps its abort listener on the caller signal | tests/src/browser/ScrollLock.test.ts > ScrollLock leaves no listener on the signal of a lock it refuses for a missing body, so aborting that signal later runs none of it, writes nothing, and throws nothing | KILLED | KILLED | AssertionError: expected 2 to be 1 // Object.is equality | PASS |
+| H5-PRESENT | H5 | a failed persist puts back only an absent reading, removing a present attribute | tests/src/browser/ColorMode.test.ts > ColorMode puts the root reading back, absent or present, and rethrows the same error when persisting the stored mode throws during construction | KILLED | KILLED | AssertionError: expected null to be 'light' // Object.is equality | PASS |
+| H5-IDENTITY | H5 | a failed persist rethrows a copy of the storage error with the same message | tests/src/browser/ColorMode.test.ts > ColorMode puts the root reading back, absent or present, and rethrows the same error when persisting the stored mode throws during construction | KILLED | KILLED | AssertionError: expected Error: stop to be Error: stop // Object.is equality | PASS |
+| CONTROL | control | a show adds the open token whether or not the body carries it, which leaves the same token list | tests/src/browser/Modal.test.ts > Modal adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found | HELD | HELD |  | PASS |
+| BOOM | demonstration | isolation destruction throws new Error('boom'), a failure that is not an assertion | tests/src/browser/Isolation.test.ts > Isolation keeps an inert ancestor clear while any isolation inside it lives, and restores it at the last release | REFUSED | REFUSED | Error: boom | PASS |
+restored byte for byte
+rows failing: none
+instrument exit=0
+--- killed rows whose failure message does not name an assertion
+none
+--- the instrument's log
+digest src/browser/Modal.ts 15b550f149cde09fe898872394423fecb72ba0727805296288e4b97ba97b0d51
+digest src/browser/Isolation.ts 88fa9828002d74f90f08c4bcb2447a97f2dfd8c49e85ff05249c2a220e77086b
+digest src/browser/ScrollLock.ts cfc2ab1deaf9e7facba222fe8e2dbeb49b29fe8d727d224696c98dd8bc50cb45
+digest src/browser/ColorMode.ts 7b9269f3d9a1540422da4fc0ea771eebff00011e79a686954ffc770d8bb7f956
+| Row | Obligation | Mutation | Case | Expected | Reading | Failure message | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| H1-LAST | H1 | the last modal to hide relinquishes the open record without writing the body back | tests/src/browser/Modal.test.ts > Modal adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found | KILLED | KILLED | AssertionError: expected 'page modal-open' to be 'page' // Object.is equality | PASS |
+| H2-LAST | H2 | the last isolation to release an element never writes the inert record back | tests/src/browser/Isolation.test.ts > Isolation keeps an inert ancestor clear while any isolation inside it lives, and restores it at the last release | KILLED | KILLED | AssertionError: expected null to be '' // Object.is equality | PASS |
+| H2-ORDER | H2 | a release leaves the element to the shared record alone, handing it to no remaining claim | tests/src/browser/Isolation.test.ts > Isolation keeps an element another live isolation claimed inert interactive while a sparing isolation lives, and hands it back when that isolation ends | KILLED | KILLED | AssertionError: expected false to be true // Object.is equality | PASS |
+| H3-MEASURE | H3 | every lock measures and writes its own targets instead of joining the first lock | tests/src/browser/ScrollLock.test.ts > ScrollLock compensates the elements the selectors of the lock that wrote match, and refuses a selector that fails to parse | KILLED | KILLED | AssertionError: expected '0px' to be '' // Object.is equality | PASS |
+| H5-SIGNAL | H5 | a lock refused for a missing body keeps its abort listener on the caller signal | tests/src/browser/ScrollLock.test.ts > ScrollLock leaves no listener on the signal of a lock it refuses for a missing body, so aborting that signal later runs none of it, writes nothing, and throws nothing | KILLED | KILLED | AssertionError: expected 2 to be 1 // Object.is equality | PASS |
+| H5-PRESENT | H5 | a failed persist puts back only an absent reading, removing a present attribute | tests/src/browser/ColorMode.test.ts > ColorMode puts the root reading back, absent or present, and rethrows the same error when persisting the stored mode throws during construction | KILLED | KILLED | AssertionError: expected null to be 'light' // Object.is equality | PASS |
+| H5-IDENTITY | H5 | a failed persist rethrows a copy of the storage error with the same message | tests/src/browser/ColorMode.test.ts > ColorMode puts the root reading back, absent or present, and rethrows the same error when persisting the stored mode throws during construction | KILLED | KILLED | AssertionError: expected Error: stop to be Error: stop // Object.is equality | PASS |
+| CONTROL | control | a show adds the open token whether or not the body carries it, which leaves the same token list | tests/src/browser/Modal.test.ts > Modal adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found | HELD | HELD |  | PASS |
+| BOOM | demonstration | isolation destruction throws new Error('boom'), a failure that is not an assertion | tests/src/browser/Isolation.test.ts > Isolation keeps an inert ancestor clear while any isolation inside it lives, and restores it at the last release | REFUSED | REFUSED | Error: boom | PASS |
+restored byte for byte
+rows failing: none
+--- the Orchestrator's restore check
+every source restored byte for byte (the Orchestrator's digest)
+--- status after
