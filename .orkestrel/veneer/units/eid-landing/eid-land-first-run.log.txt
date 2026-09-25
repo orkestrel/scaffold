@@ -1,0 +1,14 @@
+=== fast-forward to origin/main (01:09:30)
+Updating 6882751..6d27028
+Fast-forward
+ guides/veneer.md                                   |  23 +++-
+ src/browser/constants.ts                           |  50 +++++++-
+ src/browser/sanitizers/ConfigSanitizer.ts          |  52 +++++++-
+ tests/src/browser/index.test.ts                    |   4 +
+ .../src/browser/sanitizers/ConfigSanitizer.test.ts | 139 +++++++++++++++++++++
+ 5 files changed, 253 insertions(+), 15 deletions(-)
+=== fast-forward to origin/main exit=0
+=== base 6d27028
+=== integrate eir over ca83afb (unit tip ca83afb)
+Finished in 17370ms on 476 files using 4 threads.
+=== integrate eil over ca83afb (unit tip ca83afb)

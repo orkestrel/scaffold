@@ -1,0 +1,14 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/eid-trial
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  00:36:09
+   Duration  30.24s (transform 773ms, setup 235ms, import 19.82s, tests 9.98s, environment 0ms)
+

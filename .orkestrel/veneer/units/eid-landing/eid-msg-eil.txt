@@ -1,0 +1,15 @@
+Keep dl, blockquote, and figure defaults on the tag, and let Bootstrap's classes carry Bootstrap's layout
+
+E-ID-LAYOUT (E-IDENTITY, Addenda 2 and 3). A dl keeps its two-column grid, a blockquote its bar, inset, and italics,
+and a figure its caption spacing, whatever class the tag carries; no selector reads a tag's context or whether it
+carries a class. Bootstrap's classes write the layout their patterns need: a .row column's gutter overrides the term
+padding so dl.row lays out as Bootstrap's horizontal description list, .blockquote clears the bar, and
+.figure-caption clears the caption margin. figure returns to block flow, so the attributed quotation ends at its
+footer and the following content sits where Bootstrap places it. The proofs read each pattern's geometry, each red
+under its named mutation, and the probe reads every pattern against Bootstrap 5.3.8 at 390 and 1280 pixels.
+
+Audited in five rounds by the analyst on GPT-6 Astra, the reviewer on Opus 5.5, and the checker on Sonnet; written by
+opus on Opus 5.5, with round 5 on builder on Sonnet. Records: .orkestrel/veneer/units/eil-audit-5-verdict.md in the scaffold repository.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

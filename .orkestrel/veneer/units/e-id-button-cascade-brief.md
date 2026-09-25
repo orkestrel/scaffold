@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native Claude subagent, the sole writer in `/home/user/veneer-ebc` (branch `unit/ebc`, cut from
-the session branch at the E-ID landing, `LANDING_HEAD`). Read, in order: `/home/user/scaffold/AGENTS.md`; the rules
+the session branch at the E-ID landing, `e07b3a6`). Read, in order: `/home/user/scaffold/AGENTS.md`; the rules
 `/home/user/scaffold/.claude/rules/{styles,tests,names,typescript,architecture,documentation,writing,quality}.md`;
 Veneer's `ROADMAP.md` § Tenets in the worktree; the design verdict
 `/home/user/scaffold/.orkestrel/veneer/e-id-button-design-verdict.md`, which binds; and both design proposals it names,
@@ -90,7 +90,7 @@ Perform the assignment directly and spawn nothing.
 
 Write `tmp/units/ebc-report.md` and return the same text: the changes; the `revert` readings and every literal written
 in their place; the failing-first and mutation tables with log paths; the gate table with log paths; the shared-file
-hunks; `tmp/units/ebc.diff` (`git diff LANDING_HEAD`) and `tmp/units/ebc-status.txt`. State no count.
+hunks; `tmp/units/ebc.diff` (`git diff e07b3a6`) and `tmp/units/ebc-status.txt`. State no count.
 
 ## Deviation contract
 

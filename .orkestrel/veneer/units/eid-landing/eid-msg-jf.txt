@@ -1,0 +1,12 @@
+Route the fixture lookups' one-match step through requireMatch
+
+J-FIXTURES (carried for the engine session). readButton, readSpecimen, and readSubject end in one exported helper,
+requireMatch(matched, messages), which refuses several matches, then none, then a lone non-HTML match, with the
+lookup's own MatchMessages wording; every message is byte-identical and no caller changes. SAMPLE_MESSAGES holds the
+helper cases' wording in the setup file, and a case pins the check order.
+
+Audited in two rounds by the analyst on GPT-6 Astra, the reviewer on Opus 5.5, and the checker on Sonnet; written by
+opus on Opus 5.5. Records: .orkestrel/veneer/units/jf-audit-2-verdict.md in the scaffold repository.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
