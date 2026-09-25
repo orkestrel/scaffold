@@ -103,8 +103,8 @@ sections it writes only the hunks named here.
   `tests/src/styles/components/{carousel,dropdown,list-group,nav}.test.ts` and `tests/src/styles/elements/button.test.ts`
   on your Chromium 153 host, and record the reading in your fourth standing row.
 - **E-ID-ANCHOR is in round 3.** D47b (`units/decisions-round-2.md`) corrects D47a: from your `V.focus` row and your
-  J-PLACEMENT-141 diagnosis, Chromium 141 leaves a fully clipped dropdown menu painted only when a pointer press on the
-  toggle opened it; a menu the engine opened without a press is not painted, on either build. The guide and comments
+  J-PLACEMENT-141 diagnosis, Chromium 141 leaves a fully clipped dropdown menu painted only when the engine showed it after
+  a trusted pointer press on the toggle; a menu the engine opened without a press is not painted, on either build. The guide and comments
   say that in round 3. Your E29 records the combined `:where(.dropdown-menu, .tooltip, .popover)` rule; the shipped
   shape is one rule per partial through the `anchor-visibility` mixin (D47a). J-ANCHOR-VISIBLE follows the landing.
 - **E-ID-MOTION-OFFCANVAS and E-ID-MOTION-COLLAPSE are writing** from `877e7c6`, now that J-MOTION-PROOFS-B is on
