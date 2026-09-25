@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native Claude subagent, the sole writer in `/home/user/scaffold-rm` (branch `unit/rm`, cut from
-scaffold's session branch at `BASE_COMMIT`). The `config` project spawns the linter and the end-to-end case spawns Vitest
+scaffold's session branch at `392aa1e0`). The `config` project spawns the linter and the end-to-end case spawns Vitest
 and npm, a child's child a bench sandbox denies (`.agents/orchestration.md` § Bench laws, rule 5), so the unit runs on
 the native writing lane. Read, in order: `/home/user/scaffold-rm/AGENTS.md`; the rules
 `/home/user/scaffold-rm/.claude/rules/{workspace,tests,architecture,patterns,portability,typescript,names,documentation,writing,quality}.md`;
@@ -84,7 +84,7 @@ Perform the assignment directly and spawn nothing.
 
 Write `tmp/units/rm-report.md` and return the same text: the changes; the failing-first and green readings with
 commands and counts; the mutation table; the host log; the list of tests the change made false and each fix; the gate
-table; `tmp/units/rm.diff` (`git diff BASE_COMMIT`) and `tmp/units/rm-status.txt`. State no count.
+table; `tmp/units/rm.diff` (`git diff 392aa1e0`) and `tmp/units/rm-status.txt`. State no count.
 
 ## Deviation contract
 
