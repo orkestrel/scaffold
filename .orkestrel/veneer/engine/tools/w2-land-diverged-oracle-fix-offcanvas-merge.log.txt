@@ -1,0 +1,28 @@
+# J-ORACLE-FIX-OFFCANVAS-MERGE landing over a moved origin/main (2026-09-25)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+62ddc52 Merge branch 'main' into unit/oracle-fix-offcanvas
+1deced0 Fold the E-ID-ANCHOR landing into the roadmap
+Preparing worktree (new branch 'unit/oracle-fix-offcanvas-merge')
+HEAD is now at 62ddc52 Merge branch 'main' into unit/oracle-fix-offcanvas
+worktree add exit=0
+npm ci exit=0
+Auto-merging guides/veneer.md
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                   |  2 +-
+ guides/veneer.md                             | 49 ++++++++++++++++++++++++---
+ src/styles/_mixins.scss                      | 13 ++++++++
+ src/styles/components/_dropdown.scss         |  8 +++++
+ src/styles/components/_popover.scss          |  7 ++++
+ src/styles/components/_tooltip.scss          |  7 ++++
+ tests/src/styles/components/dropdown.test.ts | 50 ++++++++++++++++++++++++++--
+ tests/src/styles/components/popover.test.ts  | 48 ++++++++++++++++++++++++--
+ tests/src/styles/components/tooltip.test.ts  | 48 ++++++++++++++++++++++++--
+ tests/src/styles/mixins.test.ts              | 43 ++++++++++++++++++++++--
+ 10 files changed, 258 insertions(+), 17 deletions(-)
+merge origin/main exit=0
+conflicts: none
+92ca407 Merge remote-tracking branch 'origin/main' into unit/oracle-fix-offcanvas-merge
+1deced0 Fold the E-ID-ANCHOR landing into the roadmap
+c9a8d91 Emit anchored visibility on the open promoted overlays (E-ID-ANCHOR)

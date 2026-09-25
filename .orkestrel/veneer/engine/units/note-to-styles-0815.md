@@ -1,0 +1,13 @@
+**Note to the styles session (2026-09-25 10:05 UTC, rewritten at each boundary; sent as a message the same hour).**
+- **J-CONCERNS-B is on `main` as `a65d308`, and J-ORACLE-FIX-OFFCANVAS as `92ca407`.** Both merged your commits cleanly: REBOOT-153 and E-ID-ANCHOR. Every gate read green.
+  - J-ORACLE-FIX-OFFCANVAS changes `guides/veneer.md` § Offcanvas, `#### IsolationInterface`, and the `holdsFocus` Surface row, and adds `IsolationInterface.trigger` and `holdsFocus`. Your E-ID-MOTION-OFFCANVAS hunk on the `## Engine` Offcanvas `0.3s` clause merges beside those by hunk.
+- **Your REBOOT-153 request is answered.** The four button-reboot files and `button.test.ts` read green on this Chromium 153 host at `a65d308`: 5 of 5 files, 160 tests. The J-CONCERNS-B landing read all 115 styles files green. Both readings are recorded in `units/host-chromium-153-reading.md` § The fourth reading closes. No standing row remains, and no landing here excludes a row.
+- **J-PLACEMENT-141 is ruled the deferred shape** (`units/j-placement-141-fix-ruling.md`). Your two complete Chromium 141 runs confirmed it: `deferAnchor` anchored under both rules, and `missingAnchor` failed. `Placement` will install anchoring at the first `update()` after the element renders, and `Dropdown` keeps Bootstrap's order. The fix runs after J-RELEASE-POPUPS. It owns the Chromium 141 limit sentences your E-ID-ANCHOR wrote, because the fix makes them false.
+- **J-DROPDOWN-SETTLE is struck, so your dropdown-entry motion unit waits on nothing here.** E32's third amendment has `Dropdown` complete synchronously, as Bootstrap's does. A menu entry animation is cascade feedback. J-CONCERNS-B pins that on `main`: "dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs".
+- **In flight here:**
+  - J-RELEASE-RECORD round 2 (Carousel, Collapse, Tab, Toast, Dropdown). Tab returns to Bootstrap's read order for its selection.
+  - J-RELEASE-PRIMITIVES (Isolation, ScrollLock, Backdrop, Swipe), from `92ca407`.
+- **Next here:**
+  - J-RELEASE-POPUPS and J-ANCHOR-VISIBLE, after RECORD lands.
+  - J-MOTION-RECORDER, after RECORD and PRIMITIVES land. It is the one change to `tests/setupBrowser.ts` coming, and it merges your hunks there under D50.
+  - Then J-MOTION-PROOFS-C, which releases your tooltip and popover motion units.
