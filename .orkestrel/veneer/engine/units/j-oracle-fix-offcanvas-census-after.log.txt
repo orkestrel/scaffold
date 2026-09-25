@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project probe tmp/probe/census.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  03:13:44
+   Duration  40.82s (transform 280ms, setup 70ms, import 997ms, tests 39.61s, environment 0ms)
+

@@ -1,0 +1,42 @@
+--- a/tests/app/browser/sections/EngineSection.test.ts
++++ b/tests/app/browser/sections/EngineSection.test.ts
+@@ -13,6 +13,7 @@
+ 	ScrollSpy,
+ 	Toast,
+ 	TOAST_CLASSES,
++	TOAST_EVENTS,
+ 	Tooltip,
+ } from '@src/browser'
+ import { requireValue, waitForCondition, waitForEvent } from '@orkestrel/test'
+@@ -307,17 +308,25 @@
+ 		expect(readStyle(toast, 'display')).toBe('none')
+ 		if (!(toast instanceof HTMLElement)) throw new Error('The toast is not an HTML element')
+ 		const engine = requireValue(Toast.find(toast), 'The section constructed no toast')
+-		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Show toast')
+-		await waitForCondition(
++		// The toast's fade in runs after the showing token leaves, and the shown event follows it, so
++		// each step waits for the toast's own completed event rather than for its tokens.
++		const shown = waitForEvent<readonly [Event]>(
++			(listener) => toast.addEventListener(TOAST_EVENTS.shown, listener, { once: true }),
+ 			'the toast shows',
+-			() => toast.classList.contains('show') && !toast.classList.contains('showing'),
+ 		)
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Show toast')
++		await shown
++		expect(toast.classList.contains('show')).toBe(true)
++		expect(toast.classList.contains('showing')).toBe(false)
+ 		expect(readStyle(toast, 'display')).toBe('block')
+-		await userEvent.click(close)
+-		await waitForCondition(
++		const hidden = waitForEvent<readonly [Event]>(
++			(listener) => toast.addEventListener(TOAST_EVENTS.hidden, listener, { once: true }),
+ 			'the toast hides',
+-			() => !toast.classList.contains('show') && !toast.classList.contains('showing'),
+ 		)
++		await userEvent.click(close)
++		await hidden
++		expect(toast.classList.contains('show')).toBe(false)
++		expect(toast.classList.contains('showing')).toBe(false)
+ 		expect(readStyle(toast, 'display')).toBe('none')
+ 		// The delegate's dismiss route hid the toast through the section's engine rather than one of its
+ 		// own, so the host still carries the engine the section constructed.

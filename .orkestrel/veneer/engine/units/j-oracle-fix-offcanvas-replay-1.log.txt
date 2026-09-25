@@ -1,0 +1,8 @@
+# J-ORACLE-FIX-OFFCANVAS round 1 replay (2026-09-25) at eaf3908 Leave focus on the trigger after a backdrop press hides the offcanvas (J-ORACLE-FIX-OFFCANVAS round 1)
+Offcanvas whole-file exit=0
+      Tests  64 passed (64)
+Isolation whole-file exit=0
+      Tests  10 passed (10)
+Modal whole-file exit=0
+      Tests  61 passed (61)
+1

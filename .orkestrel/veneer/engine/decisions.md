@@ -417,3 +417,72 @@ It also found that scroll offsets are rounded before recording.
 - **the settled scroll offsets as the platform reports them,** without rounding.
 
 The comparator reports a difference in each. The first amendment's limits stand.
+
+## E35 — every Veneer class gives back what it took through one `Lifetime`, and a snapshot records only a write that changes its target (2026-09-25)
+
+J-SAMEWAY-ENGINES-B's round-4 audit was the fourth round at one seam (`units/j-sameway-engines-b-audit-4-verdict.md`). J-RELEASE-SWEEP mapped every release station on six blind lenses (`units/j-release-sweep-<slice>-map.md`). J-RELEASE-DESIGN round 3 ran `planner` on Opus 5.5 (`units/j-release-design-3-planner-proposal.md`) and `analyst` on Astra, thread `01a0d75a-714d-7190-b2a6-92d81a3a916e` (`units/j-release-design-3-analyst-proposal.md`), blind, on `units/j-release-design-brief-3.md`. Both lanes chose a shared ledger. The Orchestrator rules:
+
+**The invariant.** Every resource a class takes is held by its lifetime from before the take can run consumer code until its release returns. Every release acts on what the take recorded. Every call to `destroy`, including one nested in a release, gives back every pending holding before it returns.
+
+**The bound.** A lifetime holds only what its owner's own take returned or is about to take, keyed by identity. A release never takes a resource again, and it acts on a fresh read of the page only to skip work that is already done. A snapshot records only a write that changes its target, or joins the record a live holder holds. Nothing the owner found, and nothing other code took back, is released. A completed hide still ends in Bootstrap's state (the withdrawn completed-hide rule below), and E18, E22, E24, and E25 keep their domain rules.
+
+**The consumer's interface.** An engine's `destroy()`, called at any point, including inside consumer code one of its releases runs, returns only after every write the engine made has been written back and every resource it took has been given back.
+
+**The mechanism: `Lifetime`** (the planner's shape, with the objective lane's enrollment rule), in `src/browser/Lifetime.ts`, contract `LifetimeInterface` in `src/browser/types.ts`, exported from the browser barrel.
+- It carries a `signal` that aborts when destruction begins.
+- `hold(record, release)` enrolls a holding keyed by `record`, and returns `true`. When destruction has begun, it runs `release(record)` at once and returns `false`, and the caller takes nothing further. A take that can run consumer code (`showPopover()`, a child's construction, a hand-off write) is held **before** it runs, and its record carries what the release needs to finish it or to skip it.
+- `release(record)` gives one holding back now. The holding stays enrolled while its release runs, and it ends only while the lifetime still holds that same entry.
+- `destroy()` aborts the signal on its first call, then drains every pending holding, newest first, on every call. A nested call runs each pending release again, the running one included. Each release is resumable: run again, it finishes its unfinished work and repeats no completed effect, the rule `HostSnapshot.restore` already keeps. A release that throws ends its holding; the drain gives back every other holding and then rethrows the first error.
+- **Membership through `signal`.** Every Veneer class whose options take `signal` joins before its first write. When the signal is a `Lifetime`'s, the class becomes a holding of that lifetime, with its `destroy` as the release, so an owner's drain reaches it through the ledger and never only through a listener. When the signal is foreign, the abort destroys the class, as today. No option is added: the objective lane's `owner` option would be a second key for the lifetime `signal` already names, which "One concept, one term" refuses. The unit names the static member after the fleet's surface check (the planner proposes `join`).
+- **The claim stays outside the ledger.** A class releases its registry claim in its latched one-time step, before its abort and before any restoration, and then drains. `Modal` and `Offcanvas` move the claim release ahead of the abort (the objective lane's finding).
+- No `@orkestrel/*` export fits. `createTeardown` in `@orkestrel/test` awaits its handlers and detaches its list before release, and the platform's `DisposableStack` latches a nested `dispose` (both lanes).
+
+**The save moment.**
+- `HostSnapshotInterface` gains a change-aware `write(target, value, priority?)`. It resolves the target once. At a write that changes the target, it creates or joins the record, then writes. At a write that changes nothing, it joins the record a live holder holds, and creates none.
+- `recordHostWrite` records the call's prior value and writes through the snapshot's `write`, so one step keeps both baselines: the call's, for E24's returning step, and the lifetime's, for destruction. They stay two records; the objective lane refused to merge them. The call's list stays a local of the call, and destruction never replays it (E22).
+- **E25 is narrowed.** A tab joins the record of an initial attribute its list's plan names when a live holder holds it. It creates no record for a value the markup alone carries, so a consumer's later edit survives the tab's destruction. The shared claims keep their protection by the same rule, because each finds a live record: sibling tabs, a later `Swipe` over the `pointer` token, overlapping `Isolation` claims, `ScrollLock` holders, and the modal's `open` holders.
+- `save` stays while a caller needs an explicit join. The unit that converts the last caller removes it (E6).
+
+**Row rulings** (the sweep maps' labels):
+- **Defects, carried below:**
+  - S1: REPLACE, D-SAVE, P-SAVE, PROMOTION, CLOSE-REENTRY, and OPEN-ABORT.
+  - S2: rows 2 and 4 to 10.
+  - S3: F1, and M4, M7, M12, M14, M15, O3, O5, O6, O10, and O12, for their host and drain halves. Also the ScrollLock group row and I3s.
+  - S4: C4, C5, T2, T3, K3, and K4, and Carousel's half of R3.
+  - S5: T10, A3, B1, C1, ScrollSpy S1, and each whole-method latch.
+  - S6: rows 8, 9, and 10.
+- **Not defects:**
+  - HIDE, S3 M10, M11, O7, and O8, S4 C7 and R4, the Toast `fade` left after a completed hide, and the content left in a removed tip: a completed hide ends in Bootstrap's state.
+  - S3 M3 and O2 (the I1 half), and the backdrop-relocation halves of M14 and O6: E24's backdrop constraint.
+  - S4 R2: E25's intermediate state.
+  - S5 A2: Alert's documented lifecycle. `clear` stays after `closed`; the objective lane ruled that moving it changes what a destruction inside `closed` restores.
+  - ColorMode's storage: persistent output, not a holding.
+  - S6 row 15: no observable effect.
+- **Adopted without a claimed failure:** M3, M13, O2, and O11 take ledger retention. No unit claims their witnesses show a failure.
+- **Given to J-OVERLAYS as a witness:** M5, a supported connected host that the engine moves. The move is recorded, and destruction returns it while the host stays where the engine put it (the objective lane). A detached host stays outside the contract.
+
+**E24 amended.** The clause "Ruled conforming, no change: a restoration already running inside `Isolation.destroy`, `ScrollLock.destroy`, or `HostSnapshot.restore` when a reaction destroys the owner completes" is superseded. A nested destroy now completes that restoration before it returns, not only by the time the outer call ends.
+
+**The completed-hide sentence withdrawn.** The J-RELEASE-SWEEP brief's "A completed `hide` returns every write its `show` made" is withdrawn (`units/j-release-design-brief-3.md` § One ruling is already taken).
+
+**Native gates.** Each gate is run on Chromium 153 before its unit is accepted, and the styles session is asked for the Chromium 141 reading.
+- OPEN-ABORT: a destruction inside the opening `beforetoggle` must leave no promotion after `showPopover()` unwinds. Closing the element only after `showPopover()` returns does not meet the invariant.
+- CLOSE-REENTRY: whether a nested `hidePopover()` closes the element before it returns.
+- `showPopover()` on an open element.
+- CSS serialization for the no-op test: prove it on the values the engines emit, and build no parser.
+- A `ScrollLock` taken during a restoration reaction.
+
+**Units.** Every writing unit is `opus` on Opus 5.5, native, because its proofs run in Chromium (Bench law 5). Each unit is audited by `analyst` on Astra and `reviewer` on Opus 5.5, and each carries its map rows as red-first witnesses read inside the nested callback. Every unit's acceptance also requires:
+- no `destroy` in its files opens with a whole-method latch;
+- no field is cleared before its release;
+- no unconditional save remains.
+
+1. **J-SAMEWAY-ENGINES-B round 5.** Only claim 4's executed reading of the frame wait. REPLACE and the discard's `tip.id` read move to J-RELEASE-POPUPS, their one carrier. Then the unit lands.
+2. **J-RELEASE-CORE.** `Lifetime` and `HostSnapshot.write`. `Button` is the first consumer, with B1 and its drain. It owns `Lifetime.ts`, `HostSnapshot.ts`, the change predicate in `helpers.ts`, `Button.ts`, the `types.ts` and guide sections for these, and the barrel. It starts now, in parallel with the units in flight, because their files are disjoint. It leaves `recordHostWrite`'s signature alone: its callers are in files units in flight own.
+2a. **J-RELEASE-RECORD.** `recordHostWrite` writes through the snapshot's `write`, and every caller moves in the same change: `Carousel`, `Collapse`, `Tab`, `Toast`, and `Dropdown`. Each caller's call-start `#save` of a recorded target goes with it, and so do the S5 T10, Carousel R3, S4 T2 I1, and S6 row 16 witnesses. It runs after CORE, J-SAMEWAY-ENGINES-B, and J-MOTION-PROOFS-B land, and before the family units that own those files.
+3. **J-RELEASE-PRIMITIVES.** `Isolation`, `ScrollLock`, `Backdrop`, and `Swipe`, after CORE. It lands before J-TOAST-SWIPE, which grows `Swipe` (E33).
+4. **J-RELEASE-POPUPS.** `Dropdown`, `Tooltip`, `Popover`, and `Placement`, after CORE and J-SAMEWAY-ENGINES-B. It is serialized with the other units on those files; the Orchestrator orders them at each dispatch.
+5. **J-RELEASE-SWITCHES.** `Collapse`, `Tab`, and `Carousel`, after PRIMITIVES, J-MOTION-PROOFS-B, and J-TOAST-SWIPE.
+6. **J-RELEASE-SIGNALS.** `Toast`, `Alert`, `ScrollSpy`, and `ColorMode`, after CORE and J-TOAST-SWIPE.
+7. **J-OVERLAYS, widened.** `Modal` and `Offcanvas`: their E24 returns, the drain, F1, M5, and the claim order. It runs after PRIMITIVES and J-ORACLE-FIX-OFFCANVAS.
+8. **J-RELEASE-DELEGATE.** `Delegate`, rows 8 to 10 and row 11 read through the ledger, after units 4 to 7.

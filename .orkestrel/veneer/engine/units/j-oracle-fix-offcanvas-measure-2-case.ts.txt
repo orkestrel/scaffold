@@ -1,0 +1,36 @@
+	it('MEASURE focus after a trusted backdrop press', async () => {
+		scene.load(cascade)
+		const readings: Record<string, unknown> = {}
+		for (const motion of [true, false]) {
+			if (!motion) await stageMedia({ motion: false })
+			const root = scene.mount(markup)
+			const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+			const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+			const label = (): string => {
+				const active = document.activeElement
+				return active === null ? 'null' : active.id || active.localName
+			}
+			const log: string[] = []
+			const controller = new AbortController()
+			document.addEventListener('focusin', (event) => log.push(`focusin ${label()} ${String((event.target as HTMLElement).id || (event.target as HTMLElement).localName)}`), { capture: true, signal: controller.signal })
+			document.addEventListener('focusout', () => log.push(`focusout -> ${label()}`), { capture: true, signal: controller.signal })
+			window.addEventListener('mousedown', () => log.push(`mousedown bubbled, active ${label()}, hiding ${host.className}, backdrop ${String(root.querySelector('.offcanvas-backdrop')?.isConnected)}`), { signal: controller.signal })
+			window.addEventListener('mouseup', () => log.push(`mouseup active ${label()}`), { signal: controller.signal })
+			let hidden = ''
+			const offcanvas = new Offcanvas(host, { on: { hidden: () => { hidden = label(); log.push(`hidden ${label()}`) } } })
+			opener.focus()
+			expect(await offcanvas.show(opener)).toBe(true)
+			const backdrop = requireValue(root.querySelector<HTMLElement>('.offcanvas-backdrop'), 'No backdrop')
+			await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
+			const returned = label()
+			log.push(`press returned ${returned}`)
+			await waitForCondition('hidden', () => hidden !== '')
+			readings[motion ? 'motion' : 'reduced'] = { returned, hidden, final: label(), log }
+			controller.abort()
+			offcanvas.destroy()
+			if (!motion) await releaseMedia()
+			scene.clear()
+			scene.load(cascade)
+		}
+		expect(readings).toEqual({})
+	})

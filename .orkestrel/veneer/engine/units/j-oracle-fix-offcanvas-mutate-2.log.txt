@@ -1,0 +1,31 @@
+1
+never exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 863ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+always exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 385ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+released exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 769ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+outside exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 1170ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+static exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 1552ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+source restored
+base exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 823ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+source restored after base

@@ -1,0 +1,54 @@
+import { Carousel } from '@src/browser'
+import { createRecorder, requireValue } from '@orkestrel/test'
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import carouselCascade from '../../../src/styles/components/_carousel.scss?inline'
+import { readDuration, scene } from '../../setupBrowser.js'
+
+afterEach(() => scene.clear())
+
+// Each row lengthens the motion of one of the two items a slide moves to twice the shipped duration
+// it reads on the other, and the slid event reads how many of the motions the slide started have not
+// finished. It never ships.
+describe('CarouselOrderProbe', () => {
+	it('reads whether slid follows the longer of the outgoing and incoming motions', async () => {
+		scene.load(carouselCascade)
+		const readings = createRecorder<readonly [string, string, number]>()
+		for (const longer of ['outgoing', 'incoming'] as const) {
+			const root = scene.mount(`
+				<div class="carousel slide">
+					<div class="carousel-item active">One</div>
+					<div class="carousel-item">Two</div>
+				</div>`)
+			const host = requireValue(root.querySelector<HTMLElement>('.carousel'), 'No carousel')
+			const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
+			const outgoing = requireValue(one, 'No outgoing')
+			const incoming = requireValue(two, 'No incoming')
+			const [lengthened, other] = longer === 'outgoing' ? [outgoing, incoming] : [incoming, outgoing]
+			const shipped = readDuration(other)
+			expect(shipped).toBeGreaterThan(0)
+			lengthened.style.setProperty('transition-duration', `${2 * shipped}ms`)
+			const motions = createRecorder<readonly [Animation]>()
+			const carousel = new Carousel(host, {
+				on: {
+					slid: (event) =>
+						readings.handler(
+							longer,
+							event.type,
+							motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
+						),
+				},
+			})
+			onTestFinished(() => carousel.destroy())
+			const moving = carousel.next()
+			for (const item of [outgoing, incoming]) {
+				for (const animation of item.getAnimations()) motions.handler(animation)
+			}
+			expect(motions.count).toBeGreaterThanOrEqual(2)
+			expect(await moving).toBe(true)
+		}
+		expect(readings.calls).toEqual([
+			['outgoing', 'slid.vn.carousel', 0],
+			['incoming', 'slid.vn.carousel', 0],
+		])
+	})
+})
