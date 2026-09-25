@@ -1,0 +1,24 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (probe.config.ts:3:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/lret-probe
+
+stdout | referrals.probe.test.ts > reads the referral pairs and their controls
+ROW R1 cqw | width | 1cqw vs 1vw | {"recorded":"12.7969px","emitted":"12.7969px"}
+ROW R1 ex | width | 1ex vs 0.5em | {"recorded":"7.34375px","emitted":"8px"}
+ROW R1 control apart | width | 1em vs 16px | {"recorded":"20px","emitted":"16px"}
+ROW R1 control alike | width | 16px vs 1pc | {"recorded":"16px","emitted":"16px"}
+ROW R2 custom SERIF | --vn-sample | SERIF vs serif | {"recorded":"serif","emitted":"serif"}
+ROW R2 custom Monospace | --vn-sample | Monospace vs monospace | {"recorded":"monospace","emitted":"monospace"}
+ROW R2 control custom apart | --vn-sample | serif vs monospace | {"recorded":"serif","emitted":"monospace"}
+ROW R2 regular font-family | font-family | SERIF vs serif | {"recorded":"serif","emitted":"serif"}
+
+ ✓ |lret-referrals| referrals.probe.test.ts > reads the referral pairs and their controls 73ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  09:44:12
+   Duration  2.80s (transform 879ms, setup 333ms, import 1.54s, tests 747ms, environment 0ms)
+
+exit=0

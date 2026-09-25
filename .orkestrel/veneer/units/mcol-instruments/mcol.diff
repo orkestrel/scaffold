@@ -1,0 +1,575 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1a0e6a8..f0d4702 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4847,15 +4847,26 @@ turns the clip onto the other axis: the width is zeroed, the height returns to `
+ clips its content to the width the element carries inline. The horizontal rule is a compound
+ selector, so a horizontal element nested inside a closing panel takes nothing from it.
+ 
+-Each closing box transitions the size it clips, `height` or `width`, over the release's
+-`0.35s ease` value. No published motion token resolves to `0.35s`, so the value is Bootstrap's
+-literal rather than a motion token, and `--vn-factor-motion` does not rescale it. The transition is written
+-through the `transition` mixin, so the reduced-motion rule the release records beside each one is
+-emitted with it, and the duration resolves to `0s` under that preference. The hiding rule carries no
+-transition, so a panel shown or hidden by its class changes state at once.
++Each closing box transitions the size it clips, `height` or `width`, over the
++`--vn-motion-panel` duration on the `--vn-ease-panel` curve, so the size an engine writes inline
++moves on the panel timing and rescales with the `--vn-factor-motion` factor. The box transitions no
++opacity, because the `collapsing` class marks an opening panel and a closing one alike. The
++transition is written through the `transition` mixin, so the reduced-motion rule the release
++records beside each one is emitted with it, and the duration resolves to `0s` under that
++preference. The hiding rule carries no transition, so a panel shown or hidden by its class changes
++state at once.
+ 
+ No rule here paints a color, so every state resolves the same in either color mode.
+ 
++These are the key's recorded departures.
++
++- **The size moves on the panel motion tokens.** The release writes the `height 0.35s ease` and
++  `width 0.35s ease` values; Veneer writes the
++  `height var(--vn-motion-panel) var(--vn-ease-panel)` and
++  `width var(--vn-motion-panel) var(--vn-ease-panel)` values, which resolve to `0.25s` on the
++  `cubic-bezier(0.32, 0.72, 0, 1)` curve and rescale with the `--vn-factor-motion` factor. A panel
++  therefore opens and closes sooner than the release's and decelerates into its end size.
++
+ The Collapse region renders the shown and the hidden panel on each axis, each inside a card under
+ its header. It renders no closing panel: a panel carrying the `collapsing` class rests at zero
+ height until an engine writes an inline size on it, and no specimen carries an inline style, so a
+@@ -4865,8 +4876,12 @@ reads the class instead.
+ The `tests/src/styles/components/collapse.test.ts` proof reads each state in the browser: the
+ written selectors, the hidden and the shown display, the clip under an inline height with a hit test
+ below the panel's edge, the zero-height box on a panel carrying no inline height, the horizontal
+-compound against a nested element, each transition at rest and under the staged preference, and
+-every state inside a dark island.
++compound against a nested element, each transition's declaration at rest and under the
++reduced-motion condition, and every state inside a dark island. It also reads the transition the
++browser runs as a panel opens and closes on each axis through the class and size writes an engine
++makes: the panel duration and curve a specimen resolves from the tokens, the size alone moving, and
++the midpoint frame past half the travel; twice that duration at a doubled motion factor; and no
++transition at a zero factor or under the staged preference.
+ 
+ ### Dropdown classes
+ 
+@@ -5278,9 +5293,11 @@ button under a dark scope, so a light island nested inside a dark one keeps the
+ 
+ The button transition's durations read the `--vn-motion-feedback` token on the release's own
+ curves, so they resolve to the release's `0.15s` value at a factor of `1` and rescale with the
+-`--vn-factor-motion` factor. The chevron transition carries Bootstrap's own `0.2s` timing. Each is
+-written through the `transition` mixin, so the reduced-motion rule the release records beside it is
+-emitted with it, and each duration resolves to a `0s` duration under that preference.
++`--vn-factor-motion` factor. The chevron turns its `transform` over the same
++`--vn-motion-feedback` token on the `--vn-ease-standard` curve, and ends at the release's own
++`rotate(-180deg)` half turn. Each is written through the `transition` mixin, so the
++reduced-motion rule the release records beside it is emitted with it, and each duration resolves to
++a `0s` duration under that preference.
+ 
+ These are the key's recorded departures.
+ 
+@@ -5297,6 +5314,10 @@ These are the key's recorded departures.
+   `--bs-accordion-transition` property as `0.15s`; the partial writes each as the
+   `--vn-motion-feedback` token, which resolves to that value at a factor of `1`, and keeps the
+   release's `ease-in-out` curves and the `ease` curve on the radius.
++- **The chevron turns on the feedback motion tokens.** The release writes the
++  `--bs-accordion-btn-icon-transition` property as `transform 0.2s ease-in-out`; the partial writes
++  `transform var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`
++  and rescales with the `--vn-factor-motion` factor. The half turn stays the release's.
+ 
+ The Accordion region renders the release's own arrangement, the same group with its last item
+ expanded, and a flush accordion whose middle item is expanded. The release's arrangement expands its
+@@ -5314,7 +5335,10 @@ lifts, the forced-colors outline, the dark chevrons against an empty theme scope
+ modes, the density factor, and each transition at rest and under the staged preference. It also
+ reads the button transitions the browser runs as the last item collapses: the release's durations
+ and curves at the resting motion factor, twice those durations at a doubled factor, and no
+-transition at a zero factor.
++transition at a zero factor. It reads the chevron's turn as one button takes the collapsed class
++and another loses it: the feedback duration and standard curve a specimen resolves from the tokens,
++with each chevron held at its start frame while it turns; twice that duration at a doubled factor;
++and a chevron that lands on its end frame at once at a zero factor or under the staged preference.
+ 
+ ### Breadcrumb classes
+ 
+@@ -7307,14 +7331,14 @@ no `Source` column.
+ | `--vn-factor-elevation` | `1`   | none  |
+ | `--vn-factor-motion`    | `1`   | none  |
+ 
+-The motion factor scales every transition duration the cascade writes except the collapse,
+-offcanvas panel, carousel slide and indicator, and accordion chevron timings, which keep the
+-release's literals as their own sections record. A scaled duration reads a `--vn-motion-*` token,
+-alone or scaled by a fixed ratio, so it doubles from its own resting value at a factor of `2` and
+-starts no transition at a factor of `0`. At a factor of `1`, it resolves to the value its token and
+-ratio give, which is the release's duration wherever Veneer keeps that duration. § Departures or §
+-Additions records each scaled duration that differs from the release's, such as the `.icon-link`
+-transform's in § Departures and the modal host's in § Additions.
++The motion factor scales every transition duration the cascade writes except the offcanvas
++panel and the carousel slide and indicator timings, which keep the release's literals as their own
++sections record. A scaled duration reads a `--vn-motion-*` token, alone or scaled by a fixed ratio,
++so it doubles from its own resting value at a factor of `2` and starts no transition at a factor of
++`0`. At a factor of `1`, it resolves to the value its token and ratio give, which is the
++release's duration wherever Veneer keeps that duration. § Departures or § Additions records each
++scaled duration that differs from the release's, such as the `.icon-link` transform's in
++§ Departures and the modal host's in § Additions.
+ 
+ A factor takes effect where the scale it multiplies is declared. Veneer declares the scales on the
+ `:root` selector, so a factor set on the root element rescales the document. A subtree that sets a
+@@ -7821,6 +7845,7 @@ declaration.
+ | ----------- | ------------------- | ------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+ | `accordion` | `.accordion`        | `--bs-accordion-transition`           | —         | `color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-radius 0.15s ease` | `color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out, box-shadow var(--vn-motion-feedback) ease-in-out, border-radius var(--vn-motion-feedback) ease` | tokenized |
+ | `accordion` | `.accordion`        | `--bs-accordion-btn-padding-y`        | —         | `1rem`                                                                                                                                                | `var(--vn-space-8)`                                                                                                                                                                                                                                       | tokenized |
++| `accordion` | `.accordion`        | `--bs-accordion-btn-icon-transition`  | —         | `transform 0.2s ease-in-out`                                                                                                                          | `transform var(--vn-motion-feedback) var(--vn-ease-standard)`                                                                                                                                                                                             | tokenized |
+ | `accordion` | `.accordion`        | `--bs-accordion-btn-focus-box-shadow` | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                                                                                              | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)`                                                                                                                                                                               | tokenized |
+ | `accordion` | `.accordion`        | `--bs-accordion-body-padding-y`       | —         | `1rem`                                                                                                                                                | `var(--vn-space-8)`                                                                                                                                                                                                                                       | tokenized |
+ | `accordion` | `.accordion-button` | `font-size`                           | —         | `1rem`                                                                                                                                                | `var(--vn-size-3)`                                                                                                                                                                                                                                        | tokenized |
+@@ -8208,6 +8233,13 @@ declaration.
+ | `col`     | `.col-form-label-sm` | `padding-bottom` | —         | `calc(0.25rem + var(--bs-border-width))`  | `calc(var(--vn-space-2) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label-sm` | `font-size`      | —         | `0.875rem`                                | `var(--vn-size-2)`                                 | tokenized |
+ 
++#### `collapsing`
++
++| Component    | Selector                          | Property     | Condition | Bootstrap 5.3.8     | Veneer                                               | Departure |
++| ------------ | --------------------------------- | ------------ | --------- | ------------------- | ---------------------------------------------------- | --------- |
++| `collapsing` | `.collapsing`                     | `transition` | —         | `height 0.35s ease` | `height var(--vn-motion-panel) var(--vn-ease-panel)` | tokenized |
++| `collapsing` | `.collapsing.collapse-horizontal` | `transition` | —         | `width 0.35s ease`  | `width var(--vn-motion-panel) var(--vn-ease-panel)`  | tokenized |
++
+ #### `column-gap`
+ 
+ | Component    | Selector            | Property          | Condition                    | Bootstrap 5.3.8 | Veneer            | Departure |
+diff --git a/src/styles/components/_accordion.scss b/src/styles/components/_accordion.scss
+index 98dad16..0667360 100644
+--- a/src/styles/components/_accordion.scss
++++ b/src/styles/components/_accordion.scss
+@@ -31,7 +31,9 @@
+ 		--bs-accordion-btn-icon: #{map.get(tokens.$icons, 'accordion-icon')};
+ 		--bs-accordion-btn-icon-width: 1.25rem;
+ 		--bs-accordion-btn-icon-transform: rotate(-180deg);
+-		--bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
++		// The chevron turns over the feedback duration on the standard curve, so the motion factor
++		// scales it; the half turn it ends at stays the release's.
++		--bs-accordion-btn-icon-transition: transform var(--vn-motion-feedback) var(--vn-ease-standard);
+ 		--bs-accordion-btn-active-icon: #{map.get(tokens.$icons, 'accordion-active-icon')};
+ 		--bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem
+ 			color-mix(in srgb, var(--vn-palette-blue) 25%, transparent);
+diff --git a/src/styles/components/_collapse.scss b/src/styles/components/_collapse.scss
+index 3ca2520..d23208f 100644
+--- a/src/styles/components/_collapse.scss
++++ b/src/styles/components/_collapse.scss
+@@ -6,10 +6,11 @@
+ 	// inline while the panel opens or closes. No rule here paints a color, so no color mode retunes
+ 	// one.
+ 	//
+-	// The timing is the release's own `0.35s ease` value rather than the motion tokens `.btn` reads,
+-	// because no published motion token resolves to `0.35s`, and a token that did not would change
+-	// how long a panel takes to open. The `transition` mixin emits the reduced-motion twin the
+-	// release records beside each transition.
++	// A closing box moves its size over the `--vn-motion-panel` duration on the `--vn-ease-panel`
++	// curve, so the motion factor scales it. It moves no opacity, because the `collapsing` class marks
++	// an opening panel and a closing one alike. An engine writes the size each move ends at inline.
++	// The `transition` mixin emits the reduced-motion twin the release records beside each
++	// transition.
+ 	.collapse:not(.show) {
+ 		display: none;
+ 	}
+@@ -17,7 +18,7 @@
+ 	.collapsing {
+ 		height: 0;
+ 		overflow: hidden;
+-		@include transition(height 0.35s ease);
++		@include transition(height var(--vn-motion-panel) var(--vn-ease-panel));
+ 	}
+ 
+ 	// Both classes sit on one element, so a horizontal panel closes on its width and releases the
+@@ -26,6 +27,6 @@
+ 	.collapsing.collapse-horizontal {
+ 		width: 0;
+ 		height: auto;
+-		@include transition(width 0.35s ease);
++		@include transition(width var(--vn-motion-panel) var(--vn-ease-panel));
+ 	}
+ }
+diff --git a/tests/src/styles/components/accordion.test.ts b/tests/src/styles/components/accordion.test.ts
+index 6ed51b0..e6dea4c 100644
+--- a/tests/src/styles/components/accordion.test.ts
++++ b/tests/src/styles/components/accordion.test.ts
+@@ -498,8 +498,8 @@ describe('accordion classes', () => {
+ 			'0.15s, 0.15s, 0.15s, 0.15s, 0.15s',
+ 			'ease-in-out, ease-in-out, ease-in-out, ease-in-out, ease',
+ 			'transform',
+-			'0.2s',
+-			'ease-in-out',
++			'0.15s',
++			'ease',
+ 		]
+ 		expect(slots.map(([property, pseudo]) => readStyle(button, property, pseudo))).toEqual(recorded)
+ 		await stageMedia({ motion: false })
+@@ -550,6 +550,97 @@ describe('accordion classes', () => {
+ 		])
+ 		expect(zeroed).toEqual(properties.map(() => undefined))
+ 	})
++
++	// The mutations this catches are the release's `transform 0.2s ease-in-out` timing restored on
++	// the chevron, a duration written as a literal, and the transition written outside the mixin.
++	// Each reading is the transition the chevron's pseudo-element resolves as one button takes the
++	// collapsed class and another loses it, compared with the feedback duration and the standard
++	// curve a specimen resolves from the tokens at the same factor, apart from the accordion's rules.
++	// The doubled duration is read as a ratio to the resting one. The `sampleTransition` reader takes
++	// no pseudo-element, so the turn itself is read through the chevron's frames: a running turn holds
++	// each chevron at its start frame as the class changes, and a zero factor or the reduced-motion
++	// preference lands it on its end frame at once, which is the release's half turn on the expanded
++	// button.
++	it('turns the chevron over the feedback duration on the standard curve as the button takes and loses the collapsed class, twice as long at a doubled motion factor, and at once at a zero factor or under the reduced-motion preference', async () => {
++		const sweeps = []
++		for (const motion of [true, false]) {
++			await stageMedia({ motion })
++			sweeps.push(
++				sweepMotionFactor(() => {
++					const host = scene.mount(
++						`<div style="transition: transform var(${TOKEN_NAMES.motion.feedback}) var(${TOKEN_NAMES.ease.standard})"></div><div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" aria-expanded="true">Customs</button></h2></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Duties</button></h2></div></div>`,
++					)
++					const specimen = requireValue(host.firstElementChild, 'No motion specimen')
++					const [closing, opening] = [...host.querySelectorAll('.accordion-button')]
++					const shutting = requireValue(closing, 'No expanded button')
++					const turning = requireValue(opening, 'No collapsed button')
++					// Each frame is read as a matrix, because the browser serializes the resting chevron as
++					// `none` and the same frame on a running turn as the identity matrix.
++					const from = [shutting, turning].map((button) =>
++						new DOMMatrix(readStyle(button, 'transform', '::after')).toString(),
++					)
++					shutting.classList.add('collapsed')
++					turning.classList.remove('collapsed')
++					return {
++						specimen: [
++							readStyle(specimen, 'transition-duration'),
++							readStyle(specimen, 'transition-timing-function'),
++						],
++						chevron: [shutting, turning].map((button) =>
++							['transition-property', 'transition-duration', 'transition-timing-function'].map(
++								(property) => readStyle(button, property, '::after'),
++							),
++						),
++						from,
++						to: [shutting, turning].map((button) =>
++							new DOMMatrix(readStyle(button, 'transform', '::after')).toString(),
++						),
++					}
++				}),
++			)
++			await releaseMedia()
++		}
++		const [[resting, doubled, zeroed] = [], reduced = []] = sweeps
++		expect(resting).toBeDefined()
++		expect(doubled).toBeDefined()
++		const base = requireValue(resting, 'No resting reading')
++		const twice = requireValue(doubled, 'No doubled reading')
++		const [feedback = '', standard = ''] = base.specimen
++		expect(Number.parseFloat(feedback)).toBeGreaterThan(0)
++		expect(base.chevron).toEqual([
++			['transform', feedback, standard],
++			['transform', feedback, standard],
++		])
++		const turn = 'matrix(-1, 0, 0, -1, 0, 0)'
++		const rest = 'matrix(1, 0, 0, 1, 0, 0)'
++		expect(base.from).toEqual([turn, rest])
++		expect(base.to).toEqual(base.from)
++		expect(
++			twice.chevron.map(([property, duration = '', easing], index) => [
++				property,
++				Number.parseFloat(duration) /
++					Number.parseFloat(requireValue(base.chevron[index]?.[1], 'No resting duration')),
++				easing,
++			]),
++		).toEqual([
++			['transform', 2, standard],
++			['transform', 2, standard],
++		])
++		expect(twice.to).toEqual(base.from)
++		expect(reduced).toHaveLength(3)
++		for (const settled of [zeroed, ...reduced])
++			expect([settled?.from, settled?.to]).toEqual([
++				[turn, rest],
++				[rest, turn],
++			])
++		expect(zeroed?.chevron.map(([, duration]) => duration)).toEqual(['0s', '0s'])
++		expect(reduced.map(({ chevron }) => chevron)).toEqual(
++			reduced.map(() => [
++				['none', '0s', 'ease'],
++				['none', '0s', 'ease'],
++			]),
++		)
++	})
+ })
+ 
+ describe('accordion-button button reboot', () => {
+diff --git a/tests/src/styles/components/collapse.test.ts b/tests/src/styles/components/collapse.test.ts
+index 507cd1c..0850b46 100644
+--- a/tests/src/styles/components/collapse.test.ts
++++ b/tests/src/styles/components/collapse.test.ts
+@@ -1,7 +1,15 @@
++import { TOKEN_NAMES } from '@src/core'
+ import { requireValue } from '@orkestrel/test'
+ import { readHit, readPixels, readStyle, releaseMedia, stageMedia } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	readDuration,
++	sampleTransition,
++	scene,
++	sweepMotionFactor,
++} from '../../../setupBrowser.js'
+ import {
+ 	normalizeComplexSelector,
+ 	REDUCED_MOTION,
+@@ -61,11 +69,23 @@ describe('collapse classes', () => {
+ 			),
+ 		).toEqual([
+ 			[
+-				[undefined, '0px', '', 'hidden', 'height 0.35s'],
++				[
++					undefined,
++					'0px',
++					'',
++					'hidden',
++					`height var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel})`,
++				],
+ 				[REDUCED_MOTION, '', '', '', 'none'],
+ 			],
+ 			[
+-				[undefined, 'auto', '0px', '', 'width 0.35s'],
++				[
++					undefined,
++					'auto',
++					'0px',
++					'',
++					`width var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel})`,
++				],
+ 				[REDUCED_MOTION, '', '', '', 'none'],
+ 			],
+ 		])
+@@ -143,35 +163,141 @@ describe('collapse classes', () => {
+ 		expect(readStyle(nested, 'transition-property')).toBe('all')
+ 	})
+ 
+-	// The mutation this catches is a transition written outside the mixin: the resting reading and
+-	// the staged reading are taken on the same elements, so a declaration that kept its duration
+-	// under the preference reports here, and so does one that dropped its reduced-motion twin.
+-	it('transitions the closing size and collapses that transition under the reduced-motion preference', async () => {
+-		const host = scene.mount(
+-			'<div class="collapsing" style="height: 24px">Tracking history</div><div class="collapsing collapse-horizontal" style="width: 80px">Carrier filters</div>',
+-		)
+-		const [vertical, horizontal] = [...host.children]
+-		const readings = [vertical, horizontal].map((panel) =>
+-			['transition-property', 'transition-duration', 'transition-timing-function'].map((property) =>
+-				readStyle(requireValue(panel, 'No closing panel'), property),
+-			),
++	// The mutations this catches are the release's `0.35s ease` timing restored on either axis, an
++	// opacity transition added to the closing box, and a transition written outside the mixin. Each
++	// reading is the transition the browser runs as a panel opens and closes through the class and
++	// size writes an engine makes, compared with the panel duration and the panel curve a specimen
++	// resolves from the tokens apart from the collapse rules. The panel's own running list and its
++	// declared property list hold its size alone, so an opacity entry reports whether or not it moves
++	// anything. The doubled durations are read as ratios to the resting ones. A zero factor and the
++	// reduced-motion preference start no transition, and each panel still settles at its end size. A
++	// panel left without its transition samples none, which the presence assertions report before
++	// any reading is narrowed.
++	it('opens and closes a vertical panel on its height and a horizontal panel on its width over the panel duration on the panel curve, twice as long at a doubled motion factor, and not at all at a zero factor or under the reduced-motion preference', async () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: height var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
+ 		)
+-		expect(readings).toEqual([
+-			['height', '0.35s', 'ease'],
+-			['width', '0.35s', 'ease'],
+-		])
+-		await stageMedia({ motion: false })
+-		expect(
+-			[vertical, horizontal].map((panel) =>
+-				readStyle(requireValue(panel, 'No closing panel'), 'transition-duration'),
+-			),
+-		).toEqual(['0s', '0s'])
+-		await releaseMedia()
+-		expect(
+-			[vertical, horizontal].map((panel) =>
+-				readStyle(requireValue(panel, 'No closing panel'), 'transition-duration'),
+-			),
+-		).toEqual(['0.35s', '0.35s'])
++		const panel = readDuration(specimen)
++		const curve = readStyle(specimen, 'transition-timing-function')
++		expect(panel).toBeGreaterThan(0)
++		scene.clear()
++		const sweeps = []
++		for (const motion of [true, false]) {
++			await stageMedia({ motion })
++			sweeps.push(
++				sweepMotionFactor(() =>
++					(
++						[
++							[
++								'height',
++								'scrollHeight',
++								'<div style="width: 320px"><div class="collapse"><div style="height: 96px">Tracking history</div></div><div class="collapse show"><div style="height: 96px">Tracking history</div></div></div>',
++							],
++							[
++								'width',
++								'scrollWidth',
++								'<div style="width: 320px"><div class="collapse collapse-horizontal"><div style="width: 160px; height: 24px">Carrier filters</div></div><div class="collapse collapse-horizontal show"><div style="width: 160px; height: 24px">Carrier filters</div></div></div>',
++							],
++						] as const
++					).map(([dimension, scroll, markup]) => {
++						const [opening, closing] = [
++							...scene.mount(markup).querySelectorAll<HTMLElement>('.collapse'),
++						]
++						const shut = requireValue(opening, 'No closed panel')
++						const open = requireValue(closing, 'No shown panel')
++						// The show writes: the closing box replaces the hiding class at a zero size, and the
++						// scroll size read at that zero is the size written next.
++						shut.classList.add('collapsing')
++						shut.classList.remove('collapse')
++						shut.style.setProperty(dimension, '0px')
++						readStyle(shut, dimension)
++						const grown = shut[scroll]
++						shut.style.setProperty(dimension, `${grown}px`)
++						const growing = sampleTransition(shut, dimension)
++						const growingList = shut.getAnimations()
++						growing?.transition.finish()
++						// The hide writes: the measured size goes inline before the closing box joins, and its
++						// removal hands the size to the closing rule's zero.
++						const shrunk = open.getBoundingClientRect()[dimension]
++						open.style.setProperty(dimension, `${shrunk}px`)
++						readStyle(open, dimension)
++						open.classList.add('collapsing')
++						open.classList.remove('collapse', 'show')
++						open.style.removeProperty(dimension)
++						const shrinking = sampleTransition(open, dimension)
++						const shrinkingList = open.getAnimations()
++						shrinking?.transition.finish()
++						return {
++							dimension,
++							declared: [
++								readStyle(shut, 'transition-property'),
++								readStyle(open, 'transition-property'),
++							],
++							opening: { size: grown, sample: growing, running: growingList },
++							closing: { size: shrunk, sample: shrinking, running: shrinkingList },
++							settled: [readStyle(shut, dimension), readStyle(open, dimension)],
++						}
++					}),
++				),
++			)
++			await releaseMedia()
++		}
++		const [[resting = [], doubled = [], zeroed = []] = [], reduced = []] = sweeps
++		expect(resting.map(({ dimension }) => dimension)).toEqual(['height', 'width'])
++		for (const { dimension, declared, opening, closing, settled } of resting) {
++			expect(declared).toEqual([dimension, dimension])
++			expect(opening.sample).toBeDefined()
++			expect(closing.sample).toBeDefined()
++			const grow = requireValue(opening.sample, 'No opening transition')
++			const shrink = requireValue(closing.sample, 'No closing transition')
++			expect(opening.running).toEqual([grow.transition])
++			expect(closing.running).toEqual([shrink.transition])
++			expect([grow.duration, grow.easing, grow.start]).toEqual([panel, curve, '0px'])
++			expect([shrink.duration, shrink.easing, shrink.start]).toEqual([
++				panel,
++				curve,
++				`${closing.size}px`,
++			])
++			// Halfway through its time, a panel on a decelerating curve has covered more than half of
++			// its travel in either direction.
++			expect(Number.parseFloat(grow.midpoint)).toBeGreaterThan(opening.size / 2)
++			expect(Number.parseFloat(grow.midpoint)).toBeLessThan(opening.size)
++			expect(Number.parseFloat(shrink.midpoint)).toBeGreaterThan(0)
++			expect(Number.parseFloat(shrink.midpoint)).toBeLessThan(closing.size / 2)
++			expect(settled).toEqual([`${opening.size}px`, '0px'])
++		}
++		for (const [index, { opening, closing, settled }] of doubled.entries()) {
++			const base = requireValue(resting[index], 'No resting reading')
++			expect(opening.sample).toBeDefined()
++			expect(closing.sample).toBeDefined()
++			const grow = requireValue(opening.sample, 'No opening transition')
++			const shrink = requireValue(closing.sample, 'No closing transition')
++			const growBase = requireValue(base.opening.sample, 'No resting opening transition')
++			const shrinkBase = requireValue(base.closing.sample, 'No resting closing transition')
++			expect([
++				grow.duration / growBase.duration,
++				shrink.duration / shrinkBase.duration,
++				grow.easing,
++				shrink.easing,
++			]).toEqual([2, 2, curve, curve])
++			expect(settled).toEqual(base.settled)
++		}
++		expect(doubled).toHaveLength(resting.length)
++		for (const readings of [zeroed, ...reduced]) {
++			expect(
++				readings.map(({ opening, closing, settled }) => [
++					opening.sample,
++					opening.running,
++					closing.sample,
++					closing.running,
++					settled,
++				]),
++			).toEqual(resting.map(({ settled }) => [undefined, [], undefined, [], settled]))
++		}
++		expect(reduced).toHaveLength(3)
+ 		for (const selector of ['.collapsing', '.collapsing.collapse-horizontal'])
+ 			expect(collectMediaConditions(collectLayer('components'), selector)).toEqual([REDUCED_MOTION])
+ 		// The hiding rule carries no motion and no condition, so a shown or hidden panel changes
+@@ -179,17 +305,6 @@ describe('collapse classes', () => {
+ 		expect(collectMediaConditions(collectLayer('components'), '.collapse:not(.show)')).toEqual([])
+ 	})
+ 
+-	// The mutation this catches is the partial writing the duration through
+-	// `calc(0.35s * var(--vn-factor-motion))`: a wrapper doubling the motion factor would then read
+-	// back a doubled duration, and the release's own literal reads back unchanged instead.
+-	it('keeps the closing transition at the release duration under a doubled motion factor', () => {
+-		const host = scene.mount(
+-			'<div style="--vn-factor-motion: 2"><div class="collapsing" style="height: 24px">Tracking history</div></div>',
+-		)
+-		const panel = requireValue(host.querySelector('.collapsing'), 'No closing panel')
+-		expect(readStyle(panel, 'transition-duration')).toBe('0.35s')
+-	})
+-
+ 	// The mutation this catches is a treatment that moves with the color mode: the key paints
+ 	// nothing, so every reading it owns has to come back the same inside a dark island.
+ 	it('resolves every state the same inside a dark island as inside a light one', () => {
+diff --git a/tests/src/styles/components/fade.test.ts b/tests/src/styles/components/fade.test.ts
+index 97fbfa5..251b810 100644
+--- a/tests/src/styles/components/fade.test.ts
++++ b/tests/src/styles/components/fade.test.ts
+@@ -234,22 +234,22 @@ describe('fade classes', () => {
+ 	// The mutation this catches is the partial loaded after the collapse partial. The `.fade` rule
+ 	// and the `.collapsing` rule each write a transition at one specificity, so the later rule wins
+ 	// on an element carrying the `fade` class and the `collapsing` class. The release loads the fade
+-	// rule first, so that element transitions its size. The lone fading element is the reading that
+-	// the fade rule is present.
+-	it('yields the transition to the collapsing rule on an element carrying the fade and collapsing classes', () => {
++	// rule first, so that element takes the collapsing rule's transition whole. The lone closing
++	// element is the collapsing rule's own reading, so the case pins the order and none of that
++	// rule's values, and the lone fading element is the reading that the fade rule is present and
++	// differs from it.
++	it('gives an element carrying the fade and collapsing classes the transition of the collapsing rule rather than that of the fade rule', () => {
+ 		const host = scene.mount(
+-			'<div class="fade collapsing" style="height: 24px">Tide table</div><div class="fade">Tide table</div>',
++			'<div class="fade collapsing" style="height: 24px">Tide table</div><div class="collapsing" style="height: 24px">Tide table</div><div class="fade">Tide table</div>',
+ 		)
+-		expect(
+-			[...host.children].map((element) => [
+-				readStyle(element, 'transition-property'),
+-				readStyle(element, 'transition-duration'),
+-				readStyle(element, 'transition-timing-function'),
+-			]),
+-		).toEqual([
+-			['height', '0.35s', 'ease'],
+-			['opacity', '0.15s', 'ease-out'],
++		const [compound, closing, fading] = [...host.children].map((element) => [
++			readStyle(element, 'transition-property'),
++			readStyle(element, 'transition-duration'),
++			readStyle(element, 'transition-timing-function'),
+ 		])
++		expect(closing?.[0]).toBe('height')
++		expect(fading).toEqual(['opacity', '0.15s', 'ease-out'])
++		expect(compound).toEqual(closing)
+ 	})
+ 
+ 	// The mutation this catches is the hidden state dropped, which leaves an animated alert, popover,

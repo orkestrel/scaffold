@@ -1,0 +1,6 @@
+#!/bin/bash
+# LEDGER-BOUNDARY design round, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer-lret. Launched through codex-queue-2.sh; the cap is 2700 s (a design round over one seam, plus slack).
+# Brief: .orkestrel/veneer/units/ledger-boundary-design-brief.md  Journal: tmp/codex/ledger-boundary-design-analyst.jsonl  Last message: tmp/codex/ledger-boundary-design-analyst-last.md
+cd /home/user/scaffold || exit 1
+timeout 2700 codex exec --json -C /home/user/veneer-lret --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/ledger-boundary-design-analyst-last.md "Your working directory is /home/user/veneer-lret. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/ledger-boundary-design-brief.md exactly. You hold the objective lane of this design round. Make your final message the proposal the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/ledger-boundary-design-analyst.jsonl 2> /home/user/scaffold/tmp/codex/ledger-boundary-design-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/ledger-boundary-design-analyst.err

@@ -1,0 +1,13 @@
+$ npx vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Offcanvas.test.ts tests/src/browser/Backdrop.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+Port 63315 is in use, trying another one...
+
+ Test Files  2 passed (2)
+      Tests  75 passed (75)
+   Start at  09:36:09
+   Duration  43.35s (transform 0ms, setup 644ms, import 623ms, tests 36.60s, environment 0ms)
+
+exit=0
+2.35 2.91 3.89 1/177 11796

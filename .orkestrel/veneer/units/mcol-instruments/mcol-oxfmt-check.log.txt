@@ -1,0 +1,7 @@
+$ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check src/styles/components/_collapse.scss src/styles/components/_accordion.scss tests/src/styles/components/collapse.test.ts tests/src/styles/components/accordion.test.ts tests/src/styles/components/fade.test.ts guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 19784ms on 6 files using 4 threads.
+exit=0
+3.86 3.21 3.93 3/222 12408

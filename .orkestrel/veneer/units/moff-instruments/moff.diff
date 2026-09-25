@@ -1,0 +1,730 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1a0e6a8..ddf0e4c 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2696,7 +2696,8 @@ end and before the call dispatched its completed event. A listener to the comple
+ or shows the panel starts a change of its own, so a hide a `shown.vn.offcanvas` hook completes
+ leaves the show's `true` in place. The `shown` property reads the `shown` token on every access.
+ 
+-The shipped cascade slides the panel through a `transform` transition of `0.3s`, and the
++The shipped cascade slides and fades the panel over the `--vn-motion-panel` token, on the
++`--vn-ease-panel` curve for the slide and the `--vn-ease-out` curve for the fade, and the
+ `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` token, so each wait lasts
+ as long as the longer of the two. Under reduced motion the cascade writes `transition: none` on
+ both, and each call completes in a microtask.
+@@ -5110,11 +5111,13 @@ collapsible content while its collapse class would hide it, because that rule ca
+ release's `!important` flag.
+ 
+ The expanded bar also turns an offcanvas panel into part of its row. The bar's rule for the panel is
+-more specific than the panel's own `.offcanvas` rule, so it unfixes the panel and shows it, grows it
+-into the row, and drops its header. The offcanvas partial writes its placement rules later at the
+-same specificity as the bar's rule, and the release's `!important` flags on the panel's width,
+-height, border, and transform win over them. The offcanvas key records these rules as well, and they
+-ship from this partial; § Offcanvas classes gives the panel.
++more specific than the panel's own `.offcanvas` rule, so it unfixes the panel, shows it, makes it
++opaque, grows it into the row, and drops its header. The opacity reset is Veneer's own: the
++offcanvas partial rests a fixed panel transparent, and the bar's rule wins over that rest by
++specificity alone. The offcanvas partial writes its placement rules later at the same specificity as
++the bar's rule, and the release's `!important` flags on the panel's width, height, border, and
++transform win over them. The offcanvas key records these rules as well, and they ship from this
++partial; § Offcanvas classes gives the panel.
+ 
+ The `.navbar-nav-scroll` class clamps the list to the height the `--bs-scroll-height` property
+ names, and to three quarters of the viewport while no scope sets that property; the list scrolls
+@@ -6090,31 +6093,30 @@ Each `--bs-offcanvas-*` property is declared on the `.offcanvas` class and on ea
+ so the panel itself is where a consumer retunes one, and the same override on an ancestor is
+ shadowed. The inset variables read the `--vn-space-8` token, so the `--vn-factor-density` factor
+ rescales the header's and the body's padding and the close control's fit, and the title's
+-line-height variable reads the `--vn-line-body` token. The `400px` width, the `30vh` height, and the
+-`transform 0.3s ease-in-out` transition keep the release's literals, because no Veneer token
+-resolves to them. The fixed panel paints its text and its fill from the `--bs-body-color` and
+-`--bs-body-bg` aliases and its edge from the `--bs-border-color-translucent` alias, so a panel
+-inside a dark island paints that island's surface.
++line-height variable reads the `--vn-line-body` token. The `400px` width and the `30vh` height keep
++the release's literals, because no Veneer token resolves to them. The fixed panel paints its text
++and its fill from the `--bs-body-color` and `--bs-body-bg` aliases and its edge from the
++`--bs-border-color-translucent` alias, so a panel inside a dark island paints that island's surface.
+ 
+ The `.offcanvas` class fixes the panel as a hidden column at every width, and each placement class
+ pins it to one edge of its containing block. The `.offcanvas-start` and `.offcanvas-end` classes pin
+ a side panel the recorded width across the whole height, and the `.offcanvas-top` and
+ `.offcanvas-bottom` classes pin an edge panel the recorded height across the whole width, never
+ taller than its containing block. Each placement draws the border on the panel's inner side and
+-slides the panel one whole width or height out past its edge. The `show` class clears the slide and
+-shows the panel. The placements are physical, so the start panel sits at the left whatever the
+-document's writing direction.
++slides the panel one whole width or height out past its edge. The fixed panel rests transparent, and
++the `show` class clears the slide, makes the panel opaque, and shows it. The placements are
++physical, so the start panel sits at the left whatever the document's writing direction.
+ 
+ The offcanvas script writes the `showing` class while a panel slides in and the `hiding` class while
+ it slides out: a showing panel paints as a shown one, and a hiding panel stays visible while it
+-slides back past its edge. Under the `backdrop` option the script appends the backdrop to the
+-panel's parent carrying the `fade` class and then adds the `show` class. The `.offcanvas-backdrop`
+-rule covers the viewport from the corner of its containing block in the `--vn-palette-black-base`
+-token, transparent while it carries the `fade` class alone and at the release's `0.5` opacity after
+-the `show` class arrives. The fade between them moves the opacity over the `--vn-motion-panel`
+-token on the `--vn-ease-out` curve, with no blur, as the modal backdrop's does. The
+-`overlay-backdrop` mixin in the `src/styles/_mixins.scss` partial writes that backdrop and its
+-fade, and § Modal classes states the motion both backdrops share.
++slides back past its edge and turns transparent. Under the `backdrop` option the script appends the
++backdrop to the panel's parent carrying the `fade` class and then adds the `show` class. The
++`.offcanvas-backdrop` rule covers the viewport from the corner of its containing block in the
++`--vn-palette-black-base` token, transparent while it carries the `fade` class alone and at the
++release's `0.5` opacity after the `show` class arrives. The fade between them moves the opacity over
++the `--vn-motion-panel` token on the `--vn-ease-out` curve, with no blur, as the modal backdrop's
++does. The `overlay-backdrop` mixin in the `src/styles/_mixins.scss` partial writes that backdrop and
++its fade, and § Modal classes states the motion both backdrops share.
+ 
+ Each panel class declares the `--bs-offcanvas-zindex` variable over the `--vn-stack-drawer-base`
+ token, and the fixed panel's `z-index` property reads that variable. The backdrop's `z-index`
+@@ -6125,14 +6127,15 @@ while the retuned `--vn-stack-drawer-base` token stays above the `--vn-stack-dra
+ Each `.offcanvas-sm`, `.offcanvas-md`, `.offcanvas-lg`, `.offcanvas-xl`, and `.offcanvas-xxl` class
+ is the fixed panel below its breakpoint and part of the page's flow at and above it. Below the
+ breakpoint the class paints the panel, its placements, and its states as the `.offcanvas` class
+-does. At and above the breakpoint the panel is visible whatever its classes, drops its fill and its
+-edge, hides its header, and lays its body out as a row with no inset. The panel's clear fill and the
+-body's clear fill carry the release's `!important` flag. The class also sets the
+-`--bs-offcanvas-height` variable to the `auto` value and the `--bs-offcanvas-border-width` variable
+-to the `0` value there, as the release does; no rule reads either variable at that width, because
+-the placement rules apply below the breakpoint alone. The `breakpoint-down` and `breakpoint-up`
+-mixins write each pair at one breakpoint, so the fixed state ends at the width where the inline
+-state begins.
++does. At and above the breakpoint the panel is visible and opaque whatever its classes, runs no
++transition, drops its fill and its edge, hides its header, and lays its body out as a row with no
++inset. The transparent rest and the transition apply below the breakpoint alone, as the placement
++rules do. The panel's clear fill and the body's clear fill carry the release's `!important` flag.
++The class also sets the `--bs-offcanvas-height` variable to the `auto` value and the
++`--bs-offcanvas-border-width` variable to the `0` value there, as the release does; no rule reads
++either variable at that width, because the placement rules apply below the breakpoint alone. The
++`breakpoint-down` and `breakpoint-up` mixins write each pair at one breakpoint, so the fixed state
++ends at the width where the inline state begins.
+ 
+ The `.offcanvas-header` class lays the title and the close control out in a centered row inside the
+ panel's inset. The `.offcanvas-header .btn-close` rule fits the control into that inset: half the
+@@ -6143,9 +6146,12 @@ treatment, which § Close classes gives. The `.offcanvas-title` class clears the
+ margin and sets its line height, and the `.offcanvas-body` class grows to fill the panel, insets
+ its content, and scrolls it.
+ 
+-The panel's transition is written through the `transition` mixin, so the reduced-motion rule the
+-release records beside it, for the bare panel and for each responsive panel below its breakpoint, is
+-emitted with it.
++The panel slides over the `--vn-motion-panel` token on the `--vn-ease-panel` curve and fades over
++the `--vn-motion-panel` token on the `--vn-ease-out` curve, in place of the release's
++`transform 0.3s ease-in-out` transition, which fades nothing. The travel stays the release's whole
++width or height. Each duration scales with the `--vn-factor-motion` factor. The transition is
++written through the `transition` mixin, so the reduced-motion rule the release records beside it,
++for the bare panel and for each responsive panel below its breakpoint, is emitted with it.
+ 
+ These are the key's recorded departures.
+ 
+@@ -6160,6 +6166,14 @@ These are the key's recorded departures.
+   rescale with the `--vn-factor-density` factor.
+ - **The backdrop paints the black token.** The backdrop's fill reads the `--vn-palette-black-base`
+   token in place of the recorded `#000` value, and the token holds the same bytes.
++- **The panel moves on Elements' panel motion.** The `--bs-offcanvas-transition` variable on every
++  panel class moves the `transform` property over the `--vn-motion-panel` token on the
++  `--vn-ease-panel` curve and the `opacity` property over the `--vn-motion-panel` token on the
++  `--vn-ease-out` curve, in place of the recorded `transform 0.3s ease-in-out` value. The fixed
++  panel's opacity is `0` at rest and under the `hiding` class, and `1` under the `showing` class and
++  under the `show` class without the `hiding` class. The release writes no opacity on the panel, so
++  § Additions records each opacity declaration, the expanded navbar's reset that § Navbar classes
++  gives included.
+ - **An important background utility does not paint the inline panel.** At and above the breakpoint,
+   the panel's clear fill is an important declaration in the components layer. For important
+   declarations an earlier layer wins and a layered declaration wins over an unlayered one, so a
+@@ -6191,8 +6205,10 @@ fading and shown and its fade under each motion factor and the reduced-motion pr
+ responsive panel one pixel below its breakpoint, at it, and one pixel above it, the bare panel at
+ every width, an important background utility over the inline and the fixed `.offcanvas-lg` panel,
+ the header's close control beside a control outside the header, the title and the body, the density
+-factor, the light and dark modes, the transition under the staged reduced-motion preference, and a
+-shown and a resting panel inside each expanded navbar step.
++factor, the light and dark modes, the panel's opacity in each state, its slide and fade as an engine
++adds the showing class and the hiding class at each placement, each responsive panel's opacity and
++motion on both sides of its breakpoint, the slide and the fade under each motion factor and the
++staged reduced-motion preference, and a shown and a resting panel inside each expanded navbar step.
+ 
+ ### Placeholder classes
+ 
+@@ -7307,14 +7323,14 @@ no `Source` column.
+ | `--vn-factor-elevation` | `1`   | none  |
+ | `--vn-factor-motion`    | `1`   | none  |
+ 
+-The motion factor scales every transition duration the cascade writes except the collapse,
+-offcanvas panel, carousel slide and indicator, and accordion chevron timings, which keep the
+-release's literals as their own sections record. A scaled duration reads a `--vn-motion-*` token,
+-alone or scaled by a fixed ratio, so it doubles from its own resting value at a factor of `2` and
+-starts no transition at a factor of `0`. At a factor of `1`, it resolves to the value its token and
+-ratio give, which is the release's duration wherever Veneer keeps that duration. § Departures or §
+-Additions records each scaled duration that differs from the release's, such as the `.icon-link`
+-transform's in § Departures and the modal host's in § Additions.
++The motion factor scales every transition duration the cascade writes except the collapse, carousel
++slide and indicator, and accordion chevron timings, which keep the release's literals as their own
++sections record. A scaled duration reads a `--vn-motion-*` token, alone or scaled by a fixed ratio,
++so it doubles from its own resting value at a factor of `2` and starts no transition at a factor of
++`0`. At a factor of `1`, it resolves to the value its token and ratio give, which is the release's
++duration wherever Veneer keeps that duration. § Departures or § Additions records each scaled
++duration that differs from the release's, such as the `.icon-link` transform's in § Departures and
++the modal host's in § Additions.
+ 
+ A factor takes effect where the scale it multiplies is declared. Veneer declares the scales on the
+ `:root` selector, so a factor set on the root element rescales the document. A subtree that sets a
+@@ -9395,34 +9411,40 @@ declaration.
+ 
+ #### `offcanvas`
+ 
+-| Component   | Selector              | Property                           | Condition | Bootstrap 5.3.8 | Veneer                            | Departure |
+-| ----------- | --------------------- | ---------------------------------- | --------- | --------------- | --------------------------------- | --------- |
+-| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
+-| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
+-| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
+-| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
+-| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
+-| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
+-| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
+-| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
+-| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
+-| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
+-| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
+-| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
+-| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
+-| `offcanvas` | `.offcanvas-backdrop` | `z-index`                          | —         | `1040`          | `var(--vn-stack-drawer-backdrop)` | tokenized |
+-| `offcanvas` | `.offcanvas-backdrop` | `background-color`                 | —         | `#000`          | `var(--vn-palette-black-base)`    | tokenized |
++| Component   | Selector              | Property                           | Condition | Bootstrap 5.3.8              | Veneer                                                                                                     | Departure |
++| ----------- | --------------------- | ---------------------------------- | --------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- | --------- |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-zindex`            | —         | `1045`                       | `var(--vn-stack-drawer-base)`                                                                              | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-padding-x`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-padding-y`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-transition`        | —         | `transform 0.3s ease-in-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out)` | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-title-line-height` | —         | `1.5`                        | `var(--vn-line-body)`                                                                                      | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-zindex`            | —         | `1045`                       | `var(--vn-stack-drawer-base)`                                                                              | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-padding-x`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-padding-y`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-transition`        | —         | `transform 0.3s ease-in-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out)` | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-title-line-height` | —         | `1.5`                        | `var(--vn-line-body)`                                                                                      | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-zindex`            | —         | `1045`                       | `var(--vn-stack-drawer-base)`                                                                              | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-padding-x`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-padding-y`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-transition`        | —         | `transform 0.3s ease-in-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out)` | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-title-line-height` | —         | `1.5`                        | `var(--vn-line-body)`                                                                                      | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-zindex`            | —         | `1045`                       | `var(--vn-stack-drawer-base)`                                                                              | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-padding-x`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-padding-y`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-transition`        | —         | `transform 0.3s ease-in-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out)` | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-title-line-height` | —         | `1.5`                        | `var(--vn-line-body)`                                                                                      | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-zindex`            | —         | `1045`                       | `var(--vn-stack-drawer-base)`                                                                              | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-padding-x`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-padding-y`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-transition`        | —         | `transform 0.3s ease-in-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out)` | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-title-line-height` | —         | `1.5`                        | `var(--vn-line-body)`                                                                                      | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-zindex`            | —         | `1045`                       | `var(--vn-stack-drawer-base)`                                                                              | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-padding-x`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-padding-y`         | —         | `1rem`                       | `var(--vn-space-8)`                                                                                        | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-transition`        | —         | `transform 0.3s ease-in-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out)` | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-title-line-height` | —         | `1.5`                        | `var(--vn-line-body)`                                                                                      | tokenized |
++| `offcanvas` | `.offcanvas-backdrop` | `z-index`                          | —         | `1040`                       | `var(--vn-stack-drawer-backdrop)`                                                                          | tokenized |
++| `offcanvas` | `.offcanvas-backdrop` | `background-color`                 | —         | `#000`                       | `var(--vn-palette-black-base)`                                                                             | tokenized |
+ 
+ #### `offset`
+ 
+@@ -10854,6 +10876,30 @@ leaving both ledgers unread.
+ | `modal`        | `.modal-backdrop.fade { transition }`                                                     | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ | `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` duration on the `--vn-ease-out` curve, in place of the shared `.fade` rule's feedback timing.                                                      |
+ | `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
++| `offcanvas`    | `.navbar-expand .offcanvas { opacity }`                                                   | —                                                | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The expanded bar puts the panel back in the flow, so it clears the transparent rest the offcanvas partial gives a fixed panel, as it clears the panel's hidden state and slide.                                                 |
++| `offcanvas`    | `.navbar-expand-sm .offcanvas { opacity }`                                                | `@media (width >= 576px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The expanded bar puts the panel back in the flow, so it clears the transparent rest the offcanvas partial gives a fixed panel, as it clears the panel's hidden state and slide.                                                 |
++| `offcanvas`    | `.navbar-expand-md .offcanvas { opacity }`                                                | `@media (width >= 768px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The expanded bar puts the panel back in the flow, so it clears the transparent rest the offcanvas partial gives a fixed panel, as it clears the panel's hidden state and slide.                                                 |
++| `offcanvas`    | `.navbar-expand-lg .offcanvas { opacity }`                                                | `@media (width >= 992px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The expanded bar puts the panel back in the flow, so it clears the transparent rest the offcanvas partial gives a fixed panel, as it clears the panel's hidden state and slide.                                                 |
++| `offcanvas`    | `.navbar-expand-xl .offcanvas { opacity }`                                                | `@media (width >= 1200px)`                       | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The expanded bar puts the panel back in the flow, so it clears the transparent rest the offcanvas partial gives a fixed panel, as it clears the panel's hidden state and slide.                                                 |
++| `offcanvas`    | `.navbar-expand-xxl .offcanvas { opacity }`                                               | `@media (width >= 1400px)`                       | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The expanded bar puts the panel back in the flow, so it clears the transparent rest the offcanvas partial gives a fixed panel, as it clears the panel's hidden state and slide.                                                 |
++| `offcanvas`    | `.offcanvas-sm { opacity }`                                                               | `@media (width < 576px)`                         | declaration | `0`                                                                                                                                                                                                                                                                                                                    | The fixed panel rests transparent, so it fades in on Elements' panel motion as it slides in from its edge, where the release slides an opaque panel.                                                                            |
++| `offcanvas`    | `.offcanvas-sm.showing { opacity }`                                                       | `@media (width < 576px)`                         | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-sm.show:not(.hiding) { opacity }`                                             | `@media (width < 576px)`                         | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-md { opacity }`                                                               | `@media (width < 768px)`                         | declaration | `0`                                                                                                                                                                                                                                                                                                                    | The fixed panel rests transparent, so it fades in on Elements' panel motion as it slides in from its edge, where the release slides an opaque panel.                                                                            |
++| `offcanvas`    | `.offcanvas-md.showing { opacity }`                                                       | `@media (width < 768px)`                         | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-md.show:not(.hiding) { opacity }`                                             | `@media (width < 768px)`                         | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-lg { opacity }`                                                               | `@media (width < 992px)`                         | declaration | `0`                                                                                                                                                                                                                                                                                                                    | The fixed panel rests transparent, so it fades in on Elements' panel motion as it slides in from its edge, where the release slides an opaque panel.                                                                            |
++| `offcanvas`    | `.offcanvas-lg.showing { opacity }`                                                       | `@media (width < 992px)`                         | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-lg.show:not(.hiding) { opacity }`                                             | `@media (width < 992px)`                         | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-xl { opacity }`                                                               | `@media (width < 1200px)`                        | declaration | `0`                                                                                                                                                                                                                                                                                                                    | The fixed panel rests transparent, so it fades in on Elements' panel motion as it slides in from its edge, where the release slides an opaque panel.                                                                            |
++| `offcanvas`    | `.offcanvas-xl.showing { opacity }`                                                       | `@media (width < 1200px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-xl.show:not(.hiding) { opacity }`                                             | `@media (width < 1200px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-xxl { opacity }`                                                              | `@media (width < 1400px)`                        | declaration | `0`                                                                                                                                                                                                                                                                                                                    | The fixed panel rests transparent, so it fades in on Elements' panel motion as it slides in from its edge, where the release slides an opaque panel.                                                                            |
++| `offcanvas`    | `.offcanvas-xxl.showing { opacity }`                                                      | `@media (width < 1400px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas-xxl.show:not(.hiding) { opacity }`                                            | `@media (width < 1400px)`                        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas { opacity }`                                                                  | —                                                | declaration | `0`                                                                                                                                                                                                                                                                                                                    | The fixed panel rests transparent, so it fades in on Elements' panel motion as it slides in from its edge, where the release slides an opaque panel.                                                                            |
++| `offcanvas`    | `.offcanvas.showing { opacity }`                                                          | —                                                | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
++| `offcanvas`    | `.offcanvas.show:not(.hiding) { opacity }`                                                | —                                                | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The states that bring the panel in make it opaque, so the panel fades in as the `showing` and `show` classes join and fades out as the `hiding` class joins.                                                                    |
+ 
+ ### Outside the ledger
+ 
+diff --git a/src/styles/components/_navbar.scss b/src/styles/components/_navbar.scss
+index 85ca0c2..cbcf89e 100644
+--- a/src/styles/components/_navbar.scss
++++ b/src/styles/components/_navbar.scss
+@@ -155,10 +155,12 @@
+ 	// the navbar's inline padding, a menu hangs over the content again, the collapsible content shows
+ 	// while its collapse class would hide it, and the toggler leaves. The class with no infix expands
+ 	// at every width. The offcanvas rules turn a panel into part of the row; the offcanvas partial
+-	// writes the panel itself. The bar's more specific rule unfixes the panel and shows it, and the
+-	// release's `!important` flags on the panel's width, height, border, and transform, and its
+-	// important visibility declaration, win over the placement and hidden rules the offcanvas partial
+-	// writes. The collapsible content's important display declaration wins over the hidden state its
++	// writes the panel itself. The bar's more specific rule unfixes the panel, shows it, makes it
++	// opaque, and stops its motion. The release's `!important` flags on the panel's width, height,
++	// border, and transform, and its important visibility declaration, win over the placement and
++	// hidden rules the offcanvas partial writes. The opacity reset is Veneer's own: the offcanvas
++	// partial rests a fixed panel transparent, and the bar's rule outranks that rest by specificity
++	// alone. The collapsible content's important display declaration wins over the hidden state its
+ 	// collapse class writes.
+ 	@include breakpoint-each using ($infix, $_boundary) {
+ 		.navbar-expand#{$infix} {
+@@ -204,6 +206,7 @@
+ 			background-color: transparent !important;
+ 			border: 0 !important;
+ 			transform: none !important;
++			opacity: 1;
+ 			transition: none;
+ 		}
+ 
+diff --git a/src/styles/components/_offcanvas.scss b/src/styles/components/_offcanvas.scss
+index b6bec1a..2b13629 100644
+--- a/src/styles/components/_offcanvas.scss
++++ b/src/styles/components/_offcanvas.scss
+@@ -2,10 +2,12 @@
+ @use '../mixins' as *;
+ 
+ // Holds the declarations a fixed panel paints, and the nested rules it carries keyed by the
+-// selector each one extends the panel with. A placement class pins the panel to its edge, spans the
+-// axis along that edge, draws the inner border, and slides the panel out past that edge. The state
+-// classes clear the slide and show the panel. The bare panel and each responsive panel below its
+-// boundary emit these same maps, so neither can drift from the other.
++// selector each one extends the panel with. A fixed panel rests transparent. A placement class pins
++// the panel to its edge, spans the axis along that edge, draws the inner border, and slides the
++// panel out past that edge. The state classes that bring the panel in clear the slide and make it
++// opaque, and every state class shows it, so a hiding panel slides out and fades while it still
++// paints. The bare panel and each responsive panel below its boundary emit these same maps, so
++// neither can drift from the other.
+ $panel: (
+ 	position: fixed,
+ 	bottom: 0,
+@@ -15,6 +17,7 @@ $panel: (
+ 	max-width: 100%,
+ 	color: var(--bs-offcanvas-color),
+ 	visibility: hidden,
++	opacity: 0,
+ 	background-color: var(--bs-offcanvas-bg),
+ 	background-clip: padding-box,
+ 	outline: 0,
+@@ -53,6 +56,7 @@ $nested: (
+ 	),
+ 	'&.showing, &.show:not(.hiding)': (
+ 		transform: none,
++		opacity: 1,
+ 	),
+ 	'&.showing, &.hiding, &.show': (
+ 		visibility: visible,
+@@ -60,13 +64,15 @@ $nested: (
+ );
+ 
+ @layer components {
+-	// Every value here is Bootstrap 5.3.8's own. Each panel class declares its stacking variable over
+-	// the drawer rung of the stacking ladder, which the fixed panel's `z-index` property reads, and
+-	// the backdrop's `z-index` property reads the rung beneath it, so a retuned rung moves each one.
+-	// The inset variables read the density scale token that already resolves to the release's `1rem`
+-	// inset, and the title's line-height variable reads the body line token. The width, the height,
+-	// the backdrop's opacity, and the transition keep the release's literals, because no Veneer token
+-	// resolves to them.
++	// Every value here but the transition is Bootstrap 5.3.8's own. Each panel class declares its
++	// stacking variable over the drawer rung of the stacking ladder, which the fixed panel's `z-index`
++	// property reads, and the backdrop's `z-index` property reads the rung beneath it, so a retuned
++	// rung moves each one. The inset variables read the density scale token that already resolves to
++	// the release's `1rem` inset, and the title's line-height variable reads the body line token. The
++	// width, the height, and the backdrop's opacity keep the release's literals, because no Veneer
++	// token resolves to them. The transition slides the panel over `--vn-motion-panel` on
++	// `--vn-ease-panel` and fades it over `--vn-motion-panel` on `--vn-ease-out`, in place of the
++	// release's `transform 0.3s ease-in-out`, which fades nothing.
+ 	$panels: '.offcanvas';
+ 	@each $name, $boundary in breakpoints() {
+ 		@if $boundary != 0 {
+@@ -85,17 +91,20 @@ $nested: (
+ 		--bs-offcanvas-border-width: var(--bs-border-width);
+ 		--bs-offcanvas-border-color: var(--bs-border-color-translucent);
+ 		--bs-offcanvas-box-shadow: var(--bs-box-shadow-sm);
+-		--bs-offcanvas-transition: transform 0.3s ease-in-out;
++		--bs-offcanvas-transition:
++			transform var(--vn-motion-panel) var(--vn-ease-panel),
++			opacity var(--vn-motion-panel) var(--vn-ease-out);
+ 		--bs-offcanvas-title-line-height: var(--vn-line-body);
+ 	}
+ 
+ 	// Each responsive panel is fixed below its own boundary and sits in the flow at and above it,
+ 	// where it drops its fill and its edge, hides its header, and lays its body out as a row. The
+-	// panel's and the body's transparent fills carry the release's `!important` flag, and in this
+-	// layer that flag also holds the inline panel clear under an important background utility, where
+-	// the release's later utility paints it. The height and border-width variables the class
+-	// redeclares there are the release's; no rule reads them at that width, because the placement
+-	// rules apply below the boundary alone.
++	// transparent rest and the transition are written below the boundary alone, so the panel in the
++	// flow keeps full opacity and runs no transition. The panel's and the body's transparent fills
++	// carry the release's `!important` flag, and in this layer that flag also holds the inline panel
++	// clear under an important background utility, where the release's later utility paints it. The
++	// height and border-width variables the class redeclares there are the release's; no rule reads
++	// them at that width, because the placement rules apply below the boundary alone.
+ 	@each $name, $boundary in breakpoints() {
+ 		@if $boundary != 0 {
+ 			.offcanvas-#{$name} {
+diff --git a/tests/src/styles/components/navbar.test.ts b/tests/src/styles/components/navbar.test.ts
+index cdff4bf..0c68899 100644
+--- a/tests/src/styles/components/navbar.test.ts
++++ b/tests/src/styles/components/navbar.test.ts
+@@ -337,6 +337,7 @@ describe('navbar classes', () => {
+ 			grow: '1',
+ 			visibility: 'visible',
+ 			transform: 'none',
++			opacity: '1',
+ 			width: 'auto',
+ 			fill: 'rgba(0, 0, 0, 0)',
+ 			edge: 0,
+@@ -345,8 +346,10 @@ describe('navbar classes', () => {
+ 			inset: 5,
+ 		}
+ 		// The body's inset is normal in the release, so the inline inset wins over it; every panel
+-		// declaration the release marks important wins over the inline hidden state instead. Below
+-		// the boundary the panel's own partial fixes the panel and lays its header out as a row.
++		// declaration the release marks important wins over the inline hidden state instead. The
++		// panel's own partial rests it transparent, and the bar's opacity reset outranks that rest, so
++		// a resting panel in the expanded row is opaque. Below the boundary the panel's own partial
++		// fixes the panel, keeps it transparent, and lays its header out as a row.
+ 		for (const viewport of [991, 992]) {
+ 			const reading = await visitBreakpoint(viewport, () =>
+ 				['ramp', 'always'].map((bar) => {
+@@ -359,6 +362,7 @@ describe('navbar classes', () => {
+ 						grow: readStyle(offcanvas, 'flex-grow'),
+ 						visibility: readStyle(offcanvas, 'visibility'),
+ 						transform: readStyle(offcanvas, 'transform'),
++						opacity: readStyle(offcanvas, 'opacity'),
+ 						width: readStyle(offcanvas, 'width') === '200px' ? 'inline' : 'auto',
+ 						fill: readStyle(offcanvas, 'background-color'),
+ 						edge: readPixels(offcanvas, 'border-top-width'),
+@@ -376,6 +380,7 @@ describe('navbar classes', () => {
+ 							grow: '0',
+ 							visibility: 'hidden',
+ 							transform: 'matrix(1, 0, 0, 1, -200, 0)',
++							opacity: '0',
+ 							width: 'inline',
+ 							fill: 'rgb(1, 2, 3)',
+ 							edge: 3,
+diff --git a/tests/src/styles/components/offcanvas.test.ts b/tests/src/styles/components/offcanvas.test.ts
+index 15e096d..7c150a8 100644
+--- a/tests/src/styles/components/offcanvas.test.ts
++++ b/tests/src/styles/components/offcanvas.test.ts
+@@ -17,6 +17,7 @@ import {
+ 	readDuration,
+ 	sampleTransition,
+ 	scene,
++	sweepMotionFactor,
+ 	visitBreakpoint,
+ } from '../../../setupBrowser.js'
+ import {
+@@ -269,11 +270,13 @@ describe('offcanvas placements', () => {
+ 		},
+ 	)
+ 
+-	// The mutation this catches is the `show` rule dropped or its exclusion of the `hiding` class
+-	// lost: each state is read on its own panel, as whether it paints and whether it keeps the slide
+-	// its placement writes, a whole recorded width toward its edge.
++	// The mutations this catches are the `show` rule dropped or its exclusion of the `hiding` class
++	// lost, and the hidden opacity dropped: each state is read on its own panel, as whether it paints,
++	// whether it keeps the slide its placement writes, a whole recorded width toward its edge, and its
++	// opacity. A state that keeps the slide keeps the panel transparent, and a state that clears the
++	// slide makes it opaque, so the panel fades on the same state classes it slides on.
+ 	it.each(OFFCANVAS_STATE_CASES)(
+-		'paints a panel carrying "$classes" when the state shows it and keeps the slide while the state leaves it',
++		'paints a panel carrying "$classes" when the state shows it, and keeps it slid out and transparent while the state leaves it',
+ 		({ classes, visible, slid }) => {
+ 			const host = scene.mount(
+ 				`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start ${classes}">${OFFCANVAS_MARKUP}</div></div>`,
+@@ -282,9 +285,11 @@ describe('offcanvas placements', () => {
+ 			expect({
+ 				visibility: readStyle(panel, 'visibility'),
+ 				shift: new DOMMatrix(readStyle(panel, 'transform')).m41,
++				opacity: readStyle(panel, 'opacity'),
+ 			}).toEqual({
+ 				visibility: visible ? 'visible' : 'hidden',
+ 				shift: slid ? -OFFCANVAS_GEOMETRY.width : 0,
++				opacity: slid ? '0' : '1',
+ 			})
+ 		},
+ 	)
+@@ -518,51 +523,196 @@ describe('offcanvas content', () => {
+ })
+ 
+ describe('offcanvas motion', () => {
+-	// The mutation this catches is the panel's transition written without the `transition` mixin:
+-	// the bare declaration keeps its duration under the reduced-motion preference, and the mixin
+-	// collapses it, on the bare panel and on a responsive panel below its boundary alike.
+-	it('slides with the recorded transform transition and collapses it under the reduced-motion preference', async () => {
+-		const host = scene.mount(
+-			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start">${OFFCANVAS_MARKUP}</div></div><div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-xxl offcanvas-start">${OFFCANVAS_MARKUP}</div></div>`,
+-		)
+-		const panels = [
+-			requireValue(host.querySelector('.offcanvas'), 'No bare panel'),
+-			requireValue(host.querySelector('.offcanvas-xxl'), 'No responsive panel'),
+-		]
+-		const readings: Array<ReadonlyArray<readonly string[]>> = []
++	// The mutations this catches are the slide written on the release's `0.3s ease-in-out` timing,
++	// the fade left out of the panel's transition, and the fade written on the slide's curve. Each
++	// reading is the transition the browser runs on the panel as an engine adds the `showing` and
++	// `show` classes, and as it adds the `hiding` class and removes the `show` class, compared with
++	// the panel duration, the panel curve, and the ease-out curve a specimen resolves from the tokens
++	// alone. A panel left without either transition samples none, which the presence assertions
++	// report before any reading. Halfway through, the slide has covered more than half its travel,
++	// which only a decelerating curve produces. Removing the `showing` class after the entry and the
++	// `hiding` class after the exit starts nothing, because neither removal changes the transform or
++	// the opacity the panel resolves.
++	it.each(OFFCANVAS_PLACEMENTS)(
++		'slides the $placement panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins',
++		({ placement, axis, sign }) => {
++			const specimen = requireValue(
++				scene.mount(
++					`<div style="transition: transform var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel}), opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out})"></div>`,
++				).firstElementChild,
++				'No motion specimen',
++			)
++			const duration = readDuration(specimen)
++			const [slide, fade] = splitTopLevelList(
++				readStyle(specimen, 'transition-timing-function'),
++			).map((curve) => trimCSSWhitespace(curve))
++			const host = scene.mount(
++				`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-${placement}">${OFFCANVAS_MARKUP}</div></div>`,
++			)
++			const panel = requireValue(host.querySelector('.offcanvas'), 'No panel')
++			const edge = readStyle(panel, 'transform')
++			const length = readPixels(panel, axis === 'X' ? 'width' : 'height')
++			expect(readStyle(panel, 'opacity')).toBe('0')
++			panel.classList.add('showing', 'show')
++			const entry = sampleTransition(panel, 'transform')
++			const appearance = sampleTransition(panel, 'opacity')
++			expect(entry).toBeDefined()
++			expect(appearance).toBeDefined()
++			const entering = requireValue(entry, 'No entering slide')
++			const appearing = requireValue(appearance, 'No entering fade')
++			expect([entering.duration, entering.easing, entering.start]).toEqual([duration, slide, edge])
++			expect([appearing.duration, appearing.easing, appearing.start]).toEqual([duration, fade, '0'])
++			const travel = new DOMMatrix(entering.midpoint)
++			const remaining = sign * (axis === 'X' ? travel.m41 : travel.m42)
++			expect(remaining).toBeGreaterThan(0)
++			expect(remaining).toBeLessThan(length / 2)
++			const shown = Number.parseFloat(appearing.midpoint)
++			expect(shown).toBeGreaterThan(0.5)
++			expect(shown).toBeLessThan(1)
++			entering.transition.finish()
++			appearing.transition.finish()
++			expect([readStyle(panel, 'transform'), readStyle(panel, 'opacity')]).toEqual(['none', '1'])
++			panel.classList.remove('showing')
++			expect(panel.getAnimations()).toEqual([])
++			panel.classList.add('hiding')
++			panel.classList.remove('show')
++			const exit = sampleTransition(panel, 'transform')
++			const disappearance = sampleTransition(panel, 'opacity')
++			expect(exit).toBeDefined()
++			expect(disappearance).toBeDefined()
++			const leaving = requireValue(exit, 'No leaving slide')
++			const vanishing = requireValue(disappearance, 'No leaving fade')
++			expect([leaving.duration, leaving.easing]).toEqual([duration, slide])
++			// The browser interpolates the slide back out as a matrix, which starts at the identity.
++			expect(new DOMMatrix(leaving.start).isIdentity).toBe(true)
++			expect([vanishing.duration, vanishing.easing, vanishing.start]).toEqual([duration, fade, '1'])
++			const hidden = Number.parseFloat(vanishing.midpoint)
++			expect(hidden).toBeGreaterThan(0)
++			expect(hidden).toBeLessThan(0.5)
++			leaving.transition.finish()
++			vanishing.transition.finish()
++			expect([readStyle(panel, 'transform'), readStyle(panel, 'opacity')]).toEqual([edge, '0'])
++			panel.classList.remove('hiding')
++			expect(panel.getAnimations()).toEqual([])
++		},
++	)
++
++	// The mutation this catches is the panel's opacity or its transition written outside the rules
++	// each responsive panel carries below its boundary. At and above the boundary the panel sits in
++	// the flow, where no rule of the partial gives it an opacity or a transition, so it reads opaque at
++	// rest and starts no transition as an engine shows it. Below the boundary it rests transparent,
++	// and it slides and fades in over the panel duration a specimen resolves from the token. Each
++	// boundary is read on both sides, and a reading with no transition holds no duration.
++	it.each(GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary !== 0))(
++		'keeps the $name panel opaque and still at and above its boundary, and slides and fades it in below',
++		async ({ name, boundary, readings }) => {
++			const specimen = requireValue(
++				scene.mount(`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel})"></div>`)
++					.firstElementChild,
++				'No motion specimen',
++			)
++			const duration = readDuration(specimen)
++			for (const viewport of readings) {
++				const reading = await visitBreakpoint(viewport, () => {
++					const panel = requireValue(
++						scene
++							.mount(
++								`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-${name} offcanvas-start">${OFFCANVAS_MARKUP}</div></div>`,
++							)
++							.querySelector(`.offcanvas-${name}`),
++						'No panel',
++					)
++					const resting = readStyle(panel, 'opacity')
++					readStyle(panel, 'transform')
++					panel.classList.add('showing', 'show')
++					const durations = ['transform', 'opacity'].map((property) => {
++						const sample = sampleTransition(panel, property)
++						sample?.transition.finish()
++						return sample?.duration
++					})
++					return { viewport, resting, durations, settled: readStyle(panel, 'opacity') }
++				})
++				expect(reading).toEqual(
++					viewport >= boundary
++						? { viewport, resting: '1', durations: [undefined, undefined], settled: '1' }
++						: { viewport, resting: '0', durations: [duration, duration], settled: '1' },
++				)
++			}
++		},
++	)
++
++	// The mutations this catches are a duration written as a literal, which a doubled factor leaves in
++	// place, and a transition written without the `transition` mixin, which keeps running under the
++	// reduced-motion preference. Each reading is the running duration of the slide and the fade on
++	// the bare panel and on a responsive panel below its boundary as an engine shows them, beside the
++	// value each settles at, and the doubled reading is compared with the resting one of the same move
++	// as a ratio. A zero factor starts no transition, because the browser starts none at a zero
++	// duration, and the reduced-motion preference starts none at any factor, so each of those readings
++	// holds no duration and the shown value. A panel left without its transition samples none at the
++	// resting or the doubled factor, which the presence assertions report before any ratio is read.
++	it('doubles the running slide and fade at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference, on the bare panel and on a responsive panel below its boundary', async () => {
++		const sweeps: Array<ReadonlyArray<ReadonlyArray<readonly [number | undefined, string]>>> = []
+ 		for (const motion of [true, false]) {
+ 			await stageMedia({ motion })
+-			readings.push(
++			sweeps.push(
+ 				await visitBreakpoint(1399, () =>
+-					panels.map((panel) => [
+-						readStyle(panel, 'transition-property'),
+-						readStyle(panel, 'transition-duration'),
+-						readStyle(panel, 'transition-timing-function'),
+-					]),
++					sweepMotionFactor(() => {
++						const host = scene.mount(
++							`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start" data-panel>${OFFCANVAS_MARKUP}</div></div><div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-xxl offcanvas-start" data-panel>${OFFCANVAS_MARKUP}</div></div>`,
++						)
++						const moves = [...host.querySelectorAll('[data-panel]')].flatMap((panel) =>
++							['transform', 'opacity'].map((property) => [panel, property] as const),
++						)
++						for (const [panel, property] of moves) readStyle(panel, property)
++						for (const [panel] of moves) panel.classList.add('showing', 'show')
++						return moves.map(([panel, property]) => {
++							const sample = sampleTransition(panel, property)
++							sample?.transition.finish()
++							return [sample?.duration, readStyle(panel, property)] as const
++						})
++					}),
+ 				),
+ 			)
++			await releaseMedia()
+ 		}
+-		expect(readings).toEqual([
+-			[
+-				['transform', '0.3s', 'ease-in-out'],
+-				['transform', '0.3s', 'ease-in-out'],
+-			],
+-			[
+-				['none', '0s', 'ease'],
+-				['none', '0s', 'ease'],
+-			],
++		const settled = ['none', '1', 'none', '1']
++		expect(
++			sweeps.map((sweep) => sweep.map((reading) => reading.map(([, value]) => value))),
++		).toEqual([
++			[settled, settled, settled],
++			[settled, settled, settled],
+ 		])
++		const [moving, reduced] = sweeps
++		const [resting, doubled, zeroed] = requireValue(moving, 'No sweep with motion')
++		expect(resting?.map(([duration]) => duration)).not.toContain(undefined)
++		expect(doubled?.map(([duration]) => duration)).not.toContain(undefined)
++		const base = requireValue(resting, 'No resting reading').map(([duration]) =>
++			requireValue(duration, 'No transition at the resting factor'),
++		)
++		for (const duration of base) expect(duration).toBeGreaterThan(0)
++		expect(
++			requireValue(doubled, 'No doubled reading').map(
++				([duration], index) =>
++					requireValue(duration, 'No transition at the doubled factor') /
++					requireValue(base[index], 'No resting duration'),
++			),
++		).toEqual(settled.map(() => 2))
++		expect(zeroed).toEqual(settled.map((value) => [undefined, value]))
++		expect(reduced).toEqual(
++			[settled, settled, settled].map((values) => values.map((value) => [undefined, value])),
++		)
+ 	})
+ })
+ 
+ describe('offcanvas in an expanded navbar', () => {
+-	// The mutation this catches is one of the navbar partial's width, border, or transform flags
+-	// dropped: the panel's own placement and state rules load after the navbar's at the same
+-	// specificity, so a flag the expanded bar writes without the release's `!important` marker loses
+-	// to them. Each panel sits in a block slot wider than the recorded width, so a panel that keeps that
++	// The mutations this catches are one of the navbar partial's width, border, or transform flags
++	// dropped, and its opacity reset dropped: the panel's own placement and state rules load after
++	// the navbar's at the same specificity, so a flag the expanded bar writes without the release's
++	// `!important` marker loses to them, and without the reset the panel's transparent rest reaches
++	// the resting panel in the row. Each panel sits in a block slot wider than the recorded width, so a panel that keeps that
+ 	// width is told apart from one the bar sizes automatically, and the resting panel carries the
+-	// slide the bar clears. The visibility and fill flags outrank no shipped rule here, so the
+-	// navbar proof reads them over an inline hidden state, and the priority case in the
++	// slide and the transparency the bar clears. The visibility and fill flags outrank no shipped rule
++	// here, so the navbar proof reads them over an inline hidden state, and the priority case in the
+ 	// `tests/conformance.test.ts` file compares the flags each sheet writes.
+ 	it.each(GRID_BREAKPOINT_CASES)(
+ 		'lays a shown and a resting panel into the $name expanded bar and leaves them fixed below the boundary',
+@@ -591,6 +741,7 @@ describe('offcanvas in an expanded navbar', () => {
+ 						readStyle(resting, 'visibility'),
+ 						new DOMMatrix(readStyle(resting, 'transform')).m41,
+ 						readPixels(resting, 'border-right-width'),
++						readStyle(resting, 'opacity'),
+ 					],
+ 				}))
+ 				expect(reading).toEqual(
+@@ -605,7 +756,7 @@ describe('offcanvas in an expanded navbar', () => {
+ 								transition: 'none',
+ 								header: 'none',
+ 								body: ['flex', 0],
+-								resting: ['visible', 0, 0],
++								resting: ['visible', 0, 0, '1'],
+ 							}
+ 						: {
+ 								viewport,
+@@ -614,10 +765,10 @@ describe('offcanvas in an expanded navbar', () => {
+ 								width: OFFCANVAS_GEOMETRY.width,
+ 								fill: false,
+ 								edge: 1,
+-								transition: 'transform',
++								transition: 'transform, opacity',
+ 								header: 'flex',
+ 								body: ['block', OFFCANVAS_GEOMETRY.inset],
+-								resting: ['hidden', -OFFCANVAS_GEOMETRY.width, 1],
++								resting: ['hidden', -OFFCANVAS_GEOMETRY.width, 1, '0'],
+ 							},
+ 				)
+ 			}

@@ -1,0 +1,38 @@
+$ npm run test:setup
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+····································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-L991eA'
+    at finishWithoutResolve (/home/user/veneer-moff/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-moff/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-moff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-moff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-moff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-moff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-moff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-moff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-moff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-moff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-L991eA'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-L991eA or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-L991eA/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+·································································································································································································································································································································
+
+ Test Files  4 passed (4)
+      Tests  357 passed (357)
+   Start at  09:35:27
+   Duration  28.90s (transform 2.28s, setup 402ms, import 8.24s, tests 39.00s, environment 0ms)
+
+exit=0
+4.25 3.24 4.05 5/315 11112

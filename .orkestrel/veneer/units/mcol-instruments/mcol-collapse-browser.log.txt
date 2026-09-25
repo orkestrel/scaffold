@@ -1,0 +1,12 @@
+$ npx vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-mcol
+
+
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+   Start at  09:40:53
+   Duration  12.95s (transform 0ms, setup 767ms, import 574ms, tests 4.10s, environment 0ms)
+
+exit=0
+4.16 3.80 4.04 8/351 19674
