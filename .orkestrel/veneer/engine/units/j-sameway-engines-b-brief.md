@@ -19,7 +19,7 @@
   - **`Dropdown`**: the `show` re-read, the doors around placement, focus, and ARIA, the `hide` re-read, and the `hide` door.
   - **`Popover`**: inherits `Tooltip`'s constructor and doors.
 - J-NATIVE-PROBE round 3 (`units/j-native-probe-report-3.md`) measured that a manual popover stays open on Escape. It also measured that a fully clipped reference leaves the promoted overlay open and its engine `shown`, which is out of scope here.
-- The pattern to follow is `src/browser/Modal.ts` and `src/browser/Offcanvas.ts` at BASE_COMMIT, together with J-SAMEWAY's round-3 report `units/j-sameway-report-3.md` § D1's table, which is the enumeration this unit must produce for its own engines. Tooltip's E17 bridge is the model for observing a platform close.
+- The pattern to follow is `src/browser/Modal.ts` and `src/browser/Offcanvas.ts` at `8bc940d` (J-CASCADE's landing), together with J-SAMEWAY's round-3 report `units/j-sameway-report-3.md` § D1's table, which is the enumeration this unit must produce for its own engines. Tooltip's E17 bridge is the model for observing a platform close.
 
 **Law.**
 - `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`.
@@ -29,7 +29,7 @@
 
 **Installed primitives.** `@orkestrel/test` and `@orkestrel/contract`. Reuse `src/browser/helpers.ts` rather than a new wait or listener helper.
 
-**Host.** Windows 11 with Git Bash. The worktree is `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b` on branch `unit/engines-b`, cut from Veneer `main` at BASE_COMMIT. The browser is Chromium 153. A foreground call is capped at 10 minutes. Write each program to a file under `tmp/j-engines-b/` and run it: no heredoc, no `python -`, no `node -e`. Drive a consumer's invoker with trusted `userEvent` clicks.
+**Host.** Windows 11 with Git Bash. The worktree is `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b` on branch `unit/engines-b`, cut from Veneer `main` at `8bc940d` (J-CASCADE's landing). The browser is Chromium 153. A foreground call is capped at 10 minutes. Write each program to a file under `tmp/j-engines-b/` and run it: no heredoc, no `python -`, no `node -e`. Drive a consumer's invoker with trusted `userEvent` clicks.
 
 **Control identifiers.** B1 is the agreement. B2 is the takeover return. B3 is the platform close. B4 is the enumeration. Name each test for what it proves.
 
@@ -68,7 +68,7 @@ Your final message holds:
 - the files touched;
 - the B4 table: for each engine and direction, every write, its entry, its return, or its rule, and the case that reads it;
 - B3's choice per engine, with its reason;
-- the cases with their red readings on BASE_COMMIT's sources and their green readings, verbatim;
+- the cases with their red readings on `8bc940d`'s sources and their green readings, verbatim;
 - the mutation table from the instrument's log;
 - the report-only patches;
 - the acceptance output verbatim;
@@ -82,8 +82,8 @@ Stop and report when a change needs an off-limits file or a public type change, 
 ## Acceptance criteria
 
 1. `npm run check:src:browser`, `npm run lint:check`, and `npm run format:check` exit 0.
-2. **B1 and B2.** As J-SAMEWAY-ENGINES-A's A1 and A2, for `Dropdown`, `Tooltip`, and `Popover`. Each case reads red on BASE_COMMIT's sources.
-3. **B3.** For each engine, a trusted click on a consumer's `hide-popover` invoker aimed at the promoted overlay leaves one of two outcomes. Either the engine completes its hide and dispatches its hide events, with `shown` reading `false`, or the engine keeps the overlay open and the case asserts that outcome. Each case reads red on BASE_COMMIT's sources.
+2. **B1 and B2.** As J-SAMEWAY-ENGINES-A's A1 and A2, for `Dropdown`, `Tooltip`, and `Popover`. Each case reads red on `8bc940d`'s sources.
+3. **B3.** For each engine, a trusted click on a consumer's `hide-popover` invoker aimed at the promoted overlay leaves one of two outcomes. Either the engine completes its hide and dispatches its hide events, with `shown` reading `false`, or the engine keeps the overlay open and the case asserts that outcome. Each case reads red on `8bc940d`'s sources.
 4. **B4.** The B4 table names no write without an entry or a rule.
 5. **The instrument binds.** It works as J-SAMEWAY-ENGINES-A's instrument does, for these engines and for B3's observation.
 6. The four owned test files pass in a scoped run.

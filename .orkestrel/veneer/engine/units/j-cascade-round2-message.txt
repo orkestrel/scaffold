@@ -1,0 +1,8 @@
+Bound each fade engine's completed event to one frame at a zero and a large motion factor
+
+The motion-factor cases showed the event follows the fade, but bounded no arrival, so an engine waiting a fixed second passed them. Each case now requires that, at a zero factor, the event and the call's resolution arrive before one frame, and that, at a large factor, the event arrives after the fade's `finished` and before the next frame.
+
+The mutation instrument counts a kill only when the failure is an assertion. It kills a fixed wait and a late wait in all five cases, and it refuses a thrown `Error`.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

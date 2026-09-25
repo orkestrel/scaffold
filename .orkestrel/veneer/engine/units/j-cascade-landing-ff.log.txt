@@ -1,0 +1,20 @@
+--- the fast-forward
+Updating 4cd56a8..8bc940d
+Fast-forward
+ guides/veneer.md                   |  25 ++++---
+ tests/src/browser/Alert.test.ts    | 112 +++++++++++++++++++++++-----
+ tests/src/browser/Carousel.test.ts |  63 ++++++++++++++++
+ tests/src/browser/Popover.test.ts  | 145 ++++++++++++++++++++++++++++++++++++-
+ tests/src/browser/Tab.test.ts      | 114 ++++++++++++++++++++++++++---
+ tests/src/browser/Toast.test.ts    | 143 +++++++++++++++++++++++++++---------
+ tests/src/browser/Tooltip.test.ts  | 104 ++++++++++++++++++++++----
+ 7 files changed, 620 insertions(+), 86 deletions(-)
+main ff to unit/cascade exit=0
+worktree remove exit=0
+Deleted branch unit/cascade (was 8bc940d).
+branch delete exit=0
+8bc940d Bound each fade engine's completed event to one frame at a zero and a large motion factor
+a447ce5 Merge branch 'main' into unit/cascade
+4cd56a8 Merge branch 'main' into unit/integration
+a963585 State that the shipped fade times the Alert, Tab, and Toast waits under the root's motion factor
+## main...origin/main [ahead 4]
