@@ -1,0 +1,123 @@
+1
+reader-root helpers exit 1
+     × returns the focused element inside one open shadow root, which the document reads as its host 7ms
+     × returns the focused element two open shadow roots down, from the document and from the outer root 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { document: <div></div>, …(2) } to deeply equal { document: <div></div>, …(2) }
+ ❯ tests/src/browser/helpers.test.ts:996:5
+AssertionError: expected { document: <div></div>, …(3) } to deeply equal { document: <div></div>, …(3) }
+ ❯ tests/src/browser/helpers.test.ts:1014:5
+      Tests  2 failed | 4 passed | 93 skipped (99)
+reader-root exit 1
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 852ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  1 failed | 3 passed | 62 skipped (66)
+1
+reader-one helpers exit 1
+     × returns the focused element two open shadow roots down, from the document and from the outer root 8ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { document: <div></div>, …(3) } to deeply equal { document: <div></div>, …(3) }
+ ❯ tests/src/browser/helpers.test.ts:1014:5
+      Tests  1 failed | 5 passed | 93 skipped (99)
+reader-one exit 0
+      Tests  4 passed | 62 skipped (66)
+2
+panel-root exit 1
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 869ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  1 failed | 3 passed | 62 skipped (66)
+1
+document exit 1
+     × leaves focus on a trigger in the panel's shadow root, open or closed, after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 1594ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:722:19
+      Tests  1 failed | 3 passed | 62 skipped (66)
+1
+never exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 914ms
+     × leaves focus on a trigger in the panel's shadow root, open or closed, after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 1616ms
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 799ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(4) }, …(1) ] to deeply equal [ { motion: true, …(4) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:655:19
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:722:19
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  3 failed | 1 passed | 62 skipped (66)
+1
+always exit 1
+     × keeps the press's default action, which moves focus to the body, when the hide moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 370ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { row: 'prevented', …(4) } to deeply equal { row: 'prevented', …(4) }
+ ❯ tests/src/browser/Offcanvas.test.ts:843:6
+      Tests  1 failed | 3 passed | 62 skipped (66)
+1
+released exit 1
+     × keeps the press's default action, which moves focus to the body, when the hide moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 802ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { row: 'unfocusable', …(4) } to deeply equal { row: 'unfocusable', …(4) }
+ ❯ tests/src/browser/Offcanvas.test.ts:843:6
+      Tests  1 failed | 3 passed | 62 skipped (66)
+1
+outside exit 1
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 885ms
+     × keeps the press's default action, which moves focus to the body, when the hide moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 1232ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+AssertionError: expected { row: 'sliding', …(4) } to deeply equal { row: 'sliding', …(4) }
+ ❯ tests/src/browser/Offcanvas.test.ts:843:6
+      Tests  2 failed | 2 passed | 62 skipped (66)
+1
+static exit 1
+     × keeps the press's default action, which moves focus to the body, when the hide moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 1619ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { row: 'static', …(4) } to deeply equal { row: 'static', …(4) }
+ ❯ tests/src/browser/Offcanvas.test.ts:843:6
+      Tests  1 failed | 3 passed | 62 skipped (66)
+1
+click exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 906ms
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 833ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(4) }, …(1) ] to deeply equal [ { motion: true, …(4) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:655:19
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  2 failed | 2 passed | 62 skipped (66)
+source restored
+helpers restored
+base-dcff520 exit 1
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 818ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  1 failed | 3 passed | 62 skipped (66)
+base-eaf3908 exit 1
+     × leaves focus on a trigger in the panel's shadow root, open or closed, after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 1650ms
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 800ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:722:19
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  2 failed | 2 passed | 62 skipped (66)
+base-63eabbd exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 893ms
+     × leaves focus on a trigger in the panel's shadow root, open or closed, after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 1572ms
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 798ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(4) }, …(1) ] to deeply equal [ { motion: true, …(4) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:655:19
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:722:19
+AssertionError: expected [ { motion: true, …(6) }, …(1) ] to deeply equal [ { motion: true, …(6) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:799:19
+      Tests  3 failed | 1 passed | 62 skipped (66)
+source restored after bases

@@ -1,0 +1,13 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Lifetime.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-core
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  03:28:08
+   Duration  1.54s (transform 0ms, setup 506ms, import 9ms, tests 7ms, environment 0ms)
+

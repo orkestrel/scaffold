@@ -1,0 +1,6 @@
+ M guides/veneer.md
+ M src/browser/Offcanvas.ts
+ M src/browser/helpers.ts
+ M tests/src/browser/Offcanvas.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts

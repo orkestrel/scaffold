@@ -1,0 +1,123 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Offcanvas.test.ts -t probe focusin
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts (67 tests | 1 failed | 66 skipped) 5038ms
+     × probe focusin: records the capture focusin a synchronous hide dispatches in each placement 5037ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:4013:2 > offcanvas focusin probe > probe focusin: records the capture focusin a synchronous hide dispatches in each placement
+AssertionError: expected '[\n {\n  "name": "light",\n  "before"…' to be 'dump' // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- dump[39m
+[31m+ [[39m
+[31m+  {[39m
+[31m+   "name": "light",[39m
+[31m+   "before": "inside",[39m
+[31m+   "after": "opener",[39m
+[31m+   "fired": 1,[39m
+[31m+   "events": [[39m
+[31m+    [[39m
+[31m+     "button#opener",[39m
+[31m+     "path"[39m
+[31m+    ][39m
+[31m+   ][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "open one level",[39m
+[31m+   "before": "inside",[39m
+[31m+   "after": "opener",[39m
+[31m+   "fired": 0,[39m
+[31m+   "events": [][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "open two levels",[39m
+[31m+   "before": "inside",[39m
+[31m+   "after": "opener",[39m
+[31m+   "fired": 0,[39m
+[31m+   "events": [][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "closed root the panel carries",[39m
+[31m+   "before": "held",[39m
+[31m+   "after": "return",[39m
+[31m+   "fired": 0,[39m
+[31m+   "events": [][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "shadow panel, light trigger",[39m
+[31m+   "before": [[39m
+[31m+    "",[39m
+[31m+    "panel"[39m
+[31m+   ],[39m
+[31m+   "after": [[39m
+[31m+    "opener",[39m
+[31m+    null[39m
+[31m+   ],[39m
+[31m+   "fired": 1,[39m
+[31m+   "events": [[39m
+[31m+    [[39m
+[31m+     "button#opener",[39m
+[31m+     "path"[39m
+[31m+    ][39m
+[31m+   ][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "shadow panel, outside focus",[39m
+[31m+   "before": [[39m
+[31m+    "outer",[39m
+[31m+    null[39m
+[31m+   ],[39m
+[31m+   "after": [[39m
+[31m+    "opener",[39m
+[31m+    null[39m
+[31m+   ],[39m
+[31m+   "fired": 1,[39m
+[31m+   "events": [[39m
+[31m+    [[39m
+[31m+     "button#opener",[39m
+[31m+     "path"[39m
+[31m+    ][39m
+[31m+   ][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "guard: prevented hide",[39m
+[31m+   "before": "inside",[39m
+[31m+   "after": "inside",[39m
+[31m+   "fired": 0,[39m
+[31m+   "events": [][39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "guard: unfocusable trigger",[39m
+[31m+   "before": "inside",[39m
+[31m+   "after": "inside",[39m
+[31m+   "fired": 0,[39m
+[31m+   "events": [][39m
+[31m+  }[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:4059:44
+    4057|   }
+    4058|   // The dump fails on purpose, so the runner prints every reading in …
+    4059|   expect(JSON.stringify(readings, null, 1)).toBe('dump')
+       |                                            ^
+    4060|   expect(readings.length).toBe(8)
+    4061|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 66 skipped (67)
+   Start at  04:29:22
+   Duration  7.48s (transform 0ms, setup 678ms, import 457ms, tests 5.04s, environment 0ms)
+

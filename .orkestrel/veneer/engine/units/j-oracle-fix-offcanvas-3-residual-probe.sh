@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# J-ORACLE-FIX-OFFCANVAS round 3 probe: appends the probe block to Offcanvas.test.ts from a backup,
+# runs the two probe cases, and writes the test file back from the backup.
+set -u
+cd /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas || exit 2
+TEST=tests/src/browser/Offcanvas.test.ts
+BACKUP=tmp/probe/Offcanvas.test.ts.backup
+LOG=tmp/probe/residual-probe.log.txt
+cp "$TEST" "$BACKUP"
+cat tmp/probe/offcanvas-residual.block.ts.txt >> "$TEST"
+npx vitest run --config vite.config.ts --no-cache --project src:browser "$TEST" -t "probe (closed|outside)" > "$LOG" 2>&1
+echo "probe exit $?"
+cp "$BACKUP" "$TEST"
+cmp "$TEST" "$BACKUP" && echo "test restored"
+grep -E "PROBE|^ +(×|✓)|Tests +[0-9]|^[A-Za-z]*Error" "$LOG"

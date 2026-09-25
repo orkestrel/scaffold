@@ -1,0 +1,148 @@
+
+// J-ORACLE-FIX-OFFCANVAS round 4 probe block, appended to Offcanvas.test.ts by focusin-probe.sh and
+// removed after the run: whether a capture `focusin` listener on the panel's document fires during
+// a synchronous `hide()` in each placement, and that none fires when the hide moves no focus.
+describe('offcanvas focusin probe', () => {
+	const probeCascade = `${tokensCascade}\n${fadeCascade}\n${offcanvasCascade}`
+	const probeMarkup = `
+		<button type="button" id="opener">Open</button>
+		<button type="button" id="outer">Outer</button>
+		<div id="panel" class="offcanvas offcanvas-start" tabindex="-1">
+			<div class="offcanvas-body"><button type="button" id="inside">Inside</button></div>
+		</div>`
+
+	interface Placement {
+		readonly host: HTMLElement
+		readonly trigger: HTMLElement
+		readonly focus: HTMLElement
+		readonly reads: () => unknown
+	}
+
+	function adopt(shadow: ShadowRoot): void {
+		const sheet = new CSSStyleSheet()
+		sheet.replaceSync(probeCascade)
+		shadow.adoptedStyleSheets = [sheet]
+	}
+
+	function place(name: string, root: HTMLElement): Placement {
+		const byId = (scope: ParentNode, id: string): HTMLElement =>
+			requireValue(scope.querySelector<HTMLElement>(`#${id}`), `No ${id}`)
+		if (name === 'light') {
+			const inside = byId(root, 'inside')
+			return {
+				host: byId(root, 'panel'),
+				trigger: byId(root, 'opener'),
+				focus: inside,
+				reads: () => document.activeElement?.id,
+			}
+		}
+		if (name === 'open one level') {
+			const container = document.createElement('div')
+			root.replaceChildren(container)
+			const shadow = container.attachShadow({ mode: 'open' })
+			adopt(shadow)
+			shadow.innerHTML = `<div>${probeMarkup}</div>`
+			return {
+				host: byId(shadow, 'panel'),
+				trigger: byId(shadow, 'opener'),
+				focus: byId(shadow, 'inside'),
+				reads: () => shadow.activeElement?.id,
+			}
+		}
+		if (name === 'open two levels') {
+			const container = document.createElement('div')
+			root.replaceChildren(container)
+			const outer = container.attachShadow({ mode: 'open' })
+			adopt(outer)
+			outer.innerHTML = '<div><div id="middle"></div></div>'
+			const middle = byId(outer, 'middle')
+			const inner = middle.attachShadow({ mode: 'open' })
+			adopt(inner)
+			inner.innerHTML = `<div>${probeMarkup}</div>`
+			return {
+				host: byId(inner, 'panel'),
+				trigger: byId(inner, 'opener'),
+				focus: byId(inner, 'inside'),
+				reads: () => inner.activeElement?.id,
+			}
+		}
+		if (name === 'closed root the panel carries') {
+			const host = byId(root, 'panel')
+			const shadow = host.attachShadow({ mode: 'closed' })
+			shadow.innerHTML =
+				'<button type="button" id="return">Return</button><button type="button" id="held">Inside</button>'
+			return {
+				host,
+				trigger: byId(shadow, 'return'),
+				focus: byId(shadow, 'held'),
+				reads: () => shadow.activeElement?.id,
+			}
+		}
+		// The panel sits in an open shadow root; the trigger and, in the last placement, the focused
+		// element sit in the light tree outside it.
+		const container = byId(root, 'panel')
+		container.removeAttribute('class')
+		container.removeAttribute('id')
+		const shadow = container.attachShadow({ mode: 'open' })
+		adopt(shadow)
+		shadow.innerHTML =
+			'<div><div id="panel" class="offcanvas offcanvas-start" tabindex="-1"><button type="button" id="inside">Inside</button></div></div>'
+		const host = byId(shadow, 'panel')
+		return {
+			host,
+			trigger: byId(root, 'opener'),
+			focus: name === 'shadow panel, outside focus' ? byId(root, 'outer') : host,
+			reads: () => [document.activeElement?.id, shadow.activeElement?.id],
+		}
+	}
+
+	it('probe focusin: records the capture focusin a synchronous hide dispatches in each placement', async () => {
+		scene.load(probeCascade)
+		const readings: unknown[] = []
+		for (const name of [
+			'light',
+			'open one level',
+			'open two levels',
+			'closed root the panel carries',
+			'shadow panel, light trigger',
+			'shadow panel, outside focus',
+			'guard: prevented hide',
+			'guard: unfocusable trigger',
+		]) {
+			const root = scene.mount(probeMarkup)
+			const placement = place(name.startsWith('guard') ? 'light' : name, root)
+			const offcanvas = new Offcanvas(placement.host, {
+				on: {
+					hide: (event) => {
+						if (name === 'guard: prevented hide') event.preventDefault()
+					},
+				},
+			})
+			onTestFinished(() => offcanvas.destroy())
+			expect(await offcanvas.show(placement.trigger)).toBe(true)
+			placement.focus.focus()
+			if (name === 'guard: unfocusable trigger') placement.trigger.remove()
+			const before = placement.reads()
+			const events = createRecorder<readonly [string, string]>()
+			const listener = (event: FocusEvent): void => {
+				const target = event.target
+				events.handler(
+					target instanceof Element ? `${target.localName}#${target.id}` : String(target),
+					event.composedPath()[0] instanceof Element ? 'path' : 'none',
+				)
+			}
+			const document = placement.host.ownerDocument
+			document.addEventListener('focusin', listener, { capture: true })
+			void offcanvas.hide()
+			document.removeEventListener('focusin', listener, { capture: true })
+			const after = placement.reads()
+			readings.push({ name, before, after, fired: events.count, events: events.calls })
+			await waitForCondition('the hide settles', () => !placement.host.classList.contains('hiding'))
+			offcanvas.destroy()
+			root.remove()
+		}
+		// The dump fails on purpose, so the runner prints every reading in its diff.
+		expect(JSON.stringify(readings, null, 1)).toBe('dump')
+		expect(readings.length).toBe(8)
+	})
+})
