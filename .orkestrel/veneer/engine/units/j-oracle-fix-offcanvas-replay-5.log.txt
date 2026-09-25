@@ -1,0 +1,104 @@
+# J-ORACLE-FIX-OFFCANVAS round 5 replay (2026-09-25) at 88d06f4 Cancel a dismissing backdrop press when its hide released the isolation and the trigger holds focus (J-ORACLE-FIX-OFFCANVAS round 5)
+base exit 1
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries, open or closed, until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 1599ms
+     × keeps the press's default action, which moves focus to the body, when the hide releases no isolation or leaves the trigger without focus: a prevented hide, a trigger that takes no focus, a listener that moves focus after the trigger is removed, a press during the slide out, and a static backdrop 1183ms
+     × keeps the press's default action, which moves focus to the body, when a hide listener focuses the trigger and prevents the hide 399ms
+     × cancels a trusted backdrop press's default action and leaves focus on a light-tree trigger of a panel inside a shadow root, whether focus sat on the panel or outside the panel's root, at the hidden event and after the press, with motion and under reduced motion 1602ms
+     × cancels a trusted backdrop press's default action and keeps focus on a trigger inside the panel that already held it until the panel's visibility turns hidden, then on the body, with motion and under reduced motion 782ms
+     × keeps focus inside a shadow host the isolation fell back to until the panel's visibility turns hidden, then on the body, with and without delegated focus, with motion and under reduced motion 1551ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(7) }, …(3) ] to deeply equal [ { motion: true, …(7) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:808:19
+AssertionError: expected { row: 'redirected', …(5) } to deeply equal { row: 'redirected', …(5) }
+ ❯ tests/src/browser/Offcanvas.test.ts:859:6
+AssertionError: expected { focused: [ [ …(1) ] ], …(3) } to deeply equal { focused: [ [ …(1) ] ], …(3) }
+ ❯ tests/src/browser/Offcanvas.test.ts:919:5
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:993:19
+AssertionError: expected [ { motion: true, …(5) }, …(1) ] to deeply equal [ { motion: true, …(5) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:1057:19
+AssertionError: expected [ { motion: true, …(5) }, …(3) ] to deeply equal [ { motion: true, …(5) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:1125:19
+      Tests  6 failed | 64 passed (70)
+sources restored
+fixed exit 0
+      Tests  70 passed (70)
+red-5 exit=0
+mutant document written
+document exit 1
+     × leaves focus on a trigger in the panel's shadow root, open or closed, after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 1602ms
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries, open or closed, until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 1584ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:722:19
+AssertionError: expected [ { motion: true, …(7) }, …(3) ] to deeply equal [ { motion: true, …(7) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:808:19
+      Tests  2 failed | 68 passed (70)
+mutant release written
+release exit 1
+     × keeps the press's default action, which moves focus to the body, when a hide listener focuses the trigger and prevents the hide 387ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { focused: [ [ …(1) ] ], …(3) } to deeply equal { focused: [ [ …(1) ] ], …(3) }
+ ❯ tests/src/browser/Offcanvas.test.ts:919:5
+      Tests  1 failed | 69 passed (70)
+mutant always written
+always exit 1
+     × keeps the press's default action, which moves focus to the body, when the hide releases no isolation or leaves the trigger without focus: a prevented hide, a trigger that takes no focus, a listener that moves focus after the trigger is removed, a press during the slide out, and a static backdrop 370ms
+     × keeps the press's default action, which moves focus to the body, when a hide listener focuses the trigger and prevents the hide 378ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { row: 'prevented', …(5) } to deeply equal { row: 'prevented', …(5) }
+ ❯ tests/src/browser/Offcanvas.test.ts:859:6
+AssertionError: expected { focused: [ [ …(1) ] ], …(3) } to deeply equal { focused: [ [ …(1) ] ], …(3) }
+ ❯ tests/src/browser/Offcanvas.test.ts:919:5
+      Tests  2 failed | 68 passed (70)
+mutant never written
+never exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 887ms
+     × leaves focus on a trigger in the panel's shadow root, open or closed, after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 1585ms
+     × cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries, open or closed, until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion 1567ms
+     × cancels a trusted backdrop press's default action and leaves focus on a light-tree trigger of a panel inside a shadow root, whether focus sat on the panel or outside the panel's root, at the hidden event and after the press, with motion and under reduced motion 1591ms
+     × cancels a trusted backdrop press's default action and keeps focus on a trigger inside the panel that already held it until the panel's visibility turns hidden, then on the body, with motion and under reduced motion 780ms
+     × keeps focus inside a shadow host the isolation fell back to until the panel's visibility turns hidden, then on the body, with and without delegated focus, with motion and under reduced motion 1600ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(4) }, …(1) ] to deeply equal [ { motion: true, …(4) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:655:19
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:722:19
+AssertionError: expected [ { motion: true, …(7) }, …(3) ] to deeply equal [ { motion: true, …(7) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:808:19
+AssertionError: expected [ { motion: true, …(6) }, …(3) ] to deeply equal [ { motion: true, …(6) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:993:19
+AssertionError: expected [ { motion: true, …(5) }, …(1) ] to deeply equal [ { motion: true, …(5) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:1057:19
+AssertionError: expected [ { motion: true, …(5) }, …(3) ] to deeply equal [ { motion: true, …(5) }, …(3) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:1125:19
+      Tests  6 failed | 64 passed (70)
+mutant focus written
+focus exit 0
+      Tests  70 passed (70)
+source restored
+mutate-7 exit=0
+helper-document exit 1
+     × reads an element inside an open shadow root from that root, where the document reads only the host 5ms
+     × reads an element inside a closed shadow root through a reference to the element 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { document: <div></div>, …(3) } to deeply equal { document: <div></div>, …(3) }
+ ❯ tests/src/browser/helpers.test.ts:1004:5
+AssertionError: expected { exposed: null, …(3) } to deeply equal { exposed: null, …(3) }
+ ❯ tests/src/browser/helpers.test.ts:1020:5
+      Tests  2 failed | 3 passed | 93 skipped (98)
+source restored
+mutate-helper-7 exit=0
+--- error class of each mutation log
+tmp/j-oracle-fix-offcanvas/mutation-7-always.log.txt: assertion=2 other=0 Tests  2 failed | 68 passed (70)
+tmp/j-oracle-fix-offcanvas/mutation-7-document.log.txt: assertion=2 other=0 Tests  2 failed | 68 passed (70)
+tmp/j-oracle-fix-offcanvas/mutation-7-focus.log.txt: assertion=0 other=0 Tests  70 passed (70)
+tmp/j-oracle-fix-offcanvas/mutation-7-helper-document.log.txt: assertion=2 other=0 Tests  2 failed | 3 passed | 93 skipped (98)
+tmp/j-oracle-fix-offcanvas/mutation-7-never.log.txt: assertion=6 other=0 Tests  6 failed | 64 passed (70)
+tmp/j-oracle-fix-offcanvas/mutation-7-release.log.txt: assertion=1 other=0 Tests  1 failed | 69 passed (70)
+Offcanvas whole-file exit=0       Tests  70 passed (70)
+Isolation whole-file exit=0       Tests  11 passed (11)
+Modal whole-file exit=0       Tests  61 passed (61)
+helpers whole-file exit=0       Tests  98 passed (98)
+index whole-file exit=0       Tests  3 passed (3)
+--- the tree after the replay

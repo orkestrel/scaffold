@@ -1,0 +1,15 @@
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index ece32fd..bc5709a 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -451,6 +451,10 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			const held = this.shown ? true : undefined
+ 			const accepted = emitEvent(host, events.show, null, true)
+ 			if (held === undefined ? !this.#owns(change) : !this.#holds(change, held)) return false
++			if (!accepted && this.#profile.popover === 'manual') {
++				host.setAttribute('aria-describedby', 'vn-mutation')
++				host.removeAttribute('aria-describedby')
++			}
+ 			if (!accepted || this.#blocked()) return false
+ 			const left = this.#discard(false)
+ 			if ((held === true && !left) || !this.#holds(change, undefined)) return false

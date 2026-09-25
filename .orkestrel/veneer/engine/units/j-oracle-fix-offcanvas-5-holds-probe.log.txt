@@ -1,0 +1,388 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Offcanvas.test.ts -t probe holds
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas
+
+ ❯ |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts (67 tests | 1 failed | 66 skipped) 11360ms
+     × probe holds: records the return target root read, :focus, the release, and frame focus around a synchronous hide 11359ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:4057:2 > offcanvas holds probe > probe holds: records the return target root read, :focus, the release, and frame focus around a synchronous hide
+AssertionError: expected '[\n {\n  "name": "light",\n  "trigger…' to be 'dump' // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- dump[39m
+[31m+ [[39m
+[31m+  {[39m
+[31m+   "name": "light",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#opener"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "open one level",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "div#"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "closed one level",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "div#"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "open two levels",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "div#"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "closed root the panel carries",[39m
+[31m+   "trigger": "button#return",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "shadow",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "div#panel"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "shadow panel, light trigger",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#opener"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "shadow panel, outside focus",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#opener"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "guard: prevented hide",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": false,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": false,[39m
+[31m+   "focusRule": false,[39m
+[31m+   "expected": false,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#inside"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "guard: unfocusable trigger",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "none",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "none",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": false,[39m
+[31m+   "focusRule": false,[39m
+[31m+   "expected": false,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#inside"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "guard: sliding",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": false,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": false,[39m
+[31m+   "focusRule": false,[39m
+[31m+   "expected": false,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#opener"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "trigger inside the panel, focused",[39m
+[31m+   "trigger": "button#inside",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#inside"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "listener focuses the trigger and prevents",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": false,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": false,[39m
+[31m+   "focusRule": false,[39m
+[31m+   "expected": false,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#inside"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "listener focuses a light trigger in a shadow panel and prevents",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": false,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": false,[39m
+[31m+   "focusRule": false,[39m
+[31m+   "expected": false,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#opener"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "listener moves focus elsewhere after the trigger is removed",[39m
+[31m+   "trigger": "button#opener",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "none",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "none",[39m
+[31m+    "holds": false,[39m
+[31m+    "focus": false,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": false,[39m
+[31m+   "focusRule": false,[39m
+[31m+   "expected": false,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "button#inside"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "fallback H",[39m
+[31m+   "trigger": "div#h",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "div#h"[39m
+[31m+  },[39m
+[31m+  {[39m
+[31m+   "name": "fallback H delegatesFocus",[39m
+[31m+   "trigger": "div#h",[39m
+[31m+   "released": true,[39m
+[31m+   "before": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "after": {[39m
+[31m+    "root": "document",[39m
+[31m+    "holds": true,[39m
+[31m+    "focus": true,[39m
+[31m+    "frame": true[39m
+[31m+   },[39m
+[31m+   "rule": true,[39m
+[31m+   "focusRule": true,[39m
+[31m+   "expected": true,[39m
+[31m+   "agrees": true,[39m
+[31m+   "activeAfter": "div#h"[39m
+[31m+  }[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:4137:44
+    4135|   }
+    4136|   // The dump fails on purpose, so the runner prints every reading in …
+    4137|   expect(JSON.stringify(readings, null, 1)).toBe('dump')
+       |                                            ^
+    4138|  })
+    4139| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 66 skipped (67)
+   Start at  04:46:31
+   Duration  13.34s (transform 0ms, setup 492ms, import 488ms, tests 11.36s, environment 0ms)
+

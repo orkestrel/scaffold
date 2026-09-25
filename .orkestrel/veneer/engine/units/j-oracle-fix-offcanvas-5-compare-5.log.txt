@@ -1,0 +1,15 @@
+departures round 3 66 round 5 66
+only round 3: []
+only round 5: []
+facets round 5: ['attribute']
+focus departures round 5: []
+offcanvas bootstrap steps 18 changed steps: []
+offcanvas veneer steps 18 changed steps: []
+modal bootstrap steps 22 changed steps: []
+modal veneer steps 22 changed steps: []
+departures.json byte-identical
+offcanvas.bootstrap.json byte-identical
+offcanvas.veneer.json byte-identical
+modal.bootstrap.json byte-identical
+modal.veneer.json byte-identical
+findings.json without timings identical {'modal.steps': 'every non-refused step changes state', 'modal.departures': 48, 'offcanvas.steps': 'every non-refused step changes state', 'offcanvas.departures': 18}

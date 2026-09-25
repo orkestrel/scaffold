@@ -1,0 +1,27 @@
+# J-CONCERNS-B landing: the merge of main into unit/concerns-b (2026-09-24)
+26ee551 Record every mutation during a prevented popover show and hide, and assert none was taken (J-CONCERNS-B round 2)
+7ab04db Pin Dropdown's synchronous completion under a running menu motion, and Popover's prevented show and hide (J-CONCERNS-B round 1)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+b8c6a08 Merge branch 'main' into unit/release-core
+Merge made by the 'ort' strategy.
+ guides/veneer.md                       |  87 +++++--
+ src/browser/Button.ts                  |  63 +++---
+ src/browser/HostSnapshot.ts            |  85 ++++---
+ src/browser/Lifetime.ts                | 151 +++++++++++++
+ src/browser/helpers.ts                 |  34 ++-
+ src/browser/index.ts                   |   1 +
+ src/browser/types.ts                   |  98 +++++++-
+ tests/src/browser/Button.test.ts       | 174 +++++++++++++-
+ tests/src/browser/HostSnapshot.test.ts | 119 ++++++++++
+ tests/src/browser/Lifetime.test.ts     | 398 +++++++++++++++++++++++++++++++++
+ tests/src/browser/helpers.test.ts      |  67 ++++++
+ tests/src/browser/index.test.ts        |   2 +
+ 12 files changed, 1195 insertions(+), 84 deletions(-)
+ create mode 100644 src/browser/Lifetime.ts
+ create mode 100644 tests/src/browser/Lifetime.test.ts
+merge main into unit/concerns-b exit=0
+conflicts: none

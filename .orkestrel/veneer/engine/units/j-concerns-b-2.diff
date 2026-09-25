@@ -1,0 +1,54 @@
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 8b17709..d1f4630 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -359,8 +359,24 @@ describe('Popover', () => {
+ 		host.addEventListener('show.vn.popover', (event) => event.preventDefault(), {
+ 			signal: prevention.signal,
+ 		})
++		// The observer watches the whole document, the trigger's attributes included, for the prevented
++		// calls only, so a write the call makes and then takes back is still a record.
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(document, {
++			attributes: true,
++			characterData: true,
++			childList: true,
++			subtree: true,
++		})
+ 		expect(await popover.show()).toBe(false)
+ 		expect(await popover.toggle()).toBe(false)
++		const records = [...writes.calls.flat(2), ...observer.takeRecords()].map(
++			({ type, target, attributeName }) => ({ type, target: target.nodeName, attributeName }),
++		)
++		observer.disconnect()
++		expect(records).toEqual([])
+ 		expect({
+ 			events: events.calls.flat(),
+ 			shown: popover.shown,
+@@ -412,8 +428,24 @@ describe('Popover', () => {
+ 		host.addEventListener('hide.vn.popover', (event) => event.preventDefault(), {
+ 			signal: prevention.signal,
+ 		})
++		// The observer watches the whole document, the trigger's attributes and the tip included, for
++		// the prevented calls only, so a write the call makes and then takes back is still a record.
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(document, {
++			attributes: true,
++			characterData: true,
++			childList: true,
++			subtree: true,
++		})
+ 		expect(await popover.hide()).toBe(false)
+ 		expect(await popover.toggle()).toBe(false)
++		const records = [...writes.calls.flat(2), ...observer.takeRecords()].map(
++			({ type, target, attributeName }) => ({ type, target: target.nodeName, attributeName }),
++		)
++		observer.disconnect()
++		expect(records).toEqual([])
+ 		expect({
+ 			events: events.calls.flat(),
+ 			shown: popover.shown,
