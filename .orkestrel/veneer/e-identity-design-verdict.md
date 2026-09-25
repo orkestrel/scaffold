@@ -73,3 +73,26 @@ layout, never with selectors that read a tag's context or strip a default whenev
 - **Flow margins restored** (the user's ruling): `p`, the headings, the lists, `dl`, `pre`, `hr`, `figure`, and every
   other element whose reboot margin Veneer dropped take Bootstrap's reboot margins. E-ID-FLOW, after the E-ID units
   land, so one unit owns every margin.
+
+## Addendum 3: the figure, nested lists, and the bare button (2026-09-25)
+
+Ruled on the round-3 and E-ID-FLOW audit evidence, against the same two tenets as Addendum 2.
+
+- **`figure` returns to block flow.** With its `gap` gone, the flex column differs from block flow only in that it
+  keeps a child's margins inside the figure. Under Bootstrap's attributed quotation, the flex figure encloses the
+  footer's 1rem end margin, so the figure box reads 63.14px against Bootstrap's 51px, and once `figure` takes its
+  reboot margin the following content would sit 16px lower than Bootstrap places it
+  (`units/eil-instruments/r3/eil-3-probe.log.txt`; the E-ID-LAYOUT round-3 subjective lane, claim 3). A block figure
+  gives the same 8px caption space (`figure.test.ts`, the `d-block` holder). `figure` drops `display: flex` and
+  `flex-direction`, and `figcaption` keeps its top margin. E-ID-LAYOUT round 4.
+- **Nested lists keep their margin.** Bootstrap zeroes an inner list's bottom margin with `ol ol, ul ul, ol ul, ul ol`,
+  a rule that changes a tag by the tag around it, so it stays Excluded. An inner list keeps the list's 1rem bottom
+  margin, and `.mb-0` removes it (`units/flow-instruments/orchestrator-components-probe.log.txt`: every other
+  documented component margin under E-ID-FLOW equals Bootstrap's).
+- **The bare `button` rule contradicts Addendum 2.** `button:not([class], [data-bs-target])` strips the bare default
+  whenever any class appears, which Addendum 2 rules out for `dl` and `blockquote`, and this verdict's house rule cites
+  it as its model. The fix is a design question: a tag-only `button` default must leave every Bootstrap class built on
+  `<button>` (`.btn`, `.btn-close`, `.navbar-toggler`, `.accordion-button`, `.dropdown-item`, `.nav-link`,
+  `.list-group-item-action`, `.carousel-control-*`, `.page-link`) laid out as Bootstrap lays it out, with a utility
+  class keeping the default. Carrier: the E-ID-BUTTON design round (`planner` on Opus 5.5, `analyst` on GPT-6 Astra),
+  after the E-ID landing.

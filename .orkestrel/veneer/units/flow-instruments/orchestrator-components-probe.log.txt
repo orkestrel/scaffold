@@ -79,3 +79,14 @@
   same    list-inline: veneer 0px 16px | bootstrap 0px 16px
   same    carousel-caption-h5: veneer 0px 8px | bootstrap 0px 8px
   same    carousel-caption-p: veneer 0px 16px | bootstrap 0px 16px
+  same    carousel-indicators: veneer 0px 16px | bootstrap 0px 16px
+  same    toast-p: veneer 0px 16px | bootstrap 0px 16px
+  same    display-1: veneer 0px 8px | bootstrap 0px 8px
+  same    lead: veneer 0px 16px | bootstrap 0px 16px
+  same    form-text: veneer 4px 0px | bootstrap 4px 0px
+  same    dd-p: veneer 0px 16px | bootstrap 0px 16px
+  same    list-group-flush: veneer 0px 0px | bootstrap 0px 0px
+  same    ol-nested: veneer 0px 16px | bootstrap 0px 16px
+  DIFFERS ol-inner: veneer 0px 16px | bootstrap 0px 0px
+  same    ul-nested: veneer 0px 16px | bootstrap 0px 16px
+  DIFFERS ul-inner: veneer 0px 16px | bootstrap 0px 0px
