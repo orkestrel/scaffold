@@ -1,0 +1,20 @@
+// IMPORTANT-PROBE: does `@at-root (without: layer)` lift an important declaration out of its layer
+// while keeping its selector, its media query, and its source position?
+@layer reset, utilities;
+@layer utilities {
+  .d-flex {
+    --local: 1;
+    @at-root (without: layer) {
+      & { display: flex !important; }
+    }
+  }
+  @media (min-width: 992px) {
+    .d-lg-none {
+      --local: 2;
+      @at-root (without: layer) {
+        & { display: none !important; }
+      }
+    }
+  }
+  .after { color: red; }
+}

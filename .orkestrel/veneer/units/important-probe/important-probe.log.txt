@@ -1,0 +1,29 @@
+--- sass expanded
+@layer reset, utilities;
+@layer utilities {
+  .d-flex {
+    --local: 1;
+  }
+}
+.d-flex {
+  display: flex !important;
+}
+@layer utilities {
+  @media (min-width: 992px) {
+    .d-lg-none {
+      --local: 2;
+    }
+  }
+}
+@media (min-width: 992px) {
+  .d-lg-none {
+    display: none !important;
+  }
+}
+@layer utilities {
+  .after {
+    color: red;
+  }
+}
+--- lightningcss minified
+@layer reset;@layer utilities{.d-flex{--local:1}@media (width>=992px){.d-lg-none{--local:2}}.after{color:red}}.d-flex{display:flex!important}@media (width>=992px){.d-lg-none{display:none!important}}
