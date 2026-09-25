@@ -604,3 +604,26 @@ on any element. The contract is that placement rule, stated in § Customization 
 every consumer. Re-declaring would repeat the theme scope's declarations across the component partials and add a second
 home for each alias, and no tenet asks for it: the tenet asks that tokens be a supported, tested contract, and a stated
 placement rule with its control case is one.
+
+## D51a — D51 amended: a mode scope re-declares only the aliases that follow the mode (the Orchestrator, 2026-09-25)
+
+TOKEN-PROOFS round 2 stopped on D51 (`units/token-proofs-report-2.md`) and measured the split on the built cascade
+(`tkp-instruments/r2/logs/tkp-2-probe-scopes.log.txt`, `tkp-2-probe-mode-scope.log.txt`). The `theme-tokens` mixin,
+emitted at `:root` and at each `[data-bs-theme]` scope, declares the aliases whose value follows the mode: the body,
+emphasis, secondary, and tertiary colours and backgrounds, the border colour, the heading, link, code, and highlight
+colours, the primary and secondary fills, every role's subtle, border-subtle, and text-emphasis tier, the focus ring
+colour, and the form pair. A second `:root` block declares the rest once: the fixed palette and greys, the other
+roles' base fills and triplets, the fonts, the radii, the shadows, the border width and style, the breakpoints, and
+the link decoration. The split follows Bootstrap 5.3.8, whose `[data-bs-theme=dark]` block re-declares the
+mode-dependent aliases and leaves the fixed ones on `:root`; Veneer's mode scopes also re-declare the primary and
+secondary fills and the focus ring colour, which Elements retunes by mode and Bootstrap's dark block does not
+(the Orchestrator's reading of the installed `node_modules/bootstrap/dist/css/bootstrap.css`, 2026-09-25). The split
+stays.
+
+D51's placement rule therefore reads in full:
+- a canonical token overridden on `:root` moves every tier and `--bs-*` alias derived from it;
+- overridden on a `[data-bs-theme]` element, it moves the tiers and aliases that scope re-declares, and the root-only
+  aliases keep their `:root` value;
+- overridden on any other element, it moves only the rules that read the token themselves;
+- a rule that reads a `--bs-*` alias follows that alias set on any element.
+

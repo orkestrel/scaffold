@@ -1,0 +1,80 @@
+plant placement-mode-invalid-feedback: src/styles/_mixins.scss
+old: '--bs-form-invalid-color: var(--vn-form-invalid);' (occurrence 1 of 1)
+new: '--bs-form-invalid-color: oklab(0.4159 0.131299 0.0563228);'
+
+$ git diff -U1 -- src/styles/_mixins.scss
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 5c42799..df63621 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -527,3 +527,3 @@
+ 	--bs-form-valid-border-color: var(--vn-form-valid);
+-	--bs-form-invalid-color: var(--vn-form-invalid);
++	--bs-form-invalid-color: oklab(0.4159 0.131299 0.0563228);
+ 	--bs-form-invalid-border-color: var(--vn-form-invalid);
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.89 kB │ gzip: 34.31 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.67s
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'holds the validation paint on the rest color under a plain ancestor'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (45 tests | 1 failed | 44 skipped) 62ms
+     × holds the validation paint on the rest color under a plain ancestor that overrides the form tokens, and moves it under a mode scope that does 60ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:837:2 > ancestor token overrides > holds the validation paint on the rest color under a plain ancestor that overrides the form tokens, and moves it under a mode scope that does
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/tokens.test.ts:891:84
+    889|   expect(matchesColor(readStyle(modeValidFeedback, 'color'), 'rgb(200,…
+    890|   expect(matchesColor(readStyle(modeInvalid, 'border-top-color'), 'rgb…
+    891|   expect(matchesColor(readStyle(modeInvalidFeedback, 'color'), 'rgb(20…
+       |                                                                                    ^
+    892|  })
+    893|  it('recolors the border and the feedback of a valid control inside a …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 skipped (45)
+   Start at  04:54:37
+   Duration  12.65s (transform 0ms, setup 1.36s, import 147ms, tests 62ms, environment 0ms)
+
+exit=1
+
+$ cat /proc/loadavg
+2.34 5.71 10.94 5/264 20097
+exit=0
+
+$ cmp /home/user/veneer-tkp/tmp/units/tkp-2-backup/placement-mode-invalid-feedback.scss src/styles/_mixins.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src; echo "src-diffstat-lines=$(git diff --stat -- src | wc -l)"
+src-diffstat-lines=0
+exit=0
+

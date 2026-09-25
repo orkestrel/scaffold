@@ -1,0 +1,80 @@
+plant placement-plain-valid-feedback: src/styles/components/_validation.scss
+old: 'color: var(--bs-form-#{$state}-color);' (occurrence 1 of 3)
+new: "@if $state == 'valid' { color: var(--vn-form-valid); } @else { color: var(--bs-form-#{$state}-color); }"
+
+$ git diff -U1 -- src/styles/components/_validation.scss
+diff --git a/src/styles/components/_validation.scss b/src/styles/components/_validation.scss
+index 28710cd..9aa7132 100644
+--- a/src/styles/components/_validation.scss
++++ b/src/styles/components/_validation.scss
+@@ -18,3 +18,3 @@ $states: ('valid' 'success' 3), ('invalid' 'danger' 4);
+ 			font-size: 0.875em;
+-			color: var(--bs-form-#{$state}-color);
++			@if $state == 'valid' { color: var(--vn-form-valid); } @else { color: var(--bs-form-#{$state}-color); }
+ 		}
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.86 kB │ gzip: 34.30 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.81s
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'holds the validation paint on the rest color under a plain ancestor'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (45 tests | 1 failed | 44 skipped) 68ms
+     × holds the validation paint on the rest color under a plain ancestor that overrides the form tokens, and moves it under a mode scope that does 66ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:837:2 > ancestor token overrides > holds the validation paint on the rest color under a plain ancestor that overrides the form tokens, and moves it under a mode scope that does
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/tokens.test.ts:881:4
+    879|   expect(
+    880|    matchesColor(readStyle(plainValidFeedback, 'color'), 'oklab(0.4313 …
+    881|   ).toBe(true)
+       |    ^
+    882|   expect(
+    883|    matchesColor(readStyle(plainInvalid, 'border-top-color'), 'oklab(0.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 skipped (45)
+   Start at  04:53:15
+   Duration  10.11s (transform 0ms, setup 1.19s, import 157ms, tests 68ms, environment 0ms)
+
+exit=1
+
+$ cat /proc/loadavg
+4.23 6.90 11.79 3/278 17352
+exit=0
+
+$ cmp /home/user/veneer-tkp/tmp/units/tkp-2-backup/placement-plain-valid-feedback.scss src/styles/components/_validation.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src; echo "src-diffstat-lines=$(git diff --stat -- src | wc -l)"
+src-diffstat-lines=0
+exit=0
+

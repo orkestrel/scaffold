@@ -1,0 +1,18 @@
+command: npm run test:distribution -- -t renders a Vue SFC through the generated browser setup project
+loadavg before: 3.07 4.87 10.07 3/393 22507
+
+> @orkestrel/scaffold@0.0.77 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution -t renders a Vue SFC through the generated browser setup project
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+-------·-
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 8 skipped (9)
+   Start at  04:56:33
+   Duration  46.54s (transform 609ms, setup 359ms, import 1.09s, tests 44.89s, environment 0ms)
+
+exit=0
+loadavg after: 4.34 4.98 9.86 2/319 23560

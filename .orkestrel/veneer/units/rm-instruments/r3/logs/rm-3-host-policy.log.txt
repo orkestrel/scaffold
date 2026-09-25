@@ -1,0 +1,18 @@
+command: npm run test:policy
+loadavg before: 2.73 4.83 10.09 7/387 22319
+
+> @orkestrel/scaffold@0.0.77 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+··············································································································
+
+ Test Files  1 passed (1)
+      Tests  110 passed (110)
+   Start at  04:56:28
+   Duration  3.44s (transform 729ms, setup 570ms, import 529ms, tests 2.18s, environment 0ms)
+
+exit=0
+loadavg after: 3.07 4.87 10.07 5/393 22506
