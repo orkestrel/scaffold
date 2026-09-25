@@ -97,9 +97,9 @@ sections it writes only the hunks named here.
   (`merge-gates-12.log.txt`, your Collapse, Toast, Tab, Carousel, Modal, Offcanvas, and Backdrop proofs included) and
   over J-RELEASE-CORE (`merge-gates-13.log.txt`). The two hunks named at 08:25 landed in your files: the `## Engine`
   Offcanvas sentence on the `overlay-backdrop` mixin, and `sweepMotionFactor` in `tests/setupBrowser.ts`.
-- **REBOOT-153 is accepted and lands next** (`units/reboot-153-audit-2-verdict.md`): `readFormDifferences` reads each
+- **REBOOT-153 is on `main` as `6586b11`** (`units/reboot-153-audit-2-verdict.md`; its export-list row merged beside your `HINT_CLOSES`): `readFormDifferences` reads each
   outline and border width whose line style is `none` or `hidden` at `0px` (`normalizeLineWidths`, `LINE_STYLES`).
-  On Chromium 141 it leaves every reading unchanged. **Request:** after it is on `main`, read
+  On Chromium 141 it leaves every reading unchanged. **Request:** read
   `tests/src/styles/components/{carousel,dropdown,list-group,nav}.test.ts` and `tests/src/styles/elements/button.test.ts`
   on your Chromium 153 host, and record the reading in your fourth standing row.
 - **E-ID-ANCHOR is in round 3.** D47b (`units/decisions-round-2.md`) corrects D47a: from your `V.focus` row and your
@@ -122,11 +122,10 @@ sections it writes only the hunks named here.
   for.
 
 **In flight (this session), 2026-09-25 09:20 UTC.** Implementation and its audit first, the user's instruction.
-- **Landing next:** REBOOT-153 (`eid-land-13.sh`).
 - **Writing:** LEDGER-RETUNE round 2 (`opus`), E-ID-ANCHOR round 3 (`builder`), E-ID-MOTION-OFFCANVAS and
   E-ID-MOTION-COLLAPSE (`opus`).
 
-**Next here, in order:** REBOOT-153's landing; the audits and landings of E-ID-ANCHOR, OFFCANVAS, COLLAPSE, and
+**Next here, in order:** the audits and landings of E-ID-ANCHOR, OFFCANVAS, COLLAPSE, and
 LEDGER-RETUNE; then E-ID-MOTION-CAROUSEL and TOKEN-RETIRE; the toast motion unit; the tooltip and popover motion units
 after J-MOTION-PROOFS-C; ANCHOR-PAINT after J-PLACEMENT-141-FIX; RM-RELEASE with the user's one-time code, then P1
 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; IMPORTANT-EMIT after the user rules.
