@@ -1,0 +1,536 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3afa3ac..82ebe93 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7185,21 +7185,20 @@ The table lists the durations and easings, the focus ring, the validation pair,
+ ladder, and the stacking ladder. Each row gives its value, its `Source` cell, and the `--bs-*`
+ variables it answers, and a row whose dark mode differs writes the dark reading into its own cell.
+ 
+-| Token                                                    | Value                                                                            | Source                                                                                                                                              | Alias                                                       |
+-| -------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+-| `--vn-motion-feedback`, `--vn-motion-panel`              | `calc(150ms * var(--vn-factor-motion))`, `calc(250ms * var(--vn-factor-motion))` | `elements` — the motion table's durations                                                                                                           | none                                                        |
+-| `--vn-ease-standard`, `--vn-ease-out`, `--vn-ease-panel` | `ease`, `ease-out`, `cubic-bezier(0.32, 0.72, 0, 1)`                             | `elements` — the motion table's easings                                                                                                             | none                                                        |
+-| `--vn-focus-width`, `--vn-focus-opacity`                 | `0.1875rem`, `0.45`                                                              | `elements` — the focus-visible ring                                                                                                                 | `--bs-focus-ring-width`, `-opacity`                         |
+-| `--vn-focus-color`                                       | `color-mix(in oklab, var(--vn-color-primary-base) 45%, transparent)`             | `derived` — reproduces the calibrated ring: `oklab(0.48 -0.0266547 -0.253603 / 0.45)` in light and `oklab(0.7 -0.0902723 -0.119795 / 0.45)` in dark | `--bs-focus-ring-color`                                     |
+-| `--vn-focus-highlight`, `--vn-focus-reset`               | `Highlight`, `none`                                                              | `derived` — system outline and shadow reset for the shared focus mixin                                                                              | none                                                        |
+-| `--vn-form-valid`                                        | `var(--vn-color-success-emphasis)`                                               | `derived` — the success on-canvas tier in each mode, so the state text on the page clears 4.5 to 1                                                  | `--bs-form-valid-color`, `--bs-form-valid-border-color`     |
+-| `--vn-form-invalid`                                      | `var(--vn-color-danger-emphasis)`                                                | `derived` — the danger on-canvas tier in each mode, so the state text on the page clears 4.5 to 1                                                   | `--bs-form-invalid-color`, `--bs-form-invalid-border-color` |
+-| `--vn-breakpoint-xs` through `--vn-breakpoint-xxl`       | `0`, `576px`, `768px`, `992px`, `1200px`, `1400px`                               | `bootstrap` — the documented wire vocabulary                                                                                                        | `--bs-breakpoint-xs` … `-xxl`                               |
+-| `--vn-stack-dropdown`, `-sticky`, `-fixed`               | `1000`, `1020`, `1030`                                                           | `bootstrap` — retained from `$zindex-dropdown`, `$zindex-sticky`, and `$zindex-fixed`                                                               | `--bs-dropdown-zindex`; no alias on the other rungs         |
+-| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | `--bs-toast-zindex`                                         |
+-| `--vn-stack-dialog-backdrop`, `-dialog-base`             | `1050`, `1055`                                                                   | `bootstrap` — retained from `$zindex-modal-backdrop` and `$zindex-modal`                                                                            | `--bs-backdrop-zindex`, `--bs-modal-zindex`                 |
+-| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | `--bs-popover-zindex`, `--bs-tooltip-zindex`                |
+-| `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                   | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | the backdrop `z-index` literal, `--bs-offcanvas-zindex`     |
++| Token                                                    | Value                                                                            | Source                                                                                                                                              | Alias                                                             |
++| -------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
++| `--vn-motion-feedback`, `--vn-motion-panel`              | `calc(150ms * var(--vn-factor-motion))`, `calc(250ms * var(--vn-factor-motion))` | `elements` — the motion table's durations                                                                                                           | none                                                              |
++| `--vn-ease-standard`, `--vn-ease-out`, `--vn-ease-panel` | `ease`, `ease-out`, `cubic-bezier(0.32, 0.72, 0, 1)`                             | `elements` — the motion table's easings                                                                                                             | none                                                              |
++| `--vn-focus-width`, `--vn-focus-opacity`                 | `0.1875rem`, `0.45`                                                              | `elements` — the focus-visible ring                                                                                                                 | `--bs-focus-ring-width`, `-opacity`                               |
++| `--vn-focus-color`                                       | `color-mix(in oklab, var(--vn-color-primary-base) 45%, transparent)`             | `derived` — reproduces the calibrated ring: `oklab(0.48 -0.0266547 -0.253603 / 0.45)` in light and `oklab(0.7 -0.0902723 -0.119795 / 0.45)` in dark | `--bs-focus-ring-color`                                           |
++| `--vn-focus-highlight`, `--vn-focus-reset`               | `Highlight`, `none`                                                              | `derived` — system outline and shadow reset for the shared focus mixin                                                                              | none                                                              |
++| `--vn-form-valid`                                        | `var(--vn-color-success-emphasis)`                                               | `derived` — the success on-canvas tier in each mode, so the state text on the page clears 4.5 to 1                                                  | `--bs-form-valid-color`, `--bs-form-valid-border-color`           |
++| `--vn-form-invalid`                                      | `var(--vn-color-danger-emphasis)`                                                | `derived` — the danger on-canvas tier in each mode, so the state text on the page clears 4.5 to 1                                                   | `--bs-form-invalid-color`, `--bs-form-invalid-border-color`       |
++| `--vn-breakpoint-xs` through `--vn-breakpoint-xxl`       | `0`, `576px`, `768px`, `992px`, `1200px`, `1400px`                               | `bootstrap` — the documented wire vocabulary                                                                                                        | `--bs-breakpoint-xs` … `-xxl`                                     |
++| `--vn-stack-dropdown`, `-sticky`, `-fixed`               | `1000`, `1020`, `1030`                                                           | `bootstrap` — retained from `$zindex-dropdown`, `$zindex-sticky`, and `$zindex-fixed`                                                               | `--bs-dropdown-zindex`; no alias on the other rungs               |
++| `--vn-stack-dialog-backdrop`, `-dialog-base`             | `1050`, `1055`                                                                   | `bootstrap` — retained from `$zindex-modal-backdrop` and `$zindex-modal`                                                                            | `--bs-backdrop-zindex`, `--bs-modal-zindex`                       |
++| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | `--bs-popover-zindex`, `--bs-tooltip-zindex`, `--bs-toast-zindex` |
++| `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                   | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | the backdrop `z-index` literal, `--bs-offcanvas-zindex`           |
+ 
+ Veneer keeps Bootstrap's breakpoint names verbatim because a consumer predicts `--bs-breakpoint-md`
+ from `--vn-breakpoint-md`. The `src/styles/_mixins.scss` partial holds the one Sass source those
+@@ -7358,9 +7357,27 @@ and icon the same way the release does.
+ ### Customization
+ 
+ Override a canonical token in your own unlayered rule. Veneer declares its tokens inside the
+-`@layer theme` block, so an unlayered rule wins, and every tier and every `--bs-*` alias derived
+-from the token you changed follows the override, because each one is an expression over that token.
+-A component rule that paints the release's fixed blue reads `--vn-palette-blue`, or keeps the
++`@layer theme` block, so an unlayered rule wins. Each custom property resolves on the element whose
++rule declares it, from the values that element inherits, and a descendant inherits the resolved
++value. An override therefore reaches every declaration that reads the token on its own element or
++inside it, and no declaration on an element above it; an element inside it that declares the token
++again gives its own subtree that value. The placement decides what follows:
++
++- An override in a `:root` rule reaches every rule, tier, and alias that reads the token, except
++  inside a `[data-bs-theme]` element whose mode scope declares that token again.
++- An override on a `[data-bs-theme]` element reaches the tiers and aliases its mode scope derives
++  from the token, which § Color modes describes, and every rule inside it that reads the token. The
++  aliases only the `:root` selector declares keep their value.
++- An override on any other element reaches the rules and the component aliases inside it that read
++  the token, among them the link colors and decoration, the button state mixes and the disabled
++  button opacity, the heading weight, and the standard easing. The tiers and aliases the `:root`
++  selector and the mode scopes declare above it keep their value.
++- An override of a `--bs-*` alias works the same way: the validation rules follow an override of
++  their aliases on an ancestor, except inside a `[data-bs-theme]` element whose mode scope declares
++  those aliases again.
++
++The `tests/src/styles/tokens.test.ts` proof reads each placement against a shipped consumer or
++alias. A component rule that paints the release's fixed blue reads `--vn-palette-blue`, or keeps the
+ release's literal where its partial writes one, rather than the primary role, so a brand retune
+ leaves that paint where the release puts it; the component's own section names the rule and the
+ published property that moves it.
+@@ -10902,7 +10919,7 @@ identical, and a difference between the sides is bounded by that before it is re
+ difference.
+ 
+ The style proofs bind the cascade to the registry and to the calibration; see
+-[token parity and values](../tests/src/styles/tokens.test.ts),
++[token parity, values, and ancestor overrides](../tests/src/styles/tokens.test.ts),
+ [theme scopes](../tests/src/styles/theme.test.ts),
+ [declaration mixins](../tests/src/styles/mixins.test.ts),
+ [layer order and position independence](../tests/src/styles/index.test.ts),
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 9bc861b..f8ab31e 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -1,5 +1,7 @@
+ import { requireValue } from '@orkestrel/test'
+ import {
++	holdAccessible,
++	hoverAccessible,
+ 	matchesColor,
+ 	parseCSSColor,
+ 	readPixels,
+@@ -7,6 +9,9 @@ import {
+ 	readRules,
+ 	readStyle,
+ 	readToken,
++	releaseMedia,
++	releasePointer,
++	stageMedia,
+ } from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+@@ -674,3 +679,433 @@ describe('content calibration tokens', () => {
+ 		},
+ 	)
+ })
++
++// Each consumer case sets one token on an ancestor and reads a shipped consumer inside it beside a
++// twin outside it: a plain ancestor for a consumer whose rule or component alias reads the token,
++// and a mode scope for the validation rules, whose aliases resolve there. The twin is read first,
++// so a consumer that stops reading the token fails on the overridden reading while the twin's rest
++// reading has already held. The placement cases read where an override reaches: a `--bs-form-*`
++// alias follows its canonical token from a mode scope and not from a plain ancestor, and a rule
++// reading that alias follows it from an ancestor, except inside a mode scope that declares it
++// again. The scope case reads the published `--bs-*` aliases themselves, under a mode scope and
++// under the document element. Every hover and press is read with motion reduced, so no reading
++// lands partway through a transition.
++describe('ancestor token overrides', () => {
++	afterEach(async () => {
++		await releasePointer()
++		await releaseMedia()
++	})
++	it('repaints a link and a link button inside an ancestor that overrides the link color, leaves a twin on the rest color, and leaves a link inside a nested mode scope on the mode color', () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.link.base}: rgb(200, 30, 40)">` +
++				'<a id="inside-link" href="#inside-link">Inside link</a>' +
++				'<button id="inside-button" type="button" class="btn btn-link">Inside button</button>' +
++				'<div data-bs-theme="light"><a id="nested-link" href="#nested-link">Nested link</a></div>' +
++				'</div>' +
++				'<a id="twin-link" href="#twin-link">Twin link</a>' +
++				'<button id="twin-button" type="button" class="btn btn-link">Twin button</button>' +
++				'<div data-bs-theme="light"><a id="mode-link" href="#mode-link">Mode link</a></div>',
++		)
++		const insideLink = requireValue(host.querySelector('#inside-link'), 'No inside link')
++		const insideButton = requireValue(host.querySelector('#inside-button'), 'No inside button')
++		const nestedLink = requireValue(host.querySelector('#nested-link'), 'No nested link')
++		const twinLink = requireValue(host.querySelector('#twin-link'), 'No twin link')
++		const twinButton = requireValue(host.querySelector('#twin-button'), 'No twin button')
++		const modeLink = requireValue(host.querySelector('#mode-link'), 'No mode link')
++		expect(
++			matchesColor(readStyle(twinLink, 'color'), 'color(srgb 0.0510206 0.212902 0.672726)'),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(twinButton, 'color'), 'color(srgb 0.0510206 0.212902 0.672726)'),
++		).toBe(true)
++		expect(matchesColor(readStyle(insideLink, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++		expect(matchesColor(readStyle(insideButton, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++		const mode = readStyle(modeLink, 'color')
++		expect(matchesColor(mode, 'rgb(200, 30, 40)')).toBe(false)
++		expect(readStyle(nestedLink, 'color')).toBe(mode)
++	})
++	it('repaints a hovered link and link button inside an ancestor that overrides the link hover color, and leaves a hovered twin on the rest hover color', async () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.link.hover.base}: rgb(20, 130, 40)">` +
++				'<a id="inside-link" href="#inside-link">Inside link</a>' +
++				'<button id="inside-button" type="button" class="btn btn-link">Inside button</button>' +
++				'</div>' +
++				'<a id="twin-link" href="#twin-link">Twin link</a>' +
++				'<button id="twin-button" type="button" class="btn btn-link">Twin button</button>',
++		)
++		const insideLink = requireValue(host.querySelector('#inside-link'), 'No inside link')
++		const insideButton = requireValue(host.querySelector('#inside-button'), 'No inside button')
++		const twinLink = requireValue(host.querySelector('#twin-link'), 'No twin link')
++		const twinButton = requireValue(host.querySelector('#twin-button'), 'No twin button')
++		await stageMedia({ motion: false })
++		await hoverAccessible('link', 'Twin link')
++		expect(twinLink.matches(':hover')).toBe(true)
++		expect(
++			matchesColor(readStyle(twinLink, 'color'), 'color(srgb 0.0331634 0.138386 0.437272)'),
++		).toBe(true)
++		await hoverAccessible('button', 'Twin button')
++		expect(twinButton.matches(':hover')).toBe(true)
++		expect(
++			matchesColor(readStyle(twinButton, 'color'), 'color(srgb 0.0331634 0.138386 0.437272)'),
++		).toBe(true)
++		await hoverAccessible('link', 'Inside link')
++		expect(insideLink.matches(':hover')).toBe(true)
++		expect(matchesColor(readStyle(insideLink, 'color'), 'rgb(20, 130, 40)')).toBe(true)
++		await hoverAccessible('button', 'Inside button')
++		expect(insideButton.matches(':hover')).toBe(true)
++		expect(matchesColor(readStyle(insideButton, 'color'), 'rgb(20, 130, 40)')).toBe(true)
++	})
++	it('redecorates a link and a link button at rest and under hover inside an ancestor that overrides the link decoration, and leaves a twin underlined', async () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.link.decoration}: overline">` +
++				'<a id="inside-link" href="#inside-link">Inside link</a>' +
++				'<button id="inside-button" type="button" class="btn btn-link">Inside button</button>' +
++				'</div>' +
++				'<a id="twin-link" href="#twin-link">Twin link</a>' +
++				'<button id="twin-button" type="button" class="btn btn-link">Twin button</button>',
++		)
++		const insideLink = requireValue(host.querySelector('#inside-link'), 'No inside link')
++		const insideButton = requireValue(host.querySelector('#inside-button'), 'No inside button')
++		const twinLink = requireValue(host.querySelector('#twin-link'), 'No twin link')
++		const twinButton = requireValue(host.querySelector('#twin-button'), 'No twin button')
++		expect(readStyle(twinLink, 'text-decoration-line')).toBe('underline')
++		expect(readStyle(twinButton, 'text-decoration-line')).toBe('underline')
++		expect(readStyle(insideLink, 'text-decoration-line')).toBe('overline')
++		expect(readStyle(insideButton, 'text-decoration-line')).toBe('overline')
++		await stageMedia({ motion: false })
++		await hoverAccessible('link', 'Twin link')
++		expect(twinLink.matches(':hover')).toBe(true)
++		expect(readStyle(twinLink, 'text-decoration-line')).toBe('underline')
++		await hoverAccessible('button', 'Twin button')
++		expect(twinButton.matches(':hover')).toBe(true)
++		expect(readStyle(twinButton, 'text-decoration-line')).toBe('underline')
++		await hoverAccessible('link', 'Inside link')
++		expect(insideLink.matches(':hover')).toBe(true)
++		expect(readStyle(insideLink, 'text-decoration-line')).toBe('overline')
++		await hoverAccessible('button', 'Inside button')
++		expect(insideButton.matches(':hover')).toBe(true)
++		expect(readStyle(insideButton, 'text-decoration-line')).toBe('overline')
++	})
++	// The `--bs-form-*` aliases the validation rules read are declared at every mode scope and
++	// resolve there, so an override of the canonical token reaches them from a mode scope.
++	it('recolors the border and the feedback of a valid control inside a mode scope that overrides the valid color, and leaves a twin on the rest color', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="light" style="${TOKEN_NAMES.form.valid}: rgb(200, 30, 40)">` +
++				'<input id="inside-control" class="form-control is-valid">' +
++				'<div id="inside-feedback" class="valid-feedback">Inside feedback</div>' +
++				'</div>' +
++				'<input id="twin-control" class="form-control is-valid">' +
++				'<div id="twin-feedback" class="valid-feedback">Twin feedback</div>',
++		)
++		const insideControl = requireValue(host.querySelector('#inside-control'), 'No inside control')
++		const insideFeedback = requireValue(
++			host.querySelector('#inside-feedback'),
++			'No inside feedback',
++		)
++		const twinControl = requireValue(host.querySelector('#twin-control'), 'No twin control')
++		const twinFeedback = requireValue(host.querySelector('#twin-feedback'), 'No twin feedback')
++		expect(
++			matchesColor(
++				readStyle(twinControl, 'border-top-color'),
++				'oklab(0.4313 -0.0943551 0.0412221)',
++			),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(twinFeedback, 'color'), 'oklab(0.4313 -0.0943551 0.0412221)'),
++		).toBe(true)
++		expect(matchesColor(readStyle(insideControl, 'border-top-color'), 'rgb(200, 30, 40)')).toBe(
++			true,
++		)
++		expect(matchesColor(readStyle(insideFeedback, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++	})
++	it('recolors the border and the feedback of an invalid control inside a mode scope that overrides the invalid color, and leaves a twin on the rest color', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="light" style="${TOKEN_NAMES.form.invalid}: rgb(20, 130, 40)">` +
++				'<input id="inside-control" class="form-control is-invalid">' +
++				'<div id="inside-feedback" class="invalid-feedback">Inside feedback</div>' +
++				'</div>' +
++				'<input id="twin-control" class="form-control is-invalid">' +
++				'<div id="twin-feedback" class="invalid-feedback">Twin feedback</div>',
++		)
++		const insideControl = requireValue(host.querySelector('#inside-control'), 'No inside control')
++		const insideFeedback = requireValue(
++			host.querySelector('#inside-feedback'),
++			'No inside feedback',
++		)
++		const twinControl = requireValue(host.querySelector('#twin-control'), 'No twin control')
++		const twinFeedback = requireValue(host.querySelector('#twin-feedback'), 'No twin feedback')
++		expect(
++			matchesColor(readStyle(twinControl, 'border-top-color'), 'oklab(0.4159 0.131299 0.0563228)'),
++		).toBe(true)
++		expect(matchesColor(readStyle(twinFeedback, 'color'), 'oklab(0.4159 0.131299 0.0563228)')).toBe(
++			true,
++		)
++		expect(matchesColor(readStyle(insideControl, 'border-top-color'), 'rgb(20, 130, 40)')).toBe(
++			true,
++		)
++		expect(matchesColor(readStyle(insideFeedback, 'color'), 'rgb(20, 130, 40)')).toBe(true)
++	})
++	it('holds the validation paint on the rest color under a plain ancestor that overrides the form tokens, and moves it under a mode scope that does', () => {
++		const override = `${TOKEN_NAMES.form.valid}: rgb(200, 30, 40); ${TOKEN_NAMES.form.invalid}: rgb(20, 130, 40)`
++		const host = scene.mount(
++			`<div style="${override}">` +
++				'<input id="plain-valid" class="form-control is-valid">' +
++				'<div id="plain-valid-feedback" class="valid-feedback">Plain valid feedback</div>' +
++				'<input id="plain-invalid" class="form-control is-invalid">' +
++				'<div id="plain-invalid-feedback" class="invalid-feedback">Plain invalid feedback</div>' +
++				'</div>' +
++				`<div data-bs-theme="light" style="${override}">` +
++				'<input id="mode-valid" class="form-control is-valid">' +
++				'<div id="mode-valid-feedback" class="valid-feedback">Mode valid feedback</div>' +
++				'<input id="mode-invalid" class="form-control is-invalid">' +
++				'<div id="mode-invalid-feedback" class="invalid-feedback">Mode invalid feedback</div>' +
++				'</div>',
++		)
++		const plainValid = requireValue(host.querySelector('#plain-valid'), 'No plain valid control')
++		const plainValidFeedback = requireValue(
++			host.querySelector('#plain-valid-feedback'),
++			'No plain valid feedback',
++		)
++		const plainInvalid = requireValue(
++			host.querySelector('#plain-invalid'),
++			'No plain invalid control',
++		)
++		const plainInvalidFeedback = requireValue(
++			host.querySelector('#plain-invalid-feedback'),
++			'No plain invalid feedback',
++		)
++		const modeValid = requireValue(host.querySelector('#mode-valid'), 'No mode valid control')
++		const modeValidFeedback = requireValue(
++			host.querySelector('#mode-valid-feedback'),
++			'No mode valid feedback',
++		)
++		const modeInvalid = requireValue(host.querySelector('#mode-invalid'), 'No mode invalid control')
++		const modeInvalidFeedback = requireValue(
++			host.querySelector('#mode-invalid-feedback'),
++			'No mode invalid feedback',
++		)
++		expect(
++			matchesColor(readStyle(plainValid, 'border-top-color'), 'oklab(0.4313 -0.0943551 0.0412221)'),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(plainValidFeedback, 'color'), 'oklab(0.4313 -0.0943551 0.0412221)'),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(plainInvalid, 'border-top-color'), 'oklab(0.4159 0.131299 0.0563228)'),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(plainInvalidFeedback, 'color'), 'oklab(0.4159 0.131299 0.0563228)'),
++		).toBe(true)
++		expect(matchesColor(readStyle(modeValid, 'border-top-color'), 'rgb(200, 30, 40)')).toBe(true)
++		expect(matchesColor(readStyle(modeValidFeedback, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++		expect(matchesColor(readStyle(modeInvalid, 'border-top-color'), 'rgb(20, 130, 40)')).toBe(true)
++		expect(matchesColor(readStyle(modeInvalidFeedback, 'color'), 'rgb(20, 130, 40)')).toBe(true)
++	})
++	it('recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases, leaves a twin on the rest color, and leaves a control inside a nested mode scope on the mode color', () => {
++		const host = scene.mount(
++			'<div style="--bs-form-valid-border-color: rgb(20, 130, 40); --bs-form-valid-color: rgb(200, 30, 40)">' +
++				'<input id="inside-control" class="form-control is-valid">' +
++				'<div id="inside-feedback" class="valid-feedback">Inside feedback</div>' +
++				'<div data-bs-theme="light">' +
++				'<input id="nested-control" class="form-control is-valid">' +
++				'<div id="nested-feedback" class="valid-feedback">Nested feedback</div>' +
++				'</div>' +
++				'</div>' +
++				'<input id="twin-control" class="form-control is-valid">' +
++				'<div id="twin-feedback" class="valid-feedback">Twin feedback</div>' +
++				'<div data-bs-theme="light">' +
++				'<input id="mode-control" class="form-control is-valid">' +
++				'<div id="mode-feedback" class="valid-feedback">Mode feedback</div>' +
++				'</div>',
++		)
++		const insideControl = requireValue(host.querySelector('#inside-control'), 'No inside control')
++		const insideFeedback = requireValue(
++			host.querySelector('#inside-feedback'),
++			'No inside feedback',
++		)
++		const nestedControl = requireValue(host.querySelector('#nested-control'), 'No nested control')
++		const nestedFeedback = requireValue(
++			host.querySelector('#nested-feedback'),
++			'No nested feedback',
++		)
++		const twinControl = requireValue(host.querySelector('#twin-control'), 'No twin control')
++		const twinFeedback = requireValue(host.querySelector('#twin-feedback'), 'No twin feedback')
++		const modeControl = requireValue(host.querySelector('#mode-control'), 'No mode control')
++		const modeFeedback = requireValue(host.querySelector('#mode-feedback'), 'No mode feedback')
++		expect(
++			matchesColor(
++				readStyle(twinControl, 'border-top-color'),
++				'oklab(0.4313 -0.0943551 0.0412221)',
++			),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(twinFeedback, 'color'), 'oklab(0.4313 -0.0943551 0.0412221)'),
++		).toBe(true)
++		expect(matchesColor(readStyle(insideControl, 'border-top-color'), 'rgb(20, 130, 40)')).toBe(
++			true,
++		)
++		expect(matchesColor(readStyle(insideFeedback, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++		const border = readStyle(modeControl, 'border-top-color')
++		const feedback = readStyle(modeFeedback, 'color')
++		expect(matchesColor(border, 'rgb(20, 130, 40)')).toBe(false)
++		expect(matchesColor(feedback, 'rgb(200, 30, 40)')).toBe(false)
++		expect(readStyle(nestedControl, 'border-top-color')).toBe(border)
++		expect(readStyle(nestedFeedback, 'color')).toBe(feedback)
++	})
++	// A mode scope re-declares the aliases whose value follows the mode, and a second `:root` block
++	// declares the fixed ones once, so a mode-scope override reaches the mode aliases and not the
++	// root-only ones. A document-element override reaches both, except inside a mode scope that
++	// re-declares the token itself.
++	it('moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, and moves all of them from the document element outside a mode scope that re-declares the token', () => {
++		const override = [
++			`${TOKEN_NAMES.color.primary.base}: rgb(4, 5, 6)`,
++			`${TOKEN_NAMES.color.success.base}: rgb(1, 2, 3)`,
++			`${TOKEN_NAMES.radius.base}: 20px`,
++		].join('; ')
++		const host = scene.mount(
++			`<div data-bs-theme="light" style="${override}"><div id="island"></div></div>` +
++				'<div data-bs-theme="light"><div id="held"></div></div>' +
++				'<div id="outside"></div>',
++		)
++		const island = requireValue(host.querySelector('#island'), 'No island specimen')
++		const held = requireValue(host.querySelector('#held'), 'No held specimen')
++		const outside = requireValue(host.querySelector('#outside'), 'No outside specimen')
++		const primary = readToken(held, '--bs-primary')
++		const success = readToken(document.documentElement, '--bs-success')
++		const radius = readToken(document.documentElement, '--bs-border-radius')
++		expect(success).not.toBe('rgb(1, 2, 3)')
++		expect(radius).not.toBe('20px')
++		expect(primary).not.toBe('rgb(4, 5, 6)')
++		expect(readToken(island, '--bs-primary')).toBe('rgb(4, 5, 6)')
++		expect(readToken(island, '--bs-success')).toBe(success)
++		expect(readToken(island, '--bs-border-radius')).toBe(radius)
++		document.documentElement.style.setProperty(TOKEN_NAMES.color.primary.base, 'rgb(4, 5, 6)')
++		document.documentElement.style.setProperty(TOKEN_NAMES.color.success.base, 'rgb(1, 2, 3)')
++		document.documentElement.style.setProperty(TOKEN_NAMES.radius.base, '20px')
++		try {
++			expect(readToken(outside, '--bs-primary')).toBe('rgb(4, 5, 6)')
++			expect(readToken(outside, '--bs-success')).toBe('rgb(1, 2, 3)')
++			expect(readToken(outside, '--bs-border-radius')).toBe('20px')
++			expect(readToken(held, '--bs-primary')).toBe(primary)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.color.primary.base)
++			document.documentElement.style.removeProperty(TOKEN_NAMES.color.success.base)
++			document.documentElement.style.removeProperty(TOKEN_NAMES.radius.base)
++		}
++	})
++	it('deepens the hover fill of a button inside an ancestor that overrides the hover mix, and leaves a hovered twin on the rest mix', async () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.state.hover}: 50%">` +
++				'<button id="inside" type="button" class="btn">Inside button</button>' +
++				'</div>' +
++				'<button id="twin" type="button" class="btn">Twin button</button>',
++		)
++		const inside = requireValue(host.querySelector('#inside'), 'No inside button')
++		const twin = requireValue(host.querySelector('#twin'), 'No twin button')
++		await stageMedia({ motion: false })
++		await hoverAccessible('button', 'Twin button')
++		expect(twin.matches(':hover')).toBe(true)
++		expect(
++			matchesColor(
++				readStyle(twin, 'background-color'),
++				'color(srgb 0.00742457 0.0232852 0.0925134 / 0.12)',
++			),
++		).toBe(true)
++		await hoverAccessible('button', 'Inside button')
++		expect(inside.matches(':hover')).toBe(true)
++		expect(
++			matchesColor(
++				readStyle(inside, 'background-color'),
++				'color(srgb 0.00742457 0.0232852 0.0925134 / 0.5)',
++			),
++		).toBe(true)
++	})
++	it('deepens the pressed fill of a button inside an ancestor that overrides the active mix, and leaves a pressed twin on the rest mix', async () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.state.active}: 60%">` +
++				'<button id="inside" type="button" class="btn">Inside button</button>' +
++				'</div>' +
++				'<button id="twin" type="button" class="btn">Twin button</button>',
++		)
++		const inside = requireValue(host.querySelector('#inside'), 'No inside button')
++		const twin = requireValue(host.querySelector('#twin'), 'No twin button')
++		await stageMedia({ motion: false })
++		await holdAccessible('button', 'Twin button')
++		expect(twin.matches(':active')).toBe(true)
++		expect(
++			matchesColor(
++				readStyle(twin, 'background-color'),
++				'color(srgb 0.00742457 0.0232852 0.0925134 / 0.22)',
++			),
++		).toBe(true)
++		await releasePointer()
++		await holdAccessible('button', 'Inside button')
++		expect(inside.matches(':active')).toBe(true)
++		expect(
++			matchesColor(
++				readStyle(inside, 'background-color'),
++				'color(srgb 0.00742457 0.0232852 0.0925134 / 0.6)',
++			),
++		).toBe(true)
++	})
++	it('retints the hover fill of a button inside an ancestor that overrides the state mixer, and leaves a hovered twin on the rest mixer', async () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.state.mixer}: rgb(255, 0, 0)">` +
++				'<button id="inside" type="button" class="btn">Inside button</button>' +
++				'</div>' +
++				'<button id="twin" type="button" class="btn">Twin button</button>',
++		)
++		const inside = requireValue(host.querySelector('#inside'), 'No inside button')
++		const twin = requireValue(host.querySelector('#twin'), 'No twin button')
++		await stageMedia({ motion: false })
++		await hoverAccessible('button', 'Twin button')
++		expect(twin.matches(':hover')).toBe(true)
++		expect(
++			matchesColor(
++				readStyle(twin, 'background-color'),
++				'color(srgb 0.00742457 0.0232852 0.0925134 / 0.12)',
++			),
++		).toBe(true)
++		await hoverAccessible('button', 'Inside button')
++		expect(inside.matches(':hover')).toBe(true)
++		expect(matchesColor(readStyle(inside, 'background-color'), 'rgb(255 0 0 / 0.12)')).toBe(true)
++	})
++	it('fades a disabled button inside an ancestor that overrides the button opacity, and leaves a disabled twin at the rest opacity', () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.button.opacity}: 0.3">` +
++				'<button id="inside" type="button" class="btn" disabled>Inside button</button>' +
++				'</div>' +
++				'<button id="twin" type="button" class="btn" disabled>Twin button</button>',
++		)
++		const inside = requireValue(host.querySelector('#inside'), 'No inside button')
++		const twin = requireValue(host.querySelector('#twin'), 'No twin button')
++		expect(readStyle(twin, 'opacity')).toBe('0.65')
++		expect(readStyle(inside, 'opacity')).toBe('0.3')
++	})
++	it('reweights a description term inside an ancestor that overrides the heading weight, and leaves a twin at the rest weight', () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.weight.heading}: 800">` +
++				'<dl><dt id="inside">Inside term</dt><dd>Inside detail</dd></dl>' +
++				'</div>' +
++				'<dl><dt id="twin">Twin term</dt><dd>Twin detail</dd></dl>',
++		)
++		const inside = requireValue(host.querySelector('#inside'), 'No inside term')
++		const twin = requireValue(host.querySelector('#twin'), 'No twin term')
++		expect(readStyle(twin, 'font-weight')).toBe('600')
++		expect(readStyle(inside, 'font-weight')).toBe('800')
++	})
++	it('retimes the transitions of a button inside an ancestor that overrides the standard easing, and leaves a twin on the rest easing', () => {
++		const host = scene.mount(
++			`<div style="${TOKEN_NAMES.ease.standard}: linear">` +
++				'<button id="inside" type="button" class="btn">Inside button</button>' +
++				'</div>' +
++				'<button id="twin" type="button" class="btn">Twin button</button>',
++		)
++		const inside = requireValue(host.querySelector('#inside'), 'No inside button')
++		const twin = requireValue(host.querySelector('#twin'), 'No twin button')
++		expect(readStyle(twin, 'transition-timing-function')).toBe('ease, ease, ease, ease, ease')
++		expect(readStyle(inside, 'transition-timing-function')).toBe(
++			'linear, linear, linear, linear, linear',
++		)
++	})
++})

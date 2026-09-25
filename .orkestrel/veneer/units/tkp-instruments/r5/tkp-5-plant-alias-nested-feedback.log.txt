@@ -1,0 +1,85 @@
+plant alias-nested-feedback: src/styles/_theme.scss
+occurrences of the include line: 1 (expected 1)
+
+$ git diff -- src/styles/_theme.scss
+diff --git a/src/styles/_theme.scss b/src/styles/_theme.scss
+index 8fb2fb5..4c2a86c 100644
+--- a/src/styles/_theme.scss
++++ b/src/styles/_theme.scss
+@@ -19,6 +19,7 @@
+ 		[data-bs-theme='#{$mode}'] {
+ 			color-scheme: $mode;
+ 			@include theme-tokens(tokens.$roles, tokens.$aliased, $values, tokens.$retuned);
++			--bs-form-valid-color: inherit;
+ 		}
+ 	}
+ }
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.84 kB │ gzip: 34.30 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 3.06s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 3.0s of this 3.0s build (98%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (97%, 2.9s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (46 tests | 1 failed | 45 skipped) 54ms
+     × recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases, leaves a twin on the rest color, and leaves a control inside a nested mode scope on the mode color 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:904:2 > ancestor token overrides > recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases, leaves a twin on the rest color, and leaves a control inside a nested mode scope on the mode color
+AssertionError: expected 'rgb(200, 30, 40)' to be 'oklab(0.4313 -0.0943551 0.0412221)' // Object.is equality
+
+Expected: [32m"[7moklab(0.4313 -0.0943551 0.0412221[27m)"[39m
+Received: [31m"[7mrgb(200, 30, 40[27m)"[39m
+
+ ❯ tests/src/styles/tokens.test.ts:953:45
+    951|   expect(matchesColor(feedback, 'rgb(200, 30, 40)')).toBe(false)
+    952|   expect(readStyle(nestedControl, 'border-top-color')).toBe(border)
+    953|   expect(readStyle(nestedFeedback, 'color')).toBe(feedback)
+       |                                             ^
+    954|  })
+    955|  // A mode scope re-declares the aliases whose value follows the mode,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 45 skipped (46)
+   Start at  05:38:52
+   Duration  13.93s (transform 0ms, setup 1.75s, import 267ms, tests 54ms, environment 0ms)
+
+exit=1
+
+$ cat /proc/loadavg
+10.75 5.23 3.90 7/206 6371
+exit=0
+
+$ cmp /home/user/veneer-tkp/tmp/units/tkp-5-backup/_theme-alias-nested-feedback.scss src/styles/_theme.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src; echo "src-diffstat-lines=$(git diff --stat -- src | wc -l)"
+src-diffstat-lines=0
+exit=0
+

@@ -1,0 +1,8 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 21059ms on 2 files using 4 threads.
+exit=0
+tests/src/styles/tokens.test.ts: OK
+guides/veneer.md: OK
+unchanged-exit=0

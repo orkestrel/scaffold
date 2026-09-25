@@ -1,0 +1,6 @@
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+exit=0
+7.83 5.38 4.04 8/347 8213

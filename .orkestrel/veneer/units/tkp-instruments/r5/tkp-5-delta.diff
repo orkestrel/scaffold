@@ -1,0 +1,152 @@
+--- tmp/units/tkp-5-backup/veneer.md	2026-09-25 05:36:04.000293165 +0000
++++ guides/veneer.md	2026-09-25 05:36:11.256990225 +0000
+@@ -7357,20 +7357,24 @@
+ ### Customization
+ 
+ Override a canonical token in your own unlayered rule. Veneer declares its tokens inside the
+-`@layer theme` block, so an unlayered rule wins. The element that carries the override decides
+-what follows it:
++`@layer theme` block, so an unlayered rule wins. Each custom property resolves on the element whose
++rule declares it, from the values that element inherits, and a descendant inherits the resolved
++value. An override therefore reaches every declaration that reads the token on its own element or
++inside it, and no declaration on an element above it; an element inside it that declares the token
++again gives its own subtree that value. The placement decides what follows:
+ 
+-- A rule that reads the token itself follows an override on its own element or on any ancestor.
+-  The link colors and decoration, the button state mixes and the disabled button opacity, the
+-  heading weight, and the standard easing are rules of this kind.
+-- A tier or a `--bs-*` alias resolves on the element whose rule declares it, and a descendant
+-  inherits the resolved value. An override in a `:root` rule moves every tier and alias derived
+-  from the token, except inside a `[data-bs-theme]` element whose mode scope declares that token
+-  again. An override on a `[data-bs-theme]` element moves the tiers and aliases its mode scope
+-  derives from the token, which § Color modes describes. An override on any other element moves
+-  no tier and no alias.
+-- A rule that reads a `--bs-*` alias, as the validation rules do, follows an override of that
+-  alias on its own element or on any ancestor.
++- An override in a `:root` rule reaches every rule, tier, and alias that reads the token, except
++  inside a `[data-bs-theme]` element whose mode scope declares that token again.
++- An override on a `[data-bs-theme]` element reaches the tiers and aliases its mode scope derives
++  from the token, which § Color modes describes, and every rule inside it that reads the token. The
++  aliases only the `:root` selector declares keep their value.
++- An override on any other element reaches the rules and the component aliases inside it that read
++  the token, among them the link colors and decoration, the button state mixes and the disabled
++  button opacity, the heading weight, and the standard easing. The tiers and aliases the `:root`
++  selector and the mode scopes declare above it keep their value.
++- An override of a `--bs-*` alias works the same way: the validation rules follow an override of
++  their aliases on an ancestor, except inside a `[data-bs-theme]` element whose mode scope declares
++  those aliases again.
+ 
+ The `tests/src/styles/tokens.test.ts` proof reads each placement against a shipped consumer or
+ alias. A component rule that paints the release's fixed blue reads `--vn-palette-blue`, or keeps the
+--- tmp/units/tkp-5-backup/tokens.test.ts	2026-09-25 05:36:04.000990391 +0000
++++ tests/src/styles/tokens.test.ts	2026-09-25 05:37:02.317990124 +0000
+@@ -680,12 +680,14 @@
+ 	)
+ })
+ 
+-// Each consumer case sets one token on a plain ancestor and reads a shipped consumer inside it
+-// beside a twin outside it. The twin is read first, so a consumer that stops reading the token
+-// fails on the overridden reading while the twin's rest reading has already held. The placement
+-// cases read where an override reaches: a `--bs-form-*` alias follows its canonical token from a
+-// mode scope and not from a plain ancestor, and a rule reading that alias follows it from any
+-// ancestor. The scope case reads the published `--bs-*` aliases themselves, under a mode scope and
++// Each consumer case sets one token on an ancestor and reads a shipped consumer inside it beside a
++// twin outside it: a plain ancestor for a consumer whose rule or component alias reads the token,
++// and a mode scope for the validation rules, whose aliases resolve there. The twin is read first,
++// so a consumer that stops reading the token fails on the overridden reading while the twin's rest
++// reading has already held. The placement cases read where an override reaches: a `--bs-form-*`
++// alias follows its canonical token from a mode scope and not from a plain ancestor, and a rule
++// reading that alias follows it from an ancestor, except inside a mode scope that declares it
++// again. The scope case reads the published `--bs-*` aliases themselves, under a mode scope and
+ // under the document element. Every hover and press is read with motion reduced, so no reading
+ // lands partway through a transition.
+ describe('ancestor token overrides', () => {
+@@ -693,19 +695,23 @@
+ 		await releasePointer()
+ 		await releaseMedia()
+ 	})
+-	it('repaints a link and a link button inside an ancestor that overrides the link color, and leaves a twin on the rest color', () => {
++	it('repaints a link and a link button inside an ancestor that overrides the link color, leaves a twin on the rest color, and leaves a link inside a nested mode scope on the mode color', () => {
+ 		const host = scene.mount(
+ 			`<div style="${TOKEN_NAMES.link.base}: rgb(200, 30, 40)">` +
+ 				'<a id="inside-link" href="#inside-link">Inside link</a>' +
+ 				'<button id="inside-button" type="button" class="btn btn-link">Inside button</button>' +
++				'<div data-bs-theme="light"><a id="nested-link" href="#nested-link">Nested link</a></div>' +
+ 				'</div>' +
+ 				'<a id="twin-link" href="#twin-link">Twin link</a>' +
+-				'<button id="twin-button" type="button" class="btn btn-link">Twin button</button>',
++				'<button id="twin-button" type="button" class="btn btn-link">Twin button</button>' +
++				'<div data-bs-theme="light"><a id="mode-link" href="#mode-link">Mode link</a></div>',
+ 		)
+ 		const insideLink = requireValue(host.querySelector('#inside-link'), 'No inside link')
+ 		const insideButton = requireValue(host.querySelector('#inside-button'), 'No inside button')
++		const nestedLink = requireValue(host.querySelector('#nested-link'), 'No nested link')
+ 		const twinLink = requireValue(host.querySelector('#twin-link'), 'No twin link')
+ 		const twinButton = requireValue(host.querySelector('#twin-button'), 'No twin button')
++		const modeLink = requireValue(host.querySelector('#mode-link'), 'No mode link')
+ 		expect(
+ 			matchesColor(readStyle(twinLink, 'color'), 'color(srgb 0.0510206 0.212902 0.672726)'),
+ 		).toBe(true)
+@@ -714,6 +720,9 @@
+ 		).toBe(true)
+ 		expect(matchesColor(readStyle(insideLink, 'color'), 'rgb(200, 30, 40)')).toBe(true)
+ 		expect(matchesColor(readStyle(insideButton, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++		const mode = readStyle(modeLink, 'color')
++		expect(matchesColor(mode, 'rgb(200, 30, 40)')).toBe(false)
++		expect(readStyle(nestedLink, 'color')).toBe(mode)
+ 	})
+ 	it('repaints a hovered link and link button inside an ancestor that overrides the link hover color, and leaves a hovered twin on the rest hover color', async () => {
+ 		const host = scene.mount(
+@@ -892,22 +901,37 @@
+ 		expect(matchesColor(readStyle(modeInvalid, 'border-top-color'), 'rgb(20, 130, 40)')).toBe(true)
+ 		expect(matchesColor(readStyle(modeInvalidFeedback, 'color'), 'rgb(20, 130, 40)')).toBe(true)
+ 	})
+-	it('recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases, and leaves a twin on the rest color', () => {
++	it('recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases, leaves a twin on the rest color, and leaves a control inside a nested mode scope on the mode color', () => {
+ 		const host = scene.mount(
+ 			'<div style="--bs-form-valid-border-color: rgb(20, 130, 40); --bs-form-valid-color: rgb(200, 30, 40)">' +
+ 				'<input id="inside-control" class="form-control is-valid">' +
+ 				'<div id="inside-feedback" class="valid-feedback">Inside feedback</div>' +
++				'<div data-bs-theme="light">' +
++				'<input id="nested-control" class="form-control is-valid">' +
++				'<div id="nested-feedback" class="valid-feedback">Nested feedback</div>' +
++				'</div>' +
+ 				'</div>' +
+ 				'<input id="twin-control" class="form-control is-valid">' +
+-				'<div id="twin-feedback" class="valid-feedback">Twin feedback</div>',
++				'<div id="twin-feedback" class="valid-feedback">Twin feedback</div>' +
++				'<div data-bs-theme="light">' +
++				'<input id="mode-control" class="form-control is-valid">' +
++				'<div id="mode-feedback" class="valid-feedback">Mode feedback</div>' +
++				'</div>',
+ 		)
+ 		const insideControl = requireValue(host.querySelector('#inside-control'), 'No inside control')
+ 		const insideFeedback = requireValue(
+ 			host.querySelector('#inside-feedback'),
+ 			'No inside feedback',
+ 		)
++		const nestedControl = requireValue(host.querySelector('#nested-control'), 'No nested control')
++		const nestedFeedback = requireValue(
++			host.querySelector('#nested-feedback'),
++			'No nested feedback',
++		)
+ 		const twinControl = requireValue(host.querySelector('#twin-control'), 'No twin control')
+ 		const twinFeedback = requireValue(host.querySelector('#twin-feedback'), 'No twin feedback')
++		const modeControl = requireValue(host.querySelector('#mode-control'), 'No mode control')
++		const modeFeedback = requireValue(host.querySelector('#mode-feedback'), 'No mode feedback')
+ 		expect(
+ 			matchesColor(
+ 				readStyle(twinControl, 'border-top-color'),
+@@ -921,6 +945,12 @@
+ 			true,
+ 		)
+ 		expect(matchesColor(readStyle(insideFeedback, 'color'), 'rgb(200, 30, 40)')).toBe(true)
++		const border = readStyle(modeControl, 'border-top-color')
++		const feedback = readStyle(modeFeedback, 'color')
++		expect(matchesColor(border, 'rgb(20, 130, 40)')).toBe(false)
++		expect(matchesColor(feedback, 'rgb(200, 30, 40)')).toBe(false)
++		expect(readStyle(nestedControl, 'border-top-color')).toBe(border)
++		expect(readStyle(nestedFeedback, 'color')).toBe(feedback)
+ 	})
+ 	// A mode scope re-declares the aliases whose value follows the mode, and a second `:root` block
+ 	// declares the fixed ones once, so a mode-scope override reaches the mode aliases and not the

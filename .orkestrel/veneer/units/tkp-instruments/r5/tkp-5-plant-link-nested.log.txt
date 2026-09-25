@@ -1,0 +1,87 @@
+plant link-nested: src/styles/_theme.scss
+occurrences of the include line: 1 (expected 1)
+
+$ git diff -- src/styles/_theme.scss
+diff --git a/src/styles/_theme.scss b/src/styles/_theme.scss
+index 8fb2fb5..cf1e82a 100644
+--- a/src/styles/_theme.scss
++++ b/src/styles/_theme.scss
+@@ -19,6 +19,7 @@
+ 		[data-bs-theme='#{$mode}'] {
+ 			color-scheme: $mode;
+ 			@include theme-tokens(tokens.$roles, tokens.$aliased, $values, tokens.$retuned);
++			--vn-link-base: inherit;
+ 		}
+ 	}
+ }
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.82 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 3.48s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 3.4s of this 3.5s build (99%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (98%, 3.4s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'repaints a link and a link button inside an ancestor that overrides the link color'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (46 tests | 1 failed | 45 skipped) 47ms
+     × repaints a link and a link button inside an ancestor that overrides the link color, leaves a twin on the rest color, and leaves a link inside a nested mode scope on the mode color 45ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:698:2 > ancestor token overrides > repaints a link and a link button inside an ancestor that overrides the link color, leaves a twin on the rest color, and leaves a link inside a nested mode scope on the mode color
+AssertionError: expected 'color(srgb 0.784314 0.117647 0.156863)' to be 'color(srgb 0.0510206 0.212902 0.67272…' // Object.is equality
+
+Expected: [32m"color(srgb 0.[7m0510206 0.212902 0.672726[27m)"[39m
+Received: [31m"color(srgb 0.[7m784314 0.117647 0.156863[27m)"[39m
+
+ ❯ tests/src/styles/tokens.test.ts:725:41
+    723|   const mode = readStyle(modeLink, 'color')
+    724|   expect(matchesColor(mode, 'rgb(200, 30, 40)')).toBe(false)
+    725|   expect(readStyle(nestedLink, 'color')).toBe(mode)
+       |                                         ^
+    726|  })
+    727|  it('repaints a hovered link and link button inside an ancestor that o…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 45 skipped (46)
+   Start at  05:38:17
+   Duration  11.30s (transform 0ms, setup 1.84s, import 195ms, tests 47ms, environment 0ms)
+
+exit=1
+
+$ cat /proc/loadavg
+8.29 4.18 3.53 11/401 4768
+exit=0
+
+$ cmp /home/user/veneer-tkp/tmp/units/tkp-5-backup/_theme-link-nested.scss src/styles/_theme.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src; echo "src-diffstat-lines=$(git diff --stat -- src | wc -l)"
+src-diffstat-lines=0
+exit=0
+
