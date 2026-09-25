@@ -39,7 +39,11 @@ const resolve = {
 // override receives that record in the same position. A `UserConfig` declares `mode`
 // but not `command`, and the invocation record always carries both, so a value
 // carrying the pair is that record rather than an override. The merge returns the
-// base unchanged and reports nothing. The `tests/config.test.ts` file drives every
+// base in the record's `mode` and carries none of the record's other fields. Vitest
+// runs a project that declares no `mode` in its own run mode, `test`, rather than in
+// the `--mode` value it was invoked with, so a distribution proof run with
+// `--mode release` would read `test` and skip where it must fail. A record whose
+// `mode` is not a string throws. The `tests/config.test.ts` file drives every
 // registered factory through it.
 //
 // `mergeConfig` concatenates arrays, so an override carrying `plugins` would otherwise
@@ -52,7 +56,13 @@ const resolve = {
 // merges it, so an override's arrays elsewhere concatenate with the base's rather than
 // replacing them.
 export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
-	if (override === undefined || ('command' in override && 'mode' in override)) return base
+	if (override === undefined) return base
+	if ('command' in override && 'mode' in override) {
+		if (typeof override.mode !== 'string') {
+			throw new Error('The project invocation carries no string mode')
+		}
+		return { ...base, mode: override.mode }
+	}
 	const merged: UserConfig = mergeConfig(base, override)
 	if (merged.plugins === undefined) return merged
 	const candidates = override.plugins ?? []

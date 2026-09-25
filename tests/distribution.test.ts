@@ -1,30 +1,38 @@
 import { spawnSync } from 'node:child_process'
-import { globSync, readFileSync } from 'node:fs'
+import { globSync, readdirSync, readFileSync } from 'node:fs'
 import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
 	CANON_PATHS,
 	compareVersions,
+	Compiler,
+	createBlueprint,
+	DISTRIBUTION_TEST_PATH,
 	HOST_PATHS,
 	MINIMUM_NPM_VERSION,
 	REFERENCE_PATHS,
+	RELEASE_PROOF_COMMAND,
 	replaceManifestRanges,
 } from '@src/core'
-import { listFiles, pathToStorage } from '@src/server'
+import { listFiles, Materializer, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
-import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import { isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { executeSync, readVariable } from '@orkestrel/process/server'
+import { execute, executeSync, readVariable } from '@orkestrel/process/server'
 import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
 import {
+	buildReleaseScenarios,
+	createUpstreamServer,
 	installGeneratedWorkspace,
 	GENERATED_VUE_SETUP_FILES,
 	installPackedScaffold,
 	NPM_LAUNCHER,
 	provisionNpm,
 	readManifestVersion,
+	readNpmFloor,
 	readNpmVersion,
+	parseVitestReport,
 } from './setupServer.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -685,6 +693,126 @@ describe('installed package consumer', () => {
 		}
 	})
 
+	// The mode channel end to end. Vitest runs a project in the mode it was invoked with only when
+	// the project's factory returns that mode, and nothing else in a generated workspace carries it,
+	// so this drives a generated configuration and its generated distribution proof through the
+	// command `prepublishOnly` runs. The registry is a loopback fixture that refuses `npm ping`,
+	// which puts both branches of the proof's registry gate under one host. The workspace runs on
+	// this checkout's installed toolchain, linked rather than installed: the subject is the
+	// configuration and the proof, and the refusing registry could install nothing.
+	it('fails the release run of a generated distribution proof on a refusing registry and skips the ordinary run', async () => {
+		const workspace = createScratch({ prefix: 'scaffold-release-mode-' })
+		const refusal = await createUpstreamServer({
+			'/-/ping': { status: 503, body: '{"error":"refused"}', type: 'application/json' },
+		})
+		try {
+			const compiler = new Compiler()
+			const plan = compiler.compile(createBlueprint('proof', { src: ['core'] })).plan
+			compiler.destroy()
+			if (plan === undefined) throw new Error('The generated proof blueprint was blocked')
+			const generated = join(workspace.path, 'generated')
+			const materializer = new Materializer({ host: root })
+			materializer.materialize(plan, generated)
+			materializer.destroy()
+			workspace.ensure('generated/node_modules')
+			for (const name of readdirSync(resolve(root, 'node_modules'))) {
+				if (name.startsWith('.') && name !== '.bin') continue
+				workspace.link(`generated/node_modules/${name}`, resolve(root, 'node_modules', name))
+			}
+
+			// The generated manifest runs the proof with the command the release row names, so the
+			// following runs are that command and the same command without its mode.
+			const manifest = parseJSON(requireValue(workspace.read('generated/package.json')))
+			if (!isRecord(manifest) || !isRecord(manifest.scripts)) {
+				throw new Error('The generated manifest declares no scripts')
+			}
+			const prepublish = manifest.scripts.prepublishOnly
+			if (!isString(prepublish))
+				throw new Error('The generated manifest declares no prepublishOnly')
+			expect(prepublish.endsWith(` && ${RELEASE_PROOF_COMMAND}`)).toBe(true)
+			const [file, ...command] = RELEASE_PROOF_COMMAND.split(' ')
+			if (file === undefined) throw new Error('The release row names no executable')
+			const ordinary = command.slice(0, command.indexOf('--') + 1)
+			expect(command.slice(ordinary.length)).toStrictEqual(['--mode', 'release'])
+
+			const admitted = provisionNpm({
+				floor: readNpmFloor(manifest),
+				prefix: workspace.ensure('npm'),
+			})
+			const environment = { ...admitted.environment, npm_config_registry: `${refusal.base}/` }
+			const proof = resolve(generated, DISTRIBUTION_TEST_PATH)
+			const configuration = requireValue(workspace.read('generated/vite.config.ts'))
+			const source = requireValue(workspace.read(`generated/${DISTRIBUTION_TEST_PATH}`))
+			// The controls are the rival runs `buildReleaseScenarios` lists after the release and
+			// ordinary runs: each fails a release run without reaching the proof's registry gate.
+			const scenarios = buildReleaseScenarios(command, ordinary, configuration, source)
+			const readings = new Map<string, unknown>()
+			for (const scenario of scenarios) {
+				for (const [path, content] of Object.entries(scenario.files)) {
+					workspace.write(`generated/${path}`, content)
+				}
+				const pinged = refusal.paths.filter((path) => path === '/-/ping').length
+				const report = `tmp/${scenario.label}.json`
+				const run = await execute(
+					{
+						file,
+						arguments: [...scenario.arguments, '--reporter=json', `--outputFile.json=${report}`],
+					},
+					{ workspace: generated, environment, timeout: scenario.timeout, strict: false },
+				)
+				workspace.write('generated/vite.config.ts', configuration)
+				workspace.write(`generated/${DISTRIBUTION_TEST_PATH}`, source)
+				const text = workspace.read(`generated/${report}`)
+				const files = text === undefined ? undefined : parseVitestReport(text)
+				readings.set(scenario.label, {
+					// A run the timeout or a signal ended never reached the proof's verdict, and a run
+					// that never asked the fixture answers something other than its refusal.
+					expired: run.expired,
+					signal: run.signal,
+					pinged: refusal.paths.filter((path) => path === '/-/ping').length - pinged,
+					code: run.code,
+					files: files?.map((entry) => ({
+						proof: resolve(entry.name) === proof,
+						status: entry.status,
+						message: entry.message,
+						statuses: [...new Set(entry.cases.map((item) => item.status))].sort(),
+					})),
+				})
+			}
+			// Release fails at the proof's registry gate before any case is collected. The ordinary
+			// run collects the proof, runs the cases that need no registry, and skips the cases that
+			// need one.
+			const failed = {
+				expired: false,
+				signal: null,
+				pinged: 1,
+				code: 1,
+				files: [
+					{
+						proof: true,
+						status: 'failed',
+						message:
+							'The release gate requires a reachable npm registry, and npm ping did not answer',
+						statuses: [],
+					},
+				],
+			}
+			expect(readings.get('release')).toStrictEqual(failed)
+			expect(readings.get('ordinary')).toStrictEqual({
+				expired: false,
+				signal: null,
+				pinged: 1,
+				code: 0,
+				files: [{ proof: true, status: 'passed', message: '', statuses: ['passed', 'skipped'] }],
+			})
+			const rivals = ['malformed', 'collection', 'assertion', 'timeout']
+			expect(rivals.map((label) => readings.get(label))).not.toContainEqual(failed)
+		} finally {
+			await refusal.destroy()
+			workspace.destroy()
+		}
+	}, 600_000)
+
 	it('installs a preserved peer beside an exact co-peer witness and rejects the narrowed control', () => {
 		const workspace = createScratch({ prefix: 'scaffold-peer-install-' })
 		const packed = workspace.ensure('packed')
@@ -1035,25 +1163,20 @@ describe('installed package consumer', () => {
 				expect(proof.code, `${proof.stdout}\n${proof.stderr}`).toBe(0)
 				expect(proof.stdout).toContain('setup:browser')
 				expect(proof.stdout).toContain('tests/setupBrowser.test.ts')
-				const report = parseJSON(
+				const report = parseVitestReport(
 					requireValue(workspace.read('generated/tmp/setup-vue-results.json')),
 				)
-				if (!isRecord(report) || !isArray(report.testResults)) {
+				if (report === undefined) {
 					throw new Error('The generated browser proof wrote no test results.')
 				}
-				const paired = report.testResults.find(
-					(result) =>
-						isRecord(result) &&
-						isString(result.name) &&
-						resolve(result.name) === resolve(generated.path, 'tests/setupBrowser.test.ts'),
+				const paired = report.find(
+					(entry) => resolve(entry.name) === resolve(generated.path, 'tests/setupBrowser.test.ts'),
 				)
-				if (!isRecord(paired) || !isArray(paired.assertionResults)) {
+				if (paired === undefined) {
 					throw new Error('The generated browser proof reported no paired setup cases.')
 				}
-				const assertions = paired.assertionResults.filter(
-					(assertion) =>
-						isRecord(assertion) &&
-						assertion.title === 'renders the Vue component through the browser setup helper',
+				const assertions = paired.cases.filter(
+					(item) => item.title === 'renders the Vue component through the browser setup helper',
 				)
 				expect(assertions).toEqual([
 					expect.objectContaining({

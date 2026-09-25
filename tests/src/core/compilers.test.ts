@@ -1218,10 +1218,12 @@ describe('blueprint gate laws', () => {
 	})
 
 	// Each factory takes the caller's override. `appBrowser` is a project row, so Vitest
-	// calls it with its own environment record, and that record lands in the override
-	// position: `mergeOverride` refuses a value carrying `command` and `mode`, which makes
-	// the parameter safe, and the vendored `tests/config.test.ts` drives every registered
-	// row through that refusal. `appShowcase` is registered nowhere and is reached only by
+	// calls it with its own invocation record, and that record lands in the override
+	// position. Receiving the record is not running in its mode: `mergeOverride` merges
+	// nothing from a value carrying `command` and `mode` and returns the base with that
+	// record's mode set, which makes the parameter safe and the project run in the
+	// invoked mode, and the vendored `tests/config.test.ts` drives every registered row
+	// through that projection. `appShowcase` is registered nowhere and is reached only by
 	// the showcase wrapper's own call, so it composes on `appBrowser` and declares only
 	// the output boundary and the build options a showcase changes. The sealed copy
 	// restores the declaration this rule replaced and must fail the same assertion.
@@ -1652,7 +1654,13 @@ export default defineConfig(appShowcase())
 		}
 
 		const merge = `export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
-	if (override === undefined || ('command' in override && 'mode' in override)) return base
+	if (override === undefined) return base
+	if ('command' in override && 'mode' in override) {
+		if (typeof override.mode !== 'string') {
+			throw new Error('The project invocation carries no string mode')
+		}
+		return { ...base, mode: override.mode }
+	}
 	const merged: UserConfig = mergeConfig(base, override)
 	if (merged.plugins === undefined) return merged
 	const candidates = override.plugins ?? []

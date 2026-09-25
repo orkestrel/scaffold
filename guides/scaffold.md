@@ -2115,6 +2115,10 @@ you for asking for the generated proof back.
 The generated distribution proof takes its release contract from the outside. The generated
 `prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and the proof reads
 `import.meta.env.MODE === 'release'` and **fails** on an unreachable registry rather than skipping.
+The project factories the root configuration registers receive the invocation record, and each of
+their projects runs in the invocation's mode. Vitest runs a project whose factory returns no mode in
+Vitest's own `test` mode, where the proof skips. A journey project is such a project: its
+birth-owned wrapper drops the record, so it runs in `test` whatever mode the run names.
 An ordinary local run skips that case, because a developer offline is not a defect; a release run
 does not, because skipping there passes the publish gate without ever proving the artifact installs.
 A workspace that replaces the generated proof takes that contract with it: presence ownership leaves

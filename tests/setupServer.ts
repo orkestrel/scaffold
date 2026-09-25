@@ -45,6 +45,7 @@ import {
 	Compiler,
 	compareVersions,
 	createBlueprint,
+	DISTRIBUTION_TEST_PATH,
 	FLOOR_RANGE_PATTERN,
 	HOST_PATHS,
 	REFERENCE_PATHS,
@@ -416,6 +417,49 @@ export interface TestGeneratedWorkspace {
 	readonly manifest: Readonly<Record<string, unknown>>
 	readonly environment: Readonly<NodeJS.ProcessEnv>
 	readonly pin: TestGeneratedPin
+}
+
+/**
+ * Describes one case a Vitest JSON report records under a test file.
+ *
+ * @remarks
+ * `title` and `status` are the reporter's own values, carried unread, so a caller compares them
+ * against the value it expects rather than this reader deciding which values exist.
+ */
+export interface TestReportCase {
+	readonly title: unknown
+	readonly status: unknown
+}
+
+/**
+ * Describes one test file a Vitest JSON report records.
+ *
+ * @remarks
+ * `name` is the absolute path the reporter wrote. `status` and `message` are the reporter's
+ * file-level verdict and diagnostic, carried unread: a file that failed to collect carries its
+ * error in `message` and no case at all. `cases` holds every case the file collected, in report
+ * order.
+ */
+export interface TestReportFile {
+	readonly name: string
+	readonly status: unknown
+	readonly message: unknown
+	readonly cases: readonly TestReportCase[]
+}
+
+/**
+ * Describes one run of a generated distribution proof, beside the workspace rewrite it takes.
+ *
+ * @remarks
+ * `label` names the run and its report file. `arguments` follows the executable the release row
+ * names. `timeout` bounds the run in milliseconds. `files` maps a workspace-relative path to the
+ * text written there for this run alone; an empty map runs the workspace as generated.
+ */
+export interface TestReleaseScenario {
+	readonly label: string
+	readonly arguments: readonly string[]
+	readonly timeout: number
+	readonly files: Readonly<Record<string, string>>
 }
 
 /**
@@ -853,6 +897,102 @@ export function installGeneratedWorkspace(
 		environment: admitted.environment,
 		pin: { range, version, specifier, resolved },
 	}
+}
+
+/**
+ * Parses the test files a Vitest JSON report records.
+ *
+ * @param text - The report's text, as the `json` reporter wrote it to its output file.
+ * @returns Every test file the report records, in report order, or undefined when the text is not
+ * a report: it is not JSON, carries no `testResults` list, or holds a file entry with no string
+ * `name` or no `assertionResults` list.
+ *
+ * @remarks
+ * The whole report is refused rather than the malformed entry dropped, so a caller never receives
+ * a partial file list as the run's. The parser narrows only the structure it walks; every verdict
+ * field stays the reporter's value.
+ *
+ * @example
+ * ```ts
+ * parseVitestReport('{"testResults":[]}') // []
+ * ```
+ */
+export function parseVitestReport(text: string): readonly TestReportFile[] | undefined {
+	const report = parseJSON(text)
+	if (!isRecord(report) || !isArray(report.testResults)) return undefined
+	const files: TestReportFile[] = []
+	for (const result of report.testResults) {
+		if (!isRecord(result) || !isString(result.name) || !isArray(result.assertionResults)) {
+			return undefined
+		}
+		files.push({
+			name: result.name,
+			status: result.status,
+			message: result.message,
+			cases: result.assertionResults.map((assertion) =>
+				isRecord(assertion)
+					? { title: assertion.title, status: assertion.status }
+					: { title: undefined, status: undefined },
+			),
+		})
+	}
+	return files
+}
+
+/**
+ * Builds the runs the release-mode proof drives against one generated workspace.
+ *
+ * @param release - The arguments of the release row, `--mode release` included.
+ * @param ordinary - The same arguments without the mode.
+ * @param configuration - The generated root configuration's text.
+ * @param proof - The generated distribution proof's text.
+ * @returns The release run and the ordinary run, then the rival runs: each fails a release run
+ * without reaching the proof's registry gate.
+ *
+ * @remarks
+ * The rivals are a configuration Vite cannot load, a proof that fails to collect on another
+ * import, a proof whose own assertion fails, and a run its timeout ends. Each rewriting rival
+ * writes its `files` for its own run alone, and the caller restores the generated text after it;
+ * the `timeout` rival runs the workspace as generated and differs only in its timeout.
+ */
+export function buildReleaseScenarios(
+	release: readonly string[],
+	ordinary: readonly string[],
+	configuration: string,
+	proof: string,
+): readonly TestReleaseScenario[] {
+	return [
+		{ label: 'release', arguments: release, timeout: 240_000, files: {} },
+		{ label: 'ordinary', arguments: ordinary, timeout: 240_000, files: {} },
+		{
+			label: 'malformed',
+			arguments: release,
+			timeout: 240_000,
+			files: { 'vite.config.ts': `${configuration}\nexport const =\n` },
+		},
+		{
+			label: 'collection',
+			arguments: release,
+			timeout: 240_000,
+			files: { [DISTRIBUTION_TEST_PATH]: `import './absent-module.js'\n${proof}` },
+		},
+		{
+			label: 'assertion',
+			arguments: release,
+			timeout: 240_000,
+			files: {
+				[DISTRIBUTION_TEST_PATH]: [
+					"import { expect, it } from 'vitest'",
+					'',
+					"it('asserts an unrelated value', () => {",
+					'\texpect(1).toBe(2)',
+					'})',
+					'',
+				].join('\n'),
+			},
+		},
+		{ label: 'timeout', arguments: release, timeout: 1, files: {} },
+	]
 }
 
 /** Defines the real Vue component and browser setup proof a generated consumer renders. */

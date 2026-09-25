@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "d90a3808fe395a76407b3dc2ab4560509b5930930b04d326434f596951371e50"
+			"digest": "4cd7d762c47ecc8763eed8c1cd78296feeca5614fc7d4fb205939fb0bc482757"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -454,7 +454,7 @@
 			"storage": "claude/rules/styles.md",
 			"destination": ".claude/rules/styles.md",
 			"executable": false,
-			"digest": "9393ce28750e93f790da32e991e2edc7ca3d8cc1c527f40a43aeaabb202d52bc"
+			"digest": "19bcde2076aeb299648c8b6468d73827d43408acb366b0654dc70f62b08a17d8"
 		},
 		{
 			"storage": "claude/rules/tests.md",
@@ -910,7 +910,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "7c89a20cba178e493d6cb46e517742cf31d12836eb24481a0eb7c96a2f20acad"
+			"digest": "bf5b34c0fb107880edefb6669961cc48906c464563f62bc5bd5b9f03d60a0c93"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1036,7 +1036,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "904357442e9d2d0b46a792ef083feba2e7eddb05eea3f4e3f3536f5f2dcd4453"
+			"digest": "40ccaf2700a32980a1b34838a3436c33de94123dcae17efd904333a524fdb0be"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "6e63fd0db896ab8473efd5167659758dc56c775f917997eff7a80460db15f190"
+	"digest": "f2fbbc419babc33ca969ab22892e7b65caad9f1b18b282fee554351649794fb4"
 }
