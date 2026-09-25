@@ -1,0 +1,793 @@
+# J-ENGINES-A round 5 — the Orchestrator's own gate run (2026-09-24)
+63a153b Say that each return writes its targets back (J-SAMEWAY-ENGINES-A round 5 integration)
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+check:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings src/browser tests/src/browser
+oxlint exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --check src/browser tests/src/browser guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 17698ms on 56 files using 16 threads.
+oxfmt exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-a
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+Port 63319 is in use, trying another one...
+······················································································································································································································································································································································································································································································································································································································································································1:01:01 AM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > writeHostValue src/browser/helpers.ts:925:45
+    923 |  ): void {
+    924 |  	const { category, element, name } = target
+    925 |  	if (category === 'token') element.classList.toggle(name, value !== undefined)
+        |                                               ^
+    926 |  	else if (category === 'attribute') {
+    927 |  		if (value === undefined) element.removeAttribute(name)
+ > #writeBack src/browser/HostSnapshot.ts:319:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:146:67
+ > tests/src/browser/HostSnapshot.test.ts:346:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:319:27
+ > writeHostValue src/browser/helpers.ts:925:45
+ > #writeBack src/browser/HostSnapshot.ts:319:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:146:67
+ > tests/src/browser/HostSnapshot.test.ts:348:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=d2579a75:302:11
+
+1:01:01 AM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63320/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-a/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at writeHostValue (http://localhost:63320/src/browser/helpers.ts:755:46)
+    at #writeBack (http://localhost:63320/src/browser/HostSnapshot.ts:305:3)
+    at HostSnapshot.restore (http://localhost:63320/src/browser/HostSnapshot.ts:133:67)
+    at http://localhost:63320/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-a/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790312461516:478:11
+    at http://localhost:63320/node_modules/@vitest/runner/dist/chunk-artifact.js?v=d2579a75:302:11
+    at http://localhost:63320/node_modules/@vitest/runner/dist/chunk-artifact.js?v=d2579a75:1903:26
+    at http://localhost:63320/node_modules/@vitest/runner/dist/chunk-artifact.js?v=d2579a75:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63320/node_modules/@vitest/runner/dist/chunk-artifact.js?v=d2579a75:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:311:2 > HostSnapshot > withdraws a shared target when the last holder restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+··············································································································································································································································································································································································
+
+ Test Files  26 passed (26)
+      Tests  1028 passed (1028)
+   Start at  00:59:15
+   Duration  115.36s (transform 0ms, setup 2.73s, import 1.74s, tests 106.19s, environment 0ms)
+
+test:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-a
+
+····················
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  01:01:13
+   Duration  4.74s (transform 959ms, setup 188ms, import 3.63s, tests 676ms, environment 0ms)
+
+test:guides exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-a
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  01:01:20
+   Duration  4.24s (transform 211ms, setup 139ms, import 458ms, tests 3.40s, environment 0ms)
+
+test:policy exit=0
+--- the unit's greps
+bs-wire-grep listed (a .bs. wire name outside constants.ts is a finding)
+10611:| engine           | plugin         | Collapse: a `[data-bs-toggle="collapse"]` trigger names its panel by `data-bs-target` or `href` attribute; `parent: null` and `toggle: true` defaults; `togg
+10612:| engine           | plugin         | Dropdown: the `[data-bs-toggle="dropdown"]` data API; the `autoClose`, `boundary`, `display`, `offset`, `popperConfig`, and `reference` options; the `toggle
+10613:| engine           | plugin         | Tab: `[data-bs-toggle="tab\|pill\|list"]` shows the pane its trigger names with `show()`; fires `hide.bs.tab`, `hidden.bs.tab`, `show.bs.tab`, and `shown.bs
+10614:| engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoo
+10615:| engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable
+10616:| engine           | plugin         | Carousel: `[data-bs-slide]` and `[data-bs-slide-to]` triggers and `[data-bs-ride="carousel"]` on load; `interval: 5000`, `keyboard: true`, `pause: 'hover'`,
+10617:| engine           | plugin         | Offcanvas: a `[data-bs-toggle="offcanvas"]` trigger, unless it is disabled, calls the `hide` method of another open panel, which that panel's `hide.bs.offca
+10618:| engine           | plugin         | Tooltip: constructed by a consumer, no data API; `placement: 'top'`, `trigger: 'hover focus'`, and `sanitize: true` defaults; `show`, `hide`, and `setConten
+10619:| engine           | plugin         | Popover: extends Tooltip, inheriting its construction, methods, sanitizing, and ARIA under `.bs.popover` events; `content: ''`, `offset: [0, 8]`, `placement
+10620:| engine           | plugin         | Modal: a `[data-bs-dismiss="modal"]` trigger hides the dialog it names, or the `.modal` ancestor it sits in; a `[data-bs-toggle="modal"]` trigger calls the 
+10621:| engine           | plugin         | Toast: a `[data-bs-dismiss="toast"]` trigger hides the toast it names or sits in; the `animation: true`, `autohide: true`, and `delay: 5000` defaults; the `
+plugin-rows listed
+src/browser/Alert.ts:18: 104
+src/browser/Alert.ts:64: 173
+src/browser/Backdrop.ts:7: 111
+src/browser/Backdrop.ts:13: 101
+src/browser/Backdrop.ts:46: 125
+src/browser/Button.ts:38: 184
+src/browser/Carousel.ts:70: 101
+src/browser/Carousel.ts:89: 125
+src/browser/Carousel.ts:129: 101
+src/browser/Carousel.ts:139: 124
+src/browser/Carousel.ts:140: 284
+src/browser/Carousel.ts:638: 101
+src/browser/Carousel.ts:642: 101
+src/browser/Carousel.ts:778: 101
+src/browser/Collapse.ts:36: 101
+src/browser/Collapse.ts:71: 101
+src/browser/Collapse.ts:106: 104
+src/browser/Collapse.ts:107: 261
+src/browser/Collapse.ts:518: 101
+src/browser/Delegate.ts:84: 112
+src/browser/Delegate.ts:97: 101
+src/browser/Delegate.ts:101: 101
+src/browser/Delegate.ts:107: 102
+src/browser/Delegate.ts:110: 101
+src/browser/Delegate.ts:121: 101
+src/browser/Delegate.ts:122: 102
+src/browser/Delegate.ts:125: 102
+src/browser/Delegate.ts:126: 102
+src/browser/Delegate.ts:133: 101
+src/browser/Delegate.ts:137: 101
+src/browser/Delegate.ts:146: 108
+src/browser/Delegate.ts:157: 102
+src/browser/Delegate.ts:168: 101
+src/browser/Delegate.ts:186: 102
+src/browser/Delegate.ts:187: 101
+src/browser/Delegate.ts:253: 106
+src/browser/Delegate.ts:254: 278
+src/browser/Delegate.ts:464: 101
+src/browser/Delegate.ts:510: 102
+src/browser/Delegate.ts:534: 101
+src/browser/Delegate.ts:550: 102
+src/browser/Delegate.ts:552: 159
+src/browser/Delegate.ts:722: 101
+src/browser/Delegate.ts:928: 102
+src/browser/Delegate.ts:968: 101
+src/browser/Delegate.ts:1004: 101
+src/browser/Dropdown.ts:92: 119
+src/browser/Dropdown.ts:93: 307
+src/browser/Dropdown.ts:356: 103
+src/browser/HostSnapshot.ts:12: 126
+src/browser/HostSnapshot.ts:241: 101
+src/browser/HostSnapshot.ts:308: 101
+src/browser/Isolation.ts:8: 102
+src/browser/Isolation.ts:12: 101
+src/browser/Isolation.ts:20: 101
+src/browser/Isolation.ts:27: 101
+src/browser/Isolation.ts:65: 146
+src/browser/Isolation.ts:68: 116
+src/browser/Isolation.ts:69: 116
+src/browser/Modal.ts:39: 131
+src/browser/Modal.ts:45: 102
+src/browser/Modal.ts:70: 101
+src/browser/Modal.ts:72: 101
+src/browser/Modal.ts:79: 101
+src/browser/Modal.ts:129: 114
+src/browser/Modal.ts:130: 249
+src/browser/Modal.ts:520: 101
+src/browser/Modal.ts:522: 101
+src/browser/Modal.ts:604: 101
+src/browser/Offcanvas.ts:37: 126
+src/browser/Offcanvas.ts:59: 101
+src/browser/Offcanvas.ts:73: 101
+src/browser/Offcanvas.ts:75: 101
+src/browser/Offcanvas.ts:132: 118
+src/browser/Offcanvas.ts:133: 249
+src/browser/Placement.ts:28: 102
+src/browser/Placement.ts:30: 102
+src/browser/Placement.ts:32: 101
+src/browser/Placement.ts:34: 102
+src/browser/Placement.ts:35: 101
+src/browser/Placement.ts:45: 102
+src/browser/Placement.ts:54: 102
+src/browser/Placement.ts:72: 121
+src/browser/Placement.ts:73: 133
+src/browser/Placement.ts:74: 634
+src/browser/Popover.ts:12: 121
+src/browser/Popover.ts:19: 102
+src/browser/Popover.ts:24: 102
+src/browser/Popover.ts:25: 102
+src/browser/Popover.ts:44: 122
+src/browser/ScrollLock.ts:10: 127
+src/browser/ScrollLock.ts:19: 102
+src/browser/ScrollLock.ts:26: 101
+src/browser/ScrollLock.ts:53: 294
+src/browser/ScrollSpy.ts:32: 109
+src/browser/ScrollSpy.ts:94: 114
+src/browser/ScrollSpy.ts:97: 135
+src/browser/ScrollSpy.ts:98: 282
+src/browser/ScrollSpy.ts:248: 101
+src/browser/ScrollSpy.ts:294: 101
+src/browser/ScrollSpy.ts:338: 101
+src/browser/Swipe.ts:44: 276
+src/browser/Tab.ts:105: 123
+src/browser/Tab.ts:109: 291
+src/browser/Toast.ts:27: 116
+src/browser/Toast.ts:59: 103
+src/browser/Toast.ts:91: 118
+src/browser/Toast.ts:94: 117
+src/browser/Toast.ts:95: 248
+src/browser/Toast.ts:345: 103
+src/browser/Tooltip.ts:53: 116
+src/browser/Tooltip.ts:63: 101
+src/browser/Tooltip.ts:67: 102
+src/browser/Tooltip.ts:78: 101
+src/browser/Tooltip.ts:87: 101
+src/browser/Tooltip.ts:89: 101
+src/browser/Tooltip.ts:90: 101
+src/browser/Tooltip.ts:93: 101
+src/browser/Tooltip.ts:95: 101
+src/browser/Tooltip.ts:103: 101
+src/browser/Tooltip.ts:107: 102
+src/browser/Tooltip.ts:114: 151
+src/browser/Tooltip.ts:127: 164
+src/browser/Tooltip.ts:181: 101
+src/browser/Tooltip.ts:186: 103
+src/browser/Tooltip.ts:215: 216
+src/browser/Tooltip.ts:218: 167
+src/browser/Tooltip.ts:219: 377
+src/browser/Tooltip.ts:239: 102
+src/browser/Tooltip.ts:380: 108
+src/browser/Tooltip.ts:383: 183
+src/browser/Tooltip.ts:550: 102
+src/browser/Tooltip.ts:564: 102
+src/browser/Tooltip.ts:571: 101
+src/browser/Tooltip.ts:572: 102
+src/browser/Tooltip.ts:574: 102
+src/browser/Tooltip.ts:674: 101
+src/browser/Tooltip.ts:699: 101
+src/browser/Tooltip.ts:727: 101
+src/browser/Tooltip.ts:730: 102
+src/browser/Tooltip.ts:805: 101
+src/browser/Tooltip.ts:806: 103
+src/browser/Tooltip.ts:855: 101
+src/browser/constants.ts:70: 110
+src/browser/constants.ts:83: 108
+src/browser/constants.ts:88: 157
+src/browser/constants.ts:93: 107
+src/browser/constants.ts:104: 122
+src/browser/constants.ts:119: 147
+src/browser/constants.ts:130: 110
+src/browser/constants.ts:138: 116
+src/browser/constants.ts:143: 115
+src/browser/constants.ts:156: 107
+src/browser/constants.ts:165: 109
+src/browser/constants.ts:170: 127
+src/browser/constants.ts:186: 113
+src/browser/constants.ts:201: 146
+src/browser/constants.ts:210: 130
+src/browser/constants.ts:218: 101
+src/browser/constants.ts:226: 112
+src/browser/constants.ts:246: 150
+src/browser/constants.ts:254: 137
+src/browser/constants.ts:260: 110
+src/browser/constants.ts:266: 104
+src/browser/constants.ts:275: 121
+src/browser/constants.ts:292: 149
+src/browser/constants.ts:322: 112
+src/browser/constants.ts:334: 108
+src/browser/constants.ts:347: 126
+src/browser/constants.ts:354: 137
+src/browser/constants.ts:365: 146
+src/browser/constants.ts:377: 125
+src/browser/constants.ts:384: 101
+src/browser/constants.ts:399: 109
+src/browser/constants.ts:418: 119
+src/browser/constants.ts:428: 127
+src/browser/constants.ts:445: 154
+src/browser/constants.ts:454: 114
+src/browser/constants.ts:462: 115
+src/browser/constants.ts:467: 134
+src/browser/constants.ts:475: 107
+src/browser/constants.ts:484: 120
+src/browser/constants.ts:495: 109
+src/browser/constants.ts:503: 113
+src/browser/constants.ts:509: 138
+src/browser/constants.ts:518: 101
+src/browser/constants.ts:527: 111
+src/browser/constants.ts:535: 121
+src/browser/constants.ts:552: 121
+src/browser/constants.ts:560: 111
+src/browser/constants.ts:562: 110
+src/browser/constants.ts:576: 101
+src/browser/constants.ts:585: 111
+src/browser/constants.ts:593: 185
+src/browser/constants.ts:599: 133
+src/browser/constants.ts:608: 142
+src/browser/constants.ts:610: 183
+src/browser/constants.ts:623: 148
+src/browser/constants.ts:744: 138
+src/browser/constants.ts:749: 149
+src/browser/constants.ts:754: 105
+src/browser/constants.ts:785: 113
+src/browser/constants.ts:801: 132
+src/browser/helpers.ts:25: 123
+src/browser/helpers.ts:26: 114
+src/browser/helpers.ts:82: 103
+src/browser/helpers.ts:124: 107
+src/browser/helpers.ts:142: 105
+src/browser/helpers.ts:145: 119
+src/browser/helpers.ts:146: 107
+src/browser/helpers.ts:181: 110
+src/browser/helpers.ts:184: 119
+src/browser/helpers.ts:185: 108
+src/browser/helpers.ts:186: 153
+src/browser/helpers.ts:208: 103
+src/browser/helpers.ts:211: 107
+src/browser/helpers.ts:212: 102
+src/browser/helpers.ts:214: 140
+src/browser/helpers.ts:216: 126
+src/browser/helpers.ts:217: 171
+src/browser/helpers.ts:229: 125
+src/browser/helpers.ts:270: 104
+src/browser/helpers.ts:277: 109
+src/browser/helpers.ts:300: 167
+src/browser/helpers.ts:319: 117
+src/browser/helpers.ts:323: 106
+src/browser/helpers.ts:324: 104
+src/browser/helpers.ts:353: 194
+src/browser/helpers.ts:374: 167
+src/browser/helpers.ts:378: 106
+src/browser/helpers.ts:379: 140
+src/browser/helpers.ts:406: 104
+src/browser/helpers.ts:407: 112
+src/browser/helpers.ts:408: 121
+src/browser/helpers.ts:435: 118
+src/browser/helpers.ts:437: 122
+src/browser/helpers.ts:459: 158
+src/browser/helpers.ts:463: 171
+src/browser/helpers.ts:467: 101
+src/browser/helpers.ts:512: 198
+src/browser/helpers.ts:516: 101
+src/browser/helpers.ts:541: 115
+src/browser/helpers.ts:542: 113
+src/browser/helpers.ts:546: 171
+src/browser/helpers.ts:579: 107
+src/browser/helpers.ts:584: 101
+src/browser/helpers.ts:603: 101
+src/browser/helpers.ts:606: 102
+src/browser/helpers.ts:636: 107
+src/browser/helpers.ts:695: 104
+src/browser/helpers.ts:697: 102
+src/browser/helpers.ts:714: 101
+src/browser/helpers.ts:749: 102
+src/browser/helpers.ts:751: 101
+src/browser/helpers.ts:774: 110
+src/browser/helpers.ts:778: 106
+src/browser/helpers.ts:790: 113
+src/browser/helpers.ts:814: 131
+src/browser/helpers.ts:854: 117
+src/browser/helpers.ts:857: 160
+src/browser/helpers.ts:875: 142
+src/browser/helpers.ts:880: 106
+src/browser/helpers.ts:894: 161
+src/browser/helpers.ts:897: 115
+src/browser/helpers.ts:909: 119
+src/browser/helpers.ts:910: 219
+src/browser/helpers.ts:934: 161
+src/browser/helpers.ts:938: 105
+src/browser/helpers.ts:939: 196
+src/browser/helpers.ts:941: 101
+src/browser/helpers.ts:947: 108
+src/browser/helpers.ts:969: 148
+src/browser/parsers.ts:48: 122
+src/browser/parsers.ts:77: 124
+src/browser/parsers.ts:81: 101
+src/browser/parsers.ts:88: 131
+src/browser/parsers.ts:113: 124
+src/browser/parsers.ts:114: 207
+src/browser/parsers.ts:135: 106
+src/browser/parsers.ts:136: 145
+src/browser/parsers.ts:181: 101
+src/browser/parsers.ts:190: 102
+src/browser/parsers.ts:208: 131
+src/browser/parsers.ts:209: 204
+src/browser/parsers.ts:227: 148
+src/browser/parsers.ts:229: 211
+src/browser/parsers.ts:230: 269
+src/browser/parsers.ts:267: 107
+src/browser/parsers.ts:269: 141
+src/browser/parsers.ts:270: 251
+src/browser/parsers.ts:273: 102
+src/browser/parsers.ts:274: 101
+src/browser/parsers.ts:302: 102
+src/browser/parsers.ts:317: 143
+src/browser/parsers.ts:320: 170
+src/browser/parsers.ts:322: 101
+src/browser/types.ts:6: 101
+src/browser/types.ts:18: 124
+src/browser/types.ts:30: 114
+src/browser/types.ts:43: 102
+src/browser/types.ts:50: 104
+src/browser/types.ts:56: 153
+src/browser/types.ts:64: 127
+src/browser/types.ts:66: 186
+src/browser/types.ts:82: 133
+src/browser/types.ts:146: 101
+src/browser/types.ts:156: 105
+src/browser/types.ts:186: 140
+src/browser/types.ts:188: 144
+src/browser/types.ts:190: 144
+src/browser/types.ts:192: 134
+src/browser/types.ts:194: 146
+src/browser/types.ts:196: 138
+src/browser/types.ts:198: 146
+src/browser/types.ts:200: 138
+src/browser/types.ts:202: 138
+src/browser/types.ts:204: 164
+src/browser/types.ts:211: 136
+src/browser/types.ts:216: 127
+src/browser/types.ts:233: 101
+src/browser/types.ts:249: 150
+src/browser/types.ts:251: 141
+src/browser/types.ts:272: 115
+src/browser/types.ts:297: 101
+src/browser/types.ts:329: 108
+src/browser/types.ts:342: 129
+src/browser/types.ts:346: 200
+src/browser/types.ts:348: 119
+src/browser/types.ts:352: 124
+src/browser/types.ts:355: 144
+src/browser/types.ts:379: 168
+src/browser/types.ts:396: 101
+src/browser/types.ts:415: 126
+src/browser/types.ts:432: 142
+src/browser/types.ts:436: 143
+src/browser/types.ts:440: 130
+src/browser/types.ts:442: 172
+src/browser/types.ts:444: 123
+src/browser/types.ts:448: 165
+src/browser/types.ts:450: 159
+src/browser/types.ts:454: 133
+src/browser/types.ts:462: 196
+src/browser/types.ts:464: 126
+src/browser/types.ts:470: 116
+src/browser/types.ts:472: 119
+src/browser/types.ts:474: 366
+src/browser/types.ts:476: 176
+src/browser/types.ts:485: 138
+src/browser/types.ts:497: 148
+src/browser/types.ts:499: 132
+src/browser/types.ts:501: 115
+src/browser/types.ts:503: 130
+src/browser/types.ts:507: 133
+src/browser/types.ts:509: 120
+src/browser/types.ts:513: 219
+src/browser/types.ts:524: 185
+src/browser/types.ts:525: 194
+src/browser/types.ts:527: 102
+src/browser/types.ts:540: 108
+src/browser/types.ts:542: 149
+src/browser/types.ts:566: 200
+src/browser/types.ts:568: 143
+src/browser/types.ts:572: 121
+src/browser/types.ts:576: 119
+src/browser/types.ts:578: 207
+src/browser/types.ts:582: 101
+src/browser/types.ts:600: 102
+src/browser/types.ts:616: 135
+src/browser/types.ts:619: 106
+src/browser/types.ts:621: 123
+src/browser/types.ts:623: 108
+src/browser/types.ts:627: 146
+src/browser/types.ts:629: 124
+src/browser/types.ts:633: 129
+src/browser/types.ts:635: 156
+src/browser/types.ts:637: 205
+src/browser/types.ts:641: 422
+src/browser/types.ts:645: 146
+src/browser/types.ts:651: 180
+src/browser/types.ts:653: 254
+src/browser/types.ts:698: 118
+src/browser/types.ts:700: 116
+src/browser/types.ts:722: 141
+src/browser/types.ts:738: 155
+src/browser/types.ts:740: 235
+src/browser/types.ts:748: 101
+src/browser/types.ts:749: 102
+src/browser/types.ts:772: 101
+src/browser/types.ts:779: 133
+src/browser/types.ts:781: 165
+src/browser/types.ts:786: 124
+src/browser/types.ts:789: 104
+src/browser/types.ts:791: 102
+src/browser/types.ts:797: 145
+src/browser/types.ts:802: 110
+src/browser/types.ts:805: 101
+src/browser/types.ts:809: 226
+src/browser/types.ts:811: 234
+src/browser/types.ts:813: 559
+src/browser/types.ts:823: 104
+src/browser/types.ts:827: 173
+src/browser/types.ts:835: 101
+src/browser/types.ts:840: 112
+src/browser/types.ts:852: 117
+src/browser/types.ts:859: 115
+src/browser/types.ts:863: 116
+src/browser/types.ts:870: 118
+src/browser/types.ts:878: 103
+src/browser/types.ts:886: 107
+src/browser/types.ts:900: 120
+src/browser/types.ts:902: 140
+src/browser/types.ts:904: 122
+src/browser/types.ts:906: 122
+src/browser/types.ts:923: 530
+src/browser/types.ts:933: 496
+src/browser/types.ts:962: 116
+src/browser/types.ts:976: 101
+src/browser/types.ts:983: 108
+src/browser/types.ts:1006: 123
+src/browser/types.ts:1008: 103
+src/browser/types.ts:1010: 127
+src/browser/types.ts:1016: 110
+src/browser/types.ts:1020: 138
+src/browser/types.ts:1022: 228
+src/browser/types.ts:1028: 204
+src/browser/types.ts:1032: 103
+src/browser/types.ts:1041: 145
+src/browser/types.ts:1043: 127
+src/browser/types.ts:1045: 207
+src/browser/types.ts:1048: 115
+src/browser/types.ts:1050: 180
+src/browser/types.ts:1052: 133
+src/browser/types.ts:1054: 286
+src/browser/types.ts:1062: 115
+src/browser/types.ts:1091: 274
+src/browser/types.ts:1101: 253
+src/browser/types.ts:1138: 156
+src/browser/types.ts:1142: 114
+src/browser/types.ts:1146: 115
+src/browser/types.ts:1153: 103
+src/browser/types.ts:1155: 118
+src/browser/types.ts:1157: 107
+src/browser/types.ts:1161: 111
+src/browser/types.ts:1163: 121
+src/browser/types.ts:1169: 105
+src/browser/types.ts:1175: 134
+src/browser/types.ts:1177: 111
+src/browser/types.ts:1179: 143
+src/browser/types.ts:1181: 169
+src/browser/types.ts:1183: 198
+src/browser/types.ts:1193: 125
+src/browser/types.ts:1195: 116
+src/browser/types.ts:1197: 118
+src/browser/types.ts:1205: 132
+src/browser/types.ts:1207: 119
+src/browser/types.ts:1215: 107
+src/browser/types.ts:1236: 563
+src/browser/types.ts:1244: 103
+src/browser/types.ts:1262: 110
+src/browser/types.ts:1269: 109
+src/browser/types.ts:1273: 114
+src/browser/types.ts:1283: 135
+src/browser/types.ts:1285: 110
+src/browser/types.ts:1287: 126
+src/browser/types.ts:1293: 113
+src/browser/types.ts:1295: 121
+src/browser/types.ts:1297: 251
+src/browser/types.ts:1301: 102
+src/browser/types.ts:1305: 107
+src/browser/types.ts:1307: 128
+src/browser/types.ts:1309: 149
+src/browser/types.ts:1313: 109
+src/browser/types.ts:1315: 124
+src/browser/types.ts:1318: 131
+src/browser/types.ts:1320: 123
+src/browser/types.ts:1322: 124
+src/browser/types.ts:1336: 112
+src/browser/types.ts:1348: 110
+src/browser/types.ts:1360: 257
+src/browser/types.ts:1362: 137
+src/browser/types.ts:1366: 191
+src/browser/types.ts:1370: 113
+src/browser/types.ts:1374: 129
+src/browser/types.ts:1376: 136
+src/browser/types.ts:1383: 105
+src/browser/types.ts:1385: 103
+src/browser/types.ts:1387: 114
+src/browser/types.ts:1389: 129
+src/browser/types.ts:1393: 131
+src/browser/types.ts:1395: 120
+src/browser/types.ts:1403: 115
+src/browser/types.ts:1405: 147
+src/browser/types.ts:1407: 126
+src/browser/types.ts:1421: 109
+src/browser/types.ts:1423: 173
+src/browser/types.ts:1425: 164
+src/browser/types.ts:1431: 114
+src/browser/types.ts:1435: 129
+src/browser/types.ts:1437: 127
+src/browser/types.ts:1439: 119
+src/browser/types.ts:1441: 120
+src/browser/types.ts:1459: 382
+src/browser/types.ts:1469: 393
+src/browser/types.ts:1497: 112
+src/browser/types.ts:1507: 195
+src/browser/types.ts:1511: 116
+src/browser/types.ts:1515: 117
+src/browser/types.ts:1517: 140
+src/browser/types.ts:1524: 116
+src/browser/types.ts:1526: 106
+src/browser/types.ts:1528: 114
+src/browser/types.ts:1534: 124
+src/browser/types.ts:1536: 118
+src/browser/types.ts:1538: 114
+src/browser/types.ts:1544: 126
+src/browser/types.ts:1546: 147
+src/browser/types.ts:1548: 126
+src/browser/types.ts:1554: 157
+src/browser/types.ts:1562: 110
+src/browser/types.ts:1564: 114
+src/browser/types.ts:1568: 120
+src/browser/types.ts:1570: 127
+src/browser/types.ts:1572: 119
+src/browser/types.ts:1574: 189
+src/browser/types.ts:1583: 104
+src/browser/types.ts:1586: 102
+src/browser/types.ts:1587: 104
+src/browser/types.ts:1599: 382
+src/browser/types.ts:1609: 393
+src/browser/types.ts:1628: 144
+src/browser/types.ts:1642: 268
+src/browser/types.ts:1644: 239
+src/browser/types.ts:1646: 259
+src/browser/types.ts:1648: 319
+src/browser/types.ts:1655: 107
+src/browser/types.ts:1661: 153
+src/browser/types.ts:1669: 124
+src/browser/types.ts:1679: 102
+src/browser/types.ts:1681: 130
+src/browser/types.ts:1685: 134
+src/browser/types.ts:1687: 104
+src/browser/types.ts:1689: 154
+src/browser/types.ts:1691: 125
+src/browser/types.ts:1693: 108
+src/browser/types.ts:1701: 135
+src/browser/types.ts:1705: 123
+src/browser/types.ts:1707: 143
+src/browser/types.ts:1716: 143
+src/browser/types.ts:1718: 117
+src/browser/types.ts:1720: 109
+src/browser/types.ts:1722: 113
+src/browser/types.ts:1725: 168
+src/browser/types.ts:1731: 167
+src/browser/types.ts:1736: 159
+src/browser/types.ts:1740: 124
+src/browser/types.ts:1742: 152
+src/browser/types.ts:1744: 176
+src/browser/types.ts:1747: 169
+src/browser/types.ts:1749: 121
+src/browser/types.ts:1751: 129
+src/browser/types.ts:1753: 132
+src/browser/types.ts:1755: 121
+src/browser/types.ts:1763: 133
+src/browser/types.ts:1802: 164
+src/browser/types.ts:1816: 103
+src/browser/types.ts:1820: 138
+src/browser/types.ts:1822: 108
+src/browser/types.ts:1826: 246
+src/browser/types.ts:1841: 267
+src/browser/types.ts:1847: 102
+src/browser/types.ts:1850: 102
+src/browser/types.ts:1851: 101
+src/browser/types.ts:1864: 141
+src/browser/types.ts:1866: 103
+src/browser/types.ts:1878: 108
+src/browser/types.ts:1904: 101
+src/browser/types.ts:1907: 405
+src/browser/types.ts:1938: 268
+src/browser/types.ts:1940: 115
+src/browser/types.ts:1942: 259
+src/browser/types.ts:1944: 319
+src/browser/types.ts:1951: 123
+src/browser/types.ts:1953: 153
+src/browser/types.ts:1957: 120
+src/browser/types.ts:1963: 153
+src/browser/types.ts:1969: 135
+src/browser/types.ts:1974: 117
+src/browser/types.ts:1979: 101
+src/browser/types.ts:1983: 135
+src/browser/types.ts:1985: 129
+src/browser/types.ts:1987: 132
+src/browser/types.ts:1989: 122
+src/browser/types.ts:1995: 117
+src/browser/types.ts:2006: 267
+src/browser/types.ts:2012: 102
+src/browser/types.ts:2015: 102
+src/browser/types.ts:2016: 101
+src/browser/types.ts:2029: 141
+src/browser/types.ts:2031: 103
+src/browser/types.ts:2043: 108
+src/browser/types.ts:2069: 101
+src/browser/types.ts:2072: 405
+src/browser/types.ts:2075: 103
+src/browser/types.ts:2103: 125
+src/browser/types.ts:2110: 106
+src/browser/types.ts:2112: 103
+src/browser/types.ts:2122: 151
+src/browser/types.ts:2124: 124
+src/browser/types.ts:2128: 154
+src/browser/types.ts:2136: 127
+src/browser/types.ts:2138: 183
+src/browser/types.ts:2140: 187
+src/browser/types.ts:2155: 266
+src/browser/types.ts:2177: 112
+src/browser/types.ts:2181: 113
+src/browser/types.ts:2188: 153
+src/browser/types.ts:2190: 102
+src/browser/types.ts:2196: 107
+src/browser/types.ts:2202: 149
+src/browser/types.ts:2204: 122
+src/browser/types.ts:2210: 123
+src/browser/types.ts:2214: 153
+src/browser/types.ts:2222: 145
+src/browser/types.ts:2224: 134
+src/browser/types.ts:2228: 166
+src/browser/types.ts:2230: 151
+src/browser/types.ts:2232: 186
+src/browser/types.ts:2249: 489
+src/browser/types.ts:2259: 516
+src/browser/types.ts:2293: 120
+src/browser/types.ts:2300: 128
+src/browser/types.ts:2303: 108
+src/browser/types.ts:2311: 116
+src/browser/types.ts:2313: 112
+src/browser/types.ts:2315: 101
+src/browser/types.ts:2317: 101
+src/browser/types.ts:2319: 121
+src/browser/types.ts:2325: 115
+src/browser/types.ts:2327: 125
+src/browser/types.ts:2329: 153
+src/browser/types.ts:2333: 147
+src/browser/types.ts:2347: 102
+src/browser/types.ts:2349: 148
+src/browser/types.ts:2355: 115
+src/browser/types.ts:2359: 106
+src/browser/types.ts:2361: 130
+src/browser/types.ts:2363: 156
+src/browser/types.ts:2367: 104
+src/browser/types.ts:2369: 130
+src/browser/types.ts:2371: 122
+src/browser/types.ts:2373: 123
+src/browser/types.ts:2390: 554
+src/browser/types.ts:2400: 555
+src/browser/types.ts:2411: 480
+src/browser/types.ts:2419: 106
+src/browser/types.ts:2439: 127
+src/browser/validators.ts:48: 101
+src/browser/validators.ts:118: 105
+src/browser/validators.ts:172: 159
+src/browser/validators.ts:185: 102
+src/browser/validators.ts:205: 121
+src/browser/validators.ts:214: 106
+src/browser/validators.ts:237: 149
+src/browser/validators.ts:240: 101
+src/browser/validators.ts:247: 111
+src/browser/validators.ts:264: 115
+src/browser/validators.ts:267: 219
+src/browser/validators.ts:275: 135
+src/browser/validators.ts:296: 107
+src/browser/validators.ts:324: 133
+src/browser/validators.ts:328: 101
+long-lines listed
+--- review evidence
+diff lines: 0

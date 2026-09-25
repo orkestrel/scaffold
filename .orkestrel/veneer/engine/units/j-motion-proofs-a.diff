@@ -1,0 +1,1300 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 439acc2..e8a8741 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2039,10 +2039,11 @@ option is `true`, shows the backdrop and waits for its fade. It then appends the
+ when the body does not contain it, writes `display: block`, removes `aria-hidden`, writes
+ `aria-modal="true"` and `role="dialog"`, scrolls the host and the element the `body` selector
+ matches inside the dialog to the top, forces a layout read, and adds the `shown` token. When the
+-host carries the `fade` token, the show waits for the dialog's transition to settle, or for the
+-host's own when the host holds no dialog. With the `focus` option `true`, it isolates the rest of
+-the document and moves focus to the host. It then dispatches `shown.vn.modal`. Hiding releases the
+-isolation, removes the `shown` token, waits for the host's own fade when the host carries the `fade`
++host carries the `fade` token, the show waits for the host's fade and the dialog's transition to
++settle, because either can outlast the other, or for the host's fade alone when the host holds no
++dialog. With the `focus` option `true`, it isolates the rest of the document and moves focus to the
++host. It then dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown` token,
++waits for the host's fade and the dialog's transition the same way when the host carries the `fade`
+ token, writes `display: none` and `aria-hidden="true"`, removes `aria-modal` and `role`, hides and
+ removes the backdrop, releases the `open` token, removes the host's padding, releases the scroll
+ lock, and dispatches `hidden.vn.modal`. The `show`, `hide`, and `toggle` methods resolve `true`
+@@ -2146,14 +2147,14 @@ turns off.
+ The modal and the delegate match with the following selectors, under the names the `selectors`
+ group resolves; each default is Bootstrap's selector.
+ 
+-| Key       | Default                                | Selects                                                        |
+-| --------- | -------------------------------------- | -------------------------------------------------------------- |
+-| `trigger` | `[data-bs-toggle="modal"]`             | The triggers a delegated click shows a modal from              |
+-| `dismiss` | `[data-bs-dismiss="modal"]`            | The triggers a delegated click hides a modal from              |
+-| `dialog`  | `.modal-dialog`                        | The dialog inside the modal, whose transition a show waits for |
+-| `body`    | `.modal-body`                          | The body inside the dialog, scrolled to its top at each show   |
+-| `fixed`   | `.fixed-top, .fixed-bottom, .is-fixed` | The fixed elements the scroll lock pads                        |
+-| `sticky`  | `.sticky-top`                          | The sticky elements the scroll lock pads and pulls back        |
++| Key       | Default                                | Selects                                                                  |
++| --------- | -------------------------------------- | ------------------------------------------------------------------------ |
++| `trigger` | `[data-bs-toggle="modal"]`             | The triggers a delegated click shows a modal from                        |
++| `dismiss` | `[data-bs-dismiss="modal"]`            | The triggers a delegated click hides a modal from                        |
++| `dialog`  | `.modal-dialog`                        | The dialog inside the modal, whose transition a show and a hide wait for |
++| `body`    | `.modal-body`                          | The body inside the dialog, scrolled to its top at each show             |
++| `fixed`   | `.fixed-top, .fixed-bottom, .is-fixed` | The fixed elements the scroll lock pads                                  |
++| `sticky`  | `.sticky-top`                          | The sticky elements the scroll lock pads and pulls back                  |
+ 
+ The `MODAL_DEFAULTS` constant holds the option values a modal takes when neither its attributes nor
+ its constructor supply them, which are Bootstrap's defaults.
+@@ -2172,7 +2173,7 @@ function checks that shape.
+ | Key       | Wire name          | Cancelable | Detail `relatedTarget`       | Dispatched                                                                        |
+ | --------- | ------------------ | ---------- | ---------------------------- | --------------------------------------------------------------------------------- |
+ | `show`    | `show.vn.modal`    | Yes        | The trigger passed to `show` | Before any write; prevention refuses the show                                     |
+-| `shown`   | `shown.vn.modal`   | No         | The trigger passed to `show` | After the transition settles and focus moves                                      |
++| `shown`   | `shown.vn.modal`   | No         | The trigger passed to `show` | After the host's fade and the dialog's transition settle and focus moves          |
+ | `hide`    | `hide.vn.modal`    | Yes        | Undefined                    | Before any write; prevention refuses the hide                                     |
+ | `hidden`  | `hidden.vn.modal`  | No         | Undefined                    | After the backdrop leaves and the scroll lock is released                         |
+ | `prevent` | `prevent.vn.modal` | No         | Undefined                    | When Escape or a press beside the dialog meets a dismissal option that is `false` |
+@@ -2305,8 +2306,9 @@ The modal departs from Bootstrap's in these ways:
+   token at each show. Bootstrap creates one backdrop per modal and reads the `fade` class at
+   construction.
+ - Escape is the host's own `keydown` event, as Bootstrap's is; no `CloseWatcher` is adopted.
+-- Completion waits on the running finite animations of the dialog on show and of the host on hide,
+-  with no timer. Bootstrap waits on a `transitionend` listener with a fallback timer.
++- Completion waits on the running finite animations of the host and the dialog on show and on hide,
++  whichever lasts longer, with no timer. Bootstrap waits on a `transitionend` listener with a
++  fallback timer, on the dialog's transition on show and on the host's fade on hide.
+ - The bounce writes no inline `overflow-y`. Bootstrap hides the modal's vertical overflow during the
+   bounce when the modal does not overflow the viewport.
+ - Wire events carry the `.vn.` namespace, and the trigger travels in `detail.relatedTarget`, as
+diff --git a/src/browser/Modal.ts b/src/browser/Modal.ts
+index 24479ce..b1fe8df 100644
+--- a/src/browser/Modal.ts
++++ b/src/browser/Modal.ts
+@@ -51,13 +51,14 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * token that the modals of one document share, adds the token when the body lacks it, shows the
+  * backdrop when `backdrop` is `true` and waits for its fade, appends a host the body does not
+  * contain to the body, displays the host, marks it as a modal dialog, scrolls it and its body to
+- * the top, and adds the `shown` token. It then waits for the dialog's transition when the host
+- * carries the `fade` token, isolates focus inside the host and moves focus to it when `focus` is
+- * `true`, and dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown`
+- * token, waits for the host's own fade, hides the host, hides and removes the backdrop, and
+- * releases the `open` token, the dialog adjustment, and the scroll lock before it dispatches
+- * `hidden.vn.modal`. The last modal to release the `open` token writes back the body's value the
+- * first show found.
++ * the top, and adds the `shown` token. It then waits for the host's fade and the dialog's transition
++ * when the host carries the `fade` token, isolates focus inside the host and moves focus to it when
++ * `focus` is `true`, and dispatches `shown.vn.modal`. Hiding releases the isolation, removes the
++ * `shown` token, waits for the host's fade and the dialog's transition when the host carries the
++ * `fade` token, hides the host, hides and removes the backdrop, and releases the `open` token, the
++ * dialog adjustment, and the scroll lock before it dispatches `hidden.vn.modal`. Each change waits
++ * for both motions because either can outlast the other. The last modal to release the `open` token
++ * writes back the body's value the first show found.
+  *
+  * A call carries the change identity it sets when its change starts. After each write, dispatch,
+  * and await, it reads whether the modal is live and whether a later `show` or `hide` call has
+@@ -322,7 +323,7 @@ export class Modal implements ModalInterface {
+ 		})
+ 		if (!marked) return this.#rehide(change, written)
+ 		if (host.classList.contains(fade)) {
+-			await settleAnimations(this.#dialog ?? host, this.#controller.signal)
++			await this.#settle()
+ 			if (!this.#holds(change, true)) return this.#rehide(change, written)
+ 		}
+ 		if (this.#options.focus) {
+@@ -371,7 +372,7 @@ export class Modal implements ModalInterface {
+ 		})
+ 		if (!cleared) return this.#reshow(change, [], null)
+ 		if (host.classList.contains(fade)) {
+-			await settleAnimations(host, this.#controller.signal)
++			await this.#settle()
+ 			if (!this.#holds(change, false)) return this.#reshow(change, [], null)
+ 		}
+ 		if (!this.#apply(change, false, () => host.style.setProperty('display', 'none'))) {
+@@ -553,6 +554,17 @@ export class Modal implements ModalInterface {
+ 		if (this.#owns(change)) write()
+ 	}
+ 
++	// Waits for the motion a show or a hide starts: the host's fade and the dialog's transition run
++	// together, and either can outlast the other, so the change completes only after both settle.
++	async #settle(): Promise<void> {
++		const signal = this.#controller.signal
++		const dialog = this.#dialog
++		await Promise.all([
++			settleAnimations(this.#host, signal),
++			...(dialog === undefined ? [] : [settleAnimations(dialog, signal)]),
++		])
++	}
++
+ 	// Reports whether a bounce may write: the modal is live and shown, and no change is in flight.
+ 	#idle(): boolean {
+ 		return !this.#controller.signal.aborted && this.shown && !this.#changing
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 16d3c4b..c75c6a4 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -60,6 +60,7 @@ import {
+ 	PROBE_CASCADE,
+ 	pressOracleKeys,
+ 	readCascadeSheet,
++	readDuration,
+ 	readElement,
+ 	readImageRegion,
+ 	recordCalls,
+@@ -918,6 +919,7 @@ describe('browser setup', () => {
+ 				'pressOracleKeys',
+ 				'readButton',
+ 				'readCascadeSheet',
++				'readDuration',
+ 				'readElement',
+ 				'readImageRegion',
+ 				'readMenuContainment',
+@@ -1771,6 +1773,20 @@ describe('browser setup', () => {
+ 	})
+ })
+ 
++describe('readDuration', () => {
++	it('returns the longest declared duration in milliseconds across a list in seconds and milliseconds', () => {
++		const root = scene.mount(`
++			<p style="transition: opacity 150ms, transform 0.3s"></p>
++			<p style="transition: color 0.2s 1s"></p>
++			<p></p>`)
++		const [listed, delayed, plain] = Array.from(root.querySelectorAll('p'))
++		expect(readDuration(requireValue(listed, 'No listed element'))).toBe(300)
++		// A delay is not a duration, so the reading leaves it out.
++		expect(readDuration(requireValue(delayed, 'No delayed element'))).toBe(200)
++		expect(readDuration(requireValue(plain, 'No plain element'))).toBe(0)
++	})
++})
++
+ describe('requireMatch', () => {
+ 	it('returns the one candidate a lookup matched', () => {
+ 		const sample = build('div')
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index bd8f1c7..2064832 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1783,6 +1783,33 @@ export class SceneManager {
+  */
+ export const scene = new SceneManager()
+ 
++/**
++ * Returns the longest transition duration an element's computed style declares, in milliseconds.
++ *
++ * @param element - The element whose `transition-duration` list is read.
++ * @returns The largest entry of the list in milliseconds, which is `0` when the element declares no transition.
++ * @remarks
++ * A motion proof reads a duration the cascade owns rather than pinning one. It sets up a condition
++ * from the reading, such as lengthening one element's motion past another's, or compares two readings
++ * of one element, such as the ratio a motion factor makes. The list holds one entry per transitioned
++ * property, each a CSS time in seconds or milliseconds. The reading starts nothing; the running
++ * transition's own timing is what `getAnimations` reports.
++ * @example
++ * ```ts
++ * dialog.style.setProperty('transition-duration', `${2 * readDuration(host)}ms`)
++ * ```
++ */
++export function readDuration(element: Element): number {
++	return Math.max(
++		...getComputedStyle(element)
++			.transitionDuration.split(',')
++			.map((entry) => {
++				const time = entry.trim()
++				return Number.parseFloat(time) * (time.endsWith('ms') ? 1 : 1000)
++			}),
++	)
++}
++
+ /** Describes the strip one pagination mount renders, beyond the page items themselves. */
+ export interface PaginationOptions {
+ 	/** The size classes the strip carries beside `pagination`, such as `pagination-sm`. */
+diff --git a/tests/src/browser/Alert.test.ts b/tests/src/browser/Alert.test.ts
+index 4f299ee..848fa1a 100644
+--- a/tests/src/browser/Alert.test.ts
++++ b/tests/src/browser/Alert.test.ts
+@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import alertCascade from '../../../src/styles/components/_alert.scss?inline'
+-import { recordListeners, scene } from '../../setupBrowser.js'
++import { readDuration, recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -28,7 +28,7 @@ describe('Alert', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped alert and fade declarations, which keep the alert in flow and fade only an alert carrying the fade token, at the feedback motion duration', () => {
++	it('reads the shipped alert and fade declarations, which keep the alert in flow and move only an alert carrying the fade token when the shown token leaves', () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		const sheet = requireValue(scene.load(alertCascade).sheet, 'The cascade sheet did not load')
+@@ -41,12 +41,17 @@ describe('Alert', () => {
+ 		const faded = requireValue(root.querySelector<HTMLElement>('#faded'), 'No faded alert')
+ 		expect(sheet.cssRules.length).toBeGreaterThan(0)
+ 		expect(getComputedStyle(plain).position).toBe('relative')
+-		expect(getComputedStyle(plain).transitionDuration).toBe('0s')
+-		expect(getComputedStyle(shown).transitionProperty).toBe('opacity')
+-		expect(getComputedStyle(shown).transitionDuration).toBe('0.15s')
+ 		expect(getComputedStyle(shown).opacity).toBe('1')
+ 		expect(getComputedStyle(faded).opacity).toBe('0')
+ 		expect(getComputedStyle(faded).position).toBe('relative')
++		plain.classList.remove('show')
++		shown.classList.remove('show')
++		expect(plain.getAnimations()).toEqual([])
++		const fade = shown.getAnimations()
++		expect(fade).not.toEqual([])
++		for (const animation of fade) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 	})
+ 
+ 	it('closes an alert without the fade token inside the call, dispatching closed on the removed host, and releases itself', async () => {
+@@ -88,28 +93,34 @@ describe('Alert', () => {
+ 		expect(Alert.find(host)).toBe(replacement)
+ 	})
+ 
+-	it('fades an alert carrying the fade token out through its opacity transition before it removes the host', async () => {
++	it('fades an alert carrying the fade token out, and removes the host after every motion the close starts finishes', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(alertCascade)
+ 		const root = scene.mount('<div class="alert alert-info fade show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+-		const order = createRecorder<readonly [string]>()
+-		const alert = new Alert(host, { on: { closed: (event) => order.handler(event.type) } })
++		const order = createRecorder<readonly [string, boolean]>()
++		const alert = new Alert(host, {
++			on: { closed: (event) => order.handler(event.type, host.isConnected) },
++		})
+ 		onTestFinished(() => alert.destroy())
+ 		const closing = alert.close()
+ 		expect(Array.from(host.classList)).toEqual(['alert', 'alert-info', 'fade'])
+ 		expect(host.isConnected).toBe(true)
+ 		const animations = host.getAnimations()
+-		expect(
+-			animations.map((animation) =>
+-				animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-			),
+-		).toEqual(['opacity'])
+-		expect(getComputedStyle(host).transitionDuration).toBe('0.15s')
+-		void animations[0]?.finished.then(() => order.handler('finished'))
++		expect(animations).not.toEqual([])
++		for (const animation of animations) {
++			expect(animation).toBeInstanceOf(CSSTransition)
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		void Promise.all(animations.map((animation) => animation.finished)).then(() =>
++			order.handler('finished', host.isConnected),
++		)
+ 		expect(await closing).toBe(true)
+-		expect(order.calls).toEqual([['finished'], ['closed.vn.alert']])
++		expect(order.calls).toEqual([
++			['finished', true],
++			['closed.vn.alert', false],
++		])
+ 		expect(host.isConnected).toBe(false)
+ 		expect(Array.from(host.classList)).toEqual(['alert', 'alert-info', 'fade'])
+ 	})
+@@ -118,14 +129,18 @@ describe('Alert', () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(alertCascade)
+-		// The root carries the factor, because the tokens partial resolves the motion tokens there and
+-		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
+-		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const root = scene.mount(`
+ 			<div class="alert fade show" id="still">Saved</div>
+ 			<div class="alert fade show" id="slow">Saved</div>`)
+ 		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still alert')
+ 		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow alert')
++		// The slow alert's duration is read at the release's factor and again at the large one, and
++		// the ratio of the two readings is the factor.
++		const released = readDuration(slow)
++		expect(released).toBeGreaterThan(0)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const order = createRecorder<readonly [string, string]>()
+ 		const instant = new Alert(still, {
+ 			on: { closed: (event) => order.handler('still', event.type) },
+@@ -136,7 +151,6 @@ describe('Alert', () => {
+ 		const closing = instant.close()
+ 		void closing.then(() => order.handler('still', 'resolved'))
+ 		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+-		expect(getComputedStyle(still).transitionDuration).toBe('0s')
+ 		expect(still.getAnimations()).toEqual([])
+ 		expect(await closing).toBe(true)
+ 		await frame
+@@ -148,19 +162,20 @@ describe('Alert', () => {
+ 		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.close()
+-		expect(getComputedStyle(slow).transitionDuration).toBe('0.6s')
+-		const transition = requireValue(slow.getAnimations()[0], 'No fade')
+-		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		const scaled = readDuration(slow)
++		expect(scaled / released).toBeCloseTo(4)
++		const motions = slow.getAnimations()
++		expect(motions).not.toEqual([])
+ 		await waitForFrame()
+ 		expect(order.calls).toEqual([
+ 			['still', 'closed.vn.alert'],
+ 			['still', 'resolved'],
+ 			['still', 'frame'],
+ 		])
+-		expect(transition.playState).toBe('running')
++		for (const animation of motions) expect(animation.playState).toBe('running')
+ 		expect(slow.isConnected).toBe(true)
+ 		// The event arrives after the fade finishes and before one further frame passes.
+-		const settled = transition.finished.then(async () => {
++		const settled = Promise.all(motions.map((animation) => animation.finished)).then(async () => {
+ 			order.handler('slow', 'finished')
+ 			await waitForFrame()
+ 			order.handler('slow', 'frame')
+@@ -312,7 +327,7 @@ describe('Alert', () => {
+ 		onTestFinished(() => fresh.destroy())
+ 		const closing = fresh.close()
+ 		expect(host.classList.contains('show')).toBe(false)
+-		expect(host.getAnimations()).toHaveLength(1)
++		expect(host.getAnimations()).not.toEqual([])
+ 		fresh.destroy()
+ 		expect(await closing).toBe(false)
+ 		expect(Array.from(host.classList)).toEqual(['alert', 'fade', 'show'])
+@@ -341,7 +356,7 @@ describe('Alert', () => {
+ 		expect(targets).toEqual([host, host, lifetime.signal])
+ 		const closing = alert?.close()
+ 		expect(host.classList.contains('show')).toBe(false)
+-		expect(host.getAnimations()).toHaveLength(1)
++		expect(host.getAnimations()).not.toEqual([])
+ 		alert?.destroy()
+ 		expect(await closing).toBe(false)
+ 		expect(hooks.calls).toEqual([['close.vn.alert']])
+@@ -362,6 +377,9 @@ describe('Alert', () => {
+ 		expect(Alert.find(host)).toBe(replacement)
+ 	})
+ 
++	// The rule is a consumer's own cascade for the replacing tokens, which no shipped rule selects. It
++	// sets up the case's condition, a fade the replacing `fade` token carries, and stands in for no
++	// shipped rule; the shipped fade is proved under the shipped cascade.
+ 	it('writes, removes, and tests only the replacing class tokens when every group is replaced', async () => {
+ 		scene.load(
+ 			'.is-fading { transition: opacity 0.15s linear } .is-fading:not(.is-open) { opacity: 0 }',
+@@ -379,13 +397,11 @@ describe('Alert', () => {
+ 		const closing = alert.close()
+ 		expect(Array.from(host.classList)).toEqual(['notice', 'is-fading', 'show'])
+ 		expect(host.isConnected).toBe(true)
+-		expect(
+-			host
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-				),
+-		).toEqual(['opacity'])
++		const fade = host.getAnimations()
++		expect(fade).not.toEqual([])
++		for (const animation of fade) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(await closing).toBe(true)
+ 		expect(host.isConnected).toBe(false)
+ 		expect(Array.from(host.classList)).toEqual(['notice', 'is-fading', 'show'])
+@@ -622,7 +638,7 @@ describe('Alert', () => {
+ 		})
+ 		onTestFinished(() => alert.destroy())
+ 		const closing = alert.close()
+-		expect(host.getAnimations()).toHaveLength(1)
++		expect(host.getAnimations()).not.toEqual([])
+ 		host.classList.add('show')
+ 		expect(await closing).toBe(false)
+ 		expect(events.calls).toEqual([['close.vn.alert']])
+diff --git a/tests/src/browser/Backdrop.test.ts b/tests/src/browser/Backdrop.test.ts
+index c978331..923a925 100644
+--- a/tests/src/browser/Backdrop.test.ts
++++ b/tests/src/browser/Backdrop.test.ts
+@@ -2,17 +2,18 @@ import { Backdrop, BACKDROP_CLASSES } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
++import modalCascade from '../../../src/styles/components/_modal.scss?inline'
+ import { scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+ describe('Backdrop', () => {
+-	// The fade rules replace every default token, so the motion proofs also read the replacing
+-	// vocabulary; the defaults are proved through the modal's own backdrop.
+-	const cascade = `
+-		.shade { position: fixed; inset: 0 }
+-		.shade.is-fading { opacity: 0; transition: opacity 0.1s linear }
+-		.shade.is-fading.is-on { opacity: 0.5 }`
++	// The motion proofs run under the shipped cascade the modal's backdrop carries: the modal key
++	// places the backdrop and sets its shown opacity, and its fade is the fade partial's `.fade` rule,
++	// whose duration reads a motion token, so the tokens and that partial load beside the key.
++	const cascade = `${tokensCascade}\n${fadeCascade}\n${modalCascade}`
+ 
+ 	it('publishes a frozen default table naming the modal backdrop tokens the cascade selects on', () => {
+ 		expect(BACKDROP_CLASSES).toStrictEqual({ host: 'modal-backdrop', shown: 'show', fade: 'fade' })
+@@ -21,45 +22,74 @@ describe('Backdrop', () => {
+ 
+ 	it('appends an element carrying the host and fade tokens, fades it in from a layout read, fades it out on hide, and removes it only on destruction', async () => {
+ 		scene.load(cascade)
+-		const readings = createRecorder<readonly [string, boolean]>()
+-		const backdrop = new Backdrop({
+-			classes: { host: 'shade', shown: 'is-on', fade: 'is-fading' },
+-			animated: true,
+-		})
++		const readings = createRecorder<readonly [string, boolean, number]>()
++		const backdrop = new Backdrop({ animated: true })
+ 		onTestFinished(() => backdrop.destroy())
+ 		const element = backdrop.element
+ 		expect(element.isConnected).toBe(false)
+-		expect(Array.from(element.classList)).toEqual(['shade', 'is-fading'])
++		expect(Array.from(element.classList)).toEqual(['modal-backdrop', 'fade'])
+ 		const showing = backdrop.show()
+ 		expect(element.parentElement).toBe(document.body)
+-		expect(Array.from(element.classList)).toEqual(['shade', 'is-fading', 'is-on'])
+-		const [fade] = element.getAnimations()
+-		expect(fade).toBeInstanceOf(CSSTransition)
+-		void fade?.finished.then(() => readings.handler('shown', element.isConnected))
++		expect(Array.from(element.classList)).toEqual(['modal-backdrop', 'fade', 'show'])
++		const fade = element.getAnimations()
++		expect(fade).not.toEqual([])
++		for (const animation of fade) {
++			expect(animation).toBeInstanceOf(CSSTransition)
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		void Promise.all(fade.map((animation) => animation.finished)).then(() =>
++			readings.handler('shown', element.isConnected, 0),
++		)
+ 		expect(await showing).toBe(true)
+-		readings.handler('resolved', element.isConnected)
++		readings.handler('resolved', element.isConnected, element.getAnimations().length)
+ 		expect(element.hasAttribute('popover')).toBe(false)
+ 		expect(element.matches(':popover-open, :modal')).toBe(false)
+ 		const hiding = backdrop.hide()
+-		expect(Array.from(element.classList)).toEqual(['shade', 'is-fading'])
+-		const [out] = element.getAnimations()
+-		void out?.finished.then(() => readings.handler('hidden', element.isConnected))
++		expect(Array.from(element.classList)).toEqual(['modal-backdrop', 'fade'])
++		const out = element.getAnimations()
++		expect(out).not.toEqual([])
++		for (const animation of out) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		void Promise.all(out.map((animation) => animation.finished)).then(() =>
++			readings.handler('hidden', element.isConnected, 0),
++		)
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+ 		onTestFinished(() => observer.disconnect())
+ 		observer.observe(document.body, { attributes: true, childList: true, subtree: true })
+ 		expect(await hiding).toBe(true)
++		readings.handler('settled', element.isConnected, element.getAnimations().length)
+ 		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
+ 		expect(element.isConnected).toBe(true)
+ 		expect(readings.calls).toEqual([
+-			['shown', true],
+-			['resolved', true],
+-			['hidden', true],
++			['shown', true, 0],
++			['resolved', true, 0],
++			['hidden', true, 0],
++			['settled', true, 0],
+ 		])
+ 		backdrop.destroy()
+ 		expect(element.isConnected).toBe(false)
+ 	})
+ 
++	it('writes, tests, and removes only the replacing tokens when every class is replaced', async () => {
++		const backdrop = new Backdrop({
++			classes: { host: 'shade', shown: 'is-on', fade: 'is-fading' },
++			animated: true,
++		})
++		onTestFinished(() => backdrop.destroy())
++		const element = backdrop.element
++		expect(Array.from(element.classList)).toEqual(['shade', 'is-fading'])
++		expect(await backdrop.show()).toBe(true)
++		expect(Array.from(element.classList)).toEqual(['shade', 'is-fading', 'is-on'])
++		expect(await backdrop.show()).toBe(false)
++		element.classList.add('show')
++		expect(await backdrop.hide()).toBe(true)
++		expect(Array.from(element.classList)).toEqual(['shade', 'is-fading', 'show'])
++		expect(await backdrop.hide()).toBe(false)
++		expect(element.isConnected).toBe(true)
++	})
++
+ 	it('appends to the parent it names and adds no fade token when not animated, settling with no animation', async () => {
+ 		const parent = scene.mount('<section></section>')
+ 		const backdrop = new Backdrop({ parent })
+@@ -93,28 +123,24 @@ describe('Backdrop', () => {
+ 
+ 	it('keeps the element for a show that takes over a hide in flight, which resolves false', async () => {
+ 		scene.load(cascade)
+-		const backdrop = new Backdrop({
+-			classes: { host: 'shade', shown: 'is-on', fade: 'is-fading' },
+-			animated: true,
+-		})
++		const backdrop = new Backdrop({ animated: true })
+ 		onTestFinished(() => backdrop.destroy())
+ 		expect(await backdrop.show()).toBe(true)
+ 		const hiding = backdrop.hide()
++		expect(backdrop.element.getAnimations()).not.toEqual([])
+ 		const showing = backdrop.show()
+ 		expect(await hiding).toBe(false)
+ 		expect(await showing).toBe(true)
+ 		expect(backdrop.element.isConnected).toBe(true)
+-		expect(backdrop.element.classList.contains('is-on')).toBe(true)
++		expect(backdrop.element.classList.contains('show')).toBe(true)
++		expect(backdrop.element.getAnimations()).toEqual([])
+ 	})
+ 
+ 	it('removes the element at once on destruction and resolves the show in flight false', async () => {
+ 		scene.load(cascade)
+-		const backdrop = new Backdrop({
+-			classes: { host: 'shade', shown: 'is-on', fade: 'is-fading' },
+-			animated: true,
+-		})
++		const backdrop = new Backdrop({ animated: true })
+ 		const showing = backdrop.show()
+-		expect(backdrop.element.getAnimations()).toHaveLength(1)
++		expect(backdrop.element.getAnimations()).not.toEqual([])
+ 		backdrop.destroy()
+ 		expect(backdrop.element.isConnected).toBe(false)
+ 		expect(await showing).toBe(false)
+diff --git a/tests/src/browser/Modal.test.ts b/tests/src/browser/Modal.test.ts
+index 7fb6de2..b203e49 100644
+--- a/tests/src/browser/Modal.test.ts
++++ b/tests/src/browser/Modal.test.ts
+@@ -24,6 +24,7 @@ import {
+ 	MODAL_SHOW_DOORS,
+ 	RELEASE_REENTRIES,
+ 	SHOW_REVERSALS,
++	readDuration,
+ 	recordListeners,
+ 	scene,
+ 	visitBreakpoint,
+@@ -101,15 +102,10 @@ describe('Modal', () => {
+ 		const backdrop = requireValue(root.querySelector<HTMLElement>('.modal-backdrop'), 'No backdrop')
+ 		expect(getComputedStyle(host).display).toBe('none')
+ 		expect(getComputedStyle(host).position).toBe('fixed')
+-		expect(getComputedStyle(host).transitionProperty).toBe('opacity')
+-		expect(getComputedStyle(host).transitionDuration).toBe('0.15s')
+-		expect(getComputedStyle(dialog).transitionProperty).toBe('transform')
+-		expect(getComputedStyle(dialog).transitionDuration).toBe('0.3s')
+ 		expect(getComputedStyle(dialog).pointerEvents).toBe('none')
+ 		expect(getComputedStyle(content).pointerEvents).toBe('auto')
+ 		expect(getComputedStyle(backdrop).position).toBe('fixed')
+ 		expect(getComputedStyle(backdrop).opacity).toBe('0')
+-		expect(getComputedStyle(backdrop).transitionDuration).toBe('0.15s')
+ 		expect(Number(getComputedStyle(host).zIndex)).toBeGreaterThan(
+ 			Number(getComputedStyle(backdrop).zIndex),
+ 		)
+@@ -182,7 +178,7 @@ describe('Modal', () => {
+ 		expect(modal.shown).toBe(false)
+ 	})
+ 
+-	it('displays the host after the backdrop fades in and dispatches shown after the dialog transition settles', async () => {
++	it('displays the host after the backdrop fades in and dispatches shown with no motion running on the host, the dialog, or the backdrop', async () => {
+ 		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#dialog'), 'No modal')
+@@ -191,7 +187,13 @@ describe('Modal', () => {
+ 		const modal = new Modal(host, {
+ 			on: {
+ 				shown: (event) =>
+-					readings.handler(event.type, host.style.display, dialog.getAnimations().length),
++					readings.handler(
++						event.type,
++						host.style.display,
++						[host, dialog, ...document.querySelectorAll('.modal-backdrop')].flatMap((element) =>
++							element.getAnimations(),
++						).length,
++					),
+ 			},
+ 		})
+ 		onTestFinished(() => modal.destroy())
+@@ -202,6 +204,7 @@ describe('Modal', () => {
+ 		)
+ 		const [fade] = backdrop.getAnimations()
+ 		expect(fade).toBeInstanceOf(CSSTransition)
++		expect(Number(fade?.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
+ 		void fade?.finished.then(() => readings.handler('backdrop', host.style.display, 0))
+ 		expect(await showing).toBe(true)
+ 		const [first, second] = readings.calls
+@@ -225,6 +228,7 @@ describe('Modal', () => {
+ 		const hiding = modal.hide()
+ 		const [fade] = host.getAnimations()
+ 		expect(fade).toBeInstanceOf(CSSTransition)
++		expect(Number(fade?.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
+ 		fade?.finished.then(
+ 			() => order.handler('finished', host.style.display),
+ 			() => order.handler('cancelled', host.style.display),
+@@ -236,6 +240,79 @@ describe('Modal', () => {
+ 		])
+ 	})
+ 
++	// Each row lengthens the motion of one of the two elements a change moves past the other's, so both
++	// orders run whatever durations the shipped cascade gives them. The inline duration sets up the
++	// row's condition from the shipped duration it reads on the other element; it copies no shipped
++	// rule. The show's motions are read as its token write lands, after the backdrop's fade, and the
++	// hide's as the hide call returns, having removed the token. Each completed event reads whether
++	// every motion read so far has finished, so a motion the change cuts short reads as unfinished.
++	it("dispatches shown and hidden after every motion its change starts on the host and the dialog finishes, whichever of the host's fade and the dialog's transition lasts longer", async () => {
++		scene.load(cascade)
++		const readings = createRecorder<readonly [string, string, number, number]>()
++		for (const longer of ['host', 'dialog'] as const) {
++			const root = scene.mount(markup)
++			const host = requireValue(root.querySelector<HTMLElement>('#dialog'), 'No modal')
++			const dialog = requireValue(host.querySelector<HTMLElement>('.modal-dialog'), 'No dialog')
++			const [lengthened, other] = longer === 'host' ? [host, dialog] : [dialog, host]
++			const shipped = readDuration(other)
++			expect(shipped).toBeGreaterThan(0)
++			lengthened.style.setProperty('transition-duration', `${2 * shipped}ms`)
++			const motions = createRecorder<readonly [string, Animation]>()
++			const watcher = new MutationObserver(() => {
++				for (const animation of host.getAnimations({ subtree: true })) {
++					motions.handler('show', animation)
++				}
++			})
++			onTestFinished(() => watcher.disconnect())
++			watcher.observe(host, { attributeFilter: ['class'] })
++			const modal = new Modal(host, {
++				on: {
++					shown: (event) =>
++						readings.handler(
++							longer,
++							event.type,
++							motions.calls.filter(([, animation]) => animation.playState !== 'finished').length,
++							host.getAnimations({ subtree: true }).length,
++						),
++					hidden: (event) =>
++						readings.handler(
++							longer,
++							event.type,
++							motions.calls.filter(([, animation]) => animation.playState !== 'finished').length,
++							host.getAnimations({ subtree: true }).length,
++						),
++				},
++			})
++			onTestFinished(() => modal.destroy())
++			expect(await modal.show()).toBe(true)
++			watcher.disconnect()
++			const hiding = modal.hide()
++			for (const animation of host.getAnimations({ subtree: true })) {
++				motions.handler('hide', animation)
++			}
++			expect(await hiding).toBe(true)
++			for (const change of ['show', 'hide']) {
++				const moved = motions.calls.filter(([name]) => name === change)
++				expect(
++					new Set(
++						moved.map(([, animation]) =>
++							animation.effect instanceof KeyframeEffect ? animation.effect.target : null,
++						),
++					),
++				).toEqual(new Set([host, dialog]))
++				for (const [, animation] of moved) {
++					expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++				}
++			}
++		}
++		expect(readings.calls).toEqual([
++			['host', 'shown.vn.modal', 0, 0],
++			['host', 'hidden.vn.modal', 0, 0],
++			['dialog', 'shown.vn.modal', 0, 0],
++			['dialog', 'hidden.vn.modal', 0, 0],
++		])
++	})
++
+ 	it('dispatches shown with no animation created under staged reduced motion', async () => {
+ 		scene.load(cascade)
+ 		await stageMedia({ motion: false })
+@@ -420,13 +497,11 @@ describe('Modal', () => {
+ 		expect(await bouncing.show()).toBe(true)
+ 		await pressKeys('{Escape}')
+ 		expect(host.classList.contains('modal-static')).toBe(true)
+-		expect(
+-			dialog
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : '',
+-				),
+-		).toEqual(['transform'])
++		const bounce = dialog.getAnimations()
++		expect(bounce).not.toEqual([])
++		for (const animation of bounce) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		await pressKeys('{Escape}')
+ 		expect(prevented.calls).toEqual([['prevent.vn.modal'], ['prevent.vn.modal']])
+ 		await waitForCondition('the bounce ends', () => !host.classList.contains('modal-static'))
+diff --git a/tests/src/browser/Offcanvas.test.ts b/tests/src/browser/Offcanvas.test.ts
+index 22fb6c5..4e53e11 100644
+--- a/tests/src/browser/Offcanvas.test.ts
++++ b/tests/src/browser/Offcanvas.test.ts
+@@ -29,6 +29,7 @@ import {
+ 	OFFCANVAS_SHOW_DOORS,
+ 	RELEASE_REENTRIES,
+ 	SHOW_REVERSALS,
++	readDuration,
+ 	recordListeners,
+ 	scene,
+ 	visitBreakpoint,
+@@ -37,6 +38,10 @@ import {
+ afterEach(() => scene.clear())
+ 
+ describe('Offcanvas', () => {
++	// The proofs run under the shipped offcanvas key. The panel's rungs and insets read the tokens, and
++	// the backdrop carries the fade partial's `.fade` rule, whose duration reads a motion token, so the
++	// tokens and that partial load beside the key.
++	const cascade = `${tokensCascade}\n${fadeCascade}\n${offcanvasCascade}`
+ 	const markup = `
+ 		<button type="button" id="opener">Open</button>
+ 		<div id="panel" class="offcanvas offcanvas-start" tabindex="-1">
+@@ -92,8 +97,8 @@ describe('Offcanvas', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped offcanvas declarations the motion proofs run under, whose backdrop fades through the fade partial alone', () => {
+-		const sheet = requireValue(scene.load(offcanvasCascade).sheet, 'The cascade sheet did not load')
++	it('reads the shipped offcanvas declarations the motion proofs run under', () => {
++		const sheet = requireValue(scene.load(cascade).sheet, 'The cascade sheet did not load')
+ 		const root = scene.mount(`${markup}<div class="offcanvas-backdrop fade"></div>`)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const backdrop = requireValue(
+@@ -104,8 +109,6 @@ describe('Offcanvas', () => {
+ 		const style = getComputedStyle(host)
+ 		expect(style.position).toBe('fixed')
+ 		expect(style.visibility).toBe('hidden')
+-		expect(style.transitionProperty).toBe('transform')
+-		expect(style.transitionDuration).toBe('0.3s')
+ 		expect(style.transform).not.toBe('none')
+ 		// Each token write starts the slide, so the end values are read with the transition held off.
+ 		host.style.setProperty('transition', 'none')
+@@ -119,11 +122,6 @@ describe('Offcanvas', () => {
+ 		expect(getComputedStyle(host).visibility).toBe('visible')
+ 		expect(getComputedStyle(backdrop).position).toBe('fixed')
+ 		expect(getComputedStyle(backdrop).opacity).toBe('0')
+-		expect(getComputedStyle(backdrop).transitionDuration).toBe('0s')
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		expect(getComputedStyle(backdrop).transitionProperty).toBe('opacity')
+-		expect(getComputedStyle(backdrop).transitionDuration).toBe('0.15s')
+ 		backdrop.style.setProperty('transition', 'none')
+ 		backdrop.classList.add('show')
+ 		expect(getComputedStyle(backdrop).opacity).toBe('0.5')
+@@ -158,7 +156,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('shows over the backdrop and hides, locking the body, isolating the page, and moving focus in step', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+@@ -206,8 +204,8 @@ describe('Offcanvas', () => {
+ 		expect(offcanvas.shown).toBe(false)
+ 	})
+ 
+-	it('slides in under the showing token and out under the hiding token, dispatching each completed event after the transform transition settles', async () => {
+-		scene.load(offcanvasCascade)
++	it('slides in under the showing token and out under the hiding token, dispatching each completed event after the slide settles', async () => {
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const readings = createRecorder<readonly [string, string, number]>()
+@@ -220,15 +218,25 @@ describe('Offcanvas', () => {
+ 		})
+ 		onTestFinished(() => offcanvas.destroy())
+ 		const showing = offcanvas.show()
+-		const [slide] = host.getAnimations()
+-		expect(slide).toBeInstanceOf(CSSTransition)
+-		expect(slide instanceof CSSTransition ? slide.transitionProperty : '').toBe('transform')
+-		void slide?.finished.then(() => readings.handler('slid in', host.className, 0))
++		const slide = host.getAnimations()
++		expect(slide).not.toEqual([])
++		for (const animation of slide) {
++			expect(animation).toBeInstanceOf(CSSTransition)
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		void Promise.all(slide.map((animation) => animation.finished)).then(() =>
++			readings.handler('slid in', host.className, 0),
++		)
+ 		expect(await showing).toBe(true)
+ 		const hiding = offcanvas.hide()
+-		const [back] = host.getAnimations()
+-		expect(back).toBeInstanceOf(CSSTransition)
+-		void back?.finished.then(() => readings.handler('slid out', host.className, 0))
++		const back = host.getAnimations()
++		expect(back).not.toEqual([])
++		for (const animation of back) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		void Promise.all(back.map((animation) => animation.finished)).then(() =>
++			readings.handler('slid out', host.className, 0),
++		)
+ 		expect(await hiding).toBe(true)
+ 		expect(readings.calls).toEqual([
+ 			['slid in', 'offcanvas offcanvas-start showing show', 0],
+@@ -239,7 +247,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('slides in a panel inserted in the same task, because the show reads layout before its tokens', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount('<div></div>')
+ 		const host = document.createElement('div')
+ 		host.className = 'offcanvas offcanvas-end'
+@@ -247,78 +255,126 @@ describe('Offcanvas', () => {
+ 		const offcanvas = new Offcanvas(host, { backdrop: false, scroll: true })
+ 		onTestFinished(() => offcanvas.destroy())
+ 		const showing = offcanvas.show()
+-		expect(
+-			host
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : '',
+-				),
+-		).toEqual(['transform'])
++		const slide = host.getAnimations()
++		expect(slide).not.toEqual([])
++		for (const animation of slide) {
++			expect(animation).toBeInstanceOf(CSSTransition)
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(await showing).toBe(true)
+ 	})
+ 
+ 	it('dispatches shown with no animation created under staged reduced motion', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		await stageMedia({ motion: false })
+ 		onTestFinished(() => releaseMedia())
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+-		expect(getComputedStyle(host).transitionProperty).toBe('none')
+-		expect(getComputedStyle(host).transitionDuration).toBe('0s')
+ 		const offcanvas = new Offcanvas(host)
+ 		onTestFinished(() => offcanvas.destroy())
+ 		const showing = offcanvas.show()
+-		expect(host.getAnimations()).toEqual([])
+-		expect(await showing).toBe(true)
+-		expect(await offcanvas.hide()).toBe(true)
+-	})
+-
+-	it('fades the backdrop in and out beside the slide and waits for both before each completed event', async () => {
+-		// The backdrop's fade is the fade partial's `.fade` rule, whose duration reads a motion token,
+-		// so this case loads the tokens and that partial beside the offcanvas key. The fade is then
+-		// lengthened past the slide, so each completed event waits on the fade rather than the slide.
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
+-		scene.load('.offcanvas-backdrop.fade { transition-duration: 0.5s }')
+-		const root = scene.mount(markup)
+-		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+-		const order = createRecorder<readonly [string]>()
+-		const offcanvas = new Offcanvas(host, {
+-			on: {
+-				shown: (event) => order.handler(event.type),
+-				hidden: (event) => order.handler(event.type),
+-			},
+-		})
+-		onTestFinished(() => offcanvas.destroy())
+-		const showing = offcanvas.show()
+-		const backdrop = requireValue(
+-			root.querySelector<HTMLElement>('.offcanvas-backdrop'),
+-			'No backdrop',
+-		)
+-		const [fade] = backdrop.getAnimations()
+-		const [slide] = host.getAnimations()
+-		expect(fade).toBeInstanceOf(CSSTransition)
+-		expect(slide).toBeInstanceOf(CSSTransition)
+-		void fade?.finished.then(() => order.handler('faded in'))
++		expect(root.querySelectorAll('.offcanvas-backdrop')).toHaveLength(1)
++		expect(
++			[host, ...root.querySelectorAll('.offcanvas-backdrop')].flatMap((element) =>
++				element.getAnimations(),
++			),
++		).toEqual([])
+ 		expect(await showing).toBe(true)
+ 		const hiding = offcanvas.hide()
+-		const [out] = backdrop.getAnimations()
+-		expect(out).toBeInstanceOf(CSSTransition)
+-		expect(host.getAnimations()).toHaveLength(1)
+-		void out?.finished.then(() => order.handler(`faded out ${String(backdrop.isConnected)}`))
++		expect(
++			[host, ...root.querySelectorAll('.offcanvas-backdrop')].flatMap((element) =>
++				element.getAnimations(),
++			),
++		).toEqual([])
+ 		expect(await hiding).toBe(true)
+-		expect(order.calls).toEqual([
+-			['faded in'],
+-			['shown.vn.offcanvas'],
+-			['faded out true'],
+-			['hidden.vn.offcanvas'],
++	})
++
++	// Each row lengthens the motion of one of the two elements a change moves past the other's, so both
++	// orders run whatever durations the shipped cascade gives them. The rule or the inline duration sets
++	// up the row's condition from the shipped duration it reads on the other element; neither copies a
++	// shipped rule. The backdrop's shipped duration is read on an element carrying its tokens before the
++	// panel creates its own. Each change writes its tokens on the panel and the backdrop before its first
++	// wait, so its motions are read as its call returns, and each completed event reads whether every
++	// motion read so far has finished, so a motion the change cuts short reads as unfinished.
++	it('fades the backdrop in and out beside the slide and dispatches each completed event after every motion its change starts finishes, whichever of the fade and the slide lasts longer', async () => {
++		scene.load(cascade)
++		const readings = createRecorder<readonly [string, string, number, number]>()
++		for (const longer of ['backdrop', 'panel'] as const) {
++			const root = scene.mount(`${markup}<div class="offcanvas-backdrop fade" id="shade"></div>`)
++			const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
++			const shade = requireValue(root.querySelector<HTMLElement>('#shade'), 'No shade')
++			const shipped = readDuration(longer === 'backdrop' ? host : shade)
++			shade.remove()
++			expect(shipped).toBeGreaterThan(0)
++			const lengthening =
++				longer === 'backdrop'
++					? scene.load(`.offcanvas-backdrop.fade { transition-duration: ${2 * shipped}ms }`)
++					: undefined
++			if (longer === 'panel') host.style.setProperty('transition-duration', `${2 * shipped}ms`)
++			const motions = createRecorder<readonly [string, Animation]>()
++			const offcanvas = new Offcanvas(host, {
++				on: {
++					shown: (event) =>
++						readings.handler(
++							longer,
++							event.type,
++							motions.calls.filter(([, animation]) => animation.playState !== 'finished').length,
++							[host, ...root.querySelectorAll('.offcanvas-backdrop')].flatMap((element) =>
++								element.getAnimations(),
++							).length,
++						),
++					hidden: (event) =>
++						readings.handler(
++							longer,
++							event.type,
++							motions.calls.filter(([, animation]) => animation.playState !== 'finished').length,
++							[host, ...root.querySelectorAll('.offcanvas-backdrop')].flatMap((element) =>
++								element.getAnimations(),
++							).length,
++						),
++				},
++			})
++			onTestFinished(() => offcanvas.destroy())
++			const showing = offcanvas.show()
++			const backdrop = requireValue(
++				root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++				'No backdrop',
++			)
++			for (const animation of [host, backdrop].flatMap((element) => element.getAnimations())) {
++				motions.handler('show', animation)
++			}
++			expect(await showing).toBe(true)
++			const hiding = offcanvas.hide()
++			for (const animation of [host, backdrop].flatMap((element) => element.getAnimations())) {
++				motions.handler('hide', animation)
++			}
++			expect(await hiding).toBe(true)
++			expect(backdrop.isConnected).toBe(false)
++			for (const change of ['show', 'hide']) {
++				const moved = motions.calls.filter(([name]) => name === change)
++				expect(
++					new Set(
++						moved.map(([, animation]) =>
++							animation.effect instanceof KeyframeEffect ? animation.effect.target : null,
++						),
++					),
++				).toEqual(new Set([host, backdrop]))
++				for (const [, animation] of moved) {
++					expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++				}
++			}
++			lengthening?.remove()
++		}
++		expect(readings.calls).toEqual([
++			['backdrop', 'shown.vn.offcanvas', 0, 0],
++			['backdrop', 'hidden.vn.offcanvas', 0, 0],
++			['panel', 'shown.vn.offcanvas', 0, 0],
++			['panel', 'hidden.vn.offcanvas', 0, 0],
+ 		])
+-		expect(backdrop.isConnected).toBe(false)
+ 	})
+ 
+ 	it('leaves the host, the body, and the page untouched when a listener prevents show or hide, and resolves false', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+@@ -360,7 +416,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('resolves false for a call while a change is in flight, and completes the change in flight once', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const events = createRecorder<readonly [string]>()
+@@ -449,7 +505,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('hides on a trusted Escape, and with escape dismissal off dispatches prevent and stays shown', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const offcanvas = new Offcanvas(host)
+@@ -479,8 +535,7 @@ describe('Offcanvas', () => {
+ 	// the backdrop beside the panel and an SVG element beneath it, so each press lands where the
+ 	// cascade paints it rather than where the elements sit in the tree.
+ 	it('hides on a trusted press on the backdrop, through an inert element painted above it and over an SVG element beneath it, dispatches prevent under a static backdrop, and counts no press elsewhere', async () => {
+-		scene.load(tokensCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`${markup}
+ 			<div id="above" style="position: fixed; left: 400px; top: 0; width: 14px; height: 40px; z-index: 1090"></div>
+ 			<svg id="under" style="position: fixed; left: 400px; top: 50px; width: 14px; height: 40px"><rect width="14" height="40"></rect></svg>`)
+@@ -545,8 +600,7 @@ describe('Offcanvas', () => {
+ 	// Each probe has its own assertion, so a press that counts on a container of the backdrop and a
+ 	// press that counts inside the panel each break one of them.
+ 	it('counts no press on a container of the backdrop and no press inside the panel', async () => {
+-		scene.load(tokensCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const inside = requireValue(root.querySelector<HTMLElement>('#inside'), 'No inside button')
+@@ -565,8 +619,7 @@ describe('Offcanvas', () => {
+ 	// Two sibling panels share a parent, so the first panel's live isolation observes the second's
+ 	// backdrop arriving and claims it inert; the second panel's isolation must claim it back.
+ 	it('keeps the backdrop of a panel shown beside another shown panel interactive, so a trusted press on it hides that panel', async () => {
+-		scene.load(tokensCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<div id="first" class="offcanvas offcanvas-start" tabindex="-1"></div>
+ 			<div id="second" class="offcanvas offcanvas-end" tabindex="-1"></div>`)
+@@ -642,7 +695,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('isolates the page and takes focus when a backdrop shows or scrolling is locked, and leaves focus and the page alone when neither holds', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+@@ -677,7 +730,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('resolves the backdrop, the dismissal, and scrolling from the attributes, the constructor winning path by path', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<div id="static" class="offcanvas offcanvas-start" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-scroll="true"></div>
+ 			<div id="bare" class="offcanvas offcanvas-end" tabindex="-1" data-bs-backdrop="0"></div>`)
+@@ -775,7 +828,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+@@ -793,7 +846,7 @@ describe('Offcanvas', () => {
+ 		})
+ 		onTestFinished(() => offcanvas.destroy())
+ 		const showing = offcanvas.show(opener)
+-		expect(host.getAnimations()).toHaveLength(1)
++		expect(host.getAnimations()).not.toEqual([])
+ 		offcanvas.destroy()
+ 		const settled = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const quiet = new MutationObserver((records) => settled.handler(records))
+@@ -827,7 +880,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('restores the host, the body, and focus on destruction after a completed show, keeping consumer edits', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+@@ -974,7 +1027,7 @@ describe('Offcanvas', () => {
+ 			<div id="bare" class="offcanvas offcanvas-start" tabindex="-1"></div>`
+ 
+ 		it('hides a shown responsive panel when a resize leaves it in the flow, and keeps a bare panel shown', async () => {
+-			scene.load(offcanvasCascade)
++			scene.load(cascade)
+ 			const root = scene.mount(responsive)
+ 			const host = requireValue(root.querySelector<HTMLElement>('#responsive'), 'No panel')
+ 			const plain = requireValue(root.querySelector<HTMLElement>('#bare'), 'No bare panel')
+@@ -1011,7 +1064,7 @@ describe('Offcanvas', () => {
+ 		})
+ 
+ 		it('keeps a responsive panel shown past its boundary when a listener prevents the hide the resize asks for', async () => {
+-			scene.load(offcanvasCascade)
++			scene.load(cascade)
+ 			const root = scene.mount(responsive)
+ 			const host = requireValue(root.querySelector<HTMLElement>('#responsive'), 'No panel')
+ 			const refusals = createRecorder<readonly [string]>()
+@@ -1035,7 +1088,7 @@ describe('Offcanvas', () => {
+ 		})
+ 
+ 		it('applies a resize that arrives during the slide-in after the show dispatches its completed event', async () => {
+-			scene.load(offcanvasCascade)
++			scene.load(cascade)
+ 			const root = scene.mount(responsive)
+ 			const host = requireValue(root.querySelector<HTMLElement>('#responsive'), 'No panel')
+ 			// A long slide holds the show in flight while the viewport changes.
+@@ -1421,7 +1474,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('writes nothing after a destruction during the slide-out, resolving the hide false', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const events = createRecorder<readonly [string]>()
+@@ -1429,7 +1482,7 @@ describe('Offcanvas', () => {
+ 		onTestFinished(() => offcanvas.destroy())
+ 		expect(await offcanvas.show()).toBe(true)
+ 		const hiding = offcanvas.hide()
+-		expect(host.getAnimations()).toHaveLength(1)
++		expect(host.getAnimations()).not.toEqual([])
+ 		offcanvas.destroy()
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+@@ -1600,7 +1653,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('runs one show and one shown event when a listener to its show event shows it again, the inner call resolving true and the outer false', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const events = createRecorder<readonly [string]>()
+@@ -1631,7 +1684,7 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	it('runs one hide and one hidden event when a listener to its hide event hides it again, the inner call resolving true and the outer false', async () => {
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 		const events = createRecorder<readonly [string]>()
+@@ -1673,7 +1726,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount('<div></div>')
+ 		const host = document.createElement(name)
+ 		host.className = 'offcanvas offcanvas-start'
+@@ -1744,9 +1797,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const rows = [
+ 			['class', 'show'],
+ 			['wait', undefined],
+@@ -1912,9 +1963,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const rows = ['token', 'wait', 'showing', 'isolation', 'focus'] as const
+ 		const readings = createRecorder<
+ 			readonly [
+@@ -2071,9 +2120,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const readings = createRecorder<
+ 			readonly [
+ 				{
+@@ -2242,7 +2289,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const root = scene.mount('<div></div>')
+ 		const host = document.createElement(name)
+ 		host.className = 'offcanvas offcanvas-start'
+@@ -2397,9 +2444,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const readings = createRecorder<
+ 			readonly [
+ 				{
+@@ -2564,9 +2609,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const readings = createRecorder<
+ 			readonly [
+ 				{
+@@ -2690,9 +2733,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const readings = createRecorder<
+ 			readonly [
+ 				{
+@@ -2796,9 +2837,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const rows = OFFCANVAS_HIDE_DOORS.filter((door) => door !== 'event')
+ 		const readings = createRecorder<
+ 			readonly [
+@@ -3025,9 +3064,7 @@ describe('Offcanvas', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(tokensCascade)
+-		scene.load(fadeCascade)
+-		scene.load(offcanvasCascade)
++		scene.load(cascade)
+ 		const readings = createRecorder<
+ 			readonly [
+ 				{
+@@ -3170,9 +3207,7 @@ describe('Offcanvas', () => {
+ 			]
+ 		>()
+ 		for (const { door, animated } of OFFCANVAS_REINSERTIONS) {
+-			const sheets = animated
+-				? [scene.load(tokensCascade), scene.load(fadeCascade), scene.load(offcanvasCascade)]
+-				: []
++			const sheets = animated ? [scene.load(cascade)] : []
+ 			const root = scene.mount('<div></div>')
+ 			const bar = document.createElement(name)
+ 			bar.className = 'fixed-top'

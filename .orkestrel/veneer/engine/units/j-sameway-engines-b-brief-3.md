@@ -2,7 +2,9 @@
 
 Successor of `j-sameway-engines-b-brief-2.md` and `j-sameway-engines-b-brief.md`. Their sections stand except where this brief replaces them. The verdict is `units/j-sameway-engines-b-audit-verdict.md`, which reconciles the objective verdict `units/j-sameway-engines-b-audit-objective-verdict.md` and the checker verdict.
 
-**The base.** Dispatched after J-SAMEWAY-ENGINES-A lands. `unit/engines-b` then carries a merge of Veneer `main` BASE_COMMIT, which holds J-SAMEWAY-ENGINES-A's shared prior-value leaves in `src/browser/helpers.ts`, over your `54a6c2f` and the integration `b8a8805`. Work on that tip, and run no merge.
+**The base.** J-SAMEWAY-ENGINES-A has landed. `unit/engines-b` carries the Orchestrator's merge `45aebaa` of Veneer `main` `3058570` over your `54a6c2f` and the integration `b8a8805`, and the worktree is clean there. `main` holds J-SAMEWAY-ENGINES-A's shared leaves in `src/browser/helpers.ts`, with J-CONCERNS-A and the styles session's landings. The lockfile is unchanged. Work on that tip, and run no merge.
+
+**A standing condition.** On this host `tests/src/styles/elements/button.test.ts` reads red on `main` as a standing row (`units/host-chromium-153-reading.md`). It is not this unit's.
 
 ## The obligations
 
