@@ -1,0 +1,41 @@
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-core
+
+····································································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the workspace policy laws including surface ownership
+AssertionError: expected [ { rule: 'surface', …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "line": 2540,
++     "message": "surface name belongs to one package: Emitter (emitter)",
++     "path": "src/browser/types.ts",
++     "rule": "surface",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:758:49
+    756| describe('repository policy', () => {
+    757|  it('enforces the workspace policy laws including surface ownership', …
+    758|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    759|  })
+    760|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 108 passed | 1 skipped (110)
+   Start at  03:31:32
+   Duration  2.97s (transform 149ms, setup 96ms, import 335ms, tests 2.36s, environment 0ms)
+

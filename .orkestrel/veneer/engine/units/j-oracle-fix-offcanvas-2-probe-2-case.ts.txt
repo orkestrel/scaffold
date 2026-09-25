@@ -1,0 +1,38 @@
+	it('PROBE shadow show and hide apart from the press', async () => {
+		scene.load(cascade)
+		const sheet = new CSSStyleSheet()
+		sheet.replaceSync(cascade)
+		const container = scene.mount('')
+		const shadow = container.attachShadow({ mode: 'open' })
+		shadow.adoptedStyleSheets = [sheet]
+		shadow.innerHTML = `<div>${markup}</div>`
+		const host = requireValue(shadow.querySelector<HTMLElement>('#panel'), 'No panel')
+		const opener = requireValue(shadow.querySelector<HTMLElement>('#opener'), 'No opener')
+		const offcanvas = new Offcanvas(host)
+		onTestFinished(() => offcanvas.destroy())
+		opener.focus()
+		const showed = await offcanvas.show(opener)
+		const backdrop = shadow.querySelector<HTMLElement>('.offcanvas-backdrop')
+		const afterShow = {
+			showed,
+			classes: Array.from(host.classList),
+			modal: host.getAttribute('aria-modal'),
+			backdropInShadow: backdrop?.getRootNode() === shadow,
+			backdropClasses: Array.from(backdrop?.classList ?? []),
+			position: getComputedStyle(host).position,
+			transition: getComputedStyle(host).transitionDuration,
+			visibility: getComputedStyle(host).visibility,
+			backdropOpacity: backdrop === null ? '' : getComputedStyle(backdrop).opacity,
+			focus: shadow.activeElement?.id,
+			documentFocus: document.activeElement?.tagName,
+		}
+		const hid = await offcanvas.hide()
+		const afterHide = {
+			hid,
+			classes: Array.from(host.classList),
+			modal: host.getAttribute('aria-modal'),
+			backdropConnected: backdrop?.isConnected,
+			focus: shadow.activeElement?.id,
+		}
+		expect({ afterShow, afterHide }).toEqual({})
+	})

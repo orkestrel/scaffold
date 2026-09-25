@@ -1,0 +1,130 @@
+[
+	{
+		"id": "drain-nested",
+		"line": "Lifetime.destroy drains on a nested call",
+		"file": "src/browser/Lifetime.ts",
+		"find": "\t\tif (!this.#controller.signal.aborted) this.#controller.abort()\n\t\tlet failure",
+		"replace": "\t\tif (this.#controller.signal.aborted) return\n\t\tthis.#controller.abort()\n\t\tlet failure",
+		"tests": ["tests/src/browser/Lifetime.test.ts", "tests/src/browser/Button.test.ts"]
+	},
+	{
+		"id": "same-entry",
+		"line": "Lifetime.#give ends only the same entry",
+		"file": "src/browser/Lifetime.ts",
+		"find": "this.#holdings.filter((pending) => pending !== holding)",
+		"replace": "this.#holdings.filter((pending) => pending.record !== holding.record)",
+		"tests": ["tests/src/browser/Lifetime.test.ts"]
+	},
+	{
+		"id": "newest-first",
+		"line": "Lifetime.destroy drains newest first",
+		"file": "src/browser/Lifetime.ts",
+		"find": "for (const holding of [...this.#holdings].reverse()) {",
+		"replace": "for (const holding of [...this.#holdings]) {",
+		"tests": ["tests/src/browser/Lifetime.test.ts"]
+	},
+	{
+		"id": "hold-after-destroy",
+		"line": "Lifetime.hold runs the release at once after destruction began",
+		"file": "src/browser/Lifetime.ts",
+		"find": "\t\tif (!this.#controller.signal.aborted) return true\n\t\tthis.#give(holding)\n\t\treturn false",
+		"replace": "\t\treturn true",
+		"tests": ["tests/src/browser/Lifetime.test.ts", "tests/src/browser/Button.test.ts"]
+	},
+	{
+		"id": "drain-past-throw",
+		"line": "Lifetime.destroy continues past a throwing release",
+		"file": "src/browser/Lifetime.ts",
+		"find": "\t\t\ttry {\n\t\t\t\tthis.#give(holding)\n\t\t\t} catch (error) {\n\t\t\t\tfailure ??= { error }\n\t\t\t}",
+		"replace": "\t\t\tthis.#give(holding)",
+		"tests": ["tests/src/browser/Lifetime.test.ts"]
+	},
+	{
+		"id": "first-error",
+		"line": "Lifetime.destroy rethrows the first error",
+		"file": "src/browser/Lifetime.ts",
+		"find": "failure ??= { error }",
+		"replace": "failure = { error }",
+		"tests": ["tests/src/browser/Lifetime.test.ts"]
+	},
+	{
+		"id": "join-ledger",
+		"line": "Lifetime.join holds the resource in the owning lifetime",
+		"file": "src/browser/Lifetime.ts",
+		"find": "\t\tif (owner !== undefined) owner.hold(resource, (held) => held.destroy())\n\t\telse if (signal.aborted)",
+		"replace": "\t\tif (owner !== undefined && signal.aborted) resource.destroy()\n\t\telse if (signal.aborted)",
+		"tests": ["tests/src/browser/Lifetime.test.ts"]
+	},
+	{
+		"id": "join-unlisten",
+		"line": "Lifetime.join removes a foreign listener at the resource's destruction",
+		"file": "src/browser/Lifetime.ts",
+		"find": "\t\t\t\tonce: true,\n\t\t\t\tsignal: lifetime.signal,\n",
+		"replace": "\t\t\t\tonce: true,\n",
+		"tests": ["tests/src/browser/Lifetime.test.ts"]
+	},
+	{
+		"id": "write-no-record",
+		"line": "HostSnapshot.write creates no record for a write that changes nothing",
+		"file": "src/browser/HostSnapshot.ts",
+		"find": "} else if (HostSnapshot.#records.get(resolved.element)?.has(HostSnapshot.#key(resolved))) {",
+		"replace": "} else {",
+		"tests": ["tests/src/browser/HostSnapshot.test.ts"]
+	},
+	{
+		"id": "write-join",
+		"line": "HostSnapshot.write joins a live record at a write that changes nothing",
+		"file": "src/browser/HostSnapshot.ts",
+		"find": "} else if (HostSnapshot.#records.get(resolved.element)?.has(HostSnapshot.#key(resolved))) {",
+		"replace": "} else if (HostSnapshot.#records.get(resolved.element)?.has('never')) {",
+		"tests": ["tests/src/browser/HostSnapshot.test.ts", "tests/src/browser/Button.test.ts"]
+	},
+	{
+		"id": "write-change",
+		"line": "HostSnapshot.write saves before a write that changes the target",
+		"file": "src/browser/HostSnapshot.ts",
+		"find": "\t\t\tthis.#save(resolved)\n\t\t\twriteHostValue(resolved, value, priority)",
+		"replace": "\t\t\twriteHostValue(resolved, value, priority)",
+		"tests": ["tests/src/browser/HostSnapshot.test.ts"]
+	},
+	{
+		"id": "priority",
+		"line": "matchesHostValue compares the priority",
+		"file": "src/browser/helpers.ts",
+		"find": "return readHostValue(target) === value && readHostPriority(target) === priority",
+		"replace": "return readHostValue(target) === value",
+		"tests": ["tests/src/browser/helpers.test.ts", "tests/src/browser/HostSnapshot.test.ts"]
+	},
+	{
+		"id": "claim-before-drain",
+		"line": "Button.destroy releases the claim before the drain",
+		"file": "src/browser/Button.ts",
+		"find": "\t\tif (!this.#lifetime.signal.aborted) Button.#registry.release(this.#host, this)\n\t\tthis.#lifetime.destroy()",
+		"replace": "\t\tconst first = !this.#lifetime.signal.aborted\n\t\tthis.#lifetime.destroy()\n\t\tif (first) Button.#registry.release(this.#host, this)",
+		"tests": ["tests/src/browser/Button.test.ts"]
+	},
+	{
+		"id": "button-latch",
+		"line": "Button.destroy opens with no whole-method latch",
+		"file": "src/browser/Button.ts",
+		"find": "\t\tif (!this.#lifetime.signal.aborted) Button.#registry.release(this.#host, this)\n\t\tthis.#lifetime.destroy()",
+		"replace": "\t\tif (this.#lifetime.signal.aborted) return\n\t\tButton.#registry.release(this.#host, this)\n\t\tthis.#lifetime.destroy()",
+		"tests": ["tests/src/browser/Button.test.ts"]
+	},
+	{
+		"id": "button-construction-save",
+		"line": "Button construction saves nothing",
+		"file": "src/browser/Button.ts",
+		"find": "\t\t\tthis.#lifetime.hold(this.#snapshot, (snapshot) => snapshot.restore())\n",
+		"replace": "\t\t\tthis.#lifetime.hold(this.#snapshot, (snapshot) => snapshot.restore())\n\t\t\tthis.#snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })\n",
+		"tests": ["tests/src/browser/Button.test.ts"]
+	},
+	{
+		"id": "button-snapshot-held",
+		"line": "Button holds its snapshot in its lifetime",
+		"file": "src/browser/Button.ts",
+		"find": "\t\t\tthis.#lifetime.hold(this.#snapshot, (snapshot) => snapshot.restore())\n",
+		"replace": "",
+		"tests": ["tests/src/browser/Button.test.ts"]
+	}
+]

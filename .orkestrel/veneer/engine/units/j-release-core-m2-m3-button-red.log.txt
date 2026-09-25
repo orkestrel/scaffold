@@ -1,0 +1,62 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Button.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-core
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Button.test.ts (49 tests | 2 failed) 33ms
+     × writes nothing back at destruction when it never wrote the host, keeping the values you set 2ms
+     × returns from a destroy a reaction to its restoration calls only after the host is restored 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:718:2 > Button > writes nothing back at destruction when it never wrote the host, keeping the values you set
+AssertionError: expected null to be 'mixed' // Object.is equality
+
+[32m- Expected:[39m
+"mixed"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/src/browser/Button.test.ts:725:44
+    723|   host.classList.add('active')
+    724|   button.destroy()
+    725|   expect(host.getAttribute('aria-pressed')).toBe('mixed')
+       |                                            ^
+    726|   expect(host.classList.contains('active')).toBe(true)
+    727|   expect(Button.find(host)).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:732:2 > Button > returns from a destroy a reaction to its restoration calls only after the host is restored
+AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[2m      false,[22m
+[32m-     null,[39m
+[31m+     "true",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Button.test.ts:755:25
+    753|   })
+    754|   button.destroy()
+    755|   expect(readings.calls).toEqual([[false, null]])
+       |                         ^
+    756|   expect(host.hasAttribute('class')).toBe(false)
+    757|   expect(host.hasAttribute('aria-pressed')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 47 passed (49)
+   Start at  03:23:00
+   Duration  2.63s (transform 0ms, setup 568ms, import 431ms, tests 33ms, environment 0ms)
+

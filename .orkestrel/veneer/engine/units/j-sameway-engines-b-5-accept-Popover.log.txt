@@ -1,0 +1,65 @@
+=== Popover run 1 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:36:47
+   Duration  4.93s (transform 0ms, setup 569ms, import 369ms, tests 2.90s, environment 0ms)
+
+exit 0
+=== Popover run 2 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:36:54
+   Duration  4.87s (transform 0ms, setup 528ms, import 356ms, tests 2.92s, environment 0ms)
+
+exit 0
+=== Popover run 3 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:37:00
+   Duration  4.95s (transform 0ms, setup 561ms, import 380ms, tests 2.90s, environment 0ms)
+
+exit 0
+=== Popover run 4 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:37:07
+   Duration  5.07s (transform 0ms, setup 581ms, import 348ms, tests 2.97s, environment 0ms)
+
+exit 0
+=== Popover run 5 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:37:14
+   Duration  5.46s (transform 0ms, setup 717ms, import 456ms, tests 3.06s, environment 0ms)
+
+exit 0

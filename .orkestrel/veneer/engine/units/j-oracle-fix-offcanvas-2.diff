@@ -1,0 +1,169 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ae5a892..80878d8 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2610,10 +2610,12 @@ isolation claims the backdrop as not inert, even beside another shown panel whos
+ it inert, so a press beside the panel lands on the backdrop itself. The listener ends when the hide
+ or destruction removes the backdrop. A press on any other element, a container of the backdrop
+ included, counts for nothing. A press that hides the panel releases the isolation inside its
+-`mousedown` listener, which moves focus to the trigger, and the press's default action runs after
+-the listener and would move focus on to the body. So a press whose hide moved focus cancels that
+-default action, and focus stays on the trigger through the `hidden.vn.offcanvas` event and after the
+-press, with motion and under reduced motion. A press that moves no focus keeps its default action,
++`mousedown` listener, and the isolation moves focus to the trigger when the platform lets it. The
++press's default action runs after the listener and would move focus on to the body. So a press
++whose hide moved focus cancels that default action, and focus stays on the trigger through the
++`hidden.vn.offcanvas` event and after the press, with motion and under reduced motion. The panel
++reads the move from its root, the document or the shadow root that holds it, so a move between two
++elements of one shadow root counts. Every other press on the backdrop keeps its default action,
+ which moves focus to the body: a hide a listener prevents, a hide whose trigger the platform cannot
+ focus, a press while the panel slides out, and a press on a static backdrop.
+ 
+@@ -2789,10 +2791,10 @@ ways:
+   flag before the slide out, so a `show` call during the slide out runs, and a `hide` call during
+   the slide in runs as well.
+ - Hiding calls no `blur` on the panel, where Bootstrap's `hide` method does. A panel that isolates
+-  moves focus to the trigger instead, as it releases the isolation. A backdrop press that hides the
+-  panel therefore cancels its own `mousedown` default action, and focus stays on the trigger.
+-  Bootstrap lets that default action move focus to the body, and its data API returns focus to the
+-  trigger at `hidden.bs.offcanvas`, so both end with focus on the trigger.
++  moves focus to the trigger instead, as it releases the isolation. A backdrop press whose hide
++  moves focus to the trigger therefore cancels its own `mousedown` default action, so focus stays
++  there. Bootstrap lets that default action move focus to the body, and its data API then returns
++  focus to the trigger that opened the panel, at `hidden.bs.offcanvas`.
+ - The engine adopts no `.offcanvas.show` markup at the window's `load` event, where Bootstrap's data
+   API calls `show` on each such panel. You construct the engine over shown markup instead, and its
+   `shown` property reads the token, so its `hide` method hides the panel.
+diff --git a/src/browser/Offcanvas.ts b/src/browser/Offcanvas.ts
+index 226da9c..6eb17d4 100644
+--- a/src/browser/Offcanvas.ts
++++ b/src/browser/Offcanvas.ts
+@@ -60,9 +60,11 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * the panel is shown. The panel listens for a press on the backdrop element it creates, and the
+  * isolation spares that element, so a press beside the panel lands on it. A press whose hide moves
+  * focus, by releasing the isolation, cancels the press's `mousedown` default action, so focus stays
+- * on the trigger rather than moving on to the body; a press that moves no focus keeps its default
+- * action. A window resize hides a shown panel whose computed `position` is no longer `fixed`; a
+- * resize during a show is applied after the show dispatches its completed event.
++ * on the trigger rather than moving on to the body; every other press keeps its default action. The
++ * panel reads the move from its root, the document or the shadow root that holds it, so a move
++ * between two elements of one shadow root counts. A window resize hides a shown panel whose computed
++ * `position` is no longer `fixed`; a resize during a show is applied after the show dispatches its
++ * completed event.
+  *
+  * A call carries the change identity it sets when its change starts. After each write, dispatch,
+  * and await, it reads whether the panel is live and whether a later `show` or `hide` call has
+@@ -561,19 +563,23 @@ export class Offcanvas implements OffcanvasInterface {
+ 
+ 	// Hides the panel on a press on its backdrop, or refuses the hide through the `prevent` event when
+ 	// the backdrop does not dismiss it. The hide releases the isolation inside this listener, which
+-	// moves focus to the trigger, and the press's default action runs after the listener and would move
+-	// focus on to the body. Bootstrap's panel returns focus after that default action, at its `hidden`
+-	// event. So a press whose hide moved focus cancels its default action and focus stays where the
+-	// hide put it; a press that moved no focus keeps it, as Bootstrap's does.
++	// moves focus to the trigger when the platform lets it, and the press's default action runs after
++	// the listener and would move focus on to the body. Bootstrap's data API returns focus after that
++	// default action, at the panel's `hidden` event. So a press whose hide moved focus cancels its
++	// default action and focus stays where the hide put it; every other press keeps its default
++	// action, as Bootstrap's does. The panel's root reads the move, because the document retargets an
++	// element focused inside a shadow root to that root's host, so the document reads no move between
++	// two elements of the panel's own shadow root.
+ 	#press(event: MouseEvent): void {
+ 		if (!this.#options.dismiss.backdrop) {
+ 			this.#prevent()
+ 			return
+ 		}
+-		const document = this.#host.ownerDocument
+-		const focused = document.activeElement
++		const root = this.#host.getRootNode()
++		const scope = isInstance(root, ShadowRoot) ? root : this.#host.ownerDocument
++		const focused = scope.activeElement
+ 		void this.hide()
+-		if (document.activeElement !== focused) event.preventDefault()
++		if (scope.activeElement !== focused) event.preventDefault()
+ 	}
+ 
+ 	// Dispatches the `prevent` event for a refused dismissal of the live, shown panel.
+diff --git a/tests/src/browser/Offcanvas.test.ts b/tests/src/browser/Offcanvas.test.ts
+index fba45bd..47921c8 100644
+--- a/tests/src/browser/Offcanvas.test.ts
++++ b/tests/src/browser/Offcanvas.test.ts
+@@ -599,8 +599,9 @@ describe('Offcanvas', () => {
+ 
+ 	// The press's own focus change runs after its `mousedown` listeners, and a hide under reduced
+ 	// motion completes in the microtasks between them, so the case reads focus under both settings: at
+-	// the `hidden` event, when the press returns, and after the hide. The window hears the press after
+-	// the backdrop does, so the panel reads hidden there when the press's `mousedown` dismissed it.
++	// the `hidden` event, when the press returns, and after the hide. The window's `mousedown` listener
++	// runs after the backdrop's, so the panel reads hidden there when the press's `mousedown` dismissed
++	// it.
+ 	it('leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion', async () => {
+ 		scene.load(cascade)
+ 		const readings: unknown[] = []
+@@ -654,11 +655,61 @@ describe('Offcanvas', () => {
+ 		expect(readings).toEqual(expected)
+ 	})
+ 
+-	// A press whose listeners leave focus where it was keeps its own focus change, which moves focus to
+-	// the body, as Bootstrap's press does: a hide a listener prevents, a hide whose trigger the platform
+-	// cannot focus, a press while the panel slides out, and a static backdrop's refusal. The slide out
+-	// is lengthened on the panel alone so the press lands while the backdrop is still in the page.
+-	it('keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop', async () => {
++	// The panel and its trigger sit in one shadow root. The document reads the shadow host as its active
++	// element both before and after the isolation returns focus, so the case reads focus from the shadow
++	// root. The document loads the cascade for its `:root` tokens, which the shadow tree inherits, and
++	// the shadow root adopts the same cascade for the rules that match the panel and its backdrop.
++	it("leaves focus on a trigger in the panel's shadow root after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion", async () => {
++		scene.load(cascade)
++		const sheet = new CSSStyleSheet()
++		sheet.replaceSync(cascade)
++		const readings: unknown[] = []
++		const expected: unknown[] = []
++		for (const motion of [true, false]) {
++			if (!motion) {
++				await stageMedia({ motion: false })
++				onTestFinished(() => releaseMedia())
++			}
++			const container = scene.mount('')
++			const shadow = container.attachShadow({ mode: 'open' })
++			shadow.adoptedStyleSheets = [sheet]
++			shadow.innerHTML = `<div>${markup}</div>`
++			const host = requireValue(shadow.querySelector<HTMLElement>('#panel'), 'No panel')
++			const opener = requireValue(shadow.querySelector<HTMLElement>('#opener'), 'No opener')
++			const hidden = createRecorder<readonly [Element | null]>()
++			const offcanvas = new Offcanvas(host, {
++				on: { hidden: () => hidden.handler(shadow.activeElement) },
++			})
++			onTestFinished(() => offcanvas.destroy())
++			opener.focus()
++			expect(await offcanvas.show(opener)).toBe(true)
++			const backdrop = requireValue(
++				shadow.querySelector<HTMLElement>('.offcanvas-backdrop'),
++				'No backdrop',
++			)
++			await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
++			const pressed = shadow.activeElement
++			await waitForCondition('the hide completes', () => hidden.count > 0)
++			readings.push({
++				motion,
++				shown: offcanvas.shown,
++				hidden: hidden.calls,
++				pressed,
++				settled: shadow.activeElement,
++			})
++			expected.push({ motion, shown: false, hidden: [[opener]], pressed: opener, settled: opener })
++			offcanvas.destroy()
++			container.remove()
++		}
++		expect(readings).toEqual(expected)
++	})
++
++	// A press whose hide moves no focus, or that starts no hide, keeps its default action, which moves
++	// focus to the body, as Bootstrap's press does: a hide a listener prevents, a hide whose trigger
++	// the platform cannot focus, a press while the panel slides out, and a static backdrop's refusal.
++	// The slide out is lengthened on the panel alone so the press lands while the backdrop is still in
++	// the page.
++	it("keeps the press's default action, which moves focus to the body, when the hide moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop", async () => {
+ 		scene.load(cascade)
+ 		for (const row of ['prevented', 'unfocusable', 'sliding', 'static'] as const) {
+ 			const root = scene.mount(markup)

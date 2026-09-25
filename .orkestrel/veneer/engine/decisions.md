@@ -368,6 +368,8 @@ E32 amended at J-CONCERNS-A round 2 (2026-09-25). The writer found that the comp
 
 **The completion bullet binds only an engine whose Bootstrap counterpart waits on a transition before its completion event:** Alert, Carousel, Collapse, Modal, Offcanvas, Tab, Toast, Tooltip, Popover, and `Backdrop`. Button and ScrollSpy complete synchronously, as Bootstrap does. Their motion proof reads that the event fires while the cascade's transition runs, and pins no value the cascade owns. Dropdown completes synchronously until J-DROPDOWN-SETTLE rules otherwise.
 
+E32 amended again at the J-MOTION-PROOFS-B audit (2026-09-25; `units/j-motion-proofs-b-audit-verdict.md`, claim 7). **The completion bullet binds the elements an engine moves, and not a feedback transition that a token change starts on a control.** Tab settles on its panes, and Carousel settles on its outgoing and incoming items. Neither settles on a nav link or an indicator, and either feedback transition may outlast the completion event. This follows Bootstrap 5.3.8: its tab waits on the pane's transition, and its carousel waits on the active item's. The feedback is the cascade's, and a proof reads the moved elements only.
+
 ## E34 — an engine gates the motion it starts in script on the reduced-motion preference (2026-09-25)
 
 Veneer's `ROADMAP.md` § Tenets adopts "reduced-motion gating in script". J-CONCERNS-A's audit found a conflict with that tenet. The objective lane is `analyst` on GPT-6 Astra, thread `01a0d6d1-dee5-74a2-8fc4-65ef95e9b481` (`units/j-concerns-a-audit-objective-verdict.md`, claim 3).

@@ -1,0 +1,42 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache --reporter=verbose tmp/probe/platform/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+3:28:14 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:28:14 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+stderr | tmp/probe/platform/loop.test.ts:62:2 > platform only > reports the loop when an observation starts in the microtask after a delivery, at the same depth
+[Error: ResizeObserver loop completed with undelivered notifications.]
+3:28:14 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:28:14 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+stderr | tmp/probe/platform/loop.test.ts:76:2 > platform only > reports the loop when an observation starts inside the delivering callback itself
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:62:2 > platform only > reports the loop when an observation starts in the microtask after a delivery, at the same depth 78ms
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:76:2 > platform only > reports the loop when an observation starts inside the delivering callback itself 98ms
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:90:2 > platform only > reports nothing when the same observation starts in the next task 101ms
+stdout | tmp/probe/platform/loop.test.ts:118:2 > platform only > reads whether an observation started and ended within the delivery still reports
+started-and-ended-within-delivery loops=0
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:104:2 > platform only > reports nothing when the late observation targets a deeper element 100ms
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:118:2 > platform only > reads whether an observation started and ended within the delivery still reports 99ms
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:137:2 > placement > reports nothing for one placement on a fresh trigger, twenty times 1050ms
+3:28:16 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:28:16 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+stderr | tmp/probe/platform/loop.test.ts:162:2 > placement > reports the loop for one placement on a fresh trigger built in the microtask after a native delivery
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:149:2 > placement > reports nothing for a second placement of the same trigger built a frame later 133ms
+ ✓ |probe:browser (chromium)| tmp/probe/platform/loop.test.ts:162:2 > placement > reports the loop for one placement on a fresh trigger built in the microtask after a native delivery 101ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  03:28:12
+   Duration  3.42s (transform 0ms, setup 535ms, import 11ms, tests 1.76s, environment 0ms)
+

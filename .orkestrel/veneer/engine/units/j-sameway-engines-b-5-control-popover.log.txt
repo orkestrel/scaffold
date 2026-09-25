@@ -1,0 +1,65 @@
+=== run 1 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-popover/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:38:45
+   Duration  4.71s (transform 0ms, setup 501ms, import 343ms, tests 2.90s, environment 0ms)
+
+exit 0
+=== run 2 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-popover/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:38:51
+   Duration  4.90s (transform 0ms, setup 529ms, import 377ms, tests 2.90s, environment 0ms)
+
+exit 0
+=== run 3 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-popover/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:38:58
+   Duration  5.08s (transform 0ms, setup 556ms, import 449ms, tests 2.97s, environment 0ms)
+
+exit 0
+=== run 4 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-popover/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:39:04
+   Duration  5.03s (transform 0ms, setup 541ms, import 370ms, tests 3.00s, environment 0ms)
+
+exit 0
+=== run 5 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-popover/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  03:39:11
+   Duration  5.25s (transform 0ms, setup 637ms, import 385ms, tests 2.99s, environment 0ms)
+
+exit 0

@@ -1,0 +1,95 @@
+=== run 1 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/tooltip-2396/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+3:16:38 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:16:38 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:16:28
+   Duration  10.98s (transform 0ms, setup 496ms, import 339ms, tests 9.13s, environment 0ms)
+
+exit 0
+=== run 2 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/tooltip-2396/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+3:16:51 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:16:51 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:16:41
+   Duration  11.14s (transform 0ms, setup 513ms, import 347ms, tests 9.25s, environment 0ms)
+
+exit 0
+=== run 3 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/tooltip-2396/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+3:17:04 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:17:04 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:16:54
+   Duration  11.05s (transform 0ms, setup 513ms, import 358ms, tests 9.13s, environment 0ms)
+
+exit 0
+=== run 4 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/tooltip-2396/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+3:17:16 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:17:16 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:17:06
+   Duration  11.08s (transform 0ms, setup 490ms, import 346ms, tests 9.15s, environment 0ms)
+
+exit 0
+=== run 5 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/tooltip-2396/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+3:17:30 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../../@vite/client:305:50
+
+3:17:30 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: ResizeObserver loop completed with undelivered notifications.
+    at throwUnhandlerError (http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:17:19
+   Duration  12.13s (transform 0ms, setup 847ms, import 474ms, tests 9.23s, environment 0ms)
+
+exit 0

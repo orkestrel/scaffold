@@ -1,0 +1,12 @@
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/HostSnapshot.ts
+ M src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M tests/src/browser/Button.test.ts
+ M tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+?? src/browser/Lifetime.ts
+?? tests/src/browser/Lifetime.test.ts
