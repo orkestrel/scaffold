@@ -1,0 +1,46 @@
+# The Orchestrator's red reading of the J-SNAPSHOT-SHARED cases on the base sources (2026-09-24, Chromium 153.0.8010.12)
+Preparing worktree (new branch 'red/snapshot-shared')
+HEAD is now at 3acad4c State the related-target summaries in plain sentences, pin a truly undefined detail, and state the resolver's constructor-key rule
+npm ci exit=0
+ M tests/src/browser/Alert.test.ts
+ M tests/src/browser/Carousel.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/Popover.test.ts
+ M tests/src/browser/Swipe.test.ts
+ M tests/src/browser/Tab.test.ts
+ M tests/src/browser/Tooltip.test.ts
+--- Command A
+7:51:40 PM [vite] (client) [Unhandled error] TypeError: snapshot.clear is not a function
+7:51:40 PM [vite] (client) [console.error] Error: Uncaught TypeError: snapshot.clear is not a function
+[Error: Uncaught TypeError: snapshot.clear is not a function]
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:359:2 > HostSnapshot > writes an overlapping target back from its first save value at the last holder restoration, whichever restoration starts first
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:458:2 > HostSnapshot > leaves a shared target to the holder a reaction restores, which writes the first save value back
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:524:2 > HostSnapshot > removes the class attribute the first save found absent when a nested restoration that holds a shared token last empties the list
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:985:2 > HostSnapshot > writes a target two snapshots share back only at the last holder restoration, from the first save value, in either order
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1016:2 > HostSnapshot > keeps the value a live holder wrote when a save during another holder restoration joins the target, and writes the first save value after the last holder restores
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1052:2 > HostSnapshot > writes back only the targets it holds last when a reaction to one of its writes restores the same snapshot again
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1088:2 > HostSnapshot > withdraws only its own targets when a write throws while another snapshot holds a target it saved
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1103:2 > HostSnapshot > relinquishes its holdings on clear without writing, so the last remaining holder writes the first save value back
+TypeError: cleared.clear is not a function
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1128:2 > HostSnapshot > forgets a record a final clear leaves, so a later save reads the element
+TypeError: cleared.clear is not a function
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1146:2 > HostSnapshot > writes nothing more, removing no emptied class attribute, for an interrupted restoration a reaction to one of its writes clears
+      Tests  10 failed | 52 passed (62)
+--- Command B
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1185:2 > Carousel > keeps the pointer token of a touch replacement a reaction to an item restoration constructs, and removes it after the replacement is destroyed
+ FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts:1873:2 > Delegate > restores a list to its markup when the first click lands on the control the markup marks active
+ FAIL  |src:browser (chromium)| tests/src/browser/Swipe.test.ts:124:2 > Swipe > keeps the pointer token while a carousel or a swipe on the same host lives, and removes it after the last is destroyed, in either order
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1425:2 > Tab > keeps the roles and states of a live sibling tab when another tab of its list is destroyed, and restores the markup after the last
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1454:2 > Tab > restores the markup after a tab refused on its active control swaps back after a sibling, in either destruction order
+      Tests  5 failed | 237 passed (242)
+--- Command C
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Popover.test.ts:428:2 > Popover > names only live tips in aria-describedby after it is destroyed while a tooltip on the same trigger lives
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2320:2 > Tooltip > names only live tips in aria-describedby after it is destroyed while a popover on the same trigger lives, and restores its title and label
+      Tests  2 failed | 69 skipped (71)
+worktree remove exit=0
+Deleted branch red/snapshot-shared (was 3acad4c).
+branch delete exit=0

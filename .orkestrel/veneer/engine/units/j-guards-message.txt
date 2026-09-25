@@ -1,6 +1,0 @@
-Name the event guards for the detail they narrow, and read each declared option once
-
-`isBareEvent` (a custom event whose detail is null) replaces `isCollapseEvent`, `isAlertEvent`, `isToastEvent`, `isTooltipEvent`, and `isPopoverEvent`, and `isRelatedEvent` (a custom event whose detail's `relatedTarget`, read once, is absent, undefined, or an HTML element) replaces `isTabEvent`, `isModalEvent`, and `isOffcanvasEvent`, over one `RelatedDetail` type in place of `TabDetail`, `ModalDetail`, and `OffcanvasDetail`; each entity's related-target meaning moves into its event map's summary, and no removed name survives. `TooltipProfile.guard` is gone: every profile's events are null-detail events, so the engine binds `isBareEvent`. `resolveOptions` reads each key its parser table declares once, by property access, and never walks the options object, so an undeclared getter never runs, an undeclared key never reaches the result, and an inherited or non-enumerable declared key counts; `ParserMap<T>` is total over `T`. The options cases read red first against the enumerating body, and each guard, binding, and read has a mutation row that fails its case (E23).
-
-Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
