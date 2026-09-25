@@ -1,0 +1,9 @@
+departures round 1 66 round 2 66
+only round 1: []
+only round 2: []
+facets round 2: ['attribute']
+focus departures round 2: []
+offcanvas bootstrap steps 18 changed steps: []
+offcanvas veneer steps 18 changed steps: []
+modal bootstrap steps 22 changed steps: []
+modal veneer steps 22 changed steps: []

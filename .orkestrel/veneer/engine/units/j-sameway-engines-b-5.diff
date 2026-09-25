@@ -1,0 +1,65 @@
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 54d168a..91821a9 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -790,8 +790,11 @@ describe('Popover', () => {
+ 				anchored: host.style.getPropertyValue('anchor-name') !== '',
+ 			}
+ 			observer.disconnect()
+-			// A second placement of the same trigger inside the frame the first was built and restored in
+-			// makes Chromium report a ResizeObserver loop, so the next call waits a frame.
++			// The first call can settle inside the frame's ResizeObserver delivery, after the placement's
++			// callback. A placement built there starts observing a trigger no deeper than the delivered
++			// one, so Chromium defers its first notification to the next frame and reports a
++			// ResizeObserver loop, although no callback changes an observed size. The next call waits a
++			// frame, so its placement observes before that frame's delivery.
+ 			await waitForFrame()
+ 			readings.handler({
+ 				...reading,
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index 15d37e5..14e4fe6 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -2391,8 +2391,11 @@ describe('Tooltip', () => {
+ 				anchored: host.style.getPropertyValue('anchor-name') !== '',
+ 			}
+ 			observer.disconnect()
+-			// A second placement of the same trigger inside the frame the first was built and restored in
+-			// makes Chromium report a ResizeObserver loop, so the next call waits a frame.
++			// The first call can settle inside the frame's ResizeObserver delivery, after the placement's
++			// callback. A placement built there starts observing a trigger no deeper than the delivered
++			// one, so Chromium defers its first notification to the next frame and reports a
++			// ResizeObserver loop, although no callback changes an observed size. The next call waits a
++			// frame, so its placement observes before that frame's delivery.
+ 			await waitForFrame()
+ 			readings.handler({
+ 				...reading,
+@@ -3142,8 +3145,12 @@ describe('Tooltip', () => {
+ 				described: host.getAttribute('aria-describedby'),
+ 				expected: row.popover ? (inserted.calls[0]?.[0] ?? 'no popover tip') : (row.prior ?? null),
+ 			})
+-			// A second placement of the same trigger inside the frame the first was built and restored in
+-			// makes Chromium report a ResizeObserver loop, so the teardown waits a frame.
++			// The show can settle inside the frame's ResizeObserver delivery, after the placement's
++			// callback. Without a wait, the teardown and the next row's placements run there, and a
++			// placement that starts observing a trigger no deeper than the delivered one makes
++			// Chromium defer its first notification to the next frame and report a ResizeObserver loop,
++			// although no callback changes an observed size. The teardown waits a frame, so the next row
++			// observes before that frame's delivery.
+ 			await waitForFrame()
+ 			popover.destroy()
+ 			tooltip.destroy()
+@@ -3368,8 +3375,11 @@ describe('Tooltip', () => {
+ 			described: host.getAttribute('aria-describedby'),
+ 			removed: document.getElementById(next) === null,
+ 		}).toEqual({ tips: [next], described: next, removed: true })
+-		// A placement built and destroyed in the frame the next case places a tip in makes Chromium report
+-		// a ResizeObserver loop, so the case ends a frame later.
++		// The stopped show settles inside the frame's ResizeObserver delivery, after the placement's
++		// callback. Without a wait, the next case runs there, and its placement starts observing a
++		// trigger no deeper than the delivered one, so Chromium defers that first notification to
++		// the next frame and reports a ResizeObserver loop, although no callback changes an observed
++		// size. The case ends a frame later, so the next case observes before that frame's delivery.
+ 		await waitForFrame()
+ 	})
+ 

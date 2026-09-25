@@ -1,0 +1,90 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas
+
+ ❯ |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts (65 tests | 1 failed) 43420ms
+     × leaves focus on a trigger in the panel's shadow root after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 803ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:662:2 > Offcanvas > leaves focus on a trigger in the panel's shadow root after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion
+AssertionError: expected [ { motion: true, …(4) }, …(1) ] to deeply equal [ { motion: true, …(4) }, …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,30 +1,15 @@[39m
+[2m  [[22m
+[2m    {[22m
+[2m      "hidden": [[22m
+[2m        [[22m
+[32m-         <button[39m
+[32m-           id="opener"[39m
+[32m-           type="button"[39m
+[32m-         >[39m
+[32m-           Open[39m
+[32m-         </button>,[39m
+[31m+         null,[39m
+[2m        ],[22m
+[2m      ],[22m
+[2m      "motion": true,[22m
+[32m-     "pressed": <button[39m
+[32m-       id="opener"[39m
+[32m-       type="button"[39m
+[32m-     >[39m
+[32m-       Open[39m
+[32m-     </button>,[39m
+[32m-     "settled": <button[39m
+[32m-       id="opener"[39m
+[32m-       type="button"[39m
+[32m-     >[39m
+[32m-       Open[39m
+[32m-     </button>,[39m
+[31m+     "pressed": null,[39m
+[31m+     "settled": null,[39m
+[2m      "shown": false,[22m
+[2m    },[22m
+[2m    {[22m
+[2m      "hidden": [[22m
+[2m        [[22m
+[33m@@ -35,20 +20,10 @@[39m
+[2m            Open[22m
+[2m          </button>,[22m
+[2m        ],[22m
+[2m      ],[22m
+[2m      "motion": false,[22m
+[32m-     "pressed": <button[39m
+[32m-       id="opener"[39m
+[32m-       type="button"[39m
+[32m-     >[39m
+[32m-       Open[39m
+[32m-     </button>,[39m
+[32m-     "settled": <button[39m
+[32m-       id="opener"[39m
+[32m-       type="button"[39m
+[32m-     >[39m
+[32m-       Open[39m
+[32m-     </button>,[39m
+[31m+     "pressed": null,[39m
+[31m+     "settled": null,[39m
+[2m      "shown": false,[22m
+[2m    },[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:704:19
+    702|    container.remove()
+    703|   }
+    704|   expect(readings).toEqual(expected)
+       |                   ^
+    705|  })
+    706|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 64 passed (65)
+   Start at  03:28:45
+   Duration  45.34s (transform 0ms, setup 518ms, import 368ms, tests 43.42s, environment 0ms)
+

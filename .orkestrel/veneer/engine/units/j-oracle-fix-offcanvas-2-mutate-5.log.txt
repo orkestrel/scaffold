@@ -1,0 +1,8 @@
+1
+click exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 893ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ { motion: true, …(4) }, …(1) ] to deeply equal [ { motion: true, …(4) }, …(1) ]
+ ❯ tests/src/browser/Offcanvas.test.ts:655:19
+      Tests  1 failed | 2 passed | 62 skipped (65)
+source restored

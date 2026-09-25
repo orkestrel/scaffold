@@ -1,0 +1,80 @@
+popover-794-rec.run1.json: callbacks 12, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 7
+    delivered in that task: [24]
+    observations started in that task after a delivery: ["25:button#trigger@25 in 'returns what a change wrote to the state the host chose when'"]
+popover-794-rec.run2.json: callbacks 12, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 7
+    delivered in that task: [24]
+    observations started in that task after a delivery: ["25:button#trigger@25 in 'returns what a change wrote to the state the host chose when'"]
+popover-794-rec.run3.json: callbacks 13, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 7
+    delivered in that task: [24]
+    observations started in that task after a delivery: ["25:button#trigger@25 in 'returns what a change wrote to the state the host chose when'"]
+popover-794-rec.run4.json: callbacks 12, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 7
+    delivered in that task: [24]
+    observations started in that task after a delivery: ["25:button#trigger@25 in 'returns what a change wrote to the state the host chose when'"]
+popover-794-rec.run5.json: callbacks 12, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 7
+    delivered in that task: [24]
+    observations started in that task after a delivery: ["25:button#trigger@25 in 'returns what a change wrote to the state the host chose when'"]
+tooltip-2396-rec.run1.json: callbacks 31, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 20
+    delivered in that task: [77]
+    observations started in that task after a delivery: ["78:button#trigger@71 in 'returns what a change wrote to the state the host chose when'"]
+tooltip-2396-rec.run2.json: callbacks 31, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 20
+    delivered in that task: [77]
+    observations started in that task after a delivery: ["78:button#trigger@71 in 'returns what a change wrote to the state the host chose when'"]
+tooltip-2396-rec.run3.json: callbacks 31, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 20
+    delivered in that task: [77]
+    observations started in that task after a delivery: ["78:button#trigger@71 in 'returns what a change wrote to the state the host chose when'"]
+tooltip-2396-rec.run4.json: callbacks 31, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 20
+    delivered in that task: [77]
+    observations started in that task after a delivery: ["78:button#trigger@71 in 'returns what a change wrote to the state the host chose when'"]
+tooltip-2396-rec.run5.json: callbacks 31, callbacks changing a watched size 0, loop reports 1
+  report in 'returns what a change wrote to the state the host chose when the host moves the tip shown ' render task 20
+    delivered in that task: [77]
+    observations started in that task after a delivery: ["78:button#trigger@71 in 'returns what a change wrote to the state the host chose when'"]
+tooltip-3147-rec.run1.json: callbacks 29, callbacks changing a watched size 0, loop reports 1
+  report in 'takes only its own id out of aria-describedby when the host takes a show over, keeping a p' render task 25
+    delivered in that task: [104, 109]
+    observations started in that task after a delivery: ["105:button#trigger@100 in 'takes only its own id out of aria-describedby when the host '", "106:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "107:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "108:button#trigger@102 in 'destroys the placement and takes its id out before it remove'", "109:button#trigger@103 in 'hides the tip with its events when a listener cancels the pr'"]
+tooltip-3147-rec.run2.json: callbacks 29, callbacks changing a watched size 0, loop reports 1
+  report in 'takes only its own id out of aria-describedby when the host takes a show over, keeping a p' render task 25
+    delivered in that task: [104]
+    observations started in that task after a delivery: ["105:button#trigger@100 in 'takes only its own id out of aria-describedby when the host '", "106:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "107:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "108:button#trigger@102 in 'destroys the placement and takes its id out before it remove'", "109:button#trigger@103 in 'hides the tip with its events when a listener cancels the pr'"]
+tooltip-3147-rec.run3.json: callbacks 29, callbacks changing a watched size 0, loop reports 1
+  report in 'takes only its own id out of aria-describedby when the host takes a show over, keeping a p' render task 25
+    delivered in that task: [104, 109]
+    observations started in that task after a delivery: ["105:button#trigger@100 in 'takes only its own id out of aria-describedby when the host '", "106:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "107:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "108:button#trigger@102 in 'destroys the placement and takes its id out before it remove'", "109:button#trigger@103 in 'hides the tip with its events when a listener cancels the pr'"]
+tooltip-3147-rec.run4.json: callbacks 29, callbacks changing a watched size 0, loop reports 1
+  report in 'takes only its own id out of aria-describedby when the host takes a show over, keeping a p' render task 25
+    delivered in that task: [104, 109]
+    observations started in that task after a delivery: ["105:button#trigger@100 in 'takes only its own id out of aria-describedby when the host '", "106:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "107:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "108:button#trigger@102 in 'destroys the placement and takes its id out before it remove'", "109:button#trigger@103 in 'hides the tip with its events when a listener cancels the pr'"]
+tooltip-3147-rec.run5.json: callbacks 29, callbacks changing a watched size 0, loop reports 1
+  report in 'takes only its own id out of aria-describedby when the host takes a show over, keeping a p' render task 25
+    delivered in that task: [104]
+    observations started in that task after a delivery: ["105:button#trigger@100 in 'takes only its own id out of aria-describedby when the host '", "106:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "107:button#trigger@101 in 'takes only its own id out of aria-describedby when the host '", "108:button#trigger@102 in 'destroys the placement and takes its id out before it remove'", "109:button#trigger@103 in 'hides the tip with its events when a listener cancels the pr'"]
+tooltip-3373-rec.run1.json: callbacks 30, callbacks changing a watched size 0, loop reports 1
+  report in '(after all)' render task 29
+    delivered in that task: [112]
+    observations started in that task after a delivery: ["113:button#trigger@112 in 'takes out the id it linked when the tip id changes before th'"]
+tooltip-3373-rec.run2.json: callbacks 30, callbacks changing a watched size 0, loop reports 1
+  report in '(after all)' render task 29
+    delivered in that task: [112]
+    observations started in that task after a delivery: ["113:button#trigger@112 in 'takes out the id it linked when the tip id changes before th'"]
+tooltip-3373-rec.run3.json: callbacks 30, callbacks changing a watched size 0, loop reports 1
+  report in '(after all)' render task 28
+    delivered in that task: [112]
+    observations started in that task after a delivery: ["113:button#trigger@112 in 'takes out the id it linked when the tip id changes before th'"]
+tooltip-3373-rec.run4.json: callbacks 30, callbacks changing a watched size 0, loop reports 1
+  report in '(after all)' render task 29
+    delivered in that task: [112]
+    observations started in that task after a delivery: ["113:button#trigger@112 in 'takes out the id it linked when the tip id changes before th'"]
+tooltip-3373-rec.run5.json: callbacks 30, callbacks changing a watched size 0, loop reports 1
+  report in '(after all)' render task 29
+    delivered in that task: [112]
+    observations started in that task after a delivery: ["113:button#trigger@112 in 'takes out the id it linked when the tip id changes before th'"]

@@ -1,0 +1,23 @@
+npm run check exit 0
+npm run lint:check exit 0
+npm run format:check exit 0
+Offcanvas.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  65 passed (65)
+Isolation.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+Modal.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  61 passed (61)
+census exit 0
+compare exit 0
+departures round 1 66 round 2 66
+only round 1: []
+only round 2: []
+facets round 2: ['attribute']
+focus departures round 2: []
+offcanvas bootstrap steps 18 changed steps: []
+offcanvas veneer steps 18 changed steps: []
+modal bootstrap steps 22 changed steps: []
+modal veneer steps 22 changed steps: []

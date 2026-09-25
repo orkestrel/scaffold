@@ -1,0 +1,69 @@
+=== run 1 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-tooltip/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:20:16
+   Duration  11.51s (transform 0ms, setup 694ms, import 416ms, tests 9.16s, environment 0ms)
+
+exit 0
+=== run 2 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-tooltip/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:20:30
+   Duration  11.31s (transform 0ms, setup 559ms, import 345ms, tests 9.23s, environment 0ms)
+
+exit 0
+=== run 3 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-tooltip/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:20:42
+   Duration  11.03s (transform 0ms, setup 505ms, import 332ms, tests 9.18s, environment 0ms)
+
+exit 0
+=== run 4 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-tooltip/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:20:55
+   Duration  10.97s (transform 0ms, setup 489ms, import 333ms, tests 9.15s, environment 0ms)
+
+exit 0
+=== run 5 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config tmp/probe/vitest.probe.config.ts --no-cache tmp/probe/control-tooltip/
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:21:07
+   Duration  11.01s (transform 0ms, setup 503ms, import 334ms, tests 9.16s, environment 0ms)
+
+exit 0

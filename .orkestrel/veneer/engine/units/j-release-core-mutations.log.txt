@@ -1,0 +1,280 @@
+## drain-nested — Lifetime.destroy drains on a nested call
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  4 failed | 14 passed (18)
+  × drains on a destroy a release calls, running the running release again, and returns with every holding given back 3ms
+  × drains on a destroy an abort listener calls before the first release runs 1ms
+  × keeps a record held after destruction began pending while its release runs, so a nested destroy runs it again 0ms
+  × reaches a joined resource from a destroy nested in a newer release of the owner 0ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:36:2 > Lifetime > drains on a destroy a release calls, running the running release again, and returns with every holding given back
+    AssertionError: expected [ [ 'second' ], …(2) ] to deeply equal [ [ 'second' ], [ 'second' ], …(2) ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:54:2 > Lifetime > drains on a destroy an abort listener calls before the first release runs
+    AssertionError: expected [ [ 'listener returned' ], …(1) ] to deeply equal [ [ 'released' ], …(1) ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:99:2 > Lifetime > keeps a record held after destruction began pending while its release runs, so a nested destroy runs it again
+    AssertionError: expected [ [ 'release' ] ] to deeply equal [ [ 'release' ], [ 'release' ] ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:203:2 > Lifetime.join > reaches a joined resource from a destroy nested in a newer release of the owner
+    AssertionError: expected [ [ 'nested returned' ], [ 'joined' ] ] to deeply equal [ [ 'joined' ], [ 'nested returned' ] ]
+- tests/src/browser/Button.test.ts: exit 1; Tests  1 failed | 49 passed (50)
+  × returns from a destroy a reaction to its restoration calls only after the host is restored 4ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:739:2 > Button > returns from a destroy a reaction to its restoration calls only after the host is restored
+    AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## same-entry — Lifetime.#give ends only the same entry
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  1 failed | 17 passed (18)
+  × ends a holding only while the lifetime still holds that same entry 4ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:66:2 > Lifetime > ends a holding only while the lifetime still holds that same entry
+    AssertionError: expected [] to deeply equal [ [ {} ] ]
+
+## newest-first — Lifetime.destroy drains newest first
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  4 failed | 14 passed (18)
+  × aborts its signal once, before the first release, and gives every holding back newest first 6ms
+  × drains on a destroy a release calls, running the running release again, and returns with every holding given back 1ms
+  × gives every other holding back past a throwing release, ends that holding, and rethrows the first error 2ms
+  × destroys a joined resource in the drain, in its place among the holdings, never at the abort 1ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:6:2 > Lifetime > aborts its signal once, before the first release, and gives every holding back newest first
+    AssertionError: expected [ [ 'first', true ], …(2) ] to deeply equal [ [ 'third', true ], …(2) ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:36:2 > Lifetime > drains on a destroy a release calls, running the running release again, and returns with every holding given back
+    AssertionError: expected [ [ 'first' ], [ 'second' ], …(2) ] to deeply equal [ [ 'second' ], [ 'second' ], …(2) ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:115:2 > Lifetime > gives every other holding back past a throwing release, ends that holding, and rethrows the first error
+    AssertionError: expected [Function] to throw error including 'newer' but got 'older'
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:192:2 > Lifetime.join > destroys a joined resource in the drain, in its place among the holdings, never at the abort
+    AssertionError: expected [ [ 'aborted' ], [ 'oldest' ], …(2) ] to deeply equal [ [ 'aborted' ], [ 'newest' ], …(2) ]
+
+## hold-after-destroy — Lifetime.hold runs the release at once after destruction began
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  3 failed | 15 passed (18)
+  × runs the release at once and returns false for a record held after destruction began 3ms
+  × keeps a record held after destruction began pending while its release runs, so a nested destroy runs it again 0ms
+  × destroys a resource at once when the lifetime that owns the signal has begun its destruction 1ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:87:2 > Lifetime > runs the release at once and returns false for a record held after destruction began
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:99:2 > Lifetime > keeps a record held after destruction began pending while its release runs, so a nested destroy runs it again
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:184:2 > Lifetime.join > destroys a resource at once when the lifetime that owns the signal has begun its destruction
+    AssertionError: expected +0 to be 1 // Object.is equality
+- tests/src/browser/Button.test.ts: exit 1; Tests  1 failed | 49 passed (50)
+  × joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction once that destruction began 3ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:768:2 > Button > joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction once that destruction began
+    AssertionError: expected Button{} to be undefined
+
+## drain-past-throw — Lifetime.destroy continues past a throwing release
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  1 failed | 17 passed (18)
+  × gives every other holding back past a throwing release, ends that holding, and rethrows the first error 5ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:115:2 > Lifetime > gives every other holding back past a throwing release, ends that holding, and rethrows the first error
+    AssertionError: expected [ [ 'newest' ] ] to deeply equal [ [ 'newest' ], [ 'oldest' ] ]
+
+## first-error — Lifetime.destroy rethrows the first error
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  1 failed | 17 passed (18)
+  × gives every other holding back past a throwing release, ends that holding, and rethrows the first error 4ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:115:2 > Lifetime > gives every other holding back past a throwing release, ends that holding, and rethrows the first error
+    AssertionError: expected [Function] to throw error including 'newer' but got 'older'
+
+## join-ledger — Lifetime.join holds the resource in the owning lifetime
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  1 failed | 17 passed (18)
+  × destroys a joined resource in the drain, in its place among the holdings, never at the abort 4ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:192:2 > Lifetime.join > destroys a joined resource in the drain, in its place among the holdings, never at the abort
+    AssertionError: expected [ [ 'joined' ], [ 'aborted' ], …(2) ] to deeply equal [ [ 'aborted' ], [ 'newest' ], …(2) ]
+
+## join-unlisten — Lifetime.join removes a foreign listener at the resource's destruction
+- tests/src/browser/Lifetime.test.ts: exit 1; Tests  1 failed | 17 passed (18)
+  × removes its listener from a signal no lifetime owns when the resource lifetime is destroyed first 3ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Lifetime.test.ts:230:2 > Lifetime.join > removes its listener from a signal no lifetime owns when the resource lifetime is destroyed first
+    AssertionError: expected 1 to be +0 // Object.is equality
+
+## write-no-record — HostSnapshot.write creates no record for a write that changes nothing
+- tests/src/browser/HostSnapshot.test.ts: exit 1; Tests  1 failed | 54 passed (55)
+  × records nothing at a write that changes nothing, so an edit you make after it survives the restoration 3ms
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1433:2 > HostSnapshot > records nothing at a write that changes nothing, so an edit you make after it survives the restoration
+    AssertionError: expected 'false' to be 'true' // Object.is equality
+
+## write-join — HostSnapshot.write joins a live record at a write that changes nothing
+- tests/src/browser/HostSnapshot.test.ts: exit 1; Tests  3 failed | 52 passed (55)
+  × joins a live holder record at a write that changes nothing, so only the last holder writes the earliest value back, in either order 2ms
+  × joins the record a restoration has still to write back at a write that changes nothing, which the restoration then leaves 0ms
+  × resolves the target name once, so a write under another spelling joins the record the first write keyed 0ms
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1460:2 > HostSnapshot > joins a live holder record at a write that changes nothing, so only the last holder writes the earliest value back, in either order
+    AssertionError: expected null to be 'true' // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1492:2 > HostSnapshot > joins the record a restoration has still to write back at a write that changes nothing, which the restoration then leaves
+    AssertionError: expected null to be 'open' // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1521:2 > HostSnapshot > resolves the target name once, so a write under another spelling joins the record the first write keyed
+    AssertionError: expected null to be 'open' // Object.is equality
+- tests/src/browser/Button.test.ts: exit 1; Tests  1 failed | 49 passed (50)
+  × hands the originals to an engine constructed at the token write of its restoration 2ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:257:2 > Button > hands the originals to an engine constructed at the token write of its restoration
+    AssertionError: expected null to be 'true' // Object.is equality
+
+## write-change — HostSnapshot.write saves before a write that changes the target
+- tests/src/browser/HostSnapshot.test.ts: exit 1; Tests  9 failed | 46 passed (55)
+  × removes the class attribute the first save found absent when a restoration a button write starts restores the last token 4ms
+  × removes the class attribute of a trigger a button and a collapse share when the button restoration destroys the collapse 5ms
+  × leaves the class attribute of a trigger a button restoration empties while a collapse on the same trigger stays live, and the collapse destruction removes it 2ms
+  × saves a target at a write that changes it, writes the value, and writes back the value the host carried 0ms
+  × counts a changed priority as a change, and writes the property and its priority back 0ms
+  × joins a live holder record at a write that changes nothing, so only the last holder writes the earliest value back, in either order 0ms
+  × creates no record at a write that changes nothing while no snapshot holds the target 1ms
+  × joins the record a restoration has still to write back at a write that changes nothing, which the restoration then leaves 0ms
+  × resolves the target name once, so a write under another spelling joins the record the first write keyed 0ms
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:492:2 > HostSnapshot > removes the class attribute the first save found absent when a restoration a button write starts restores the last token
+    AssertionError: expected [] to deeply equal [ [ 'collapsed' ] ]
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:638:2 > HostSnapshot > removes the class attribute of a trigger a button and a collapse share when the button restoration destroys the collapse
+    AssertionError: expected Collapse{} to be undefined
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:676:2 > HostSnapshot > leaves the class attribute of a trigger a button restoration empties while a collapse on the same trigger stays live, and the collapse destruction removes it
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1415:2 > HostSnapshot > saves a target at a write that changes it, writes the value, and writes back the value the host carried
+    AssertionError: expected null to be 'false' // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1449:2 > HostSnapshot > counts a changed priority as a change, and writes the property and its priority back
+    AssertionError: expected 'important' to be '' // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1460:2 > HostSnapshot > joins a live holder record at a write that changes nothing, so only the last holder writes the earliest value back, in either order
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1476:2 > HostSnapshot > creates no record at a write that changes nothing while no snapshot holds the target
+    AssertionError: expected 'false' to be 'true' // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1492:2 > HostSnapshot > joins the record a restoration has still to write back at a write that changes nothing, which the restoration then leaves
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1521:2 > HostSnapshot > resolves the target name once, so a write under another spelling joins the record the first write keyed
+    AssertionError: expected true to be false // Object.is equality
+
+## priority — matchesHostValue compares the priority
+- tests/src/browser/helpers.test.ts: exit 1; Tests  4 failed | 101 passed (105)
+  × reports an attribute, a token, and a property that already read the value, and each that does not 2ms
+  × compares a property priority, so a value written with another priority is a change 0ms
+  × records a write of the value an inline property holds when the property carries a priority 2ms
+  × writes an inline property back with its recorded priority, and skips it once it holds that value and priority 1ms
+  FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1526:2 > matchesHostValue > reports an attribute, a token, and a property that already read the value, and each that does not
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1553:2 > matchesHostValue > compares a property priority, so a value written with another priority is a change
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1655:2 > recordHostWrite > records a write of the value an inline property holds when the property carries a priority
+    AssertionError: expected [] to deeply equal [ { target: { …(3) }, …(2) } ]
+  FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1723:2 > rewindHostWrites > writes an inline property back with its recorded priority, and skips it once it holds that value and priority
+    AssertionError: expected [ [ '12px', 'important' ], …(1) ] to deeply equal [ [ '12px', 'important' ], …(1) ]
+- tests/src/browser/HostSnapshot.test.ts: exit 1; Tests  1 failed | 54 passed (55)
+  × counts a changed priority as a change, and writes the property and its priority back 2ms
+  FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1449:2 > HostSnapshot > counts a changed priority as a change, and writes the property and its priority back
+    AssertionError: expected '' to be 'important' // Object.is equality
+
+## claim-before-drain — Button.destroy releases the claim before the drain
+- tests/src/browser/Button.test.ts: exit 1; Tests  3 failed | 47 passed (50)
+  × releases its host before restoring it, so an engine constructed at the restoration last write keeps its state 6ms
+  × hands the originals to an engine constructed at the token write of its restoration 2ms
+  × stops a toggle whose own token write destroys the button, writing and dispatching nothing more 2ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:209:2 > Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state
+    AssertionError: expected [ [ …(1) ] ] to deeply equal []
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:257:2 > Button > hands the originals to an engine constructed at the token write of its restoration
+    AssertionError: expected [ [ …(1) ] ] to deeply equal []
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:305:2 > Button > stops a toggle whose own token write destroys the button, writing and dispatching nothing more
+    AssertionError: expected [ [ …(1) ] ] to deeply equal []
+
+## button-latch — Button.destroy opens with no whole-method latch
+- tests/src/browser/Button.test.ts: exit 1; Tests  1 failed | 49 passed (50)
+  × returns from a destroy a reaction to its restoration calls only after the host is restored 3ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:739:2 > Button > returns from a destroy a reaction to its restoration calls only after the host is restored
+    AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## button-construction-save — Button construction saves nothing
+- tests/src/browser/Button.test.ts: exit 1; Tests  1 failed | 49 passed (50)
+  × writes nothing back at destruction when it never wrote the host, keeping the values you set 2ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:725:2 > Button > writes nothing back at destruction when it never wrote the host, keeping the values you set
+    AssertionError: expected null to be 'mixed' // Object.is equality
+
+## button-snapshot-held — Button holds its snapshot in its lifetime
+- tests/src/browser/Button.test.ts: exit 1; Tests  34 failed | 16 passed (50)
+  × writes, tests, and restores only the pressed token its classes group names 3ms
+  × destroys the button when its signal aborts, and at construction when it arrived aborted 1ms
+  × releases its host before restoring it, so an engine constructed at the restoration last write keeps its state 1ms
+  × hands the originals to an engine constructed at the token write of its restoration 1ms
+  × stops a toggle whose own token write destroys the button, writing and dispatching nothing more 1ms
+  × dispatches nothing when a reaction to its aria-pressed write destroys the button 1ms
+  × releases hooks and leaves later toggles inert while reading the live host 1ms
+  × restores active membership and the exact original attribute while preserving consumer edits 0ms
+  × restores original membership and attribute presence for class=undefined and aria-pressed=undefined 0ms
+  × restores original membership and attribute presence for class=undefined and aria-pressed='true' 0ms
+  × restores original membership and attribute presence for class=undefined and aria-pressed='false' 0ms
+  × restores original membership and attribute presence for class=undefined and aria-pressed='mixed' 1ms
+  × restores original membership and attribute presence for class='active btn' and aria-pressed=undefined 0ms
+  × restores original membership and attribute presence for class='active btn' and aria-pressed='true' 0ms
+  × restores original membership and attribute presence for class='active btn' and aria-pressed='false' 0ms
+  × restores original membership and attribute presence for class='active btn' and aria-pressed='mixed' 0ms
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed=undefined 0ms
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed='true' 0ms
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed='false' 0ms
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed='mixed' 0ms
+  × restores original membership and attribute presence for class='btn' and aria-pressed=undefined 0ms
+  × restores original membership and attribute presence for class='btn' and aria-pressed='true' 0ms
+  × restores original membership and attribute presence for class='btn' and aria-pressed='false' 0ms
+  × restores original membership and attribute presence for class='btn' and aria-pressed='mixed' 0ms
+  × restores original membership and attribute presence for class='' and aria-pressed=undefined 0ms
+  × restores original membership and attribute presence for class='' and aria-pressed='true' 0ms
+  × restores original membership and attribute presence for class='' and aria-pressed='false' 0ms
+  × restores original membership and attribute presence for class='' and aria-pressed='mixed' 0ms
+  × keeps consumer class tokens on a host constructed without a class attribute 1ms
+  × restores absent and empty attributes distinctly on detached hosts 0ms
+  × refuses invalid hosts and concurrent ownership then permits reconstruction 1ms
+  × preserves destruction performed by a listener during a toggle and returns the state the host carries 0ms
+  × returns from a destroy a reaction to its restoration calls only after the host is restored 1ms
+  × joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction once that destruction began 0ms
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:147:2 > Button > writes, tests, and restores only the pressed token its classes group names
+    AssertionError: expected [ 'active', 'is-pressed' ] to deeply equal [ 'active' ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:187:2 > Button > destroys the button when its signal aborts, and at construction when it arrived aborted
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:209:2 > Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state
+    AssertionError: expected +0 to be 1 // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:257:2 > Button > hands the originals to an engine constructed at the token write of its restoration
+    AssertionError: expected +0 to be 1 // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:305:2 > Button > stops a toggle whose own token write destroys the button, writing and dispatching nothing more
+    AssertionError: expected +0 to be 2 // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:365:2 > Button > dispatches nothing when a reaction to its aria-pressed write destroys the button
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:544:2 > Button > releases hooks and leaves later toggles inert while reading the live host
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:564:2 > Button > restores active membership and the exact original attribute while preserving consumer edits
+    AssertionError: expected [ 'consumer' ] to deeply equal [ 'active', 'consumer' ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed=undefined
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='true'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='true'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='false'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='false'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='mixed'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='mixed'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed=undefined
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed=undefined
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed='true'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed='true'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed='false'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed='false'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed='mixed'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='btn' and aria-pressed='mixed'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed=undefined
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed=undefined
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed='true'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed='true'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed='false'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed='false'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed='mixed'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='' and aria-pressed='mixed'
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed=undefined
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed='true'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed='true'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed='false'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed='false'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed='mixed'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class='active btn' and aria-pressed='mixed'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed=undefined
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed=undefined
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='true'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='true'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='false'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='false'
+    FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='mixed'
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:583:2 > Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='mixed'
+    AssertionError: expected false to be true // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:602:2 > Button > keeps consumer class tokens on a host constructed without a class attribute
+    AssertionError: expected [ 'active', 'consumer', 'retained' ] to deeply equal [ 'consumer', 'retained' ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:613:2 > Button > restores absent and empty attributes distinctly on detached hosts
+    AssertionError: expected false to be true // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:631:2 > Button > refuses invalid hosts and concurrent ownership then permits reconstruction
+    AssertionError: expected false to be true // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:712:2 > Button > preserves destruction performed by a listener during a toggle and returns the state the host carries
+    AssertionError: expected true to be false // Object.is equality
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:739:2 > Button > returns from a destroy a reaction to its restoration calls only after the host is restored
+    AssertionError: expected [] to deeply equal [ [ false, null ] ]
+  FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:768:2 > Button > joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction once that destruction began
+    AssertionError: expected true to be false // Object.is equality
+

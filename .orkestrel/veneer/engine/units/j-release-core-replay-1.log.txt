@@ -1,0 +1,38 @@
+# J-RELEASE-CORE round 1 replay (2026-09-25) at d702bb8 Give back every holding through one Lifetime, write the snapshot only on a change, and adopt both in Button (J-RELEASE-CORE round 1)
+Lifetime whole-file exit=0       Tests  18 passed (18)
+HostSnapshot whole-file exit=0       Tests  55 passed (55)
+helpers whole-file exit=0       Tests  105 passed (105)
+Button whole-file exit=0       Tests  50 passed (50)
+index whole-file exit=0       Tests  3 passed (3)
+test:policy exit=0
+test:guides exit=0
+test:setup:browser exit=0
+(node:43920) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+mutate exit=0
+--- per row: failing cases, and the error names in the row's output
+button-construction-save failed=1 assertion=1 other=0
+button-latch failed=1 assertion=1 other=0
+button-snapshot-held failed=34 assertion=16 other=0
+claim-before-drain failed=3 assertion=3 other=0
+drain-nested failed=5 assertion=5 other=0
+drain-past-throw failed=1 assertion=1 other=0
+first-error failed=1 assertion=1 other=0
+hold-after-destroy failed=4 assertion=4 other=0
+join-ledger failed=1 assertion=1 other=0
+join-unlisten failed=1 assertion=1 other=0
+newest-first failed=4 assertion=4 other=0
+priority failed=5 assertion=5 other=0
+same-entry failed=1 assertion=1 other=0
+write-change failed=9 assertion=9 other=0
+write-join failed=4 assertion=4 other=0
+write-no-record failed=1 assertion=1 other=0
+--- rows that failed nothing
+--- Button.test.ts against 63eabbd's Button.ts
+base Button exit=1 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 48 passed (50)
+     × writes nothing back at destruction when it never wrote the host, keeping the values you set 2ms
+     × returns from a destroy a reaction to its restoration calls only after the host is restored 2ms
+AssertionError: expected null to be 'mixed' // Object.is equality
+AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+--- the tree after the replay

@@ -1,0 +1,67 @@
+=== Tooltip run 1 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:35:43
+   Duration  11.25s (transform 0ms, setup 572ms, import 365ms, tests 9.26s, environment 0ms)
+
+exit 0
+=== Tooltip run 2 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:35:55
+   Duration  11.40s (transform 0ms, setup 562ms, import 393ms, tests 9.28s, environment 0ms)
+
+exit 0
+=== Tooltip run 3 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:36:09
+   Duration  11.47s (transform 0ms, setup 641ms, import 446ms, tests 9.12s, environment 0ms)
+
+exit 0
+=== Tooltip run 4 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:36:22
+   Duration  11.26s (transform 0ms, setup 553ms, import 375ms, tests 9.22s, environment 0ms)
+
+exit 0
+=== Tooltip run 5 ===
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/engines-b
+
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  03:36:35
+   Duration  11.26s (transform 0ms, setup 564ms, import 374ms, tests 9.19s, environment 0ms)
+
+exit 0
