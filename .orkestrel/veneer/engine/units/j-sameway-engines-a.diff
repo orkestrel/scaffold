@@ -1,0 +1,3255 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1da72d8..d4fbfec 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1078,19 +1078,38 @@ which the platform reads as `null`.
+ | `hide`   | `hide.vn.collapse`   | Yes        | Before any write; prevention refuses the hide        |
+ | `hidden` | `hidden.vn.collapse` | No         | After the transition settles                         |
+ 
+-A call reads the panel at each of its doors for the phase it is in. From its write of the
+-`transition` token until it removes that token, the panel must carry the token; at completion the
+-panel must carry the `host` and `shown` tokens without the `transition` token after a show, and the
+-`host` token without the `shown` or `transition` token after a hide; before a hide writes its token,
+-the panel must still carry the `shown` token without the `transition` token, and from the moment a
+-hide removes the `shown` token until the transition settles, the panel must lack it. A call that
+-finds the panel otherwise, the collapse destroyed, or a later call of the same collapse started
+-reads the change as taken over: it stops, writing and dispatching nothing more, and resolves
+-`false`. A listener that shows the panel again inside `show.vn.collapse` therefore runs the one
+-transition and dispatches the one `shown.vn.collapse` event: its own call resolves `true`, and the
+-call whose event it heard resolves `false`. Destruction aborts the wait, so a call awaiting the
+-transition resolves `false` and dispatches no completed event, and restoration writes back the
+-panel's tokens and inline size and each trigger's `collapsed` token and `aria-expanded` value.
++A call carries the change identity it sets when its change starts, and after each write, dispatch,
++and await it reads whether the collapse is live and whether a later `show` or `hide` call has
++started. It also reads the panel for the phase it is in: before a hide writes the `transition`
++token the panel must lack it, from the call's write of that token until its removal the panel must
++carry it, and after the call writes the `host` token the panel must carry that token. A call that
++finds the collapse destroyed, a later call started, or the panel otherwise stops, writing and
++dispatching nothing more, and resolves `false`. A listener that shows the panel again inside
++`show.vn.collapse` therefore runs the one transition and dispatches the one `shown.vn.collapse`
++event: its own call resolves `true`, and the call whose event it heard resolves `false`. A listener
++that prevents the pre-change event starts no change, whatever else it wrote.
++
++The panel's `shown` token at the change's end is agreement. A listener or a reaction that adds the
++token before a show writes it, or removes it before a hide does, has made that write for the call:
++the call's token write leaves the `shown` token as the panel carries it, and the call completes
++every other write in its order, dispatches its completed event, and resolves `true`. From the
++moment the call finds the token at the change's end, right after the pre-change dispatch or at its
++own token write, each door also reads the token there, and a panel that moves it back takes the
++change over. Until that moment no door reads the `shown` token.
++
++A call the panel took over resolves `false`, dispatches nothing, and takes one further step that
++returns what the change wrote. A show taken over removes the `transition` token and the inline size
++while the show holds them, adds back the `host` token it removed, and gives the `collapsed` token
++and an `aria-expanded` value of `false` to each trigger it expanded none of whose panels is shown.
++A hide taken over removes the inline size and the `transition` token while the hide holds them,
++adds back the `host` token it removed, and removes the `collapsed` token from and writes an
++`aria-expanded` value of `true` on each trigger it collapsed. Each step returns only the trigger
++writes the call made. It reads no door; before each of its writes it reads only the call's identity
++and the collapse's lifetime, so a destruction inside one of its writes stops the step and the
++snapshot's restoration stands, and a call a reaction starts inside one supersedes the step.
++Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
++completed event, and restoration writes back the panel's tokens and inline size and each trigger's
++`collapsed` token and `aria-expanded` value.
+ 
+ The delegate's `collapse` option carries the collapse's groups. A click inside a trigger the resolved
+ `trigger` selector matches toggles each panel the trigger names that the root contains, through the
+@@ -1114,8 +1133,12 @@ The collapse departs from Bootstrap's in these ways:
+ - Triggers are read at each change. Bootstrap finds them once, at construction.
+ - A trigger that names several panels takes the `collapsed` token only when none of them is shown.
+   Bootstrap reads only the first panel the trigger names.
+-- The refusals read the panel's tokens, before the pre-change event and again after it. Bootstrap
+-  reads its own transitioning flag once, before the event.
++- The refusals read the panel's tokens before the pre-change event, and its `transition` token and
++  the change identity again after it. Bootstrap reads its own transitioning flag once, before the
++  event.
++- A call whose panel moves the `shown` token back from the change's end returns the change's writes
++  and dispatches no completed event. Bootstrap's completion writes its classes and dispatches its
++  event whatever the panel carries.
+ - A call while an open sibling transitions resolves `false`. Bootstrap's sibling query,
+   `.collapse.collapsing`, matches no transitioning panel, because its transition removes the
+   `collapse` class.
+@@ -1333,25 +1356,39 @@ as `detail.relatedTarget`, or undefined when no control was active.
+ | `hidden` | `hidden.vn.tab` | No         | The active sibling | After the swap and the fade of the control's pane |
+ | `shown`  | `shown.vn.tab`  | No         | The control        | After `hidden.vn.tab`                             |
+ 
+-A call reads its list, the control, and its pane at each of its doors for the phase it is in. After
+-the pre-change events it reads again whether the control is active and whether the active sibling is
+-still the one `hide.vn.tab` named. From its removal of the sibling's `active` token on, no control
+-of the list but the control may carry the `active` token. From its write of the control's `active`
+-token the control must carry that token, and from each write to the pane the pane must carry the
+-`active` token and, from its write on, the `shown` token, through the fade and the `hidden.vn.tab`
+-dispatch. A call that finds the list, the control, or the pane otherwise, the tab destroyed, or a
+-later call of the same tab started reads the change as taken over: it stops, writing and dispatching
++A call carries the change identity it sets when its change starts, and after each write, dispatch,
++and await it reads whether the tab is live and whether a later `show` call of the same tab has
++started. After the pre-change events it reads again whether the active sibling is still the one
++`hide.vn.tab` named. It also reads the list and the pane for the phase it is in: from its removal of
++the sibling's `active` token on, no control of the list but the control may carry the `active`
++token, and from each write to the pane the pane must carry the `active` token and, from its write
++on, the `shown` token, through the fade and the `hidden.vn.tab` dispatch. A call that finds the tab
++destroyed, a later call started, or the list or the pane otherwise stops, writing and dispatching
+ nothing more, and resolves `false`. A sibling that shows during the swap therefore takes it over,
+ whether a listener to the sibling's blur or a reaction to one of the call's writes shows it: the
+ call it took over writes and dispatches nothing more and resolves `false`, and the sibling's own
+ call dispatches its completed events once. A listener that shows the control again inside
+ `show.vn.tab` runs the one swap and dispatches the one `shown.vn.tab` event: its own call resolves
+-`true`, and the call whose event it heard resolves `false`. A list whose markup marks two controls
+-with the `active` token never swaps, because the second one fails the read after the first one's
+-removal. Destruction aborts the wait, so a call awaiting the fade resolves `false` and dispatches no
+-completed event, and restoration writes back every value the tab wrote that no live engine still
+-holds: the roles and states it wrote at construction, and the tokens and states of the control, its
+-pane, the sibling it deactivated, that sibling's pane, and each dropdown. The tabs of one list share
++`true`, and the call whose event it heard resolves `false`. A listener that prevents a pre-change
++event starts no change, whatever else it wrote. A list whose markup marks two controls with the
++`active` token never swaps, because the second one fails the read after the first one's removal.
++
++The control's `active` token is agreement. A listener or a reaction that adds the token before the
++call writes it has made that write for the call: the call writes the token only when the control
++lacks it, completes every other write in its order, dispatches its completed events, and resolves
++`true`. From the moment the call finds the token on the control, right after the pre-change events
++or at its own token write, each door also reads the token there. A control that loses the token
++then, while no other control of the list is active, takes the swap over: the call resolves `false`,
++dispatches nothing more, and takes one further step that writes back each value the swap wrote, in
++its order. The sibling takes its `active` token back, its pane its `active` and `shown` tokens, and
++each control and dropdown the swap wrote the selection, tab stop, and open state it had, so the list
++shows the sibling again; the control's pane loses the tokens the swap added. The sibling's blur is
++not returned. The step reads no door; before each of its writes it reads only the call's identity
++and the tab's lifetime. Destruction aborts the wait, so a call awaiting the fade resolves `false`
++and dispatches no completed event, and restoration writes back every value the tab wrote that no
++live engine still holds: the roles and states it wrote at construction, and the tokens and states
++of the control, its pane, the sibling it deactivated, that sibling's pane, and each dropdown. The
++tabs of one list share
+ one record of each of those targets, as § Ownership and restoration states. Each tab joins the
+ record of every role and state construction writes on its list, whether it writes the value or
+ finds it already written, and each swap joins the records of the targets it writes. A tab destroyed
+@@ -1916,19 +1953,33 @@ Each event carries its own detail object.
+ A slide reads, at each of its doors, its lifetime, that both items are still items of the host, and
+ the items and indicators for the phase it is in. Each indicator write's door reads the `active` token
+ and the `aria-current` value the slide has written to that indicator so far. Until its completion
+-moves the `active` token, the outgoing item must carry that token and the incoming item must lack
+-it. From its write of the incoming item's order token, the outgoing item must lack the order token
+-and the incoming item must carry it until the completion removes it; from its write of each item's
+-direction token, that item must carry the direction token until the completion removes it. At
+-completion the incoming item must carry the `active` token without the order and direction tokens,
+-and after the last write the outgoing item must carry none of the `active`, order, and direction
+-tokens. A slide that finds the items or an indicator otherwise, an item gone from the host, or the
+-carousel destroyed reads the change as taken over: it stops, writing and dispatching nothing more,
+-and resolves `false`. A slide also reads a tally of slides across its `slide.vn.carousel` dispatch,
+-so a listener that slides the carousel inside that dispatch, back to the outgoing item included,
+-takes the change over: its own calls resolve as their slides do, and the call whose event it heard
+-resolves `false`. Destruction aborts the wait, so a slide awaiting the transition resolves `false`
+-and dispatches no completed event, and a `slide` call waiting on it resolves `false` as well.
++removes the `active` token from the outgoing item, that item must carry it. From its write of the
++incoming item's order token, the outgoing item must lack the order token and the incoming item must
++carry it until the completion removes it; from its write of each item's direction token, that item
++must carry the direction token until the completion removes it. At completion the incoming item must
++carry the `active` token without the order and direction tokens, and after the last write the
++outgoing item must carry none of the `active`, order, and direction tokens. A slide that finds the
++items or an indicator otherwise, an item gone from the host, or the carousel destroyed stops,
++writing and dispatching nothing more, and resolves `false`. A slide also reads a tally of slides
++across its `slide.vn.carousel` dispatch, so a listener that slides the carousel inside that
++dispatch, back to the outgoing item included, takes the change over: its own calls resolve as their
++slides do, and the call whose event it heard resolves `false`. A listener that prevents
++`slide.vn.carousel` starts no slide, whatever else it wrote.
++
++The incoming item's `active` token is agreement. A listener or a reaction that adds the token before
++the slide writes it has made that write for the slide: the slide writes the token only when the
++item lacks it, completes every other write in its order, dispatches `slid.vn.carousel`, and
++resolves `true`. From the moment the slide finds the token on the incoming item, right after the
++`slide.vn.carousel` dispatch or at its own token write, each door also reads the token there. A host
++that takes the token off the incoming item then takes the slide over: the slide resolves `false`,
++dispatches nothing more, and takes one further step that writes back each value the slide wrote, in
++its order. Each indicator takes back the `active` token and the `aria-current` value it had, the
++outgoing item takes back its `active` token and loses the direction token the slide added, and the
++incoming item loses the order and direction tokens the slide added, so the carousel shows the
++outgoing item again. The step reads no door; before each of its writes it reads only the carousel's
++lifetime and the slide in flight. Destruction aborts the wait, so a slide awaiting the transition
++resolves `false` and dispatches no completed event, and a `slide` call waiting on it resolves
++`false` as well.
+ Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+ value first, and the swipe then writes back the host's `pointer` token when it holds the token
+ last, so a carousel a reaction to that token constructs finds the items restored. Every swipe on
+@@ -2395,22 +2446,39 @@ which the platform reads as `null`.
+ | `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide   |
+ | `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave |
+ 
+-A call reads the toast at each of its doors for the phase it is in. Before a show writes the
+-`transition` token, the toast must lack it, and after its `fade` write the toast must carry the
+-`shown` token exactly when it carried it as the call began writing; from a call's write of the
+-`transition` token until it removes that token, the toast must carry the `transition` and `shown`
+-tokens; at completion the toast must carry the `shown` token without the `transition` token after
+-a show, and neither token after a hide. A call that finds the toast otherwise, the toast destroyed,
+-or a later call of the same toast started reads the change as taken over: it stops, writing and
+-dispatching nothing more, and resolves `false`. A call takes its identity before it dispatches its
+-pre-change event, so a listener that calls `show` inside `show.vn.toast` or `hide.vn.toast` takes
+-the change over, whether that call is still waiting or has already completed: the call whose event
+-it heard resolves `false` and writes nothing, and the listener's call completes or stops by its own
+-cancellation, lifetime, and door reads. A listener that prevents the nested `show.vn.toast` its own
+-call dispatches therefore leaves both calls resolving `false`, with no token written and no
+-completed event. Destruction clears the timer and
+-aborts the wait, so a call awaiting the transition resolves `false` and dispatches no completed
+-event, and restoration writes back the toast's `shown`, `transition`, and `fade` tokens.
++A call carries the change identity it sets when its change starts, and after each write, dispatch,
++and await it reads whether the toast is live and whether a later `show` or `hide` call has started.
++It also reads the `transition` token: before a show writes it the toast must lack it, and from a
++call's write of it until the call removes it the toast must carry it. A call that finds the toast
++destroyed, a later call started, or the `transition` token otherwise stops, writing and dispatching
++nothing more, and resolves `false`. A listener that calls `show` or `hide` inside `show.vn.toast`
++or `hide.vn.toast` therefore supersedes the call whose event it heard, whether the listener's call
++is still waiting or has already completed: the call whose event it heard resolves `false` and
++writes nothing, and the listener's call completes or stops by its own cancellation, lifetime, and
++door reads. A listener that prevents the pre-change event starts no change, whatever else it wrote,
++so a listener that prevents the nested `show.vn.toast` its own call dispatches leaves the outer call
++to complete: the nested call resolves `false`, and the outer call dispatches `shown.vn.toast` once
++and resolves `true`.
++
++The toast's `shown` token at the change's end is agreement. A listener or a reaction that adds the
++token before a show writes it, or removes it before a hide does, has made that write for the call:
++the call's token write leaves the `shown` token as the toast carries it, and the call completes
++every other write in its order, dispatches its completed event, and resolves `true`. A show of a
++shown toast finds the token at its end as it starts. From the moment the call finds the token at the
++change's end, right after the pre-change dispatch or at its own token write, each door also reads
++the token there, and a toast that moves it back takes the change over. A hide whose toast loses the
++`shown` token while the `transition` token is on therefore completes, removes the `transition`
++token, and leaves the toast accepting later calls.
++
++A call the toast took over resolves `false`, dispatches nothing, and takes one further step that
++returns what the change wrote: a show taken over removes the `transition` token while the show holds
++it and the `fade` token when the show added it, and a hide taken over removes the `transition` token
++while the hide holds it. The step reads no door; before each of its writes it reads only the call's
++identity and the toast's lifetime. The timer an accepted call cleared stays cleared after the call is
++taken over, until the pointer or focus leaves the toast with neither inside or a later show
++completes. Destruction clears the timer and aborts the wait, so a call awaiting the transition
++resolves `false` and dispatches no completed event, and restoration writes back the toast's `shown`,
++`transition`, and `fade` tokens.
+ 
+ The delegate's `toast` option carries the toast's groups. A click inside a trigger the resolved
+ `dismiss` selector matches inside the root hides the toast the trigger's target attribute or `href`
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index c31f64f..a4019ae 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -59,7 +59,17 @@ import { isAttributeName, isCarouselEvent, isClassToken, isSelector } from './va
+  * took over resolves `false`. After each write and await, a slide reads its lifetime, that both
+  * items are still items of the host, and the tokens and indicator values the phase requires, and
+  * it stops, writing and dispatching nothing more, and resolves `false`, when any read fails. The
+- * timer is a chain of native timeouts at the active item's interval attribute or the `interval`
++ * incoming item's `active` token is agreement: a listener or a reaction that adds it has made the
++ * slide's token write for it, so the slide writes the token only when the item lacks it, completes
++ * every other write, dispatches `slid.vn.carousel`, and resolves `true`. From the moment the slide
++ * finds the token on the incoming item, after the `slide.vn.carousel` dispatch or at its token
++ * write, each door also reads the token there. A host that takes the token off the incoming item
++ * then takes the slide over: the slide resolves `false` and takes one further step that writes back
++ * each value the slide wrote, in its order, so the indicators and both items return to the state
++ * the slide found. The step dispatches nothing and reads only the carousel's lifetime and the slide
++ * in flight before each write.
++ *
++ * The timer is a chain of native timeouts at the active item's interval attribute or the `interval`
+  * option. Arming reads whether cycling is wanted, whether a touch deferral is pending, whether the
+  * pointer over the host holds it under `pause`, and whether the view prefers reduced motion, and
+  * arms nothing when any holds; each tick slides forward only while the document is visible and the
+@@ -298,11 +308,12 @@ export class Carousel implements CarouselInterface {
+ 
+ 	// Runs one slide from the outgoing item to the incoming one. Each door reads the lifetime, that
+ 	// both items are still items of the host, and the items and indicators for its phase: the outgoing
+-	// item keeps the `active` token and the incoming item lacks it until the completion moves it, the
+-	// outgoing item lacks the order token from the order token's write on, the incoming item carries
+-	// its order token from its write until the completion removes it, each item carries the direction
+-	// token from its write until the completion removes it, and each indicator carries the token and
+-	// the `aria-current` value the slide has written to it so far.
++	// item keeps the `active` token until the completion removes it, the incoming item carries that
++	// token from the moment the slide finds it there, after the `slide` dispatch or at its own token
++	// write, the outgoing item lacks the order token from the order token's write on, the incoming
++	// item carries its order token from its write until the completion removes it, each item carries
++	// the direction token from its write until the completion removes it, and each indicator carries
++	// the token and the `aria-current` value the slide has written to it so far.
+ 	async #move(
+ 		outgoing: HTMLElement,
+ 		incoming: HTMLElement,
+@@ -321,22 +332,23 @@ export class Carousel implements CarouselInterface {
+ 		if (!emitEvent(this.#host, CAROUSEL_EVENTS.slide, detail, true)) return false
+ 		// A listener runs inside the dispatch and can destroy this carousel or slide it itself, even
+ 		// back to this slide's outgoing item, so the refusals and the slide tally are read again before
+-		// any write.
++		// any write. A listener that only adds the incoming item's `active` token has made this slide's
++		// token write for it, so every later door requires the token.
+ 		const { active } = this.#classes
+ 		const current = this.#items()
+ 		if (
+ 			this.#controller.signal.aborted ||
+ 			this.#change !== undefined ||
+ 			this.#slides !== slides ||
+-			this.#active(current) !== outgoing ||
+-			!current.includes(incoming) ||
+-			incoming.classList.contains(active)
++			this.#active(current.filter((item) => item !== incoming)) !== outgoing ||
++			!current.includes(incoming)
+ 		) {
+ 			return false
+ 		}
+ 		const change = Promise.withResolvers<void>()
+ 		this.#change = change
+ 		this.#slides += 1
++		const expected = incoming.classList.contains(active) ? true : undefined
+ 		// The timer stops for the slide. After the slide completes or stops it is armed again where it
+ 		// was running when the slide began, and arming reads whether cycling is still wanted.
+ 		const cycling = this.#timer !== undefined
+@@ -350,76 +362,92 @@ export class Carousel implements CarouselInterface {
+ 				`[${CSS.escape(this.#attributes.index)}="${String(detail.to)}"]`,
+ 			)
+ 			this.#save(outgoing, incoming, [...leaving, ...arriving])
++			// Each write the slide makes is an entry: a token entry names the element, the token, and
++			// whether the write added it, and an `aria-current` entry names the indicator and the value
++			// the write replaced, so the returning step writes each one back. A token already as a write
++			// leaves it is no entry.
++			let written: ReadonlyArray<
++				readonly [HTMLElement, string, boolean] | readonly [HTMLElement, string | null]
++			> = []
+ 			for (const indicator of leaving) {
+ 				const marked = indicator.getAttribute('aria-current')
++				written = [...written, [indicator, active, false]]
+ 				if (
+ 					!this.#apply(
+ 						() => indicator.classList.remove(active),
++						change,
+ 						pair,
++						expected,
+ 						[[outgoing, active]],
+-						[
+-							[incoming, active],
+-							[indicator, active],
+-						],
++						[[indicator, active]],
+ 						[[indicator, marked]],
+ 					)
+ 				) {
+-					return false
++					return this.#rewind(change, written)
+ 				}
++				written = [...written, [indicator, marked]]
+ 				if (
+ 					!this.#apply(
+ 						() => indicator.removeAttribute('aria-current'),
++						change,
+ 						pair,
++						expected,
+ 						[[outgoing, active]],
+-						[
+-							[incoming, active],
+-							[indicator, active],
+-						],
++						[[indicator, active]],
+ 						[[indicator, null]],
+ 					)
+ 				) {
+-					return false
++					return this.#rewind(change, written)
+ 				}
+ 			}
+ 			for (const indicator of arriving) {
+ 				const marked = indicator.getAttribute('aria-current')
++				if (!indicator.classList.contains(active)) written = [...written, [indicator, active, true]]
+ 				if (
+ 					!this.#apply(
+ 						() => indicator.classList.add(active),
++						change,
+ 						pair,
++						expected,
+ 						[
+ 							[outgoing, active],
+ 							[indicator, active],
+ 						],
+-						[[incoming, active]],
++						[],
+ 						[[indicator, marked]],
+ 					)
+ 				) {
+-					return false
++					return this.#rewind(change, written)
+ 				}
++				written = [...written, [indicator, marked]]
+ 				if (
+ 					!this.#apply(
+ 						() => indicator.setAttribute('aria-current', 'true'),
++						change,
+ 						pair,
++						expected,
+ 						[
+ 							[outgoing, active],
+ 							[indicator, active],
+ 						],
+-						[[incoming, active]],
++						[],
+ 						[[indicator, 'true']],
+ 					)
+ 				) {
+-					return false
++					return this.#rewind(change, written)
+ 				}
+ 			}
+-			const blocked: ReadonlyArray<readonly [HTMLElement, string]> = [
+-				[incoming, active],
+-				[outgoing, order],
+-			]
++			const indicated = written
++			const blocked: ReadonlyArray<readonly [HTMLElement, string]> = [[outgoing, order]]
++			const ordered: typeof written = incoming.classList.contains(order)
++				? indicated
++				: [...indicated, [incoming, order, true]]
+ 			if (
+ 				!this.#apply(
+ 					() => incoming.classList.add(order),
++					change,
+ 					pair,
++					expected,
+ 					[
+ 						[outgoing, active],
+ 						[incoming, order],
+@@ -427,13 +455,18 @@ export class Carousel implements CarouselInterface {
+ 					blocked,
+ 				)
+ 			) {
+-				return false
++				return this.#rewind(change, ordered)
+ 			}
+ 			reflow(incoming)
++			const turned: typeof written = outgoing.classList.contains(direction)
++				? ordered
++				: [...ordered, [outgoing, direction, true]]
+ 			if (
+ 				!this.#apply(
+ 					() => outgoing.classList.add(direction),
++					change,
+ 					pair,
++					expected,
+ 					[
+ 						[outgoing, active],
+ 						[outgoing, direction],
+@@ -442,7 +475,7 @@ export class Carousel implements CarouselInterface {
+ 					blocked,
+ 				)
+ 			) {
+-				return false
++				return this.#rewind(change, turned)
+ 			}
+ 			const moving: ReadonlyArray<readonly [HTMLElement, string]> = [
+ 				[outgoing, active],
+@@ -450,39 +483,41 @@ export class Carousel implements CarouselInterface {
+ 				[incoming, order],
+ 				[incoming, direction],
+ 			]
+-			if (!this.#apply(() => incoming.classList.add(direction), pair, moving, blocked)) {
+-				return false
+-			}
+-			if (this.#host.classList.contains(this.#classes.slide)) {
+-				await settleAnimations(incoming, this.#controller.signal)
+-				if (!this.#holds(pair, moving, blocked, [])) return false
+-			}
++			const both: typeof written = incoming.classList.contains(direction)
++				? turned
++				: [...turned, [incoming, direction, true]]
+ 			if (
+ 				!this.#apply(
+-					() => incoming.classList.remove(direction, order),
++					() => incoming.classList.add(direction),
++					change,
+ 					pair,
+-					[
+-						[outgoing, active],
+-						[outgoing, direction],
+-					],
+-					[
+-						[incoming, active],
+-						[incoming, order],
+-						[incoming, direction],
+-						[outgoing, order],
+-					],
++					expected,
++					moving,
++					blocked,
+ 				)
+ 			) {
+-				return false
++				return this.#rewind(change, both)
+ 			}
++			if (this.#host.classList.contains(this.#classes.slide)) {
++				await settleAnimations(incoming, this.#controller.signal)
++				if (!this.#holds(change, pair, expected, moving, blocked, [])) {
++					return this.#rewind(change, both)
++				}
++			}
++			// The removal takes the incoming item's order and direction tokens off, so the slide has
++			// undone those writes and they are no entries from here.
++			const landed: typeof written = both.filter(
++				(entry) => entry[0] !== incoming || (entry[1] !== order && entry[1] !== direction),
++			)
+ 			if (
+ 				!this.#apply(
+-					() => incoming.classList.add(active),
++					() => incoming.classList.remove(direction, order),
++					change,
+ 					pair,
++					expected,
+ 					[
+ 						[outgoing, active],
+ 						[outgoing, direction],
+-						[incoming, active],
+ 					],
+ 					[
+ 						[incoming, order],
+@@ -491,13 +526,40 @@ export class Carousel implements CarouselInterface {
+ 					],
+ 				)
+ 			) {
+-				return false
++				return this.#rewind(change, landed)
+ 			}
++			// An incoming item that carries the `active` token already has made this write for the slide.
++			const moved = this.#apply(
++				() => {
++					if (!incoming.classList.contains(active)) incoming.classList.add(active)
++				},
++				change,
++				pair,
++				true,
++				[
++					[outgoing, active],
++					[outgoing, direction],
++				],
++				[
++					[incoming, order],
++					[incoming, direction],
++					[outgoing, order],
++				],
++			)
++			if (!moved) return this.#rewind(change, landed)
++			// The removal takes the outgoing item's `active` token off, an entry of its own, and its
++			// direction token, which the slide wrote, so that write is no entry from here.
++			const left: typeof written = [
++				...landed.filter((entry) => entry[0] !== outgoing || entry[1] !== direction),
++				[outgoing, active, false],
++			]
+ 			if (
+ 				!this.#apply(
+ 					() => outgoing.classList.remove(active, order, direction),
++					change,
+ 					pair,
+-					[[incoming, active]],
++					true,
++					[],
+ 					[
+ 						[incoming, order],
+ 						[incoming, direction],
+@@ -507,7 +569,7 @@ export class Carousel implements CarouselInterface {
+ 					],
+ 				)
+ 			) {
+-				return false
++				return this.#rewind(change, left)
+ 			}
+ 			this.#finish(change)
+ 			emitEvent(this.#host, CAROUSEL_EVENTS.slid, { ...detail }, false)
+@@ -520,35 +582,88 @@ export class Carousel implements CarouselInterface {
+ 		}
+ 	}
+ 
+-	// Reports whether the slide still holds its change: the carousel is live, both items of the pair
+-	// are still items of the host, each element carries every token `present` pairs it with and none
+-	// `absent` pairs it with, and each indicator carries the `aria-current` value `marks` pairs it with.
++	// Reports whether the slide that set `change` still owns the carousel: the carousel is live and
++	// that slide is the one in flight.
++	#owns(change: PromiseWithResolvers<void>): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
++
++	// Reads a door of the slide that set `change`: the slide still owns the carousel, both items of
++	// the pair are still items of the host, the incoming item carries the `active` token exactly when
++	// `active` is true when `active` is a boolean, each element carries every token `present` pairs it
++	// with and none `absent` pairs it with, and each indicator carries the `aria-current` value `marks`
++	// pairs it with. A door before the slide has found the incoming item's token at its end passes
++	// `undefined`, so it reads no such token. The pair is read first: an item that left the host ends
++	// the slide whatever its tokens read. A host that stops the slide otherwise than by moving the
++	// incoming item's token ends the slide in flight, so the returning step the slide takes next writes
++	// nothing.
+ 	#holds(
++		change: PromiseWithResolvers<void>,
+ 		pair: readonly [HTMLElement, HTMLElement],
++		active: boolean | undefined,
+ 		present: ReadonlyArray<readonly [HTMLElement, string]>,
+ 		absent: ReadonlyArray<readonly [HTMLElement, string]>,
+ 		marks: ReadonlyArray<readonly [HTMLElement, string | null]>,
+ 	): boolean {
++		if (!this.#owns(change)) return false
+ 		const items = this.#items()
+-		return (
+-			!this.#controller.signal.aborted &&
+-			pair.every((item) => items.includes(item)) &&
+-			present.every(([element, token]) => element.classList.contains(token)) &&
+-			!absent.some(([element, token]) => element.classList.contains(token)) &&
+-			marks.every(([element, value]) => element.getAttribute('aria-current') === value)
+-		)
++		if (pair.every((item) => items.includes(item))) {
++			if (active !== undefined && pair[1].classList.contains(this.#classes.active) !== active) {
++				return false
++			}
++			if (
++				present.every(([element, token]) => element.classList.contains(token)) &&
++				!absent.some(([element, token]) => element.classList.contains(token)) &&
++				marks.every(([element, value]) => element.getAttribute('aria-current') === value)
++			) {
++				return true
++			}
++		}
++		this.#finish(change)
++		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads whether the slide still holds its change.
++	// Runs one write a reaction can run inside, then reads the door after it.
+ 	#apply(
+ 		write: () => void,
++		change: PromiseWithResolvers<void>,
+ 		pair: readonly [HTMLElement, HTMLElement],
++		active: boolean | undefined,
+ 		present: ReadonlyArray<readonly [HTMLElement, string]>,
+ 		absent: ReadonlyArray<readonly [HTMLElement, string]>,
+ 		marks: ReadonlyArray<readonly [HTMLElement, string | null]> = [],
+ 	): boolean {
+ 		write()
+-		return this.#holds(pair, present, absent, marks)
++		return this.#holds(change, pair, active, present, absent, marks)
++	}
++
++	// Ends a slide the host took over by taking the incoming item's `active` token off: writes each
++	// entry the slide wrote back, in its order, so the indicators, the outgoing item, and the incoming
++	// item return to the state the slide found. A token entry takes its token off when the slide added
++	// it and puts it back when the slide removed it, and an `aria-current` entry writes back the value
++	// the slide replaced. The step dispatches nothing and reads no door; it reads only whether the
++	// slide that set `change` still owns the carousel before each write, so a destruction inside one
++	// writes nothing more and the snapshot's restoration stands.
++	#rewind(
++		change: PromiseWithResolvers<void>,
++		written: ReadonlyArray<
++			readonly [HTMLElement, string, boolean] | readonly [HTMLElement, string | null]
++		>,
++	): false {
++		for (const entry of written) {
++			this.#revert(change, () => {
++				if (entry.length === 3) entry[0].classList.toggle(entry[1], !entry[2])
++				else if (entry[1] === null) entry[0].removeAttribute('aria-current')
++				else entry[0].setAttribute('aria-current', entry[1])
++			})
++		}
++		return false
++	}
++
++	// Runs one write of a returning step while the slide that set `change` still owns the carousel;
++	// a destroyed carousel restores nothing here, because its snapshot restores.
++	#revert(change: PromiseWithResolvers<void>, write: () => void): void {
++		if (this.#owns(change)) write()
+ 	}
+ 
+ 	// Ends the slide in flight when it is this one, and releases every `slide` call waiting on it.
+diff --git a/src/browser/Collapse.ts b/src/browser/Collapse.ts
+index 0905ed7..909ac21 100644
+--- a/src/browser/Collapse.ts
++++ b/src/browser/Collapse.ts
+@@ -46,12 +46,29 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * every open first-level sibling inside it through that sibling's own collapse, constructing one
+  * with the same groups and parent where the sibling has none; the collapse owns each one it
+  * constructs, destroys one whose panel left the document at its next show or hide call, and
+- * destroys the rest on its own destruction. After each write, dispatch, and await, a call reads its
+- * lifetime and the panel again: from the write of the `transition` token until its removal the
+- * panel must carry that token, a hide's panel must lack the `shown` token from the moment the hide
+- * removes it, and at completion the panel must carry the state the call completes to. A call that
+- * finds the collapse destroyed, a later call started, or the panel otherwise stops, writing and
+- * dispatching nothing more, and resolves `false`. An aborted `signal` destroys the collapse.
++ * destroys the rest on its own destruction.
++ *
++ * A call carries the change identity it sets when its change starts. After each write, dispatch,
++ * and await, it reads whether the collapse is live and whether a later `show` or `hide` call has
++ * started; a call that finds either stops, writing and dispatching nothing more, and resolves
++ * `false`. A listener that starts a call of its own inside the pre-change dispatch supersedes the
++ * call this way, while a prevented call starts no change. The call also reads the panel's phase:
++ * before a hide writes the `transition` token the panel must lack it, from its write until its
++ * removal the panel must carry it, and after the call's `host` token write the panel must carry
++ * that token; a call that finds the panel otherwise stops the same way. The panel's `shown` token
++ * at the change's end is agreement: a listener or a reaction that moves the token there has made
++ * the call's token write for it, so the call writes the `shown` token only when the panel has
++ * not, completes every other write, dispatches its completed event, and resolves `true`. From the
++ * moment the call finds the token at its end, after the pre-change dispatch or at its token write,
++ * each door also reads the token there. A panel that moves the token back from that end takes the
++ * change over: the call resolves `false` and takes one further step that returns what the change
++ * wrote. A stopped show removes the `transition` token and the inline size while the show holds
++ * them, adds back the `host` token it removed, and collapses each trigger it expanded that names
++ * no shown panel; a stopped hide removes the inline size and the `transition` token while the hide
++ * holds them, adds back the `host` token it removed, and expands each trigger it collapsed. The
++ * step dispatches nothing and reads only the call's identity and the collapse's lifetime before
++ * each write, so a call a reaction starts inside the step supersedes it. An aborted `signal`
++ * destroys the collapse.
+  *
+  * @example
+  * ```ts
+@@ -72,9 +89,10 @@ export class Collapse implements CollapseInterface {
+ 	readonly #snapshot = new HostSnapshot()
+ 	readonly #controller = new AbortController()
+ 	readonly #owned = new Set<CollapseInterface>()
+-	// The identity of the latest call that started a change. A call holds its change only while this
+-	// is its identity, so a call resuming after a later one started sees that it no longer holds it.
+-	#change: object | undefined
++	// The identity of the latest show or hide that started. Each call carries the identity it set, and
++	// its doors and its returning step write only while this field still holds it, so a change a
++	// listener or a reaction starts supersedes the call.
++	#change: object = {}
+ 
+ 	/**
+ 	 * Claims the host, resolves its vocabulary and parent, and binds initial hooks.
+@@ -160,52 +178,95 @@ export class Collapse implements CollapseInterface {
+ 	async show(): Promise<boolean> {
+ 		this.#prune()
+ 		if (this.#refused(true) || this.#transitioning(this.#siblings())) return false
++		const prior = this.#change
+ 		if (!emitEvent(this.#host, COLLAPSE_EVENTS.show, null, true)) return false
+-		// A listener runs inside the dispatch and can destroy this collapse, show or hide the panel
+-		// itself, or start a sibling's transition, so every refusal is read again before any write.
++		// A listener runs inside the dispatch and can destroy this collapse, start a show or hide of its
++		// own, which moves the change identity and supersedes this call, or start a transition, so
++		// those are read again before any write. A listener that only adds the `shown` token has made
++		// this call's token write for it, so every later door requires the token.
+ 		const siblings = this.#siblings()
+-		if (this.#refused(true) || this.#transitioning(siblings)) return false
++		if (
++			this.#controller.signal.aborted ||
++			this.#change !== prior ||
++			this.#transitioning([this.#host, ...siblings])
++		) {
++			return false
++		}
+ 		const change = {}
+ 		this.#change = change
+-		if (!this.#hideSiblings(change, siblings)) return false
++		const expected = this.shown ? true : undefined
++		if (!this.#hideSiblings(change, expected, siblings)) return false
+ 		const host = this.#host
+ 		const { transition, shown } = this.#classes
+ 		// Each write door reads the panel for its phase: the transition token while the transition
+-		// runs, and the completed tokens without it at completion.
++		// runs, and the `host` token without the transition token after its removal.
+ 		const during = [transition]
+-		const completed = [this.#classes.host, shown]
++		const completed = [this.#classes.host]
+ 		const dimension = this.#dimension()
+ 		const triggers = this.#triggers()
++		// Each trigger write is an entry of its own, in the order the call writes them.
++		const marks = triggers.flatMap((trigger) => [
++			[trigger, 'collapsed'] as const,
++			[trigger, 'expanded'] as const,
++		])
+ 		this.#save(dimension, triggers)
+-		if (!this.#apply(change, during, [], () => host.classList.add(transition))) return false
+-		if (!this.#apply(change, during, [], () => host.classList.remove(this.#classes.host))) {
+-			return false
++		if (!this.#apply(change, expected, during, [], () => host.classList.add(transition))) {
++			return this.#rehide(change, ['transition'])
+ 		}
+-		if (!this.#apply(change, during, [], () => host.style.setProperty(dimension, '0px'))) {
+-			return false
++		// The removal of the `host` token is an entry only when the panel carried it, so the returning
++		// step adds no token the call did not remove.
++		const opened = host.classList.contains(this.#classes.host)
++			? (['transition', 'host'] as const)
++			: (['transition'] as const)
++		if (
++			!this.#apply(change, expected, during, [], () => host.classList.remove(this.#classes.host))
++		) {
++			return this.#rehide(change, opened)
+ 		}
+-		if (!this.#writeTriggers(change, during, [], triggers, true)) return false
++		const sized = [...opened, dimension] as const
++		if (
++			!this.#apply(change, expected, during, [], () => host.style.setProperty(dimension, '0px'))
++		) {
++			return this.#rehide(change, sized)
++		}
++		for (const [index, mark] of marks.entries()) {
++			if (!this.#apply(change, expected, during, [], () => this.#mark(mark, true))) {
++				return this.#rehide(change, [...sized, ...marks.slice(0, index + 1)])
++			}
++		}
++		const written = [...sized, ...marks]
+ 		// Reading the scroll size lays the panel out at zero, so the size written next transitions.
+ 		const size = dimension === 'width' ? host.scrollWidth : host.scrollHeight
+-		if (!this.#apply(change, during, [], () => host.style.setProperty(dimension, `${size}px`))) {
+-			return false
+-		}
+-		await settleAnimations(host, this.#controller.signal)
+-		if (!this.#holds(change, during, [])) return false
+ 		if (
+-			!this.#apply(change, [...completed, transition], [], () =>
+-				host.classList.add(this.#classes.host, shown),
++			!this.#apply(change, expected, during, [], () =>
++				host.style.setProperty(dimension, `${size}px`),
+ 			)
+ 		) {
+-			return false
++			return this.#rehide(change, written)
+ 		}
+-		if (!this.#apply(change, completed, [transition], () => host.classList.remove(transition))) {
+-			return false
++		await settleAnimations(host, this.#controller.signal)
++		if (!this.#holds(change, expected, during, [])) return this.#rehide(change, written)
++		// A host that added the `shown` token first has made that write for the call, which then adds
++		// the `host` token alone.
++		const marked = this.#apply(change, true, [...completed, transition], [], () => {
++			if (this.shown) host.classList.add(this.#classes.host)
++			else host.classList.add(this.#classes.host, shown)
++		})
++		// The token write adds back the `host` token, so the show's removal of it is no entry from here.
++		const raised = ['transition', dimension, ...marks] as const
++		if (!marked) return this.#rehide(change, raised)
++		if (
++			!this.#apply(change, true, completed, [transition], () => host.classList.remove(transition))
++		) {
++			return this.#rehide(change, [dimension, ...marks])
+ 		}
+-		if (!this.#apply(change, completed, [transition], () => host.style.removeProperty(dimension))) {
+-			return false
++		if (
++			!this.#apply(change, true, completed, [transition], () =>
++				host.style.removeProperty(dimension),
++			)
++		) {
++			return this.#rehide(change, marks)
+ 		}
+-		this.#change = undefined
+ 		emitEvent(host, COLLAPSE_EVENTS.shown, null, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -213,15 +274,25 @@ export class Collapse implements CollapseInterface {
+ 	async hide(): Promise<boolean> {
+ 		this.#prune()
+ 		if (this.#refused(false)) return false
++		const prior = this.#change
+ 		if (!emitEvent(this.#host, COLLAPSE_EVENTS.hide, null, true)) return false
+-		if (this.#refused(false)) return false
++		// As in `show`, a listener's own call supersedes this call, and a listener that only removes the
++		// `shown` token has made this call's token write for it.
++		if (
++			this.#controller.signal.aborted ||
++			this.#change !== prior ||
++			this.#transitioning([this.#host])
++		) {
++			return false
++		}
+ 		const change = {}
+ 		this.#change = change
++		const expected = this.shown ? undefined : false
+ 		const host = this.#host
+ 		const { transition, shown } = this.#classes
+-		// Each write door reads the panel for its phase: the shown token before the transition token
+-		// is written, the transition token while the transition runs, without the shown token from
+-		// its removal on, and the completed token without the shown or transition token at completion.
++		// Each write door reads the panel for its phase: no transition token before the call writes
++		// it, the transition token while the transition runs, and the `host` token without the
++		// transition token after its removal.
+ 		const during = [transition]
+ 		const completed = [this.#classes.host]
+ 		const dimension = this.#dimension()
+@@ -229,40 +300,57 @@ export class Collapse implements CollapseInterface {
+ 		this.#save(dimension, triggers)
+ 		const size = host.getBoundingClientRect()[dimension]
+ 		if (
+-			!this.#apply(change, [shown], during, () => host.style.setProperty(dimension, `${size}px`))
++			!this.#apply(change, expected, [], during, () =>
++				host.style.setProperty(dimension, `${size}px`),
++			)
+ 		) {
+-			return false
++			return this.#reshow(change, [dimension])
+ 		}
+ 		reflow(host)
+-		if (!this.#apply(change, during, [], () => host.classList.add(transition))) return false
+-		if (
+-			!this.#apply(change, during, [shown], () => host.classList.remove(this.#classes.host, shown))
+-		) {
+-			return false
++		if (!this.#apply(change, expected, during, [], () => host.classList.add(transition))) {
++			return this.#reshow(change, [dimension, 'transition'])
+ 		}
+-		const collapsed = triggers.filter(
+-			(trigger) =>
+-				!readTargets(trigger, this.#attributes).some((panel) => panel.classList.contains(shown)),
+-		)
+-		if (!this.#writeTriggers(change, during, [shown], collapsed, false)) return false
+-		if (!this.#apply(change, during, [shown], () => host.style.removeProperty(dimension))) {
+-			return false
++		// The removal of the `host` token is an entry only when the panel carries it, as in `show`.
++		const lowered = host.classList.contains(this.#classes.host)
++			? (['transition', 'host'] as const)
++			: (['transition'] as const)
++		const closed = [dimension, ...lowered] as const
++		// A host that removed the `shown` token first has made that write for the call, which then
++		// removes the `host` token alone.
++		const cleared = this.#apply(change, false, during, [], () => {
++			if (this.shown) host.classList.remove(this.#classes.host, shown)
++			else host.classList.remove(this.#classes.host)
++		})
++		if (!cleared) return this.#reshow(change, closed)
++		const marks = triggers
++			.filter(
++				(trigger) =>
++					!readTargets(trigger, this.#attributes).some((panel) => panel.classList.contains(shown)),
++			)
++			.flatMap((trigger) => [[trigger, 'collapsed'] as const, [trigger, 'expanded'] as const])
++		for (const [index, mark] of marks.entries()) {
++			if (!this.#apply(change, false, during, [], () => this.#mark(mark, false))) {
++				return this.#reshow(change, [...closed, ...marks.slice(0, index + 1)])
++			}
++		}
++		const written = [...lowered, ...marks] as const
++		if (!this.#apply(change, false, during, [], () => host.style.removeProperty(dimension))) {
++			return this.#reshow(change, written)
+ 		}
+ 		await settleAnimations(host, this.#controller.signal)
+-		if (!this.#holds(change, during, [shown])) return false
++		if (!this.#holds(change, false, during, [])) return this.#reshow(change, written)
+ 		if (
+-			!this.#apply(change, [...completed, transition], [shown], () =>
++			!this.#apply(change, false, [...completed, transition], [], () =>
+ 				host.classList.add(this.#classes.host),
+ 			)
+ 		) {
+-			return false
++			return this.#reshow(change, ['transition', ...marks])
+ 		}
+ 		if (
+-			!this.#apply(change, completed, [transition, shown], () => host.classList.remove(transition))
++			!this.#apply(change, false, completed, [transition], () => host.classList.remove(transition))
+ 		) {
+-			return false
++			return this.#reshow(change, marks)
+ 		}
+-		this.#change = undefined
+ 		emitEvent(host, COLLAPSE_EVENTS.hidden, null, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -297,27 +385,118 @@ export class Collapse implements CollapseInterface {
+ 		return panels.some((panel) => panel.classList.contains(this.#classes.transition))
+ 	}
+ 
+-	// Reports whether the call still holds its change: the collapse is live, no later call started a
+-	// change, and the panel carries every token in `present` and none in `absent`.
+-	#holds(change: object, present: readonly string[], absent: readonly string[]): boolean {
++	// Reports whether the call that set `change` still owns the collapse: the collapse is live and no
++	// later show or hide has started.
++	#owns(change: object): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
++
++	// Reads a door of the call that set `change`: the call still owns the collapse, the panel carries
++	// the `shown` token exactly when `shown` is true when `shown` is a boolean, and it carries every
++	// token in `present` and none in `absent`. A door before the call has found the `shown` token at
++	// its end passes `undefined`, so it reads no `shown` token. A panel that stops the call otherwise
++	// than by moving the `shown` token ends the change, moving the identity to one no call carries, so
++	// the returning step the call takes next writes nothing.
++	#holds(
++		change: object,
++		shown: boolean | undefined,
++		present: readonly string[],
++		absent: readonly string[],
++	): boolean {
++		if (!this.#owns(change)) return false
++		if (shown !== undefined && this.shown !== shown) return false
+ 		const tokens = this.#host.classList
+-		return (
+-			!this.#controller.signal.aborted &&
+-			this.#change === change &&
++		if (
+ 			present.every((token) => tokens.contains(token)) &&
+ 			!absent.some((token) => tokens.contains(token))
+-		)
++		) {
++			return true
++		}
++		this.#change = {}
++		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads whether the call still holds its change.
++	// Runs one write a reaction can run inside, then reads the door after it.
+ 	#apply(
+ 		change: object,
++		shown: boolean | undefined,
+ 		present: readonly string[],
+ 		absent: readonly string[],
+ 		write: () => void,
+ 	): boolean {
+ 		write()
+-		return this.#holds(change, present, absent)
++		return this.#holds(change, shown, present, absent)
++	}
++
++	// Writes one trigger entry for the state the panel moves to: the trigger's `collapsed` token, or
++	// its `aria-expanded` value.
++	#mark(
++		[trigger, name]: readonly [HTMLElement, 'collapsed' | 'expanded'],
++		expanded: boolean,
++	): void {
++		if (name === 'collapsed') trigger.classList.toggle(this.#classes.collapsed, !expanded)
++		else trigger.setAttribute('aria-expanded', String(expanded))
++	}
++
++	// Ends a show the host took over by dropping the `shown` token: returns each write the show made,
++	// named in its order, to the hidden state a hide writes. It removes the `transition` token and the
++	// inline size while the show holds them and adds back the `host` token the show removed, and it
++	// collapses each trigger entry the show wrote whose trigger names no shown panel, as a hide does.
++	// The step dispatches nothing and reads no door; it reads only whether the call that set `change`
++	// still owns the collapse before each write, so a destruction inside one writes nothing more and
++	// the snapshot's restoration stands, and a call a reaction starts inside one supersedes the step.
++	#rehide(
++		change: object,
++		written: ReadonlyArray<
++			'transition' | 'host' | 'width' | 'height' | readonly [HTMLElement, 'collapsed' | 'expanded']
++		>,
++	): false {
++		const { shown } = this.#classes
++		for (const entry of written) {
++			this.#revert(change, () => {
++				if (typeof entry !== 'string') {
++					const panels = readTargets(entry[0], this.#attributes)
++					if (!panels.some((panel) => panel.classList.contains(shown))) this.#mark(entry, false)
++				} else this.#undo(entry)
++			})
++		}
++		return false
++	}
++
++	// Ends a hide the host took over by carrying the `shown` token again: returns each write the hide
++	// made, named in its order, to the shown state. It removes the inline size and the `transition`
++	// token while the hide holds them, adds back the `host` token the hide removed, and expands each
++	// trigger the hide collapsed. It reads only whether the call that set `change` still owns the
++	// collapse before each write, as the show's returning step does.
++	#reshow(
++		change: object,
++		written: ReadonlyArray<
++			'transition' | 'host' | 'width' | 'height' | readonly [HTMLElement, 'collapsed' | 'expanded']
++		>,
++	): false {
++		for (const entry of written) {
++			this.#revert(change, () => {
++				if (typeof entry !== 'string') this.#mark(entry, true)
++				else this.#undo(entry)
++			})
++		}
++		return false
++	}
++
++	// Returns one panel write of a returning step: the `transition` token leaves, the `host` token
++	// comes back, and the inline size clears.
++	#undo(entry: 'transition' | 'host' | 'width' | 'height'): void {
++		const host = this.#host
++		if (entry === 'transition') host.classList.remove(this.#classes.transition)
++		else if (entry === 'host') host.classList.add(this.#classes.host)
++		else host.style.removeProperty(entry)
++	}
++
++	// Runs one write of a returning step while the call that set `change` still owns the collapse; a
++	// destroyed collapse restores nothing here, because its snapshot restores, and a later call owns
++	// the panel.
++	#revert(change: object, write: () => void): void {
++		if (this.#owns(change)) write()
+ 	}
+ 
+ 	// Names the inline size the panel transitions: its width with the `horizontal` token, else its
+@@ -347,16 +526,21 @@ export class Collapse implements CollapseInterface {
+ 		)
+ 	}
+ 
+-	// Hides each open sibling through its own collapse, which dispatches its own events, and reads
+-	// after each one whether the call still holds its change with the panel neither shown nor
+-	// transitioning, because a listener runs inside each sibling's dispatch.
+-	#hideSiblings(change: object, siblings: readonly HTMLElement[]): boolean {
++	// Hides each open sibling through its own collapse, which dispatches its own events, and reads the
++	// door after each one, because a listener runs inside each sibling's dispatch: the panel must not
++	// transition, and it must carry the `shown` token exactly as `shown` expects when that is a
++	// boolean. The call has written nothing yet, so a door that fails ends the call with nothing to
++	// return.
++	#hideSiblings(
++		change: object,
++		shown: boolean | undefined,
++		siblings: readonly HTMLElement[],
++	): boolean {
+ 		const parent = this.#parent
+ 		if (parent === undefined) return true
+-		const { shown, transition } = this.#classes
+ 		for (const sibling of siblings) {
+ 			void this.#acquire(sibling, parent).hide()
+-			if (!this.#holds(change, [], [shown, transition])) return false
++			if (!this.#holds(change, shown, [], [this.#classes.transition])) return false
+ 		}
+ 		return true
+ 	}
+@@ -401,32 +585,4 @@ export class Collapse implements CollapseInterface {
+ 			this.#snapshot.save({ category: 'attribute', element: trigger, name: 'aria-expanded' })
+ 		}
+ 	}
+-
+-	// Writes each trigger's `collapsed` token and `aria-expanded` value for the state the panel moves
+-	// to, reading after every write whether the call still holds its change with the panel carrying
+-	// every token in `present` and none in `absent`.
+-	#writeTriggers(
+-		change: object,
+-		present: readonly string[],
+-		absent: readonly string[],
+-		triggers: readonly HTMLElement[],
+-		expanded: boolean,
+-	): boolean {
+-		const { collapsed } = this.#classes
+-		for (const trigger of triggers) {
+-			if (
+-				!this.#apply(change, present, absent, () => trigger.classList.toggle(collapsed, !expanded))
+-			) {
+-				return false
+-			}
+-			if (
+-				!this.#apply(change, present, absent, () =>
+-					trigger.setAttribute('aria-expanded', String(expanded)),
+-				)
+-			) {
+-				return false
+-			}
+-		}
+-		return true
+-	}
+ }
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+index fe76b8a..9790c44 100644
+--- a/src/browser/Tab.ts
++++ b/src/browser/Tab.ts
+@@ -40,18 +40,32 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * has none. A control outside any list writes nothing at construction and has no sibling. Showing
+  * dispatches `hide.vn.tab` on the active sibling and `show.vn.tab` on the host, refuses when either
+  * is prevented, deactivates the sibling and its pane, activates the host and its pane, waits for a
+- * pane carrying the `fade` token to settle, and dispatches `hidden.vn.tab` and `shown.vn.tab`. After
+- * each write, dispatch, and await, a call reads its lifetime, the list, the host, and the pane
+- * again: from the removal of the sibling's `active` token no control of the list but the host may
+- * carry that token, from the write of the host's `active` token the host must carry it, and from
+- * each write to the pane the pane must carry every token written so far. A call that finds the tab
+- * destroyed, a later call started, or the list, the host, or the pane otherwise stops, writing and
+- * dispatching nothing more, and resolves `false`. Destruction restores every value the tab wrote
+- * that no live engine still holds. Each tab joins the record of every role and state construction
+- * writes on its list, whether it writes the value or finds it already written, and the last engine
+- * holding a record writes its value back, so the list returns to its markup after its last tab is
+- * destroyed. An aborted `signal` destroys the tab. The keyboard is the delegate's: the tab listens
+- * for no key.
++ * pane carrying the `fade` token to settle, and dispatches `hidden.vn.tab` and `shown.vn.tab`.
++ *
++ * A call carries the change identity it sets when its change starts. After each write, dispatch,
++ * and await, it reads whether the tab is live and whether a later `show` call has started; a call
++ * that finds either stops, writing and dispatching nothing more, and resolves `false`. A listener
++ * that starts a show of its own inside a pre-change dispatch supersedes the call this way, while a
++ * prevented call starts no change. The call also reads the list and the pane: from the removal of
++ * the sibling's `active` token no control of the list but the host may carry that token, and from
++ * each write to the pane the pane must carry every token written so far; a call that finds either
++ * otherwise stops the same way, so a sibling that shows during the swap takes it over. The host's
++ * `active` token is agreement: a listener or a reaction that adds it has made the call's token
++ * write for it, so the call writes the token only when the host lacks it, completes every other
++ * write, dispatches its completed events, and resolves `true`. From the moment the call finds the
++ * token on the host, after the pre-change dispatches or at its token write, each door also reads
++ * the token there. A host that loses the token then, with no other control of the list active,
++ * takes the swap over: the call resolves `false` and takes one further step that writes back each
++ * value the swap wrote, in its order, so the sibling, its pane, and each dropdown return to the
++ * state the list had and the host and its pane to the inactive state. The sibling's blur is not
++ * returned. The step dispatches nothing and reads only the call's identity and the tab's lifetime
++ * before each write.
++ *
++ * Destruction restores every value the tab wrote that no live engine still holds. Each tab joins
++ * the record of every role and state construction writes on its list, whether it writes the value
++ * or finds it already written, and the last engine holding a record writes its value back, so the
++ * list returns to its markup after its last tab is destroyed. An aborted `signal` destroys the tab.
++ * The keyboard is the delegate's: the tab listens for no key.
+  *
+  * @example
+  * ```ts
+@@ -72,9 +86,10 @@ export class Tab implements TabInterface {
+ 	readonly #selectors: TabSelectorMap
+ 	readonly #snapshot = new HostSnapshot()
+ 	readonly #controller = new AbortController()
+-	// The identity of the latest call that started a change. A call holds its change only while this
+-	// is its identity, so a call resuming after a later one started sees that it no longer holds it.
+-	#change: object | undefined
++	// The identity of the latest show that started. Each call carries the identity it set, and its
++	// doors and its returning step write only while this field still holds it, so a show a listener
++	// or a reaction starts supersedes the call.
++	#change: object = {}
+ 
+ 	/**
+ 	 * Claims the host, resolves its vocabulary and pane, binds initial hooks, and writes the list's initial roles and states.
+@@ -162,6 +177,7 @@ export class Tab implements TabInterface {
+ 		if (this.#refused()) return false
+ 		const host = this.#host
+ 		const outgoing = this.#sibling()
++		const prior = this.#change
+ 		// Both pre-change events are dispatched before either is read, as Bootstrap's `show` does; a
+ 		// listener that destroys the tab inside the first one stops the second.
+ 		const hiding =
+@@ -169,12 +185,16 @@ export class Tab implements TabInterface {
+ 		if (this.#controller.signal.aborted) return false
+ 		const showing = emitEvent(host, TAB_EVENTS.show, { relatedTarget: outgoing }, true)
+ 		if (!hiding || !showing) return false
+-		// A listener runs inside each dispatch and can destroy this tab, activate this control, or
+-		// activate another sibling, so the refusals and the active sibling are read again before any
+-		// write.
+-		if (this.#refused() || this.#sibling() !== outgoing) return false
++		// A listener runs inside each dispatch and can destroy this tab, start a show of its own, which
++		// moves the change identity and supersedes this call, or activate another sibling, so those are
++		// read again before any write. A listener that only adds the control's `active` token has made
++		// this call's token write for it, so every later door requires the token.
++		if (this.#controller.signal.aborted || this.#change !== prior || this.#sibling() !== outgoing) {
++			return false
++		}
+ 		const change = {}
+ 		this.#change = change
++		const expected = this.active ? true : undefined
+ 		const { active, shown, fade } = this.#classes
+ 		const pane = this.#pane
+ 		const previous =
+@@ -185,40 +205,79 @@ export class Tab implements TabInterface {
+ 		const entering = host.getAttribute('role') === 'tab'
+ 		if (outgoing !== undefined) this.#save(outgoing, previous, leaving)
+ 		this.#save(host, pane, entering)
+-		// Each write door reads the list, the host, and the pane for its phase: no control but the host
+-		// active from the sibling's first write on, the host's `active` token from its write on, and
+-		// each pane token from its write on.
++		// Each write door reads the list and the pane for its phase: no control but the host active
++		// from the sibling's first write on, and each pane token from its write on. Each write the call
++		// makes is an entry naming its element, what it writes, and the value it writes, so the
++		// returning step writes each one back.
++		let written: ReadonlyArray<
++			readonly [HTMLElement, 'active' | 'shown' | 'selected' | 'tabindex' | 'expanded', boolean]
++		> = []
+ 		if (outgoing !== undefined) {
+-			if (!this.#apply(change, [], [], () => outgoing.classList.remove(active))) return false
+-			if (!this.#apply(change, [], [], () => outgoing.blur())) return false
+-			if (
+-				previous !== undefined &&
+-				!this.#apply(change, [], [], () => previous.classList.remove(active, shown))
+-			) {
+-				return false
++			written = [[outgoing, 'active', false]]
++			if (!this.#apply(change, expected, [], () => outgoing.classList.remove(active))) {
++				return this.#rehide(change, written)
++			}
++			if (!this.#apply(change, expected, [], () => outgoing.blur())) {
++				return this.#rehide(change, written)
++			}
++			if (previous !== undefined) {
++				// The removal is one write, and each token it takes off is an entry of its own.
++				const carried = (['active', 'shown'] as const).filter((facet) =>
++					previous.classList.contains(this.#classes[facet]),
++				)
++				written = [...written, ...carried.map((facet) => [previous, facet, false] as const)]
++				if (!this.#apply(change, expected, [], () => previous.classList.remove(active, shown))) {
++					return this.#rehide(change, written)
++				}
++			}
++			if (leaving) {
++				const selection = this.#selection(outgoing, false)
++				for (const [index, entry] of selection.entries()) {
++					if (!this.#apply(change, expected, [], () => this.#write(entry))) {
++						return this.#rehide(change, [...written, ...selection.slice(0, index + 1)])
++					}
++				}
++				written = [...written, ...selection]
+ 			}
+-			if (leaving && !this.#select(change, [], [], outgoing, false)) return false
+ 		}
+-		const held = [active]
+-		if (!this.#apply(change, held, [], () => host.classList.add(active))) return false
+-		if (entering && !this.#select(change, held, [], host, true)) return false
++		// A control that carries the `active` token already has made this write for the call.
++		const marked = this.#apply(change, true, [], () => {
++			if (!this.active) host.classList.add(active)
++		})
++		if (!marked) return this.#rehide(change, written)
++		if (entering) {
++			const selection = this.#selection(host, true)
++			for (const [index, entry] of selection.entries()) {
++				if (!this.#apply(change, true, [], () => this.#write(entry))) {
++					return this.#rehide(change, [...written, ...selection.slice(0, index + 1)])
++				}
++			}
++			written = [...written, ...selection]
++		}
+ 		const settled = [active, shown]
+ 		if (pane !== undefined) {
+-			if (!this.#apply(change, held, [active], () => pane.classList.add(active))) return false
++			// A pane token the pane already carries is no entry, so the returning step removes no token
++			// the call did not add.
++			if (!pane.classList.contains(active)) written = [...written, [pane, 'active', true]]
++			if (!this.#apply(change, true, [active], () => pane.classList.add(active))) {
++				return this.#rehide(change, written)
++			}
+ 			const fading = pane.classList.contains(fade)
+ 			// Laying the pane out with its `active` token lets the `shown` token written next fade it.
+ 			if (fading) reflow(pane)
+-			if (!this.#apply(change, held, settled, () => pane.classList.add(shown))) return false
++			if (!pane.classList.contains(shown)) written = [...written, [pane, 'shown', true]]
++			if (!this.#apply(change, true, settled, () => pane.classList.add(shown))) {
++				return this.#rehide(change, written)
++			}
+ 			if (fading) {
+ 				await settleAnimations(pane, this.#controller.signal)
+-				if (!this.#holds(change, held, settled)) return false
++				if (!this.#holds(change, true, settled)) return this.#rehide(change, written)
+ 			}
+ 		}
+ 		if (outgoing !== undefined) {
+ 			emitEvent(outgoing, TAB_EVENTS.hidden, { relatedTarget: host }, false)
+-			if (!this.#holds(change, held, settled)) return false
++			if (!this.#holds(change, true, settled)) return this.#rehide(change, written)
+ 		}
+-		this.#change = undefined
+ 		emitEvent(host, TAB_EVENTS.shown, { relatedTarget: outgoing }, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -237,30 +296,85 @@ export class Tab implements TabInterface {
+ 		return this.#controller.signal.aborted || this.active
+ 	}
+ 
+-	// Reports whether the call still holds its change: the tab is live, no later call started a
+-	// change, no control of the list but the host carries the `active` token, the host carries every
+-	// token in `host`, and the pane, when there is one, carries every token in `pane`.
+-	#holds(change: object, host: readonly string[], pane: readonly string[]): boolean {
++	// Reports whether the call that set `change` still owns the tab: the tab is live and no later
++	// show has started.
++	#owns(change: object): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
++
++	// Reads a door of the call that set `change`: the call still owns the tab, no control of the list
++	// but the host carries the `active` token, the host carries that token exactly when `active` is
++	// true when `active` is a boolean, and the pane, when there is one, carries every token in `pane`.
++	// A door before the call has found the host's token at its end passes `undefined`, so it reads no
++	// host token. The list is read first: another control that became active took the swap over by a
++	// change of its own, whatever the host's token reads. A list or a pane that stops the call
++	// otherwise than by moving the host's token ends the change, moving the identity to one no call
++	// carries, so the returning step the call takes next writes nothing.
++	#holds(change: object, active: boolean | undefined, pane: readonly string[]): boolean {
++		if (!this.#owns(change)) return false
+ 		const element = this.#pane
+-		return (
+-			!this.#controller.signal.aborted &&
+-			this.#change === change &&
+-			this.#sibling() === undefined &&
+-			host.every((token) => this.#host.classList.contains(token)) &&
+-			(element === undefined || pane.every((token) => element.classList.contains(token)))
+-		)
++		if (this.#sibling() === undefined) {
++			if (active !== undefined && this.active !== active) return false
++			if (element === undefined || pane.every((token) => element.classList.contains(token))) {
++				return true
++			}
++		}
++		this.#change = {}
++		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads whether the call still holds its change
+-	// with the host carrying every token in `host` and the pane every token in `pane`.
++	// Runs one write a reaction or a listener can run inside, then reads the door after it.
+ 	#apply(
+ 		change: object,
+-		host: readonly string[],
++		active: boolean | undefined,
+ 		pane: readonly string[],
+ 		write: () => void,
+ 	): boolean {
+ 		write()
+-		return this.#holds(change, host, pane)
++		return this.#holds(change, active, pane)
++	}
++
++	// Ends a show the host took over by dropping the control's `active` token: writes each entry the
++	// show wrote back, in its order, to the value it replaced, so the sibling, its pane, and each
++	// dropdown return to the state the list had, and the control and its pane to the inactive state.
++	// The sibling's blur is no entry: focus stays where it went. The step dispatches nothing and reads
++	// no door; it reads only whether the call that set `change` still owns the tab before each write,
++	// so a destruction inside one writes nothing more and the snapshot's restoration stands, and a
++	// show a reaction starts inside one supersedes the step.
++	#rehide(
++		change: object,
++		written: ReadonlyArray<
++			readonly [HTMLElement, 'active' | 'shown' | 'selected' | 'tabindex' | 'expanded', boolean]
++		>,
++	): false {
++		for (const [element, facet, value] of written) {
++			this.#revert(change, () => this.#write([element, facet, !value]))
++		}
++		return false
++	}
++
++	// Runs one write of a returning step while the call that set `change` still owns the tab; a
++	// destroyed tab restores nothing here, because its snapshot restores, and a later call owns the
++	// list.
++	#revert(change: object, write: () => void): void {
++		if (this.#owns(change)) write()
++	}
++
++	// Writes one entry: the `active` or `shown` token present exactly when the value is true, the
++	// `aria-selected` or `aria-expanded` value, or the tab stop, removed for a selected control and
++	// `-1` otherwise.
++	#write([element, facet, value]: readonly [
++		HTMLElement,
++		'active' | 'shown' | 'selected' | 'tabindex' | 'expanded',
++		boolean,
++	]): void {
++		if (facet === 'active' || facet === 'shown') {
++			element.classList.toggle(this.#classes[facet], value)
++		} else if (facet === 'tabindex') {
++			if (value) element.removeAttribute('tabindex')
++			else element.setAttribute('tabindex', '-1')
++		} else
++			element.setAttribute(facet === 'selected' ? 'aria-selected' : 'aria-expanded', String(value))
+ 	}
+ 
+ 	// Returns the active control of the host's list other than the host, or undefined when the list
+@@ -384,50 +498,28 @@ export class Tab implements TabInterface {
+ 		}
+ 	}
+ 
+-	// Writes a `tab` control's selection and tab stop, and the state of the dropdown that holds it,
+-	// reading after every write whether the call still holds its change with the host carrying every
+-	// token in `host` and the pane every token in `pane`.
+-	#select(
+-		change: object,
+-		host: readonly string[],
+-		pane: readonly string[],
++	// Lists the writes that select or deselect a `tab` control, in the order the call makes them, each
++	// an entry naming its element, what it writes, and the value it writes: the control's selection
++	// and tab stop, and the toggle's `active` token, the menu's `shown` token, and the wrapper's
++	// `aria-expanded` value of the dropdown that holds it.
++	#selection(
+ 		control: HTMLElement,
+ 		selected: boolean,
+-	): boolean {
+-		if (
+-			!this.#apply(change, host, pane, () =>
+-				control.setAttribute('aria-selected', String(selected)),
+-			)
+-		) {
+-			return false
+-		}
+-		if (
+-			!this.#apply(change, host, pane, () => {
+-				if (selected) control.removeAttribute('tabindex')
+-				else control.setAttribute('tabindex', '-1')
+-			})
+-		) {
+-			return false
+-		}
++	): ReadonlyArray<
++		readonly [HTMLElement, 'active' | 'shown' | 'selected' | 'tabindex' | 'expanded', boolean]
++	> {
++		const own = [
++			[control, 'selected', selected],
++			[control, 'tabindex', selected],
++		] as const
+ 		const dropdown = this.#dropdown(control)
+-		if (dropdown === undefined) return true
++		if (dropdown === undefined) return own
+ 		const { toggle, menu, wrapper } = dropdown
+-		if (
+-			toggle !== undefined &&
+-			!this.#apply(change, host, pane, () =>
+-				toggle.classList.toggle(this.#classes.active, selected),
+-			)
+-		) {
+-			return false
+-		}
+-		if (
+-			menu !== undefined &&
+-			!this.#apply(change, host, pane, () => menu.classList.toggle(this.#classes.shown, selected))
+-		) {
+-			return false
+-		}
+-		return this.#apply(change, host, pane, () =>
+-			wrapper.setAttribute('aria-expanded', String(selected)),
+-		)
++		return [
++			...own,
++			...(toggle === undefined ? [] : [[toggle, 'active', selected] as const]),
++			...(menu === undefined ? [] : [[menu, 'shown', selected] as const]),
++			[wrapper, 'expanded', selected],
++		]
+ 	}
+ }
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+index b79e662..e7fa832 100644
+--- a/src/browser/Toast.ts
++++ b/src/browser/Toast.ts
+@@ -36,15 +36,27 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * `shown` tokens. Showing a shown toast runs the sequence again and restarts the delay. With
+  * `autohide`, a shown toast hides itself through a native timer `delay` milliseconds after it
+  * shows; the timer is cleared while the pointer or focus is inside the host and started again in
+- * full when both have left. A call takes its identity before it dispatches its pre-change event,
+- * so a call a listener makes inside that dispatch takes the change over, whether it is still
+- * waiting or has completed. After each write, dispatch, and await, a call reads its lifetime and
+- * the host again: the `fade` write must leave the `shown` token as the call found it, from the
+- * write of the `transition` token until its removal the host must carry that token and the
+- * `shown` token, and at completion the host must carry the state the call completes to. A call
+- * that finds the toast destroyed, a later call started, or the host otherwise stops, writing and
+- * dispatching nothing more, and resolves `false`. Destruction clears the timer and restores the
+- * host. An aborted `signal` destroys the toast.
++ * full when both have left.
++ *
++ * A call carries the change identity it sets when its change starts. After each write, dispatch,
++ * and await, it reads whether the toast is live and whether a later `show` or `hide` call has
++ * started; a call that finds either stops, writing and dispatching nothing more, and resolves
++ * `false`. A listener that starts a call of its own inside the pre-change dispatch supersedes the
++ * call this way, whether that call is still waiting or has completed, while a prevented call starts
++ * no change. The call also reads the `transition` token: before a show writes it the host must lack
++ * it, and from its write until its removal the host must carry it; a call that finds the host
++ * otherwise stops the same way. The host's `shown` token at the change's end is agreement: a
++ * listener or a reaction that moves the token there has made the call's token write for it, so the
++ * call writes the `shown` token only when the host has not, completes every other write, dispatches
++ * its completed event, and resolves `true`. From the moment the call finds the token at its end,
++ * after the pre-change dispatch or at its token write, each door also reads the token there. A host
++ * that moves the token back from that end takes the change over: the call resolves `false` and
++ * takes one further step that returns what the change wrote. A stopped show removes the
++ * `transition` token while the show holds it and the `fade` token when the show added it; a stopped
++ * hide removes the `transition` token while the hide holds it. The step dispatches nothing and
++ * reads only the call's identity and the toast's lifetime before each write. The timer an accepted
++ * call cleared stays cleared until the pointer and focus leave the host or a later show completes.
++ * Destruction clears the timer and restores the host. An aborted `signal` destroys the toast.
+  *
+  * @example
+  * ```ts
+@@ -64,9 +76,10 @@ export class Toast implements ToastInterface {
+ 	readonly #delay: number
+ 	readonly #snapshot = new HostSnapshot()
+ 	readonly #controller = new AbortController()
+-	// The identity of the latest call that started a change. A call holds its change only while this
+-	// is its identity, so a call resuming after a later one started sees that it no longer holds it.
+-	#change: object | undefined
++	// The identity of the latest show or hide that started. Each call carries the identity it set, and
++	// its doors and its returning step write only while this field still holds it, so a change a
++	// listener or a reaction starts supersedes the call.
++	#change: object = {}
+ 	#timer: ReturnType<typeof setTimeout> | undefined
+ 
+ 	/**
+@@ -158,40 +171,45 @@ export class Toast implements ToastInterface {
+ 
+ 	async show(): Promise<boolean> {
+ 		if (this.#refused()) return false
+-		// The identity is taken before the dispatch, so a call a listener makes inside it, still
+-		// waiting or already completed, takes the change over.
++		const prior = this.#change
++		if (!emitEvent(this.#host, TOAST_EVENTS.show, null, true)) return false
++		// A listener runs inside the dispatch and can destroy this toast, start a show or hide of its
++		// own, which moves the change identity and supersedes this call, or write the transition token.
++		// A listener that only adds the `shown` token has made this call's token write for it, so every
++		// later door requires the token.
++		if (this.#refused() || this.#change !== prior) return false
+ 		const change = {}
+ 		this.#change = change
+-		if (!emitEvent(this.#host, TOAST_EVENTS.show, null, true)) return false
+-		// A listener runs inside the dispatch and can destroy this toast or start another call, so the
+-		// refusal and the identity are read again before any write.
+-		if (this.#refused() || this.#change !== change) return false
++		const expected = this.shown ? true : undefined
+ 		this.#disarm()
+ 		const host = this.#host
+ 		const { shown, transition, fade } = this.#classes
+ 		this.#save()
+-		// Each write door reads the host for its phase: no transition token and the shown token as the
+-		// call found it before the transition token is written, the shown and transition tokens while
+-		// the transition runs, and the shown token without the transition token at completion.
+-		const before = host.classList.contains(shown) ? [shown] : []
+-		const absent = before.length > 0 ? [transition] : [shown, transition]
+-		if (this.#animated && !this.#apply(change, before, absent, () => host.classList.add(fade))) {
+-			return false
+-		}
+-		reflow(host)
++		// The `fade` token is an entry of its own only when the call finds the toast without it, so the
++		// returning step removes no token the show did not add.
++		const faded: ReadonlyArray<'fade'> =
++			this.#animated && !host.classList.contains(fade) ? ['fade'] : []
+ 		if (
+-			!this.#apply(change, [shown, transition], [], () => host.classList.add(shown, transition))
++			this.#animated &&
++			!this.#apply(change, expected, [], [transition], () => host.classList.add(fade))
+ 		) {
+-			return false
++			return this.#rehide(change, faded)
+ 		}
++		reflow(host)
++		const written: ReadonlyArray<'fade' | 'transition'> = [...faded, 'transition']
++		// A host that added the token first has made this write for the call.
++		const marked = this.#apply(change, true, [transition], [], () => {
++			if (this.shown) host.classList.add(transition)
++			else host.classList.add(shown, transition)
++		})
++		if (!marked) return this.#rehide(change, written)
+ 		if (this.#animated) {
+ 			await settleAnimations(host, this.#controller.signal)
+-			if (!this.#holds(change, [shown, transition], [])) return false
++			if (!this.#holds(change, true, [transition], [])) return this.#rehide(change, written)
+ 		}
+-		if (!this.#apply(change, [shown], [transition], () => host.classList.remove(transition))) {
+-			return false
++		if (!this.#apply(change, true, [], [transition], () => host.classList.remove(transition))) {
++			return this.#rehide(change, faded)
+ 		}
+-		this.#change = undefined
+ 		emitEvent(host, TOAST_EVENTS.shown, null, false)
+ 		if (!host.matches(':hover') && !host.matches(':focus-within')) this.#arm()
+ 		return !this.#controller.signal.aborted
+@@ -199,31 +217,35 @@ export class Toast implements ToastInterface {
+ 
+ 	async hide(): Promise<boolean> {
+ 		if (this.#refused() || !this.shown) return false
++		const prior = this.#change
++		if (!emitEvent(this.#host, TOAST_EVENTS.hide, null, true)) return false
++		// As in `show`, a listener's own call supersedes this call, and a listener that only removes the
++		// `shown` token has made this call's token write for it.
++		if (this.#refused() || this.#change !== prior) return false
+ 		const change = {}
+ 		this.#change = change
+-		if (!emitEvent(this.#host, TOAST_EVENTS.hide, null, true)) return false
+-		if (this.#refused() || !this.shown || this.#change !== change) return false
++		const expected = this.shown ? undefined : false
+ 		this.#disarm()
+ 		const host = this.#host
+ 		const { shown, transition } = this.#classes
+ 		this.#save()
+-		// Each write door reads the host for its phase: the shown and transition tokens while the
+-		// transition runs, and neither at completion. The layout read lets a toast inserted shown in
+-		// this task fade out.
++		// The layout read lets a toast inserted shown in this task fade out.
+ 		reflow(host)
+-		if (!this.#apply(change, [shown, transition], [], () => host.classList.add(transition))) {
+-			return false
++		if (!this.#apply(change, expected, [transition], [], () => host.classList.add(transition))) {
++			return this.#reshow(change, ['transition'])
+ 		}
+ 		if (this.#animated) {
+ 			await settleAnimations(host, this.#controller.signal)
+-			if (!this.#holds(change, [shown, transition], [])) return false
++			if (!this.#holds(change, expected, [transition], [])) {
++				return this.#reshow(change, ['transition'])
++			}
+ 		}
+-		if (
+-			!this.#apply(change, [], [shown, transition], () => host.classList.remove(transition, shown))
+-		) {
+-			return false
+-		}
+-		this.#change = undefined
++		// A host that removed the token first has made this write for the call.
++		const cleared = this.#apply(change, false, [], [transition], () => {
++			if (this.shown) host.classList.remove(transition, shown)
++			else host.classList.remove(transition)
++		})
++		if (!cleared) return this.#reshow(change, [])
+ 		emitEvent(host, TOAST_EVENTS.hidden, null, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -245,27 +267,77 @@ export class Toast implements ToastInterface {
+ 		)
+ 	}
+ 
+-	// Reports whether the call still holds its change: the toast is live, no later call started a
+-	// change, and the host carries every token in `present` and none in `absent`.
+-	#holds(change: object, present: readonly string[], absent: readonly string[]): boolean {
++	// Reports whether the call that set `change` still owns the toast: the toast is live and no later
++	// show or hide has started.
++	#owns(change: object): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
++
++	// Reads a door of the call that set `change`: the call still owns the toast, the host carries the
++	// `shown` token exactly when `shown` is true when `shown` is a boolean, and it carries every token
++	// in `present` and none in `absent`. A door before the call has found the `shown` token at its end
++	// passes `undefined`, so it reads no `shown` token. A host that stops the call otherwise than by
++	// moving the `shown` token ends the change, moving the identity to one no call carries, so the
++	// returning step the call takes next writes nothing.
++	#holds(
++		change: object,
++		shown: boolean | undefined,
++		present: readonly string[],
++		absent: readonly string[],
++	): boolean {
++		if (!this.#owns(change)) return false
++		if (shown !== undefined && this.shown !== shown) return false
+ 		const tokens = this.#host.classList
+-		return (
+-			!this.#controller.signal.aborted &&
+-			this.#change === change &&
++		if (
+ 			present.every((token) => tokens.contains(token)) &&
+ 			!absent.some((token) => tokens.contains(token))
+-		)
++		) {
++			return true
++		}
++		this.#change = {}
++		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads whether the call still holds its change.
++	// Runs one write a reaction can run inside, then reads the door after it.
+ 	#apply(
+ 		change: object,
++		shown: boolean | undefined,
+ 		present: readonly string[],
+ 		absent: readonly string[],
+ 		write: () => void,
+ 	): boolean {
+ 		write()
+-		return this.#holds(change, present, absent)
++		return this.#holds(change, shown, present, absent)
++	}
++
++	// Ends a show the host took over by dropping the `shown` token: returns each write the show made,
++	// named in its order, to the hidden state, removing the `fade` token when the show added it and the
++	// `transition` token while the show holds it. The step dispatches nothing and reads no door; it
++	// reads only whether the call that set `change` still owns the toast before each write, so a
++	// destruction inside one writes nothing more and the snapshot's restoration stands.
++	#rehide(change: object, written: ReadonlyArray<'fade' | 'transition'>): false {
++		const { fade, transition } = this.#classes
++		for (const name of written) {
++			this.#revert(change, () => this.#host.classList.remove(name === 'fade' ? fade : transition))
++		}
++		return false
++	}
++
++	// Ends a hide the host took over by carrying the `shown` token again: removes the `transition`
++	// token while the hide holds it, the one write the hide makes before its token write, reading only
++	// whether the call that set `change` still owns the toast.
++	#reshow(change: object, written: ReadonlyArray<'transition'>): false {
++		if (written.includes('transition')) {
++			this.#revert(change, () => this.#host.classList.remove(this.#classes.transition))
++		}
++		return false
++	}
++
++	// Runs one write of a returning step while the call that set `change` still owns the toast; a
++	// destroyed toast restores nothing here, because its snapshot restores, and a later call owns the
++	// host.
++	#revert(change: object, write: () => void): void {
++		if (this.#owns(change)) write()
+ 	}
+ 
+ 	// Records the host's shown, transition, and fade tokens before the first write, so destruction
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 92124e5..5c09e05 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -872,7 +872,7 @@ export interface CollapseInterface {
+ 	/**
+ 	 * Shows the panel and hides its open accordion siblings.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show`, the collapse is destroyed, or the panel's tokens read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the panel gained the `shown` token before the call wrote it; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show` or started a change of its own inside it, the collapse is destroyed, the panel's `transition` or `host` token read otherwise than the call's phase requires, or the panel lost the `shown` token after the call found it added and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await collapse.show()
+@@ -882,7 +882,7 @@ export interface CollapseInterface {
+ 	/**
+ 	 * Hides the panel.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the panel was hidden, a transition was in flight, a listener prevented `hide`, the collapse is destroyed, or the panel's tokens read the change as taken over.
++	 * @returns Resolves true after the `hidden` event, also when the panel lost the `shown` token before the call removed it; false when the panel was hidden, a transition was in flight, a listener prevented `hide` or started a change of its own inside it, the collapse is destroyed, the panel's `transition` or `host` token read otherwise than the call's phase requires, or the panel gained the `shown` token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await collapse.hide()
+@@ -1185,7 +1185,7 @@ export interface TabInterface {
+ 	/**
+ 	 * Activates the control and its pane and deactivates the active sibling.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the control was active, a listener prevented `show` or the sibling's `hide`, a listener activated another control before the swap, the tab is destroyed, or the control's, the pane's, or the list's tokens read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the control gained the `active` token before the call wrote it; false when the control was active, a listener prevented `show` or the sibling's `hide` or started a show of its own inside either, a listener activated another control before the swap, the tab is destroyed, another control of the list became active or the pane's tokens read otherwise than the call's phase requires, or the control lost the `active` token after the call found it added and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const activated = await tab.show()
+@@ -2198,7 +2198,7 @@ export interface ToastInterface {
+ 	/**
+ 	 * Shows the toast and starts the delay after which it hides itself.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when a transition was in flight, a listener prevented `show`, the toast is destroyed, a later call took the change over, or the toast's tokens read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the toast gained the `shown` token before the call wrote it; false when a transition was in flight, a listener prevented `show` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast lost the `shown` token after the call found it at its end and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await toast.show()
+@@ -2208,7 +2208,7 @@ export interface ToastInterface {
+ 	/**
+ 	 * Hides the toast.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the toast was hidden, a transition was in flight, a listener prevented `hide`, the toast is destroyed, a later call took the change over, or the toast's tokens read the change as taken over.
++	 * @returns Resolves true after the `hidden` event, also when the toast lost the `shown` token before the call removed it; false when the toast was hidden, a transition was in flight, a listener prevented `hide` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast gained the `shown` token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await toast.hide()
+@@ -2339,7 +2339,7 @@ export interface CarouselInterface {
+ 	/**
+ 	 * Slides to the following item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, no item is active, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
++	 * @returns Resolves true after the `slid` event, also when the incoming item gained the `active` token before the slide wrote it; false when a slide was in flight, no item is active, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, the items' or the indicators' tokens read otherwise than the slide's phase requires, or the incoming item lost the `active` token after the slide found it added and before the slide dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.next()
+@@ -2349,7 +2349,7 @@ export interface CarouselInterface {
+ 	/**
+ 	 * Slides to the preceding item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, no item is active, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
++	 * @returns Resolves true after the `slid` event, also when the incoming item gained the `active` token before the slide wrote it; false when a slide was in flight, no item is active, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, the items' or the indicators' tokens read otherwise than the slide's phase requires, or the incoming item lost the `active` token after the slide found it added and before the slide dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.previous()
+@@ -2360,7 +2360,7 @@ export interface CarouselInterface {
+ 	 * Slides to the item at a position, waiting for a slide in flight to finish first.
+ 	 *
+ 	 * @param index - The position of the item to activate.
+-	 * @returns Resolves true after the `slid` event; false when the position is out of range or already active, no item is active, a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
++	 * @returns Resolves true after the `slid` event, also when the incoming item gained the `active` token before the slide wrote it; false when the position is out of range or already active, no item is active, a listener prevented `slide`, the carousel is destroyed, the items' or the indicators' tokens read otherwise than the slide's phase requires, or the incoming item lost the `active` token after the slide found it added and before the slide dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.slide(2)
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index 7605715..ec01e63 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -2034,7 +2034,7 @@ describe('Carousel', () => {
+ 		])
+ 	})
+ 
+-	it('stops a slide whose completing write a reaction answers by removing the active token, dispatching no slid', async () => {
++	it('returns a slide whose completing write a reaction answers by removing the incoming active token, taking the direction token off the outgoing item and dispatching no slid', async () => {
+ 		const name = 'vn-carousel-completion-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -2065,13 +2065,290 @@ describe('Carousel', () => {
+ 			if (!(value ?? '').split(' ').includes('active')) return
+ 			reactions.delete(two)
+ 			two.classList.remove('active')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await carousel.next()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.target === one ? 'one' : 'other',
++				record.oldValue,
++			]),
++		).toEqual([['one', 'carousel-item active carousel-item-start']])
++		expect(slid.count).toBe(0)
++		expect(Array.from(one.classList)).toEqual(['carousel-item', 'active'])
++		expect(Array.from(two.classList)).toEqual(['carousel-item'])
++		expect(carousel.index).toBe(0)
++		expect(await carousel.next()).toBe(true)
++		expect(carousel.index).toBe(1)
++	})
++
++	it('completes a slide whose listener activates the incoming item, writing no active token on it and dispatching slid', async () => {
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-indicators">
++					<button type="button" data-bs-slide-to="0" class="active" aria-current="true"></button>
++					<button type="button" data-bs-slide-to="1"></button>
++				</div>
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const [first, second] = Array.from(root.querySelectorAll<HTMLElement>('[data-bs-slide-to]'))
++		const incoming = requireValue(two, 'No second item')
++		const events = createRecorder<readonly [string]>()
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		const carousel = new Carousel(host, {
++			on: {
++				slide: (event) => {
++					events.handler(event.type)
++					incoming.classList.add('active')
++					observer.observe(incoming, { attributeFilter: ['class'], attributeOldValue: true })
++				},
++				slid: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => carousel.destroy())
++		expect(await carousel.next()).toBe(true)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual([
++			'carousel-item active',
++			'carousel-item active carousel-item-next',
++			'carousel-item active carousel-item-next carousel-item-start',
++		])
++		expect(events.calls).toEqual([['slide.vn.carousel'], ['slid.vn.carousel']])
++		expect(Array.from(one?.classList ?? [])).toEqual(['carousel-item'])
++		expect(Array.from(incoming.classList)).toEqual(['carousel-item', 'active'])
++		expect(first?.classList.contains('active')).toBe(false)
++		expect(first?.hasAttribute('aria-current')).toBe(false)
++		expect(second?.classList.contains('active')).toBe(true)
++		expect(second?.getAttribute('aria-current')).toBe('true')
++		expect(carousel.index).toBe(1)
++	})
++
++	it('completes a slide whose indicator write a reaction answers by activating the incoming item, dispatching slid', async () => {
++		const name = 'vn-carousel-indicator-agrees'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-indicators"></div>
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const indicators = requireValue(root.querySelector('.carousel-indicators'), 'No list')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const first = document.createElement(name)
++		first.className = 'active'
++		first.setAttribute('data-bs-slide-to', '0')
++		const second = document.createElement('button')
++		second.setAttribute('data-bs-slide-to', '1')
++		indicators.append(first, second)
++		const slid = createRecorder<readonly [string]>()
++		const carousel = new Carousel(host, { on: { slid: (event) => slid.handler(event.type) } })
++		onTestFinished(() => carousel.destroy())
++		reactions.set(first, () => {
++			reactions.delete(first)
++			two?.classList.add('active')
++		})
++		expect(await carousel.next()).toBe(true)
++		expect(slid.count).toBe(1)
++		expect(Array.from(one?.classList ?? [])).toEqual(['carousel-item'])
++		expect(Array.from(two?.classList ?? [])).toEqual(['carousel-item', 'active'])
++		expect(second.getAttribute('aria-current')).toBe('true')
++		expect(carousel.index).toBe(1)
++	})
++
++	it('completes a slide whose incoming item gains its active token during the transition, dispatching slid', async () => {
++		scene.load(carouselCascade)
++		scene.load('.carousel-item { transition-duration: 60ms }')
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const slid = createRecorder<readonly [string]>()
++		const carousel = new Carousel(host, { on: { slid: (event) => slid.handler(event.type) } })
++		onTestFinished(() => carousel.destroy())
++		const moving = carousel.next()
++		two?.classList.add('active')
++		expect(await moving).toBe(true)
++		expect(slid.count).toBe(1)
++		expect(Array.from(one?.classList ?? [])).toEqual(['carousel-item'])
++		expect(Array.from(two?.classList ?? [])).toEqual(['carousel-item', 'active'])
++		expect(getComputedStyle(requireValue(one, 'No first item')).display).toBe('none')
++		expect(getComputedStyle(requireValue(two, 'No second item')).display).toBe('block')
++	})
++
++	it('returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator', async () => {
++		const name = 'vn-carousel-outgoing-removal-changed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-indicators">
++					<button type="button" data-bs-slide-to="0" class="active" aria-current="true"></button>
++					<button type="button" data-bs-slide-to="1"></button>
++				</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const two = requireValue(root.querySelector<HTMLElement>('.carousel-item'), 'No item')
++		const [first, second] = Array.from(root.querySelectorAll<HTMLElement>('[data-bs-slide-to]'))
++		const one = document.createElement(name)
++		one.className = 'carousel-item active'
++		two.before(one)
++		const slid = createRecorder<readonly [string]>()
++		const carousel = new Carousel(host, { on: { slid: (event) => slid.handler(event.type) } })
++		onTestFinished(() => carousel.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(one, (value) => {
++			if ((value ?? '').split(' ').includes('active')) return
++			reactions.delete(one)
++			two.classList.remove('active')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await carousel.next()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.target === one ? 'one' : record.target === first ? 'first' : 'second',
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['first', 'class', ''],
++			['first', 'aria-current', null],
++			['second', 'class', 'active'],
++			['second', 'aria-current', 'true'],
++			['one', 'class', 'carousel-item'],
++		])
+ 		expect(slid.count).toBe(0)
+-		expect(Array.from(one.classList)).toEqual(['carousel-item', 'active', 'carousel-item-start'])
++		expect(Array.from(one.classList)).toEqual(['carousel-item', 'active'])
+ 		expect(Array.from(two.classList)).toEqual(['carousel-item'])
++		expect(first?.classList.contains('active')).toBe(true)
++		expect(first?.getAttribute('aria-current')).toBe('true')
++		expect(second?.classList.contains('active')).toBe(false)
++		expect(second?.hasAttribute('aria-current')).toBe(false)
++		expect(carousel.index).toBe(0)
++	})
++
++	it('returns a slide whose listener activated the incoming item and which loses that token during the transition, removing the order and direction tokens it added', async () => {
++		scene.load(carouselCascade)
++		scene.load('.carousel-item { transition-duration: 60ms }')
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const incoming = requireValue(two, 'No second item')
++		const outgoing = requireValue(one, 'No first item')
++		const events = createRecorder<readonly [string]>()
++		const carousel = new Carousel(host, {
++			on: {
++				slide: (event) => {
++					events.handler(event.type)
++					if (events.count === 1) incoming.classList.add('active')
++				},
++				slid: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => carousel.destroy())
++		const moving = carousel.next()
++		expect(Array.from(incoming.classList)).toEqual([
++			'carousel-item',
++			'active',
++			'carousel-item-next',
++			'carousel-item-start',
++		])
++		incoming.classList.remove('active')
++		expect(await moving).toBe(false)
++		expect(events.calls).toEqual([['slide.vn.carousel']])
++		expect(Array.from(outgoing.classList)).toEqual(['carousel-item', 'active'])
++		expect(Array.from(incoming.classList)).toEqual(['carousel-item'])
++		expect(getComputedStyle(outgoing).display).toBe('block')
++		expect(getComputedStyle(incoming).display).toBe('none')
++		expect(await carousel.next()).toBe(true)
++		expect(carousel.index).toBe(1)
++	})
++
++	// The listener activates the incoming item inside the slide's dispatch, so the slide finds the
++	// token at its end and every later door requires it there.
++	it('returns a slide whose listener activated the incoming item and whose order-token write a reaction answers by deactivating it', async () => {
++		const name = 'vn-carousel-agreed-reversed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-item active">One</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const one = requireValue(root.querySelector<HTMLElement>('.carousel-item'), 'No item')
++		const two = document.createElement(name)
++		two.className = 'carousel-item'
++		host.append(two)
++		const events = createRecorder<readonly [string]>()
++		const carousel = new Carousel(host, {
++			on: {
++				slide: (event) => {
++					events.handler(event.type)
++					if (events.count === 1) two.classList.add('active')
++				},
++				slid: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => carousel.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(two, (value) => {
++			if (!(value ?? '').split(' ').includes('carousel-item-next')) return
++			reactions.delete(two)
++			two.classList.remove('active')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await carousel.next()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['carousel-item carousel-item-next'])
++		expect(events.calls).toEqual([['slide.vn.carousel']])
++		expect(Array.from(one.classList)).toEqual(['carousel-item', 'active'])
++		expect(Array.from(two.classList)).toEqual(['carousel-item'])
++		expect(await carousel.next()).toBe(true)
++		expect(carousel.index).toBe(1)
+ 	})
+ 
+ 	it('writes, tests, reads, and matches only the replacing values when every group is replaced', async () => {
+diff --git a/tests/src/browser/Collapse.test.ts b/tests/src/browser/Collapse.test.ts
+index 77d3029..42161dc 100644
+--- a/tests/src/browser/Collapse.test.ts
++++ b/tests/src/browser/Collapse.test.ts
+@@ -914,7 +914,7 @@ describe('Collapse', () => {
+ 		expect(trigger.hasAttribute('class')).toBe(false)
+ 	})
+ 
+-	it('stops a show whose completing token write a reaction answers by removing the shown token, dispatching no shown event', async () => {
++	it('returns a show whose completing token write a reaction answers by removing the shown token, clearing the transition token and the size, so a later show runs', async () => {
+ 		const name = 'vn-collapse-show-completion-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -940,16 +940,27 @@ describe('Collapse', () => {
+ 			if (!(value ?? '').split(' ').includes('show')) return
+ 			reactions.delete(panel)
+ 			panel.classList.remove('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await collapse.show()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['class', 'collapsing collapse'],
++			['style', 'height: 0px;'],
++		])
+ 		expect(events.count).toBe(0)
+ 		expect(collapse.shown).toBe(false)
+-		expect(Array.from(panel.classList)).toEqual(['collapsing', 'collapse'])
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(panel.style.height).toBe('')
++		expect(await collapse.show()).toBe(true)
++		expect(events.calls).toEqual([['shown.vn.collapse']])
+ 	})
+ 
+-	it('stops a hide whose size write a reaction answers by removing the shown token, writing no transition token', async () => {
++	it('completes a hide whose size write a reaction answers by removing the shown token, dispatching hidden and resolving true', async () => {
+ 		const name = 'vn-collapse-hide-size-changed'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -974,12 +985,24 @@ describe('Collapse', () => {
+ 		reactions.set(panel, () => {
+ 			reactions.delete(panel)
+ 			panel.classList.remove('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+-		expect(await collapse.hide()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
+-		expect(events.count).toBe(0)
++		expect(await collapse.hide()).toBe(true)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['class', 'collapse'],
++			['class', 'collapse collapsing'],
++			['style', expect.stringMatching(/^height: [\d.]+px;$/)],
++			['class', 'collapsing'],
++			['class', 'collapsing collapse'],
++		])
++		expect(events.calls).toEqual([['hidden.vn.collapse']])
+ 		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(panel.style.height).toBe('')
+ 	})
+ 
+ 	it('stops a hide whose transition-token write a reaction answers by removing that token, writing nothing more', async () => {
+@@ -1021,7 +1044,7 @@ describe('Collapse', () => {
+ 		expect(trigger.hasAttribute('class')).toBe(false)
+ 	})
+ 
+-	it('stops a hide whose host-and-shown removal a reaction answers by adding the shown token back, writing nothing more', async () => {
++	it('returns a hide whose host-and-shown removal a reaction answers by adding the shown token back, clearing the size and the transition token and adding the host token', async () => {
+ 		const name = 'vn-collapse-hide-removal-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1051,20 +1074,32 @@ describe('Collapse', () => {
+ 			if (tokens.includes('collapse') || tokens.includes('show')) return
+ 			reactions.delete(panel)
+ 			panel.classList.add('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await collapse.hide()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['style', expect.stringMatching(/^height: [\d.]+px;$/)],
++			['class', 'collapsing show'],
++			['class', 'show'],
++		])
+ 		expect(events.count).toBe(0)
+-		expect(Array.from(panel.classList)).toEqual(['collapsing', 'show'])
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		expect(panel.style.height).toBe('')
+ 		expect(trigger.getAttribute('aria-expanded')).toBe('true')
+ 		expect(trigger.hasAttribute('class')).toBe(false)
++		expect(await collapse.hide()).toBe(true)
++		expect(events.count).toBe(1)
+ 	})
+ 
+ 	// The clearing starts the cascade's transition, so a call that went on to await it would resolve
+-	// only after the transition settles; the call that stops at the clearing door resolves while it
+-	// still runs.
+-	it('stops a hide whose size clearing a reaction answers by adding the shown token, dispatching no hidden event', async () => {
++	// only after the transition settles; the call that returns at the clearing door removes the
++	// transition token, which ends the transition the cascade declares only under that token.
++	it('returns a hide whose size clearing a reaction answers by adding the shown token, ending the transition and dispatching no hidden event', async () => {
+ 		const name = 'vn-collapse-hide-clearing-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1092,16 +1127,25 @@ describe('Collapse', () => {
+ 			if ((value ?? '').includes('height')) return
+ 			reactions.delete(panel)
+ 			panel.classList.add('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await collapse.hide()).toBe(false)
+-		expect(panel.getAnimations()).toHaveLength(1)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(panel.getAnimations()).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['class', 'collapsing show'],
++			['class', 'show'],
++		])
+ 		expect(events.count).toBe(0)
+-		expect(Array.from(panel.classList)).toEqual(['collapsing', 'show'])
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		expect(getComputedStyle(panel).display).not.toBe('none')
+ 	})
+ 
+-	it('stops a hide when the shown token returns during its transition, dispatching no hidden event', async () => {
++	it('returns a hide when the shown token returns during its transition, leaving the panel shown at its full height with no hidden event', async () => {
+ 		scene.load(collapseCascade)
+ 		const root = scene.mount(
+ 			'<div id="details" class="collapse show"><div style="height: 40px"></div></div>',
+@@ -1116,10 +1160,12 @@ describe('Collapse', () => {
+ 		panel.classList.add('show')
+ 		expect(await hiding).toBe(false)
+ 		expect(events.count).toBe(0)
+-		expect(Array.from(panel.classList)).toEqual(['collapsing', 'show'])
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		expect(panel.style.height).toBe('')
++		expect(getComputedStyle(panel).height).toBe('40px')
+ 	})
+ 
+-	it('stops a hide whose trigger write a reaction answers by adding the shown token, writing nothing more', async () => {
++	it('returns a hide whose trigger write a reaction answers by adding the shown token, expanding that trigger again and writing no aria-expanded value it never wrote', async () => {
+ 		const name = 'vn-collapse-hide-trigger-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1148,17 +1194,28 @@ describe('Collapse', () => {
+ 			if (!(value ?? '').split(' ').includes('collapsed')) return
+ 			reactions.delete(trigger)
+ 			panel.classList.add('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await collapse.hide()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.target === trigger ? 'trigger' : 'panel',
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['panel', 'style', expect.stringMatching(/^height: [\d.]+px;$/)],
++			['panel', 'class', 'collapsing show'],
++			['panel', 'class', 'show'],
++			['trigger', 'class', 'collapsed'],
++		])
+ 		expect(events.count).toBe(0)
+-		expect(Array.from(panel.classList)).toEqual(['collapsing', 'show'])
+-		expect(Array.from(trigger.classList)).toEqual(['collapsed'])
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		expect(Array.from(trigger.classList)).toEqual([])
+ 		expect(trigger.getAttribute('aria-expanded')).toBe('true')
+ 	})
+ 
+-	it('stops a hide whose completing token write a reaction answers by adding the shown token, dispatching no hidden event', async () => {
++	it('returns a hide whose completing token write a reaction answers by adding the shown token, removing the transition token and dispatching no hidden event', async () => {
+ 		const name = 'vn-collapse-hide-completion-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1191,12 +1248,293 @@ describe('Collapse', () => {
+ 			}
+ 			reactions.delete(panel)
+ 			panel.classList.add('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await collapse.hide()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['collapsing collapse show'])
++		expect(events.count).toBe(0)
++		expect(Array.from(panel.classList)).toEqual(['collapse', 'show'])
++	})
++
++	it('completes a show whose listener adds the shown token, expanding its trigger, clearing the size, and dispatching shown', async () => {
++		scene.load(collapseCascade)
++		const root = scene.mount(`
++			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
++			<div id="details" class="collapse"><div style="height: 40px"></div></div>`)
++		const panel = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, {
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					panel.classList.add('show')
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => collapse.destroy())
++		expect(await collapse.show()).toBe(true)
++		expect(events.calls).toEqual([['show.vn.collapse'], ['shown.vn.collapse']])
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		expect(panel.style.height).toBe('')
++		expect(getComputedStyle(panel).height).toBe('40px')
++		expect(trigger.classList.contains('collapsed')).toBe(false)
++		expect(trigger.getAttribute('aria-expanded')).toBe('true')
++	})
++
++	it('completes a show whose open sibling hide listener adds the shown token to its panel', async () => {
++		scene.load(collapseCascade)
++		const root = scene.mount(`
++			<div id="accordion">
++				<div id="first" class="collapse show" data-bs-parent="#accordion"><div style="height: 20px"></div></div>
++				<div id="second" class="collapse" data-bs-parent="#accordion"><div style="height: 20px"></div></div>
++			</div>
++			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#second">Second</button>`)
++		const first = requireValue(root.querySelector<HTMLElement>('#first'), 'No first panel')
++		const second = requireValue(root.querySelector<HTMLElement>('#second'), 'No second panel')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		first.addEventListener('hide.vn.collapse', () => second.classList.add('show'), {
++			once: true,
++			signal: controller.signal,
++		})
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(second, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => collapse.destroy())
++		expect(await collapse.show()).toBe(true)
++		expect(events.calls).toEqual([['shown.vn.collapse']])
++		expect(Array.from(second.classList)).toEqual(['show', 'collapse'])
++		expect(second.style.height).toBe('')
++		expect(getComputedStyle(second).height).toBe('20px')
++		expect(trigger.getAttribute('aria-expanded')).toBe('true')
++		await waitForCondition(
++			'the first panel hides',
++			() => Array.from(first.classList).join(' ') === 'collapse',
++		)
++		onTestFinished(() => Collapse.find(first)?.destroy())
++	})
++
++	it('completes a hide whose listener removes the shown token, collapsing its trigger and dispatching hidden', async () => {
++		scene.load(collapseCascade)
++		const root = scene.mount(`
++			<button type="button" aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
++			<div id="details" class="collapse show"><div style="height: 40px"></div></div>`)
++		const panel = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, {
++			on: {
++				hide: (event) => {
++					events.handler(event.type)
++					panel.classList.remove('show')
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => collapse.destroy())
++		expect(await collapse.hide()).toBe(true)
++		expect(events.calls).toEqual([['hide.vn.collapse'], ['hidden.vn.collapse']])
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(panel.style.height).toBe('')
++		expect(getComputedStyle(panel).display).toBe('none')
++		expect(trigger.classList.contains('collapsed')).toBe(true)
++		expect(trigger.getAttribute('aria-expanded')).toBe('false')
++	})
++
++	// The listener adds the shown token inside the show's dispatch, so the show finds the token at its
++	// end and every later door requires it there.
++	it('returns a show whose listener added the shown token and whose transition-token write a reaction answers by removing it', async () => {
++		const name = 'vn-collapse-show-agreed-reversed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse'
++		root.append(panel)
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, {
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					if (events.count === 1) panel.classList.add('show')
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => collapse.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(panel, (value) => {
++			if (!(value ?? '').split(' ').includes('collapsing')) return
++			reactions.delete(panel)
++			panel.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await collapse.show()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['collapse collapsing'])
++		expect(events.calls).toEqual([['show.vn.collapse']])
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(await collapse.show()).toBe(true)
++		expect(events.calls).toEqual([
++			['show.vn.collapse'],
++			['show.vn.collapse'],
++			['shown.vn.collapse'],
++		])
++	})
++
++	it('returns a show whose listener added the shown token and whose zero-size write a reaction answers by removing it, adding back the host token and clearing the size', async () => {
++		const name = 'vn-collapse-show-sized-reversed'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['style']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse'
++		root.append(panel)
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => collapse.destroy())
++		panel.addEventListener('show.vn.collapse', () => panel.classList.add('show'), { once: true })
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(panel, () => {
++			reactions.delete(panel)
++			panel.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await collapse.show()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['class', 'collapsing'],
++			['class', ''],
++			['style', 'height: 0px;'],
++		])
++		expect(events.count).toBe(0)
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(panel.style.height).toBe('')
++	})
++
++	// The panel carries no `host` token, so the show's removal of it changes nothing and the returning
++	// step adds none.
++	it('returns a show of a panel without the host token, whose host-token removal a reaction answers by removing the shown token, adding no host token', async () => {
++		const name = 'vn-collapse-show-hostless'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		root.append(panel)
++		const collapse = new Collapse(panel)
++		onTestFinished(() => collapse.destroy())
++		panel.addEventListener('show.vn.collapse', () => panel.classList.add('show'), { once: true })
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		const seen = createRecorder<readonly [string | null]>()
++		reactions.set(panel, (value) => {
++			seen.handler(value)
++			// The first reaction is the listener's own write and the second the transition-token write.
++			if (seen.count < 3) return
++			reactions.delete(panel)
++			panel.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await collapse.show()).toBe(false)
++		expect(seen.calls).toEqual([['show'], ['show collapsing'], ['show collapsing']])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['collapsing'])
++		expect(panel.getAttribute('class')).toBe('')
++	})
++
++	it('returns a show whose transition removal a reaction answers by removing the shown token, clearing the size and collapsing each trigger that names no shown panel', async () => {
++		const name = 'vn-collapse-show-settled-dropped'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<button type="button" id="only" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
++			<button type="button" id="both" aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#details, #other">Both</button>
++			<div id="other" class="collapse show"></div>`)
++		const only = requireValue(root.querySelector<HTMLElement>('#only'), 'No single trigger')
++		const both = requireValue(root.querySelector<HTMLElement>('#both'), 'No shared trigger')
++		const panel = document.createElement(name)
++		panel.id = 'details'
++		panel.className = 'collapse'
++		root.append(panel)
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => collapse.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(panel, (value) => {
++			const tokens = (value ?? '').split(' ')
++			if (!tokens.includes('show') || tokens.includes('collapsing')) return
++			reactions.delete(panel)
++			panel.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await collapse.show()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.target instanceof Element ? record.target.id : '',
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['details', 'style', 'height: 0px;'],
++			['only', 'class', ''],
++			['only', 'aria-expanded', 'true'],
++		])
+ 		expect(events.count).toBe(0)
+-		expect(Array.from(panel.classList)).toEqual(['collapsing', 'collapse', 'show'])
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(panel.style.height).toBe('')
++		expect(Array.from(only.classList)).toEqual(['collapsed'])
++		expect(only.getAttribute('aria-expanded')).toBe('false')
++		expect(both.hasAttribute('class')).toBe(false)
++		expect(both.getAttribute('aria-expanded')).toBe('true')
+ 	})
+ 
+ 	it('destroys a sibling collapse it constructed at its next show or hide call, refused or not, after that sibling panel leaves the document', async () => {
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index 9429fa5..d644aa1 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -1380,7 +1380,7 @@ describe('Tab', () => {
+ 		expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade', 'active'])
+ 	})
+ 
+-	it('stops a swap whose control-activation write a reaction answers by removing the active token, with no other control active', async () => {
++	it('returns a swap whose control-activation write a reaction answers by removing the active token, reactivating and reselecting the sibling', async () => {
+ 		const name = 'vn-tab-control-deactivated'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1412,12 +1412,282 @@ describe('Tab', () => {
+ 			if (!(value ?? '').split(' ').includes('active')) return
+ 			reactions.delete(profile)
+ 			profile.classList.remove('active')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await tab.show()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.target instanceof Element ? record.target.id : '',
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['home-tab', 'class', 'nav-link'],
++			['home-tab', 'aria-selected', 'false'],
++			['home-tab', 'tabindex', '-1'],
++		])
++		expect(shown.calls).toEqual([])
++		expect(Array.from(list.querySelectorAll('.active')).map((control) => control.id)).toEqual([
++			'home-tab',
++		])
++		const home = requireValue(list.querySelector('#home-tab'), 'No home control')
++		expect(home.getAttribute('aria-selected')).toBe('true')
++		expect(home.hasAttribute('tabindex')).toBe(false)
++		expect(profile.getAttribute('aria-selected')).toBe('false')
++		expect(profile.getAttribute('tabindex')).toBe('-1')
++	})
++
++	it('completes a swap whose listener activates the control, writing no active token on the control and dispatching every event', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const events = createRecorder<readonly [string, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) =>
++					events.handler(event.type, event.target instanceof Element ? event.target.id : ''),
++				{ signal: controller.signal },
++			)
++		}
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		profile.addEventListener(
++			'show.vn.tab',
++			() => {
++				profile.classList.add('active')
++				observer.observe(profile, { attributeFilter: ['class'] })
++			},
++			{ once: true, signal: controller.signal },
++		)
++		expect(await tab.show()).toBe(true)
+ 		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.calls).toEqual([
++			['hide.vn.tab', 'home-tab'],
++			['show.vn.tab', 'profile-tab'],
++			['hidden.vn.tab', 'home-tab'],
++			['shown.vn.tab', 'profile-tab'],
++		])
++		expect(home.classList.contains('active')).toBe(false)
++		expect(home.getAttribute('aria-selected')).toBe('false')
++		expect(profile.getAttribute('aria-selected')).toBe('true')
++		expect(Array.from(root.querySelector('#home')?.classList ?? [])).toEqual(['tab-pane'])
++		expect(Array.from(root.querySelector('#profile')?.classList ?? [])).toEqual([
++			'tab-pane',
++			'active',
++			'show',
++		])
++	})
++
++	it('completes a swap whose sibling token write a reaction answers by activating the control, writing no active token on the control', async () => {
++		const name = 'vn-tab-sibling-agrees'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div class="nav">
++				<button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button>
++			</div>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const list = requireValue(root.querySelector<HTMLElement>('.nav'), 'No list')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const home = document.createElement(name)
++		home.id = 'home-tab'
++		home.className = 'nav-link active'
++		home.setAttribute('data-bs-toggle', 'tab')
++		home.setAttribute('data-bs-target', '#home')
++		list.prepend(home)
++		const shown = createRecorder<readonly [string]>()
++		const tab = new Tab(profile, { on: { shown: (event) => shown.handler(event.type) } })
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(home, (value) => {
++			if ((value ?? '').split(' ').includes('active')) return
++			reactions.delete(home)
++			profile.classList.add('active')
++			observer.observe(profile, { attributeFilter: ['class'] })
++		})
++		expect(await tab.show()).toBe(true)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(shown.calls).toEqual([['shown.vn.tab']])
++		expect(Array.from(list.querySelectorAll('.active')).map((control) => control.id)).toEqual([
++			'profile-tab',
++		])
++		expect(profile.getAttribute('aria-selected')).toBe('true')
++		expect(Array.from(root.querySelector('#home')?.classList ?? [])).toEqual(['tab-pane'])
++		expect(Array.from(root.querySelector('#profile')?.classList ?? [])).toEqual([
++			'tab-pane',
++			'active',
++			'show',
++		])
++	})
++
++	it('returns a swap whose control loses its active token during the pane fade, reactivating the sibling and its pane and deactivating the control and its pane', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-content">
++				<div class="tab-pane fade active show" id="home"></div>
++				<div class="tab-pane fade" id="profile"></div>
++			</div>`)
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const homePane = requireValue(root.querySelector<HTMLElement>('#home'), 'No home pane')
++		const pane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile pane')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		const showing = tab.show()
++		expect(pane.getAnimations()).toHaveLength(1)
++		profile.classList.remove('active')
++		expect(await showing).toBe(false)
++		expect(events.calls).toEqual([['hide.vn.tab'], ['show.vn.tab']])
++		expect(home.classList.contains('active')).toBe(true)
++		expect(home.getAttribute('aria-selected')).toBe('true')
++		expect(home.hasAttribute('tabindex')).toBe(false)
++		expect(profile.getAttribute('aria-selected')).toBe('false')
++		expect(profile.getAttribute('tabindex')).toBe('-1')
++		expect(Array.from(homePane.classList)).toEqual(['tab-pane', 'fade', 'active', 'show'])
++		expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade'])
++		expect(getComputedStyle(homePane).display).toBe('block')
++		expect(getComputedStyle(pane).display).toBe('none')
++		expect(await tab.show()).toBe(true)
++	})
++
++	it('returns a swap whose control loses its active token during the pane fade, reopening the dropdown that holds the sibling', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
++		const root = scene.mount(`
++			<ul class="nav nav-tabs">
++				<li class="nav-item"><button type="button" class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item dropdown">
++					<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">More</a>
++					<ul class="dropdown-menu">
++						<li><a class="dropdown-item" id="settings-tab" href="#settings" data-bs-toggle="tab">Settings</a></li>
++					</ul>
++				</li>
++			</ul>
++			<div class="tab-content">
++				<div class="tab-pane fade" id="home"></div>
++				<div class="tab-pane fade" id="settings"></div>
++			</div>`)
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const settings = requireValue(root.querySelector<HTMLElement>('#settings-tab'), 'No settings')
++		const wrapper = requireValue(root.querySelector('.dropdown'), 'No dropdown')
++		const toggle = requireValue(root.querySelector('.dropdown-toggle'), 'No toggle')
++		const menu = requireValue(root.querySelector('.dropdown-menu'), 'No menu')
++		const homePane = requireValue(root.querySelector<HTMLElement>('#home'), 'No home pane')
++		const settingsPane = requireValue(root.querySelector<HTMLElement>('#settings'), 'No pane')
++		const tab = new Tab(settings)
++		const back = new Tab(home)
++		onTestFinished(() => tab.destroy())
++		onTestFinished(() => back.destroy())
++		expect(await tab.show()).toBe(true)
++		const showing = back.show()
++		expect(homePane.getAnimations()).toHaveLength(1)
++		home.classList.remove('active')
++		expect(await showing).toBe(false)
++		expect(settings.classList.contains('active')).toBe(true)
++		expect(settings.getAttribute('aria-selected')).toBe('true')
++		expect(settings.hasAttribute('tabindex')).toBe(false)
++		expect(Array.from(toggle.classList)).toEqual(['nav-link', 'dropdown-toggle', 'active'])
++		expect(Array.from(menu.classList)).toEqual(['dropdown-menu', 'show'])
++		expect(wrapper.getAttribute('aria-expanded')).toBe('true')
++		expect(home.getAttribute('aria-selected')).toBe('false')
++		expect(home.getAttribute('tabindex')).toBe('-1')
++		expect(Array.from(settingsPane.classList)).toEqual(['tab-pane', 'fade', 'active', 'show'])
++		expect(Array.from(homePane.classList)).toEqual(['tab-pane', 'fade'])
++		expect(getComputedStyle(settingsPane).display).toBe('block')
++		expect(getComputedStyle(homePane).display).toBe('none')
++	})
++
++	// The listener activates the control inside the show's dispatch, so the show finds the token at
++	// its end and every later door requires it there.
++	it('returns a swap whose listener activated the control and whose sibling token write a reaction answers by deactivating it', async () => {
++		const name = 'vn-tab-agreed-reversed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div class="nav">
++				<button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab">Profile</button>
++			</div>`)
++		const list = requireValue(root.querySelector<HTMLElement>('.nav'), 'No list')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const home = document.createElement(name)
++		home.id = 'home-tab'
++		home.className = 'nav-link active'
++		home.setAttribute('data-bs-toggle', 'tab')
++		list.prepend(home)
++		const shown = createRecorder<readonly [string]>()
++		const tab = new Tab(profile, { on: { shown: (event) => shown.handler(event.type) } })
++		onTestFinished(() => tab.destroy())
++		profile.addEventListener('show.vn.tab', () => profile.classList.add('active'), { once: true })
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(home, (value) => {
++			if ((value ?? '').split(' ').includes('active')) return
++			reactions.delete(home)
++			profile.classList.remove('active')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await tab.show()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.target instanceof Element ? record.target.id : '',
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([['home-tab', 'class', 'nav-link']])
+ 		expect(shown.calls).toEqual([])
+-		expect(list.querySelectorAll('.active')).toHaveLength(0)
++		expect(Array.from(list.querySelectorAll('.active')).map((control) => control.id)).toEqual([
++			'home-tab',
++		])
+ 	})
+ 
+ 	it('resolves false for the swap a sibling takes over by a reaction to its control write, with no panes to read', async () => {
+@@ -1483,6 +1753,9 @@ describe('Tab', () => {
+ 		expect(profile.classList.contains('active')).toBe(false)
+ 		expect(profile.getAttribute('aria-selected')).toBe('false')
+ 		expect(contact.classList.contains('active')).toBe(true)
++		expect(
++			Array.from(list.querySelectorAll('.nav-link.active')).map((control) => control.id),
++		).toEqual(['contact-tab'])
+ 	})
+ 
+ 	it('resolves false for the swap a sibling takes over during the fade, which dispatches its own completed events once', async () => {
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index de0bdda..8c38cd3 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -983,7 +983,8 @@ describe('Toast', () => {
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+ 	})
+ 
+-	it('resolves both calls false and writes nothing when a listener to its show event shows it again and prevents that nested show', async () => {
++	// A prevented call starts no change, so the nested show moves no identity and the outer show goes on.
++	it('completes the one show whose listener shows it again and prevents that nested show, the nested call resolving false', async () => {
+ 		const root = scene.mount('<div class="toast" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const events = createRecorder<readonly [string]>()
+@@ -1010,13 +1011,15 @@ describe('Toast', () => {
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+ 		onTestFinished(() => observer.disconnect())
+ 		observer.observe(root, { attributes: true, subtree: true })
+-		expect(await toast.show()).toBe(false)
++		expect(await toast.show()).toBe(true)
+ 		expect(inner.count).toBe(1)
+ 		expect(await inner.calls[0]?.[0]).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
+-		expect(events.calls).toEqual([['show.vn.toast'], ['show.vn.toast']])
+-		expect(toast.shown).toBe(false)
+-		expect(Array.from(host.classList)).toEqual(['toast'])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.attributeName),
++		).toEqual(['class', 'class'])
++		expect(events.calls).toEqual([['show.vn.toast'], ['show.vn.toast'], ['shown.vn.toast']])
++		expect(toast.shown).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+ 	})
+ 
+ 	it('resolves false for a hide whose event listener shows the toast, and the show completes once', async () => {
+@@ -1193,7 +1196,9 @@ describe('Toast', () => {
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'showing'])
+ 	})
+ 
+-	it('stops a show of a shown toast whose fade write a reaction answers by removing the shown token, writing nothing more', async () => {
++	// A show of a shown toast finds the shown token at its end when it starts, so the reaction takes
++	// the show over before its token write.
++	it('returns a show of a shown toast whose fade write a reaction answers by removing the shown token, removing only the fade token it added', async () => {
+ 		const name = 'vn-toast-show-fade-hidden'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1219,13 +1224,16 @@ describe('Toast', () => {
+ 			if (!(value ?? '').split(' ').includes('fade')) return
+ 			reactions.delete(host)
+ 			host.classList.remove('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await toast.show()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['toast fade'])
+ 		expect(events.count).toBe(0)
+ 		expect(toast.shown).toBe(false)
+-		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		expect(await toast.show()).toBe(true)
+ 	})
+ 
+ 	// With `animated` false no wait follows the transition-token write, so the door after that write
+@@ -1267,7 +1275,7 @@ describe('Toast', () => {
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+ 	})
+ 
+-	it('stops a show whose completing removal a reaction answers by removing the shown token, dispatching no shown event', async () => {
++	it('returns a show whose completing removal a reaction answers by removing the shown token, removing the fade token it added and dispatching no shown event', async () => {
+ 		const name = 'vn-toast-show-completion-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1294,16 +1302,67 @@ describe('Toast', () => {
+ 			if ((value ?? '').split(' ').includes('showing')) return
+ 			reactions.delete(host)
+ 			host.classList.remove('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await toast.show()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['toast fade'])
+ 		expect(events.count).toBe(0)
+ 		expect(toast.shown).toBe(false)
+-		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++	})
++
++	it('returns a show whose token write a reaction answers by removing the shown token, leaving no showing token, so a later show and hide run', async () => {
++		const name = 'vn-toast-show-token-dropped'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: {
++				shown: (event) => events.handler(event.type),
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('showing')) return
++			reactions.delete(host)
++			host.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await toast.show()).toBe(false)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['toast fade showing', 'toast showing'])
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		expect(getComputedStyle(host).display).toBe('none')
++		expect(await toast.show()).toBe(true)
++		expect(await toast.hide()).toBe(true)
++		expect(events.calls).toEqual([['shown.vn.toast'], ['hidden.vn.toast']])
+ 	})
+ 
+-	it('stops a hide whose transition-token write a reaction answers by removing the shown token, writing nothing more', async () => {
++	it('completes a hide whose transition-token write a reaction answers by removing the shown token, leaving no showing token, so a later show and hide run', async () => {
+ 		const name = 'vn-toast-hide-token-changed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1322,7 +1381,11 @@ describe('Toast', () => {
+ 		const events = createRecorder<readonly [string]>()
+ 		const toast = new Toast(host, {
+ 			animated: false,
+-			on: { hidden: (event) => events.handler(event.type) },
++			autohide: false,
++			on: {
++				shown: (event) => events.handler(event.type),
++				hidden: (event) => events.handler(event.type),
++			},
+ 		})
+ 		onTestFinished(() => toast.destroy())
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+@@ -1332,15 +1395,138 @@ describe('Toast', () => {
+ 			if (!(value ?? '').split(' ').includes('showing')) return
+ 			reactions.delete(host)
+ 			host.classList.remove('show')
+-			observer.observe(root, { attributes: true, subtree: true })
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		})
++		expect(await toast.hide()).toBe(true)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['toast showing'])
++		expect(events.calls).toEqual([['hidden.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		expect(await toast.show()).toBe(true)
++		expect(await toast.hide()).toBe(true)
++		expect(events.calls).toEqual([['hidden.vn.toast'], ['shown.vn.toast'], ['hidden.vn.toast']])
++	})
++
++	it('completes a hide whose listener removes the shown token, dispatching hidden and resolving true', async () => {
++		scene.load(toastCascade)
++		const root = scene.mount('<div class="toast show" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			animated: false,
++			on: {
++				hide: (event) => {
++					events.handler(event.type)
++					host.classList.remove('show')
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
++		expect(await toast.hide()).toBe(true)
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['toast show', 'toast', 'toast showing'])
++		expect(events.calls).toEqual([['hide.vn.toast'], ['hidden.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		expect(getComputedStyle(host).display).toBe('none')
++	})
++
++	it('completes a show whose fade write a reaction answers by adding the shown token, dispatching shown and resolving true', async () => {
++		const name = 'vn-toast-show-fade-agreed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('fade')) return
++			reactions.delete(host)
++			host.classList.add('show')
++		})
++		expect(await toast.show()).toBe(true)
++		expect(events.calls).toEqual([['show.vn.toast'], ['shown.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++		expect(getComputedStyle(host).display).not.toBe('none')
++	})
++
++	// The listener takes the shown token off inside the hide's dispatch, so the hide finds the token at
++	// its end and every later door requires it there.
++	it('returns a hide whose listener removed the shown token and whose transition-token write a reaction answers by adding it back, removing the showing token', async () => {
++		const name = 'vn-toast-hide-token-returned'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast show'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			animated: false,
++			autohide: false,
++			on: {
++				hide: (event) => {
++					events.handler(event.type)
++					if (events.count === 1) host.classList.remove('show')
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('showing')) return
++			reactions.delete(host)
++			host.classList.add('show')
++			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await toast.hide()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
+-		expect(events.count).toBe(0)
+-		expect(Array.from(host.classList)).toEqual(['toast', 'showing'])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
++		).toEqual(['toast showing show'])
++		expect(events.calls).toEqual([['hide.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++		expect(await toast.hide()).toBe(true)
++		expect(events.calls).toEqual([['hide.vn.toast'], ['hide.vn.toast'], ['hidden.vn.toast']])
+ 	})
+ 
+-	it('stops a hide when the shown token leaves during its transition, dispatching no hidden event', async () => {
++	it('completes a hide when the shown token leaves during its transition, dispatching hidden and leaving no showing token', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+@@ -1353,9 +1539,11 @@ describe('Toast', () => {
+ 		const transition = requireValue(host.getAnimations()[0], 'No transition')
+ 		await transition.ready
+ 		host.classList.remove('show')
+-		expect(await hiding).toBe(false)
+-		expect(events.count).toBe(0)
+-		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'showing'])
++		expect(await hiding).toBe(true)
++		expect(events.calls).toEqual([['hidden.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++		expect(getComputedStyle(host).display).toBe('none')
++		expect(await toast.show()).toBe(true)
+ 	})
+ 
+ 	it('stops a hide whose completing removal a reaction answers by adding the shown token back, dispatching no hidden event', async () => {

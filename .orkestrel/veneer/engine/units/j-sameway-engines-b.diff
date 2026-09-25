@@ -1,0 +1,2888 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1da72d8..a0447b5 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1698,31 +1698,61 @@ The options take the following defaults when neither an attribute nor the constr
+ The dropdown dispatches the following events on its toggle, which is each event's target. Each one
+ bubbles and carries a detail whose `click` member is the click that hid the menu, or undefined.
+ 
+-| Key      | Wire name            | Cancelable | Dispatched                                            |
+-| -------- | -------------------- | ---------- | ----------------------------------------------------- |
+-| `show`   | `show.vn.dropdown`   | Yes        | Before any write; prevention refuses the show         |
+-| `shown`  | `shown.vn.dropdown`  | No         | After the menu and the toggle carry the `shown` token |
+-| `hide`   | `hide.vn.dropdown`   | Yes        | Before any write; prevention refuses the hide         |
+-| `hidden` | `hidden.vn.dropdown` | No         | After the toggle reads `aria-expanded="false"`        |
+-
+-A call reads the menu at each of its doors. Until a show writes the menu's `shown` token the menu
+-must lack it, and from that write on the menu must carry it; a hide reads the reverse, and before
+-its first token write the menu must still carry the token. A call that finds the menu otherwise, the
+-dropdown destroyed, or a later call of the same dropdown started reads the change as taken over: it
+-stops, writing and dispatching nothing more, and resolves `false`. While a change is in flight every
+-other call of the same dropdown resolves `false` at once, so a listener to the toggle's `focus`
+-event that calls `hide` leaves the show to complete. A listener that shows the menu again inside
+-`show.vn.dropdown` promotes it once and dispatches the one `shown.vn.dropdown` event: its own call
+-resolves `true`, and the call whose event it heard resolves `false`. The dropdown passes its
+-lifetime to the placement as the `signal` option, and the placement reads that signal after its
+-`popover` attribute write and after the promotion, so a dropdown destroyed by the menu's
+-`beforetoggle` event or by a reaction to that write leaves the placement restored and writing
+-nothing more. A show that finds a placement a taken-over show left restores it first and reads its
+-door before placing the menu again. Destruction closes an open menu without events, destroys the
+-placement, and writes back the `shown` tokens of the menu and the toggle and the toggle's
+-`aria-expanded` value. A `destroy` call made from a custom element's reaction to one of that
+-restoration's own attribute writes, such as the menu's `popover` removal, completes the placement's
+-restoration and the dropdown's before it returns, so no write of either lands after it.
++| Key      | Wire name            | Cancelable | Dispatched                                                                                                                                                                                                          |
++| -------- | -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `show`   | `show.vn.dropdown`   | Yes        | Before any write; prevention refuses the show                                                                                                                                                                       |
++| `shown`  | `shown.vn.dropdown`  | No         | After the menu and the toggle carry the `shown` token                                                                                                                                                               |
++| `hide`   | `hide.vn.dropdown`   | Yes        | Before any write; prevention refuses the hide, and after a prevented hide that a platform close started has promoted the menu again once, the next platform close of the same placement hides it despite prevention |
++| `hidden` | `hidden.vn.dropdown` | No         | After the toggle reads `aria-expanded="false"`                                                                                                                                                                      |
++
++A call carries the change identity it sets when its change starts, and after each write and
++dispatch it reads whether the dropdown is live and whether a later `show` or `hide` call has
++started. A call that finds either stops, writing and dispatching nothing more, and resolves `false`.
++While a change is in flight every other call of the same dropdown resolves `false` at once, so a
++listener to the toggle's `focus` event that calls `hide` leaves the show to complete. A listener
++that shows or hides the menu inside the pre-change dispatch supersedes the call whose event it
++heard: a listener that shows the menu again inside `show.vn.dropdown` promotes it once and
++dispatches the one `shown.vn.dropdown` event, its own call resolves `true`, and the call whose event
++it heard resolves `false` and writes nothing. A listener that prevents the pre-change event starts
++no change, whatever else it wrote.
++
++The menu's `shown` token at the change's end is agreement. A host that adds the token before a show
++writes it, such as a listener to `show.vn.dropdown`, to the menu's opening `beforetoggle` event, or
++to the toggle's `focus` event, or removes it before a hide does, such as a listener to
++`hide.vn.dropdown` or to the menu's closing `beforetoggle` event, has made that write for the call.
++The call's token step writes the token only when the host has not, and the call completes every
++other write in its order, dispatches its completed event, and resolves `true`. From the moment the
++call finds the token at the change's end, right after the pre-change dispatch or at its own token
++step, each door also reads the token there, and a host that moves it back takes the change over.
++Until that moment a door reads only the call's identity and the dropdown's lifetime.
++
++A call the host took over resolves `false`, dispatches nothing, ends the change in flight, and takes
++one further step that returns what the change wrote to the state the host chose. The step reads no
++door; before each of its writes it reads only the call's identity and the dropdown's lifetime, so a
++destruction a reaction runs inside one stops the step, and a `show` or `hide` call a reaction starts
++inside one supersedes it. A show the host took over restores the placement, sets `aria-expanded` to
++`false`, and removes the toggle's `shown` token when the show had added it, as far as the show had
++written them. A hide the host took over adds the toggle's `shown` token back when the hide had
++removed it and sets `aria-expanded` to `true`, as far as the hide had written them. The placement
++the hide restored before its token step stays restored, because placing the menu again is an
++acquisition, so the menu shows in flow where the cascade puts it until the next hide.
++
++The dropdown passes its lifetime to the placement as the `signal` option, and the placement reads
++that signal after its `popover` attribute write and after the promotion, so a dropdown destroyed by
++the menu's `beforetoggle` event or by a reaction to that write leaves the placement restored and
++writing nothing more. Destruction closes an open menu without events, destroys the placement, and
++writes back the `shown` tokens of the menu and the toggle and the toggle's `aria-expanded` value. A
++`destroy` call made from a custom element's reaction to one of that restoration's own attribute
++writes, such as the menu's `popover` removal, completes the placement's restoration and the
++dropdown's before it returns, so no write of either lands after it.
++
++The platform closes the promoted menu when a `hide-popover` or `toggle-popover` invoker of yours, or
++your `hidePopover` call, aims at it. The dropdown reads that close from the menu's `toggle` event and
++hides the menu through its own sequence, dispatching `hide.vn.dropdown` and `hidden.vn.dropdown`
++with an undefined `click`; like light dismissal, that hide reads no disabled state. When a listener
++prevents that hide, the dropdown promotes the menu again, so it stays open and anchored. It does so
++once per placement: the platform's next close of the same shown menu hides it with
++`hide.vn.dropdown` dispatched and its prevention ignored.
+ 
+ The delegate's `dropdown` option carries the dropdown's groups. A click inside a toggle the resolved
+ `trigger` selector matches, unless the toggle carries the `disabled` token or is disabled, prevents
+@@ -1758,6 +1788,9 @@ The dropdown departs from Bootstrap's in these ways:
+   `getBoundingClientRect` method, and its `offset` option also takes a function.
+ - The menu is positioned `fixed` in the top layer, where Popper positions it `absolute`, so the
+   viewport is the boundary it flips against.
++- The promoted menu is a `manual` popover, so a `hide-popover` or `toggle-popover` invoker or a
++  `hidePopover` call closes it, and the dropdown hides the menu with its events. Bootstrap's menu is
++  no popover, and nothing but the dropdown closes it.
+ - Light dismissal belongs to each open dropdown, which listens on its own document, so a dropdown
+   you construct directly closes on an outside click without a delegate. Bootstrap's `clearMenus`
+   handler is part of its data API.
+@@ -2826,8 +2859,10 @@ outside that edge by the side attribute. Destruction of the placement restores t
+ declarations. The dropdown passes no arrow.
+ 
+ The platform closes a `hint` popover when you press Escape, when you click outside it, and when
+-another `hint` popover opens, so one tooltip tip shows at a time. When the platform closes the tip,
+-the tooltip hides through the same sequence, dispatching `hide.vn.tooltip` and `hidden.vn.tooltip`.
++another `hint` popover opens, so one tooltip tip shows at a time. It also closes a tip that a
++`hide-popover` or `toggle-popover` invoker of yours, or your `hidePopover` call, aims at. The
++tooltip reads each close from the tip's `toggle` event and hides through the same sequence,
++dispatching `hide.vn.tooltip` and `hidden.vn.tooltip`.
+ Chromium 153 dispatches the closing `beforetoggle` event with `cancelable` set to `false`, so no
+ listener can keep the platform from closing the tip; a listener that prevents that `hide.vn.tooltip`
+ event keeps the tip by having the tooltip promote it again after the platform closed it. The tooltip
+@@ -2940,11 +2975,10 @@ release that undoes nothing the completed show announced. A call runs each write
+ dispatch, element move, and sanitizer call of its change as one step. After every step, every
+ content function, and every await, it reads that the tooltip is live and that no later call
+ started. From the tip's insertion until its removal, it also reads that the tip is in the container
+-it went into and carries the `shown` token exactly when the call expects it: from the show's token
+-write on, and until the hide's token removal. A show that rebuilds a settled shown tip reads that
+-tip the same way after its `show.vn.tooltip` event, and stops when its removal leaves that tip in
+-the document. A build calls every content function before it writes anything. A call that finds any
+-of these false stops, writing, moving, and dispatching nothing more, and resolves `false`. A build
++it went into. A show that rebuilds a settled shown tip reads that tip the same way after its
++`show.vn.tooltip` event, with its `shown` token, and stops when its removal leaves that tip in the
++document. A build calls every content function before it writes anything. A call that finds any of
++these false stops, writing, moving, and dispatching nothing more, and resolves `false`. A build
+ that stops returns every element it moved into the unfinished tip, and a tip that other code moved
+ stays where that code put it. Destruction, a hide's removal, and a content element's return move a
+ node only while it is still where the tooltip put it, and a hide's removal only while the tip also
+@@ -2954,6 +2988,22 @@ listener adds back stays shown where it is, and every attribute the tooltip wrot
+ The change is released before its completed event is dispatched, so a listener can start another
+ change, and that change is never undone.
+ 
++The tip's `shown` token at the change's end is agreement. A host that marks the tip shown before a
++show writes the token, such as a listener to `inserted.vn.tooltip` or to the tip's opening
++`beforetoggle` event, or takes the token before a hide removes it, in a listener to
++`hide.vn.tooltip`, has made that write for the call. The call's token step writes the token only
++when the host has not, and the call completes every other step, dispatches its completed event,
++and resolves `true`. From the moment the call finds the token at the change's end, after
++`hide.vn.tooltip` or at its own token step, each door also reads the token there, and a host that
++moves it back takes the change over: the call resolves `false` and dispatches nothing more. A show
++taken over takes one further step that returns what it wrote to the hidden state a hide writes: it
++restores the placement, removes the tip from its container while the tip is still there without the
++token, and takes the tip's id out of `aria-describedby`. Before each of those writes it reads only
++the call's identity and the tooltip's lifetime, so a destruction a reaction runs inside one stops the
++step, and a hide a reaction starts inside one supersedes it. The step runs only when the token alone
++moved, so a show whose tip other code moved takes none. A hide writes nothing but its token before
++its discard, so a hide taken over returns nothing and leaves the tip shown and named.
++
+ The placement reads the same door after the promotion: when a listener to the platform's opening
+ `beforetoggle` event moves the tip, the placement hides the tip, restores what it wrote, and
+ positions nothing, and the show resolves `false` with the tip where the listener put it. When a
+@@ -3035,8 +3085,11 @@ whose `data-bs-content` default feeds the `content` option. A popover has conten
+ has content, and an undefined or empty slot is removed from the tip, as Bootstrap's template factory
+ removes it. The tip is promoted with the `manual` popover value, so the platform closes it on no
+ Escape key press, outside click, or other tip opening; the interactions the `trigger` group
+-selects, the `hide` method, the modal hide event § Tooltip names, and destruction hide it. The
+-popover keeps its own registry beside the tooltip's, and a popover whose `descendants` option is set
++selects, the `hide` method, the modal hide event § Tooltip names, and destruction hide it. A
++`hide-popover` or `toggle-popover` invoker of yours, or your `hidePopover` call, aimed at the tip
++closes it, and the popover follows that close through its hide sequence as § Tooltip states,
++promoting the tip again once when a listener prevents that hide. The popover keeps its own registry
++beside the tooltip's, and a popover whose `descendants` option is set
+ constructs a popover for each matching descendant.
+ 
+ The popover departs from Bootstrap's in the ways § Tooltip lists, and in these:
+diff --git a/src/browser/Dropdown.ts b/src/browser/Dropdown.ts
+index 91d5c27..5177ce2 100644
+--- a/src/browser/Dropdown.ts
++++ b/src/browser/Dropdown.ts
+@@ -51,11 +51,32 @@ import { isAttributeName, isClassToken, isDropdownEvent, isSelector } from './va
+  * menu's `--bs-position` property, and the menu stays in flow inside an element the `navbar`
+  * selector matches or when `placement.static` is `true`. While the menu is open, a click or a Tab
+  * key release that the `dismiss` option allows hides it; a Tab release inside the menu never does.
+- * The dropdown answers no key: the delegate carries `Escape` and the arrow keys. After each write
+- * and dispatch a call reads its lifetime and the menu again: until it writes the menu's `shown`
+- * token the menu must lack it, and from that write on the menu must carry it; a hide reads the
+- * reverse. A call that finds the dropdown destroyed, a later call started, or the menu otherwise
+- * stops, writing and dispatching nothing more, and resolves `false`. An aborted `signal` destroys
++ * The dropdown answers no key: the delegate carries `Escape` and the arrow keys.
++ *
++ * A call carries the change identity it sets when its change starts. After each write and dispatch
++ * it reads whether the dropdown is live and whether a later `show` or `hide` call has started; a
++ * call that finds either stops, writing and dispatching nothing more, and resolves `false`. A
++ * listener that starts a change of its own inside the pre-change dispatch supersedes the call this
++ * way, while a prevented call starts no change. The menu's `shown` token at the change's end is
++ * agreement: a listener or a reaction that moves the token there has made the call's token write for
++ * it, so the token step writes the token only when the host has not, and the call completes every
++ * other write, dispatches its completed event, and resolves `true`. From the moment the call finds
++ * the token at its end, after the pre-change dispatch or at its token step, each door also reads the
++ * token there. A host that moves the token back from that end takes the change over: the call ends
++ * the change in flight, resolves `false`, and takes one further step that returns what the change
++ * wrote to the state the host chose. A stopped show restores the placement, sets `aria-expanded` to
++ * `false`, and removes the toggle's `shown` token when the show had added it. A stopped hide adds
++ * the toggle's `shown` token back when the hide had removed it and sets `aria-expanded` to `true`;
++ * the placement it restored before its token step stays restored, so the menu shows in flow. Each
++ * returns only what the call wrote. The step dispatches nothing and reads only the call's identity
++ * and the dropdown's lifetime before each write, so a call a reaction starts inside the step
++ * supersedes it.
++ *
++ * The platform closes the promoted menu when a consumer's `hide-popover` or `toggle-popover`
++ * invoker or a `hidePopover` call aims at it, and the dropdown reads that close from the menu's
++ * `toggle` event: it hides the menu through the same sequence, dispatching its hide events, and when
++ * a listener prevents that hide it promotes the menu again, once per placement. The platform's next
++ * close of the same placement hides the menu whatever a listener does. An aborted `signal` destroys
+  * the dropdown.
+  *
+  * @example
+@@ -81,9 +102,16 @@ export class Dropdown implements DropdownInterface {
+ 	// The placement of the open menu, from the show that placed it until the hide or destruction
+ 	// that restores it.
+ 	#placement: PlacementInterface | undefined
+-	// The identity of the call whose change is in flight. A call holds its change only while this is
+-	// its identity, and every other call is refused while a change is in flight.
+-	#change: object | undefined
++	// The placement the dropdown promoted again after a listener prevented the hide a platform close
++	// started; that placement's next platform close hides the menu whatever a listener does.
++	#promoted: PlacementInterface | undefined
++	// Whether a show or a hide is in flight. Every other call is refused while it is, so only the call
++	// in flight, its doors, and the end of its change clear it.
++	#changing = false
++	// The identity of the latest show or hide that started. Each call carries the identity it set, and
++	// its doors and its returning step write only while this field still holds it, so a change a
++	// listener or a reaction starts supersedes the call.
++	#change: object = {}
+ 
+ 	/**
+ 	 * Claims the toggle, resolves its vocabulary, menu, and options, and binds initial hooks.
+@@ -163,6 +191,9 @@ export class Dropdown implements DropdownInterface {
+ 			owner.addEventListener('keyup', (event) => this.#lightDismiss(event), {
+ 				signal: this.#controller.signal,
+ 			})
++			menu.addEventListener('toggle', (event) => this.#follow(event), {
++				signal: this.#controller.signal,
++			})
+ 			const signal = options?.signal
+ 			if (signal?.aborted) this.destroy()
+ 			else {
+@@ -205,45 +236,61 @@ export class Dropdown implements DropdownInterface {
+ 
+ 	async show(): Promise<boolean> {
+ 		if (this.#refused(true, true)) return false
++		const prior = this.#change
+ 		if (!emitEvent(this.#host, DROPDOWN_EVENTS.show, { click: undefined }, true)) return false
+-		// A listener runs inside the dispatch and can destroy this dropdown, show or hide it itself, or
+-		// disable the toggle, so every refusal is read again before any write.
+-		if (this.#refused(true, true)) return false
++		// A listener runs inside the dispatch and can destroy this dropdown, start a show or hide of its
++		// own, which moves the change identity and supersedes this call, or disable the toggle. A
++		// listener that only adds the menu's `shown` token has made this call's token write for it, so
++		// every later door requires the token.
++		if (this.#halted(prior, true)) return false
++		this.#changing = true
+ 		const change = {}
+ 		this.#change = change
++		const expected = this.shown ? true : undefined
+ 		try {
+ 			const host = this.#host
+ 			const menu = this.#menu
+ 			const { shown } = this.#classes
+ 			this.#save()
+-			// Restoring a placement a taken-over show left runs a reaction inside each of its writes and
+-			// dispatches the menu's `beforetoggle` event, so the call reads its door before placing anew.
+-			this.#placement?.destroy()
+-			this.#placement = undefined
+-			if (!this.#holds(change, false)) return false
+ 			// The placement reads this dropdown's signal inside its construction and restores itself when
+ 			// it aborts, so the door after it reads a destroyed dropdown with nothing left to restore.
+ 			const placement = this.#place()
+ 			if (placement === undefined) return false
+ 			this.#placement = placement
+-			if (!this.#holds(change, false)) return false
+-			if (!this.#apply(change, false, () => host.focus())) return false
+-			if (!this.#apply(change, false, () => host.setAttribute('aria-expanded', 'true'))) {
+-				return false
++			if (!this.#holds(change, expected)) return this.#rehide(change, ['placement'])
++			if (!this.#apply(change, expected, () => host.focus())) {
++				return this.#rehide(change, ['placement'])
++			}
++			if (!this.#apply(change, expected, () => host.setAttribute('aria-expanded', 'true'))) {
++				return this.#rehide(change, ['placement', 'aria-expanded'])
++			}
++			// A host that added the token first has made this write for the call.
++			const marked = this.#apply(change, true, () => {
++				if (!this.shown) menu.classList.add(shown)
++			})
++			if (!marked) return this.#rehide(change, ['placement', 'aria-expanded'])
++			// The toggle's token is a write of its own, which the call returns only when it added it.
++			const written: ReadonlyArray<'placement' | 'aria-expanded' | 'toggle'> =
++				host.classList.contains(shown)
++					? ['placement', 'aria-expanded']
++					: ['placement', 'aria-expanded', 'toggle']
++			if (!this.#apply(change, true, () => host.classList.add(shown))) {
++				return this.#rehide(change, written)
+ 			}
+-			if (!this.#apply(change, true, () => menu.classList.add(shown))) return false
+-			if (!this.#apply(change, true, () => host.classList.add(shown))) return false
+-			if (!this.#apply(change, true, () => placement.update())) return false
+-			this.#change = undefined
++			if (!this.#apply(change, true, () => placement.update())) {
++				return this.#rehide(change, written)
++			}
++			this.#changing = false
+ 			emitEvent(host, DROPDOWN_EVENTS.shown, { click: undefined }, false)
+ 			return !this.#controller.signal.aborted
+ 		} finally {
+-			if (this.#change === change) this.#change = undefined
++			// A refused promotion and a throw end the change in flight here.
++			if (this.#change === change) this.#changing = false
+ 		}
+ 	}
+ 
+ 	async hide(): Promise<boolean> {
+-		return this.#conceal(undefined, true)
++		return this.#conceal(undefined, true, false)
+ 	}
+ 
+ 	toggle(): Promise<boolean> {
+@@ -278,28 +325,95 @@ export class Dropdown implements DropdownInterface {
+ 	#refused(shown: boolean, guarded: boolean): boolean {
+ 		return (
+ 			this.#controller.signal.aborted ||
+-			this.#change !== undefined ||
++			this.#changing ||
+ 			this.shown === shown ||
+ 			(guarded && matchesDisabled(this.#host, this.#classes.disabled))
+ 		)
+ 	}
+ 
+-	// Reports whether the call still holds its change: the dropdown is live, no later call started a
+-	// change, and the menu carries its `shown` token exactly when `shown` is true.
+-	#holds(change: object, shown: boolean): boolean {
++	// Reports whether a call that read the change identity `prior` before its pre-change dispatch
++	// cannot start its change after it: the dropdown is destroyed, a listener started a change of its
++	// own, or, when `guarded` is true, a listener left the toggle reading as disabled. The menu's
++	// token is not read, because a listener that moved it to the change's end agreed with the call.
++	#halted(prior: object, guarded: boolean): boolean {
+ 		return (
+-			!this.#controller.signal.aborted &&
+-			this.#change === change &&
+-			this.#menu.classList.contains(this.#classes.shown) === shown
++			this.#controller.signal.aborted ||
++			this.#change !== prior ||
++			(guarded && matchesDisabled(this.#host, this.#classes.disabled))
+ 		)
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads whether the call still holds its change.
+-	#apply(change: object, shown: boolean, write: () => void): boolean {
++	// Reports whether the call that set `change` still owns the dropdown: the dropdown is live and no
++	// later show or hide has started.
++	#owns(change: object): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
++
++	// Reads a door of the call that set `change`: the call still owns the dropdown and, when `shown` is
++	// a boolean, the menu carries its `shown` token exactly when `shown` is true. A door before the
++	// call has found the token at its end passes `undefined`, so it reads no token. A call the host
++	// alone stopped ends the change in flight, so a later call can start.
++	#holds(change: object, shown: boolean | undefined): boolean {
++		if (!this.#owns(change)) return false
++		if (shown === undefined || this.shown === shown) return true
++		this.#changing = false
++		return false
++	}
++
++	// Runs one write a reaction or a listener can run inside, then reads the door after it.
++	#apply(change: object, shown: boolean | undefined, write: () => void): boolean {
+ 		write()
+ 		return this.#holds(change, shown)
+ 	}
+ 
++	// Ends a show the host took over by taking the menu's `shown` token: returns each write the show
++	// made, named in its order, to the hidden state a hide writes. It restores the placement, sets the
++	// toggle's `aria-expanded` attribute to `false`, and removes the toggle's `shown` token when the
++	// show had added it. The step dispatches nothing and reads no door; it reads only whether the call
++	// that set `change` still owns the dropdown before each write, so a destruction inside one writes
++	// nothing more and the snapshot's restoration stands, and a show or hide a reaction starts inside
++	// one supersedes the step.
++	#rehide(change: object, written: ReadonlyArray<'placement' | 'aria-expanded' | 'toggle'>): false {
++		const host = this.#host
++		for (const name of written) {
++			this.#revert(change, () => {
++				if (name === 'placement') {
++					// The dropdown keeps the placement until its restoration returns, so a destroy called from a
++					// listener inside that restoration completes it; a show a reaction starts there keeps its own.
++					const placement = this.#placement
++					placement?.destroy()
++					if (this.#placement === placement) this.#placement = undefined
++				}
++				if (name === 'aria-expanded') host.setAttribute('aria-expanded', 'false')
++				if (name === 'toggle') host.classList.remove(this.#classes.shown)
++			})
++		}
++		return false
++	}
++
++	// Ends a hide the host took over by adding the menu's `shown` token back: returns each write the
++	// hide made after its token step, named in its order, to the shown state a show writes. It adds the
++	// toggle's `shown` token back when the hide had removed it and sets `aria-expanded` to `true`. The
++	// placement the hide restored before its token step stays restored, because placing the menu again
++	// is an acquisition rather than a write the hide returns. The step reads what `#rehide` reads.
++	#reshow(change: object, written: ReadonlyArray<'toggle' | 'aria-expanded'>): false {
++		const host = this.#host
++		for (const name of written) {
++			this.#revert(change, () => {
++				if (name === 'toggle') host.classList.add(this.#classes.shown)
++				if (name === 'aria-expanded') host.setAttribute('aria-expanded', 'true')
++			})
++		}
++		return false
++	}
++
++	// Runs one write of a returning step while the call that set `change` still owns the dropdown; a
++	// destroyed dropdown restores nothing here, because its snapshot restores, and a later change owns
++	// the toggle and the menu.
++	#revert(change: object, write: () => void): void {
++		if (this.#owns(change)) write()
++	}
++
+ 	// Places the menu against its reference, or returns undefined when the platform refused the
+ 	// promotion, which the placement reports after restoring what it wrote.
+ 	#place(): PlacementInterface | undefined {
+@@ -321,37 +435,87 @@ export class Dropdown implements DropdownInterface {
+ 	}
+ 
+ 	// Dispatches the hide event carrying the click that closes the menu, then restores the placement
+-	// and writes the hidden state, reading the menu at each door; `guarded` passes to each refusal
+-	// read, true for the `hide` method and false for light dismissal.
+-	#conceal(click: MouseEvent | undefined, guarded: boolean): boolean {
+-		if (this.#refused(false, guarded)) return false
+-		if (!emitEvent(this.#host, DROPDOWN_EVENTS.hide, { click }, true)) return false
++	// and writes the hidden state, reading the door after each write; `guarded` passes to each refusal
++	// read, true for the `hide` method and false for light dismissal and the platform's close, and
++	// `forced` hides the menu whatever a listener to the hide event does.
++	#conceal(click: MouseEvent | undefined, guarded: boolean, forced: boolean): boolean {
+ 		if (this.#refused(false, guarded)) return false
++		const prior = this.#change
++		const accepted = emitEvent(this.#host, DROPDOWN_EVENTS.hide, { click }, true)
++		if (!accepted && !forced) return false
++		// As in `show`, a listener's own change supersedes this call, and a listener that only removes
++		// the menu's `shown` token has made this call's token write for it.
++		if (this.#halted(prior, guarded)) return false
++		this.#changing = true
+ 		const change = {}
+ 		this.#change = change
++		const expected = this.shown ? undefined : false
+ 		try {
+ 			const host = this.#host
+ 			const menu = this.#menu
+ 			const { shown } = this.#classes
+ 			this.#save()
+ 			// The dropdown keeps the placement until its restoration returns, so a destroy called from a
+-			// listener inside that restoration completes it.
++			// listener inside that restoration completes it. A restored placement stays restored when the
++			// host takes the hide over, because placing the menu again is an acquisition.
+ 			this.#placement?.destroy()
+ 			this.#placement = undefined
+-			if (!this.#holds(change, true)) return false
+-			if (!this.#apply(change, false, () => menu.classList.remove(shown))) return false
+-			if (!this.#apply(change, false, () => host.classList.remove(shown))) return false
++			if (!this.#holds(change, expected)) return false
++			// A host that removed the token first has made this write for the call.
++			const cleared = this.#apply(change, false, () => {
++				if (this.shown) menu.classList.remove(shown)
++			})
++			if (!cleared) return false
++			// The toggle's token is a write of its own, which the call returns only when it removed it.
++			const toggled: ReadonlyArray<'toggle'> = host.classList.contains(shown) ? ['toggle'] : []
++			if (!this.#apply(change, false, () => host.classList.remove(shown))) {
++				return this.#reshow(change, toggled)
++			}
+ 			if (!this.#apply(change, false, () => host.setAttribute('aria-expanded', 'false'))) {
+-				return false
++				return this.#reshow(change, [...toggled, 'aria-expanded'])
+ 			}
+-			this.#change = undefined
++			this.#changing = false
+ 			emitEvent(host, DROPDOWN_EVENTS.hidden, { click }, false)
+ 			return !this.#controller.signal.aborted
+ 		} finally {
+-			if (this.#change === change) this.#change = undefined
++			// A throw ends the change in flight here.
++			if (this.#change === change) this.#changing = false
+ 		}
+ 	}
+ 
++	// Hides the menu the platform closed, as the hint tooltip bridges its platform close: a consumer's
++	// `hide-popover` or `toggle-popover` invoker or a `hidePopover` call closed the menu the placement
++	// promoted while the dropdown reads it shown. When a listener prevents that hide, the dropdown
++	// promotes the menu again once per placement; the platform's next close of the same placement
++	// hides it with the hide event's prevention ignored. The dropdown's own restorations close the menu
++	// after its `shown` token has left or with no placement held, so this reads none of them.
++	#follow(event: Event): void {
++		if (!isInstance(event, ToggleEvent) || event.newState !== 'closed') return
++		const placement = this.#placement
++		if (placement === undefined || !this.#closed()) return
++		if (this.#promoted === placement) {
++			this.#conceal(undefined, false, true)
++			return
++		}
++		if (this.#conceal(undefined, false, false)) return
++		if (this.#placement === placement && this.#closed()) {
++			this.#promoted = placement
++			this.#menu.showPopover()
++		}
++	}
++
++	// Reports whether the platform closed a menu the dropdown reads as shown: the menu carries its
++	// `shown` token and the `popover` attribute, is connected, and is not open in the top layer.
++	#closed(): boolean {
++		const menu = this.#menu
++		return (
++			this.shown &&
++			menu.isConnected &&
++			menu.hasAttribute('popover') &&
++			!menu.matches(':popover-open')
++		)
++	}
++
+ 	// Hides the open menu for a click or a Tab key release its dismissal allows: a click on the toggle
+ 	// never counts, a secondary button never counts, a click inside the menu counts when `dismiss.inside`
+ 	// is true unless it lands on a form control, and a click or Tab release outside it counts when
+@@ -374,7 +538,7 @@ export class Dropdown implements DropdownInterface {
+ 		) {
+ 			return
+ 		}
+-		this.#conceal(click, false)
++		this.#conceal(click, false, false)
+ 	}
+ 
+ 	// Returns the first HTML element the `menu` selector matches after the toggle among its siblings,
+diff --git a/src/browser/Popover.ts b/src/browser/Popover.ts
+index bf38f7b..5d60d9c 100644
+--- a/src/browser/Popover.ts
++++ b/src/browser/Popover.ts
+@@ -23,7 +23,9 @@ import { Tooltip } from './Tooltip.js'
+  * popover has content when either slot has, and an empty slot is removed from the tip. The tip is
+  * promoted with the `manual` popover value, so the platform closes it on no Escape key press, outside
+  * click, or other tip opening; the interactions the `trigger` group selects, the calls, and the modal
+- * hide event hide it. The popover keeps its own registry, so a trigger can carry a tooltip and a
++ * hide event hide it. A consumer's `hide-popover` or `toggle-popover` invoker or a `hidePopover` call
++ * aimed at the tip closes it, and the popover follows that close through its hide sequence, as the
++ * `Tooltip` class states. The popover keeps its own registry, so a trigger can carry a tooltip and a
+  * popover at once, and `Popover.find` returns the popover. A popover whose `descendants` option is
+  * set constructs a popover for each matching descendant.
+  *
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index 26238ef..aa35adb 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -72,26 +72,40 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * rebuilt tip takes a different element for that slot, and when another selector's content takes
+  * the slot it fills; its record is written before the move.
+  * The platform closes a `hint` popover on an Escape key press, on a click outside it, and when
+- * another `hint` popover opens; the tooltip then hides through the same sequence, and when a
+- * listener prevents that hide it promotes the tip again, once per shown tip. Interactions arm one
+- * native timer at a time for the `delay` group, and a leave hides the tip only when no other
+- * interaction still holds it. With `descendants` set, each descendant matching the selector receives
+- * its own tooltip on its first interaction, driven by this one's listeners and destroyed with it; a
+- * descendant's tooltip a consumer constructed is left to its own listeners, and a descendant whose
+- * tooltip refuses construction is driven no further. Destruction clears the timer, removes the tip
+- * without an event unless other code moved it, takes the tip's id out of `aria-describedby`,
+- * returns each element content still in its slot, and restores the trigger.
++ * another `hint` popover opens, and it closes any promoted tip a consumer's `hide-popover` or
++ * `toggle-popover` invoker or a `hidePopover` call aims at. The tooltip reads each close from the
++ * tip's `toggle` event and hides through the same sequence, and when a listener prevents that hide
++ * it promotes the tip again, once per shown tip. Interactions arm one native timer at a time for the
++ * `delay` group, and a leave hides the tip only when no other interaction still holds it. With
++ * `descendants` set, each descendant matching the selector receives its own tooltip on its first
++ * interaction, driven by this one's listeners and destroyed with it; a descendant's tooltip a
++ * consumer constructed is left to its own listeners, and a descendant whose tooltip refuses
++ * construction is driven no further. Destruction clears the timer, removes the tip without an event
++ * unless other code moved it, takes the tip's id out of `aria-describedby`, returns each element
++ * content still in its slot, and restores the trigger.
+  *
+  * A call runs each write, dispatch, element move, and sanitizer call of its change as one step.
+  * After every step, every content function, and every await, it reads that the tooltip is live and
+  * that no later call started. From the tip's insertion until its removal, it also reads that the tip
+- * is in the container it went into and carries the `shown` token exactly when the call expects it:
+- * from the show's token write on, and until the hide's token removal. A show that rebuilds a settled
+- * shown tip reads that tip the same way after its show event, and stops when its removal leaves that
+- * tip in the document. A build calls every content function before it writes anything. A call that
+- * finds any of these false stops, writing, moving, and dispatching nothing more, and resolves
+- * `false`. A build that stops returns every element it moved into the unfinished tip, and a tip that
+- * other code moved stays where that code put it. Destruction, a hide's removal, and a content
++ * is in the container it went into. A show that rebuilds a settled shown tip reads that tip the same
++ * way after its show event, with its `shown` token, and stops when its removal leaves that tip in the
++ * document. A build calls every content function before it writes anything. A call that finds any of
++ * these false stops, writing, moving, and dispatching nothing more, and resolves `false`.
++ *
++ * The tip's `shown` token at the change's end is agreement: a listener or a reaction that moves the
++ * token there first has made the call's token write for it, so the token step writes the token only
++ * when the host has not, and the call completes every other step, dispatches its completed event,
++ * and resolves `true`. From the moment the call finds the token at its end, after a hide's event or
++ * at its token step, each door also reads the token there. A host that moves the token back from that
++ * end takes the change over: the call resolves `false` and dispatches nothing more. A show taken over
++ * takes one further step that returns what it wrote to the hidden state a hide writes: it restores
++ * the placement, removes the tip from its container while the tip is still there without the token,
++ * and takes the tip's id out of `aria-describedby`, reading only the call's identity and the
++ * tooltip's lifetime before each write. A hide writes nothing but its token before its discard, so a
++ * hide taken over returns nothing and leaves the tip shown.
++ *
++ * A build that stops returns every element it moved into the unfinished tip, and a tip that other
++ * code moved stays where that code put it. Destruction, a hide's removal, and a content
+  * element's return move a node only while it is still where the tooltip put it, and a hide's removal
+  * only while the tip also lacks the `shown` token. A tip or an element that a listener or reaction
+  * moved, including a listener to the platform's closing `beforetoggle` event, is left there, a tip
+@@ -425,7 +439,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			// rebuild when it leaves that tip where other code moved it.
+ 			const held = this.shown ? true : undefined
+ 			const accepted = emitEvent(host, events.show, null, true)
+-			if (!this.#holds(change, held)) return false
++			if (held === undefined ? !this.#owns(change) : !this.#holds(change, held)) return false
+ 			if (!accepted || this.#blocked()) return false
+ 			const left = this.#discard(false)
+ 			if ((held === true && !left) || !this.#holds(change, undefined)) return false
+@@ -434,23 +448,31 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			const container = this.#resolveContainer()
+ 			this.#tip = tip
+ 			this.#container = container
+-			if (!this.#apply(change, false, () => container.append(tip))) return false
+-			if (!this.#apply(change, false, () => this.#link(tip.id, true))) return false
+-			if (!this.#apply(change, false, () => emitEvent(host, events.inserted, null, false))) {
++			// Until its token step the call has not found the tip's `shown` token at its end, so each door
++			// reads the tip's container and no token: a host that marks the tip shown first has made the
++			// token write for the call.
++			if (!this.#apply(change, undefined, () => container.append(tip))) return false
++			if (!this.#apply(change, undefined, () => this.#link(tip.id, true))) return false
++			if (!this.#apply(change, undefined, () => emitEvent(host, events.inserted, null, false))) {
+ 				return false
+ 			}
+ 			const placement = this.#place(change, tip)
+ 			if (placement === undefined) {
+-				if (this.#holds(change, false)) this.#discard(false)
++				if (this.#holds(change, undefined)) this.#discard(false)
+ 				return false
+ 			}
+ 			this.#placement = placement
+-			if (!this.#holds(change, false)) return false
++			if (!this.#holds(change, undefined)) return false
+ 			reflow(tip)
+-			if (!this.#apply(change, true, () => tip.classList.add(this.#classes.shown))) return false
++			const { shown } = this.#classes
++			// A host that marked the tip shown first has made this write for the call.
++			const marked = this.#apply(change, true, () => {
++				if (!tip.classList.contains(shown)) tip.classList.add(shown)
++			})
++			if (!marked) return this.#rehide(change, tip)
+ 			if (this.#animated) await settleAnimations(tip, this.#controller.signal)
+ 			// The completion reads the whole door, after the wait and before it releases the change.
+-			if (!this.#holds(change, true)) return false
++			if (!this.#holds(change, true)) return this.#rehide(change, tip)
+ 			this.#change = undefined
+ 			emitEvent(host, events.shown, null, false)
+ 			return !this.#controller.signal.aborted
+@@ -546,18 +568,24 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		return false
+ 	}
+ 
+-	// Reports whether the call still holds its change: the tooltip is live and no later call started a
+-	// change. With `shown` a boolean, the call also holds its published tip: the tip is in the container
+-	// it went into and carries the `shown` token exactly when `shown` is true. With `shown` undefined,
+-	// the call holds no published tip, as during the build and around a discard.
++	// Reports whether the call that set `change` still owns the tooltip: the tooltip is live and no
++	// later call started a change.
++	#owns(change: object): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
++
++	// Reads a door of the call that set `change`: the call still owns the tooltip and, from the tip's
++	// insertion until its discard, holds its published tip, which is in the container it went into.
++	// When `shown` is a boolean, the tip also carries the `shown` token exactly when `shown` is true, and
++	// a door before the call has found the token at its end passes `undefined`, so it reads no token.
++	// During the build and after a discard the tooltip holds no tip, and a boolean `shown` reads false.
+ 	#holds(change: object, shown: boolean | undefined): boolean {
+-		if (this.#controller.signal.aborted || this.#change !== change) return false
+-		if (shown === undefined) return true
++		if (!this.#owns(change)) return false
+ 		const tip = this.#tip
++		if (tip === undefined) return shown === undefined
+ 		return (
+-			tip !== undefined &&
+ 			tip.parentElement === this.#container &&
+-			tip.classList.contains(this.#classes.shown) === shown
++			(shown === undefined || tip.classList.contains(this.#classes.shown) === shown)
+ 		)
+ 	}
+ 
+@@ -568,6 +596,43 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		return this.#holds(change, shown)
+ 	}
+ 
++	// Ends a show the host took over by taking its tip's `shown` token after the token step: returns
++	// each write the show made to the hidden state a hide writes, in the order a hide's discard writes
++	// them. It restores the placement, forgets the tip and removes it while it is still in the container
++	// it went into without the token, and takes its id out of the trigger's `aria-describedby`
++	// attribute. The step runs only when the door read the token alone as moved, with the tip still in
++	// its container, so a call another call superseded, a destroyed tooltip, and a tip other code moved
++	// write nothing here. It dispatches nothing and reads no door; before each write it reads only
++	// whether the call that set `change` still owns the tooltip, so a destruction inside one writes
++	// nothing more and the destruction's own restoration stands, and a hide a reaction starts inside
++	// one supersedes the step.
++	#rehide(change: object, tip: HTMLElement): false {
++		if (!this.#holds(change, false)) return false
++		const container = this.#container
++		this.#revert(change, () => {
++			const placement = this.#placement
++			this.#placement = undefined
++			placement?.destroy()
++		})
++		this.#revert(change, () => {
++			this.#tip = undefined
++			this.#container = undefined
++			this.#promoted = undefined
++			if (tip.parentElement === container && !tip.classList.contains(this.#classes.shown)) {
++				tip.remove()
++			}
++		})
++		this.#revert(change, () => this.#link(tip.id, false))
++		return false
++	}
++
++	// Runs one write of a returning step while the call that set `change` still owns the tooltip; a
++	// destroyed tooltip restores nothing here, because its destruction restores, and a later change
++	// owns the tip.
++	#revert(change: object, write: () => void): void {
++		if (this.#owns(change)) write()
++	}
++
+ 	// Builds a tip, calling every content function before it writes anything and reading the door after
+ 	// each, then writing the template through the sanitizer, the tip's tokens and id, each slot, and the
+ 	// return of the elements an earlier tip held, each as one step. A build that stops returns the
+@@ -698,8 +763,9 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 
+ 	// Places the tip against the trigger, or returns undefined when the platform refused the promotion,
+ 	// which the placement reports after restoring what it wrote. The placement reads the call's door
+-	// after the promotion, so a listener to the opening `beforetoggle` event that takes the tip over
+-	// leaves the placement restored and writing nothing.
++	// after the promotion, so a listener to the opening `beforetoggle` event that moves the tip out of
++	// its container leaves the placement restored and writing nothing, and one that marks the tip shown
++	// has made the show's token write for it.
+ 	#place(change: object, tip: HTMLElement): PlacementInterface | undefined {
+ 		try {
+ 			return new Placement(
+@@ -715,7 +781,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 					offset: this.#offset,
+ 					fallbacks: this.#fallbacks,
+ 					signal: this.#controller.signal,
+-					owned: this.#holds.bind(this, change, false),
++					owned: this.#holds.bind(this, change, undefined),
+ 				},
+ 			)
+ 		} catch (error) {
+@@ -781,10 +847,11 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		host.removeAttribute('title')
+ 	}
+ 
+-	// Hides the tip the platform closed, on an Escape key press, a click outside it, or another `hint`
+-	// popover opening, and promotes it again once when a listener prevented that hide; the platform's
+-	// next close of the same tip hides it with the hide event's prevention ignored, so two tooltips
+-	// whose listeners prevent every hide cannot close each other without end.
++	// Hides the tip the platform closed, on an Escape key press, a click outside it, another `hint`
++	// popover opening, or a consumer's `hide-popover` or `toggle-popover` invoker or `hidePopover` call,
++	// and promotes it again once when a listener prevented that hide; the platform's next close of the
++	// same tip hides it with the hide event's prevention ignored, so two tooltips whose listeners
++	// prevent every hide cannot close each other without end.
+ 	#dismiss(tip: HTMLElement, event: Event): void {
+ 		if (!isInstance(event, ToggleEvent) || event.newState !== 'closed') return
+ 		if (this.#tip !== tip || !this.shown || tip.matches(':popover-open')) return
+@@ -813,7 +880,8 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			const host = this.#host
+ 			const { events } = this.#profile
+ 			const accepted = emitEvent(host, events.hide, null, true)
+-			if (!this.#holds(change, true)) return false
++			// A listener that only took the tip's `shown` token has made this call's token write for it.
++			if (!this.#holds(change, undefined)) return false
+ 			if (!accepted && !forced) return false
+ 			const tip = this.#tip
+ 			if (tip === undefined) return false
+@@ -821,7 +889,14 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			this.#active.focus = false
+ 			this.#active.click = false
+ 			this.#entered = false
+-			if (!this.#apply(change, false, () => tip.classList.remove(this.#classes.shown))) return false
++			const { shown } = this.#classes
++			// A host that took the token first has made this write for the call. The hide writes nothing
++			// else before its discard, so a host that adds the token back before then takes the hide over
++			// with nothing to return.
++			const cleared = this.#apply(change, false, () => {
++				if (tip.classList.contains(shown)) tip.classList.remove(shown)
++			})
++			if (!cleared) return false
+ 			if (this.#animated) await settleAnimations(tip, this.#controller.signal)
+ 			if (!this.#holds(change, false)) return false
+ 			// The discard is the last step. The completion stops when the tip stays where other code moved
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 92124e5..9cd22ea 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -923,7 +923,7 @@ export interface DropdownEventMap {
+ 	readonly show: CustomEvent<DropdownDetail>
+ 	/** Names the `shown.vn.dropdown` event, dispatched after the menu opens; it is not cancelable. */
+ 	readonly shown: CustomEvent<DropdownDetail>
+-	/** Names the `hide.vn.dropdown` event, whose prevention refuses the hide. */
++	/** Names the `hide.vn.dropdown` event, whose prevention refuses the hide; after a prevented hide that the platform's close of the promoted menu started has promoted the menu again once, the next platform close of the same placement hides it despite prevention. */
+ 	readonly hide: CustomEvent<DropdownDetail>
+ 	/** Names the `hidden.vn.dropdown` event, dispatched after the menu closes; it is not cancelable. */
+ 	readonly hidden: CustomEvent<DropdownDetail>
+@@ -1040,7 +1040,7 @@ export interface DropdownInterface {
+ 	/**
+ 	 * Opens the menu.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the menu was open, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `show` or the menu's promotion, the dropdown is destroyed, or the call read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the host added the menu's `shown` token before the call wrote it; false when the menu was open, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `show` or the menu's promotion or started a change of its own inside `show`, the dropdown is destroyed, or the host removed the menu's token after the call found it added and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await dropdown.show()
+@@ -1050,7 +1050,7 @@ export interface DropdownInterface {
+ 	/**
+ 	 * Closes the menu.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the menu was closed, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `hide`, the dropdown is destroyed, or the call read the change as taken over.
++	 * @returns Resolves true after the `hidden` event, also when the host removed the menu's `shown` token before the call removed it; false when the menu was closed, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `hide` or started a change of its own inside it, the dropdown is destroyed, or the host added the menu's token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await dropdown.hide()
+@@ -1790,7 +1790,7 @@ export interface TooltipInterface {
+ 	/**
+ 	 * Builds, inserts, and shows the tip.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the tooltip is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, or the tooltip is destroyed.
++	 * @returns Resolves true after the `shown` event, also when the host marked the tip shown before the call wrote its `shown` token; false when the tooltip is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, the tooltip is destroyed, or the host took the token after the call's token step and before the call dispatched its completed event.
+ 	 * @remarks
+ 	 * A settled shown tip is rebuilt, as Bootstrap's `show` rebuilds it. Bootstrap's `show` also runs
+ 	 * again while a change is in flight; this contract resolves false there. Bootstrap throws for a
+@@ -1804,6 +1804,12 @@ export interface TooltipInterface {
+ 	 * show completes. A listener to the platform's opening `beforetoggle` event that moves the tip
+ 	 * during the promotion also stops the placement, which hides the tip and restores what it wrote,
+ 	 * leaving the tip where the listener put it.
++	 *
++	 * A host that marks the tip shown before the call's token step has made that write for the call,
++	 * which completes. A host that takes the token after the token step, with the tip still in its
++	 * container, takes the call over: the call restores the placement, removes the tip from its
++	 * container, and takes the tip's id out of `aria-describedby` before it resolves false, reading
++	 * the tooltip's lifetime before each of those writes.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await tooltip.show()
+@@ -1813,11 +1819,13 @@ export interface TooltipInterface {
+ 	/**
+ 	 * Hides the tip and removes it from its container.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the tip was hidden, a listener prevented `hide`, or the tooltip is destroyed.
++	 * @returns Resolves true after the `hidden` event, also when a listener to `hide` took the tip's `shown` token first; false when the tip was hidden, a listener prevented `hide`, or the tooltip is destroyed.
+ 	 * @remarks
+ 	 * A listener or reaction that moves the tip or adds its `shown` token back during the hide, including
+ 	 * a listener to the platform's closing `beforetoggle` event, takes the tip over: the call resolves
+ 	 * false, dispatches no `hidden` event, and leaves the tip there.
++	 * The tooltip also runs this hide when the platform closes the tip, including when a
++	 * `hide-popover` or `toggle-popover` invoker or a `hidePopover` call aims at it.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await tooltip.hide()
+@@ -1889,7 +1897,7 @@ export interface PopoverEventMap {
+ 	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.popover` event, dispatched after the tip's transition settles; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly shown: CustomEvent<null>
+-	/** Names the `hide.vn.popover` event, dispatched before the `shown` token leaves; prevention refuses the hide. */
++	/** Names the `hide.vn.popover` event, dispatched before the `shown` token leaves. Prevention refuses an ordinary hide; after a prevented platform hide has re-promoted this tip once, its next platform close hides it despite prevention. */
+ 	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.popover` event, dispatched after the tip is removed; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly hidden: CustomEvent<null>
+@@ -1955,7 +1963,7 @@ export interface PopoverInterface {
+ 	/**
+ 	 * Builds, inserts, and shows the tip, removing the header or body slot whose content is empty.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the popover is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, or the popover is destroyed.
++	 * @returns Resolves true after the `shown` event, also when the host marked the tip shown before the call wrote its `shown` token; false when the popover is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, the popover is destroyed, or the host took the token after the call's token step and before the call dispatched its completed event.
+ 	 * @remarks
+ 	 * A settled shown tip is rebuilt, as Bootstrap's `show` rebuilds it. Bootstrap's `show` also runs
+ 	 * again while a change is in flight; this contract resolves false there. Bootstrap throws for a
+@@ -1969,6 +1977,12 @@ export interface PopoverInterface {
+ 	 * show completes. A listener to the platform's opening `beforetoggle` event that moves the tip
+ 	 * during the promotion also stops the placement, which hides the tip and restores what it wrote,
+ 	 * leaving the tip where the listener put it.
++	 *
++	 * A host that marks the tip shown before the call's token step has made that write for the call,
++	 * which completes. A host that takes the token after the token step, with the tip still in its
++	 * container, takes the call over: the call restores the placement, removes the tip from its
++	 * container, and takes the tip's id out of `aria-describedby` before it resolves false, reading
++	 * the popover's lifetime before each of those writes.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await popover.show()
+@@ -1978,11 +1992,13 @@ export interface PopoverInterface {
+ 	/**
+ 	 * Hides the tip and removes it from its container.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the tip was hidden, a listener prevented `hide`, or the popover is destroyed.
++	 * @returns Resolves true after the `hidden` event, also when a listener to `hide` took the tip's `shown` token first; false when the tip was hidden, a listener prevented `hide`, or the popover is destroyed.
+ 	 * @remarks
+ 	 * A listener or reaction that moves the tip or adds its `shown` token back during the hide, including
+ 	 * a listener to the platform's closing `beforetoggle` event, takes the tip over: the call resolves
+ 	 * false, dispatches no `hidden` event, and leaves the tip there.
++	 * The popover also runs this hide when the platform closes the tip, including when a
++	 * `hide-popover` or `toggle-popover` invoker or a `hidePopover` call aims at it.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await popover.hide()
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 16d3c4b..3ff64ba 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -874,7 +874,12 @@ describe('browser setup', () => {
+ 				'BUTTON_CLASS',
+ 				'BUTTON_RESTORATIONS',
+ 				'CLOSING_REACTIONS',
++				'DROPDOWN_HIDE_DOORS',
++				'DROPDOWN_HIDE_REVERSALS',
++				'DROPDOWN_SHOW_DOORS',
++				'DROPDOWN_SHOW_REVERSALS',
+ 				'FrameManager',
++				'HINT_CLOSES',
+ 				'MODAL_HIDE_DOORS',
+ 				'MODAL_REINSERTIONS',
+ 				'MODAL_SHOW_DOORS',
+@@ -883,6 +888,9 @@ describe('browser setup', () => {
+ 				'OFFCANVAS_SHOW_DOORS',
+ 				'ORACLE_ACTIONS',
+ 				'ORACLE_EXCLUDED',
++				'PLATFORM_CLOSES',
++				'POPOVER_CHANGE_DOORS',
++				'POPOVER_REVERSALS',
+ 				'PROBE_CASCADE',
+ 				'RELEASE_REENTRIES',
+ 				'SAMPLE_MESSAGES',
+@@ -891,6 +899,9 @@ describe('browser setup', () => {
+ 				'SHOW_REVERSALS',
+ 				'SPECIMEN_ATTRIBUTE',
+ 				'SceneManager',
++				'TOOLTIP_HIDE_DOORS',
++				'TOOLTIP_REVERSALS',
++				'TOOLTIP_SHOW_DOORS',
+ 				'applyTheme',
+ 				'buildOracleComparison',
+ 				'buildWalkTarget',
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index bd8f1c7..6cbb488 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -2879,3 +2879,123 @@ export const OFFCANVAS_REINSERTIONS = Object.freeze([
+  * Lists the reactions inside a hide's closing destruction of a backdrop a consumer put back: one destroys the engine, and one adds the `shown` token back.
+  */
+ export const CLOSING_REACTIONS = Object.freeze(['destroy', 'token'] as const)
++
++/**
++ * Lists the doors of a dropdown's show before its token step, where the agreement proof has the host add the menu's `shown` token first.
++ *
++ * @remarks
++ * Each door follows the `show.vn.dropdown` dispatch, the menu's opening `beforetoggle` event, the
++ * toggle's `focus` event, or the toggle's `aria-expanded` write.
++ */
++export const DROPDOWN_SHOW_DOORS = Object.freeze([
++	'event',
++	'promotion',
++	'focus',
++	'aria-expanded',
++] as const)
++
++/**
++ * Lists the doors of a dropdown's hide before its token step, where the agreement proof has the host remove the menu's `shown` token first.
++ *
++ * @remarks
++ * Each door follows the `hide.vn.dropdown` dispatch or the menu's closing `beforetoggle` event, which
++ * the placement's restoration dispatches.
++ */
++export const DROPDOWN_HIDE_DOORS = Object.freeze(['event', 'placement'] as const)
++
++/**
++ * Lists the dropdown show reversal proof's rows: the door at which the host adds the menu's `shown` token early, undefined when it adds none, and the later door at which it removes the token.
++ *
++ * @remarks
++ * A row with no early door removes the token in a reaction to the menu's token write, the toggle's
++ * token write, or the side attribute the placement's update writes. A row whose early door is the
++ * `show.vn.dropdown` dispatch removes it in the toggle's `focus` event or its `aria-expanded` write.
++ */
++export const DROPDOWN_SHOW_REVERSALS = Object.freeze([
++	Object.freeze([undefined, 'menu'] as const),
++	Object.freeze([undefined, 'toggle'] as const),
++	Object.freeze([undefined, 'side'] as const),
++	Object.freeze(['event', 'focus'] as const),
++	Object.freeze(['event', 'aria-expanded'] as const),
++])
++
++/**
++ * Lists the dropdown hide reversal proof's rows: the door at which the host removes the menu's `shown` token early, undefined when it removes none, and the later door at which it adds the token back.
++ *
++ * @remarks
++ * A row with no early door adds the token back in a reaction to the menu's token removal, the
++ * toggle's token removal, or the toggle's `aria-expanded` write. The row whose early door is the
++ * `hide.vn.dropdown` dispatch adds it back in the menu's closing `beforetoggle` event.
++ */
++export const DROPDOWN_HIDE_REVERSALS = Object.freeze([
++	Object.freeze([undefined, 'menu'] as const),
++	Object.freeze([undefined, 'toggle'] as const),
++	Object.freeze([undefined, 'aria-expanded'] as const),
++	Object.freeze(['event', 'placement'] as const),
++])
++
++/**
++ * Lists the ways a consumer closes an overlay an engine promoted with `popover="manual"`: a `hide-popover` invoker, a `toggle-popover` invoker, and a `hidePopover` call.
++ */
++export const PLATFORM_CLOSES = Object.freeze(['hide-popover', 'toggle-popover', 'call'] as const)
++
++/**
++ * Lists the ways the tooltip's platform-close proof closes its `hint` tip: a `hide-popover` invoker and a `hidePopover` call.
++ */
++export const HINT_CLOSES = Object.freeze(['hide-popover', 'call'] as const)
++
++/**
++ * Lists the doors of a tooltip's show between its tip's insertion and its token step, where the agreement proof has the host mark the tip shown first.
++ *
++ * @remarks
++ * Each door follows the tip's insertion, which runs a slot content's connection reaction, the
++ * trigger's `aria-describedby` write, the `inserted.vn.tooltip` dispatch, or the tip's opening
++ * `beforetoggle` event.
++ */
++export const TOOLTIP_SHOW_DOORS = Object.freeze([
++	'connection',
++	'aria-describedby',
++	'inserted',
++	'promotion',
++] as const)
++
++/**
++ * Lists the tooltip hide agreement proof's rows: the `hide.vn.tooltip` door, where the host takes the tip's `shown` token first, without and with the fade.
++ */
++export const TOOLTIP_HIDE_DOORS = Object.freeze([
++	Object.freeze({ door: 'event', animated: false } as const),
++	Object.freeze({ door: 'event', animated: true } as const),
++])
++
++/**
++ * Lists the tooltip reversal proof's rows: the direction of the change, and the door at which the host moves the tip's `shown` token against it.
++ *
++ * @remarks
++ * A show row takes the token at an upgraded custom tip's reaction to the token write, or during the
++ * fade in. A hide row adds it back during the fade out, or in a task a listener to
++ * `hide.vn.tooltip` queues after it takes the token first.
++ */
++export const TOOLTIP_REVERSALS = Object.freeze([
++	Object.freeze(['show', 'token'] as const),
++	Object.freeze(['show', 'wait'] as const),
++	Object.freeze(['hide', 'wait'] as const),
++	Object.freeze(['hide', 'event'] as const),
++])
++
++/**
++ * Lists the popover agreement proof's rows: the direction of the change, and the door before its token step at which the host moves the tip's `shown` token to the change's end.
++ *
++ * @remarks
++ * A show row marks the tip shown in a listener to `inserted.vn.popover` or to the tip's opening
++ * `beforetoggle` event, and the hide row takes the token in a listener to `hide.vn.popover`.
++ */
++export const POPOVER_CHANGE_DOORS = Object.freeze([
++	Object.freeze(['show', 'inserted'] as const),
++	Object.freeze(['show', 'promotion'] as const),
++	Object.freeze(['hide', 'event'] as const),
++])
++
++/**
++ * Lists the directions of the changes the popover reversal proof moves the tip's `shown` token against during the fade.
++ */
++export const POPOVER_REVERSALS = Object.freeze(['show', 'hide'] as const)
+diff --git a/tests/src/browser/Dropdown.test.ts b/tests/src/browser/Dropdown.test.ts
+index bb00d08..3c5db2f 100644
+--- a/tests/src/browser/Dropdown.test.ts
++++ b/tests/src/browser/Dropdown.test.ts
+@@ -9,11 +9,19 @@ import {
+ } from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+-import { createRecorder, requireValue, waitForCondition } from '@orkestrel/test'
++import { createRecorder, requireValue, waitForCondition, waitForEvent } from '@orkestrel/test'
+ import { userEvent } from 'vitest/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import dropdownCascade from '../../../src/styles/components/_dropdown.scss?inline'
+-import { recordListeners, scene } from '../../setupBrowser.js'
++import {
++	DROPDOWN_HIDE_DOORS,
++	DROPDOWN_HIDE_REVERSALS,
++	DROPDOWN_SHOW_DOORS,
++	DROPDOWN_SHOW_REVERSALS,
++	PLATFORM_CLOSES,
++	recordListeners,
++	scene,
++} from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -915,7 +923,7 @@ describe('Dropdown', () => {
+ 		expect(Dropdown.find(toggle)).toBe(replacement)
+ 	})
+ 
+-	it('binds its hooks, the document listeners, and the signal, and destroys the dropdown when its signal aborts, and at construction when it arrived aborted', async () => {
++	it('binds its hooks, the document listeners, the menu toggle listener, and the signal, and destroys the dropdown when its signal aborts, and at construction when it arrived aborted', async () => {
+ 		const root = scene.mount(`
+ 			<div class="dropdown">
+ 				<button type="button" id="toggle" data-bs-toggle="dropdown">Menu</button>
+@@ -936,7 +944,7 @@ describe('Dropdown', () => {
+ 				signal: lifetime.signal,
+ 			})
+ 		})
+-		expect(targets).toEqual([toggle, toggle, document, document, lifetime.signal])
++		expect(targets).toEqual([toggle, toggle, document, document, menu, lifetime.signal])
+ 		expect(await dropdown?.show()).toBe(true)
+ 		lifetime.abort()
+ 		expect(Dropdown.find(toggle)).toBeUndefined()
+@@ -1173,76 +1181,678 @@ describe('Dropdown', () => {
+ 		}
+ 	})
+ 
+-	// Each case below drives a custom element whose attribute reaction runs inside the engine's own
+-	// write and answers it, so the call reads the change as taken over at the door after that write.
+-	it('stops a show whose menu token write a reaction answers by removing that token, dispatching no shown event', async () => {
+-		const name = 'vn-dropdown-menu-shown'
++	// Each row names a door of a show before its token step, and the host adds the menu's `shown` token
++	// there first: a listener to the `show.vn.dropdown` event, a listener to the menu's opening
++	// `beforetoggle` event, a listener to the toggle's `focus` event, or the toggle's reaction to its
++	// `aria-expanded` write. The host has made the show's token write for it, so the show writes no
++	// `class` value of its own on the menu, completes every other write, and dispatches its completed
++	// event: the menu opens in the top layer below the toggle, and the toggle reads open.
++	it('completes a show whose menu shown token the host adds first at each door before its token step, skipping that write', async () => {
++		const toggleName = 'vn-dropdown-show-agreed-toggle'
++		const menuName = 'vn-dropdown-show-agreed-menu'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		const echoes = createRecorder<readonly [string]>()
+ 		customElements.define(
+-			name,
++			toggleName,
+ 			class extends HTMLElement {
+-				static observedAttributes = ['class']
+-				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++				static observedAttributes = ['aria-expanded']
++				attributeChangedCallback(
++					_attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
+ 					reactions.get(this)?.(value)
+ 				}
+ 			},
+ 		)
+-		const root = scene.mount(
+-			`<div class="dropdown"><button type="button" id="toggle">Menu</button></div>`,
++		customElements.define(
++			menuName,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(
++					_attribute: string,
++					previous: string | null,
++					value: string | null,
++				) {
++					if (previous === value) echoes.handler(String(value))
++				}
++			},
++		)
++		scene.load(dropdownCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly door: string
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly open: boolean
++					readonly display: string
++					readonly gap: number
++					readonly side: string | null
++					readonly toggled: boolean
++					readonly expanded: string | null
++					readonly focused: boolean
++					readonly echoes: number
++				},
++			]
++		>()
++		const doors = DROPDOWN_SHOW_DOORS
++		for (const door of doors) {
++			const root = scene.mount('<div class="dropdown" style="margin: 100px"></div>')
++			const wrapper = requireValue(root.querySelector('div'), 'No wrapper')
++			const toggle = document.createElement(toggleName)
++			toggle.tabIndex = 0
++			toggle.textContent = 'Menu'
++			const menu = document.createElement(menuName)
++			menu.className = 'dropdown-menu'
++			menu.innerHTML = '<li><button type="button" class="dropdown-item">One</button></li>'
++			wrapper.append(toggle, menu)
++			const events = createRecorder<readonly [string]>()
++			const dropdown = new Dropdown(toggle, {
++				on: {
++					show: (event) => events.handler(event.type),
++					shown: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => dropdown.destroy())
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			if (door === 'event') {
++				toggle.addEventListener(DROPDOWN_EVENTS.show, () => menu.classList.add('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			if (door === 'promotion') {
++				menu.addEventListener(
++					'beforetoggle',
++					(event) => {
++						if (event.newState === 'open') menu.classList.add('show')
++					},
++					{ once: true, signal: controller.signal },
++				)
++			}
++			if (door === 'focus') {
++				toggle.addEventListener('focus', () => menu.classList.add('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			if (door === 'aria-expanded') {
++				reactions.set(toggle, (value) => {
++					if (value !== 'true') return
++					reactions.delete(toggle)
++					menu.classList.add('show')
++				})
++			}
++			echoes.clear()
++			const resolved = await dropdown.show()
++			const anchor = toggle.getBoundingClientRect()
++			const box = menu.getBoundingClientRect()
++			readings.handler({
++				door,
++				resolved,
++				events: events.calls.flat(),
++				open: menu.matches(':popover-open'),
++				display: getComputedStyle(menu).display,
++				gap: Math.round(box.top - anchor.bottom),
++				side: menu.getAttribute('data-popper-placement'),
++				toggled: toggle.classList.contains('show'),
++				expanded: toggle.getAttribute('aria-expanded'),
++				focused: document.activeElement === toggle,
++				echoes: echoes.count,
++			})
++			dropdown.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			doors.map((door) => [
++				{
++					door,
++					resolved: true,
++					events: ['show.vn.dropdown', 'shown.vn.dropdown'],
++					open: true,
++					display: 'block',
++					gap: 2,
++					side: 'bottom',
++					toggled: true,
++					expanded: 'true',
++					focused: true,
++					echoes: 0,
++				},
++			]),
+ 		)
+-		const wrapper = requireValue(root.querySelector('div'), 'No wrapper')
+-		const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
+-		const menu = document.createElement(name)
+-		menu.className = 'dropdown-menu'
+-		wrapper.append(menu)
+-		const events = createRecorder<readonly [string]>()
+-		const dropdown = new Dropdown(toggle, { on: { shown: (event) => events.handler(event.type) } })
+-		onTestFinished(() => dropdown.destroy())
+-		reactions.set(menu, (value) => {
+-			if (!(value ?? '').split(' ').includes('show')) return
+-			reactions.delete(menu)
+-			menu.classList.remove('show')
+-		})
+-		expect(await dropdown.show()).toBe(false)
+-		expect(events.calls).toEqual([])
+-		expect(toggle.classList.contains('show')).toBe(false)
+-		expect(dropdown.shown).toBe(false)
+ 	})
+ 
+-	it('stops a hide whose menu token removal a reaction answers by adding that token back, dispatching no hidden event', async () => {
+-		const name = 'vn-dropdown-menu-hidden'
+-		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++	// Each row names a door of a hide before its token step, and the host removes the menu's `shown`
++	// token there first: a listener to the `hide.vn.dropdown` event, or a listener to the menu's closing
++	// `beforetoggle` event, which the placement's restoration dispatches. The host has made the hide's
++	// token write for it, so the hide writes no `class` value of its own on the menu, completes every
++	// other write, and dispatches its completed event: the menu leaves the top layer and the page, and
++	// the toggle reads closed.
++	it('completes a hide whose menu shown token the host removes first at each door before its token step, skipping that write', async () => {
++		const menuName = 'vn-dropdown-hide-agreed-menu'
++		const echoes = createRecorder<readonly [string]>()
+ 		customElements.define(
+-			name,
++			menuName,
+ 			class extends HTMLElement {
+ 				static observedAttributes = ['class']
+-				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
+-					reactions.get(this)?.(value)
++				attributeChangedCallback(
++					_attribute: string,
++					previous: string | null,
++					value: string | null,
++				) {
++					if (previous === value) echoes.handler(String(value))
+ 				}
+ 			},
+ 		)
+-		const root = scene.mount(
+-			`<div class="dropdown"><button type="button" id="toggle">Menu</button></div>`,
++		scene.load(dropdownCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly door: string
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly promoted: boolean
++					readonly display: string
++					readonly toggled: boolean
++					readonly expanded: string | null
++					readonly echoes: number
++				},
++			]
++		>()
++		const doors = DROPDOWN_HIDE_DOORS
++		for (const door of doors) {
++			const root = scene.mount(
++				'<div class="dropdown"><button type="button" id="toggle">Menu</button></div>',
++			)
++			const wrapper = requireValue(root.querySelector('div'), 'No wrapper')
++			const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
++			const menu = document.createElement(menuName)
++			menu.className = 'dropdown-menu'
++			menu.textContent = 'Menu'
++			wrapper.append(menu)
++			const events = createRecorder<readonly [string]>()
++			const dropdown = new Dropdown(toggle, {
++				on: {
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => dropdown.destroy())
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const shown = await dropdown.show()
++			if (door === 'event') {
++				toggle.addEventListener(DROPDOWN_EVENTS.hide, () => menu.classList.remove('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			if (door === 'placement') {
++				menu.addEventListener(
++					'beforetoggle',
++					(event) => {
++						if (event.newState === 'closed') menu.classList.remove('show')
++					},
++					{ once: true, signal: controller.signal },
++				)
++			}
++			echoes.clear()
++			const resolved = shown && (await dropdown.hide())
++			readings.handler({
++				door,
++				resolved,
++				events: events.calls.flat(),
++				promoted: menu.hasAttribute('popover') || menu.matches(':popover-open'),
++				display: getComputedStyle(menu).display,
++				toggled: toggle.classList.contains('show'),
++				expanded: toggle.getAttribute('aria-expanded'),
++				echoes: echoes.count,
++			})
++			dropdown.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			doors.map((door) => [
++				{
++					door,
++					resolved: true,
++					events: ['hide.vn.dropdown', 'hidden.vn.dropdown'],
++					promoted: false,
++					display: 'none',
++					toggled: false,
++					expanded: 'false',
++					echoes: 0,
++				},
++			]),
+ 		)
+-		const wrapper = requireValue(root.querySelector('div'), 'No wrapper')
++	})
++
++	// Each row moves the menu's `shown` token against a show after the show found it at its end. With
++	// no early write, a reaction to the menu's token write, to the toggle's token write, or to the side
++	// attribute the placement's update writes removes the token. With the token added early by a
++	// listener to `show.vn.dropdown`, a listener to the toggle's `focus` event or the toggle's reaction
++	// to its `aria-expanded` write removes it. The show returns each write it made to the hidden state
++	// a hide writes, as far as it had written them: the placement is restored, the toggle loses the
++	// token the show gave it, and its `aria-expanded` attribute reads `false`. It dispatches no
++	// completed event, resolves `false`, and leaves the dropdown ready for the next call.
++	it('returns a show to the hidden state when the host removes the menu shown token after the show found it at its end', async () => {
++		const toggleName = 'vn-dropdown-show-reversed-toggle'
++		const menuName = 'vn-dropdown-show-reversed-menu'
++		const reactions = new WeakMap<HTMLElement, (attribute: string, value: string | null) => void>()
++		customElements.define(
++			toggleName,
++			class extends HTMLElement {
++				static observedAttributes = ['class', 'aria-expanded']
++				attributeChangedCallback(
++					attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(attribute, value)
++				}
++			},
++		)
++		customElements.define(
++			menuName,
++			class extends HTMLElement {
++				static observedAttributes = ['class', 'data-popper-placement']
++				attributeChangedCallback(
++					attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(attribute, value)
++				}
++			},
++		)
++		scene.load(dropdownCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: readonly [string | undefined, string]
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly promoted: boolean
++					readonly styled: boolean
++					readonly side: string | null
++					readonly anchored: string
++					readonly toggled: boolean
++					readonly expanded: string | null
++					readonly again: boolean
++				},
++			]
++		>()
++		const rows = DROPDOWN_SHOW_REVERSALS
++		for (const [early, late] of rows) {
++			const root = scene.mount('<div class="dropdown"></div>')
++			const wrapper = requireValue(root.querySelector('div'), 'No wrapper')
++			const toggle = document.createElement(toggleName)
++			toggle.tabIndex = 0
++			toggle.textContent = 'Menu'
++			const menu = document.createElement(menuName)
++			menu.className = 'dropdown-menu'
++			menu.textContent = 'Menu'
++			wrapper.append(toggle, menu)
++			const events = createRecorder<readonly [string]>()
++			const dropdown = new Dropdown(toggle, {
++				on: {
++					show: (event) => events.handler(event.type),
++					shown: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => dropdown.destroy())
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			if (early === 'event') {
++				toggle.addEventListener(DROPDOWN_EVENTS.show, () => menu.classList.add('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			if (late === 'focus') {
++				toggle.addEventListener('focus', () => menu.classList.remove('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			if (late === 'menu') {
++				reactions.set(menu, (attribute, value) => {
++					if (attribute !== 'class' || !(value ?? '').split(' ').includes('show')) return
++					reactions.delete(menu)
++					menu.classList.remove('show')
++				})
++			}
++			if (late === 'side') {
++				reactions.set(menu, (attribute, value) => {
++					if (attribute !== 'data-popper-placement' || value === null) return
++					reactions.delete(menu)
++					menu.classList.remove('show')
++				})
++			}
++			if (late === 'toggle' || late === 'aria-expanded') {
++				reactions.set(toggle, (attribute, value) => {
++					const reached =
++						late === 'toggle'
++							? attribute === 'class' && (value ?? '').split(' ').includes('show')
++							: attribute === 'aria-expanded' && value === 'true'
++					if (!reached) return
++					reactions.delete(toggle)
++					menu.classList.remove('show')
++				})
++			}
++			const resolved = await dropdown.show()
++			const reading = {
++				row: [early, late] as const,
++				resolved,
++				events: events.calls.flat(),
++				shown: dropdown.shown,
++				promoted: menu.hasAttribute('popover') || menu.matches(':popover-open'),
++				styled: menu.hasAttribute('style'),
++				side: menu.getAttribute('data-popper-placement'),
++				anchored: toggle.style.getPropertyValue('anchor-name'),
++				toggled: toggle.classList.contains('show'),
++				expanded: toggle.getAttribute('aria-expanded'),
++			}
++			readings.handler({ ...reading, again: await dropdown.show() })
++			dropdown.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(([early, late]) => [
++				{
++					row: [early, late],
++					resolved: false,
++					events: ['show.vn.dropdown'],
++					shown: false,
++					promoted: false,
++					styled: false,
++					side: null,
++					anchored: '',
++					toggled: false,
++					expanded: late === 'focus' ? null : 'false',
++					again: true,
++				},
++			]),
++		)
++	})
++
++	// Each row moves the menu's `shown` token back against a hide after the hide found it gone. With no
++	// early write, a reaction to the menu's token removal, to the toggle's token removal, or to the
++	// toggle's `aria-expanded` write adds the token back. With the token removed early by a listener to
++	// `hide.vn.dropdown`, a listener to the menu's closing `beforetoggle` event adds it back. The hide
++	// returns each write it made after its token step to the shown state a show writes, as far as it
++	// had written them: the toggle carries the token again and its `aria-expanded` attribute reads
++	// `true`. The placement the hide restored before its token step stays restored, so the menu shows
++	// in flow. The hide dispatches no completed event, resolves `false`, and leaves the dropdown ready
++	// for the next call.
++	it('keeps the shown state of a hide whose menu shown token the host adds back after the hide found it removed', async () => {
++		const toggleName = 'vn-dropdown-hide-reversed-toggle'
++		const menuName = 'vn-dropdown-hide-reversed-menu'
++		const reactions = new WeakMap<HTMLElement, (attribute: string, value: string | null) => void>()
++		for (const name of [toggleName, menuName]) {
++			customElements.define(
++				name,
++				class extends HTMLElement {
++					static observedAttributes = ['class', 'aria-expanded']
++					attributeChangedCallback(
++						attribute: string,
++						_previous: string | null,
++						value: string | null,
++					) {
++						reactions.get(this)?.(attribute, value)
++					}
++				},
++			)
++		}
++		scene.load(dropdownCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: readonly [string | undefined, string]
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly promoted: boolean
++					readonly display: string
++					readonly toggled: boolean
++					readonly expanded: string | null
++					readonly again: boolean
++				},
++			]
++		>()
++		const rows = DROPDOWN_HIDE_REVERSALS
++		for (const [early, late] of rows) {
++			const root = scene.mount('<div class="dropdown"></div>')
++			const wrapper = requireValue(root.querySelector('div'), 'No wrapper')
++			const toggle = document.createElement(toggleName)
++			toggle.tabIndex = 0
++			toggle.textContent = 'Menu'
++			const menu = document.createElement(menuName)
++			menu.className = 'dropdown-menu'
++			menu.textContent = 'Menu'
++			wrapper.append(toggle, menu)
++			const events = createRecorder<readonly [string]>()
++			const dropdown = new Dropdown(toggle, {
++				on: {
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => dropdown.destroy())
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const shown = await dropdown.show()
++			if (early === 'event') {
++				toggle.addEventListener(DROPDOWN_EVENTS.hide, () => menu.classList.remove('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			if (late === 'placement') {
++				menu.addEventListener(
++					'beforetoggle',
++					(event) => {
++						if (event.newState === 'closed') menu.classList.add('show')
++					},
++					{ once: true, signal: controller.signal },
++				)
++			}
++			if (late === 'menu') {
++				reactions.set(menu, (attribute, value) => {
++					if (attribute !== 'class' || (value ?? '').split(' ').includes('show')) return
++					reactions.delete(menu)
++					menu.classList.add('show')
++				})
++			}
++			if (late === 'toggle' || late === 'aria-expanded') {
++				reactions.set(toggle, (attribute, value) => {
++					const reached =
++						late === 'toggle'
++							? attribute === 'class' && !(value ?? '').split(' ').includes('show')
++							: attribute === 'aria-expanded' && value === 'false'
++					if (!reached) return
++					reactions.delete(toggle)
++					menu.classList.add('show')
++				})
++			}
++			const resolved = shown && (await dropdown.hide())
++			const reading = {
++				row: [early, late] as const,
++				resolved,
++				events: events.calls.flat(),
++				shown: dropdown.shown,
++				promoted: menu.hasAttribute('popover') || menu.matches(':popover-open'),
++				display: getComputedStyle(menu).display,
++				toggled: toggle.classList.contains('show'),
++				expanded: toggle.getAttribute('aria-expanded'),
++			}
++			readings.handler({ ...reading, again: await dropdown.hide() })
++			dropdown.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(([early, late]) => [
++				{
++					row: [early, late],
++					resolved: false,
++					events: ['hide.vn.dropdown'],
++					shown: true,
++					promoted: false,
++					display: 'block',
++					toggled: true,
++					expanded: 'true',
++					again: true,
++				},
++			]),
++		)
++	})
++
++	// A consumer's `hide-popover` invoker, its `toggle-popover` invoker, and a `hidePopover` call each
++	// close the menu the dropdown promoted with `popover="manual"`. The dropdown reads that close from
++	// the menu's `toggle` event and hides the menu through its own sequence, dispatching
++	// `hide.vn.dropdown` and `hidden.vn.dropdown`, so the toggle reads closed and the menu leaves the
++	// top layer. Light dismissal is off, so no click listener of the dropdown's hides the menu first.
++	it('hides the menu with its events when a consumer invoker or a hidePopover call closes the promoted menu', async () => {
++		scene.load(dropdownCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: string
++					readonly before: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly promoted: boolean
++					readonly display: string
++					readonly toggled: boolean
++					readonly expanded: string | null
++				},
++			]
++		>()
++		const rows = PLATFORM_CLOSES
++		for (const row of rows) {
++			const root = scene.mount(`
++				<div class="dropdown" style="margin: 100px">
++					<button type="button" id="toggle" data-bs-toggle="dropdown">Menu</button>
++					<ul class="dropdown-menu" id="menu"><li><button type="button" class="dropdown-item">One</button></li></ul>
++				</div>
++				<button type="button" id="invoker" commandfor="menu" command="${row}">Close</button>`)
++			const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
++			const menu = requireValue(root.querySelector<HTMLElement>('#menu'), 'No menu')
++			const invoker = requireValue(root.querySelector<HTMLElement>('#invoker'), 'No invoker')
++			const events = createRecorder<readonly [string]>()
++			const dropdown = new Dropdown(toggle, {
++				dismiss: { inside: false, outside: false },
++				on: {
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => dropdown.destroy())
++			expect(await dropdown.show()).toBe(true)
++			const before = menu.matches(':popover-open')
++			const closed = waitForEvent<readonly [Event]>(
++				(listener) => menu.addEventListener('toggle', listener, { once: true }),
++				'the platform closes the menu',
++			)
++			if (row === 'call') menu.hidePopover()
++			else await userEvent.click(invoker)
++			await closed
++			readings.handler({
++				row,
++				before,
++				events: events.calls.flat(),
++				shown: dropdown.shown,
++				promoted: menu.hasAttribute('popover') || menu.matches(':popover-open'),
++				display: getComputedStyle(menu).display,
++				toggled: toggle.classList.contains('show'),
++				expanded: toggle.getAttribute('aria-expanded'),
++			})
++			dropdown.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((row) => [
++				{
++					row,
++					before: true,
++					events: ['hide.vn.dropdown', 'hidden.vn.dropdown'],
++					shown: false,
++					promoted: false,
++					display: 'none',
++					toggled: false,
++					expanded: 'false',
++				},
++			]),
++		)
++	})
++
++	// A listener that prevents the hide a platform close starts refuses that hide once: the dropdown
++	// promotes the menu again, so it stays open and anchored. The next platform close of the same shown
++	// menu hides it with the prevention ignored, as the hint tooltip's bridge does.
++	it('promotes the menu again once when a listener prevents the hide a platform close starts, and hides it at the next close', async () => {
++		scene.load(dropdownCascade)
++		const root = scene.mount(`
++			<div class="dropdown" style="margin: 100px">
++				<button type="button" id="toggle" data-bs-toggle="dropdown">Menu</button>
++				<ul class="dropdown-menu" id="menu"><li><button type="button" class="dropdown-item">One</button></li></ul>
++			</div>`)
+ 		const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
+-		const menu = document.createElement(name)
+-		menu.className = 'dropdown-menu'
+-		wrapper.append(menu)
++		const menu = requireValue(root.querySelector<HTMLElement>('#menu'), 'No menu')
+ 		const events = createRecorder<readonly [string]>()
+-		const dropdown = new Dropdown(toggle, { on: { hidden: (event) => events.handler(event.type) } })
++		const dropdown = new Dropdown(toggle, {
++			on: {
++				hide: (event) => {
++					events.handler(event.type)
++					event.preventDefault()
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
+ 		onTestFinished(() => dropdown.destroy())
+ 		expect(await dropdown.show()).toBe(true)
+-		reactions.set(menu, (value) => {
+-			if ((value ?? '').split(' ').includes('show')) return
+-			reactions.delete(menu)
+-			menu.classList.add('show')
++		const closed = waitForEvent<readonly [Event]>(
++			(listener) => menu.addEventListener('toggle', listener, { once: true }),
++			'the platform closes the menu',
++		)
++		menu.hidePopover()
++		await closed
++		expect({
++			events: events.calls.flat(),
++			shown: dropdown.shown,
++			open: menu.matches(':popover-open'),
++			side: menu.getAttribute('data-popper-placement'),
++			expanded: toggle.getAttribute('aria-expanded'),
++		}).toEqual({
++			events: ['hide.vn.dropdown'],
++			shown: true,
++			open: true,
++			side: 'bottom',
++			expanded: 'true',
++		})
++		await waitForEvent<readonly [Event]>(
++			(listener) => menu.addEventListener('toggle', listener, { once: true }),
++			'the menu opens again',
++		)
++		const again = waitForEvent<readonly [Event]>(
++			(listener) => menu.addEventListener('toggle', listener, { once: true }),
++			'the platform closes the menu again',
++		)
++		menu.hidePopover()
++		await again
++		expect({
++			events: events.calls.flat(),
++			shown: dropdown.shown,
++			promoted: menu.hasAttribute('popover') || menu.matches(':popover-open'),
++			expanded: toggle.getAttribute('aria-expanded'),
++		}).toEqual({
++			events: ['hide.vn.dropdown', 'hide.vn.dropdown', 'hidden.vn.dropdown'],
++			shown: false,
++			promoted: false,
++			expanded: 'false',
+ 		})
+-		expect(await dropdown.hide()).toBe(false)
+-		expect(events.calls).toEqual([])
+-		expect(toggle.classList.contains('show')).toBe(true)
+-		expect(toggle.getAttribute('aria-expanded')).toBe('true')
+-		expect(dropdown.shown).toBe(true)
+ 	})
+ 
+ 	it('refuses the show when a listener cancels the menu promotion, keeping nothing it wrote and dispatching no shown event', async () => {
+@@ -1318,8 +1928,8 @@ describe('Dropdown', () => {
+ 		expect(toggle.hasAttribute('aria-expanded')).toBe(false)
+ 	})
+ 
+-	it('reads its lifetime after restoring the placement a taken-over show left, writing nothing more when that restoration destroys it', async () => {
+-		const name = 'vn-dropdown-menu-leftover'
++	it('writes nothing more of a stopped show returning step when a reaction inside its placement restoration destroys the dropdown', async () => {
++		const name = 'vn-dropdown-menu-returned'
+ 		const reactions = new WeakMap<HTMLElement, (attribute: string, value: string | null) => void>()
+ 		customElements.define(
+ 			name,
+@@ -1345,18 +1955,16 @@ describe('Dropdown', () => {
+ 		wrapper.append(menu)
+ 		const dropdown = new Dropdown(toggle)
+ 		onTestFinished(() => dropdown.destroy())
+-		reactions.set(menu, (attribute, value) => {
+-			if (attribute === 'class' && (value ?? '').split(' ').includes('show')) {
+-				menu.classList.remove('show')
+-			}
+-		})
+-		expect(await dropdown.show()).toBe(false)
+-		expect(menu.getAttribute('popover')).toBe('manual')
+-		expect(menu.getAttribute('data-popper-placement')).toBe('bottom')
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+ 		onTestFinished(() => observer.disconnect())
++		// The menu takes its token back at the show's token step, and destroys the dropdown when the
++		// returning step's placement restoration removes the side attribute.
+ 		reactions.set(menu, (attribute, value) => {
++			if (attribute === 'class' && (value ?? '').split(' ').includes('show')) {
++				menu.classList.remove('show')
++				return
++			}
+ 			if (attribute !== 'data-popper-placement' || value !== null) return
+ 			reactions.delete(menu)
+ 			dropdown.destroy()
+@@ -1365,6 +1973,9 @@ describe('Dropdown', () => {
+ 		expect(await dropdown.show()).toBe(false)
+ 		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
+ 		expect(menu.hasAttribute('popover')).toBe(false)
++		expect(menu.hasAttribute('style')).toBe(false)
++		expect(toggle.hasAttribute('aria-expanded')).toBe(false)
++		expect(toggle.hasAttribute('class')).toBe(false)
+ 		expect(Dropdown.find(toggle)).toBeUndefined()
+ 	})
+ 
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 74eb168..ce3d337 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -28,7 +28,12 @@ import { userEvent } from 'vitest/browser'
+ import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import popoverCascade from '../../../src/styles/components/_popover.scss?inline'
+-import { scene } from '../../setupBrowser.js'
++import {
++	PLATFORM_CLOSES,
++	POPOVER_CHANGE_DOORS,
++	POPOVER_REVERSALS,
++	scene,
++} from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -594,4 +599,356 @@ describe('Popover', () => {
+ 			scene.clear()
+ 		}
+ 	})
++
++	// Each show row marks the tip shown first at a door before the show's token step, under the
++	// popover's default fade: a listener to `inserted.vn.popover`, or a listener to the tip's opening
++	// `beforetoggle` event. The hide row takes the token first in a listener to `hide.vn.popover`. The
++	// host has made the call's token write for it, so the call writes no `class` value of its own on
++	// the tip, completes every other step, and dispatches its completed event.
++	it('completes a change whose tip the host moves the shown token to the change end first at a door before its token step, skipping that write', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(popoverCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: readonly [string, string]
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly promoted: boolean
++					readonly side: string | null
++					readonly linked: boolean
++					readonly echoes: number
++				},
++			]
++		>()
++		const rows = POPOVER_CHANGE_DOORS
++		for (const [direction, door] of rows) {
++			const root = scene.mount(
++				'<button type="button" id="trigger" style="margin: 120px 200px" title="Draft" data-bs-content="Saved at noon">Save</button>',
++			)
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const events = createRecorder<readonly [string]>()
++			const echoes = createRecorder<readonly [number]>()
++			const observer = new MutationObserver((records) => echoes.handler(records.length))
++			onTestFinished(() => observer.disconnect())
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const popover = new Popover(host, {
++				trigger: { hover: false, focus: false, click: false },
++				on: {
++					show: (event) => events.handler(event.type),
++					inserted: (event) => events.handler(event.type),
++					shown: (event) => events.handler(event.type),
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => popover.destroy())
++			if (direction === 'hide') await popover.show()
++			host.addEventListener(
++				direction === 'show' ? POPOVER_EVENTS.inserted : POPOVER_EVENTS.hide,
++				() => {
++					const tip = requireValue(
++						document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++						'No tip',
++					)
++					if (door === 'event') {
++						tip.classList.remove('show')
++						observer.observe(tip, { attributeFilter: ['class'] })
++					}
++					if (door === 'inserted') {
++						tip.classList.add('show')
++						observer.observe(tip, { attributeFilter: ['class'] })
++					}
++					if (door !== 'promotion') return
++					tip.addEventListener(
++						'beforetoggle',
++						(event) => {
++							if (event.newState !== 'open') return
++							tip.classList.add('show')
++							observer.observe(tip, { attributeFilter: ['class'] })
++						},
++						{ once: true },
++					)
++				},
++				{ once: true, signal: controller.signal },
++			)
++			events.clear()
++			const resolved = direction === 'show' ? await popover.show() : await popover.hide()
++			const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++			readings.handler({
++				row: [direction, door],
++				resolved,
++				events: events.calls.flat(),
++				shown: popover.shown,
++				promoted: tip?.matches(':popover-open') === true,
++				side: tip?.getAttribute('data-popper-placement') ?? null,
++				linked: host.hasAttribute('aria-describedby'),
++				echoes: [...echoes.calls.flat(), observer.takeRecords().length].reduce(
++					(total, count) => total + count,
++					0,
++				),
++			})
++			observer.disconnect()
++			popover.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(([direction, door]) => [
++				{
++					row: [direction, door],
++					resolved: true,
++					events:
++						direction === 'show'
++							? ['show.vn.popover', 'inserted.vn.popover', 'shown.vn.popover']
++							: ['hide.vn.popover', 'hidden.vn.popover'],
++					shown: direction === 'show',
++					promoted: direction === 'show',
++					side: direction === 'show' ? 'right' : null,
++					linked: direction === 'show',
++					echoes: 0,
++				},
++			]),
++		)
++	})
++
++	// An observer during the fade takes the tip's `shown` token from a show after its token step, or
++	// adds it back to a hide after its token step. The show returns each write it made to the hidden
++	// state a hide writes: the placement is restored, the tip leaves its container, and the trigger
++	// names it no more. The hide wrote nothing but its token before its discard, so it returns nothing,
++	// and the tip stays shown and promoted. Either call dispatches no completed event, resolves `false`,
++	// and leaves the popover ready for the next call.
++	it('returns what a change wrote to the state the host chose when the host moves the tip shown token against it during the fade', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(popoverCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly direction: string
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly tips: number
++					readonly promoted: boolean
++					readonly linked: boolean
++					readonly anchored: boolean
++					readonly again: boolean
++				},
++			]
++		>()
++		const rows = POPOVER_REVERSALS
++		for (const direction of rows) {
++			const root = scene.mount(
++				'<button type="button" id="trigger" style="margin: 120px 200px" title="Draft" data-bs-content="Saved at noon">Save</button>',
++			)
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const events = createRecorder<readonly [string]>()
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const observer = new MutationObserver((records) => {
++				const tip = records[0]?.target
++				if (!(tip instanceof HTMLElement)) return
++				observer.disconnect()
++				if (direction === 'show') tip.classList.remove('show')
++				else tip.classList.add('show')
++			})
++			onTestFinished(() => observer.disconnect())
++			const popover = new Popover(host, {
++				trigger: { hover: false, focus: false, click: false },
++				on: {
++					show: (event) => events.handler(event.type),
++					inserted: (event) => events.handler(event.type),
++					shown: (event) => events.handler(event.type),
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => popover.destroy())
++			if (direction === 'hide') await popover.show()
++			host.addEventListener(
++				direction === 'show' ? POPOVER_EVENTS.inserted : POPOVER_EVENTS.hide,
++				() => {
++					const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++					if (tip !== null) observer.observe(tip, { attributeFilter: ['class'] })
++				},
++				{ once: true, signal: controller.signal },
++			)
++			events.clear()
++			const resolved = direction === 'show' ? await popover.show() : await popover.hide()
++			const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++			const reading = {
++				direction,
++				resolved,
++				events: events.calls.flat(),
++				shown: popover.shown,
++				tips: document.querySelectorAll('.popover').length,
++				promoted: tip?.matches(':popover-open') === true,
++				linked: host.hasAttribute('aria-describedby'),
++				anchored: host.style.getPropertyValue('anchor-name') !== '',
++			}
++			observer.disconnect()
++			// A second placement of the same trigger inside the frame the first was built and restored in
++			// makes Chromium report a ResizeObserver loop, so the next call waits a frame.
++			await waitForFrame()
++			readings.handler({
++				...reading,
++				again: direction === 'show' ? await popover.show() : await popover.hide(),
++			})
++			popover.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((direction) => [
++				{
++					direction,
++					resolved: false,
++					events:
++						direction === 'show' ? ['show.vn.popover', 'inserted.vn.popover'] : ['hide.vn.popover'],
++					shown: direction === 'hide',
++					tips: direction === 'hide' ? 1 : 0,
++					promoted: direction === 'hide',
++					linked: direction === 'hide',
++					anchored: direction === 'hide',
++					again: true,
++				},
++			]),
++		)
++	})
++
++	// A consumer's `hide-popover` invoker, its `toggle-popover` invoker, and a `hidePopover` call each
++	// close the tip the popover promoted with `popover="manual"`, which the platform closes on no Escape
++	// key press or outside click. The popover reads the close from the tip's `toggle` event and hides
++	// the tip through its own sequence, dispatching `hide.vn.popover` and `hidden.vn.popover`, so the
++	// tip leaves the page.
++	it('hides the tip with its events when a consumer invoker or a hidePopover call closes it', async () => {
++		scene.load(popoverCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: string
++					readonly before: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly connected: boolean
++					readonly linked: boolean
++				},
++			]
++		>()
++		const rows = PLATFORM_CLOSES
++		for (const row of rows) {
++			const root = scene.mount(`
++				<button type="button" id="trigger" style="margin: 120px 200px" title="Draft" data-bs-content="Saved at noon">Save</button>
++				<button type="button" id="invoker" command="${row === 'call' ? 'hide-popover' : row}">Close</button>`)
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const invoker = requireValue(root.querySelector<HTMLElement>('#invoker'), 'No invoker')
++			const events = createRecorder<readonly [string]>()
++			const popover = new Popover(host, {
++				animated: false,
++				trigger: { hover: false, focus: false, click: false },
++				on: {
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => popover.destroy())
++			expect(await popover.show()).toBe(true)
++			const tip = requireValue(
++				document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++				'No tip',
++			)
++			invoker.setAttribute('commandfor', tip.id)
++			const before = tip.matches(':popover-open')
++			const closed = waitForEvent<readonly [Event]>(
++				(listener) => tip.addEventListener('toggle', listener, { once: true }),
++				'the platform closes the tip',
++			)
++			if (row === 'call') tip.hidePopover()
++			else await userEvent.click(invoker)
++			await closed
++			readings.handler({
++				row,
++				before,
++				events: events.calls.flat(),
++				shown: popover.shown,
++				connected: tip.isConnected,
++				linked: host.hasAttribute('aria-describedby'),
++			})
++			popover.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((row) => [
++				{
++					row,
++					before: true,
++					events: ['hide.vn.popover', 'hidden.vn.popover'],
++					shown: false,
++					connected: false,
++					linked: false,
++				},
++			]),
++		)
++	})
++
++	// A listener that prevents the hide a platform close starts refuses that hide once: the popover
++	// promotes the tip again, so it stays open and anchored. The next platform close of the same shown
++	// tip hides it with the prevention ignored.
++	it('promotes the tip again once when a listener prevents the hide a platform close starts, and hides it at the next close', async () => {
++		scene.load(popoverCascade)
++		const root = scene.mount(
++			'<button type="button" id="trigger" style="margin: 120px 200px" title="Draft" data-bs-content="Saved at noon">Save</button>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const popover = new Popover(host, {
++			animated: false,
++			trigger: { hover: false, focus: false, click: false },
++			on: {
++				hide: (event) => {
++					events.handler(event.type)
++					event.preventDefault()
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => popover.destroy())
++		expect(await popover.show()).toBe(true)
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		const toggles = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		tip.addEventListener('toggle', (event) => toggles.handler(event.newState), {
++			signal: controller.signal,
++		})
++		tip.hidePopover()
++		await waitForCondition('the refused tip opens again', () => toggles.count === 2)
++		expect({
++			events: events.calls.flat(),
++			shown: popover.shown,
++			open: tip.matches(':popover-open'),
++			toggles: toggles.calls.flat(),
++		}).toEqual({
++			events: ['hide.vn.popover'],
++			shown: true,
++			open: true,
++			toggles: ['closed', 'open'],
++		})
++		tip.hidePopover()
++		await waitForCondition('the platform closes the tip again', () => toggles.count === 3)
++		expect({
++			events: events.calls.flat(),
++			shown: popover.shown,
++			connected: tip.isConnected,
++		}).toEqual({
++			events: ['hide.vn.popover', 'hide.vn.popover', 'hidden.vn.popover'],
++			shown: false,
++			connected: false,
++		})
++	})
+ })
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index b71dc9a..46e01e7 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -25,7 +25,15 @@ import { userEvent } from 'vitest/browser'
+ import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import tooltipCascade from '../../../src/styles/components/_tooltip.scss?inline'
+-import { recordCalls, recordListeners, scene } from '../../setupBrowser.js'
++import {
++	HINT_CLOSES,
++	recordCalls,
++	recordListeners,
++	scene,
++	TOOLTIP_HIDE_DOORS,
++	TOOLTIP_REVERSALS,
++	TOOLTIP_SHOW_DOORS,
++} from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -2024,31 +2032,465 @@ describe('Tooltip', () => {
+ 		expect(tip.matches(':popover-open')).toBe(false)
+ 	})
+ 
+-	it('stops a show before the promotion when an inserted listener marks the tip shown, promoting nothing', async () => {
+-		const root = scene.mount('<button type="button" id="trigger" title="Marked">Save</button>')
+-		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
+-		const tips = createRecorder<readonly [HTMLElement]>()
+-		const shown = createRecorder<readonly [string]>()
+-		const tooltip = new Tooltip(host, {
+-			animated: false,
+-			on: {
+-				inserted: () => {
+-					const tip = requireValue(
+-						document.getElementById(host.getAttribute('aria-describedby') ?? ''),
+-						'No tip',
+-					)
+-					tips.handler(tip)
+-					tip.classList.add(TOOLTIP_CLASSES.shown)
++	// Each row names a door of a show between its tip's insertion and its token step, and the host marks
++	// the tip shown there first: a custom element content's reaction to the tip's insertion, the
++	// trigger's reaction to its `aria-describedby` write, a listener to `inserted.vn.tooltip`, or a
++	// listener to the tip's opening `beforetoggle` event. The host has made the show's token write for
++	// it, so the show writes no `class` value of its own on the tip, completes every other write, and
++	// dispatches its completed event: the tip opens in the top layer above its trigger, which names it.
++	it('completes a show whose tip the host marks shown first at each door before its token step, skipping that write', async () => {
++		const triggerName = 'vn-tooltip-show-agreed-trigger'
++		const contentName = 'vn-tooltip-show-agreed-content'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			triggerName,
++			class extends HTMLElement {
++				static observedAttributes = ['aria-describedby']
++				attributeChangedCallback(
++					_attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		customElements.define(
++			contentName,
++			class extends HTMLElement {
++				connectedCallback() {
++					reactions.get(this)?.(null)
++				}
++			},
++		)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly door: string
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly open: boolean
++					readonly side: string | null
++					readonly linked: boolean
++					readonly echoes: number
+ 				},
+-				shown: (event) => shown.handler(event.type),
++			]
++		>()
++		const doors = TOOLTIP_SHOW_DOORS
++		for (const door of doors) {
++			const root = scene.mount('<div id="home" style="margin: 120px"></div>')
++			const home = requireValue(root.querySelector<HTMLElement>('#home'), 'No home')
++			const host = document.createElement(triggerName)
++			host.textContent = 'Save'
++			const content = document.createElement(contentName)
++			content.textContent = 'Saves the draft'
++			home.append(host, content)
++			const events = createRecorder<readonly [string]>()
++			const echoes = createRecorder<readonly [number]>()
++			const observer = new MutationObserver((records) => echoes.handler(records.length))
++			onTestFinished(() => observer.disconnect())
++			const tooltip = new Tooltip(host, {
++				animated: false,
++				title: content,
++				trigger: { hover: false, focus: false, click: false },
++				on: {
++					show: (event) => events.handler(event.type),
++					inserted: (event) => {
++						events.handler(event.type)
++						const tip = requireValue(
++							document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++							'No inserted tip',
++						)
++						if (door === 'inserted') {
++							tip.classList.add('show')
++							observer.observe(tip, { attributeFilter: ['class'] })
++						}
++						if (door === 'promotion') {
++							tip.addEventListener(
++								'beforetoggle',
++								(toggle) => {
++									if (toggle.newState !== 'open') return
++									tip.classList.add('show')
++									observer.observe(tip, { attributeFilter: ['class'] })
++								},
++								{ once: true },
++							)
++						}
++					},
++					shown: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => tooltip.destroy())
++			if (door === 'connection') {
++				reactions.set(content, () => {
++					const tip = content.closest<HTMLElement>('.tooltip')
++					if (tip === null) return
++					reactions.delete(content)
++					tip.classList.add('show')
++					observer.observe(tip, { attributeFilter: ['class'] })
++				})
++			}
++			if (door === 'aria-describedby') {
++				reactions.set(host, (value) => {
++					const tip = document.getElementById(value ?? '')
++					if (tip === null) return
++					reactions.delete(host)
++					tip.classList.add('show')
++					observer.observe(tip, { attributeFilter: ['class'] })
++				})
++			}
++			const resolved = await tooltip.show()
++			const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++			readings.handler({
++				door,
++				resolved,
++				events: events.calls.flat(),
++				shown: tooltip.shown,
++				open: tip?.matches(':popover-open') === true,
++				side: tip?.getAttribute('data-popper-placement') ?? null,
++				linked: tip !== null,
++				echoes: [...echoes.calls.flat(), observer.takeRecords().length].reduce(
++					(total, count) => total + count,
++					0,
++				),
++			})
++			observer.disconnect()
++			tooltip.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			doors.map((door) => [
++				{
++					door,
++					resolved: true,
++					events: ['show.vn.tooltip', 'inserted.vn.tooltip', 'shown.vn.tooltip'],
++					shown: true,
++					open: true,
++					side: 'top',
++					linked: true,
++					echoes: 0,
++				},
++			]),
++		)
++	})
++
++	// A listener to `hide.vn.tooltip` takes the tip's `shown` token first, the one door of a hide before
++	// its token step. The host has made the hide's token write for it, so the hide writes no `class`
++	// value of its own on the tip, completes its wait and its discard, and dispatches its completed
++	// event: the tip leaves the page, and the trigger names it no more.
++	it('completes a hide whose tip the host takes the shown token from first at its hide event, skipping that write', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(tooltipCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly animated: boolean
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly connected: boolean
++					readonly linked: boolean
++					readonly echoes: number
++				},
++			]
++		>()
++		const rows = TOOLTIP_HIDE_DOORS
++		for (const { animated } of rows) {
++			const root = scene.mount('<button type="button" id="trigger" title="Saves">Save</button>')
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const events = createRecorder<readonly [string]>()
++			const echoes = createRecorder<readonly [number]>()
++			const observer = new MutationObserver((records) => echoes.handler(records.length))
++			onTestFinished(() => observer.disconnect())
++			const tooltip = new Tooltip(host, {
++				animated,
++				trigger: { hover: false, focus: false, click: false },
++				on: {
++					hide: (event) => {
++						events.handler(event.type)
++						const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++						if (tip === null) return
++						tip.classList.remove('show')
++						observer.observe(tip, { attributeFilter: ['class'] })
++					},
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => tooltip.destroy())
++			const shown = await tooltip.show()
++			const tip = requireValue(
++				document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++				'No tip',
++			)
++			const resolved = shown && (await tooltip.hide())
++			readings.handler({
++				animated,
++				resolved,
++				events: events.calls.flat(),
++				shown: tooltip.shown,
++				connected: tip.isConnected,
++				linked: host.hasAttribute('aria-describedby'),
++				echoes: [...echoes.calls.flat(), observer.takeRecords().length].reduce(
++					(total, count) => total + count,
++					0,
++				),
++			})
++			observer.disconnect()
++			tooltip.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(({ animated }) => [
++				{
++					animated,
++					resolved: true,
++					events: ['hide.vn.tooltip', 'hidden.vn.tooltip'],
++					shown: false,
++					connected: false,
++					linked: false,
++					echoes: 0,
++				},
++			]),
++		)
++	})
++
++	// Each show row takes the tip's `shown` token after the show's token step: an upgraded custom tip's
++	// reaction to that write, or an observer during the fade in. The show returns each write it made to
++	// the hidden state a hide writes: the placement is restored, the tip leaves its container, and the
++	// trigger names it no more. Each hide row adds the token back after the hide found it removed: an
++	// observer during the fade out, or a task a listener to `hide.vn.tooltip` queues after it takes the
++	// token first. The hide wrote nothing but its token before its discard, so it returns nothing, and
++	// the tip stays shown, promoted, and named. Either call dispatches no completed event, resolves
++	// `false`, and leaves the tooltip ready for the next call.
++	it('returns what a change wrote to the state the host chose when the host moves the tip shown token against it after its token step', async () => {
++		const tipName = 'vn-tooltip-reversed-tip'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			tipName,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(
++					_attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(value)
++				}
+ 			},
+-		})
+-		onTestFinished(() => tooltip.destroy())
+-		expect(await tooltip.show()).toBe(false)
+-		const tip = requireValue(tips.calls[0]?.[0], 'No inserted tip')
+-		expect(tip.hasAttribute('popover')).toBe(false)
+-		expect(tip.matches(':popover-open')).toBe(false)
+-		expect(shown.calls).toEqual([])
++		)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(tooltipCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: readonly [string, string]
++					readonly resolved: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly tips: number
++					readonly promoted: boolean
++					readonly linked: boolean
++					readonly anchored: boolean
++					readonly again: boolean
++				},
++			]
++		>()
++		const rows = TOOLTIP_REVERSALS
++		for (const [direction, door] of rows) {
++			const root = scene.mount('<button type="button" id="trigger" title="Saves">Save</button>')
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const events = createRecorder<readonly [string]>()
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			// The observer answers the call's own token write once, against the call's direction.
++			const observer = new MutationObserver((records) => {
++				const tip = records[0]?.target
++				if (!(tip instanceof HTMLElement)) return
++				observer.disconnect()
++				if (direction === 'show') tip.classList.remove('show')
++				else tip.classList.add('show')
++			})
++			onTestFinished(() => observer.disconnect())
++			// The token row builds its first tip through a sanitizer that makes it an upgraded custom
++			// element, whose reaction to the token write takes the token at once.
++			const built = createRecorder<readonly []>()
++			const sanitizer: SanitizerInterface = {
++				write: (element, html) => {
++					if (!html.includes('tooltip-inner')) {
++						element.textContent = html
++						return
++					}
++					const tip = document.createElement(tipName)
++					tip.className = 'tooltip'
++					tip.setAttribute('role', 'tooltip')
++					tip.append(build('div', { classes: 'tooltip-arrow' }))
++					tip.append(build('div', { classes: 'tooltip-inner' }))
++					element.replaceChildren(tip)
++					built.handler()
++					if (built.count > 1) return
++					reactions.set(tip, (value) => {
++						if (!(value ?? '').split(' ').includes('show')) return
++						reactions.delete(tip)
++						tip.classList.remove('show')
++					})
++				},
++			}
++			const tooltip = new Tooltip(host, {
++				animated: door !== 'token',
++				trigger: { hover: false, focus: false, click: false },
++				...(door === 'token' ? { sanitizer } : {}),
++				on: {
++					show: (event) => events.handler(event.type),
++					inserted: (event) => events.handler(event.type),
++					shown: (event) => events.handler(event.type),
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => tooltip.destroy())
++			if (direction === 'hide') await tooltip.show()
++			if (direction === 'show' && door === 'wait') {
++				host.addEventListener(
++					TOOLTIP_EVENTS.inserted,
++					() => {
++						const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++						if (tip !== null) observer.observe(tip, { attributeFilter: ['class'] })
++					},
++					{ once: true, signal: controller.signal },
++				)
++			}
++			if (direction === 'hide') {
++				host.addEventListener(
++					TOOLTIP_EVENTS.hide,
++					() => {
++						const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++						if (tip === null) return
++						if (door === 'wait') observer.observe(tip, { attributeFilter: ['class'] })
++						if (door !== 'event') return
++						tip.classList.remove('show')
++						queueMicrotask(() => tip.classList.add('show'))
++					},
++					{ once: true, signal: controller.signal },
++				)
++			}
++			events.clear()
++			const resolved = direction === 'show' ? await tooltip.show() : await tooltip.hide()
++			const tip = document.getElementById(host.getAttribute('aria-describedby') ?? '')
++			const reading = {
++				row: [direction, door] as const,
++				resolved,
++				events: events.calls.flat(),
++				shown: tooltip.shown,
++				tips: document.querySelectorAll('.tooltip').length,
++				promoted: tip?.matches(':popover-open') === true,
++				linked: host.hasAttribute('aria-describedby'),
++				anchored: host.style.getPropertyValue('anchor-name') !== '',
++			}
++			observer.disconnect()
++			// A second placement of the same trigger inside the frame the first was built and restored in
++			// makes Chromium report a ResizeObserver loop, so the next call waits a frame.
++			await waitForFrame()
++			readings.handler({
++				...reading,
++				again: direction === 'show' ? await tooltip.show() : await tooltip.hide(),
++			})
++			tooltip.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(([direction, door]) => [
++				{
++					row: [direction, door],
++					resolved: false,
++					events:
++						direction === 'show' ? ['show.vn.tooltip', 'inserted.vn.tooltip'] : ['hide.vn.tooltip'],
++					shown: direction === 'hide',
++					tips: direction === 'hide' ? 1 : 0,
++					promoted: direction === 'hide',
++					linked: direction === 'hide',
++					anchored: direction === 'hide',
++					again: true,
++				},
++			]),
++		)
++	})
++
++	// A consumer's `hide-popover` invoker and a `hidePopover` call each close the tip the tooltip
++	// promoted, as the platform's own light dismissal of the `hint` popover does. The tooltip reads the
++	// close from the tip's `toggle` event and hides the tip through its own sequence, dispatching
++	// `hide.vn.tooltip` and `hidden.vn.tooltip`, so the tip leaves the page.
++	it('hides the tip with its events when a consumer invoker or a hidePopover call closes it', async () => {
++		scene.load(tooltipCascade)
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: string
++					readonly before: boolean
++					readonly events: readonly string[]
++					readonly shown: boolean
++					readonly connected: boolean
++					readonly linked: boolean
++				},
++			]
++		>()
++		const rows = HINT_CLOSES
++		for (const row of rows) {
++			const root = scene.mount(`
++				<button type="button" id="trigger" title="Saves" style="margin: 120px">Save</button>
++				<button type="button" id="invoker" command="hide-popover">Close</button>`)
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const invoker = requireValue(root.querySelector<HTMLElement>('#invoker'), 'No invoker')
++			const events = createRecorder<readonly [string]>()
++			const tooltip = new Tooltip(host, {
++				animated: false,
++				trigger: { hover: false, focus: false, click: false },
++				on: {
++					hide: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => tooltip.destroy())
++			expect(await tooltip.show()).toBe(true)
++			const tip = requireValue(
++				document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++				'No tip',
++			)
++			invoker.setAttribute('commandfor', tip.id)
++			const before = tip.matches(':popover-open')
++			const closed = waitForEvent<readonly [Event]>(
++				(listener) => tip.addEventListener('toggle', listener, { once: true }),
++				'the platform closes the tip',
++			)
++			if (row === 'call') tip.hidePopover()
++			else await userEvent.click(invoker)
++			await closed
++			await waitForDelay(0)
++			readings.handler({
++				row,
++				before,
++				events: events.calls.flat(),
++				shown: tooltip.shown,
++				connected: tip.isConnected,
++				linked: host.hasAttribute('aria-describedby'),
++			})
++			tooltip.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((row) => [
++				{
++					row,
++					before: true,
++					events: ['hide.vn.tooltip', 'hidden.vn.tooltip'],
++					shown: false,
++					connected: false,
++					linked: false,
++				},
++			]),
++		)
+ 	})
+ 
+ 	it('calls every content function before the build moves anything, so a function that destroys the tooltip leaves every element home', async () => {
+@@ -2524,4 +2966,109 @@ describe('Tooltip', () => {
+ 		onTestFinished(() => successor.destroy())
+ 		expect(Tooltip.find(host)).toBe(successor)
+ 	})
++
++	// A reaction during the show's fade moves the tip out of its container after the token step. That is
++	// not the host moving the token, so the show takes no returning step: it stops, and the tip stays
++	// where the reaction put it, promoted and named, until destruction restores what the tooltip wrote.
++	it('leaves a tip a reaction moves during the show fade where it is, promoted and named, and takes no returning step', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(tooltipCascade)
++		const root = scene.mount(
++			'<button type="button" id="trigger" title="Moved">Save</button><div id="elsewhere"></div>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const elsewhere = requireValue(root.querySelector<HTMLElement>('#elsewhere'), 'No elsewhere')
++		const events = createRecorder<readonly [string]>()
++		const tooltip = new Tooltip(host, {
++			trigger: { hover: false, focus: false, click: false },
++			on: { shown: (event) => events.handler(event.type) },
++		})
++		onTestFinished(() => tooltip.destroy())
++		const showing = tooltip.show()
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		elsewhere.append(tip)
++		expect(await showing).toBe(false)
++		expect({
++			events: events.calls.flat(),
++			parent: tip.parentElement === elsewhere,
++			token: tip.classList.contains('show'),
++			popover: tip.getAttribute('popover'),
++			linked: host.getAttribute('aria-describedby') === tip.id,
++		}).toEqual({ events: [], parent: true, token: true, popover: 'hint', linked: true })
++		tooltip.destroy()
++		expect(tip.parentElement).toBe(elsewhere)
++		expect(tip.hasAttribute('popover')).toBe(false)
++		expect(host.hasAttribute('aria-describedby')).toBe(false)
++	})
++
++	// An upgraded custom tip takes its own `shown` token at the show's token write, and destroys the
++	// tooltip in its disconnection reaction, which the returning step's removal of the tip runs. The
++	// destruction takes the tip's id out of the trigger's `aria-describedby` value and restores it, and
++	// the returning step reads the tooltip's lifetime before its later write, so it writes nothing more.
++	it('writes nothing more of a stopped show returning step when a reaction inside its tip removal destroys the tooltip', async () => {
++		const tipName = 'vn-tooltip-returned-tip'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		const departures = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			tipName,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(
++					_attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(value)
++				}
++				disconnectedCallback() {
++					departures.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount(
++			'<button type="button" id="trigger" aria-describedby="help" title="Saves">Save</button><p id="help">Help</p>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		const sanitizer: SanitizerInterface = {
++			write: (element, html) => {
++				if (!html.includes('tooltip-inner')) {
++					element.textContent = html
++					return
++				}
++				const tip = document.createElement(tipName)
++				tip.className = 'tooltip'
++				tip.setAttribute('role', 'tooltip')
++				tip.append(build('div', { classes: 'tooltip-inner' }))
++				element.replaceChildren(tip)
++				reactions.set(tip, (value) => {
++					if (!(value ?? '').split(' ').includes('show')) return
++					reactions.delete(tip)
++					tip.classList.remove('show')
++					departures.set(tip, () => {
++						departures.delete(tip)
++						tooltip.destroy()
++						observer.observe(root, { attributes: true, subtree: true })
++					})
++				})
++			},
++		}
++		const tooltip = new Tooltip(host, {
++			animated: false,
++			sanitizer,
++			trigger: { hover: false, focus: false, click: false },
++		})
++		onTestFinished(() => tooltip.destroy())
++		expect(await tooltip.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(host.getAttribute('aria-describedby')).toBe('help')
++		expect(document.querySelector(tipName)).toBeNull()
++		expect(Tooltip.find(host)).toBeUndefined()
++	})
+ })

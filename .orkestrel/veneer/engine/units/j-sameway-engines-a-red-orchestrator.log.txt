@@ -1,0 +1,76 @@
+# The Orchestrator's red reading of J-SAMEWAY-ENGINES-A's cases on 8bc940d's sources (2026-09-25, Chromium 153.0.8010.12), tests at 7511b82 State the agreement and the returning step of Collapse, Toast, Tab, and Carousel in their contracts and the guide
+⎯⎯⎯⎯⎯⎯ Failed Tests 36 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2037:2 > Carousel > returns a slide whose completing write a reaction answers by removing the incoming active token, taking the direction token off the outgoing item and dispatching no slid
+AssertionError: expected [] to deeply equal [ [ 'one', …(1) ] ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2085:2 > Carousel > completes a slide whose listener activates the incoming item, writing no active token on it and dispatching slid
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2132:2 > Carousel > completes a slide whose indicator write a reaction answers by activating the incoming item, dispatching slid
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2174:2 > Carousel > completes a slide whose incoming item gains its active token during the transition, dispatching slid
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2197:2 > Carousel > returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator
+AssertionError: expected [] to deeply equal [ [ 'first', 'class', '' ], …(4) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2259:2 > Carousel > returns a slide whose listener activated the incoming item and which loses that token during the transition, removing the order and direction tokens it added
+AssertionError: expected [ 'carousel-item', 'active' ] to deeply equal [ 'carousel-item', 'active', …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2302:2 > Carousel > returns a slide whose listener activated the incoming item and whose order-token write a reaction answers by deactivating it
+AssertionError: expected [] to deeply equal [ 'carousel-item carousel-item-next' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:917:2 > Collapse > returns a show whose completing token write a reaction answers by removing the shown token, clearing the transition token and the size, so a later show runs
+AssertionError: expected [] to deeply equal [ …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:963:2 > Collapse > completes a hide whose size write a reaction answers by removing the shown token, dispatching hidden and resolving true
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1047:2 > Collapse > returns a hide whose host-and-shown removal a reaction answers by adding the shown token back, clearing the size and the transition token and adding the host token
+AssertionError: expected [] to deeply equal [ Array(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1102:2 > Collapse > returns a hide whose size clearing a reaction answers by adding the shown token, ending the transition and dispatching no hidden event
+AssertionError: expected [ CSSTransition{} ] to deeply equal []
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1148:2 > Collapse > returns a hide when the shown token returns during its transition, leaving the panel shown at its full height with no hidden event
+AssertionError: expected [ 'collapsing', 'show' ] to deeply equal [ 'show', 'collapse' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1168:2 > Collapse > returns a hide whose trigger write a reaction answers by adding the shown token, expanding that trigger again and writing no aria-expanded value it never wrote
+AssertionError: expected [] to deeply equal [ [ 'panel', 'style', …(1) ], …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1218:2 > Collapse > returns a hide whose completing token write a reaction answers by adding the shown token, removing the transition token and dispatching no hidden event
+AssertionError: expected [] to deeply equal [ 'collapsing collapse show' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1261:2 > Collapse > completes a show whose listener adds the shown token, expanding its trigger, clearing the size, and dispatching shown
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1288:2 > Collapse > completes a show whose open sibling hide listener adds the shown token to its panel
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1321:2 > Collapse > completes a hide whose listener removes the shown token, collapsing its trigger and dispatching hidden
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1350:2 > Collapse > returns a show whose listener added the shown token and whose transition-token write a reaction answers by removing it
+AssertionError: expected [] to deeply equal [ 'collapse collapsing' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1400:2 > Collapse > returns a show whose listener added the shown token and whose zero-size write a reaction answers by removing it, adding back the host token and clearing the size
+AssertionError: expected [] to deeply equal [ [ 'class', 'collapsing' ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1446:2 > Collapse > returns a show of a panel without the host token, whose host-token removal a reaction answers by removing the shown token, adding no host token
+AssertionError: expected [ [ 'show' ] ] to deeply equal [ [ 'show' ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1484:2 > Collapse > returns a show whose transition removal a reaction answers by removing the shown token, clearing the size and collapsing each trigger that names no shown panel
+AssertionError: expected [] to deeply equal [ [ 'details', 'style', …(1) ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1383:2 > Tab > returns a swap whose control-activation write a reaction answers by removing the active token, reactivating and reselecting the sibling
+AssertionError: expected [] to deeply equal [ [ 'home-tab', 'class', …(1) ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1440:2 > Tab > completes a swap whose listener activates the control, writing no active token on the control and dispatching every event
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1496:2 > Tab > completes a swap whose sibling token write a reaction answers by activating the control, writing no active token on the control
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1549:2 > Tab > returns a swap whose control loses its active token during the pane fade, reactivating the sibling and its pane and deactivating the control and its pane
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1593:2 > Tab > returns a swap whose control loses its active token during the pane fade, reopening the dropdown that holds the sibling
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1643:2 > Tab > returns a swap whose listener activated the control and whose sibling token write a reaction answers by deactivating it
+AssertionError: expected [] to deeply equal [ [ 'home-tab', 'class', 'nav-link' ] ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:987:2 > Toast > completes the one show whose listener shows it again and prevents that nested show, the nested call resolving false
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1201:2 > Toast > returns a show of a shown toast whose fade write a reaction answers by removing the shown token, removing only the fade token it added
+AssertionError: expected [] to deeply equal [ 'toast fade' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1278:2 > Toast > returns a show whose completing removal a reaction answers by removing the shown token, removing the fade token it added and dispatching no shown event
+AssertionError: expected [] to deeply equal [ 'toast fade' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1316:2 > Toast > returns a show whose token write a reaction answers by removing the shown token, leaving no showing token, so a later show and hide run
+AssertionError: expected [] to deeply equal [ 'toast fade showing', …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1365:2 > Toast > completes a hide whose transition-token write a reaction answers by removing the shown token, leaving no showing token, so a later show and hide run
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1411:2 > Toast > completes a hide whose listener removes the shown token, dispatching hidden and resolving true
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1440:2 > Toast > completes a show whose fade write a reaction answers by adding the shown token, dispatching shown and resolving true
+AssertionError: expected false to be true // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1481:2 > Toast > returns a hide whose listener removed the shown token and whose transition-token write a reaction answers by adding it back, removing the showing token
+AssertionError: expected [] to deeply equal [ 'toast showing show' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1529:2 > Toast > completes a hide when the shown token leaves during its transition, dispatching hidden and leaving no showing token
+AssertionError: expected false to be true // Object.is equality
+      Tests  36 failed | 162 passed (198)
+restored byte for byte (the Orchestrator's digest)

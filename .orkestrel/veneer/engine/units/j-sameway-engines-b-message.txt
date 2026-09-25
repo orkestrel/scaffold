@@ -1,0 +1,10 @@
+Complete a change the host agreed with, return one it took over, and follow the platform's close in Dropdown, Tooltip, and Popover
+
+E24 now holds in the three promoted-overlay engines. A host that moves the menu's or the tip's shown token toward the change's end before the call writes it has made that write for the call, and the call completes. From the moment the call finds the token at its end, a host that moves it back takes the change over. The call returns each write it made by its own entry and dispatches nothing. A Dropdown's stopped show now returns its own placement, so no later show restores a leftover one.
+
+A consumer's hide-popover or toggle-popover invoker, or a hidePopover call, that closes a promoted menu, tip, or popover now completes the engine's hide with its events. Dropdown observes the close through a menu toggle listener, and Tooltip and Popover through the E17 bridge already on every tip. A listener that prevents that hide keeps the overlay once, and the next close of the same placement is forced.
+
+The door and reversal tables live in tests/setupBrowser.ts as frozen exports. The cases read red on 8bc940d's sources: 14 failed. The instrument kills each door, return, and platform-close observation through an assertion.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

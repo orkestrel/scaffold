@@ -282,3 +282,16 @@ Under the rule, an attribute a leaving holder's writes emptied while another hol
 - `Tab.test.ts`'s case for a tab refused on its active control, applied as the J-HOLDERS integration patch.
 
 The Orchestrator ruled round 2's obligation before reading this bullet, and records the reversal here rather than leave the two rulings in conflict.
+
+E24 amended at the J-SAMEWAY-ENGINES-A audit (2026-09-25). The objective lane (the analyst on Astra, thread `01a0d683-b0bc-7a51-b7fc-2cd1d3f53aaf`) found three returns that did not match the change the call made:
+- Tab recorded dropdown entries for writes that changed nothing.
+- Tab's forward-order return undid a shared dropdown's restoration.
+- Carousel's completion removed a pre-existing order token with no entry.
+
+**The returning step restores prior values.** A returning step restores each target the call changed to the value that target held before the call's first write to it.
+- A write that changes nothing records nothing.
+- A target the call writes more than once is recorded once, at its first changing write.
+- A token or attribute the call removes without having added it is recorded with its prior presence.
+- The step restores in reverse order of those first writes.
+
+This is the invariant every engine's returning step follows, Modal and Offcanvas included. J-SAMEWAY-ENGINES-A round 2 applies it to Collapse, Toast, Tab, and Carousel. J-SAMEWAY-ENGINES-B's audit reads Dropdown, Tooltip, and Popover against it. J-OVERLAYS, which next owns Modal and Offcanvas, carries a claim that they conform.

@@ -1,0 +1,32 @@
+# The Orchestrator's red reading of J-SAMEWAY-ENGINES-B's cases on 8bc940d's sources (2026-09-25, Chromium 153.0.8010.12), tests at b8a8805 State the agreement, the returning step, and the platform's close of Dropdown, Tooltip, and Popover in their contracts and the guide
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:926:2 > Dropdown > binds its hooks, the document listeners, the menu toggle listener, and the signal, and destroys the dropdown when its signal aborts, and at construction when it arrived aborted
+AssertionError: expected [ <button …(3)></button>, …(4) ] to deeply equal [ <button …(3)></button>, …(5) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1190:2 > Dropdown > completes a show whose menu shown token the host adds first at each door before its token step, skipping that write
+AssertionError: expected [ [ { door: 'event', …(10) } ], …(3) ] to deeply equal [ [ { door: 'event', …(10) } ], …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1333:2 > Dropdown > completes a hide whose menu shown token the host removes first at each door before its token step, skipping that write
+AssertionError: expected [ [ { door: 'event', …(7) } ], …(1) ] to deeply equal [ [ { door: 'event', …(7) } ], …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1440:2 > Dropdown > returns a show to the hidden state when the host removes the menu shown token after the show found it at its end
+AssertionError: expected [ [ { …(11) } ], [ { …(11) } ], …(3) ] to deeply equal [ [ { …(11) } ], [ { …(11) } ], …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1591:2 > Dropdown > keeps the shown state of a hide whose menu shown token the host adds back after the hide found it removed
+AssertionError: expected [ [ { …(9) } ], [ { …(9) } ], …(2) ] to deeply equal [ [ { …(9) } ], [ { …(9) } ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1718:2 > Dropdown > hides the menu with its events when a consumer invoker or a hidePopover call closes the promoted menu
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1795:2 > Dropdown > promotes the menu again once when a listener prevents the hide a platform close starts, and hides it at the next close
+AssertionError: expected { events: [], shown: true, …(3) } to deeply equal { Object (events, shown, ...) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1931:2 > Dropdown > writes nothing more of a stopped show returning step when a reaction inside its placement restoration destroys the dropdown
+AssertionError: expected true to be false // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Popover.test.ts:608:2 > Popover > completes a change whose tip the host moves the shown token to the change end first at a door before its token step, skipping that write
+AssertionError: expected [ [ { …(8) } ], [ { …(8) } ], …(1) ] to deeply equal [ [ { …(8) } ], [ { …(8) } ], …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Popover.test.ts:723:2 > Popover > returns what a change wrote to the state the host chose when the host moves the tip shown token against it during the fade
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2041:2 > Tooltip > completes a show whose tip the host marks shown first at each door before its token step, skipping that write
+AssertionError: expected [ …(4) ] to deeply equal [ …(4) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2182:2 > Tooltip > completes a hide whose tip the host takes the shown token from first at its hide event, skipping that write
+AssertionError: expected [ [ { animated: false, …(6) } ], …(1) ] to deeply equal [ [ { animated: false, …(6) } ], …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2267:2 > Tooltip > returns what a change wrote to the state the host chose when the host moves the tip shown token against it after its token step
+AssertionError: expected [ [ { …(9) } ], [ { …(9) } ], …(2) ] to deeply equal [ [ { …(9) } ], [ { …(9) } ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:3012:2 > Tooltip > writes nothing more of a stopped show returning step when a reaction inside its tip removal destroys the tooltip
+AssertionError: expected 'help vn-tooltip-109' to be 'help' // Object.is equality
+      Tests  14 failed | 111 passed (125)
+restored byte for byte (the Orchestrator's digest)
