@@ -1,0 +1,27 @@
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index d6eb97c..f727c69 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -2805,15 +2805,15 @@ export const RELEASE_REENTRIES = Object.freeze([
+  * Lists the doors of a modal's hide at which the host takes the hide over before the returning step inserts the backdrop again, with and without the `fade` token.
+  *
+  * @remarks
+- * Each door follows the backdrop's removal, the scroll lock's release, the host's `padding-right`
+- * removal, or the body's `open` token release.
++ * Each door follows, in the order the hide runs them, the backdrop's removal, the body's `open`
++ * token release, the host's `padding-right` removal, or the scroll lock's release.
+  */
+ export const MODAL_REINSERTIONS = Object.freeze([
+-	Object.freeze({ door: 'removal', animated: false } as const),
+-	Object.freeze({ door: 'removal', animated: true } as const),
+-	Object.freeze({ door: 'lock', animated: false } as const),
+-	Object.freeze({ door: 'padding', animated: false } as const),
+-	Object.freeze({ door: 'open', animated: false } as const),
++	Object.freeze({ door: 'removal', fade: false } as const),
++	Object.freeze({ door: 'removal', fade: true } as const),
++	Object.freeze({ door: 'open', fade: false } as const),
++	Object.freeze({ door: 'padding', fade: false } as const),
++	Object.freeze({ door: 'lock', fade: false } as const),
+ ])
+ 
+ /**

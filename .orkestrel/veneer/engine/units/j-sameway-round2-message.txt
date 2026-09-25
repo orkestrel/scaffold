@@ -1,0 +1,6 @@
+Return only the backdrop a modal or offcanvas change wrote, release a failed construction's claim, and keep "take over" for the host
+
+A stale returning step destroyed or showed a backdrop its call never touched, when `Backdrop.show()` or `hide()` refused because the backdrop was already in that state (the audit's objective lane). Each call now reads the backdrop's shown token before its backdrop step and hands its returning step the backdrop only when the call wrote it. The Modal and Offcanvas constructors claimed the host and then read option getters with nothing releasing on a throw; each now assigns its host before the claim and destroys itself and rethrows when construction fails after it. The backdrop's show reads its owner before its own lifetime, so an owner read that destroys the backdrop writes no token. "Take over" names only the host moving the token against the change, and a later call supersedes. The local that held the expected token is `expected`, the reinsertion table's axis is `fade` in the hide's order, and the cases are titled for what they prove. The new cases read red on round 1's sources.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

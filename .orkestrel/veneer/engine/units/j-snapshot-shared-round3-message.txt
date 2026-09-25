@@ -1,0 +1,6 @@
+Fix a snapshot record's key at the save, and read every construction prerequisite before the first claim
+
+A record's key was derived again at each release from the element's current document, and whether a document folds attribute names was read from its content type, so a host adopted into an XML document left its holder behind and an HTML document loaded as plain text kept two records for one attribute. The key now resolves once, at the save, from the platform's own folding (`createElement('A').localName` in that document, cached per document), and every release reads the stored key. Construction now reads every option and prerequisite before its first claim, save, promotion, or published holder, or releases what it took before rethrowing: `Placement` reads its fallback entries before the promotion, `ScrollLock` refuses a document with no body (`SCROLL_LOCK_BODY_MISSING`) before it holds the lock, and `ColorMode` puts the root back when persisting a stored mode throws; a search of every class that claims, saves, publishes, or promotes found no other path. The four audit witnesses and the ColorMode path read red on round 2's sources.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
