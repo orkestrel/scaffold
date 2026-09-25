@@ -1,0 +1,4 @@
+# Excerpt of /home/user/scaffold/tmp/codex/moff-audit-2-analyst.jsonl: the head line (thread id) and the final events. The journal itself stays under tmp/ and is swept.
+{"type":"thread.started","thread_id":"01a0d816-5e4f-73b1-b073-acf8b9a30e5b"}
+{"type":"error","message":"You’ve hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Sep 30th, 2026 3:18 PM."}
+{"type":"turn.failed","error":{"message":"You’ve hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Sep 30th, 2026 3:18 PM."}}

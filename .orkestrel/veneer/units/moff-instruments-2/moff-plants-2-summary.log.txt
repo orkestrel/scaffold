@@ -1,0 +1,8 @@
+literal exit=1 restored=identical
+opacity exit=1 restored=identical
+transition exit=1 restored=identical
+navbar-reset exit=1 restored=identical
+hiding-opaque exit=1 restored=identical
+leak exit=1 restored=identical
+mixin exit=1 restored=identical
+final build=0

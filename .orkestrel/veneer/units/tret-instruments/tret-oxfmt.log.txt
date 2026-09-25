@@ -1,0 +1,7 @@
+$ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check src/styles/_tokens.scss src/styles/_mixins.scss src/core/constants.ts tests/setupStyles.ts tests/src/styles/tokens.test.ts tests/src/styles/mixins.test.ts tests/src/styles/fixtures/mixins.scss guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 19824ms on 8 files using 4 threads.
+exit=0
+4.09 4.81 3.94 5/283 26353

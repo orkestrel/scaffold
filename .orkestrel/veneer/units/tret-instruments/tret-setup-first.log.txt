@@ -1,0 +1,50 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-tret
+
+········································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-f3CFXS'
+    at finishWithoutResolve (/home/user/veneer-tret/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-tret/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-tret/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-tret/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-tret/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-tret/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-tret/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-tret/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-tret/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-tret/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-f3CFXS'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-f3CFXS or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-f3CFXS/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+·····················································································································································································································································x·······································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > finds a forbidden runtime in a built entry through its specifier and through its signature
+Error: ENOENT: no such file or directory, open '/home/user/veneer-tret/dist/src/core/index.js'
+ ❯ tests/setupServer.test.ts:2562:18
+    2560|   const scratch = createScratch()
+    2561|   try {
+    2562|    const clean = readFileSync(entry, 'utf8')
+       |                  ^
+    2563|    const copy = scratch.write('index.js', clean)
+    2564|    expect(scanForbiddenBuild(copy, FORBIDDEN_RUNTIME, FORBIDDEN_SIGNAT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 356 passed (357)
+   Start at  10:06:46
+   Duration  39.99s (transform 5.66s, setup 926ms, import 19.23s, tests 56.03s, environment 0ms)
+

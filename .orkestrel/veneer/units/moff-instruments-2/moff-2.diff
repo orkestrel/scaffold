@@ -1,0 +1,182 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ddf0e4c..725ea39 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -6147,11 +6147,12 @@ margin and sets its line height, and the `.offcanvas-body` class grows to fill t
+ its content, and scrolls it.
+ 
+ The panel slides over the `--vn-motion-panel` token on the `--vn-ease-panel` curve and fades over
+-the `--vn-motion-panel` token on the `--vn-ease-out` curve, in place of the release's
+-`transform 0.3s ease-in-out` transition, which fades nothing. The travel stays the release's whole
+-width or height. Each duration scales with the `--vn-factor-motion` factor. The transition is
+-written through the `transition` mixin, so the reduced-motion rule the release records beside it,
+-for the bare panel and for each responsive panel below its breakpoint, is emitted with it.
++the `--vn-motion-panel` token on the `--vn-ease-out` curve, so each move resolves to `250ms` at a
++factor of `1`, in place of the release's `0.3s`, and rescales with the `--vn-factor-motion` factor.
++The release's `transform 0.3s ease-in-out` transition moves the transform alone. The travel stays
++the release's whole width or height. The transition is written through the `transition` mixin, so
++the reduced-motion rule the release records beside it, for the bare panel and for each responsive
++panel below its breakpoint, is emitted with it.
+ 
+ These are the key's recorded departures.
+ 
+@@ -6169,11 +6170,12 @@ These are the key's recorded departures.
+ - **The panel moves on Elements' panel motion.** The `--bs-offcanvas-transition` variable on every
+   panel class moves the `transform` property over the `--vn-motion-panel` token on the
+   `--vn-ease-panel` curve and the `opacity` property over the `--vn-motion-panel` token on the
+-  `--vn-ease-out` curve, in place of the recorded `transform 0.3s ease-in-out` value. The fixed
+-  panel's opacity is `0` at rest and under the `hiding` class, and `1` under the `showing` class and
+-  under the `show` class without the `hiding` class. The release writes no opacity on the panel, so
+-  § Additions records each opacity declaration, the expanded navbar's reset that § Navbar classes
+-  gives included.
++  `--vn-ease-out` curve, in place of the recorded `transform 0.3s ease-in-out` value. At a factor of
++  `1` the slide resolves to a `250ms` duration on the `cubic-bezier(0.32, 0.72, 0, 1)` curve and the
++  fade to a `250ms` duration on the `ease-out` curve. The fixed panel's opacity is `0` at rest and
++  under the `hiding` class, and `1` under the `showing` class and under the `show` class without the
++  `hiding` class. The release writes no opacity on the panel, so § Additions records each opacity
++  declaration, the expanded navbar's reset that § Navbar classes gives included.
+ - **An important background utility does not paint the inline panel.** At and above the breakpoint,
+   the panel's clear fill is an important declaration in the components layer. For important
+   declarations an earlier layer wins and a layered declaration wins over an unlayered one, so a
+diff --git a/src/styles/components/_offcanvas.scss b/src/styles/components/_offcanvas.scss
+index 2b13629..f714bf7 100644
+--- a/src/styles/components/_offcanvas.scss
++++ b/src/styles/components/_offcanvas.scss
+@@ -72,7 +72,7 @@ $nested: (
+ 	// width, the height, and the backdrop's opacity keep the release's literals, because no Veneer
+ 	// token resolves to them. The transition slides the panel over `--vn-motion-panel` on
+ 	// `--vn-ease-panel` and fades it over `--vn-motion-panel` on `--vn-ease-out`, in place of the
+-	// release's `transform 0.3s ease-in-out`, which fades nothing.
++	// release's `transform 0.3s ease-in-out`, which moves the transform alone.
+ 	$panels: '.offcanvas';
+ 	@each $name, $boundary in breakpoints() {
+ 		@if $boundary != 0 {
+diff --git a/tests/src/styles/components/offcanvas.test.ts b/tests/src/styles/components/offcanvas.test.ts
+index 7c150a8..5f580e5 100644
+--- a/tests/src/styles/components/offcanvas.test.ts
++++ b/tests/src/styles/components/offcanvas.test.ts
+@@ -597,21 +597,30 @@ describe('offcanvas motion', () => {
+ 		},
+ 	)
+ 
+-	// The mutation this catches is the panel's opacity or its transition written outside the rules
+-	// each responsive panel carries below its boundary. At and above the boundary the panel sits in
+-	// the flow, where no rule of the partial gives it an opacity or a transition, so it reads opaque at
+-	// rest and starts no transition as an engine shows it. Below the boundary it rests transparent,
+-	// and it slides and fades in over the panel duration a specimen resolves from the token. Each
+-	// boundary is read on both sides, and a reading with no transition holds no duration.
++	// The mutations this catches are the panel's opacity or its transition written outside the rules
++	// each responsive panel carries below its boundary, and a hiding panel left opaque below it. Each
++	// boundary is read on both sides, and each reading drives the class writes an engine makes: the
++	// `showing` and `show` classes join, the `showing` class leaves, the `hiding` class joins as the
++	// `show` class leaves, and the `hiding` class leaves. At and above the boundary the panel sits in
++	// the flow, where no rule of the partial gives it an opacity or a transition, so it reads opaque
++	// at every step and starts no transition. Below the boundary it rests transparent, slides and
++	// fades in and back out on the panel duration and the two curves a specimen resolves from the
++	// tokens, and rests transparent again. A step that starts no transition reads as no duration and
++	// no curve, and the removal of the `showing` class and of the `hiding` class starts nothing on
++	// either side.
+ 	it.each(GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary !== 0))(
+-		'keeps the $name panel opaque and still at and above its boundary, and slides and fades it in below',
++		'keeps the $name panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins',
+ 		async ({ name, boundary, readings }) => {
+ 			const specimen = requireValue(
+-				scene.mount(`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel})"></div>`)
+-					.firstElementChild,
++				scene.mount(
++					`<div style="transition: transform var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel}), opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out})"></div>`,
++				).firstElementChild,
+ 				'No motion specimen',
+ 			)
+ 			const duration = readDuration(specimen)
++			const [slide, fade] = splitTopLevelList(
++				readStyle(specimen, 'transition-timing-function'),
++			).map((curve) => trimCSSWhitespace(curve))
+ 			for (const viewport of readings) {
+ 				const reading = await visitBreakpoint(viewport, () => {
+ 					const panel = requireValue(
+@@ -625,17 +634,61 @@ describe('offcanvas motion', () => {
+ 					const resting = readStyle(panel, 'opacity')
+ 					readStyle(panel, 'transform')
+ 					panel.classList.add('showing', 'show')
+-					const durations = ['transform', 'opacity'].map((property) => {
++					const entering = ['transform', 'opacity'].map((property) => {
+ 						const sample = sampleTransition(panel, property)
+ 						sample?.transition.finish()
+-						return sample?.duration
++						return [sample?.duration, sample?.easing]
+ 					})
+-					return { viewport, resting, durations, settled: readStyle(panel, 'opacity') }
++					const shown = readStyle(panel, 'opacity')
++					panel.classList.remove('showing')
++					const settling = panel.getAnimations()
++					panel.classList.add('hiding')
++					panel.classList.remove('show')
++					const leaving = ['transform', 'opacity'].map((property) => {
++						const sample = sampleTransition(panel, property)
++						sample?.transition.finish()
++						return [sample?.duration, sample?.easing]
++					})
++					const hidden = readStyle(panel, 'opacity')
++					panel.classList.remove('hiding')
++					return {
++						viewport,
++						resting,
++						entering,
++						shown,
++						leaving,
++						hidden,
++						lingering: [settling, panel.getAnimations()],
++					}
+ 				})
++				const idle = [
++					[undefined, undefined],
++					[undefined, undefined],
++				]
++				const moving = [
++					[duration, slide],
++					[duration, fade],
++				]
+ 				expect(reading).toEqual(
+ 					viewport >= boundary
+-						? { viewport, resting: '1', durations: [undefined, undefined], settled: '1' }
+-						: { viewport, resting: '0', durations: [duration, duration], settled: '1' },
++						? {
++								viewport,
++								resting: '1',
++								entering: idle,
++								shown: '1',
++								leaving: idle,
++								hidden: '1',
++								lingering: [[], []],
++							}
++						: {
++								viewport,
++								resting: '0',
++								entering: moving,
++								shown: '1',
++								leaving: moving,
++								hidden: '0',
++								lingering: [[], []],
++							},
+ 				)
+ 			}
+ 		},
+@@ -709,11 +762,12 @@ describe('offcanvas in an expanded navbar', () => {
+ 	// dropped, and its opacity reset dropped: the panel's own placement and state rules load after
+ 	// the navbar's at the same specificity, so a flag the expanded bar writes without the release's
+ 	// `!important` marker loses to them, and without the reset the panel's transparent rest reaches
+-	// the resting panel in the row. Each panel sits in a block slot wider than the recorded width, so a panel that keeps that
+-	// width is told apart from one the bar sizes automatically, and the resting panel carries the
+-	// slide and the transparency the bar clears. The visibility and fill flags outrank no shipped rule
+-	// here, so the navbar proof reads them over an inline hidden state, and the priority case in the
+-	// `tests/conformance.test.ts` file compares the flags each sheet writes.
++	// the resting panel in the row. Each panel sits in a block slot wider than the recorded width,
++	// so a panel that keeps that width is told apart from one the bar sizes automatically, and the
++	// resting panel carries the slide and the transparency the bar clears. The visibility and fill
++	// flags outrank no shipped rule here, so the navbar proof reads them over an inline hidden state,
++	// and the priority case in the `tests/conformance.test.ts` file compares the flags each sheet
++	// writes.
+ 	it.each(GRID_BREAKPOINT_CASES)(
+ 		'lays a shown and a resting panel into the $name expanded bar and leaves them fixed below the boundary',
+ 		async ({ name, boundary, readings }) => {

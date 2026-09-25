@@ -1,0 +1,17 @@
+$ npm run test:conformance
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+·············································
+
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+   Start at  10:12:38
+   Duration  124.18s (transform 675ms, setup 187ms, import 22.82s, tests 101.00s, environment 0ms)
+
+exit=0
+7.81 5.84 4.45 4/452 31750

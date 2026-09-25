@@ -1,0 +1,422 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 9d8683d..85c4a58 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4062,9 +4062,9 @@ the mode changes, every tier mixed from one, and every `--bs-*` alias reading on
+ nested in a dark one therefore returns its subtree to the light closure. A name no mode changes
+ carries the same declaration in every scope. The `:root` selector declares most such names alone,
+ and an island inherits them from its parent. Each mode scope declares the `--vn-state-hover`,
+-`--vn-state-active`, `--vn-state-stripe`, `--vn-focus-highlight`, `--vn-focus-reset`, and
+-`--bs-heading-color` variables again, with the declaration the `:root` selector writes, so each
+-resolves against the tokens its own element holds.
++`--vn-state-active`, `--vn-state-stripe`, `--vn-focus-highlight`, and `--bs-heading-color`
++variables again, with the declaration the `:root` selector writes, so each resolves against the
++tokens its own element holds.
+ 
+ The mode scopes retune tokens and paint nothing. An island paints its own surface and text through
+ the `bg-body` and `text-body` utilities, or through a component that reads the body tokens. Each
+@@ -7373,15 +7373,15 @@ Bootstrap's own values for them, so neither gets a canonical token of its own.
+ 
+ #### Semantic roles
+ 
+-Each role carries a fill, its channel triplet, and the subtle, emphasis, and border tiers. Veneer
+-takes Bootstrap's role names as the compatibility axis and Elements' measured fills as the identity.
+-The `tertiary` role is Veneer's own and answers no Bootstrap alias.
++Each role Bootstrap names carries a fill, its channel triplet, and the subtle, emphasis, and border
++tiers. Veneer takes Bootstrap's role names as the compatibility axis and Elements' measured fills as
++the identity. The `tertiary` role is Veneer's own, answers no Bootstrap alias, and carries a fill
++and an emphasis tier alone; the end of this subsection gives both.
+ 
+ | Role        | Fill                                                    | Source                                                                                 | Alias            |
+ | ----------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------- |
+ | `primary`   | `oklch(0.48 0.255 264)`, dark `oklch(0.7 0.15 233)`     | `elements` — primary fill and border                                                   | `--bs-primary`   |
+ | `secondary` | `oklch(0.446 0.043 257.281)`, dark `var(--vn-gray-600)` | `elements` — secondary fill in light; the dark fill is the release's `bootstrap` value | `--bs-secondary` |
+-| `tertiary`  | `oklch(0.541 0.281 293.009)`                            | `elements` — tertiary fill                                                             | none             |
+ | `success`   | `oklch(0.527 0.154 150.069)`                            | `elements` — success fill                                                              | `--bs-success`   |
+ | `info`      | `oklch(0.5 0.134 242.749)`                              | `elements` — the fill of the `information` variant                                     | `--bs-info`      |
+ | `warning`   | `oklch(0.555 0.163 48.998)`                             | `elements` — warning fill                                                              | `--bs-warning`   |
+@@ -7406,17 +7406,18 @@ literal rather than against `--vn-surface-raised`, because that literal is the s
+ were calibrated on and the raised surface carries its own content reading; the
+ `src/styles/_tokens.scss` partial holds it as the dark `anchor` entry.
+ 
+-`--vn-color-{role}-rgb` carries the fill's sRGB rendering as channels, for a consumer writing
+-`rgba(var(--vn-color-primary-rgb), 0.5)`. A fill outside the sRGB gamut takes the color the engine
+-paints for it, which is the clamped rendering: the dark primary is `0, 172, 236` rather than the
+-negative red channel its `color-mix()` serialization reports.
++`--vn-color-{role}-rgb` carries the fill's sRGB rendering as channels for every role apart from
++`tertiary`, for a consumer writing `rgba(var(--vn-color-primary-rgb), 0.5)`. A fill outside the sRGB
++gamut takes the color the engine paints for it, which is the clamped rendering: the dark primary is
++`0, 172, 236` rather than the negative red channel its `color-mix()` serialization reports.
+ 
+ The triplet is also the fill the contrast rule reads. The `src/styles/_tokens.scss` partial holds
+ each role's triplet as a Sass list, per mode for the primary and secondary fills, and the `contrast`
+ function in the `src/styles/_mixins.scss` partial runs the release's `color-contrast` rule over it:
+ the white palette entry where it reaches 4.5 to 1 against the fill, and the black entry otherwise.
+-§ Button states and bindings gives the label each role carries and the direction its state fills
+-move.
++The tertiary triplet lives in that partial alone: the contrast rule reads it for the tertiary
++buttons' label, and no token carries it. § Button states and bindings gives the label each role
++carries and the direction its state fills move.
+ 
+ The `light` and `dark` roles take the release's own tiers rather than the mixes. Each of their fills
+ sits beside the surface in one mode and beside the text in the other, and there a mix leaves an
+@@ -7438,6 +7439,20 @@ no less contrast than the release gives them.
+ | `--vn-color-light-subtle`, `--vn-color-light-emphasis`, `--vn-color-light-border` | `#fcfcfd`, `var(--vn-gray-700)`, `var(--vn-gray-200)`            | `var(--vn-gray-800)`, `var(--vn-gray-100)`, `var(--vn-gray-700)` | `bootstrap` — the release's `light` tiers | `--bs-light-bg-subtle`, `--bs-light-text-emphasis`, `--bs-light-border-subtle` |
+ | `--vn-color-dark-subtle`, `--vn-color-dark-emphasis`, `--vn-color-dark-border`    | `var(--vn-gray-400)`, `var(--vn-gray-700)`, `var(--vn-gray-500)` | `#1a1d20`, `var(--vn-gray-300)`, `var(--vn-gray-800)`            | `bootstrap` — the release's `dark` tiers  | `--bs-dark-bg-subtle`, `--bs-dark-text-emphasis`, `--bs-dark-border-subtle`    |
+ 
++The `tertiary` role drives the `.btn-tertiary` and `.btn-outline-tertiary` classes alone, and they
++read its fill and its emphasis tier. No Bootstrap class reads a subtle tier, a border tier, or a
++channel triplet for a role Bootstrap does not name, so the cascade declares none of them for it.
++The following tables give the tertiary fill and its emphasis tier, which is the tier table's
++emphasis mix over that fill.
++
++| Role       | Fill                         | Source                     | Alias |
++| ---------- | ---------------------------- | -------------------------- | ----- |
++| `tertiary` | `oklch(0.541 0.281 293.009)` | `elements` — tertiary fill | none  |
++
++| Token                          | Light                                                                              | Dark                | Source                                              | Alias |
++| ------------------------------ | ---------------------------------------------------------------------------------- | ------------------- | --------------------------------------------------- | ----- |
++| `--vn-color-tertiary-emphasis` | `color-mix(in oklab, var(--vn-color-tertiary-base) 70%, var(--vn-text-body-base))` | the same expression | `derived` — the emphasis mix over the tertiary fill | none  |
++
+ #### Text and surface
+ 
+ The table lists the body text tokens and the surface tokens they are painted on. Each row gives
+@@ -7600,7 +7615,7 @@ variables it answers, and a row whose dark mode differs writes the dark reading
+ | `--vn-ease-standard`, `--vn-ease-out`, `--vn-ease-panel` | `ease`, `ease-out`, `cubic-bezier(0.32, 0.72, 0, 1)`                             | `elements` — the motion table's easings                                                                                                             | none                                                              |
+ | `--vn-focus-width`, `--vn-focus-opacity`                 | `0.1875rem`, `0.45`                                                              | `elements` — the focus-visible ring                                                                                                                 | `--bs-focus-ring-width`, `-opacity`                               |
+ | `--vn-focus-color`                                       | `color-mix(in oklab, var(--vn-color-primary-base) 45%, transparent)`             | `derived` — reproduces the calibrated ring: `oklab(0.48 -0.0266547 -0.253603 / 0.45)` in light and `oklab(0.7 -0.0902723 -0.119795 / 0.45)` in dark | `--bs-focus-ring-color`                                           |
+-| `--vn-focus-highlight`, `--vn-focus-reset`               | `Highlight`, `none`                                                              | `derived` — system outline and shadow reset for the shared focus mixin                                                                              | none                                                              |
++| `--vn-focus-highlight`                                   | `Highlight`                                                                      | `derived` — system outline for the shared focus mixin                                                                                               | none                                                              |
+ | `--vn-form-valid`                                        | `var(--vn-color-success-emphasis)`                                               | `derived` — the success on-canvas tier in each mode, so the state text on the page clears 4.5 to 1                                                  | `--bs-form-valid-color`, `--bs-form-valid-border-color`           |
+ | `--vn-form-invalid`                                      | `var(--vn-color-danger-emphasis)`                                                | `derived` — the danger on-canvas tier in each mode, so the state text on the page clears 4.5 to 1                                                   | `--bs-form-invalid-color`, `--bs-form-invalid-border-color`       |
+ | `--vn-breakpoint-xs` through `--vn-breakpoint-xxl`       | `0`, `576px`, `768px`, `992px`, `1200px`, `1400px`                               | `bootstrap` — the documented wire vocabulary                                                                                                        | `--bs-breakpoint-xs` … `-xxl`                                     |
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 82cc248..7fa482e 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -68,10 +68,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 		} as const),
+ 		tertiary: Object.freeze({
+ 			base: '--vn-color-tertiary-base',
+-			rgb: '--vn-color-tertiary-rgb',
+-			subtle: '--vn-color-tertiary-subtle',
+ 			emphasis: '--vn-color-tertiary-emphasis',
+-			border: '--vn-color-tertiary-border',
+ 		} as const),
+ 		success: Object.freeze({
+ 			base: '--vn-color-success-base',
+@@ -239,7 +236,6 @@ export const TOKEN_NAMES = Object.freeze({
+ 		opacity: '--vn-focus-opacity',
+ 		color: '--vn-focus-color',
+ 		highlight: '--vn-focus-highlight',
+-		reset: '--vn-focus-reset',
+ 	} as const),
+ 	state: Object.freeze({
+ 		mixer: '--vn-state-mixer',
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 8da06dc..b5040fc 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -383,7 +383,7 @@
+ 	$width: var(--vn-focus-width),
+ 	$shadow: 0 0 0 $width $color,
+ 	$highlight: var(--vn-focus-highlight),
+-	$reset: var(--vn-focus-reset)
++	$reset: none
+ ) {
+ 	outline: none;
+ 	box-shadow: $shadow;
+@@ -392,12 +392,16 @@
+ 	}
+ }
+ 
+-// Emits the subtle, emphasis, and border tiers of every role in `$roles`.
++// Emits the emphasis tier of every role in `$roles`, and the subtle and border tiers of every role
++// in `$aliased`.
+ //
+ // Each tier is an oklab mix over the role's own fill, so a retuned fill carries its own tiers.
+ // `$tint` and `$edge` are the mix percentages the mode uses, and `$anchor` is the surface the
+ // border tier mixes against. The emphasis percentage is the same in light and in dark, so it is
+-// written here rather than passed.
++// written here rather than passed. The subtle and border tiers exist for the `--bs-*` aliases the
++// release's classes read, so a role outside `$aliased`, which has no such alias, takes only the
++// emphasis tier its own buttons read. `$aliased` defaults to `$roles`, so a caller naming no subset
++// takes every tier for every role.
+ //
+ // `.claude/rules/styles.md` keeps a one-partial pattern inline and creates no mixin for one
+ // caller, and `theme-tokens` is this mixin's only include in the shipped source. It is retained
+@@ -408,23 +412,28 @@
+ // whole theme closure and leave that proof reading a mode's own values instead. The deleted
+ // `theme-assets` mixin had no such proof: it emitted the dark scope's `url()` declarations and
+ // nothing read it except the scope that already carried them.
+-@mixin role-each($roles, $tint, $edge, $anchor) {
++@mixin role-each($roles, $tint, $edge, $anchor, $aliased: $roles) {
+ 	@each $role in $roles {
+-		--vn-color-#{$role}-subtle: color-mix(
+-			in oklab,
+-			var(--vn-color-#{$role}-base) #{$tint},
+-			var(--vn-surface-body-base)
+-		);
++		$tiered: list.index($aliased, $role) != null;
++		@if $tiered {
++			--vn-color-#{$role}-subtle: color-mix(
++				in oklab,
++				var(--vn-color-#{$role}-base) #{$tint},
++				var(--vn-surface-body-base)
++			);
++		}
+ 		--vn-color-#{$role}-emphasis: color-mix(
+ 			in oklab,
+ 			var(--vn-color-#{$role}-base) 70%,
+ 			var(--vn-text-body-base)
+ 		);
+-		--vn-color-#{$role}-border: color-mix(
+-			in oklab,
+-			var(--vn-color-#{$role}-base) #{$edge},
+-			#{$anchor}
+-		);
++		@if $tiered {
++			--vn-color-#{$role}-border: color-mix(
++				in oklab,
++				var(--vn-color-#{$role}-base) #{$edge},
++				#{$anchor}
++			);
++		}
+ 	}
+ }
+ 
+@@ -455,7 +464,8 @@
+ 		$roles,
+ 		map.get($values, 'tint'),
+ 		map.get($values, 'edge'),
+-		map.get($values, 'anchor')
++		map.get($values, 'anchor'),
++		$aliased
+ 	);
+ 	@each $name, $key in $retuned {
+ 		#{$name}: #{map.get($values, $key)};
+@@ -486,7 +496,6 @@
+ 	--vn-form-invalid: #{map.get($values, 'invalid')};
+ 	--vn-focus-color: color-mix(in oklab, var(--vn-color-primary-base) 45%, transparent);
+ 	--vn-focus-highlight: #{map.get($values, 'focus-highlight')};
+-	--vn-focus-reset: #{map.get($values, 'focus-reset')};
+ 
+ 	@each $role in $aliased {
+ 		@if map.has-key($values, $role) {
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 51d2a6b..327a48f 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -22,7 +22,6 @@ $neutrals: light, dark;
+ // `guides/veneer.md` under Tokens.
+ $light: (
+ 	'focus-highlight': Highlight,
+-	'focus-reset': none,
+ 	'state-mixer': 'color(srgb 0.00742457 0.0232852 0.0925134)',
+ 	'state-hover': 12%,
+ 	'state-active': 22%,
+@@ -86,7 +85,6 @@ $light: (
+ // reads about 2.3 to 1 against the dark canvas.
+ $dark: (
+ 	'focus-highlight': Highlight,
+-	'focus-reset': none,
+ 	'state-mixer': 'var(--vn-palette-white-base)',
+ 	'state-hover': 12%,
+ 	'state-active': 22%,
+@@ -169,8 +167,10 @@ $retuned: (
+ 	'--vn-color-dark-border': 'dark-border',
+ );
+ 
+-// The channel triplet of every role whose fill is the same in both modes, which the `:root` block
+-// emits as the role's `--vn-color-{role}-rgb` token and the contrast rule reads in both modes.
++// The channel triplet of every role whose fill is the same in both modes, which the contrast rule
++// reads in both modes. The `:root` block emits each aliased role's triplet as its
++// `--vn-color-{role}-rgb` token, the value its `--bs-{role}-rgb` alias reads; a role with no
++// Bootstrap alias has no class reading its channels, so its triplet stays here.
+ $triplets: (
+ 	'tertiary': (
+ 		127,
+@@ -360,7 +360,9 @@ $icons: (
+ 		--vn-color-light-base: var(--vn-gray-100);
+ 		--vn-color-dark-base: var(--vn-gray-900);
+ 		@each $role, $triplet in $triplets {
+-			--vn-color-#{$role}-rgb: #{$triplet};
++			@if list.index($aliased, $role) {
++				--vn-color-#{$role}-rgb: #{$triplet};
++			}
+ 		}
+ 
+ 		--vn-text-heading: inherit;
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index ae6f315..1b533ba 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -4075,7 +4075,6 @@ export const VENEER_GUIDE_PATH = 'guides/veneer.md'
+ export const UNMAPPED_TOKENS: readonly string[] = Object.freeze([
+ 	'--vn-color-primary-rgb',
+ 	'--vn-color-secondary-rgb',
+-	'--vn-color-tertiary-rgb',
+ 	'--vn-color-success-rgb',
+ 	'--vn-color-info-rgb',
+ 	'--vn-color-warning-rgb',
+@@ -4521,7 +4520,9 @@ export const RETAINED_LENGTH_ALIASES: ReadonlyArray<
+  * release's gray steps, which the {@link THEME_GRAY_TIERS} constant records. The dark secondary
+  * fill is the release's rather than Elements', because Elements' slate reads about 2.3 to 1 against
+  * the dark canvas, so no row measures the dark secondary tiers either; the
+- * `tests/src/styles/theme.test.ts` proof reads that fill against the release's own.
++ * `tests/src/styles/theme.test.ts` proof reads that fill against the release's own. The `tertiary`
++ * role carries no Bootstrap alias, so Veneer declares no subtle or border tier for it and no row
++ * records Elements' reading of either.
+  */
+ export const CALIBRATED_TIERS: ReadonlyArray<
+ 	readonly [role: string, mode: string, tier: string, color: string]
+@@ -4555,12 +4556,8 @@ export const CALIBRATED_TIERS: ReadonlyArray<
+ 	] as const),
+ 	Object.freeze(['tertiary', 'light', 'base', 'oklch(0.541 0.281 293.009)'] as const),
+ 	Object.freeze(['tertiary', 'dark', 'base', 'oklch(0.541 0.281 293.009)'] as const),
+-	Object.freeze(['tertiary', 'light', 'subtle', 'oklab(0.944915 0.0132204 -0.0310197)'] as const),
+-	Object.freeze(['tertiary', 'dark', 'subtle', 'oklab(0.25965 0.0138022 -0.0495184)'] as const),
+ 	Object.freeze(['tertiary', 'light', 'emphasis', 'oklab(0.4411 0.0759527 -0.193617)'] as const),
+ 	Object.freeze(['tertiary', 'dark', 'emphasis', 'oklab(0.6574 0.0759094 -0.184827)'] as const),
+-	Object.freeze(['tertiary', 'light', 'border', 'oklab(0.839346 0.0384723 -0.0905125)'] as const),
+-	Object.freeze(['tertiary', 'dark', 'border', 'oklab(0.388 0.0533456 -0.135629)'] as const),
+ 	Object.freeze(['success', 'light', 'base', 'oklch(0.527 0.154 150.069)'] as const),
+ 	Object.freeze(['success', 'dark', 'base', 'oklch(0.527 0.154 150.069)'] as const),
+ 	Object.freeze(['success', 'light', 'subtle', 'oklab(0.943235 -0.0159752 0.00923839)'] as const),
+diff --git a/tests/src/styles/fixtures/mixins.scss b/tests/src/styles/fixtures/mixins.scss
+index 6bbafff..699a2b6 100644
+--- a/tests/src/styles/fixtures/mixins.scss
++++ b/tests/src/styles/fixtures/mixins.scss
+@@ -23,6 +23,12 @@
+ 	}
+ }
+ 
++// Includes the focus ring with no argument, so the proof reads the reset the mixin writes by default
++// under forced colors. Every shipped caller passes its own reset, so no shipped rule shows it.
++.vn-fixture-ring {
++	@include focus-ring;
++}
++
+ // Pins the fill the tiers mix and the body surface and body text they mix against, so the painted
+ // result is a function of the mix percentages alone. Every endpoint is a palette token Veneer
+ // retains from Bootstrap, so the proof's expected colors are stable values rather than a second
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 242cb3a..43375d0 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -72,6 +72,63 @@ describe('declaration mixins', () => {
+ 		expect(ring.lengths).toEqual([0, 0, 0, 3])
+ 		expect(matchesColor(ring.color, 'oklab(0.48 -0.0266547 -0.253603 / 0.45)')).toBe(true)
+ 	})
++	// A `var()` naming an undeclared property computes to the initial `none` as well, so the
++	// declaration the mixin wrote is read as text, and the rendered reading takes a specimen that
++	// declares a shadow under the retired reset name and opts out of forced colors: a default that
++	// still read a token would paint that shadow.
++	it('writes no shadow under forced colors when its caller passes no reset, and reads no token for it', async () => {
++		const resets = readRules().flatMap((rule) =>
++			rule instanceof CSSMediaRule && rule.conditionText === '(forced-colors: active)'
++				? Array.from(rule.cssRules).flatMap((nested) =>
++						nested instanceof CSSStyleRule && nested.selectorText === '.vn-fixture-ring'
++							? [nested.style.getPropertyValue('box-shadow')]
++							: [],
++					)
++				: [],
++		)
++		expect.soft(resets).toEqual(['none'])
++		const specimen = requireValue(
++			scene.mount(
++				'<div class="vn-fixture-ring" style="--vn-focus-reset: 0 0 0 5px rgb(255, 0, 0); forced-color-adjust: none"></div>',
++			).firstElementChild,
++			'The ring fixture mounted no specimen',
++		)
++		expect(extractShadowLayers(readStyle(specimen, 'box-shadow'))).not.toEqual([])
++		await stageMedia({ forced: true })
++		expect(readStyle(specimen, 'outline-style')).toBe('solid')
++		expect(readStyle(specimen, 'box-shadow')).toBe('none')
++	})
++	it('outlines every shipped focus-ring caller at the focus width under forced colors and paints no shadow ring', async () => {
++		const host = scene.mount(
++			'<button>Element ring</button><button class="btn btn-tertiary">Tertiary ring</button><button class="btn btn-outline-tertiary">Outline ring</button><button class="btn btn-link">Link ring</button><div class="focus-gauge" style="width: var(--vn-focus-width)"></div>',
++		)
++		const gauge = requireValue(host.querySelector('.focus-gauge'), 'No focus gauge')
++		await stageMedia({ motion: false, forced: true })
++		const readings: Array<Readonly<Record<string, string | number | boolean | null>>> = []
++		for (const button of host.querySelectorAll('button')) {
++			button.focus()
++			await pressKeys('{ArrowRight}')
++			readings.push({
++				name: button.textContent,
++				visible: button.matches(':focus-visible'),
++				style: readStyle(button, 'outline-style'),
++				width: readPixels(button, 'outline-width'),
++				shadow: readStyle(button, 'box-shadow'),
++			})
++			button.blur()
++		}
++		const width = readPixels(gauge, 'width')
++		expect(width).toBeGreaterThan(0)
++		expect(readings).toEqual(
++			['Element ring', 'Tertiary ring', 'Outline ring', 'Link ring'].map((name) => ({
++				name,
++				visible: true,
++				style: 'solid',
++				width,
++				shadow: 'none',
++			})),
++		)
++	})
+ 	it('emits the calibrated feedback duration and easing, and collapses it under reduced motion', async () => {
+ 		const specimen = requireValue(
+ 			scene.mount('<div class="vn-fixture-transition"></div>').firstElementChild,
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 4bac62b..19587d3 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -18,6 +18,7 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import guide from '../../../guides/veneer.md?raw'
+ import { normalizeSelectorText } from '../../setup.js'
+ import {
++	collectCustomProperties,
+ 	collectNestedRules,
+ 	collectScopeProperties,
+ 	readCascadeSheet,
+@@ -59,6 +60,39 @@ describe('token cascade', () => {
+ 		expect([...compatible].sort()).toEqual([...BOOTSTRAP_ROOT_VARIABLES].sort())
+ 		expect(declared.length).toBe(canonical.length + compatible.length + lowered.length)
+ 	})
++	// No Bootstrap class reads a subtle, border, or channel tier for a role with no Bootstrap alias,
++	// and every shipped focus-ring caller passes its own reset, so none of these names has a reader.
++	// The walk takes every rule of the Veneer sheet, the mode scopes and the rules nested in a media
++	// or layer block included, and the tertiary fill and emphasis tier it must still find show that
++	// it reached the tokens at all.
++	it('declares no focus reset token and no subtle, border, or channel tier for the tertiary role in any scope', () => {
++		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const declared = collectCustomProperties([sheet])
++		expect(declared).toEqual(
++			expect.arrayContaining(['--vn-color-tertiary-base', '--vn-color-tertiary-emphasis']),
++		)
++		expect(
++			declared.filter((name) =>
++				[
++					'--vn-focus-reset',
++					'--vn-color-tertiary-subtle',
++					'--vn-color-tertiary-border',
++					'--vn-color-tertiary-rgb',
++				].includes(name),
++			),
++		).toEqual([])
++	})
++	it('declares the tertiary fill at the document scope and its emphasis tier in every mode scope', () => {
++		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const rules = collectNestedRules(sheet.cssRules)
++		expect(collectScopeProperties(rules, ':root')).toEqual(
++			expect.arrayContaining(['--vn-color-tertiary-base', '--vn-color-tertiary-emphasis']),
++		)
++		for (const selector of ["[data-bs-theme='light']", "[data-bs-theme='dark']"])
++			expect
++				.soft(collectScopeProperties(rules, selector), selector)
++				.toContain('--vn-color-tertiary-emphasis')
++	})
+ 	// The reference map is the guide's own statement of what the cascade declares, so it is read
+ 	// here as a second mechanism that can disagree with the cascade rather than as documentation.
+ 	// Every row the reader returns carries a value for both modes — a cell it cannot read is a

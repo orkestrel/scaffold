@@ -1,0 +1,13 @@
+DIFF /TRET-BUTTON/btn-tertiary light tokens/subtle: "color-mix(in oklab, oklch(54.1% .281 293.009) 12%, #fff)" -> ""
+DIFF /TRET-BUTTON/btn-tertiary light tokens/border: "color-mix(in oklab, oklch(54.1% .281 293.009) 35%, #fff)" -> ""
+DIFF /TRET-BUTTON/btn-tertiary light tokens/rgb: "127, 34, 254" -> ""
+DIFF /TRET-BUTTON/btn-outline-tertiary light tokens/subtle: "color-mix(in oklab, oklch(54.1% .281 293.009) 12%, #fff)" -> ""
+DIFF /TRET-BUTTON/btn-outline-tertiary light tokens/border: "color-mix(in oklab, oklch(54.1% .281 293.009) 35%, #fff)" -> ""
+DIFF /TRET-BUTTON/btn-outline-tertiary light tokens/rgb: "127, 34, 254" -> ""
+DIFF /TRET-BUTTON/btn-tertiary dark tokens/subtle: "color-mix(in oklab, oklch(54.1% .281 293.009) 15%, oklch(21% .013 256))" -> ""
+DIFF /TRET-BUTTON/btn-tertiary dark tokens/border: "color-mix(in oklab, oklch(54.1% .281 293.009) 50%, oklch(23.5% .013 256))" -> ""
+DIFF /TRET-BUTTON/btn-tertiary dark tokens/rgb: "127, 34, 254" -> ""
+DIFF /TRET-BUTTON/btn-outline-tertiary dark tokens/subtle: "color-mix(in oklab, oklch(54.1% .281 293.009) 15%, oklch(21% .013 256))" -> ""
+DIFF /TRET-BUTTON/btn-outline-tertiary dark tokens/border: "color-mix(in oklab, oklch(54.1% .281 293.009) 50%, oklch(23.5% .013 256))" -> ""
+DIFF /TRET-BUTTON/btn-outline-tertiary dark tokens/rgb: "127, 34, 254" -> ""
+same=222

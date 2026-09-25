@@ -1,0 +1,283 @@
+# plant leak on src/styles/components/_offcanvas.scss (moff-plants-2.sh)
+127a128
+> 					opacity: 0;
+$ npm run build:src:styles
+build=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/offcanvas.test.ts tests/src/styles/components/navbar.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:53 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts (40 tests | 5 failed) 2993ms
+     × keeps the 'sm' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins 86ms
+     × keeps the 'md' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins 77ms
+     × keeps the 'lg' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins 83ms
+     × keeps the 'xl' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins 86ms
+     × keeps the 'xxl' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins 101ms
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:07:57 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:612:2 > offcanvas motion > keeps the 'sm' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins
+AssertionError: expected { viewport: 576, resting: '0', …(5) } to deeply equal { viewport: 576, resting: '1', …(5) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,11 +7,11 @@[39m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[2m    ],[22m
+[32m-   "hidden": "1",[39m
+[31m+   "hidden": "0",[39m
+[2m    "leaving": [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[33m@@ -22,9 +22,9 @@[39m
+[2m    ],[22m
+[2m    "lingering": [[22m
+[2m      [],[22m
+[2m      [],[22m
+[2m    ],[22m
+[32m-   "resting": "1",[39m
+[32m-   "shown": "1",[39m
+[31m+   "resting": "0",[39m
+[31m+   "shown": "0",[39m
+[2m    "viewport": 576,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:672:20
+    670|      [duration, fade],
+    671|     ]
+    672|     expect(reading).toEqual(
+       |                    ^
+    673|      viewport >= boundary
+    674|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:612:2 > offcanvas motion > keeps the 'md' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins
+AssertionError: expected { viewport: 768, resting: '0', …(5) } to deeply equal { viewport: 768, resting: '1', …(5) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,11 +7,11 @@[39m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[2m    ],[22m
+[32m-   "hidden": "1",[39m
+[31m+   "hidden": "0",[39m
+[2m    "leaving": [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[33m@@ -22,9 +22,9 @@[39m
+[2m    ],[22m
+[2m    "lingering": [[22m
+[2m      [],[22m
+[2m      [],[22m
+[2m    ],[22m
+[32m-   "resting": "1",[39m
+[32m-   "shown": "1",[39m
+[31m+   "resting": "0",[39m
+[31m+   "shown": "0",[39m
+[2m    "viewport": 768,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:672:20
+    670|      [duration, fade],
+    671|     ]
+    672|     expect(reading).toEqual(
+       |                    ^
+    673|      viewport >= boundary
+    674|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:612:2 > offcanvas motion > keeps the 'lg' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins
+AssertionError: expected { viewport: 992, resting: '0', …(5) } to deeply equal { viewport: 992, resting: '1', …(5) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,11 +7,11 @@[39m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[2m    ],[22m
+[32m-   "hidden": "1",[39m
+[31m+   "hidden": "0",[39m
+[2m    "leaving": [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[33m@@ -22,9 +22,9 @@[39m
+[2m    ],[22m
+[2m    "lingering": [[22m
+[2m      [],[22m
+[2m      [],[22m
+[2m    ],[22m
+[32m-   "resting": "1",[39m
+[32m-   "shown": "1",[39m
+[31m+   "resting": "0",[39m
+[31m+   "shown": "0",[39m
+[2m    "viewport": 992,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:672:20
+    670|      [duration, fade],
+    671|     ]
+    672|     expect(reading).toEqual(
+       |                    ^
+    673|      viewport >= boundary
+    674|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:612:2 > offcanvas motion > keeps the 'xl' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins
+AssertionError: expected { viewport: 1200, resting: '0', …(5) } to deeply equal { viewport: 1200, resting: '1', …(5) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,11 +7,11 @@[39m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[2m    ],[22m
+[32m-   "hidden": "1",[39m
+[31m+   "hidden": "0",[39m
+[2m    "leaving": [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[33m@@ -22,9 +22,9 @@[39m
+[2m    ],[22m
+[2m    "lingering": [[22m
+[2m      [],[22m
+[2m      [],[22m
+[2m    ],[22m
+[32m-   "resting": "1",[39m
+[32m-   "shown": "1",[39m
+[31m+   "resting": "0",[39m
+[31m+   "shown": "0",[39m
+[2m    "viewport": 1200,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:672:20
+    670|      [duration, fade],
+    671|     ]
+    672|     expect(reading).toEqual(
+       |                    ^
+    673|      viewport >= boundary
+    674|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:612:2 > offcanvas motion > keeps the 'xxl' panel opaque with no transition at and above its boundary, and below it slides and fades the panel in as the showing class joins and back out as the hiding class joins
+AssertionError: expected { viewport: 1400, resting: '0', …(5) } to deeply equal { viewport: 1400, resting: '1', …(5) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,11 +7,11 @@[39m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[2m    ],[22m
+[32m-   "hidden": "1",[39m
+[31m+   "hidden": "0",[39m
+[2m    "leaving": [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        undefined,[22m
+[2m      ],[22m
+[33m@@ -22,9 +22,9 @@[39m
+[2m    ],[22m
+[2m    "lingering": [[22m
+[2m      [],[22m
+[2m      [],[22m
+[2m    ],[22m
+[32m-   "resting": "1",[39m
+[32m-   "shown": "1",[39m
+[31m+   "resting": "0",[39m
+[31m+   "shown": "0",[39m
+[2m    "viewport": 1400,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:672:20
+    670|      [duration, fade],
+    671|     ]
+    672|     expect(reading).toEqual(
+       |                    ^
+    673|      viewport >= boundary
+    674|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  5 failed | 77 passed (82)
+   Start at  10:07:42
+   Duration  19.79s (transform 0ms, setup 2.25s, import 170ms, tests 8.24s, environment 0ms)
+
+exit=1
+7.23 4.97 3.70 18/435 17564
+restored=identical
