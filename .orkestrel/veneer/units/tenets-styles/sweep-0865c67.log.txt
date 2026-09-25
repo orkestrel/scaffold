@@ -1,0 +1,25 @@
+== :has()
+none
+== :not([class...])
+elements | a:not([href]):not([class]),a:not([href]):not([class]):hover
+elements | button:not([class],[data-bs-target])
+elements | button:not([class],[data-bs-target])
+elements | button:not([class],[data-bs-target]):hover
+elements | button:not([class],[data-bs-target]):active
+elements | button:not([class],[data-bs-target]):focus-visible
+elements | button:not([class],[data-bs-target]):focus-visible
+elements | button:not([class],[data-bs-target]):disabled
+== tag-context pairs (two or more tag-only compounds, no class anywhere)
+none
+== tag-only selectors outside the elements and reboot layers
+none
+== !important per layer
+{"reset":1,"elements":1,"components":54,"utilities":1589}
+== declared --vn-* with no var() reader in the cascade
+--vn-color-tertiary-border
+--vn-color-tertiary-rgb
+--vn-color-tertiary-subtle
+--vn-ease-out
+--vn-ease-panel
+--vn-focus-reset
+--vn-motion-panel

@@ -1,0 +1,516 @@
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 3ef69a5c..d7fbb861 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -2115,6 +2115,8 @@ you for asking for the generated proof back.
+ The generated distribution proof takes its release contract from the outside. The generated
+ `prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and the proof reads
+ `import.meta.env.MODE === 'release'` and **fails** on an unreachable registry rather than skipping.
++The root project factories carry the invocation mode into each project, because Vitest runs a
++project whose factory returns no mode in its own `test` mode, where the proof skips.
+ An ordinary local run skips that case, because a developer offline is not a defect; a release run
+ does not, because skipping there passes the publish gate without ever proving the artifact installs.
+ A workspace that replaces the generated proof takes that contract with it: presence ownership leaves
+diff --git a/host.json b/host.json
+index 3087c8ec..796de3aa 100644
+--- a/host.json
++++ b/host.json
+@@ -22,7 +22,7 @@
+ 			"storage": "agents/orchestration.md",
+ 			"destination": ".agents/orchestration.md",
+ 			"executable": false,
+-			"digest": "d90a3808fe395a76407b3dc2ab4560509b5930930b04d326434f596951371e50"
++			"digest": "4cd7d762c47ecc8763eed8c1cd78296feeca5614fc7d4fb205939fb0bc482757"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
+@@ -454,7 +454,7 @@
+ 			"storage": "claude/rules/styles.md",
+ 			"destination": ".claude/rules/styles.md",
+ 			"executable": false,
+-			"digest": "9393ce28750e93f790da32e991e2edc7ca3d8cc1c527f40a43aeaabb202d52bc"
++			"digest": "19bcde2076aeb299648c8b6468d73827d43408acb366b0654dc70f62b08a17d8"
+ 		},
+ 		{
+ 			"storage": "claude/rules/tests.md",
+@@ -910,7 +910,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "7c89a20cba178e493d6cb46e517742cf31d12836eb24481a0eb7c96a2f20acad"
++			"digest": "ec8b30af02b700f398d7c68a0e541f8b0a85eb1346ae7b61d8e602bd84b3aaad"
+ 		},
+ 		{
+ 			"storage": "guides/sea.md",
+@@ -1036,7 +1036,7 @@
+ 			"storage": "tests/config.test.ts",
+ 			"destination": "tests/config.test.ts",
+ 			"executable": false,
+-			"digest": "904357442e9d2d0b46a792ef083feba2e7eddb05eea3f4e3f3536f5f2dcd4453"
++			"digest": "50cac1343a064c5ac0620cddcf215063affbdfed993e3078a74c795ecad30d13"
+ 		},
+ 		{
+ 			"storage": "tests/policy.test.ts",
+@@ -2001,5 +2001,5 @@
+ 			]
+ 		}
+ 	],
+-	"digest": "6e63fd0db896ab8473efd5167659758dc56c775f917997eff7a80460db15f190"
++	"digest": "9f3bd3d8050156cce69e7013aa06ecc76aa0887bbe467b09ab9066c96c735279"
+ }
+diff --git a/src/core/templates.ts b/src/core/templates.ts
+index 85deff4a..32115a8a 100644
+--- a/src/core/templates.ts
++++ b/src/core/templates.ts
+@@ -100,7 +100,11 @@ const resolve = {
+ // override receives that record in the same position. A \`UserConfig\` declares \`mode\`
+ // but not \`command\`, and the invocation record always carries both, so a value
+ // carrying the pair is that record rather than an override. The merge returns the
+-// base unchanged and reports nothing. The \`tests/config.test.ts\` file drives every
++// base in the record's \`mode\` and carries none of the record's other fields. Vitest
++// runs a project that declares no \`mode\` in its own run mode, \`test\`, rather than in
++// the \`--mode\` value it was invoked with, so a distribution proof run with
++// \`--mode release\` would read \`test\` and skip where it must fail. A record whose
++// \`mode\` is not a string throws. The \`tests/config.test.ts\` file drives every
+ // registered factory through it.
+ //
+ // \`mergeConfig\` concatenates arrays, so an override carrying \`plugins\` would otherwise
+@@ -113,7 +117,13 @@ const resolve = {
+ // merges it, so an override's arrays elsewhere concatenate with the base's rather than
+ // replacing them.
+ export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
+-	if (override === undefined || ('command' in override && 'mode' in override)) return base
++	if (override === undefined) return base
++	if ('command' in override && 'mode' in override) {
++		if (typeof override.mode !== 'string') {
++			throw new Error('The project invocation carries no string mode')
++		}
++		return { ...base, mode: override.mode }
++	}
+ 	const merged: UserConfig = mergeConfig(base, override)
+ 	if (merged.plugins === undefined) return merged
+ 	const candidates = override.plugins ?? []
+@@ -1277,7 +1287,8 @@ const TSC = createRequire(join(ROOT, 'package.json')).resolve('typescript/bin/ts
+ // rather than an exit code a caller can read. Every following argument is a literal or
+ // a path this file built, so the shell has nothing to escape.
+ const SHELL = process.platform === 'win32'
+-// \`prepublishOnly\` runs this proof as \`npm run test:distribution -- --mode release\`.
++// \`prepublishOnly\` runs this proof as \`npm run test:distribution -- --mode release\`,
++// and the root configuration's project factories carry that mode into this project.
+ // Release is the publish gate, so evidence it cannot obtain fails there and skips
+ // everywhere else: a gate that passes on missing evidence proves nothing.
+ const RELEASE = import.meta.env.MODE === 'release'
+diff --git a/tests/config.test.ts b/tests/config.test.ts
+index 0206b1a2..fc55d421 100644
+--- a/tests/config.test.ts
++++ b/tests/config.test.ts
+@@ -370,63 +370,77 @@ describe('root configuration', () => {
+ 		}).toThrow(/strictly equal/u)
+ 	})
+ 
+-	it('emits every project as a factory so the release mode reaches its proof', () => {
++	it('runs every project in the mode Vitest was invoked with', () => {
+ 		const projects = configuration.test?.projects
+ 		if (!Array.isArray(projects)) throw new Error('The root configuration carries no projects')
+ 		if (projects.length === 0) throw new Error('The root configuration registers no project')
+-		// Measured: with `--mode release` on the command line, `import.meta.env.MODE` reads
+-		// `release` inside a project Vitest calls and `test` inside an inline project
+-		// configuration. `prepublishOnly` runs the distribution proof with `--mode release`, and
+-		// that proof fails rather than skips only when it reads `release`, so converting these
+-		// entries to inline configurations turns the publish gate into a skip while every suite
+-		// stays green. The control is that conversion applied to one entry.
+-		const inline = {
+-			test: {
+-				name: { label: 'inline' },
+-				include: ['tests/inline.test.ts'],
+-				setupFiles: ['./tests/setup.ts'],
+-			},
+-		}
+-		const callable = projects.concat(inline).filter((entry) => typeof entry === 'function')
+-		for (const entry of projects) expect(callable).toContain(entry)
+-		expect(callable).not.toContain(inline)
+-	})
+-
+-	it('keeps Vitest invocation fields out of project configurations', () => {
+-		const projects = configuration.test?.projects
+-		if (!Array.isArray(projects)) throw new Error('The root configuration carries no projects')
+-		const factories = projects.filter((row) => typeof row === 'function')
+-		if (factories.length === 0)
+-			throw new Error('The root configuration registers no project factory')
+-		const sentinel = {
+-			command: 'sentinel-command',
++		// Vitest calls each registered factory with its invocation record, whose `mode` is the
++		// `--mode` value, and runs a project that declares no `mode` in its own run mode, `test`.
++		// `prepublishOnly` runs the distribution proof with `--mode release`, and that proof fails
++		// rather than skips only when it reads `release`, so every project returns the record's
++		// `mode` and none of the record's other fields. The sentinel mode is a value no factory
++		// declares, so only a forwarded mode reads it. The controls are the ways a row misses
++		// that: a factory that ignores the record, one that spreads it whole, and an inline
++		// entry, which Vitest never calls.
++		const invocation = {
++			command: 'serve',
+ 			isPreview: true,
+ 			isSsrBuild: true,
+ 			mode: 'sentinel-mode',
+ 			sentinel: true,
+ 		}
+-		for (const factory of factories) {
+-			const project: unknown = Reflect.apply(factory, undefined, [sentinel])
++		const test = { name: { label: 'control' }, include: ['tests/control.test.ts'] }
++		const ignoring = Object.defineProperty(() => ({ test }), 'name', { value: 'ignoring' })
++		const spreading = Object.defineProperty((record: object) => ({ ...record, test }), 'name', {
++			value: 'spreading',
++		})
++		const entries: readonly unknown[] = [...projects, ignoring, spreading, { test }]
++		const readings = entries.map((entry) => {
++			if (typeof entry !== 'function') {
++				return { name: undefined, callable: false, mode: undefined, leaked: [] }
++			}
++			const project: unknown = Reflect.apply(entry, undefined, [invocation])
+ 			if (typeof project !== 'object' || project === null) {
+-				throw new Error('A project factory returned no configuration')
++				throw new Error(`The project factory ${entry.name} returned no configuration`)
+ 			}
+-			for (const field of Object.keys(sentinel)) {
+-				expect(Object.getOwnPropertyDescriptor(project, field)?.value).toBeUndefined()
++			return {
++				name: entry.name,
++				callable: true,
++				mode: Object.getOwnPropertyDescriptor(project, 'mode')?.value,
++				leaked: Object.keys(invocation).filter(
++					(field) => field !== 'mode' && Object.hasOwn(project, field),
++				),
+ 			}
++		})
++		const forwarded = { callable: true, mode: 'sentinel-mode', leaked: [] }
++		expect(readings.slice(0, projects.length)).toStrictEqual(
++			projects.map((entry) => ({
++				name: typeof entry === 'function' ? entry.name : undefined,
++				...forwarded,
++			})),
++		)
++		expect(readings.slice(projects.length)).toStrictEqual([
++			{ name: 'ignoring', callable: true, mode: undefined, leaked: [] },
++			{
++				name: 'spreading',
++				callable: true,
++				mode: 'sentinel-mode',
++				leaked: ['command', 'isPreview', 'isSsrBuild', 'sentinel'],
++			},
++			{ name: undefined, callable: false, mode: undefined, leaked: [] },
++		])
++		for (const reading of readings.slice(projects.length)) {
++			expect({ ...reading, name: undefined }).not.toStrictEqual({ name: undefined, ...forwarded })
+ 		}
+ 
+-		const control = Object.defineProperty(() => ({ ...sentinel }), 'name', { value: 'control' })
+-		expect(() => {
+-			for (const factory of factories.concat(control)) {
+-				const project: unknown = Reflect.apply(factory, undefined, [sentinel])
+-				if (typeof project !== 'object' || project === null) {
+-					throw new Error('A project factory returned no configuration')
+-				}
+-				for (const field of Object.keys(sentinel)) {
+-					expect(Object.getOwnPropertyDescriptor(project, field)?.value).toBeUndefined()
+-				}
+-			}
+-		}).toThrow(/expected/u)
++		// A record that carries no string `mode` is refused rather than forwarded as a project
++		// with no mode, which would run in `test` again.
++		for (const entry of projects) {
++			if (typeof entry !== 'function') continue
++			expect(() => Reflect.apply(entry, undefined, [{ ...invocation, mode: undefined }])).toThrow(
++				'The project invocation carries no string mode',
++			)
++		}
+ 	})
+ 
+ 	it('requires and validates every selected target wrapper', async () => {
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 38d89a77..379a9d25 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -1,29 +1,35 @@
+ import { spawnSync } from 'node:child_process'
+-import { globSync, readFileSync } from 'node:fs'
++import { globSync, readdirSync, readFileSync } from 'node:fs'
+ import { delimiter, dirname, join, relative, resolve } from 'node:path'
+ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import {
+ 	CANON_PATHS,
+ 	compareVersions,
++	Compiler,
++	createBlueprint,
++	DISTRIBUTION_TEST_PATH,
+ 	HOST_PATHS,
+ 	MINIMUM_NPM_VERSION,
+ 	REFERENCE_PATHS,
++	RELEASE_PROOF_COMMAND,
+ 	replaceManifestRanges,
+ } from '@src/core'
+-import { listFiles, pathToStorage } from '@src/server'
++import { listFiles, Materializer, pathToStorage } from '@src/server'
+ import { requireValue } from '@orkestrel/test'
+ import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
+ import { createScratch } from '@orkestrel/test/server'
+-import { executeSync, readVariable } from '@orkestrel/process/server'
++import { execute, executeSync, readVariable } from '@orkestrel/process/server'
+ import { transformWithOxc } from 'vite'
+ import { describe, expect, it } from 'vitest'
+ import {
++	createUpstreamServer,
+ 	installGeneratedWorkspace,
+ 	GENERATED_VUE_SETUP_FILES,
+ 	installPackedScaffold,
+ 	NPM_LAUNCHER,
+ 	provisionNpm,
+ 	readManifestVersion,
++	readNpmFloor,
+ 	readNpmVersion,
+ } from './setupServer.js'
+ 
+@@ -685,6 +691,172 @@ describe('installed package consumer', () => {
+ 		}
+ 	})
+ 
++	// The mode channel end to end. Vitest runs a project in the mode it was invoked with only when
++	// the project's factory returns that mode, and nothing else in a generated workspace carries it,
++	// so this drives a generated configuration and its generated distribution proof through the
++	// command `prepublishOnly` runs. The registry is a loopback fixture that refuses `npm ping`,
++	// which puts both branches of the proof's registry gate under one host. The workspace runs on
++	// this checkout's installed toolchain, linked rather than installed: the subject is the
++	// configuration and the proof, and the refusing registry could install nothing.
++	it('fails the release run of a generated distribution proof on a refusing registry and skips the ordinary run', async () => {
++		const workspace = createScratch({ prefix: 'scaffold-release-mode-' })
++		const refusal = await createUpstreamServer({
++			'/-/ping': { status: 503, body: '{"error":"refused"}', type: 'application/json' },
++		})
++		try {
++			const compiler = new Compiler()
++			const plan = compiler.compile(createBlueprint('proof', { src: ['core'] })).plan
++			compiler.destroy()
++			if (plan === undefined) throw new Error('The generated proof blueprint was blocked')
++			const generated = join(workspace.path, 'generated')
++			const materializer = new Materializer({ host: root })
++			materializer.materialize(plan, generated)
++			materializer.destroy()
++			workspace.ensure('generated/node_modules')
++			for (const name of readdirSync(resolve(root, 'node_modules'))) {
++				if (name.startsWith('.') && name !== '.bin') continue
++				workspace.link(`generated/node_modules/${name}`, resolve(root, 'node_modules', name))
++			}
++
++			// The generated manifest runs the proof with the command the release row names, so the
++			// following runs are that command and the same command without its mode.
++			const manifest = parseJSON(requireValue(workspace.read('generated/package.json')))
++			if (!isRecord(manifest) || !isRecord(manifest.scripts)) {
++				throw new Error('The generated manifest declares no scripts')
++			}
++			const prepublish = manifest.scripts.prepublishOnly
++			if (!isString(prepublish))
++				throw new Error('The generated manifest declares no prepublishOnly')
++			expect(prepublish.endsWith(` && ${RELEASE_PROOF_COMMAND}`)).toBe(true)
++			const [file, ...command] = RELEASE_PROOF_COMMAND.split(' ')
++			if (file === undefined) throw new Error('The release row names no executable')
++			const ordinary = command.slice(0, command.indexOf('--') + 1)
++			expect(command.slice(ordinary.length)).toStrictEqual(['--mode', 'release'])
++
++			const admitted = provisionNpm({
++				floor: readNpmFloor(manifest),
++				prefix: workspace.ensure('npm'),
++			})
++			const environment = { ...admitted.environment, npm_config_registry: `${refusal.base}/` }
++			const proof = resolve(generated, DISTRIBUTION_TEST_PATH)
++			const configuration = requireValue(workspace.read('generated/vite.config.ts'))
++			const source = requireValue(workspace.read(`generated/${DISTRIBUTION_TEST_PATH}`))
++			// The controls are the rival ways a release run fails without reaching the proof's
++			// registry gate: a configuration Vite cannot load, a proof that fails to collect for
++			// another reason, a proof whose own assertion fails, and a run the timeout ends. Each
++			// rewrites the workspace for its own run alone.
++			const scenarios = [
++				{ label: 'release', arguments: command, timeout: 240_000, files: {} },
++				{ label: 'ordinary', arguments: ordinary, timeout: 240_000, files: {} },
++				{
++					label: 'malformed',
++					arguments: command,
++					timeout: 240_000,
++					files: { 'vite.config.ts': `${configuration}\nexport const =\n` },
++				},
++				{
++					label: 'collection',
++					arguments: command,
++					timeout: 240_000,
++					files: { [DISTRIBUTION_TEST_PATH]: `import './absent-module.js'\n${source}` },
++				},
++				{
++					label: 'assertion',
++					arguments: command,
++					timeout: 240_000,
++					files: {
++						[DISTRIBUTION_TEST_PATH]: [
++							"import { expect, it } from 'vitest'",
++							'',
++							"it('asserts an unrelated value', () => {",
++							'\texpect(1).toBe(2)',
++							'})',
++							'',
++						].join('\n'),
++					},
++				},
++				{ label: 'timeout', arguments: command, timeout: 1, files: {} },
++			]
++			const readings = new Map<string, unknown>()
++			for (const scenario of scenarios) {
++				for (const [path, content] of Object.entries(scenario.files)) {
++					workspace.write(`generated/${path}`, content)
++				}
++				const pinged = refusal.paths.filter((path) => path === '/-/ping').length
++				const report = `tmp/${scenario.label}.json`
++				const run = await execute(
++					{
++						file,
++						arguments: [...scenario.arguments, '--reporter=json', `--outputFile.json=${report}`],
++					},
++					{ workspace: generated, environment, timeout: scenario.timeout, strict: false },
++				)
++				workspace.write('generated/vite.config.ts', configuration)
++				workspace.write(`generated/${DISTRIBUTION_TEST_PATH}`, source)
++				const text = workspace.read(`generated/${report}`)
++				const results: unknown = text === undefined ? undefined : parseJSON(text)
++				readings.set(scenario.label, {
++					// A run the timeout or a signal ended never reached the proof's verdict, and a run
++					// that never asked the fixture answers something other than its refusal.
++					expired: run.expired,
++					signal: run.signal,
++					pinged: refusal.paths.filter((path) => path === '/-/ping').length - pinged,
++					code: run.code,
++					files:
++						isRecord(results) && isArray(results.testResults)
++							? results.testResults.map((result) =>
++									isRecord(result) && isString(result.name) && isArray(result.assertionResults)
++										? {
++												proof: resolve(result.name) === proof,
++												status: result.status,
++												message: result.message,
++												statuses: [
++													...new Set(
++														result.assertionResults.map((assertion) =>
++															isRecord(assertion) ? assertion.status : undefined,
++														),
++													),
++												].sort(),
++											}
++										: undefined,
++								)
++							: undefined,
++				})
++			}
++			// Release fails at the proof's registry gate before any case is collected. The ordinary
++			// run collects the proof, runs the cases that need no registry, and skips the cases that
++			// need one.
++			const failed = {
++				expired: false,
++				signal: null,
++				pinged: 1,
++				code: 1,
++				files: [
++					{
++						proof: true,
++						status: 'failed',
++						message:
++							'The release gate requires a reachable npm registry, and npm ping did not answer',
++						statuses: [],
++					},
++				],
++			}
++			expect(readings.get('release')).toStrictEqual(failed)
++			expect(readings.get('ordinary')).toStrictEqual({
++				expired: false,
++				signal: null,
++				pinged: 1,
++				code: 0,
++				files: [{ proof: true, status: 'passed', message: '', statuses: ['passed', 'skipped'] }],
++			})
++			const rivals = ['malformed', 'collection', 'assertion', 'timeout']
++			expect(rivals.map((label) => readings.get(label))).not.toContainEqual(failed)
++		} finally {
++			await refusal.destroy()
++			workspace.destroy()
++		}
++	}, 600_000)
++
+ 	it('installs a preserved peer beside an exact co-peer witness and rejects the narrowed control', () => {
+ 		const workspace = createScratch({ prefix: 'scaffold-peer-install-' })
+ 		const packed = workspace.ensure('packed')
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index 02938a0d..e87eee5d 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -1652,7 +1652,13 @@ export default defineConfig(appShowcase())
+ 		}
+ 
+ 		const merge = `export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
+-	if (override === undefined || ('command' in override && 'mode' in override)) return base
++	if (override === undefined) return base
++	if ('command' in override && 'mode' in override) {
++		if (typeof override.mode !== 'string') {
++			throw new Error('The project invocation carries no string mode')
++		}
++		return { ...base, mode: override.mode }
++	}
+ 	const merged: UserConfig = mergeConfig(base, override)
+ 	if (merged.plugins === undefined) return merged
+ 	const candidates = override.plugins ?? []
+diff --git a/tests/src/core/templates.test.ts b/tests/src/core/templates.test.ts
+index 49df1f44..a9df5f13 100644
+--- a/tests/src/core/templates.test.ts
++++ b/tests/src/core/templates.test.ts
+@@ -940,11 +940,11 @@ describe('emitted workspaces under their own gates', () => {
+ 		// declares a parameter receives those fields in the override position. The
+ 		// emitted `mergeOverride` is what makes the parameter safe: a `UserConfig` declares
+ 		// `mode` but not `command`, and the record always carries both, so a value carrying
+-		// the pair returns the base unchanged. The vendored `tests/config.test.ts` drives
+-		// every registered row through that refusal. This rule replaced a seal — a factory
+-		// declaring no parameter at all — so the controls are that seal put back: once
+-		// into the template text the emitters carry, and once into every emitted
+-		// configuration the sweep reads.
++		// the pair returns the base in the record's mode and carries none of its other
++		// fields. The vendored `tests/config.test.ts` drives every registered row through
++		// that projection. This rule replaced a seal — a factory declaring no parameter at
++		// all — so the controls are that seal put back: once into the template text the
++		// emitters carry, and once into every emitted configuration the sweep reads.
+ 		const sealed = sealParameter(CONFIG_TEMPLATES.factories.policy)
+ 		expect(sealed).not.toBe(CONFIG_TEMPLATES.factories.policy)
+ 		expect(findRefusals(sealed)).toStrictEqual(['policy()'])
+diff --git a/vite.config.ts b/vite.config.ts
+index 85bb84dd..fc4634f8 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -39,7 +39,11 @@ const resolve = {
+ // override receives that record in the same position. A `UserConfig` declares `mode`
+ // but not `command`, and the invocation record always carries both, so a value
+ // carrying the pair is that record rather than an override. The merge returns the
+-// base unchanged and reports nothing. The `tests/config.test.ts` file drives every
++// base in the record's `mode` and carries none of the record's other fields. Vitest
++// runs a project that declares no `mode` in its own run mode, `test`, rather than in
++// the `--mode` value it was invoked with, so a distribution proof run with
++// `--mode release` would read `test` and skip where it must fail. A record whose
++// `mode` is not a string throws. The `tests/config.test.ts` file drives every
+ // registered factory through it.
+ //
+ // `mergeConfig` concatenates arrays, so an override carrying `plugins` would otherwise
+@@ -52,7 +56,13 @@ const resolve = {
+ // merges it, so an override's arrays elsewhere concatenate with the base's rather than
+ // replacing them.
+ export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
+-	if (override === undefined || ('command' in override && 'mode' in override)) return base
++	if (override === undefined) return base
++	if ('command' in override && 'mode' in override) {
++		if (typeof override.mode !== 'string') {
++			throw new Error('The project invocation carries no string mode')
++		}
++		return { ...base, mode: override.mode }
++	}
+ 	const merged: UserConfig = mergeConfig(base, override)
+ 	if (merged.plugins === undefined) return merged
+ 	const candidates = override.plugins ?? []

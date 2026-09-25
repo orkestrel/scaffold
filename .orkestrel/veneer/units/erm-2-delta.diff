@@ -1,0 +1,517 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index f38d8d0..ab00811 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10542,30 +10542,41 @@ and the Tooltip row names the `Sanitizer` and `TemplateFactory` utilities that c
+ ## Hosts
+ 
+ Veneer's Node and npm floors are the `engines.node` and `devEngines.packageManager` fields of the
+-`package.json` file, which npm reads before it runs a script; this section names those fields and
+-doesn't restate them. Its browser families are Chromium, Chrome, and Edge. Veneer ships no host
+-check and selects no browser: the browser projects and the distribution proof launch the browser
+-the `PLAYWRIGHT_EXECUTABLE_PATH`, `PLAYWRIGHT_WS_ENDPOINT`, or `PLAYWRIGHT_CHANNEL` variable names,
+-and otherwise the first the resolver in the `configs/browsers.ts` file finds of the Chromium
+-Playwright manages, a Chromium the host bundles, and an installed system channel.
++`package.json` file; this section names those fields and doesn't restate them. npm 11.19.1 refuses
++to run a script under an npm version the `devEngines.packageManager` field excludes, and runs one
++under a Node version the `engines.node` field excludes, so the guides proof holds each receipt's
++Node version against that floor. Veneer's browser families are Chromium, Chrome, and Edge. Veneer
++ships no host check and selects no browser: the browser projects and the distribution proof launch
++the browser the `PLAYWRIGHT_EXECUTABLE_PATH`, `PLAYWRIGHT_WS_ENDPOINT`, or `PLAYWRIGHT_CHANNEL`
++variable names. Otherwise the resolver in the `configs/browsers.ts` file takes the first it finds of
++the Chromium Playwright manages, a Chromium the host bundles, the installed `chrome` channel, and
++the installed `msedge` channel. Where it finds none, it names the platform's default channel
++without checking that the channel is installed: `msedge` on Windows and `chrome` on every other
++platform.
+ 
+ A supported host is a Playwright channel on a platform, and "every supported host" means every row
+ of the Supported hosts table with a passing receipt in the Receipts table. A receipt records one run
+-of package scripts on one host and the Veneer revision it measured, and it is the record a sentence
+-naming a browser build rests on. The Channel, Build, Platform, Kernel, Node, and npm cells hold what
+-the `readRuntime` reader in [the server setup module](../tests/setupServer.ts) returns on that host,
+-so the build is the one the browser reports rather than the major its user agent names. An Owner
+-cell names the unit that takes the host's first passing receipt, and reads `—` after that receipt is
+-recorded. The `chrome` row names no platform until its owner records the platform the user chooses.
+-
+-The guides proof refuses a receipt naming a host outside the Supported hosts table, a host with a
+-passing receipt that still names an owner, a host with neither an owner nor a passing receipt, a
+-receipt whose Node or npm version is under its `package.json` floor, a command naming no
+-`package.json` script, and a repeated row; see [the host record gates](../tests/guides.test.ts).
+-When the distribution project runs in release mode, its release-host case launches the browser the
+-browser projects launch and fails unless a passing receipt names that run's channel, platform, and
+-build, and in any other mode it skips. Either way the case's message names every value the missing
+-row needs; see [the release-host case](../tests/distribution.test.ts).
++of package scripts on one host and the Veneer revision it measured. A sentence naming a browser
++build must rest on a receipt; the ER-PROSE unit owns the gate that holds each such sentence to one.
++The Channel, Build, Platform, Kernel, Node, and npm cells hold what the `readRuntime` reader in
++[the server setup module](../tests/setupServer.ts) returns on that host, so the build is the one the
++browser reports rather than the major its user agent names. An Owner cell names the unit that takes
++the host's first passing receipt, and reads `—` after that receipt is recorded. The `chrome` row
++names no platform until its owner records the platform the maintainer chooses.
++
++The readers of both tables refuse a malformed cell and name its row, including a Platform cell that
++is neither `—` nor a value Node reports as its platform and a Commands cell whose code spans are not
++separated by commas. The guides proof refuses a receipt naming a host outside the Supported hosts
++table, a host with a passing receipt that still names an owner, a host with neither an owner nor a
++passing receipt, a receipt whose Node or npm version is under its `package.json` floor, a command
++naming no `package.json` script, and a repeated row; see
++[the host record gates](../tests/guides.test.ts). When the distribution project runs in release
++mode, its release-host case launches the browser the browser projects launch and fails unless a
++passing receipt names that run's channel, platform, and build. In any other mode the case passes
++when a passing receipt matches and skips when none does. When no passing receipt matches, its
++message names every host value the missing row needs (channel, build, platform, kernel, Node, and npm) and says
++the Date, Revision, and Commands cells come from the run that writes the row; see
++[the release-host case](../tests/distribution.test.ts).
+ 
+ ### Supported hosts
+ 
+@@ -11002,7 +11013,7 @@ The helper proofs read compatibility, media condition, keyframes, supported host
+ tables, the running host, built CSS, and the pinned inventory, and verify the service readiness and
+ its stage; see [the Node-only readers and recorder](../tests/setupServer.test.ts) and
+ [the service readiness and stage](../tests/setupService.test.ts).
+-The host proofs hold the § Hosts tables against each other and against `package.json`, and bind a
+-release run to a receipt on the build it launched; see
++The host proofs hold the § Hosts tables against each other and against `package.json`, and when
++the distribution project runs in release mode, fail a run that no passing receipt names; see
+ [the host record gates](../tests/guides.test.ts) and
+ [the release-host case](../tests/distribution.test.ts).
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 1e25066..ee50ed5 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url'
+ import { chromium } from 'playwright'
+ import { build } from 'vite'
+ import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
+-import { extractSpecifiers, readReceipts, readRuntime } from './setupServer.js'
++import { extractSpecifiers, matchesReceipt, readReceipts, readRuntime } from './setupServer.js'
+ import { afterAll, describe, expect, it } from 'vitest'
+ 
+ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+@@ -641,14 +641,16 @@ async function launchBrowser(options: PlaywrightProviderOptions): Promise<Browse
+ // The markup the `cascade` drive writes into the page, one element per shipped key
+ // beside an unclassed twin of it. The twin is what separates the packed cascade's own
+ // treatment from the treatment a browser gives the same tag with no stylesheet at all:
+-// a page that loaded no CSS reports the twin's reading on both sides of each pair.
++// a page that loaded no CSS reports the twin's reading on both sides of each pair. The
++// links have no twin; the swatch beside them carries the primary link rule's color
++// expression inline, so the link reading has a second resolution of its token to match.
+ const CASCADE_MARKUP = `<div class="container" id="capped">Capped</div>
+ <div class="container-fluid" id="fluid">Fluid</div>
+ <div class="row" id="row"><div class="col-6">First</div><div class="col-6">Second</div></div>
+ <div id="plain"><div>First</div><div>Second</div></div>
+ <table class="table" id="table"><caption>Shipments</caption><thead><tr><th scope="col">Material</th></tr></thead><tbody><tr><td id="cell">Oak</td></tr></tbody></table>
+ <table id="bare"><tbody><tr><td id="bare-cell">Oak</td></tr></tbody></table>
+-<p><a class="link-primary" href="#main" id="link">Primary link</a> <a class="link-danger" href="#main" id="danger">Danger link</a></p>`
++<p><a class="link-primary" href="#main" id="link">Primary link</a> <a class="link-danger" href="#main" id="danger">Danger link</a> <span id="swatch" style="color: rgb(from var(--vn-color-primary-emphasis) r g b / var(--bs-link-opacity, 1))">Swatch</span></p>`
+ 
+ // The consumer modules a bundled page is built from, each reporting its reading on
+ // `globalThis.subject` as a list of strings so one page reader answers for all of
+@@ -701,12 +703,13 @@ for (const [key, id, property] of [
+ 	['bare-cell', 'bare-cell', 'padding-left'],
+ 	['link', 'link', 'color'],
+ 	['danger', 'danger', 'color'],
++	['swatch', 'swatch', 'color'],
+ ]) {
+ 	const element = document.getElementById(id)
+ 	if (element === null) throw new Error('The cascade page rendered no ' + id + ' element')
+ 	reading.push(key + '=' + getComputedStyle(element).getPropertyValue(property))
+ }
+-const token = getComputedStyle(document.documentElement).getPropertyValue('--vn-color-primary-rgb')
++const token = getComputedStyle(document.documentElement).getPropertyValue('--vn-color-primary-emphasis')
+ reading.push('token=' + token)
+ reading.push('width=' + String(document.documentElement.clientWidth))
+ globalThis.subject = reading
+@@ -1084,14 +1087,13 @@ describe('installed package consumer', () => {
+ 			expect(Number.parseFloat(capped)).toBeLessThan(width)
+ 			expect(readReading(readings, 'fluid')).toBe('none')
+ 			expect(Number.parseFloat(readReading(readings, 'gutter'))).toBeGreaterThan(0)
+-			// The link's color is compared against the channel triplet the packed theme layer
+-			// declares, so the reading answers to the shipped token rather than to whatever the
+-			// browser paints an anchor.
+-			const channels = readReading(readings, 'token')
+-				.split(',')
+-				.map((channel) => channel.trim())
+-			expect(channels).toHaveLength(3)
+-			expect(readReading(readings, 'link')).toBe(`rgb(${channels.join(', ')})`)
++			// The link's color is compared against a swatch the page styles inline with the shipped
++			// rule's own color expression over the emphasis token the packed theme layer declares, so
++			// the reading answers to that token rather than to whatever the browser paints an anchor.
++			// A page that loaded no stylesheet leaves the token empty and the swatch at the inherited
++			// text color, and reddens here.
++			expect(readReading(readings, 'token').trim()).not.toBe('')
++			expect(readReading(readings, 'link')).toBe(readReading(readings, 'swatch'))
+ 			expect(readReading(readings, 'link')).not.toBe(readReading(readings, 'danger'))
+ 		} finally {
+ 			await browser.close()
+@@ -1204,8 +1206,10 @@ describe('installed package consumer', () => {
+ 
+ // A release rests on a receipt taken on the build it launched. The case reads no registry stage,
+ // so it runs whether or not `npm ping` answered, and it launches the browser the browser projects
+-// launch. Outside release it skips rather than fails, so a browser update reddens the publish gate
+-// and leaves every ordinary run green until a receipt on the updated build is recorded.
++// launch. Outside release a run no receipt matches skips rather than fails, so a browser update
++// reddens the publish gate and leaves every ordinary run green until a receipt on the updated build
++// is recorded. The message names the host values this run measured; the Date, Revision, and
++// Commands cells belong to the run that writes the row, so the message names where they come from.
+ describe('release host', () => {
+ 	it('holds a passing receipt on the channel, platform, and build this run launched', async (context) => {
+ 		const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+@@ -1221,14 +1225,8 @@ describe('release host', () => {
+ 		})
+ 		try {
+ 			const runtime = readRuntime(browser, options)
+-			const recorded = readReceipts().some(
+-				(receipt) =>
+-					receipt.passed &&
+-					receipt.channel === runtime.channel &&
+-					receipt.platform === runtime.platform &&
+-					receipt.build === runtime.build,
+-			)
+-			const missing = `a passing receipt in guides/veneer.md § Hosts naming this run: Channel ${runtime.channel}, Build ${runtime.build}, Platform ${runtime.platform}, Kernel ${runtime.kernel}, Node ${runtime.node}, npm ${runtime.npm}`
++			const recorded = readReceipts().some((receipt) => matchesReceipt(receipt, runtime))
++			const missing = `a passing receipt in guides/veneer.md § Hosts naming this run's host values: Channel ${runtime.channel}, Build ${runtime.build}, Platform ${runtime.platform}, Kernel ${runtime.kernel}, Node ${runtime.node}, npm ${runtime.npm}. The Date, Revision, and Commands cells come from the run that writes the row`
+ 			if (!recorded && !RELEASE) return context.skip(`No receipt matched. The row needs ${missing}`)
+ 			expect(recorded, `The release gate requires ${missing}`).toBe(true)
+ 		} finally {
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 40f2c98..f49c3b5 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -119,7 +119,7 @@ await new GuideCommand({
+ 		expect(stale).toEqual([])
+ 	})
+ 
+-	it('holds every receipt at or above the package.json Node and npm floors', () => {
++	it('holds every receipt at or above the package.json Node and npm floors and refuses a floor not in the >=x.y.z form', () => {
+ 		// Only the `>=x.y.z` form states a floor one three-part version compares against, so a caret,
+ 		// a union, or a bare version is refused here rather than read as some floor it does not state.
+ 		const node = isRecord(manifest.engines) ? manifest.engines.node : undefined
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index b9b34f3..1244f80 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -39,6 +39,7 @@ import {
+ 	LEDGER_GUIDE,
+ 	LEDGER_INVENTORY,
+ 	LEDGER_SHIPPED,
++	NODE_PLATFORMS,
+ 	ORACLE_BINDINGS,
+ 	ORACLE_TIMEOUT,
+ 	LAYER_COMPONENTS,
+@@ -94,6 +95,7 @@ import {
+ 	extractStringArgument,
+ 	matchesOracleEvents,
+ 	matchesOracleToggle,
++	matchesReceipt,
+ 	matchesRecording,
+ 	readBootstrapCascade,
+ 	readBuiltCascade,
+@@ -513,6 +515,7 @@ describe('server setup', () => {
+ 			'LEDGER_GUIDE',
+ 			'LEDGER_INVENTORY',
+ 			'LEDGER_SHIPPED',
++			'NODE_PLATFORMS',
+ 			'ORACLE_BINDINGS',
+ 			'ORACLE_TIMEOUT',
+ 			'SHARED_LONGHANDS',
+@@ -558,6 +561,7 @@ describe('server setup', () => {
+ 			'matchShippedKey',
+ 			'matchesOracleEvents',
+ 			'matchesOracleToggle',
++			'matchesReceipt',
+ 			'matchesRecording',
+ 			'matchesSignature',
+ 			'normalizeDeclarationValue',
+@@ -1230,7 +1234,7 @@ describe('server setup', () => {
+ 		}
+ 	})
+ 
+-	it('reads supported hosts only within their Hosts subsection and refuses a missing column or cell', () => {
++	it('reads supported hosts only within their Hosts subsection and refuses a missing column, a missing cell, and a platform Node never reports', () => {
+ 		const scratch = createScratch()
+ 		const header =
+ 			'## Hosts\n\n### Supported hosts\n\n| Channel | Platform | Owner |\n| --- | --- | --- |\n'
+@@ -1260,11 +1264,25 @@ describe('server setup', () => {
+ 			expect(() => readSupportedHosts(path)).toThrow(
+ 				'Supported host row 1 (Channel: chromium): missing required cell',
+ 			)
++			for (const platform of ['`Linux`', '`macos`', '`windows`']) {
++				scratch.write(
++					'guide.md',
++					`${header}| \`chromium\` | \`linux\` | — |\n| \`chromium\` | ${platform} | ER-LINUX |\n`,
++				)
++				expect(() => readSupportedHosts(path)).toThrow(
++					`Supported host row 2: invalid Platform ${platform.slice(1, -1)}`,
++				)
++			}
+ 		} finally {
+ 			scratch.destroy()
+ 		}
+ 	})
+ 
++	it('lists the platform this process runs on among the platforms Node reports', () => {
++		expect(NODE_PLATFORMS).toContain(process.platform)
++		expect(new Set(NODE_PLATFORMS).size).toBe(NODE_PLATFORMS.length)
++	})
++
+ 	it('reads receipts only within their Hosts subsection and refuses each malformed cell', () => {
+ 		const scratch = createScratch()
+ 		const header =
+@@ -1313,6 +1331,17 @@ describe('server setup', () => {
+ 					'Receipt row 1: invalid Commands test:guides and test:distribution',
+ 				],
+ 				[commands, ',', 'Receipt row 1: invalid Commands ,'],
++				[
++					commands,
++					'`test:guides` `test:distribution`',
++					'Receipt row 1: invalid Commands test:guides test:distribution',
++				],
++				[
++					commands,
++					'`test:guides`, , `test:distribution`',
++					'Receipt row 1: invalid Commands test:guides, , test:distribution',
++				],
++				[commands, '`test:guides`,', 'Receipt row 1: invalid Commands test:guides,'],
+ 			] as const) {
+ 				scratch.write('guide.md', `${header}${row.replace(written, replacement)}`)
+ 				expect(() => readReceipts(path)).toThrow(refusal)
+@@ -3312,7 +3341,7 @@ describe('readRuntime', () => {
+ 	})
+ 
+ 	it(
+-		'reads the build the launched browser reports and the Node and platform npm reports',
++		"reads this run's channel, build, platform, kernel, Node, and npm, agreeing with npm's user agent on Node and platform and with the launched browser on its build",
+ 		async () => {
+ 			if (launched === undefined) throw new Error('No browser launched')
+ 			const runtime = readRuntime(launched, options)
+@@ -3324,8 +3353,10 @@ describe('readRuntime', () => {
+ 			expect(runtime.node).toBe(node)
+ 			expect(runtime.platform).toBe(platform)
+ 			expect(runtime.npm).toMatch(VERSION_PATTERN)
+-			// The DevTools protocol answers for the browser this case launched through its own
+-			// session, and the page's user agent names the build's major.
++			// The DevTools comparison repeats Playwright's own `Browser.getVersion` read, the one the
++			// `version` method answers from, so it catches a `readRuntime` defect and not a Playwright
++			// misreport. The page's user agent is a reading Playwright does not take, and its major is
++			// the check independent of Playwright.
+ 			const session = await launched.newBrowserCDPSession()
+ 			const { product } = await session.send('Browser.getVersion')
+ 			expect(runtime.build).toMatch(BUILD_PATTERN)
+@@ -3354,7 +3385,62 @@ describe('readRuntime', () => {
+ 		expect(() =>
+ 			readRuntime(browser, { connectOptions: { wsEndpoint: 'ws://127.0.0.1:9/' } }),
+ 		).toThrow('Runtime: a remote browser has no local platform to record')
+-		expect(BUILD_PATTERN.test('141.0.7390')).toBe(false)
++	})
++
++	it('refuses a browser that reports a build other than four numeric parts', () => {
++		// The stub carries only the `version` method the reader reads, so the refusal is driven with
++		// a build no installed browser reports.
++		const environment = { npm_config_user_agent: 'npm/11.19.1 node/v22.22.2 linux x64' }
++		for (const build of ['141.0.7390', '141.0.7390.37.1', '141.0.7390.x', '']) {
++			expect(() => readRuntime({ version: () => build }, options, environment)).toThrow(
++				`Runtime: invalid build ${build}`,
++			)
++		}
++		expect(readRuntime({ version: () => '141.0.7390.37' }, options, environment).build).toBe(
++			'141.0.7390.37',
++		)
++	})
++})
++
++describe('BUILD_PATTERN', () => {
++	it('matches a four-part numeric build and refuses a three-part, five-part, or lettered one', () => {
+ 		expect(BUILD_PATTERN.test('141.0.7390.37')).toBe(true)
++		expect(BUILD_PATTERN.test('0.0.0.0')).toBe(true)
++		expect(BUILD_PATTERN.test('141.0.7390')).toBe(false)
++		expect(BUILD_PATTERN.test('141.0.7390.37.1')).toBe(false)
++		expect(BUILD_PATTERN.test('141.0.7390.x')).toBe(false)
++		expect(BUILD_PATTERN.test('v141.0.7390.37')).toBe(false)
++	})
++})
++
++describe('matchesReceipt', () => {
++	const runtime = {
++		channel: 'chromium',
++		build: '141.0.7390.37',
++		platform: 'linux',
++		kernel: '6.18.44-fc-v37',
++		node: '22.22.2',
++		npm: '11.19.1',
++	}
++	const receipt = {
++		...runtime,
++		date: '2026-09-25',
++		revision: '873f715',
++		commands: ['test:distribution -- --mode release'],
++		passed: true,
++	}
++
++	it('matches a passing receipt on the channel, platform, and build and ignores kernel, Node, and npm', () => {
++		expect(matchesReceipt(receipt, runtime)).toBe(true)
++		expect(
++			matchesReceipt({ ...receipt, kernel: '6.1.0', node: '24.0.0', npm: '11.6.0' }, runtime),
++		).toBe(true)
++	})
++
++	it('refuses a failing receipt and a receipt on another channel, platform, or build', () => {
++		expect(matchesReceipt({ ...receipt, passed: false }, runtime)).toBe(false)
++		expect(matchesReceipt({ ...receipt, channel: 'msedge' }, runtime)).toBe(false)
++		expect(matchesReceipt({ ...receipt, platform: 'win32' }, runtime)).toBe(false)
++		expect(matchesReceipt({ ...receipt, build: '141.0.7390.38' }, runtime)).toBe(false)
+ 	})
+ })
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 424d5b3..39e74ca 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -95,7 +95,7 @@ export interface Receipt extends Runtime {
+  *
+  * @remarks
+  * The `platform` member is undefined where the guide names no platform for the channel yet. The
+- * `owner` member names the unit that takes the host's first passing receipt, and is undefined once
++ * `owner` member names the unit that takes the host's first passing receipt, and is undefined after
+  * that receipt is recorded.
+  */
+ export interface SupportedHost {
+@@ -468,6 +468,24 @@ export const EMPTY_CELL = '(empty)'
+ /** Matches the four-part build a Chromium-family browser reports, such as `141.0.7390.37`. */
+ export const BUILD_PATTERN = /^\d+\.\d+\.\d+\.\d+$/u
+ 
++/**
++ * Lists every value the `process.platform` property can take, as the `Platform` union of the
++ * installed `@types/node` declarations names them.
++ */
++export const NODE_PLATFORMS: readonly NodeJS.Platform[] = Object.freeze([
++	'aix',
++	'android',
++	'cygwin',
++	'darwin',
++	'freebsd',
++	'haiku',
++	'linux',
++	'netbsd',
++	'openbsd',
++	'sunos',
++	'win32',
++])
++
+ /**
+  * Maps each cascade layer carrying element treatments onto the inventory key it answers to.
+  *
+@@ -1151,7 +1169,7 @@ export function readCompatibility(
+ /**
+  * Reads the host a run executes on from the browser it launched and the process running it.
+  *
+- * @param browser - The browser the run launched.
++ * @param browser - The browser the run launched; only its `version` method is read.
+  * @param options - The provider options the browser was launched with, as the `resolveBrowser`
+  *   function returns them.
+  * @param environment - The environment the npm version is read from. Default: `process.env`.
+@@ -1174,7 +1192,7 @@ export function readCompatibility(
+  * ```
+  */
+ export function readRuntime(
+-	browser: Browser,
++	browser: Pick<Browser, 'version'>,
+ 	options: PlaywrightProviderOptions,
+ 	environment: NodeJS.ProcessEnv = process.env,
+ ): Runtime {
+@@ -1203,11 +1221,13 @@ export function readRuntime(
+  *
+  * @param path - The Markdown document to read; defaults to the package guide.
+  * @returns Each supported host in document order.
+- * @throws When the subsection, a column, or a required cell is missing.
++ * @throws When the subsection, a column, or a required cell is missing, or when a Platform cell
++ *   holds neither `—` nor a value the `process.platform` property can take.
+  *
+  * @remarks
+  * A `—` Platform cell records a channel whose platform the guide does not name yet, and a `—`
+- * Owner cell records a host whose passing receipt is recorded.
++ * Owner cell records a host whose passing receipt is recorded. The Channel cell is not checked
++ * against a list, because Playwright's channels are an open set.
+  */
+ export function readSupportedHosts(
+ 	path: string = resolve(WORKSPACE_ROOT, VENEER_GUIDE_PATH),
+@@ -1235,6 +1255,10 @@ export function readSupportedHosts(
+ 					),
+ 				)
+ 			}
++			// A platform `readRuntime` can never record would leave the host unmatched by every
++			// receipt, and the gates would name the missing receipt rather than the malformed cell.
++			if (platform !== ABSENT_CELL && !NODE_PLATFORMS.some((value) => value === platform))
++				throw new Error(`Supported host row ${String(position + 1)}: invalid Platform ${platform}`)
+ 			hosts.push({
+ 				channel,
+ 				platform: platform === ABSENT_CELL ? undefined : platform,
+@@ -1256,7 +1280,7 @@ export function readSupportedHosts(
+  * @remarks
+  * Date is a calendar date in the `YYYY-MM-DD` form and Revision a lowercase commit hash. Build is
+  * four numeric parts, and Node and npm are three. Commands holds one code span per package script,
+- * separated by commas, and Result reads `Pass` or `Fail`.
++ * with a comma between each span and the next, and Result reads `Pass` or `Fail`.
+  */
+ export function readReceipts(
+ 	path: string = resolve(WORKSPACE_ROOT, VENEER_GUIDE_PATH),
+@@ -1322,17 +1346,20 @@ export function readReceipts(
+ 			if (!VERSION_PATTERN.test(npm)) throw new Error(`${label}: invalid npm ${npm}`)
+ 			if (result !== 'Pass' && result !== 'Fail')
+ 				throw new Error(`${label}: invalid Result ${result}`)
++			// The parser trims the cell's edges, so a well-formed cell alternates a code span with a
++			// comma, starting and ending on a code span. Two spans with only a space between them, a
++			// doubled comma, or any other text between them reads as malformed.
+ 			const spans = commandColumn === undefined ? [] : (row[commandColumn] ?? [])
+-			const commands = spans.flatMap((span) => (span.element === 'codeSpan' ? [span.value] : []))
+ 			if (
+-				commands.length === 0 ||
+-				commands.some((command) => command.trim() === '') ||
+-				spans.some(
+-					(span) =>
+-						span.element !== 'codeSpan' && (span.element !== 'text' || /[^\s,]/u.test(span.value)),
++				spans.length % 2 === 0 ||
++				spans.some((span, index) =>
++					index % 2 === 0
++						? span.element !== 'codeSpan' || span.value.trim() === ''
++						: span.element !== 'text' || span.value.trim() !== ',',
+ 				)
+ 			)
+ 				throw new Error(`${label}: invalid Commands ${listed}`)
++			const commands = spans.flatMap((span) => (span.element === 'codeSpan' ? [span.value] : []))
+ 			receipts.push({
+ 				date,
+ 				revision,
+@@ -1350,6 +1377,33 @@ export function readReceipts(
+ 	return receipts
+ }
+ 
++/**
++ * Checks whether a receipt records a passing run on the channel, platform, and build of a runtime.
++ *
++ * @param receipt - The receipt to compare, as the {@link readReceipts} function returns it.
++ * @param runtime - The runtime to compare against, as the {@link readRuntime} function returns it.
++ * @returns True if the receipt passed and names the runtime's channel, platform, and build; false
++ *   otherwise.
++ *
++ * @remarks
++ * The kernel, Node, and npm values are recorded beside a receipt and are not compared, because the
++ * release gate binds a release to the browser it launched and the `package.json` floors bind Node
++ * and npm.
++ *
++ * @example
++ * ```ts
++ * readReceipts().some((receipt) => matchesReceipt(receipt, readRuntime(browser, options)))
++ * ```
++ */
++export function matchesReceipt(receipt: Receipt, runtime: Runtime): boolean {
++	return (
++		receipt.passed &&
++		receipt.channel === runtime.channel &&
++		receipt.platform === runtime.platform &&
++		receipt.build === runtime.build
++	)
++}
++
+ /**
+  * Reads deferred CSS names from the Styles section's Deferred selectors subsection.
+  * @param path - The Markdown document to read; defaults to the package guide.
