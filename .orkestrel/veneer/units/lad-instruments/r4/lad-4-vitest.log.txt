@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+
+ Test Files  1 passed (1)
+      Tests  118 passed (118)
+   Start at  05:50:40
+   Duration  52.46s (transform 3.32s, setup 959ms, import 4.49s, tests 46.57s, environment 0ms)
+
+exit=0
