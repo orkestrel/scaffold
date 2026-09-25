@@ -1,0 +1,33 @@
+22.54 19.98 14.86 17/936 29476
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+····································································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the workspace policy laws including surface ownership
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/policy.test.ts:757:2
+    755|
+    756| describe('repository policy', () => {
+    757|  it('enforces the workspace policy laws including surface ownership', …
+       |  ^
+    758|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+    759|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 108 passed | 1 skipped (110)
+   Start at  06:03:43
+   Duration  12.00s (transform 2.49s, setup 1.55s, import 2.42s, tests 7.27s, environment 0ms)
+
+exit=1
+21.38 19.88 14.94 12/794 29602

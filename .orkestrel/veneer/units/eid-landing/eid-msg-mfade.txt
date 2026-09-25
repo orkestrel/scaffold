@@ -1,0 +1,17 @@
+Fade on Elements' ease-out, and read a running transition through one shared reader (E-ID-MOTION-FADE)
+
+The .fade rule's opacity transition keeps the --vn-motion-feedback duration, the release's 0.15s at a motion factor of
+1, and moves from linear to Elements' ease-out; the guide records the easing as a departure in the transition table
+and in the Fade classes prose. sampleTransition in tests/setupBrowser.ts returns the CSSTransition the browser runs for
+a named property, with its duration, its easing, and the computed value at its start and midpoint, and refuses a
+transition that carries no effect; its proof in tests/setupBrowser.test.ts reads a real transition, a control whose
+transition is removed, and the no-effect refusal. The fade proof drives the show class off and on and reads the
+running transition's duration, easing, and midpoint frame, the doubled duration at a doubled factor, and no transition
+at a zero factor or under the staged reduced-motion preference.
+
+Written by opus on Opus 5.5 (rounds 1 and 2) and builder on Sonnet (round 3); audited by analyst on GPT-6 Astra,
+reviewer on Opus 5.5, and checker on Sonnet (scaffold .orkestrel/veneer/units/mfade-audit-verdict.md and
+mfade-3-checker-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

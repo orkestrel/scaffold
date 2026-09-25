@@ -1,0 +1,226 @@
+# plant entry on tests/setupBrowser.ts
+13.81 9.73 6.32 10/741 18242
+## applied diff
+1943,1947d1942
+< 					if (form === 'button' && element instanceof HTMLButtonElement) element.disabled = true
+< 					if (form === 'counterpart' && pair.paired) {
+< 						element.classList.add('disabled')
+< 						element.setAttribute('aria-disabled', 'true')
+< 					}
+## run, the reader's own proof
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:102:2 > breakpoint viewport restoration > reads every breakpoint boundary and restores after successful readings
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:120:2 > breakpoint viewport restoration > restores after synchronous and asynchronous failures and nested viewport changes
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:141:2 > breakpoint viewport restoration > keeps the reading failure when the restore is refused, and carries the refusal as its cause
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:176:2 > breakpoint viewport restoration > leaves the following case at the original viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:192:2 > frame lifts and focus frames > lifts a specimen into a padded wrapper at the document start, hands the wrapper to the action, and puts the specimen back
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:217:2 > frame lifts and focus frames > puts the specimen back when the action throws, removes a detached copy, bounds a reachable wrapper to the runner window, and leaves an unpadded one unpadded
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:246:2 > frame lifts and focus frames > reaches a ring with Tab from the wrapper, and reads its reach and the focus it held at the shot
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:265:2 > frame lifts and focus frames > lists every edge of a frame that holds none of the ring past its element
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:279:2 > frame lifts and focus frames > reads the pixels two frames differ by inside a region, and refuses a region the frames clip apart
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:305:2 > frame lifts and focus frames > creates an enabled painted and suppressed portfolio pair under one directory
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:328:2 > frame lifts and focus frames > reads an outline from the strip it changes between a painted and a suppressed frame
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:344:2 > frame lifts and focus frames > reads no change from an outline that paints nothing, and refuses an outline with no portfolios to read it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:376:2 > menu containment > reads each shown menu against the specimen holding it, at the width it visits, and restores the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:396:2 > browser setup > records event delivery on attached and detached hosts until abort
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:435:2 > browser setup > distinguishes retained blank and painted PNG frames by the pixels of a declared region
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:440:2 > browser setup > reads only the declared region, reporting a painted frame with a uniform band as uniform
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:453:2 > browser setup > separates a region painting the frame floor from one painting another color
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:483:2 > browser setup > refuses a floor naming no color the parser reads
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:495:2 > browser setup > clips a region reaching past the frame, and refuses one that clips to nothing
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:519:2 > browser setup > refuses undecodable frame bytes
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:529:2 > browser setup > reads a subject box in the coordinates of the frame it is photographed inside
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:551:2 > browser setup > resolves a capture subject through a specimen label, a region name, or a rendered host
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:569:2 > browser setup > describes a control-rooted subject through a scope that encloses it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:594:2 > browser setup > records a subject presenting no role and no control as each of those readings
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:605:2 > browser setup > refuses a subject with no parent to be read through
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:614:2 > browser setup > resolves an element answering to two declarations as the one subject it is
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:623:2 > browser setup > records every placed scenario, and writes no placement while the portfolio is disabled
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:655:2 > browser setup > shoots a page frame over the header and the one main child holding its subject
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:710:2 > browser setup > shoots an element frame of a lifted specimen with no main child laid out, so a viewport-height panel reads at the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:738:2 > browser setup > reads a viewport-height region at the pane the shot is taken at, where the kept section outgrows the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:766:2 > browser setup > places a frame at the frame area and refuses one device-pixel row over it, naming the scenario
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:791:2 > browser setup > leaves every main child hidden or laid out as it found it, after a placement and after a refused one
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:812:2 > browser setup > refuses a placement whose document grows with every pane it is staged at
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:825:2 > browser setup > re-reads a document that fits the viewport after staging the pane again, and refuses one whose height changed
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:852:2 > browser setup > reads signed painted offsets from the parent independently of its viewport position
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:869:2 > browser setup > refuses a painted offset when the element has no parent
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:872:2 > browser setup > exports the showcase mount, the component mounts, the case matrices, the oracle drive, the recorders, the cascade readers, and the position scan
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:946:2 > browser setup > collects every rendered button that paints, and leaves out each dimmed host
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:980:2 > browser setup > lists the ordinary steps of the recording in its order, over rendered specimens
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:997:2 > browser setup > reports the step names the recording excludes, and reports none while it carries none
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1002:2 > browser setup > drives every recorded step against a rendered section and reduces each reading
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1025:2 > browser setup > isolates the oracle drive from a duplicate Toggle in another mounted section
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1071:2 > browser setup > preserves the pressed-state failure when pointer release also rejects
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1107:2 > browser setup > preserves the pressed-state failure on its own when the pointer release succeeds
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1150:2 > browser setup > refuses a hold on a host scrolling cannot bring into the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1169:2 > browser setup > sets one drive beside the recording, and reports an absent step rather than passing over it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1200:2 > browser setup > records no target for an action that adds no listener
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1204:2 > browser setup > records the document target an action adds a listener to
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1214:2 > browser setup > records the receiver of each call to a prototype method, still calls it, and restores it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1234:2 > browser setup > mounts real content and cleans it up repeatedly
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1249:2 > browser setup > exposes the Button region and the delegated activation the showcase entry constructs
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1267:2 > browser setup > records nothing for an action that neither clicks nor mutates the host
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1285:2 > browser setup > records the ordered mutations, the prevented click, and the focus one activation leaves
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1301:2 > browser setup > reads a button the acting resolvers refuse, and refuses a name no button carries
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1325:2 > browser setup > bounds the search by the button class rather than by the elements a root holds
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1343:2 > browser setup > refuses a name two buttons in one root announce, and answers for each root on its own
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1363:2 > browser setup > reads one labelled specimen, and refuses an absent label and a duplicated one
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1390:2 > browser setup > records a refusal the action raised rather than letting it end the drive
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1406:2 > browser setup > names the focused control rather than the page when focus rests somewhere else
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1418:2 > browser setup > drives dark and light variants and leaves the requested mode applied on repetition
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1439:2 > browser setup > attaches a node the case can address, and takes it out again on request
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1450:2 > browser setup > renders every page its markup declares, under the classes and attributes it was asked for
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1475:2 > browser setup > takes out every node one case added, in one call
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1484:2 > browser setup > takes out a recorded container, and leaves one the installed render attached
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1496:2 > browser setup > puts a loaded sheet in the head and takes it out, where an installed mount leaves it in the body
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1510:2 > browser setup > selects the sheet carrying the theme layer, where the installed rule walk names no sheet
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1527:2 > browser setup > walks the document by default, selecting the published cascade over a sheet a case fixtured
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1548:2 > browser setup > reports no sheet where no named sheet declares a theme layer, and refuses a layer read there
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1562:2 > browser setup > reports a grouping rule before the rules it holds, where the installed walk reports by level
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1592:2 > browser setup > reads every rule of the named layer block, and reports nothing for a layer the cascade never fills
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1603:2 > browser setup > reports the gate around a selector, where the installed rule walk reports the gate and the gated rule apart
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1631:2 > browser setup > unions the custom properties a split scope declares, where the installed rule lookup reads one rule
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1647:2 > browser setup > refuses a theme layer carrying a foreign token, wherever it sits among the named sheets
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1674:2 > browser setup > reads layer order by first declaration, where a block list reports the filled layers alone
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1701:2 > browser setup > reads every declared custom property, where the scope reading answers for one selector
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1717:2 > browser setup > walks every named sheet and skips one whose rules the document refuses
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1748:2 > browser setup > reads one named layer out of the sheets it is given, where the cascade reading resolves one first
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1778:2 > requireMatch > returns the one candidate a lookup matched
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1783:2 > requireMatch > refuses a lookup that matched nothing with the absent message
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1789:2 > requireMatch > refuses a lookup that matched several candidates, and names their count
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1798:2 > requireMatch > refuses a lone candidate that is not an HTML element with the foreign message
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1806:2 > requireMatch > refuses several candidates as a duplicate before it checks the first as an HTML element
+ ✓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1817:2 > readFormDifferences > reads no difference between two alike forms, and exactly a planted longhand in the state it is planted in 5375ms
+ ✓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1848:2 > readFormDifferences > reads the rest state with motion allowed and every later state with motion reduced, and releases the staging 1311ms
+ × |setup:browser (chromium)| tests/setupBrowser.test.ts:1865:2 > readFormDifferences > enters the disabled state through the disabled class on a paired counterpart, and leaves an unpaired counterpart at rest 283ms
+   → The unpaired forms did not enter every state: veneer button disabled, release button disabled
+ ✓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1889:2 > readFormDifferences > refuses a form that does not enter a state, naming each element and state it missed 890ms
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1908:2 > scanPositionalPairs > excludes a nesting the content model mandates, and reports it when nothing mandates it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1925:2 > scanPositionalPairs > reads a rule that joins a tag to itself
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1938:2 > component mounts > mounts a badge inside a host at the size the caller names
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1953:2 > component mounts > mounts a trail carrying the items the caller supplies, in the mode it names
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1976:2 > component mounts > mounts a close control carrying the classes the caller names beyond the shipped one
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1990:2 > component mounts > mounts a focused start control, so a traversal reaches the first control mounted after it
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1865:2 > readFormDifferences > enters the disabled state through the disabled class on a paired counterpart, and leaves an unpaired counterpart at rest
+Error: The unpaired forms did not enter every state: veneer button disabled, release button disabled
+ ❯ readFormDifferences tests/setupBrowser.ts:1961:8
+    1959|  }
+    1960|  if (missed.length > 0)
+    1961|   throw new Error(`The ${pair.name} forms did not enter every state: $…
+       |        ^
+    1962|  const [veneer, release] = (['veneer', 'release'] as const).map((casca…
+    1963|   Object.fromEntries(
+ ❯ tests/setupBrowser.test.ts:1876:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed | 88 skipped (92)
+   Start at  05:47:36
+   Duration  28.57s (transform 0ms, setup 1.59s, import 4.98s, tests 7.86s, environment 0ms)
+
+run exit=1
+## run, a reboot proof
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:37:2 > close control geometry > resolves the recorded content box, inset, and mark
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:65:2 > close control geometry > paints the recorded text color from the palette token and takes a consumer override
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:78:2 > close control geometry > rescales the control corner with the published radius factor
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:91:2 > close control geometry > carries a rule for every shipped close name
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'rest' opacity from the variable the recorded rule names
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'hover' opacity from the variable the recorded rule names
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'focus' opacity from the variable the recorded rule names
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'disabled' opacity from the variable the recorded rule names
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:108:2 > close control states > moves the opacity through rest, hover, and focus
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:130:2 > close control states > declares no transition, as the release declares none, so each state paints the moment it flips
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:138:2 > close control states > outlines the focused control at the focus width under forced colors, where its shadow ring is not painted
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:159:2 > close control states > refuses a disabled control through the attribute and through the class alike
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:174:2 > close control states > reads the hover opacity from the variable a consumer retunes through a scope of their own
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:191:2 > close control states > repaints each state from a consumer rule setting its own variable
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:203:21 > close control inversion > reads the recorded filter the light theme scope declares
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:203:21 > close control inversion > reads the recorded filter the dark theme scope declares
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:216:21 > close control inversion > inverts the mark in light through the opt-in class
+ ↓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:216:21 > close control inversion > inverts the mark in dark through the opt-in class
+ × |[object Object] (chromium)| tests/src/styles/components/close.test.ts:225:2 > btn-close button reboot > resolves the btn-close button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 2300ms
+   → The btn-close forms did not enter every state: veneer button disabled, veneer counterpart disabled, release button disabled, release counterpart disabled
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/close.test.ts:225:2 > btn-close button reboot > resolves the btn-close button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled
+Error: The btn-close forms did not enter every state: veneer button disabled, veneer counterpart disabled, release button disabled, release counterpart disabled
+ ❯ readFormDifferences tests/setupBrowser.ts:1961:8
+    1959|  }
+    1960|  if (missed.length > 0)
+    1961|   throw new Error(`The ${pair.name} forms did not enter every state: $…
+       |        ^
+    1962|  const [veneer, release] = (['veneer', 'release'] as const).map((casca…
+    1963|   Object.fromEntries(
+ ❯ tests/src/styles/components/close.test.ts:230:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 skipped (19)
+   Start at  05:48:11
+   Duration  23.58s (transform 0ms, setup 5.30s, import 526ms, tests 2.30s, environment 0ms)
+
+run exit=1
+## restore: before 8972f5a954edefe729c5404ccf90a1acc531a247249d175be03461373c234063 after 8972f5a954edefe729c5404ccf90a1acc531a247249d175be03461373c234063 IDENTICAL
+cmp: restored file equals its backup
+git diff --stat -- src: []
+19.39 12.19 7.41 14/594 18709

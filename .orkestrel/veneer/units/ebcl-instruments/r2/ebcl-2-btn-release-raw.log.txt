@@ -1,0 +1,110 @@
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:33:30 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:75:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:83:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:167:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"filled","release":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}},"veneer":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1447ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"outline","release":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}},"veneer":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1333ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"link","release":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}},"veneer":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1250ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"large","release":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}},"veneer":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1250ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"small","release":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}},"veneer":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1251ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"disabled","release":{"rest":{"appearance":"button"}},"veneer":{"rest":{"appearance":"button"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 230ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-BTN {"name":"checked","release":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}},"veneer":{"rest":{"appearance":"button"},"hovered":{"appearance":"button"},"pressed":{"appearance":"button"},"focused":{"appearance":"button","outline-offset":"0px"}}}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1251ms
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:217:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:240:2 > button > resolves the calibrated geometry and interaction paint in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:240:2 > button > resolves the calibrated geometry and interaction paint in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:285:2 > button > steps the surface veil in a dark island by at least the least hover step
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 11 skipped (18)
+   Start at  05:33:19
+   Duration  19.60s (transform 0ms, setup 1.18s, import 55ms, tests 8.01s, environment 0ms)
+

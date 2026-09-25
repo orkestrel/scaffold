@@ -1,0 +1,41 @@
+# Release .btn maps, read on this tree through readFormDifferences (tests/setupBrowser.ts) by the rewritten .btn proof with a temporary console line, run: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --silent=false --reporter=verbose tests/src/styles/elements/button.test.ts -t 'form on a button'
+# Raw run: tmp/units/ebcl-2-btn-release-raw.log.txt; extraction: tmp/units/ebcl-2-btn-release.py; fixed list compared: BUTTON_FORM_DIFFERENCES at 2376710
+## filled
+release rest: {"appearance": "button"} -> equals fixed list
+release hovered: {"appearance": "button"} -> equals fixed list
+release pressed: {"appearance": "button"} -> equals fixed list
+release focused: {"appearance": "button", "outline-offset": "0px"} -> equals fixed list
+veneer equals release: True
+## outline
+release rest: {"appearance": "button"} -> equals fixed list
+release hovered: {"appearance": "button"} -> equals fixed list
+release pressed: {"appearance": "button"} -> equals fixed list
+release focused: {"appearance": "button", "outline-offset": "0px"} -> equals fixed list
+veneer equals release: True
+## link
+release rest: {"appearance": "button"} -> equals fixed list
+release hovered: {"appearance": "button"} -> equals fixed list
+release pressed: {"appearance": "button"} -> equals fixed list
+release focused: {"appearance": "button", "outline-offset": "0px"} -> equals fixed list
+veneer equals release: True
+## large
+release rest: {"appearance": "button"} -> equals fixed list
+release hovered: {"appearance": "button"} -> equals fixed list
+release pressed: {"appearance": "button"} -> equals fixed list
+release focused: {"appearance": "button", "outline-offset": "0px"} -> equals fixed list
+veneer equals release: True
+## small
+release rest: {"appearance": "button"} -> equals fixed list
+release hovered: {"appearance": "button"} -> equals fixed list
+release pressed: {"appearance": "button"} -> equals fixed list
+release focused: {"appearance": "button", "outline-offset": "0px"} -> equals fixed list
+veneer equals release: True
+## disabled
+release rest: {"appearance": "button"} -> equals fixed list
+veneer equals release: True
+## checked
+release rest: {"appearance": "button"} -> equals fixed list
+release hovered: {"appearance": "button"} -> equals fixed list
+release pressed: {"appearance": "button"} -> equals fixed list
+release focused: {"appearance": "button", "outline-offset": "0px"} -> equals fixed list
+veneer equals release: True

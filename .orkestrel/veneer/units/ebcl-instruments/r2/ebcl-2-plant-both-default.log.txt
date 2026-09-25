@@ -1,0 +1,434 @@
+# plant both-default on tests/src/styles/elements/button.test.ts
+6.31 5.97 4.54 5/436 15382
+## applied diff, both cascades, rule [outline-width: 3px]
+205c205,210
+< 			const { veneer, release } = await readFormDifferences(pair, pair.states, BUTTON_HOLDER_STYLE)
+---
+> 			// both-default plant: the rule rides in the counterpart markup, so it lands in the document and in the release shadow root.
+> 			const { veneer, release } = await readFormDifferences(
+> 				{ ...pair, counterpart: `<style>a.btn:active { outline-width: 3px }</style>${pair.counterpart}` },
+> 				pair.states,
+> 				BUTTON_HOLDER_STYLE,
+> 			)
+## run, both cascades, rule [outline-width: 3px]
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+Port 63315 is in use, trying another one...
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:75:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:83:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:167:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1703ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1398ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1470ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1388ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1515ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 324ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1452ms
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:221:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:244:2 > button > resolves the calibrated geometry and interaction paint in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:244:2 > button > resolves the calibrated geometry and interaction paint in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:289:2 > button > steps the surface veil in a dark island by at least the least hover step
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 11 skipped (18)
+   Start at  05:43:48
+   Duration  20.06s (transform 0ms, setup 1.86s, import 75ms, tests 9.25s, environment 0ms)
+
+run exit=0
+## applied diff, the document alone, rule [outline-width: 3px]
+204a205,207
+> 			// both-default plant: the rule loads into the document head alone, so the release shadow root never sees it.
+> 			scene.load('a.btn:active { outline-width: 3px }')
+> 			console.log(`EBCL2-OUTLINE ${JSON.stringify({ rule: 'outline-width: 3px', width: readStyle(requireValue(scene.mount('<a class="btn" href="#harbor" style="outline-width: 3px">Harbor</a>').querySelector('a'), 'No anchor'), 'outline-width') })}`)
+## run, the document alone, rule [outline-width: 3px]
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+Port 63315 is in use, trying another one...
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:75:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:83:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:167:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1963ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1555ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1764ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1402ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1499ms
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px","width":"0px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 393ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1472ms
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:219:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:242:2 > button > resolves the calibrated geometry and interaction paint in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:242:2 > button > resolves the calibrated geometry and interaction paint in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:287:2 > button > steps the surface veil in a dark island by at least the least hover step
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 11 skipped (18)
+   Start at  05:44:10
+   Duration  20.13s (transform 0ms, setup 2.08s, import 123ms, tests 10.05s, environment 0ms)
+
+run exit=0
+## applied diff, both cascades, rule [outline-width: 3px; outline-style: solid]
+205c205,210
+< 			const { veneer, release } = await readFormDifferences(pair, pair.states, BUTTON_HOLDER_STYLE)
+---
+> 			// both-default plant: the rule rides in the counterpart markup, so it lands in the document and in the release shadow root.
+> 			const { veneer, release } = await readFormDifferences(
+> 				{ ...pair, counterpart: `<style>a.btn:active { outline-width: 3px; outline-style: solid }</style>${pair.counterpart}` },
+> 				pair.states,
+> 				BUTTON_HOLDER_STYLE,
+> 			)
+## run, both cascades, rule [outline-width: 3px; outline-style: solid]
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:75:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:83:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:167:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1649ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1314ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1347ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1286ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1381ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 247ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1319ms
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:221:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:244:2 > button > resolves the calibrated geometry and interaction paint in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:244:2 > button > resolves the calibrated geometry and interaction paint in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:289:2 > button > steps the surface veil in a dark island by at least the least hover step
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 11 skipped (18)
+   Start at  05:44:32
+   Duration  22.48s (transform 0ms, setup 1.55s, import 65ms, tests 8.55s, environment 0ms)
+
+run exit=0
+## applied diff, the document alone, rule [outline-width: 3px; outline-style: solid]
+204a205,207
+> 			// both-default plant: the rule loads into the document head alone, so the release shadow root never sees it.
+> 			scene.load('a.btn:active { outline-width: 3px; outline-style: solid }')
+> 			console.log(`EBCL2-OUTLINE ${JSON.stringify({ rule: 'outline-width: 3px; outline-style: solid', width: readStyle(requireValue(scene.mount('<a class="btn" href="#harbor" style="outline-width: 3px; outline-style: solid">Harbor</a>').querySelector('a'), 'No anchor'), 'outline-width') })}`)
+## run, the document alone, rule [outline-width: 3px; outline-style: solid]
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:38:21 > button > removes the outline for pointer focus in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:55:21 > button > retains the Reboot button affordances in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:75:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:83:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:167:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1816ms
+   → expected { name: 'filled', …(1) } to deeply equal { name: 'filled', …(1) }
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1713ms
+   → expected { name: 'outline', …(1) } to deeply equal { name: 'outline', …(1) }
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1640ms
+   → expected { name: 'link', differences: { …(4) } } to deeply equal { name: 'link', differences: { …(4) } }
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1529ms
+   → expected { Object (name, differences) } to deeply equal { Object (name, differences) }
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1589ms
+   → expected { Object (name, differences) } to deeply equal { Object (name, differences) }
+stdout | tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+EBCL2-OUTLINE {"rule":"outline-width: 3px; outline-style: solid","width":"3px"}
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'disabled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 308ms
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled 1621ms
+   → expected { name: 'checked', …(1) } to deeply equal { name: 'checked', …(1) }
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:219:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:242:2 > button > resolves the calibrated geometry and interaction paint in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:242:2 > button > resolves the calibrated geometry and interaction paint in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:287:2 > button > steps the surface veil in a dark island by at least the least hover step
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'filled' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+AssertionError: expected { name: 'filled', …(1) } to deeply equal { name: 'filled', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,10 +7,12 @@[39m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "outline-style": "none",[39m
+[31m+       "outline-width": "0px",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m    },[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:213:52
+    211|    for (const difference of Object.values(release))
+    212|     expect(Object.keys(difference)).toContain('appearance')
+    213|    expect({ name: pair.name, differences: veneer }).toEqual({
+       |                                                    ^
+    214|     name: pair.name,
+    215|     differences: release,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'outline' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+AssertionError: expected { name: 'outline', …(1) } to deeply equal { name: 'outline', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,10 +7,12 @@[39m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "outline-style": "none",[39m
+[31m+       "outline-width": "0px",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m    },[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:213:52
+    211|    for (const difference of Object.values(release))
+    212|     expect(Object.keys(difference)).toContain('appearance')
+    213|    expect({ name: pair.name, differences: veneer }).toEqual({
+       |                                                    ^
+    214|     name: pair.name,
+    215|     differences: release,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'link' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+AssertionError: expected { name: 'link', differences: { …(4) } } to deeply equal { name: 'link', differences: { …(4) } }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,10 +7,12 @@[39m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "outline-style": "none",[39m
+[31m+       "outline-width": "0px",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m    },[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:213:52
+    211|    for (const difference of Object.values(release))
+    212|     expect(Object.keys(difference)).toContain('appearance')
+    213|    expect({ name: pair.name, differences: veneer }).toEqual({
+       |                                                    ^
+    214|     name: pair.name,
+    215|     differences: release,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'large' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'small' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+AssertionError: expected { Object (name, differences) } to deeply equal { Object (name, differences) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,10 +7,12 @@[39m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "outline-style": "none",[39m
+[31m+       "outline-width": "0px",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m    },[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:213:52
+    211|    for (const difference of Object.values(release))
+    212|     expect(Object.keys(difference)).toContain('appearance')
+    213|    expect({ name: pair.name, differences: veneer }).toEqual({
+       |                                                    ^
+    214|     name: pair.name,
+    215|     differences: release,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:198:2 > button > resolves the 'checked' .btn form on a button apart from the same form on an anchor on the same longhands, at the same button values, as the release does, at rest, and under hover, press, and keyboard focus where the form is enabled
+AssertionError: expected { name: 'checked', …(1) } to deeply equal { name: 'checked', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,10 +7,12 @@[39m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "outline-style": "none",[39m
+[31m+       "outline-width": "0px",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m      },[22m
+[2m    },[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:213:52
+    211|    for (const difference of Object.values(release))
+    212|     expect(Object.keys(difference)).toContain('appearance')
+    213|    expect({ name: pair.name, differences: veneer }).toEqual({
+       |                                                    ^
+    214|     name: pair.name,
+    215|     differences: release,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed | 11 skipped (18)
+   Start at  05:44:56
+   Duration  19.26s (transform 0ms, setup 3.40s, import 201ms, tests 10.22s, environment 0ms)
+
+run exit=1
+## restore: before d5426af2b84196de78d26c51370229b07c7f789b4a365923d372cf3aea6600a4 after d5426af2b84196de78d26c51370229b07c7f789b4a365923d372cf3aea6600a4 IDENTICAL
+cmp: restored file equals its backup
+git diff --stat -- src: []
+9.58 6.95 5.02 13/792 17263

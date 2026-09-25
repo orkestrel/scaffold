@@ -1,0 +1,17 @@
+Read the range thumb's press, disabled, and reduced-motion states and a disabled link button from rendered frames (STATES)
+
+The form-range proof holds the thumb with a trusted press and reads its painted centre against the resolved mix, reads
+the disabled thumb's paint through a host the pointer passes, and reads the fill transition off frames shot during a
+press: with motion allowed an accepted frame lies strictly between the started and the held fill, no animation is
+listed while the hold lasts, and under the staged reduced-motion preference each later press and release lands at
+once, beside the gated rule's declared transition-property and duration. readCentre in tests/setupBrowser.ts returns a
+square of device pixels centred on a subject's box in a staged frame's coordinates, proved with an off-centre subject
+and a control square. The button proof reads a disabled .btn-link's opacity from its rendered result. The integration
+case keeps its own centre read of an unstaged screenshot (D52).
+
+Written by opus on Opus 5.5 (rounds 1 and 2) and builder on Sonnet (round 3); audited by analyst on GPT-6 Astra,
+reviewer on Opus 5.5, and checker on Sonnet (scaffold .orkestrel/veneer/units/sts-audit-verdict.md,
+sts-audit-2-verdict.md, and sts-3-checker-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

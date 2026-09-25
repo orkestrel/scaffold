@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (47 tests | 1 failed | 46 skipped) 6ms
+     × tkp6 reads an alias override on a root carrying a mode 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:1125:2 > tkp6 alias probe > tkp6 reads an alias override on a root carrying a mode
+Error: TKP6 root-with-mode child=rgb(9, 8, 7) control-island-below-plain-override=color-mix(in oklab, oklch(52.7% .154 150.069) 70%, oklch(20.8% .042 265.755))
+ ❯ tests/src/styles/tokens.test.ts:1135:8
+    1133|   document.documentElement.removeAttribute('data-bs-theme')
+    1134|   document.documentElement.style.removeProperty('--bs-form-valid-color…
+    1135|   throw new Error('TKP6 root-with-mode child=' + root + ' control-isla…
+       |        ^
+    1136|  })
+    1137| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 skipped (47)
+   Start at  06:04:40
+   Duration  14.00s (transform 0ms, setup 1.46s, import 157ms, tests 6ms, environment 0ms)
+
+exit=1
+restore cmp exit=0

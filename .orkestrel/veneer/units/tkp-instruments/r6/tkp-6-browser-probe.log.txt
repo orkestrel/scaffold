@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (47 tests | 1 failed | 46 skipped) 11ms
+     × tkp6 reads the mode-scope names 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:1114:2 > tkp6 scope probe > tkp6 reads the mode-scope names
+Error: TKP6 names=125 same=["--bs-heading-color=","--lightningcss-dark=","--lightningcss-light=","--vn-focus-highlight=Highlight","--vn-focus-reset=none","--vn-state-active=22%","--vn-state-hover=12%","--vn-state-stripe=5%"] light-differs-from-root=[]
+ ❯ tests/src/styles/tokens.test.ts:1122:8
+    1120|   const same = names.filter((name) => read(document.documentElement, n…
+    1121|   const lightDiffers = names.filter((name) => read(document.documentEl…
+    1122|   throw new Error('TKP6 names=' + names.length + ' same=' + JSON.strin…
+       |        ^
+    1123|   expect(names.length).toBeGreaterThan(0)
+    1124|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 skipped (47)
+   Start at  05:52:45
+   Duration  24.43s (transform 0ms, setup 4.71s, import 689ms, tests 11ms, environment 0ms)
+
+exit=1
+restore cmp exit=0

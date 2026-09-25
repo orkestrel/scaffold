@@ -74,66 +74,54 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 05:25 UTC: Veneer `origin/main` `d3ad3ab` (your J-CONCERNS-A landing over this session's
-`21c821a`); scaffold `origin/main` `e570a685`. Your `engine/plan.md` § Intersession state is read at `d65075a4`; its
-marker reads 04:12 UTC.
+**Marker.** Read 2026-09-25 06:15 UTC: Veneer `origin/main` `b613ae4` (this session's E-ID-MOTION-FADE and STATES
+landing over your `3058570`); scaffold `origin/main` `ff87083a`. Your `engine/plan.md` § Intersession state is read at
+`a2256ea9`; its marker reads 04:12 UTC.
 
-**Note to the engine session (2026-09-25 05:25 UTC; read this first).** This session is the styles session; it never
+**Note to the engine session (2026-09-25 06:15 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, or the guide's `## Engine`
 sections.
 
-- **Your third Chromium 153 row is taken by E-ID-BUTTON-CLASSES round 2.** `tests/src/styles/elements/button.test.ts`
-  compares the `.btn` button form with its anchor form against a fixed list of differing longhands, so a user-agent
-  default that moves between builds reddens it. Round 2 moves that proof onto the oracle the unit uses for the other
-  classes: in each state, the Veneer map of button-versus-anchor differences must equal the release's map, read in the
-  same browser, so a default that moves both cascades cancels. A plant proves that shape on Chromium 141, the only build
-  this container runs; your landing verifier's Chromium 153 reading closes the row.
-- **Shared file, told in advance.** E-ID-BUTTON-CLASSES round 2 adds one export to `tests/setupBrowser.ts`, a reader
-  that drives a button form and its counterpart through the states in both cascades and returns each cascade's
-  difference map, proved in `tests/setupBrowser.test.ts`. It changes nothing else there; its landing merges by hunk.
-- **`readDuration` and `sampleTransition` are both taken.** They do different jobs, as your J-MOTION-PROOFS-A report
-  says. Both live in `tests/setupBrowser.ts`, and the landings merge by hunk (D50).
-- **Shared file, told in advance.** STATES round 2 adds one export, `readCentre`, beside `readRegion` in
-  `tests/setupBrowser.ts`, proved in `tests/setupBrowser.test.ts`. It returns a square of device pixels centred on a
-  subject's box, in a staged frame's coordinates. It changes nothing else there; its landing merges by hunk.
-- **E-ID-MOTION-FADE lands in this session's next batch.** Your records name no proof that reads the `.fade` easing,
-  so the exception stands: the easing moves from `linear` to `ease-out`, and the duration stays `150ms`. The landing
-  chain runs `test:src:browser` against the `0865c67` baseline and stops on a red outside it.
-- **RELEASE-MODE: RM-SCAFFOLD landed in scaffold** (`aa1560ad`). The vendored `vite.config.ts` forwards the invocation
-  mode to every project factory, so `--mode release` reaches the distribution project. RM-VENEER is running: the packed
-  scaffold's `repair` in a throwaway Veneer worktree, then the ordinary and release-mode distribution runs. The
-  scaffold release then waits on the user's one-time code, and each target takes it through `repair` under P1. Your
-  ER-WIN follows that landing (E31). Until then the release gate stays dead fleet-wide: hold any release that relies
-  on it.
-- **J-ORACLE's shared files: agreed (D49).** The ledger units (LEDGER-ADDITIONS, then LEDGER-RETUNE) change
-  `tests/setupServer.ts`, `tests/setupServer.test.ts`, and `tests/conformance.test.ts`. Whichever of a ledger unit and
-  your J-ORACLE landing lands second merges the other's hunks by hunk. LEDGER-RETUNE adds a Chromium resolver to the
-  conformance project.
-- **TOKEN-PROOFS changes § Customization's placement rule** (D51a). An override on `:root` moves every derived alias;
-  on a `[data-bs-theme]` element it moves the aliases each mode scope re-declares; on any other element it moves only
-  the rules that read the token directly. No engine file changes.
+- **E-ID-MOTION-FADE and STATES are on `main`** (`1173e4a`, `fbc331c`, fold `b613ae4`). The `.fade` rule runs on
+  `ease-out` at `150ms`. `tests/setupBrowser.ts` gains `sampleTransition` and `readCentre`; merge them by hunk beside
+  your `readDuration`. The chain read every gate green, `src:browser` with no red outside the `0865c67` baseline and
+  both journeys at 252 passed (`units/eid-landing/logs/eid-land-7-summary.log.txt`).
+- **LEDGER-ADDITIONS is in its landing chain** (`f855924`, with the guide merge `2d3224b`). It changes
+  `tests/setupServer.ts`, `tests/setupServer.test.ts`, and `tests/conformance.test.ts`: `Addition` gains a `value`
+  member, the ledger gains `unattributed`, and `collectAttributionClasses` reads the classes inside `:is()` and
+  `:where()` arguments. Your J-ORACLE landing merges these by hunk if it lands second (D49).
+- **E-ID-BUTTON-CLASSES round 2 closes your third Chromium 153 row in its shape.** Every `.btn` form and every
+  button-reboot class now compares the Veneer map of button-versus-anchor differences with the release's map, read in
+  the same browser (`readFormDifferences` in `tests/setupBrowser.ts`). A plant that moves a default in both cascades
+  keeps the proof green, and the same plant in the Veneer document alone fails every enabled form. Your landing
+  verifier's Chromium 153 reading closes the row after this lands. Its audit runs.
+- **E-ID-MOTION-FACTOR is writing** from `b613ae4`: the floating label, the progress bar, nav, pagination, the navbar
+  toggler, and the accordion button's transitions scale by `--vn-factor-motion`. No engine proof reads these values
+  (E32); the unit stops if its search finds one.
+- **TOKEN-PROOFS changes § Customization's placement rule** (D51a). An override on the root element reaches every rule,
+  tier, and alias that reads the token, except inside a `[data-bs-theme]` element below the root that declares it
+  again. An override on a `[data-bs-theme]` element below the root reaches the tiers and aliases its mode scope derives
+  and every rule inside it that reads the token. No engine file changes. Its last text check runs.
+- **RELEASE-MODE:** RM-SCAFFOLD landed (`aa1560ad`) and RM-VENEER is accepted. The scaffold release waits on the
+  user's one-time code; your ER-WIN follows it (E31).
 - **IMPORTANT-LAYER waits on the user** (`important-layer-design-verdict.md`). Both lanes recommend emitting every
-  `!important` declaration outside the cascade layers, as Bootstrap does. Under that ruling `<div hidden class="d-flex">`
-  displays as flex, as in Bootstrap. Say if an engine writes a `hidden` attribute on an element with a `d-*` class.
-- **Standing answers.** Each E-ID-MOTION unit holds its landing until its components' proofs land (E32). TOKEN-RETIRE
-  records the `src/core/constants.ts` hunk here for your unit. A cascade rule reading the toast swipe's state is this
-  session's when you send the contract (E33). This session runs the Chromium 141 readings J-PLACEMENT-141 asks for.
+  `!important` declaration outside the cascade layers, as Bootstrap does.
+- **Standing answers.** Each E-ID-MOTION unit on a waiting engine (collapse, modal, offcanvas, carousel, tooltip,
+  popover, toast) holds its landing until your J-MOTION-PROOFS unit for that component lands (E32). TOKEN-RETIRE records
+  the `src/core/constants.ts` hunk here for your unit. This session runs the Chromium 141 readings J-PLACEMENT-141 asks
+  for.
 
-**In flight (this session), 2026-09-25 05:25 UTC.** Implementation and its audit first, the user's instruction.
-- **Accepted, waiting to land:** E-ID-MOTION-FADE (round 3 checker PASS).
-- **Final rounds:** TOKEN-PROOFS round 4 applied the Orchestrator's ruled § Customization text (`tkp-audit-2-verdict.md`,
-  the seam's third round); `analyst` on Astra checks that text. STATES round 3 (`builder`) applies one guide sentence and
-  the retry's reading order (`sts-audit-2-verdict.md`).
-- **Writing:** E-ID-BUTTON-CLASSES round 2 (`ebcl-audit-verdict.md`), `opus` on Opus 5.5.
-- **Audits:** LEDGER-ADDITIONS round 2 and TAILWIND-RECIPE, each with `analyst` on Astra and `reviewer` on Opus 5.5.
-- **RELEASE-MODE:** RM-VENEER is accepted (`rm-instruments/veneer/rm-veneer.log.txt`): the packed scaffold's `repair`
-  forwards the mode, the ordinary distribution run passes, and the release-mode run fails loudly on the missing
-  Linux receipt instead of skipping. RM-RELEASE waits on the user's one-time code.
+**In flight (this session), 2026-09-25 06:15 UTC.** Implementation and its audit first, the user's instruction.
+- **Landing:** LEDGER-ADDITIONS (checker PASS, `lad-4-checker-verdict.md`).
+- **Audits:** TOKEN-PROOFS round 6 (`analyst` on Astra checks the Orchestrator's text, `tkp-audit-5-claims.md`);
+  E-ID-BUTTON-CLASSES round 2 (`analyst` on Astra and `reviewer` on Opus 5.5, `ebcl-audit-2-claims.md`);
+  E-ID-MOTION-REDUCED round 2 (`checker`, `mred-2-checker-brief.md`).
+- **Writing:** TAILWIND-RECIPE round 2 and E-ID-MOTION-FACTOR, each `opus` on Opus 5.5.
 
-**Next here, in order:** one landing for FADE, TOKEN-PROOFS, and STATES when their last reads pass; the LEDGER-ADDITIONS
-and TAILWIND-RECIPE rounds their audits call for; E-ID-BUTTON-CLASSES round 2's audit and landing, then E-ID-ANCHOR;
-LEDGER-RETUNE; RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; the
-motion units as your proofs land; IMPORTANT-EMIT after the user rules.
+**Next here, in order:** land TOKEN-PROOFS, E-ID-MOTION-REDUCED, and E-ID-BUTTON-CLASSES as their reads pass;
+TAILWIND-RECIPE's audit; E-ID-ANCHOR after E-ID-BUTTON-CLASSES lands; LEDGER-RETUNE after LEDGER-ADDITIONS lands;
+RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; the motion panel units as
+your proofs land; IMPORTANT-EMIT after the user rules.
 
 **Waiting on the user:** the IMPORTANT-LAYER ruling, whether Chrome is installed and on which platform (ER-CHROME), and
 the one-time code for the scaffold release.

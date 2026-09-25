@@ -1,0 +1,67 @@
+=== unit/mfade fa66e07
+=== unit/sts 82428a2
+=== fast-forward to origin/main (05:33:32)
+=== fast-forward to origin/main exit=0
+=== base 3058570
+=== integrate mfade over 2376710 (unit tip fa66e07)
+=== landed mfade as 1173e4a
+=== integrate sts over 2376710 (unit tip 82428a2)
+=== landed sts as fbc331c
+=== format:check (05:34:19)
+=== format:check exit=0
+=== lint:check (05:34:35)
+=== lint:check exit=0
+=== check (05:34:37)
+=== check exit=0
+=== build:src (05:35:06)
+=== build:src exit=0
+=== test:src:styles (05:35:20)
+ Test Files  115 passed (115)
+      Tests  1510 passed (1510)
+=== test:src:styles exit=0
+=== test:setup (05:38:38)
+ Test Files  4 passed (4)
+      Tests  330 passed (330)
+=== test:setup exit=0
+=== test:conformance (05:39:06)
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+=== test:conformance exit=0
+=== test:guides (05:39:44)
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+=== test:guides exit=0
+=== test:policy (05:39:53)
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+=== test:policy exit=0
+=== src:browser against the 0865c67 baseline (05:39:58)
+=== src:browser exit=0;  Tests 1033 passed | 2 skipped (1035)
+=== src:browser: no red outside the baseline
+=== test:service (05:42:09)
+ Test Files  3 passed (3)
+      Tests  21 passed (21)
+=== test:service exit=0
+=== build (05:42:41)
+=== build exit=0
+=== test:distribution (05:43:05)
+ Test Files  1 passed (1)
+      Tests  13 passed | 5 skipped (18)
+=== test:distribution exit=0
+=== app:browser (05:43:31)
+ Test Files  61 passed (61)
+      Tests  223 passed (223)
+=== app:browser exit=0
+=== setup:browser (05:44:31)
+ Test Files  1 passed (1)
+      Tests  92 passed (92)
+=== setup:browser exit=0
+=== journey, CAPTURE=1 (05:44:57)
+ Test Files  4 passed (4)
+      Tests  252 passed (252)
+=== journey, CAPTURE=1 exit=0
+=== journey, CAPTURE unset (05:55:41)
+ Test Files  4 passed (4)
+      Tests  252 passed (252)
+=== journey, CAPTURE unset exit=0
+=== status after chain: [] (06:04:09)
+=== eid land 6 done

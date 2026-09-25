@@ -1,0 +1,14 @@
+Record each added declaration's value, report every unattributed rule, and derive the shipped keys from the inventory (LEDGER-ADDITIONS)
+
+The cascade ledger's Addition rows carry the declared value beside the component, name, condition, and category, and
+collectAdditions reports every emitted rule that no shipped key claims instead of skipping it. The shipped component
+list derives from the pinned inventory rather than a hand-written list. collectAttributionClasses reads the classes a
+selector writes at its own level or inside an :is() or a :where() argument, decoding escaped names, so a rule written
+through those pseudo-classes attributes to its component.
+
+Written by opus on Opus 5.5 (rounds 1 to 3) and builder on Sonnet (round 4); audited by analyst on GPT-6 Astra,
+reviewer on Opus 5.5, and checker on Sonnet (scaffold .orkestrel/veneer/units/lad-audit-verdict.md,
+lad-audit-2-verdict.md, lad-audit-3-verdict.md, and lad-4-checker-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

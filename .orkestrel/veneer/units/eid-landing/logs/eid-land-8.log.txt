@@ -1,0 +1,55 @@
+=== unit/lad f0f5035
+=== fast-forward to origin/main (06:04:58)
+Already up to date.
+=== fast-forward to origin/main exit=0
+=== base b613ae4
+=== integrate lad over 2376710 (unit tip f0f5035)
+  guides/veneer.md: 1 conflict(s)
+base-union: ours=3 base=3 theirs=5 -> 7
+Finished in 27323ms on 4 files using 4 threads.
+=== landed lad as f855924
+=== format:check (06:05:26)
+
+> @orkestrel/veneer@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 20061ms on 476 files using 4 threads.
+=== format:check exit=0
+=== lint:check (06:05:46)
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== lint:check exit=0
+=== check (06:05:49)
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+
+> @orkestrel/veneer@0.0.1 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+
+
+> @orkestrel/veneer@0.0.1 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:styles
+> tsc --noEmit -p configs/src/tsconfig.styles.json
+
+
+> @orkestrel/veneer@0.0.1 check:app
+> npm run check:app:browser
+
+
+> @orkestrel/veneer@0.0.1 check:app:browser
+> vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+

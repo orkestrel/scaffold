@@ -1,0 +1,252 @@
+# plant include on src/styles/components/_close.scss
+5.86 5.21 4.07 8/485 9758
+## applied diff
+7d6
+< 		@include button-reboot;
+build exit=0
+## run
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+Port 63315 is in use, trying another one...
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:37:2 > close control geometry > resolves the recorded content box, inset, and mark 74ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:65:2 > close control geometry > paints the recorded text color from the palette token and takes a consumer override 199ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:78:2 > close control geometry > rescales the control corner with the published radius factor 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:91:2 > close control geometry > carries a rule for every shipped close name 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'rest' opacity from the variable the recorded rule names 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'hover' opacity from the variable the recorded rule names 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'focus' opacity from the variable the recorded rule names 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:101:2 > close control states > reads the 'disabled' opacity from the variable the recorded rule names 49ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:108:2 > close control states > moves the opacity through rest, hover, and focus 751ms
+ × |[object Object] (chromium)| tests/src/styles/components/close.test.ts:130:2 > close control states > declares no transition, as the release declares none, so each state paints the moment it flips 49ms
+   → expected 'color, background-color, border-color…' to be 'all' // Object.is equality
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:138:2 > close control states > outlines the focused control at the focus width under forced colors, where its shadow ring is not painted 105ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:159:2 > close control states > refuses a disabled control through the attribute and through the class alike 45ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:174:2 > close control states > reads the hover opacity from the variable a consumer retunes through a scope of their own 289ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:191:2 > close control states > repaints each state from a consumer rule setting its own variable 229ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:203:21 > close control inversion > reads the recorded filter the light theme scope declares 52ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:203:21 > close control inversion > reads the recorded filter the dark theme scope declares 51ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:216:21 > close control inversion > inverts the mark in light through the opt-in class 63ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/close.test.ts:216:21 > close control inversion > inverts the mark in dark through the opt-in class 50ms
+ × |[object Object] (chromium)| tests/src/styles/components/close.test.ts:225:2 > btn-close button reboot > resolves the btn-close button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1487ms
+   → expected { rest: { …(30) }, …(4) } to deeply equal { rest: { …(6) }, …(4) }
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/close.test.ts:130:2 > close control states > declares no transition, as the release declares none, so each state paints the moment it flips
+AssertionError: expected 'color, background-color, border-color…' to be 'all' // Object.is equality
+
+Expected: [32m"all"[39m
+Received: [31m"color, background-color, border-color, box-shadow, opacity"[39m
+
+ ❯ tests/src/styles/components/close.test.ts:134:52
+    132|   // The control's partial writes the button reboot back on its button…
+    133|   // calibrated transition every button wears gives way to the browser…
+    134|   expect(readStyle(control, 'transition-property')).toBe('all')
+       |                                                    ^
+    135|   expect(readStyle(control, 'transition-duration')).toBe('0s')
+    136|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/close.test.ts:225:2 > btn-close button reboot > resolves the btn-close button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled
+AssertionError: expected { rest: { …(30) }, …(4) } to deeply equal { rest: { …(6) }, …(4) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "disabled": {[22m
+[2m      "appearance": "button",[22m
+[31m+     "background-size": "17px",[39m
+[31m+     "block-size": "17px",[39m
+[31m+     "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[2m      "cursor": "default",[22m
+[2m      "display": "inline-block",[22m
+[32m-     "font-weight": "400",[39m
+[31m+     "font-family": "fantasy",[39m
+[31m+     "font-size": "17px",[39m
+[31m+     "font-weight": "700",[39m
+[31m+     "height": "17px",[39m
+[31m+     "inline-size": "17px",[39m
+[31m+     "line-height": "32.3px",[39m
+[31m+     "padding-block-end": "4.25px",[39m
+[31m+     "padding-block-start": "4.25px",[39m
+[31m+     "padding-bottom": "4.25px",[39m
+[31m+     "padding-inline-end": "4.25px",[39m
+[31m+     "padding-inline-start": "4.25px",[39m
+[31m+     "padding-left": "4.25px",[39m
+[31m+     "padding-right": "4.25px",[39m
+[31m+     "padding-top": "4.25px",[39m
+[31m+     "perspective-origin": "12.75px 12.75px",[39m
+[2m      "text-align": "center",[22m
+[31m+     "transform-origin": "12.75px 12.75px",[39m
+[31m+     "transition-property": "none",[39m
+[2m      "unicode-bidi": "normal",[22m
+[31m+     "width": "17px",[39m
+[2m    },[22m
+[2m    "focused": {[22m
+[2m      "appearance": "button",[22m
+[31m+     "background-size": "17px",[39m
+[31m+     "block-size": "17px",[39m
+[2m      "cursor": "pointer",[22m
+[2m      "display": "inline-block",[22m
+[32m-     "font-weight": "400",[39m
+[31m+     "font-family": "fantasy",[39m
+[31m+     "font-size": "17px",[39m
+[31m+     "font-weight": "700",[39m
+[31m+     "height": "17px",[39m
+[31m+     "inline-size": "17px",[39m
+[31m+     "line-height": "32.3px",[39m
+[31m+     "padding-block-end": "4.25px",[39m
+[31m+     "padding-block-start": "4.25px",[39m
+[31m+     "padding-bottom": "4.25px",[39m
+[31m+     "padding-inline-end": "4.25px",[39m
+[31m+     "padding-inline-start": "4.25px",[39m
+[31m+     "padding-left": "4.25px",[39m
+[31m+     "padding-right": "4.25px",[39m
+[31m+     "padding-top": "4.25px",[39m
+[31m+     "perspective-origin": "12.75px 12.75px",[39m
+[2m      "text-align": "center",[22m
+[31m+     "transform-origin": "12.75px 12.75px",[39m
+[31m+     "transition-property": "none",[39m
+[2m      "unicode-bidi": "normal",[22m
+[31m+     "width": "17px",[39m
+[2m    },[22m
+[2m    "hovered": {[22m
+[2m      "appearance": "button",[22m
+[31m+     "background-size": "17px",[39m
+[31m+     "block-size": "17px",[39m
+[31m+     "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[2m      "cursor": "pointer",[22m
+[2m      "display": "inline-block",[22m
+[32m-     "font-weight": "400",[39m
+[31m+     "font-family": "fantasy",[39m
+[31m+     "font-size": "17px",[39m
+[31m+     "font-weight": "700",[39m
+[31m+     "height": "17px",[39m
+[31m+     "inline-size": "17px",[39m
+[31m+     "line-height": "32.3px",[39m
+[31m+     "padding-block-end": "4.25px",[39m
+[31m+     "padding-block-start": "4.25px",[39m
+[31m+     "padding-bottom": "4.25px",[39m
+[31m+     "padding-inline-end": "4.25px",[39m
+[31m+     "padding-inline-start": "4.25px",[39m
+[31m+     "padding-left": "4.25px",[39m
+[31m+     "padding-right": "4.25px",[39m
+[31m+     "padding-top": "4.25px",[39m
+[31m+     "perspective-origin": "12.75px 12.75px",[39m
+[2m      "text-align": "center",[22m
+[31m+     "transform-origin": "12.75px 12.75px",[39m
+[31m+     "transition-property": "none",[39m
+[2m      "unicode-bidi": "normal",[22m
+[31m+     "width": "17px",[39m
+[2m    },[22m
+[2m    "pressed": {[22m
+[2m      "appearance": "button",[22m
+[31m+     "background-size": "17px",[39m
+[31m+     "block-size": "17px",[39m
+[2m      "cursor": "pointer",[22m
+[2m      "display": "inline-block",[22m
+[32m-     "font-weight": "400",[39m
+[31m+     "font-family": "fantasy",[39m
+[31m+     "font-size": "17px",[39m
+[31m+     "font-weight": "700",[39m
+[31m+     "height": "17px",[39m
+[31m+     "inline-size": "17px",[39m
+[31m+     "line-height": "32.3px",[39m
+[31m+     "padding-block-end": "4.25px",[39m
+[31m+     "padding-block-start": "4.25px",[39m
+[31m+     "padding-bottom": "4.25px",[39m
+[31m+     "padding-inline-end": "4.25px",[39m
+[31m+     "padding-inline-start": "4.25px",[39m
+[31m+     "padding-left": "4.25px",[39m
+[31m+     "padding-right": "4.25px",[39m
+[31m+     "padding-top": "4.25px",[39m
+[31m+     "perspective-origin": "12.75px 12.75px",[39m
+[2m      "text-align": "center",[22m
+[31m+     "transform-origin": "12.75px 12.75px",[39m
+[31m+     "transition-property": "none",[39m
+[2m      "unicode-bidi": "normal",[22m
+[31m+     "width": "17px",[39m
+[2m    },[22m
+[2m    "rest": {[22m
+[2m      "appearance": "button",[22m
+[31m+     "background-size": "17px",[39m
+[31m+     "block-size": "17px",[39m
+[31m+     "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[2m      "cursor": "pointer",[22m
+[2m      "display": "inline-block",[22m
+[32m-     "font-weight": "400",[39m
+[31m+     "font-family": "fantasy",[39m
+[31m+     "font-size": "17px",[39m
+[31m+     "font-weight": "700",[39m
+[31m+     "height": "17px",[39m
+[31m+     "inline-size": "17px",[39m
+[31m+     "line-height": "32.3px",[39m
+[31m+     "padding-block-end": "4.25px",[39m
+[31m+     "padding-block-start": "4.25px",[39m
+[31m+     "padding-bottom": "4.25px",[39m
+[31m+     "padding-inline-end": "4.25px",[39m
+[31m+     "padding-inline-start": "4.25px",[39m
+[31m+     "padding-left": "4.25px",[39m
+[31m+     "padding-right": "4.25px",[39m
+[31m+     "padding-top": "4.25px",[39m
+[31m+     "perspective-origin": "12.75px 12.75px",[39m
+[2m      "text-align": "center",[22m
+[31m+     "transform-origin": "12.75px 12.75px",[39m
+[31m+     "transition-behavior": "normal, normal, normal, normal, normal",[39m
+[31m+     "transition-delay": "0s, 0s, 0s, 0s, 0s",[39m
+[31m+     "transition-duration": "0.37s, 0.37s, 0.37s, 0.37s, 0.37s",[39m
+[31m+     "transition-property": "color, background-color, border-color, box-shadow, opacity",[39m
+[31m+     "transition-timing-function": "linear, linear, linear, linear, linear",[39m
+[2m      "unicode-bidi": "normal",[22m
+[31m+     "width": "17px",[39m
+[2m    },[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/close.test.ts:239:17
+    237|   for (const difference of Object.values(release))
+    238|    expect(Object.keys(difference)).toContain('appearance')
+    239|   expect(veneer).toEqual(release)
+       |                 ^
+    240|  })
+    241| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 17 passed (19)
+   Start at  05:41:20
+   Duration  15.48s (transform 0ms, setup 1.55s, import 76ms, tests 3.74s, environment 0ms)
+
+run exit=1
+## restore: before 5bfba3244cffb0551aedf3fbc50d8db0d94b190a93f03ff245e23f6d92d93b8a after 5bfba3244cffb0551aedf3fbc50d8db0d94b190a93f03ff245e23f6d92d93b8a IDENTICAL
+cmp: restored file equals its backup
+rebuild exit=0
+git diff --stat -- src: []
+6.57 5.44 4.18 8/395 10419

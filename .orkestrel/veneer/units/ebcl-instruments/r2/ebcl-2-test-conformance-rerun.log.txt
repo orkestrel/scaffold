@@ -1,0 +1,18 @@
+# rerun: npm run test:conformance, alone in this unit
+15.46 18.63 14.66 3/166 29892
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  06:04:25
+   Duration  33.86s (transform 672ms, setup 223ms, import 21.62s, tests 11.86s, environment 0ms)
+
+exit=0
+10.79 17.12 14.30 7/221 30661
