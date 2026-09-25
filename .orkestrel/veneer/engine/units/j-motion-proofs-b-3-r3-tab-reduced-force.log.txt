@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/motion-proofs-b
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (48 tests | 1 failed) 1670ms
+     × swaps the panes with no animation created on either pane under staged reduced motion, and dispatches shown 42ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 47 passed (48)
+   Start at  03:42:10
+   Duration  4.03s (transform 0ms, setup 662ms, import 395ms, tests 1.67s, environment 0ms)
+
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:577:2 > Tab > swaps the panes with no animation created on either pane under staged reduced motion, and dispatches shown
+AssertionError: expected [ CSSTransition{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   CSSTransition {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Tab.test.ts:605:61
+    603|   const showing = tab.show()
+    604|   expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade', 'act…
+    605|   expect([...home.getAnimations(), ...pane.getAnimations()]).toEqual([…
+       |                                                             ^
+    606|   expect(await showing).toBe(true)
+    607|   expect(shown.calls).toEqual([[0]])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

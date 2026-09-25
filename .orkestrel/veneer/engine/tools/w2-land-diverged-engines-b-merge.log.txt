@@ -1,0 +1,32 @@
+# J-ENGINES-B-MERGE landing over a moved origin/main (2026-09-25)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+6f5051b Merge branch 'main' into unit/engines-b
+2f7b4a7 Fold the TOKEN-PROOFS and TAILWIND-RECIPE landing into the roadmap
+Preparing worktree (new branch 'unit/engines-b-merge')
+HEAD is now at 6f5051b Merge branch 'main' into unit/engines-b
+worktree add exit=0
+npm ci exit=0
+Auto-merging guides/veneer.md
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                     |   6 +-
+ guides/veneer.md                               | 488 ++++++++++++++-----------
+ tests/fixtures/tailwind/components.html        |  56 +++
+ tests/fixtures/tailwind/consumer-preflight.css |   6 +
+ tests/service/tailwind/consumer.test.ts        | 291 ++++++++++++---
+ tests/service/tailwind/preflight.test.ts       |  35 +-
+ tests/service/tailwind/profiles.test.ts        |  43 +--
+ tests/setupServer.test.ts                      | 103 ++++++
+ tests/setupServer.ts                           |  40 ++
+ tests/setupService.test.ts                     |  62 +++-
+ tests/setupService.ts                          | 131 ++++++-
+ tests/src/styles/tokens.test.ts                | 458 ++++++++++++++++++++++-
+ 12 files changed, 1378 insertions(+), 341 deletions(-)
+ create mode 100644 tests/fixtures/tailwind/components.html
+ create mode 100644 tests/fixtures/tailwind/consumer-preflight.css
+merge origin/main exit=0
+conflicts: none
+d33b27c Merge remote-tracking branch 'origin/main' into unit/engines-b-merge
+2f7b4a7 Fold the TOKEN-PROOFS and TAILWIND-RECIPE landing into the roadmap
+6f5051b Merge branch 'main' into unit/engines-b

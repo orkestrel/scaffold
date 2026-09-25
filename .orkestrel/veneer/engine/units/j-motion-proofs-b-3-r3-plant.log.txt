@@ -1,0 +1,21 @@
+planted src/styles/_tokens.scss
+planted src/styles/components/_collapse.scss
+planted src/styles/components/_fade.scss
+planted src/styles/components/_toast.scss
+planted src/styles/components/_carousel.scss
+PlantProbe exit 0
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+Collapse exit 0
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+Toast exit 0
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+Tab exit 0
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+Carousel exit 0
+ Test Files  1 passed (1)
+      Tests  73 passed (73)
+scratch removed: yes

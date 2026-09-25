@@ -1,0 +1,14 @@
+planted a shipped factor of 2 in src/styles/_tokens.scss
+base fd82ae9 tests/src/browser/Toast.test.ts
+base fd82ae9 tests/src/browser/Tab.test.ts
+Toast exit 1
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:148:2 > Toast > dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+AssertionError: expected 2 to be close to 4, received difference is 2, but expected 0.005
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 passed (45)
+Tab exit 1
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:472:2 > Tab > dispatches shown with no running pane fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+AssertionError: expected 2 to be close to 4, received difference is 2, but expected 0.005
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 passed (47)
+scratch removed: yes

@@ -1,0 +1,8 @@
+planted a shipped factor of 2 in src/styles/_tokens.scss
+Toast exit 0
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+Tab exit 0
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+scratch removed: yes
