@@ -573,6 +573,15 @@ writes its own `:where(.<class>):popover-open { position-visibility: anchors-vis
 tooltip and popover on both builds, and a fully clipped dropdown menu only where the engine anchors the menu, which
 Chromium 141 does not until J-PLACEMENT-141-FIX lands; ANCHOR-PAINT updates the guide's sentence then.
 
+## D47b — D47a amended: the Chromium 141 menu limit follows how the menu opened (the Orchestrator, 2026-09-25)
+
+D47a says the rule suppresses a fully clipped dropdown menu only where the engine anchors the menu, "which Chromium 141
+does not". The `V.focus` row reads Chromium 141 suppressing a clipped menu the engine opened with no pointer press
+(`native141/j-native-probe-3-141.log.txt`), and J-PLACEMENT-141's diagnosis finds the unanchored menu only after a
+trusted pointer press on the toggle (`engine/units/j-placement-141-diagnosis-verdict.md`). So Chromium 141 leaves a
+fully clipped menu painted only when a pointer press opened it, until J-PLACEMENT-141-FIX lands
+(`anchor-audit-2-verdict.md`).
+
 ## D48 — Elements' motion opens as E-ID-MOTION (the Orchestrator, 2026-09-25)
 
 The user's ruling recorded as the engine session's E26 (2026-09-24) gives this session the motion values of the
