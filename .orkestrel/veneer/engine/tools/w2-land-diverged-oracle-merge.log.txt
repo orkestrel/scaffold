@@ -1,0 +1,25 @@
+# J-ORACLE-MERGE landing over a moved origin/main (2026-09-25)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+0325b56 Rename the receipt readers' build locals that shadow the vite build import (J-ORACLE-RECORD landing)
+73326c7 Merge origin/main (J-MOTION-PROOFS-A) into the styles session branch
+Preparing worktree (new branch 'unit/oracle-merge')
+HEAD is now at 0325b56 Rename the receipt readers' build locals that shadow the vite build import (J-ORACLE-RECORD landing)
+worktree add exit=0
+npm ci exit=0
+Auto-merging tests/conformance.test.ts
+Auto-merging tests/setupServer.test.ts
+Auto-merging tests/setupServer.ts
+Merge made by the 'ort' strategy.
+ ROADMAP.md                |   4 +-
+ guides/veneer.md          | 593 +++++++++++++++++++++++++++++++---------------
+ tests/conformance.test.ts | 199 ++++------------
+ tests/setupServer.test.ts | 290 ++++++++++++++++++++---
+ tests/setupServer.ts      | 308 ++++++++++++++++++------
+ 5 files changed, 945 insertions(+), 449 deletions(-)
+merge origin/main exit=0
+conflicts: none
+63eabbd Merge remote-tracking branch 'origin/main' into unit/oracle-merge
+0325b56 Rename the receipt readers' build locals that shadow the vite build import (J-ORACLE-RECORD landing)
+73326c7 Merge origin/main (J-MOTION-PROOFS-A) into the styles session branch
