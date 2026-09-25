@@ -272,3 +272,13 @@ This is the fourth round on the returning step, so the seam closes by ruling. **
 - an overlay whose host is outside a connected document.
 
 Within the contract, a backdrop is connected exactly when it is in the parent the engine gave it. So the recorded connection is the insertion the call made, and a token return never has to insert. The guide states the rule beside E30's limits, and J-ROWS carries the sentence.
+
+E25 amended at J-HOLDERS round 2 (2026-09-25). This reverses the "Presence stays as tested" bullet: **presence follows the record rule.** A restoration removes an emptied `class` or `style` attribute only when it leaves that presence record as its last holder, and a snapshot that a save rejoined during its restoration removes one only when no other snapshot holds the record.
+
+The J-HOLDERS round-1 objective lane (the analyst on Astra, thread `01a0d659-3827-7d01-8e99-72a96f87cfc8`) showed what the exception allowed. A holder that is not the last removed an attribute that other code emptied, not its own writes: two modals share the body's `open` record, other code removes `modal-open`, and the first hide strips the body's empty `class` attribute while the second modal still holds it. The bullet had corrected E13's wording to the code rather than ruling on the merit. One rule for values and presence alike is simpler than tracking which writes emptied an attribute.
+
+Under the rule, an attribute a leaving holder's writes emptied while another holder lives reads `class=""` or `style=""` until the last holder leaves. The final markup is unchanged. The cases this changes are:
+- `HostSnapshot.test.ts`, the nested restoration's intermediate reading and the button-and-collapse trigger case;
+- `Tab.test.ts`'s case for a tab refused on its active control, applied as the J-HOLDERS integration patch.
+
+The Orchestrator ruled round 2's obligation before reading this bullet, and records the reversal here rather than leave the two rulings in conflict.

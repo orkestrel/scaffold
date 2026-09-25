@@ -1,0 +1,226 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1078,19 +1078,38 @@
+ | `hide`   | `hide.vn.collapse`   | Yes        | Before any write; prevention refuses the hide        |
+ | `hidden` | `hidden.vn.collapse` | No         | After the transition settles                         |
+ 
+-A call reads the panel at each of its doors for the phase it is in. From its write of the
+-`transition` token until it removes that token, the panel must carry the token; at completion the
+-panel must carry the `host` and `shown` tokens without the `transition` token after a show, and the
+-`host` token without the `shown` or `transition` token after a hide; before a hide writes its token,
+-the panel must still carry the `shown` token without the `transition` token, and from the moment a
+-hide removes the `shown` token until the transition settles, the panel must lack it. A call that
+-finds the panel otherwise, the collapse destroyed, or a later call of the same collapse started
+-reads the change as taken over: it stops, writing and dispatching nothing more, and resolves
+-`false`. A listener that shows the panel again inside `show.vn.collapse` therefore runs the one
+-transition and dispatches the one `shown.vn.collapse` event: its own call resolves `true`, and the
+-call whose event it heard resolves `false`. Destruction aborts the wait, so a call awaiting the
+-transition resolves `false` and dispatches no completed event, and restoration writes back the
+-panel's tokens and inline size and each trigger's `collapsed` token and `aria-expanded` value.
++A call carries the change identity it sets when its change starts, and after each write, dispatch,
++and await it reads whether the collapse is live and whether a later `show` or `hide` call has
++started. It also reads the panel for the phase it is in: before a hide writes the `transition`
++token the panel must lack it, from the call's write of that token until its removal the panel must
++carry it, and after the call writes the `host` token the panel must carry that token. A call that
++finds the collapse destroyed, a later call started, or the panel otherwise stops, writing and
++dispatching nothing more, and resolves `false`. A listener that shows the panel again inside
++`show.vn.collapse` therefore runs the one transition and dispatches the one `shown.vn.collapse`
++event: its own call resolves `true`, and the call whose event it heard resolves `false`. A listener
++that prevents the pre-change event starts no change, whatever else it wrote.
++
++The panel's `shown` token at the change's end is agreement. A listener or a reaction that adds the
++token before a show writes it, or removes it before a hide does, has made that write for the call:
++the call's token write leaves the `shown` token as the panel carries it, and the call completes
++every other write in its order, dispatches its completed event, and resolves `true`. From the
++moment the call finds the token at the change's end, right after the pre-change dispatch or at its
++own token write, each door also reads the token there, and a panel that moves it back takes the
++change over. Until that moment no door reads the `shown` token.
++
++A call the panel took over resolves `false`, dispatches nothing, and takes one further step that
++returns what the change wrote. A show taken over removes the `transition` token and the inline size
++while the show holds them, adds back the `host` token it removed, and gives the `collapsed` token
++and an `aria-expanded` value of `false` to each trigger it expanded none of whose panels is shown.
++A hide taken over removes the inline size and the `transition` token while the hide holds them,
++adds back the `host` token it removed, and removes the `collapsed` token from and writes an
++`aria-expanded` value of `true` on each trigger it collapsed. Each step returns only the trigger
++writes the call made. It reads no door; before each of its writes it reads only the call's identity
++and the collapse's lifetime, so a destruction inside one of its writes stops the step and the
++snapshot's restoration stands, and a call a reaction starts inside one supersedes the step.
++Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
++completed event, and restoration writes back the panel's tokens and inline size and each trigger's
++`collapsed` token and `aria-expanded` value.
+ 
+ The delegate's `collapse` option carries the collapse's groups. A click inside a trigger the resolved
+ `trigger` selector matches toggles each panel the trigger names that the root contains, through the
+@@ -1114,8 +1133,12 @@
+ - Triggers are read at each change. Bootstrap finds them once, at construction.
+ - A trigger that names several panels takes the `collapsed` token only when none of them is shown.
+   Bootstrap reads only the first panel the trigger names.
+-- The refusals read the panel's tokens, before the pre-change event and again after it. Bootstrap
+-  reads its own transitioning flag once, before the event.
++- The refusals read the panel's tokens before the pre-change event, and its `transition` token and
++  the change identity again after it. Bootstrap reads its own transitioning flag once, before the
++  event.
++- A call whose panel moves the `shown` token back from the change's end returns the change's writes
++  and dispatches no completed event. Bootstrap's completion writes its classes and dispatches its
++  event whatever the panel carries.
+ - A call while an open sibling transitions resolves `false`. Bootstrap's sibling query,
+   `.collapse.collapsing`, matches no transitioning panel, because its transition removes the
+   `collapse` class.
+@@ -1333,25 +1356,39 @@
+ | `hidden` | `hidden.vn.tab` | No         | The active sibling | After the swap and the fade of the control's pane |
+ | `shown`  | `shown.vn.tab`  | No         | The control        | After `hidden.vn.tab`                             |
+ 
+-A call reads its list, the control, and its pane at each of its doors for the phase it is in. After
+-the pre-change events it reads again whether the control is active and whether the active sibling is
+-still the one `hide.vn.tab` named. From its removal of the sibling's `active` token on, no control
+-of the list but the control may carry the `active` token. From its write of the control's `active`
+-token the control must carry that token, and from each write to the pane the pane must carry the
+-`active` token and, from its write on, the `shown` token, through the fade and the `hidden.vn.tab`
+-dispatch. A call that finds the list, the control, or the pane otherwise, the tab destroyed, or a
+-later call of the same tab started reads the change as taken over: it stops, writing and dispatching
++A call carries the change identity it sets when its change starts, and after each write, dispatch,
++and await it reads whether the tab is live and whether a later `show` call of the same tab has
++started. After the pre-change events it reads again whether the active sibling is still the one
++`hide.vn.tab` named. It also reads the list and the pane for the phase it is in: from its removal of
++the sibling's `active` token on, no control of the list but the control may carry the `active`
++token, and from each write to the pane the pane must carry the `active` token and, from its write
++on, the `shown` token, through the fade and the `hidden.vn.tab` dispatch. A call that finds the tab
++destroyed, a later call started, or the list or the pane otherwise stops, writing and dispatching
+ nothing more, and resolves `false`. A sibling that shows during the swap therefore takes it over,
+ whether a listener to the sibling's blur or a reaction to one of the call's writes shows it: the
+ call it took over writes and dispatches nothing more and resolves `false`, and the sibling's own
+ call dispatches its completed events once. A listener that shows the control again inside
+ `show.vn.tab` runs the one swap and dispatches the one `shown.vn.tab` event: its own call resolves
+-`true`, and the call whose event it heard resolves `false`. A list whose markup marks two controls
+-with the `active` token never swaps, because the second one fails the read after the first one's
+-removal. Destruction aborts the wait, so a call awaiting the fade resolves `false` and dispatches no
+-completed event, and restoration writes back every value the tab wrote that no live engine still
+-holds: the roles and states it wrote at construction, and the tokens and states of the control, its
+-pane, the sibling it deactivated, that sibling's pane, and each dropdown. The tabs of one list share
++`true`, and the call whose event it heard resolves `false`. A listener that prevents a pre-change
++event starts no change, whatever else it wrote. A list whose markup marks two controls with the
++`active` token never swaps, because the second one fails the read after the first one's removal.
++
++The control's `active` token is agreement. A listener or a reaction that adds the token before the
++call writes it has made that write for the call: the call writes the token only when the control
++lacks it, completes every other write in its order, dispatches its completed events, and resolves
++`true`. From the moment the call finds the token on the control, right after the pre-change events
++or at its own token write, each door also reads the token there. A control that loses the token
++then, while no other control of the list is active, takes the swap over: the call resolves `false`,
++dispatches nothing more, and takes one further step that writes back each value the swap wrote, in
++its order. The sibling takes its `active` token back, its pane its `active` and `shown` tokens, and
++each control and dropdown the swap wrote the selection, tab stop, and open state it had, so the list
++shows the sibling again; the control's pane loses the tokens the swap added. The sibling's blur is
++not returned. The step reads no door; before each of its writes it reads only the call's identity
++and the tab's lifetime. Destruction aborts the wait, so a call awaiting the fade resolves `false`
++and dispatches no completed event, and restoration writes back every value the tab wrote that no
++live engine still holds: the roles and states it wrote at construction, and the tokens and states
++of the control, its pane, the sibling it deactivated, that sibling's pane, and each dropdown. The
++tabs of one list share
+ one record of each of those targets, as § Ownership and restoration states. Each tab joins the
+ record of every role and state construction writes on its list, whether it writes the value or
+ finds it already written, and each swap joins the records of the targets it writes. A tab destroyed
+@@ -1916,19 +1953,33 @@
+ A slide reads, at each of its doors, its lifetime, that both items are still items of the host, and
+ the items and indicators for the phase it is in. Each indicator write's door reads the `active` token
+ and the `aria-current` value the slide has written to that indicator so far. Until its completion
+-moves the `active` token, the outgoing item must carry that token and the incoming item must lack
+-it. From its write of the incoming item's order token, the outgoing item must lack the order token
+-and the incoming item must carry it until the completion removes it; from its write of each item's
+-direction token, that item must carry the direction token until the completion removes it. At
+-completion the incoming item must carry the `active` token without the order and direction tokens,
+-and after the last write the outgoing item must carry none of the `active`, order, and direction
+-tokens. A slide that finds the items or an indicator otherwise, an item gone from the host, or the
+-carousel destroyed reads the change as taken over: it stops, writing and dispatching nothing more,
+-and resolves `false`. A slide also reads a tally of slides across its `slide.vn.carousel` dispatch,
+-so a listener that slides the carousel inside that dispatch, back to the outgoing item included,
+-takes the change over: its own calls resolve as their slides do, and the call whose event it heard
+-resolves `false`. Destruction aborts the wait, so a slide awaiting the transition resolves `false`
+-and dispatches no completed event, and a `slide` call waiting on it resolves `false` as well.
++removes the `active` token from the outgoing item, that item must carry it. From its write of the
++incoming item's order token, the outgoing item must lack the order token and the incoming item must
++carry it until the completion removes it; from its write of each item's direction token, that item
++must carry the direction token until the completion removes it. At completion the incoming item must
++carry the `active` token without the order and direction tokens, and after the last write the
++outgoing item must carry none of the `active`, order, and direction tokens. A slide that finds the
++items or an indicator otherwise, an item gone from the host, or the carousel destroyed stops,
++writing and dispatching nothing more, and resolves `false`. A slide also reads a tally of slides
++across its `slide.vn.carousel` dispatch, so a listener that slides the carousel inside that
++dispatch, back to the outgoing item included, takes the change over: its own calls resolve as their
++slides do, and the call whose event it heard resolves `false`. A listener that prevents
++`slide.vn.carousel` starts no slide, whatever else it wrote.
++
++The incoming item's `active` token is agreement. A listener or a reaction that adds the token before
++the slide writes it has made that write for the slide: the slide writes the token only when the
++item lacks it, completes every other write in its order, dispatches `slid.vn.carousel`, and
++resolves `true`. From the moment the slide finds the token on the incoming item, right after the
++`slide.vn.carousel` dispatch or at its own token write, each door also reads the token there. A host
++that takes the token off the incoming item then takes the slide over: the slide resolves `false`,
++dispatches nothing more, and takes one further step that writes back each value the slide wrote, in
++its order. Each indicator takes back the `active` token and the `aria-current` value it had, the
++outgoing item takes back its `active` token and loses the direction token the slide added, and the
++incoming item loses the order and direction tokens the slide added, so the carousel shows the
++outgoing item again. The step reads no door; before each of its writes it reads only the carousel's
++lifetime and the slide in flight. Destruction aborts the wait, so a slide awaiting the transition
++resolves `false` and dispatches no completed event, and a `slide` call waiting on it resolves
++`false` as well.
+ Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+ value first, and the swipe then writes back the host's `pointer` token when it holds the token
+ last, so a carousel a reaction to that token constructs finds the items restored. Every swipe on
+@@ -2395,22 +2446,39 @@
+ | `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide   |
+ | `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave |
+ 
+-A call reads the toast at each of its doors for the phase it is in. Before a show writes the
+-`transition` token, the toast must lack it, and after its `fade` write the toast must carry the
+-`shown` token exactly when it carried it as the call began writing; from a call's write of the
+-`transition` token until it removes that token, the toast must carry the `transition` and `shown`
+-tokens; at completion the toast must carry the `shown` token without the `transition` token after
+-a show, and neither token after a hide. A call that finds the toast otherwise, the toast destroyed,
+-or a later call of the same toast started reads the change as taken over: it stops, writing and
+-dispatching nothing more, and resolves `false`. A call takes its identity before it dispatches its
+-pre-change event, so a listener that calls `show` inside `show.vn.toast` or `hide.vn.toast` takes
+-the change over, whether that call is still waiting or has already completed: the call whose event
+-it heard resolves `false` and writes nothing, and the listener's call completes or stops by its own
+-cancellation, lifetime, and door reads. A listener that prevents the nested `show.vn.toast` its own
+-call dispatches therefore leaves both calls resolving `false`, with no token written and no
+-completed event. Destruction clears the timer and
+-aborts the wait, so a call awaiting the transition resolves `false` and dispatches no completed
+-event, and restoration writes back the toast's `shown`, `transition`, and `fade` tokens.
++A call carries the change identity it sets when its change starts, and after each write, dispatch,
++and await it reads whether the toast is live and whether a later `show` or `hide` call has started.
++It also reads the `transition` token: before a show writes it the toast must lack it, and from a
++call's write of it until the call removes it the toast must carry it. A call that finds the toast
++destroyed, a later call started, or the `transition` token otherwise stops, writing and dispatching
++nothing more, and resolves `false`. A listener that calls `show` or `hide` inside `show.vn.toast`
++or `hide.vn.toast` therefore supersedes the call whose event it heard, whether the listener's call
++is still waiting or has already completed: the call whose event it heard resolves `false` and
++writes nothing, and the listener's call completes or stops by its own cancellation, lifetime, and
++door reads. A listener that prevents the pre-change event starts no change, whatever else it wrote,
++so a listener that prevents the nested `show.vn.toast` its own call dispatches leaves the outer call
++to complete: the nested call resolves `false`, and the outer call dispatches `shown.vn.toast` once
++and resolves `true`.
++
++The toast's `shown` token at the change's end is agreement. A listener or a reaction that adds the
++token before a show writes it, or removes it before a hide does, has made that write for the call:
++the call's token write leaves the `shown` token as the toast carries it, and the call completes
++every other write in its order, dispatches its completed event, and resolves `true`. A show of a
++shown toast finds the token at its end as it starts. From the moment the call finds the token at the
++change's end, right after the pre-change dispatch or at its own token write, each door also reads
++the token there, and a toast that moves it back takes the change over. A hide whose toast loses the
++`shown` token while the `transition` token is on therefore completes, removes the `transition`
++token, and leaves the toast accepting later calls.
++
++A call the toast took over resolves `false`, dispatches nothing, and takes one further step that
++returns what the change wrote: a show taken over removes the `transition` token while the show holds
++it and the `fade` token when the show added it, and a hide taken over removes the `transition` token
++while the hide holds it. The step reads no door; before each of its writes it reads only the call's
++identity and the toast's lifetime. The timer an accepted call cleared stays cleared after the call is
++taken over, until the pointer or focus leaves the toast with neither inside or a later show
++completes. Destruction clears the timer and aborts the wait, so a call awaiting the transition
++resolves `false` and dispatches no completed event, and restoration writes back the toast's `shown`,
++`transition`, and `fade` tokens.
+ 
+ The delegate's `toast` option carries the toast's groups. A click inside a trigger the resolved
+ `dismiss` selector matches inside the root hides the toast the trigger's target attribute or `href`

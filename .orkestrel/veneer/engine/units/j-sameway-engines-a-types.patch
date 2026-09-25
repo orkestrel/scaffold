@@ -1,0 +1,74 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -872,7 +872,7 @@
+ 	/**
+ 	 * Shows the panel and hides its open accordion siblings.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show`, the collapse is destroyed, or the panel's tokens read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the panel gained the `shown` token before the call wrote it; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show` or started a change of its own inside it, the collapse is destroyed, the panel's `transition` or `host` token read otherwise than the call's phase requires, or the panel lost the `shown` token after the call found it added and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await collapse.show()
+@@ -882,7 +882,7 @@
+ 	/**
+ 	 * Hides the panel.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the panel was hidden, a transition was in flight, a listener prevented `hide`, the collapse is destroyed, or the panel's tokens read the change as taken over.
++	 * @returns Resolves true after the `hidden` event, also when the panel lost the `shown` token before the call removed it; false when the panel was hidden, a transition was in flight, a listener prevented `hide` or started a change of its own inside it, the collapse is destroyed, the panel's `transition` or `host` token read otherwise than the call's phase requires, or the panel gained the `shown` token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await collapse.hide()
+@@ -1185,7 +1185,7 @@
+ 	/**
+ 	 * Activates the control and its pane and deactivates the active sibling.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the control was active, a listener prevented `show` or the sibling's `hide`, a listener activated another control before the swap, the tab is destroyed, or the control's, the pane's, or the list's tokens read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the control gained the `active` token before the call wrote it; false when the control was active, a listener prevented `show` or the sibling's `hide` or started a show of its own inside either, a listener activated another control before the swap, the tab is destroyed, another control of the list became active or the pane's tokens read otherwise than the call's phase requires, or the control lost the `active` token after the call found it added and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const activated = await tab.show()
+@@ -2198,7 +2198,7 @@
+ 	/**
+ 	 * Shows the toast and starts the delay after which it hides itself.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when a transition was in flight, a listener prevented `show`, the toast is destroyed, a later call took the change over, or the toast's tokens read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the toast gained the `shown` token before the call wrote it; false when a transition was in flight, a listener prevented `show` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast lost the `shown` token after the call found it at its end and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await toast.show()
+@@ -2208,7 +2208,7 @@
+ 	/**
+ 	 * Hides the toast.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the toast was hidden, a transition was in flight, a listener prevented `hide`, the toast is destroyed, a later call took the change over, or the toast's tokens read the change as taken over.
++	 * @returns Resolves true after the `hidden` event, also when the toast lost the `shown` token before the call removed it; false when the toast was hidden, a transition was in flight, a listener prevented `hide` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast gained the `shown` token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await toast.hide()
+@@ -2339,7 +2339,7 @@
+ 	/**
+ 	 * Slides to the following item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, no item is active, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
++	 * @returns Resolves true after the `slid` event, also when the incoming item gained the `active` token before the slide wrote it; false when a slide was in flight, no item is active, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, the items' or the indicators' tokens read otherwise than the slide's phase requires, or the incoming item lost the `active` token after the slide found it added and before the slide dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.next()
+@@ -2349,7 +2349,7 @@
+ 	/**
+ 	 * Slides to the preceding item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, no item is active, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
++	 * @returns Resolves true after the `slid` event, also when the incoming item gained the `active` token before the slide wrote it; false when a slide was in flight, no item is active, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, the items' or the indicators' tokens read otherwise than the slide's phase requires, or the incoming item lost the `active` token after the slide found it added and before the slide dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.previous()
+@@ -2360,7 +2360,7 @@
+ 	 * Slides to the item at a position, waiting for a slide in flight to finish first.
+ 	 *
+ 	 * @param index - The position of the item to activate.
+-	 * @returns Resolves true after the `slid` event; false when the position is out of range or already active, no item is active, a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
++	 * @returns Resolves true after the `slid` event, also when the incoming item gained the `active` token before the slide wrote it; false when the position is out of range or already active, no item is active, a listener prevented `slide`, the carousel is destroyed, the items' or the indicators' tokens read otherwise than the slide's phase requires, or the incoming item lost the `active` token after the slide found it added and before the slide dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.slide(2)

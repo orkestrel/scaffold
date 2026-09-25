@@ -1,0 +1,19 @@
+# The Orchestrator's red reading of J-HOLDERS round 2's cases on 806717d's HostSnapshot.ts (2026-09-25, Chromium 153.0.8010.12), tests at ada50f4 Expect the emptied class attribute a sibling tab's destruction leaves to the last holder
+·················x···············································································x10:43:34 PM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+10:43:34 PM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:524:2 > HostSnapshot > removes the class attribute the first save found absent at the outer restoration, the last holder, after a nested restoration that holds a shared token last empties the list
+AssertionError: expected [ [ null ] ] to deeply equal [ [ '' ] ]
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:580:2 > HostSnapshot > leaves the class attribute its restoration empties when a save during it rejoins the snapshot while another snapshot holds the presence record, and the last holder removes it
+AssertionError: expected null to be '' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:612:2 > HostSnapshot > leaves a class or style attribute other code emptied while another snapshot holds its presence record, and the last holder removes it, in either order
+AssertionError: expected null to be '' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:676:2 > HostSnapshot > leaves the class attribute of a trigger a button restoration empties while a collapse on the same trigger stays live, and the collapse destruction removes it
+AssertionError: expected null to be '' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:655:2 > Modal > leaves the empty class attribute a modal that is not the last holder finds after other code removed the open token, and the last hide removes it
+AssertionError: expected null to be '' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1570:2 > Tab > restores the markup after a tab refused on its active control swaps back after a sibling, in either destruction order
+AssertionError: expected null to be '' // Object.is equality
+      Tests  6 failed | 150 passed (156)
+restored byte for byte (the Orchestrator's digest)

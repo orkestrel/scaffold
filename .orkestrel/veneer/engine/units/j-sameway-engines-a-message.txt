@@ -1,0 +1,10 @@
+Complete a change the host agreed with, and return one it took over, in Collapse, Toast, Tab, and Carousel
+
+E24 now holds in the four engines, as it does in Modal and Offcanvas. A host that moves the change's token toward its end before the call writes it has made that write for the call. The call skips its own token write, completes every other write, dispatches its completed event, and resolves true. From the moment the call finds the token at its end, a host that moves it back takes the change over. The call returns each write it made by its own entry, in its order, dispatches nothing, and resolves false.
+
+Toast's hide no longer leaves its showing token stuck when a reaction removes the shown token at its transition door, so later calls are accepted again. Toast's identity is compared across its dispatch, so a nested show a listener prevents leaves the outer show to complete.
+
+The four engines' cases read red on 8bc940d's sources: 36 failed. The instrument kills each door, return, and phase read through an assertion.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

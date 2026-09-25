@@ -1,0 +1,114 @@
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 92124e5..9cd22ea 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -923,7 +923,7 @@ export interface DropdownEventMap {
+ 	readonly show: CustomEvent<DropdownDetail>
+ 	/** Names the `shown.vn.dropdown` event, dispatched after the menu opens; it is not cancelable. */
+ 	readonly shown: CustomEvent<DropdownDetail>
+-	/** Names the `hide.vn.dropdown` event, whose prevention refuses the hide. */
++	/** Names the `hide.vn.dropdown` event, whose prevention refuses the hide; after a prevented hide that the platform's close of the promoted menu started has promoted the menu again once, the next platform close of the same placement hides it despite prevention. */
+ 	readonly hide: CustomEvent<DropdownDetail>
+ 	/** Names the `hidden.vn.dropdown` event, dispatched after the menu closes; it is not cancelable. */
+ 	readonly hidden: CustomEvent<DropdownDetail>
+@@ -1040,7 +1040,7 @@ export interface DropdownInterface {
+ 	/**
+ 	 * Opens the menu.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the menu was open, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `show` or the menu's promotion, the dropdown is destroyed, or the call read the change as taken over.
++	 * @returns Resolves true after the `shown` event, also when the host added the menu's `shown` token before the call wrote it; false when the menu was open, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `show` or the menu's promotion or started a change of its own inside `show`, the dropdown is destroyed, or the host removed the menu's token after the call found it added and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await dropdown.show()
+@@ -1050,7 +1050,7 @@ export interface DropdownInterface {
+ 	/**
+ 	 * Closes the menu.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the menu was closed, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `hide`, the dropdown is destroyed, or the call read the change as taken over.
++	 * @returns Resolves true after the `hidden` event, also when the host removed the menu's `shown` token before the call removed it; false when the menu was closed, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `hide` or started a change of its own inside it, the dropdown is destroyed, or the host added the menu's token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await dropdown.hide()
+@@ -1790,7 +1790,7 @@ export interface TooltipInterface {
+ 	/**
+ 	 * Builds, inserts, and shows the tip.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the tooltip is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, or the tooltip is destroyed.
++	 * @returns Resolves true after the `shown` event, also when the host marked the tip shown before the call wrote its `shown` token; false when the tooltip is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, the tooltip is destroyed, or the host took the token after the call's token step and before the call dispatched its completed event.
+ 	 * @remarks
+ 	 * A settled shown tip is rebuilt, as Bootstrap's `show` rebuilds it. Bootstrap's `show` also runs
+ 	 * again while a change is in flight; this contract resolves false there. Bootstrap throws for a
+@@ -1804,6 +1804,12 @@ export interface TooltipInterface {
+ 	 * show completes. A listener to the platform's opening `beforetoggle` event that moves the tip
+ 	 * during the promotion also stops the placement, which hides the tip and restores what it wrote,
+ 	 * leaving the tip where the listener put it.
++	 *
++	 * A host that marks the tip shown before the call's token step has made that write for the call,
++	 * which completes. A host that takes the token after the token step, with the tip still in its
++	 * container, takes the call over: the call restores the placement, removes the tip from its
++	 * container, and takes the tip's id out of `aria-describedby` before it resolves false, reading
++	 * the tooltip's lifetime before each of those writes.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await tooltip.show()
+@@ -1813,11 +1819,13 @@ export interface TooltipInterface {
+ 	/**
+ 	 * Hides the tip and removes it from its container.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the tip was hidden, a listener prevented `hide`, or the tooltip is destroyed.
++	 * @returns Resolves true after the `hidden` event, also when a listener to `hide` took the tip's `shown` token first; false when the tip was hidden, a listener prevented `hide`, or the tooltip is destroyed.
+ 	 * @remarks
+ 	 * A listener or reaction that moves the tip or adds its `shown` token back during the hide, including
+ 	 * a listener to the platform's closing `beforetoggle` event, takes the tip over: the call resolves
+ 	 * false, dispatches no `hidden` event, and leaves the tip there.
++	 * The tooltip also runs this hide when the platform closes the tip, including when a
++	 * `hide-popover` or `toggle-popover` invoker or a `hidePopover` call aims at it.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await tooltip.hide()
+@@ -1889,7 +1897,7 @@ export interface PopoverEventMap {
+ 	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.popover` event, dispatched after the tip's transition settles; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly shown: CustomEvent<null>
+-	/** Names the `hide.vn.popover` event, dispatched before the `shown` token leaves; prevention refuses the hide. */
++	/** Names the `hide.vn.popover` event, dispatched before the `shown` token leaves. Prevention refuses an ordinary hide; after a prevented platform hide has re-promoted this tip once, its next platform close hides it despite prevention. */
+ 	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.popover` event, dispatched after the tip is removed; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly hidden: CustomEvent<null>
+@@ -1955,7 +1963,7 @@ export interface PopoverInterface {
+ 	/**
+ 	 * Builds, inserts, and shows the tip, removing the header or body slot whose content is empty.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the popover is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, or the popover is destroyed.
++	 * @returns Resolves true after the `shown` event, also when the host marked the tip shown before the call wrote its `shown` token; false when the popover is disabled or has no content, the trigger is not connected to its document or its inline `display` is `none`, a change was in flight, a listener prevented `show`, the popover is destroyed, or the host took the token after the call's token step and before the call dispatched its completed event.
+ 	 * @remarks
+ 	 * A settled shown tip is rebuilt, as Bootstrap's `show` rebuilds it. Bootstrap's `show` also runs
+ 	 * again while a change is in flight; this contract resolves false there. Bootstrap throws for a
+@@ -1969,6 +1977,12 @@ export interface PopoverInterface {
+ 	 * show completes. A listener to the platform's opening `beforetoggle` event that moves the tip
+ 	 * during the promotion also stops the placement, which hides the tip and restores what it wrote,
+ 	 * leaving the tip where the listener put it.
++	 *
++	 * A host that marks the tip shown before the call's token step has made that write for the call,
++	 * which completes. A host that takes the token after the token step, with the tip still in its
++	 * container, takes the call over: the call restores the placement, removes the tip from its
++	 * container, and takes the tip's id out of `aria-describedby` before it resolves false, reading
++	 * the popover's lifetime before each of those writes.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await popover.show()
+@@ -1978,11 +1992,13 @@ export interface PopoverInterface {
+ 	/**
+ 	 * Hides the tip and removes it from its container.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the tip was hidden, a listener prevented `hide`, or the popover is destroyed.
++	 * @returns Resolves true after the `hidden` event, also when a listener to `hide` took the tip's `shown` token first; false when the tip was hidden, a listener prevented `hide`, or the popover is destroyed.
+ 	 * @remarks
+ 	 * A listener or reaction that moves the tip or adds its `shown` token back during the hide, including
+ 	 * a listener to the platform's closing `beforetoggle` event, takes the tip over: the call resolves
+ 	 * false, dispatches no `hidden` event, and leaves the tip there.
++	 * The popover also runs this hide when the platform closes the tip, including when a
++	 * `hide-popover` or `toggle-popover` invoker or a `hidePopover` call aims at it.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await popover.hide()
