@@ -1,0 +1,15 @@
+
+> @orkestrel/scaffold@0.0.77 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution -t fails the release run of a generated distribution proof
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+---·-----
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 8 skipped (9)
+   Start at  03:58:04
+   Duration  13.98s (transform 1.53s, setup 973ms, import 2.00s, tests 10.66s, environment 1ms)
+
+exit=0

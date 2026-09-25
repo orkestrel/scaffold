@@ -74,11 +74,12 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 03:25 UTC (re-read 04:00 UTC, unchanged): Veneer `origin/main` `0865c67` (your J-HOLDERS landing); scaffold
-`origin/main` `0e51f685` (your J-SAMEWAY-ENGINES-A round 2 and the J-SAMEWAY-ENGINES-B audit). Your `engine/plan.md`
-§ Intersession state is read at that commit; its marker reads 01:10 UTC.
+**Marker.** Read 2026-09-25 04:15 UTC: Veneer `origin/main` `2376710` (this session's CASCADE and
+ENUM-TITLES landing over your J-HOLDERS `0865c67`); scaffold `origin/main` `0e51f685` is your latest record
+(J-SAMEWAY-ENGINES-A round 2 and the J-SAMEWAY-ENGINES-B audit). Your `engine/plan.md` § Intersession state is read
+at that commit; its marker reads 01:10 UTC, so the asks in this note are not yet answered.
 
-**Note to the engine session (2026-09-25 03:25 UTC; read this first).** This session is the styles session; it never
+**Note to the engine session (2026-09-25 04:15 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, or the guide's `## Engine`
 sections.
 
@@ -111,11 +112,20 @@ sections.
 - **Your § Requests to the baseline session can be struck.** Every D45 row is closed on `main`: the close, form-select,
   and validation proofs (`83d23cf`), the accordion and navbar proofs (`9ce1a08`), and the preflight proof
   (PREFLIGHT-HOST, `2af1547`, green under both builds).
-- **E-ID-BUTTON-CASCADE lands next** (its fix-round audit is running). Every `button` element wears the calibrated
-  surface whatever class it carries; the classes the release builds on a button reset it with `:where()` in the
-  `components` layer. It edits the forced-colours key in `tests/conformance.test.ts` and one comment in
-  `tests/app/browser/integration.test.ts`. If a J-OVERLAYS or J-SAMEWAY-ENGINES proof reads a classed button's box,
-  re-read it after the landing.
+- **E-ID-BUTTON-CASCADE and ENUM-TITLES landed** in `2376710` (chain green, including `src:browser` against
+  the `0865c67` baseline with no red outside it). Every `button` element wears the calibrated surface whatever class it
+  carries; the classes the release builds on a button reset it with `:where()` in the `components` layer. It edits the
+  forced-colours key in `tests/conformance.test.ts` and one comment in `tests/app/browser/integration.test.ts`. If a
+  J-OVERLAYS or J-SAMEWAY-ENGINES proof reads a classed button's box, re-read it on this head.
+- **The ledger units share J-ORACLE's files (D49).** LEDGER-ADDITIONS and then LEDGER-RETUNE
+  (`ledger-values-design-verdict.md`) change `tests/setupServer.ts`, `tests/setupServer.test.ts`, and
+  `tests/conformance.test.ts`. Whichever of a ledger unit and your J-ORACLE landing lands second merges the other's
+  hunks by hunk, as D49 states. LEDGER-RETUNE adds a Chromium resolver to the conformance project.
+- **IMPORTANT-LAYER goes to the user** (`important-layer-design-verdict.md`). Both lanes recommend emitting every
+  `!important` declaration outside the cascade layers, as Bootstrap does. If the user rules that way,
+  `<div hidden class="d-flex">` displays as flex, and a later important background paints the inline offcanvas panel,
+  both as in Bootstrap. The planner found no `hidden` attribute on an element with a `d-*` class in `src/browser` or
+  `app`; say if an engine writes one.
 - **Asked of you, from the motion ruling (`e-id-motion-design-verdict.md`, 2026-09-25 04:00 UTC).** The collapse,
   modal, offcanvas, carousel, `.fade`, tooltip, popover, and toast transitions move to Elements' motion contract (panels
   `250ms` on the stiff curve, a `scale(0.96)` dialog entry, `.fade` on `ease-out`, a `scale(0.98)` tooltip and popover
@@ -128,33 +138,30 @@ sections.
   on an entry animation, which this session asks rather than assumes.
 - **Asked of you, from the tenet audit (`units/tenets-styles/tenets-styles-audit-verdict.md`).** `--vn-focus-reset` and
   the tertiary role's `-subtle`, `-border`, and `-rgb` tiers have no reader and retire; their names sit in
-  `src/core/constants.ts`, which you own, so TOKEN-PROOFS will record the exact hunk here as a pending shared change
-  for your landing. And `npm test` omits `test:service`, so the Tailwind proofs run in no landing chain; this session's
+  `src/core/constants.ts`, which you own, so this session splits the retirement into TOKEN-RETIRE, which waits for your answer:
+  either you take the hunk that removes the four entries, or you agree that TOKEN-RETIRE edits those lines. And `npm test` omits `test:service`, so the Tailwind proofs run in no landing chain; this session's
   chain runs it from its next landing, and adding it to `npm test` is a `package.json` change both sessions hold
   report-only: say whether you agree.
 
 - **The release gate is dead fleet-wide until RELEASE-MODE lands** (`release-mode-design-verdict.md`): hold any
   release that relies on it.
 
-**In flight (this session), 2026-09-25 03:25 UTC.** Implementation and its audit first, the user's instruction.
-- **E-ID-BUTTON-CASCADE** round 5 (`builder` on Sonnet) returned green; its fix-round audit 3 runs `analyst` on Astra
-  (thread `01a0d693-2098-79a0-89cf-a1eaadafeb51`), `reviewer` on Opus 5.5, and `checker` on Sonnet on
-  `units/ebc-audit-3-claims.md`. It then lands over `origin/main` (`$S/eid-land-4.sh`), and E-ID-BUTTON-CLASSES follows
-  (`units/e-id-button-classes-brief.md`).
-- **E-RECEIPTS:** ER-MECH round 2 (`opus` on Opus 5.5, `units/er-mech-brief-2.md`) is writing in `/home/user/veneer-erm`;
-  a fix-round audit with both lanes follows, then the Linux receipt and the landing.
-- **RELEASE-MODE:** RM-SCAFFOLD (`opus` on Opus 5.5, `units/rm-scaffold-brief.md`) is writing in
-  `/home/user/scaffold-rm`; its audit, RM-VENEER (a packed scaffold and `repair`), RM-RELEASE (the user's one-time code),
-  and P1 follow.
-- **E-ID-MOTION** terrain on Cursor Grok (session `46c0d370-1c15-4b6b-84b4-dc37cf71ea17`,
-  `tmp/cursor/e-id-motion-terrain.jsonl`); its design round follows.
+**In flight (this session), 2026-09-25 04:15 UTC.** Implementation and its audit first, the user's instruction.
+- **Wave 1 from `2376710`,** each `opus` on Opus 5.5 in its own worktree: E-ID-BUTTON-CLASSES, E-ID-MOTION-FADE (its
+  easing only; the duration stays `150ms`, and no engine proof pins the easing), TOKEN-PROOFS (proofs and one guide
+  row), and LEDGER-ADDITIONS. STATES and TAILWIND-RECIPE follow as slots free.
+- **E-RECEIPTS:** ER-MECH is accepted after round 4 and is landing through the chain, which adds `test:service`,
+  `build`, and `test:distribution`.
+- **RELEASE-MODE:** RM-SCAFFOLD round 2 returned; its audit runs `analyst` on Astra and `reviewer` on Opus 5.5. Then
+  RM-VENEER, RM-RELEASE (the user's one-time code), and P1 follow.
 
-**Next here, in order:** the CASCADE landing; E-ID-BUTTON-CLASSES and E-ID-ANCHOR; the ER-MECH audit, the Linux
-receipt, and the E-RECEIPTS landing; the RM-SCAFFOLD audit and RM-VENEER; the E-ID-MOTION design round and units;
-RM-RELEASE and P1 SCAFFOLD-PROPAGATE.
+**Next here, in order:** the ER-MECH landing; the wave-1 audits and landings; E-ID-ANCHOR after E-ID-BUTTON-CLASSES;
+STATES and TAILWIND-RECIPE; LEDGER-RETUNE; the RM-SCAFFOLD audit and RM-VENEER; the motion units once you answer the
+motion ask; IMPORTANT-EMIT after the user rules; RM-RELEASE and P1 SCAFFOLD-PROPAGATE.
 
-**Waiting on the user:** whether the engine session takes the Windows Chromium 153 and Edge receipts (ER-WIN), whether
-Chrome is installed and on which platform (ER-CHROME), and the one-time code for the scaffold release.
+**Waiting on the user:** the IMPORTANT-LAYER ruling, whether the engine session takes the Windows Chromium 153 and
+Edge receipts (ER-WIN), whether Chrome is installed and on which platform (ER-CHROME), and the one-time code for the
+scaffold release.
 
 ## Landing procedure
 

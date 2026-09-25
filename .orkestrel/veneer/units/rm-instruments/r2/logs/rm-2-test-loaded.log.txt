@@ -1,0 +1,147 @@
+
+> @orkestrel/scaffold@0.0.77 test
+> npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+
+
+> @orkestrel/scaffold@0.0.77 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+····························································································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-BLu5Z2/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "mergeOverride", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from /home/user/scaffold-rm/tmp/scaffold-e2-peers-BLu5Z2/malformed/vite.config.ts
+
+x·································x·x··x··x···x··x··x···x·····················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > runs the native command when VITEST is false
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2834:2
+    2832|  })
+    2833|
+    2834|  it('runs the native command when VITEST is false', async () => {
+       |  ^
+    2835|   const scratch = buildEntryWorkspace(ENTRY_FILES)
+    2836|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > registers assertions from an authored entry in the guides worker
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2845:2
+    2843|  })
+    2844|
+    2845|  it('registers assertions from an authored entry in the guides worker'…
+       |  ^
+    2846|   const passing = buildEntryWorkspace(ENTRY_FILES)
+    2847|   const failing = buildEntryWorkspace(ENTRY_FILES)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps the first matched title and absent-language comparison boundaries
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2902:2
+    2900|  )
+    2901|
+    2902|  it('keeps the first matched title and absent-language comparison boun…
+       |  ^
+    2903|   const repeatedGuide = `${ENTRY_GUIDE_WRITTEN}\n### Shape a widget\n\…
+    2904|   const repeated = buildEntryWorkspace({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the source, and reads back clean
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2977:2
+    2975|  })
+    2976|
+    2977|  it('carries every summary and example to the source, and reads back c…
+       |  ^
+    2978|   const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_FRESH_TEST)
+    2979|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > prints one usage line and takes exit 2 for an argument outside its option
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:3054:2
+    3052|  })
+    3053|
+    3054|  it('prints one usage line and takes exit 2 for an argument outside it…
+       |  ^
+    3055|   const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_START_TEST)
+    3056|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every overlapping row into one source file and writes that file once
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:3075:2
+    3073|  // rather than the bytes the run started from. A file that moved is w…
+    3074|  // once, after every row has run.
+    3075|  it('carries every overlapping row into one source file and writes tha…
+       |  ^
+    3076|   const scratch = buildEntryWorkspace(ENTRY_OVERLAP)
+    3077|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > rejects an empty guides project and an unhandled project error
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:3133:2
+    3131|  })
+    3132|
+    3133|  it('rejects an empty guides project and an unhandled project error', …
+       |  ^
+    3134|   const empty = buildEntryWorkspace(ENTRY_FILES)
+    3135|   const unhandled = buildEntryWorkspace(ENTRY_FILES, ENTRY_UNHANDLED_T…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |src:core| tests/src/core/templates.test.ts > configuration templates > is an oxfmt fixed point across the emitted content corpus
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/templates.test.ts:644:2
+    642|  })
+    643|
+    644|  it('is an oxfmt fixed point across the emitted content corpus', () =>…
+       |  ^
+    645|   const workspace = createScratch({ prefix: 'scaffold-e2-format-' })
+    646|   const formatter = resolve('node_modules/oxfmt/bin/oxfmt')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |src:core| tests/src/core/templates.test.ts > emitted workspaces under their own gates > emits browser configurations their own typecheck accepts
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/templates.test.ts:1024:2
+    1022|  // `new` wrote, so both browser masks are measured against Vite and
+    1023|  // Vitest's real published types rather than against a description of…
+    1024|  it('emits browser configurations their own typecheck accepts', () => {
+       |  ^
+    1025|   const workspace = createScratch({ parent: ensureTmpRoot(), prefix: '…
+    1026|   const applicationRoot = workspace.ensure('application')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  2 failed | 7 passed (9)
+      Tests  9 failed | 417 passed (426)
+   Start at  03:56:18
+   Duration  103.85s (transform 11.02s, setup 5.80s, import 11.40s, tests 193.78s, environment 1ms)
+
+exit=1
+loadavg at the loaded run's end: 13.67 10.47 5.84 on 4 CPUs

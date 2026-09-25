@@ -1,0 +1,107 @@
+# base 392aa1e0 blob sha256 (git show 392aa1e0:<path> | sha256sum):
+base src/core/templates.ts 38c8d94b322e60aac9268456274feac6833060f97d0bd99fb19516281d8c5ed9
+base vite.config.ts 9e51401513063d243ff6223e05e2d1dfe05bd0141a1c4a0949209eae494b7080
+# in place for this run (sha256sum <path>):
+run src/core/templates.ts 38c8d94b322e60aac9268456274feac6833060f97d0bd99fb19516281d8c5ed9
+run vite.config.ts 9e51401513063d243ff6223e05e2d1dfe05bd0141a1c4a0949209eae494b7080
+# command: npx vitest run --config vite.config.ts --no-cache --project config -t "returns the invocation mode and no other invocation field from every registered project factory"
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+ ❯ |config| tests/config.test.ts (173 tests | 1 failed | 172 skipped) 37ms
+     × returns the invocation mode and no other invocation field from every registered project factory 35ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > root configuration > returns the invocation mode and no other invocation field from every registered project factory
+AssertionError: expected [ { name: 'srcCore', …(3) }, …(8) ] to strictly equal [ { name: 'srcCore', …(3) }, …(8) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcCore",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcServer",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcBin",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "policy",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "config",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "setup",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "guides",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "distribution",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "probe",
+    },
+  ]
+
+ ❯ tests/config.test.ts:416:46
+    414|   })
+    415|   const forwarded = { callable: true, mode: 'sentinel-mode', leaked: […
+    416|   expect(readings.slice(0, projects.length)).toStrictEqual(
+       |                                              ^
+    417|    projects.map((entry) => ({
+    418|     name: typeof entry === 'function' ? entry.name : undefined,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 172 skipped (173)
+   Start at  03:53:26
+   Duration  1.70s (transform 1.04s, setup 604ms, import 880ms, tests 37ms, environment 0ms)
+
+exit=1
+# restored (sha256sum <path>, then cmp against the pre-run copy):
+restored src/core/templates.ts 8fd40513db9f152efa1c24c66ded89940ae1005220a3063e4e1c7bf530857a96 pre-run 8fd40513db9f152efa1c24c66ded89940ae1005220a3063e4e1c7bf530857a96 identical
+restored vite.config.ts 170bfcbcd17f970c2509bc601e5d81e4eb7883a84dd38a135ef8533fc2010161 pre-run 170bfcbcd17f970c2509bc601e5d81e4eb7883a84dd38a135ef8533fc2010161 identical

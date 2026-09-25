@@ -1,0 +1,29 @@
+#!/bin/bash
+# RM-SCAFFOLD round 2, item 6: red runs on digest-recorded 392aa1e0 bytes, then byte-identical restore.
+S=/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad
+cd /home/user/scaffold-rm || exit 2
+export PATH=$S/npm11/node_modules/.bin:$PATH
+SITES="src/core/templates.ts vite.config.ts"
+for f in $SITES; do cp "$f" "$S/fixed-$(basename $f)"; done
+for f in $SITES; do git show "392aa1e0:$f" > "$f"; done
+header() {
+  echo "# base 392aa1e0 blob sha256 (git show 392aa1e0:<path> | sha256sum):"
+  for f in $SITES; do echo "base $f $(git show 392aa1e0:$f | sha256sum | cut -d' ' -f1)"; done
+  echo "# in place for this run (sha256sum <path>):"
+  for f in $SITES; do echo "run $f $(sha256sum $f | cut -d' ' -f1)"; done
+}
+header > tmp/units/rm-2-red-config.log.txt
+header > tmp/units/rm-2-red-distribution.log.txt
+C='npx vitest run --config vite.config.ts --no-cache --project config -t "returns the invocation mode and no other invocation field from every registered project factory"'
+D='npm run test:distribution -- -t "fails the release run of a generated distribution proof"'
+echo "# command: $C" >> tmp/units/rm-2-red-config.log.txt
+npx vitest run --config vite.config.ts --no-cache --project config -t "returns the invocation mode and no other invocation field from every registered project factory" >> tmp/units/rm-2-red-config.log.txt 2>&1; echo "exit=$?" >> tmp/units/rm-2-red-config.log.txt
+echo "# command: $D" >> tmp/units/rm-2-red-distribution.log.txt
+npm run test:distribution -- -t "fails the release run of a generated distribution proof" >> tmp/units/rm-2-red-distribution.log.txt 2>&1; echo "exit=$?" >> tmp/units/rm-2-red-distribution.log.txt
+for f in $SITES; do cp "$S/fixed-$(basename $f)" "$f"; done
+for log in tmp/units/rm-2-red-config.log.txt tmp/units/rm-2-red-distribution.log.txt; do
+  echo "# restored (sha256sum <path>, then cmp against the pre-run copy):" >> $log
+  for f in $SITES; do
+    echo "restored $f $(sha256sum $f | cut -d' ' -f1) pre-run $(sha256sum $S/fixed-$(basename $f) | cut -d' ' -f1) $(cmp -s $f $S/fixed-$(basename $f) && echo identical || echo DIFFERS)" >> $log
+  done
+done

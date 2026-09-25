@@ -1,0 +1,119 @@
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·-----------------x---------------------xxx·x··-------x------------------x····x···--------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > runs the native command when VITEST is false
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2834:2
+    2832|  })
+    2833|
+    2834|  it('runs the native command when VITEST is false', async () => {
+       |  ^
+    2835|   const scratch = buildEntryWorkspace(ENTRY_FILES)
+    2836|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > registers assertions from an authored entry in the guides worker
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2845:2
+    2843|  })
+    2844|
+    2845|  it('registers assertions from an authored entry in the guides worker'…
+       |  ^
+    2846|   const passing = buildEntryWorkspace(ENTRY_FILES)
+    2847|   const failing = buildEntryWorkspace(ENTRY_FILES)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward guide
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2868:30
+    2866|  })
+    2867|
+    2868|  it.each(['guide', 'source'])(
+       |                              ^
+    2869|   'keeps summary and example namespaces distinct toward %s',
+    2870|   async (direction) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps the first matched title and absent-language comparison boundaries
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2902:2
+    2900|  )
+    2901|
+    2902|  it('keeps the first matched title and absent-language comparison boun…
+       |  ^
+    2903|   const repeatedGuide = `${ENTRY_GUIDE_WRITTEN}\n### Shape a widget\n\…
+    2904|   const repeated = buildEntryWorkspace({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the source, and reads back clean
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:2977:2
+    2975|  })
+    2976|
+    2977|  it('carries every summary and example to the source, and reads back c…
+       |  ^
+    2978|   const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_FRESH_TEST)
+    2979|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every overlapping row into one source file and writes that file once
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/compilers.test.ts:3075:2
+    3073|  // rather than the bytes the run started from. A file that moved is w…
+    3074|  // once, after every row has run.
+    3075|  it('carries every overlapping row into one source file and writes tha…
+       |  ^
+    3076|   const scratch = buildEntryWorkspace(ENTRY_OVERLAP)
+    3077|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |src:core| tests/src/core/templates.test.ts > configuration templates > is an oxfmt fixed point across the emitted content corpus
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/templates.test.ts:644:2
+    642|  })
+    643|
+    644|  it('is an oxfmt fixed point across the emitted content corpus', () =>…
+       |  ^
+    645|   const workspace = createScratch({ prefix: 'scaffold-e2-format-' })
+    646|   const formatter = resolve('node_modules/oxfmt/bin/oxfmt')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |src:core| tests/src/core/templates.test.ts > emitted workspaces under their own gates > emits browser configurations their own typecheck accepts
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/templates.test.ts:1024:2
+    1022|  // `new` wrote, so both browser masks are measured against Vite and
+    1023|  // Vitest's real published types rather than against a description of…
+    1024|  it('emits browser configurations their own typecheck accepts', () => {
+       |  ^
+    1025|   const workspace = createScratch({ parent: ensureTmpRoot(), prefix: '…
+    1026|   const applicationRoot = workspace.ensure('application')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  2 failed | 7 skipped (9)
+      Tests  8 failed | 11 passed | 407 skipped (426)
+   Start at  04:03:52
+   Duration  77.12s (transform 6.06s, setup 5.33s, import 6.64s, tests 120.04s, environment 1ms)
+
+exit=1
+loadavg after: 13.53 12.43 8.44 11/519 1795
