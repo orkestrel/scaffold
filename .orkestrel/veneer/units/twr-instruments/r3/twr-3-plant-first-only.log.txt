@@ -1,0 +1,38 @@
++ npx vitest run --config vite.config.ts --no-cache --project setup tests/setupServer.test.ts -t 'reports every moved longhand'
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+ ❯ |setup| tests/setupServer.test.ts (126 tests | 1 failed | 125 skipped) 212ms
+     × reports every moved longhand of one reading, in the reading's property order 127ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > collectMovedLonghands > reports every moved longhand of one reading, in the reading's property order
+AssertionError: expected [ Array(1) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "btn padding-left: 12px became 16px",
+-   "btn padding-right: 12px became 20px",
+  ]
+
+ ❯ tests/setupServer.test.ts:3377:5
+    3375|     ],
+    3376|    ),
+    3377|   ).toEqual(['btn padding-left: 12px became 16px', 'btn padding-right:…
+       |     ^
+    3378|  })
+    3379|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 125 skipped (126)
+   Start at  06:27:54
+   Duration  6.57s (transform 3.11s, setup 644ms, import 5.10s, tests 212ms, environment 0ms)
+
+exit=1
+18.06 13.88 11.18 17/614 16718

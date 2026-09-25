@@ -1,0 +1,23 @@
+Verdict for claims 3, 4, 5 of `/home/user/scaffold/.orkestrel/veneer/units/ebcl-audit-3-claims.md`.
+
+**Claim 3 (the rename): CONFIRMED**
+- `grep -r 'FormPair' /home/user/veneer-ebcl/tests /home/user/veneer-ebcl/guides` returns no files. `FormPair` was renamed to `FormCase` at its sole prior site, `tests/setupBrowser.ts` (`ebcl-3.diff:201-215`).
+- The reader's parameter is `subject: FormCase` (`ebcl-3.diff:308-309`), and every body read uses `subject.*` (`ebcl-3.diff:313-386`).
+- Every case-row/fixture binding renamed to `subject`: `tests/setupBrowser.test.ts` new refusal case (`ebcl-3.diff:163-166`); `tests/src/styles/elements/button.test.ts` `it.each(BUTTON_FORM_CASES)(..., async (subject) => ...)` (`ebcl-3.diff:1167-1189`); each of `accordion.test.ts`, `carousel.test.ts` (both the `.find` callback and the `it.each` param), `close.test.ts`, `dropdown.test.ts`, `list-group.test.ts`, `nav.test.ts`, `navbar.test.ts`, `pagination.test.ts` binds `const subject = requireValue(BUTTON_REBOOT_CASES.find(...))` (each file's added `describe` block in `ebcl-3.diff`).
+- `grep -n '\(pair\)\|\(pair,\|pair\.name\|pair\.selector\|pair\.button\|pair\.counterpart\|pair\.states' /home/user/veneer-ebcl/tests` returns only unrelated bindings (`MANDATED_TAG_PAIRS`, color/offset test fixtures, `FormCheckSection.test.ts`, `DisplaySection.test.ts`) — none are `BUTTON_FORM_CASES`/`BUTTON_REBOOT_CASES`/`readFormDifferences` bindings.
+- TSDoc "pair" → "case" applied at every site the brief names: `name` (`ebcl-3.diff:202`), `FormDifference` (`ebcl-3.diff:218-219`), `FormComparison` (`ebcl-3.diff:223`), `@param subject` (`ebcl-3.diff:269-270`). `grep -in '\bpair\b' tests/setupBrowser.ts` shows only two unrelated TSDoc uses (line 810, 815: "pair of portfolios"; line 2369: "positional pair") — neither means a `readFormDifferences` case.
+- `paired` (the boolean member, `ebcl-3.diff:213-214`) and `FORM_ENTRIES` (unchanged block, `ebcl-3.diff:241-263` identical to `ebcl-2.diff:221-243`) keep "pair"/"paired" only in the release-pairing sense, as Item 2 and Item 3 required them left alone.
+
+**Claim 4 (the guide sentence): CONFIRMED**
+- `guides/veneer.md` (worktree, around line 10270) now reads "A counterpart cannot be `:disabled`, so it / takes the release's `disabled` class..."; round 2's text at the same site (`ebcl-2.diff:31`) read "A counterpart cannot be disabled, so it takes / the release's `disabled` class...". Comparing the full paragraph in `ebcl-2.diff:16-36` against the worktree read (`/home/user/veneer-ebcl/guides/veneer.md:10255-10275`), every word is identical except the added backticks around `:disabled` and the resulting re-wrap (round 2 wraps "takes" onto the "cannot be disabled" line; round 3 wraps "takes" onto the next line). No other content changed.
+
+**Claim 5 (scope): CONFIRMED**
+- Same file set touched in `ebcl-2.diff` and `ebcl-3.diff` (`diff --git` headers at both are byte-identical in file list and order).
+- The off-limits files `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, and `tests/src/styles/mixins.test.ts` are byte-identical between `ebcl-2.diff` and `ebcl-3.diff` (compared full hunks: `ebcl-2.diff:386-441` vs `ebcl-3.diff:418-473` for `setupStyles.test.ts`; `ebcl-2.diff:442-659` vs `ebcl-3.diff:474-691` for `setupStyles.ts`; `ebcl-2.diff:1157-1192` vs `ebcl-3.diff:1193-1228` header/body for `mixins.test.ts`) — round 3 touched none of them, consistent with the brief's off-limits list.
+- The delta between the two diffs for `tests/setupBrowser.ts` is exactly the Items: round 2 had `export interface FormPair`, `pair: FormPair`, `@param pair`, no order-refusal `if`/`throw`, and TSDoc saying "pair" (`ebcl-2.diff:174-265`); round 3 has `FormCase`/`subject`, the refusal statement, and "case" TSDoc (`ebcl-3.diff:194-321`) — the rename and Item 4's refusal, nothing else.
+- The eight component test files and `button.test.ts` and `setupBrowser.test.ts` each add only a `describe`/case block or an import list entry consistent with Items 1-2's rename; no other line changed relative to round 2 in the sections read.
+- `ebcl-3-status.txt` lists 15 modified paths: `guides/veneer.md`, `tests/setupBrowser.test.ts`, `tests/setupBrowser.ts`, `tests/setupStyles.test.ts`, `tests/setupStyles.ts`, the eight `tests/src/styles/components/*.test.ts` files, `tests/src/styles/elements/button.test.ts`, and `tests/src/styles/mixins.test.ts`. The two `setupStyles.*` files and `mixins.test.ts` carry no round-3 delta (preceding point), so they are round-1/round-2 modifications riding in the cumulative status, not a round-3 scope breach; every file round 3 actually changed is on the brief's owned list.
+
+No findings outside the three assigned claims.
+
+VERDICT: PASS

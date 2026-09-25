@@ -1,0 +1,12 @@
++ vitest run setup project
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+
+ Test Files  2 passed (2)
+      Tests  151 passed (151)
+   Start at  06:33:13
+   Duration  17.29s (transform 1.28s, setup 526ms, import 3.36s, tests 17.39s, environment 0ms)
+
+exit=0
+8.61 14.15 12.47 1/264 19610

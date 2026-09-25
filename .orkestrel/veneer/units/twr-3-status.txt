@@ -1,0 +1,19 @@
+On branch unit/twr
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   guides/veneer.md
+	modified:   tests/service/tailwind/consumer.test.ts
+	modified:   tests/service/tailwind/preflight.test.ts
+	modified:   tests/service/tailwind/profiles.test.ts
+	modified:   tests/setupServer.test.ts
+	modified:   tests/setupServer.ts
+	modified:   tests/setupService.test.ts
+	modified:   tests/setupService.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	tests/fixtures/tailwind/components.html
+	tests/fixtures/tailwind/consumer-preflight.css
+
+no changes added to commit (use "git add" and/or "git commit -a")
