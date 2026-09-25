@@ -128,9 +128,9 @@ resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e
   comment near the frame shot says "button surface" for "bare-button treatment") and the forced-colours key in
   `tests/conformance.test.ts` (`button:focus-visible @media (forced-colors: active)`). If J-CASCADE or J-HOLDERS reads a
   classed button's box, re-read it after this lands.
-- **Next here:** E-ID-BUTTON-CLASSES (each class's button form read at rest and in every state against the release;
-  the ledger's selector reader learns to read a class inside `:where()`), then E-RECEIPTS and P1 SCAFFOLD-PROPAGATE.
-  E-VUE waits on the user's ruling.
+- **Next here:** E-ID-BUTTON-CLASSES (each class's button form read against its non-button form, at rest and in every
+  state, in both cascades; the ledger's selector reader stays as it is, and the guide records the resets outside the
+  ledger), then E-RECEIPTS (its terrain is running on Grok) and P1 SCAFFOLD-PROPAGATE. E-VUE waits on the user's ruling.
 - **Motion:** still with the user; neither session changes motion before the ruling.
 
 ## Landing procedure
