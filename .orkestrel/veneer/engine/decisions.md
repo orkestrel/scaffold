@@ -244,3 +244,31 @@ That is the third round on this seam, so the class closes by ruling rather than 
 - **A host whose named controls shadow a DOM member an engine uses is outside the engine contract.** On that host, construction or a later call can throw, and E25's release guarantees do not extend to it. The guide states that limit once, and J-ROWS carries the sentence.
 - **The sanitizer is the one exception, because it walks untrusted markup.** `ConfigSanitizer`'s walk already reads and removes through prototypes (`Element.prototype.removeAttributeNode.call`, `Node.prototype.removeChild.call`, and `readElementName` and `collectAttributes` in `src/browser/helpers.ts`), so a parsed form's named control cannot stand in for the member it names. That rule stays with the sanitizer and does not spread to the engines.
 - **A host moved from an XML document into an HTML document while a snapshot holds an attribute whose name has an uppercase letter restores the lowercase attribute.** The lane's A1 witness shows this. The key stays fixed at the save (E25 N1). The write goes through the name-based accessors, which in an HTML document cannot name the original attribute. The move in the other direction restores correctly. The guide states this limit beside the other, and J-ROWS carries the sentence.
+
+E27 and E29 amended at J-NATIVE-PROBE round 3 (2026-09-25). The round ran `opus` on Opus 5.5 (`units/j-native-probe-brief-3.md` and `units/j-native-probe-report-3.md`), and the file is `units/j-native-probe-3.test.ts`. It read on Chromium 153.0.8010.12 (`units/j-native-probe-3-153.log.txt`), and the Orchestrator's re-run reproduces it (`units/j-native-probe-3-153-orchestrator.log.txt`). Rounds 1 and 2 ran on Sonnet and measured the probe rather than the platform in four row groups, so round 3 gave every row group a control whose reading separates the cases. Every control read its expected value.
+
+- **`calc-size()` reads green on Chromium 153.**
+  - The show and hide midpoints match the pixel path.
+  - Content that grows mid-transition is followed: the calc-size path finishes on the grown height, and the pixel path finishes on the stale one.
+  - `interpolate-size: numeric-only` does not block it.
+  - A zero duration creates no transition.
+  - One difference is a departure J-COLLAPSE-SIZE must rule on before it adopts. A horizontal panel's `calc-size(auto, size)` runs to the block's auto width (300px in the fixture). Bootstrap's pixel path runs to the child's scroll width (30px) and then jumps to auto when the inline width clears.
+  - J-COLLAPSE-SIZE waits for the styles session's Chromium 141 run of the same file.
+- **The anchored arrow is refused.** An arrow positioned inside the promoted tip fails the acceptable-anchor condition (CSS Anchor Positioning Level 1, § 2.3). Its containing block is the tip, and the reference's is the viewport. So `anchor-center` behaves as `center` (§ 4.2), and the arrow centres in its own tip at every offset, while an arrow promoted on its own centres on the reference within 0px. A `position: fixed` arrow inside the tip does centre on the reference, but the tip no longer contains it, so it cannot replace `Placement`'s clamp. This is a red reading on one host, which E27 records as a refusal. J-ARROW is struck.
+- **`anchors-visible` is Chromium 153's initial value.** The computed initial value of `position-visibility` is `anchors-visible`.
+  - A full clip of the reference inside a scroller already suppresses a promoted menu, tip, or popover: it is not painted and not hit-testable. The `always` control keeps it.
+  - A partial clip and a viewport scroll suppress nothing under either rule.
+  - During a suppression, `:popover-open`, `checkVisibility()`, the engine's `shown` state, focus, and the engine's events are unchanged. A focused menu entry stays focused while it is suppressed.
+  - The candidate cascade rule therefore restates the default on this host. The styles session's Chromium 141 run decides what happens next:
+    - If 141's initial value is `always`, the rule aligns 141 with 153, and J-ANCHOR-VISIBLE proves it.
+    - If 141's initial value is `anchors-visible`, no rule and no unit follow, and the guide states the platform default and its focus limit (carried by J-ROWS).
+
+E24 amended at the J-SAMEWAY round-3 audit (2026-09-25). The objective lane (the analyst on Astra, thread `01a0d62d-e8b3-75c3-8cbe-3ef57d500836`, `units/j-sameway-audit-3-objective-verdict.md`) confirmed the enumerated returns, the round-2 witness, the call reads, and the proofs. It found two inputs where the backdrop's recorded connection and its actual insertion disagree:
+- An Offcanvas whose host sits in a detached element records a connection it never inserts.
+- A consumer that removes the shown backdrop element before a hide stops sees the hide's token return re-insert it.
+
+This is the fourth round on the returning step, so the seam closes by ruling. **The backdrop is the engine's own element, as Bootstrap's is.** Only the engine inserts it into the parent it was given, or removes it, and a Modal or Offcanvas host is in a connected document. Two inputs are therefore outside the contract:
+- a consumer that moves the backdrop into another parent, removes it, or re-inserts it (round 3's ruling on the writer's deviation 2, widened here);
+- an overlay whose host is outside a connected document.
+
+Within the contract, a backdrop is connected exactly when it is in the parent the engine gave it. So the recorded connection is the insertion the call made, and a token return never has to insert. The guide states the rule beside E30's limits, and J-ROWS carries the sentence.

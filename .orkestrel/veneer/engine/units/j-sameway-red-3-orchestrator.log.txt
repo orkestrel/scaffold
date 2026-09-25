@@ -1,0 +1,12 @@
+# The Orchestrator's red reading of J-SAMEWAY round 3's cases on dc838aa's sources (2026-09-25, Chromium 153.0.8010.12), tests at e557bfe Record the backdrop's connection and its token as separate writes a stopped modal or offcanvas change returns
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:3240:2 > Modal > puts back a backdrop the hide removed, adding no token it never removed, when the host takes that hide over
+AssertionError: expected { shown: true, display: 'block', …(3) } to deeply equal { shown: true, display: 'block', …(3) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:3288:2 > Modal > removes only the backdrop token the show added when the host takes that show over
+AssertionError: expected { shown: false, parent: false, …(1) } to deeply equal { shown: false, parent: true, …(1) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3538:2 > Offcanvas > puts back a backdrop the hide removed, adding no token it never removed, when the host takes that hide over
+AssertionError: expected { …(5) } to deeply equal { …(5) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3587:2 > Offcanvas > removes only the backdrop token the show added when the host takes that show over
+AssertionError: expected { shown: false, parent: false, …(2) } to deeply equal { shown: false, parent: true, …(2) }
+      Tests  4 failed | 115 passed (119)
+restored byte for byte (the Orchestrator's digest)

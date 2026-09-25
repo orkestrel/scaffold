@@ -1,0 +1,10 @@
+Record the backdrop's connection and its token as separate writes a stopped modal or offcanvas change returns
+
+A stopped hide recorded no backdrop entry when it found the backdrop without its shown token. It still removed the element, so a reaction that reversed the host left the live backdrop disconnected. Each engine now records the backdrop's connection and its token as two entries.
+
+On the hide side, a stopped hide puts back a backdrop it removed, into the parent it removed it from, and adds back only a token it removed. On the show side, a stopped show destroys a backdrop it connected and removes only a token it added.
+
+The mutation instrument reads each failing case's error and refuses a kill caused by a `ReferenceError`, a syntax error, an unbound identifier, or a failed transform. Round 2's plants that left `expected` unbound are corrected. The four new cases read red on round 2's sources.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

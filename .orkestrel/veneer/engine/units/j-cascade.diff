@@ -1,0 +1,989 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index d2fa169..d0de0fc 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1154,9 +1154,11 @@ carries the `fade` token, waits for the alert's running animations to settle. It
+ alert from the document, dispatches `closed.vn.alert` on the removed alert, and resolves `true`. An
+ alert without the `fade` token leaves the document and dispatches `closed.vn.alert` before the call
+ returns its promise. The close reads the alert's layout before it removes the `shown` token, so an
+-alert inserted in the same task has a computed style and its fade still runs. The shipped cascade
+-declares no `.fade` rule, so under it alone a close finds no animation and completes in a
+-microtask; a stylesheet that declares Bootstrap's `.fade` transition makes the close wait for it.
++alert inserted in the same task has a computed style and its fade still runs. The shipped fade
++partial fades an alert carrying the `fade` token through its opacity over the `--vn-motion-feedback`
++duration, so the close waits for that fade and the `--vn-factor-motion` factor on the root rescales
++the wait. Under a zero factor or reduced motion the fade creates no animation, and the close
++completes in a microtask.
+ The `close` method resolves `false` when a close is in flight, a listener prevented
+ `close.vn.alert`, or the alert is destroyed.
+ 
+@@ -1276,8 +1278,9 @@ activates the control: it adds the control's `active` token and, for a control w
+ writes `aria-selected="true"`, removes `tabindex`, and opens the dropdown that holds it. It adds the
+ `active` token to the control's pane and then the `shown` token. A pane carrying the `fade` token is
+ laid out between those two writes, so the `shown` token starts its fade, and the call waits for the
+-fade to settle. The shipped `_nav.scss` sheet transitions a control's colors and supplies no pane
+-fade, so a pane fades only under a stylesheet of your own that animates the `fade` token. The call
++fade to settle. The shipped `_nav.scss` sheet transitions a control's colors, and the shipped fade
++partial fades a pane carrying the `fade` token over the `--vn-motion-feedback` duration, so the
++`--vn-factor-motion` factor on the root rescales the wait. The call
+ then dispatches `hidden.vn.tab` on the sibling and `shown.vn.tab` on the control, and resolves
+ `true`. A dropdown holds a control when the control's wrapper carries the `dropdown` token: opening
+ it adds the `active` token to the element inside the wrapper the `toggle` selector matches, adds the
+@@ -2284,11 +2287,13 @@ listener prevented the pre-change event, or the toast is destroyed, and `hide` a
+ `false` when the toast is hidden. Showing a shown toast runs the sequence again, dispatching both
+ events, and restarts the delay. The `shown` property reads the `shown` token on every access.
+ 
+-The shipped cascade declares no transition on the toast, and no Veneer rule reads the `fade` token,
+-so under the shipped cascade both calls complete in a microtask. Where a sheet of yours carries
+-Bootstrap's `.fade` transition, hiding waits for the fade out. Showing takes the toast from no
+-display to displayed at no opacity, which starts no transition, so `shown.vn.toast` dispatches in a
+-microtask and the fade in runs after it, as the `transition` token leaves.
++The toast partial declares no transition of its own, and the shipped fade partial fades a toast
++carrying the `fade` token through its opacity over the `--vn-motion-feedback` duration. Hiding
++therefore waits for the fade out the `transition` token starts, and the `--vn-factor-motion` factor
++on the root rescales the wait. Showing a hidden toast takes it from no display to displayed at no
++opacity, which starts no transition, so `shown.vn.toast` dispatches in a microtask and the fade in
++runs after it, as the `transition` token leaves. Showing a shown toast first fades it out under
++the `transition` token and waits for that fade.
+ 
+ With the `autohide` option `true`, a shown toast hides itself through a native `setTimeout` timer
+ `delay` milliseconds after `shown.vn.toast`. The timer is cleared while the pointer or focus is
+diff --git a/tests/src/browser/Alert.test.ts b/tests/src/browser/Alert.test.ts
+index 8697fc5..79a4583 100644
+--- a/tests/src/browser/Alert.test.ts
++++ b/tests/src/browser/Alert.test.ts
+@@ -3,17 +3,16 @@ import { Alert, ALERT_ATTRIBUTES, ALERT_CLASSES, ALERT_EVENTS, ALERT_SELECTORS }
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForDelay } from '@orkestrel/test'
++import { waitForFrame } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import alertCascade from '../../../src/styles/components/_alert.scss?inline'
+ import { recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+ describe('Alert', () => {
+-	// The shipped alert cascade declares no fade, so a case proving the fade wait loads Bootstrap's
+-	// own `.fade` declarations beside it; each case states which sheets it loads.
+-	const fade = '.fade { transition: opacity 0.15s linear } .fade:not(.show) { opacity: 0 }'
+-
+ 	it('publishes frozen default tables that name the cascade tokens, the Bootstrap attribute and selector, and the wire events', () => {
+ 		expect(ALERT_CLASSES).toStrictEqual({
+ 			host: 'alert',
+@@ -29,16 +28,25 @@ describe('Alert', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped alert declarations, which keep the alert in flow and run no transition', () => {
++	it('reads the shipped alert and fade declarations, which keep the alert in flow and fade only an alert carrying the fade token, at the feedback motion duration', () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		const sheet = requireValue(scene.load(alertCascade).sheet, 'The cascade sheet did not load')
+-		const root = scene.mount('<div class="alert fade show">Saved</div>')
+-		const host = requireValue(root.querySelector('div'), 'No alert')
++		const root = scene.mount(`
++			<div class="alert show" id="plain">Saved</div>
++			<div class="alert fade show" id="shown">Saved</div>
++			<div class="alert fade" id="faded">Saved</div>`)
++		const plain = requireValue(root.querySelector<HTMLElement>('#plain'), 'No plain alert')
++		const shown = requireValue(root.querySelector<HTMLElement>('#shown'), 'No shown alert')
++		const faded = requireValue(root.querySelector<HTMLElement>('#faded'), 'No faded alert')
+ 		expect(sheet.cssRules.length).toBeGreaterThan(0)
+-		expect(getComputedStyle(host).position).toBe('relative')
+-		expect(getComputedStyle(host).transitionDuration).toBe('0s')
+-		host.classList.remove('show')
+-		expect(getComputedStyle(host).opacity).toBe('1')
+-		expect(host.getAnimations()).toEqual([])
++		expect(getComputedStyle(plain).position).toBe('relative')
++		expect(getComputedStyle(plain).transitionDuration).toBe('0s')
++		expect(getComputedStyle(shown).transitionProperty).toBe('opacity')
++		expect(getComputedStyle(shown).transitionDuration).toBe('0.15s')
++		expect(getComputedStyle(shown).opacity).toBe('1')
++		expect(getComputedStyle(faded).opacity).toBe('0')
++		expect(getComputedStyle(faded).position).toBe('relative')
+ 	})
+ 
+ 	it('closes an alert without the fade token inside the call, dispatching closed on the removed host, and releases itself', async () => {
+@@ -81,8 +89,9 @@ describe('Alert', () => {
+ 	})
+ 
+ 	it('fades an alert carrying the fade token out through its opacity transition before it removes the host', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(alertCascade)
+-		scene.load(fade)
+ 		const root = scene.mount('<div class="alert alert-info fade show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+ 		const order = createRecorder<readonly [string]>()
+@@ -105,6 +114,48 @@ describe('Alert', () => {
+ 		expect(Array.from(host.classList)).toEqual(['alert', 'alert-info', 'fade'])
+ 	})
+ 
++	it('dispatches closed with no running fade at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(alertCascade)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
++		const root = scene.mount(`
++			<div class="alert fade show" id="still">Saved</div>
++			<div class="alert fade show" id="slow">Saved</div>`)
++		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still alert')
++		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow alert')
++		const order = createRecorder<readonly [string, string]>()
++		const instant = new Alert(still, {
++			on: { closed: (event) => order.handler('still', event.type) },
++		})
++		const faded = new Alert(slow, { on: { closed: (event) => order.handler('slow', event.type) } })
++		onTestFinished(() => instant.destroy())
++		onTestFinished(() => faded.destroy())
++		const closing = instant.close()
++		expect(getComputedStyle(still).transitionDuration).toBe('0s')
++		expect(still.getAnimations()).toEqual([])
++		expect(await closing).toBe(true)
++		expect(order.calls).toEqual([['still', 'closed.vn.alert']])
++		scene.load(':root { --vn-factor-motion: 4 }')
++		const fading = faded.close()
++		expect(getComputedStyle(slow).transitionDuration).toBe('0.6s')
++		const transition = requireValue(slow.getAnimations()[0], 'No fade')
++		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		await waitForFrame()
++		expect(order.calls).toEqual([['still', 'closed.vn.alert']])
++		expect(transition.playState).toBe('running')
++		expect(slow.isConnected).toBe(true)
++		void transition.finished.then(() => order.handler('slow', 'finished'))
++		expect(await fading).toBe(true)
++		expect(order.calls).toEqual([
++			['still', 'closed.vn.alert'],
++			['slow', 'finished'],
++			['slow', 'closed.vn.alert'],
++		])
++	})
++
+ 	it('closes an alert whose fade token runs no transition before a zero-delay timer fires, with no fallback timer', async () => {
+ 		const root = scene.mount('<div class="alert fade show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+@@ -203,7 +254,9 @@ describe('Alert', () => {
+ 	})
+ 
+ 	it('resolves false for a call while a close is in flight, and completes the close in flight once', async () => {
+-		scene.load(fade)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(alertCascade)
+ 		const root = scene.mount('<div class="alert fade show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+ 		const events = createRecorder<readonly [string]>()
+@@ -223,8 +276,9 @@ describe('Alert', () => {
+ 	})
+ 
+ 	it('holds no record of the shown token after a completed close, so a fresh alert on the reused host restores the token its destruction finds recorded', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(alertCascade)
+-		scene.load(fade)
+ 		const root = scene.mount('<div class="alert show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+ 		const alert = new Alert(host)
+@@ -245,8 +299,9 @@ describe('Alert', () => {
+ 	})
+ 
+ 	it('abandons the fade on destruction, resolving false with no closed event, restoring the shown token, and keeping the host in the document', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(alertCascade)
+-		scene.load(fade)
+ 		const root = scene.mount('<div class="alert fade show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+ 		const hooks = createRecorder<readonly [string]>()
+@@ -532,7 +587,9 @@ describe('Alert', () => {
+ 	})
+ 
+ 	it('stops when the shown token returns during the fade, keeping the host and dispatching no closed event', async () => {
+-		scene.load(fade)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(alertCascade)
+ 		const root = scene.mount('<div class="alert fade show">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
+ 		const events = createRecorder<readonly [string]>()
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index 2e9fc0f..7605715 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -1368,6 +1368,69 @@ describe('Carousel', () => {
+ 		expect(Array.from(host.classList)).toEqual(['carousel'])
+ 	})
+ 
++	it('slides next on a trusted leftward touch drag and previous on a rightward one under the shipped carousel cascade', async () => {
++		scene.load(carouselCascade)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide">
++				<div class="carousel-inner">
++					<div class="carousel-item active"><div style="height: 120px">One</div></div>
++					<div class="carousel-item"><div style="height: 120px">Two</div></div>
++					<div class="carousel-item"><div style="height: 120px">Three</div></div>
++				</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const pointers = createRecorder<readonly [string, string]>()
++		for (const name of ['pointerdown', 'pointerup', 'pointercancel']) {
++			host.addEventListener(name, (event) => {
++				if (event instanceof PointerEvent) pointers.handler(event.type, event.pointerType)
++			})
++		}
++		const events = createRecorder<readonly [string, string, number]>()
++		const carousel = new Carousel(host, {
++			on: { slid: (event) => events.handler(event.type, event.detail.direction, event.detail.to) },
++		})
++		onTestFinished(() => carousel.destroy())
++		// The cascade leaves horizontal panning to the swipe, so the platform keeps the drag's pointer.
++		expect(getComputedStyle(host).touchAction).toBe('pan-y')
++		await sendProtocol('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 })
++		onTestFinished(() => sendProtocol('Emulation.setTouchEmulationEnabled', { enabled: false }))
++		const box = host.getBoundingClientRect()
++		const frame = window.frameElement?.getBoundingClientRect()
++		const scale = frame === undefined ? 1 : frame.width / window.innerWidth
++		const x = (frame?.left ?? 0) + (box.left + box.width / 2) * scale
++		const y = (frame?.top ?? 0) + (box.top + box.height / 2) * scale
++		for (const distance of [-100, 100]) {
++			const slid = waitForEvent<readonly [Event]>(
++				(listener) => host.addEventListener('slid.vn.carousel', listener, { once: true }),
++				'the drag slides the carousel',
++				{ budget: 3000 },
++			)
++			await sendProtocol('Input.dispatchTouchEvent', {
++				type: 'touchStart',
++				touchPoints: [{ x, y }],
++			})
++			for (const step of [0.2, 0.4, 0.6, 0.8, 1]) {
++				await sendProtocol('Input.dispatchTouchEvent', {
++					type: 'touchMove',
++					touchPoints: [{ x: x + distance * step * scale, y }],
++				})
++			}
++			await sendProtocol('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
++			await slid
++		}
++		expect(pointers.calls).toEqual([
++			['pointerdown', 'touch'],
++			['pointerup', 'touch'],
++			['pointerdown', 'touch'],
++			['pointerup', 'touch'],
++		])
++		expect(events.calls).toEqual([
++			['slid.vn.carousel', 'left', 1],
++			['slid.vn.carousel', 'right', 0],
++		])
++		expect(carousel.index).toBe(0)
++	})
++
+ 	it('refuses the native drag of an image inside an item and leaves every other image alone', () => {
+ 		const root = scene.mount(`
+ 			<div id="gallery" class="carousel">
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 8237dac..eb7545f 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -15,10 +15,18 @@ import {
+ 	TOOLTIP_SELECTORS,
+ } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+-import { createRecorder, requireValue, waitForCondition, waitForDelay } from '@orkestrel/test'
+-import { build } from '@orkestrel/test/browser'
++import {
++	createRecorder,
++	requireValue,
++	waitForCondition,
++	waitForDelay,
++	waitForEvent,
++} from '@orkestrel/test'
++import { build, waitForFrame } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { userEvent } from 'vitest/browser'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import popoverCascade from '../../../src/styles/components/_popover.scss?inline'
+ import { scene } from '../../setupBrowser.js'
+ 
+@@ -155,6 +163,118 @@ describe('Popover', () => {
+ 		expect(tip.hasAttribute('popover')).toBe(false)
+ 	})
+ 
++	it('fades its tip in and out on trusted clicks under the shipped cascade by default, dispatching shown and hidden only after each fade finishes', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(popoverCascade)
++		const root = scene.mount(`
++			<button type="button" id="away">Away</button>
++			<button type="button" id="trigger" style="margin: 120px 200px" title="Draft" data-bs-content="Saved at noon">Save</button>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		await userEvent.hover(requireValue(root.querySelector<HTMLElement>('#away'), 'No away'))
++		const order = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		// Each fade the tip runs is recorded as it starts, and its end as it finishes.
++		document.addEventListener(
++			'transitionrun',
++			(event) => {
++				const { target } = event
++				if (!(target instanceof HTMLElement) || !target.classList.contains('popover')) return
++				for (const animation of target.getAnimations()) {
++					void animation.finished.then(() => order.handler('finished'))
++				}
++			},
++			{ signal: controller.signal },
++		)
++		const popover = new Popover(host, {
++			on: {
++				shown: (event) => order.handler(event.type),
++				hidden: (event) => order.handler(event.type),
++			},
++		})
++		onTestFinished(() => popover.destroy())
++		const shown = waitForEvent<readonly [Event]>(
++			(listener) => host.addEventListener('shown.vn.popover', listener, { once: true }),
++			'the clicked popover shows',
++		)
++		await userEvent.click(host)
++		await shown
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		expect(Array.from(tip.classList)).toEqual(['popover', 'bs-popover-auto', 'fade', 'show'])
++		expect(getComputedStyle(tip).transitionDuration).toBe('0.15s')
++		expect(getComputedStyle(tip).opacity).toBe('1')
++		expect(order.calls).toEqual([['finished'], ['shown.vn.popover']])
++		const hidden = waitForEvent<readonly [Event]>(
++			(listener) => host.addEventListener('hidden.vn.popover', listener, { once: true }),
++			'the clicked popover hides',
++		)
++		await userEvent.click(host)
++		await hidden
++		expect(order.calls).toEqual([
++			['finished'],
++			['shown.vn.popover'],
++			['finished'],
++			['hidden.vn.popover'],
++		])
++		expect(tip.isConnected).toBe(false)
++	})
++
++	it('dispatches shown with no running fade on the tip at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(popoverCascade)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
++		const root = scene.mount(`
++			<button type="button" id="still" title="Still" data-bs-content="Saved">Still</button>
++			<button type="button" id="slow" title="Slow" data-bs-content="Saved">Slow</button>`)
++		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still trigger')
++		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow trigger')
++		const order = createRecorder<readonly [string, string]>()
++		const instant = new Popover(still, {
++			on: { shown: (event) => order.handler('still', event.type) },
++		})
++		const faded = new Popover(slow, {
++			on: { shown: (event) => order.handler('slow', event.type) },
++		})
++		onTestFinished(() => instant.destroy())
++		onTestFinished(() => faded.destroy())
++		const showing = instant.show()
++		const quiet = requireValue(
++			document.getElementById(still.getAttribute('aria-describedby') ?? ''),
++			'No still tip',
++		)
++		expect(Array.from(quiet.classList)).toEqual(['popover', 'bs-popover-auto', 'fade', 'show'])
++		expect(getComputedStyle(quiet).transitionDuration).toBe('0s')
++		expect(quiet.getAnimations()).toEqual([])
++		expect(await showing).toBe(true)
++		expect(order.calls).toEqual([['still', 'shown.vn.popover']])
++		scene.load(':root { --vn-factor-motion: 4 }')
++		const fading = faded.show()
++		const tip = requireValue(
++			document.getElementById(slow.getAttribute('aria-describedby') ?? ''),
++			'No slow tip',
++		)
++		expect(getComputedStyle(tip).transitionDuration).toBe('0.6s')
++		const transition = requireValue(tip.getAnimations()[0], 'No fade')
++		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		await waitForFrame()
++		expect(order.calls).toEqual([['still', 'shown.vn.popover']])
++		expect(transition.playState).toBe('running')
++		void transition.finished.then(() => order.handler('slow', 'finished'))
++		expect(await fading).toBe(true)
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.popover'],
++			['slow', 'finished'],
++			['slow', 'shown.vn.popover'],
++		])
++	})
++
+ 	it('reads the same border, padding, background, color, and overflow on the promoted tip as on the tip the cascade shows in flow', async () => {
+ 		scene.load(popoverCascade)
+ 		const root = scene.mount(
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index 5432711..c23137e 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -3,17 +3,16 @@ import { Tab, TAB_ATTRIBUTES, TAB_CLASSES, TAB_EVENTS, TAB_SELECTORS } from '@sr
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
++import { waitForFrame } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import navCascade from '../../../src/styles/components/_nav.scss?inline'
+ import { recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+ describe('Tab', () => {
+-	// Bootstrap's own fade declarations, which the shipped cascade does not carry: a pane carrying
+-	// `fade` is transparent until it carries `show`, and its opacity transitions.
+-	const fade = '.fade { transition: opacity 0.15s linear } .fade:not(.show) { opacity: 0 }'
+-
+ 	it('publishes frozen default tables that name the cascade tokens, Bootstrap attributes and selectors, and wire events', () => {
+ 		expect(TAB_CLASSES).toStrictEqual({
+ 			active: 'active',
+@@ -43,24 +42,34 @@ describe('Tab', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped nav declarations the pane proofs run under: a control color transition and no pane fade', () => {
++	it('reads the shipped nav and fade declarations the pane proofs run under: a control color transition and a pane fade at the feedback motion duration', () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		const sheet = requireValue(scene.load(navCascade).sheet, 'The cascade sheet did not load')
+ 		const root = scene.mount(`
+ 			<ul class="nav"><li class="nav-item"><button type="button" class="nav-link" id="link">Link</button></li></ul>
+ 			<div class="tab-content">
+ 				<div class="tab-pane fade" id="hidden"></div>
+ 				<div class="tab-pane fade active" id="active"></div>
++				<div class="tab-pane fade active show" id="shown"></div>
++				<div class="tab-pane active" id="plain"></div>
+ 			</div>`)
+ 		const link = requireValue(root.querySelector<HTMLElement>('#link'), 'No control')
+ 		const hidden = requireValue(root.querySelector<HTMLElement>('#hidden'), 'No hidden pane')
+ 		const active = requireValue(root.querySelector<HTMLElement>('#active'), 'No active pane')
++		const shown = requireValue(root.querySelector<HTMLElement>('#shown'), 'No shown pane')
++		const plain = requireValue(root.querySelector<HTMLElement>('#plain'), 'No plain pane')
+ 		expect(sheet.cssRules.length).toBeGreaterThan(0)
+ 		expect(getComputedStyle(link).transitionProperty).toBe('color, background-color, border-color')
+ 		expect(getComputedStyle(link).transitionDuration).toBe('0.15s, 0.15s, 0.15s')
+ 		expect(getComputedStyle(hidden).display).toBe('none')
+ 		expect(getComputedStyle(active).display).toBe('block')
+-		expect(getComputedStyle(active).opacity).toBe('1')
+-		expect(getComputedStyle(active).transitionDuration).toBe('0s')
++		expect(getComputedStyle(active).opacity).toBe('0')
++		expect(getComputedStyle(active).transitionProperty).toBe('opacity')
++		expect(getComputedStyle(active).transitionDuration).toBe('0.15s')
++		expect(getComputedStyle(shown).opacity).toBe('1')
++		expect(getComputedStyle(plain).opacity).toBe('1')
++		expect(getComputedStyle(plain).transitionDuration).toBe('0s')
+ 	})
+ 
+ 	it('claims the host and resolves its pane by the target attribute before its href', () => {
+@@ -394,8 +403,9 @@ describe('Tab', () => {
+ 	})
+ 
+ 	it('waits for the pane fade to settle before dispatching the completed events, leaving no animation on the pane', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(navCascade)
+-		scene.load(fade)
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+ 				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
+@@ -435,6 +445,61 @@ describe('Tab', () => {
+ 		expect(getComputedStyle(pane).opacity).toBe('1')
+ 	})
+ 
++	it('dispatches shown with no running pane fade at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="still" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
++			</ul>
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#third">Third</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="slow" data-bs-toggle="tab" data-bs-target="#fourth">Fourth</button></li>
++			</ul>
++			<div class="tab-content">
++				<div class="tab-pane fade active show" id="first"></div>
++				<div class="tab-pane fade" id="second"></div>
++				<div class="tab-pane fade active show" id="third"></div>
++				<div class="tab-pane fade" id="fourth"></div>
++			</div>`)
++		const second = requireValue(root.querySelector<HTMLElement>('#second'), 'No second pane')
++		const fourth = requireValue(root.querySelector<HTMLElement>('#fourth'), 'No fourth pane')
++		const order = createRecorder<readonly [string, string]>()
++		const instant = new Tab(requireValue(root.querySelector<HTMLElement>('#still'), 'No control'), {
++			on: { shown: (event) => order.handler('still', event.type) },
++		})
++		const faded = new Tab(requireValue(root.querySelector<HTMLElement>('#slow'), 'No control'), {
++			on: { shown: (event) => order.handler('slow', event.type) },
++		})
++		onTestFinished(() => instant.destroy())
++		onTestFinished(() => faded.destroy())
++		const showing = instant.show()
++		expect(getComputedStyle(second).transitionDuration).toBe('0s')
++		expect(second.getAnimations()).toEqual([])
++		expect(await showing).toBe(true)
++		expect(order.calls).toEqual([['still', 'shown.vn.tab']])
++		scene.load(':root { --vn-factor-motion: 4 }')
++		const fading = faded.show()
++		expect(getComputedStyle(fourth).transitionDuration).toBe('0.6s')
++		const transition = requireValue(fourth.getAnimations()[0], 'No fade')
++		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		await waitForFrame()
++		expect(order.calls).toEqual([['still', 'shown.vn.tab']])
++		expect(transition.playState).toBe('running')
++		void transition.finished.then(() => order.handler('slow', 'finished'))
++		expect(await fading).toBe(true)
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.tab'],
++			['slow', 'finished'],
++			['slow', 'shown.vn.tab'],
++		])
++	})
++
+ 	it('marks the toggle, the menu, and the wrapper of a dropdown holding the active control, and clears them when a sibling activates', async () => {
+ 		const root = scene.mount(`
+ 			<ul class="nav nav-tabs">
+@@ -474,7 +539,9 @@ describe('Tab', () => {
+ 	})
+ 
+ 	it('abandons a swap in flight on destruction, resolving false and restoring the control, its pane, and the sibling it deactivated', async () => {
+-		scene.load(fade)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+ 				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
+@@ -1262,7 +1329,9 @@ describe('Tab', () => {
+ 	})
+ 
+ 	it('stops a swap whose pane loses its shown token during the fade, dispatching no completed event', async () => {
+-		scene.load(fade)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+ 				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
+@@ -1396,7 +1465,9 @@ describe('Tab', () => {
+ 	})
+ 
+ 	it('resolves false for the swap a sibling takes over during the fade, which dispatches its own completed events once', async () => {
+-		scene.load(fade)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+ 				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index a5f81dc..bc15361 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -10,17 +10,14 @@ import {
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForEvent } from '@orkestrel/test'
+-import { releaseMedia, stageMedia, waitForAnimations } from '@orkestrel/test/browser'
++import { releaseMedia, stageMedia, waitForAnimations, waitForFrame } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { userEvent } from 'vitest/browser'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import toastCascade from '../../../src/styles/components/_toast.scss?inline'
+ import { recordListeners, scene } from '../../setupBrowser.js'
+ 
+-// Bootstrap's `.fade` rule from its `_transitions.scss` file, which the shipped cascade does not
+-// carry: the toast key declares no transition, so each case that proves a wait loads this sheet.
+-const FADE =
+-	'.fade { transition: opacity 0.15s linear } @media (prefers-reduced-motion: reduce) { .fade { transition: none } } .fade:not(.show) { opacity: 0 }'
+-
+ afterEach(() => scene.clear())
+ 
+ describe('Toast', () => {
+@@ -57,7 +54,9 @@ describe('Toast', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped toast declarations, which carry no transition, and the fade sheet the motion proofs load', () => {
++	it('reads the shipped toast and fade declarations: a toast runs no transition of its own and fades through the fade token at the feedback motion duration', () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		const sheet = requireValue(scene.load(toastCascade).sheet, 'The cascade sheet did not load')
+ 		const root = scene.mount('<div class="toast"></div>')
+ 		const probe = requireValue(root.querySelector<HTMLElement>('.toast'), 'No probe')
+@@ -70,7 +69,6 @@ describe('Toast', () => {
+ 		probe.classList.add('showing')
+ 		expect(getComputedStyle(probe).opacity).toBe('0')
+ 		expect(getComputedStyle(probe).transitionDuration).toBe('0s')
+-		scene.load(FADE)
+ 		probe.classList.add('fade')
+ 		expect(getComputedStyle(probe).transitionProperty).toBe('opacity')
+ 		expect(getComputedStyle(probe).transitionDuration).toBe('0.15s')
+@@ -79,8 +77,9 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('shows through the fade and showing tokens and hides back under the shipped cascade, awaiting the fade out', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount(
+ 			'<div class="toast" id="note"><div class="toast-body">Saved</div></div>',
+ 		)
+@@ -127,34 +126,78 @@ describe('Toast', () => {
+ 		expect(running.calls).toEqual([[1], [0]])
+ 	})
+ 
+-	it('dispatches shown after the fade in finishes when the toast is displayed before it shows, under the fade sheet alone', async () => {
+-		scene.load(FADE)
+-		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++	it('dispatches hidden with no running fade at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
++		const root = scene.mount(`
++			<div class="toast fade show" id="still">Saved</div>
++			<div class="toast fade show" id="slow">Saved</div>`)
++		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still toast')
++		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow toast')
++		const order = createRecorder<readonly [string, string]>()
++		const instant = new Toast(still, {
++			autohide: false,
++			on: { hidden: (event) => order.handler('still', event.type) },
++		})
++		const faded = new Toast(slow, {
++			autohide: false,
++			on: { hidden: (event) => order.handler('slow', event.type) },
++		})
++		onTestFinished(() => instant.destroy())
++		onTestFinished(() => faded.destroy())
++		const hiding = instant.hide()
++		expect(getComputedStyle(still).transitionDuration).toBe('0s')
++		expect(still.getAnimations()).toEqual([])
++		expect(await hiding).toBe(true)
++		expect(order.calls).toEqual([['still', 'hidden.vn.toast']])
++		scene.load(':root { --vn-factor-motion: 4 }')
++		const fading = faded.hide()
++		expect(getComputedStyle(slow).transitionDuration).toBe('0.6s')
++		const transition = requireValue(slow.getAnimations()[0], 'No fade')
++		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		await waitForFrame()
++		expect(order.calls).toEqual([['still', 'hidden.vn.toast']])
++		expect(transition.playState).toBe('running')
++		void transition.finished.then(() => order.handler('slow', 'finished'))
++		expect(await fading).toBe(true)
++		expect(order.calls).toEqual([
++			['still', 'hidden.vn.toast'],
++			['slow', 'finished'],
++			['slow', 'hidden.vn.toast'],
++		])
++	})
++
++	it('dispatches shown after the fade out that a show of a shown toast runs through the showing token finishes', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const order = createRecorder<readonly [string]>()
+-		const remaining = createRecorder<readonly [number]>()
+ 		const toast = new Toast(host, {
+ 			autohide: false,
+-			on: {
+-				shown: (event) => {
+-					order.handler(event.type)
+-					remaining.handler(host.getAnimations().length)
+-				},
+-			},
++			on: { shown: (event) => order.handler(event.type) },
+ 		})
+ 		onTestFinished(() => toast.destroy())
+ 		const showing = toast.show()
+-		const [transition] = host.getAnimations()
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
++		const transition = requireValue(host.getAnimations()[0], 'No fade')
+ 		expect(transition).toBeInstanceOf(CSSTransition)
+-		void transition?.finished.then(() => order.handler('finished'))
++		expect(transition instanceof CSSTransition ? transition.transitionProperty : '').toBe('opacity')
++		void transition.finished.then(() => order.handler('finished'))
+ 		expect(await showing).toBe(true)
+ 		expect(order.calls).toEqual([['finished'], ['shown.vn.toast']])
+-		expect(remaining.calls).toEqual([[0]])
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
+ 	})
+ 
+ 	it('shows and hides at once with animated false, writing no fade token and awaiting nothing', async () => {
+-		scene.load(FADE)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
+ 		const root = scene.mount('<div class="toast" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const events = createRecorder<readonly [string]>()
+@@ -186,10 +229,13 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('dispatches shown with no animation created under staged reduced motion', async () => {
+-		scene.load(FADE)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
+ 		await stageMedia({ motion: false })
+ 		onTestFinished(() => releaseMedia())
+-		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		// A show of a shown toast fades it out under the showing token wherever motion is allowed.
++		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const shown = createRecorder<readonly [number]>()
+ 		const toast = new Toast(host, {
+@@ -207,8 +253,9 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount('<div class="toast" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const events = createRecorder<readonly [string]>()
+@@ -579,8 +626,12 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('abandons the transition in flight on destruction, resolving false and restoring the toast', async () => {
+-		scene.load(FADE)
+-		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		// A show of a shown toast runs the fade out under the showing token, which is the transition
++		// the destruction abandons.
++		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const hooks = createRecorder<readonly [string]>()
+ 		const lifetime = new AbortController()
+@@ -602,7 +653,7 @@ describe('Toast', () => {
+ 		toast?.destroy()
+ 		expect(await showing).toBe(false)
+ 		expect(hooks.calls).toEqual([['show.vn.toast']])
+-		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
+ 		expect(Toast.find(host)).toBeUndefined()
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+@@ -1031,8 +1082,11 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('stops a show when the transition token leaves during its await, dispatching no shown event', async () => {
+-		scene.load(FADE)
+-		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		// A show of a shown toast awaits the fade out the showing token runs.
++		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const events = createRecorder<readonly [string]>()
+ 		const toast = new Toast(host, { on: { shown: (event) => events.handler(event.type) } })
+@@ -1047,8 +1101,9 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('clears a pending delay when a show is accepted, even when that show stops before it completes', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount(`
+ 			<button type="button">Outside</button>
+ 			<div class="toast fade" id="note">Saved</div>
+@@ -1265,8 +1320,9 @@ describe('Toast', () => {
+ 	})
+ 
+ 	it('stops a hide when the shown token leaves during its transition, dispatching no hidden event', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+ 		const events = createRecorder<readonly [string]>()
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index d328017..7d076f1 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -19,17 +19,14 @@ import {
+ 	waitForDelay,
+ 	waitForEvent,
+ } from '@orkestrel/test'
+-import { build } from '@orkestrel/test/browser'
++import { build, waitForFrame } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { userEvent } from 'vitest/browser'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import tooltipCascade from '../../../src/styles/components/_tooltip.scss?inline'
+ import { recordCalls, recordListeners, scene } from '../../setupBrowser.js'
+ 
+-// Bootstrap's `.fade` rule from its `_transitions.scss` file, which the shipped cascade does not
+-// carry: the tooltip key declares no transition, so each case that proves a wait loads this sheet.
+-const FADE =
+-	'.fade { transition: opacity 0.15s linear } @media (prefers-reduced-motion: reduce) { .fade { transition: none } }'
+-
+ afterEach(() => scene.clear())
+ 
+ describe('Tooltip', () => {
+@@ -246,8 +243,9 @@ describe('Tooltip', () => {
+ 	})
+ 
+ 	it('waits for the fade in and the fade out when animated, and neither writes the fade token nor waits when not', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount(
+ 			'<button type="button" id="trigger" title="Faded">Fade</button><button type="button" id="plain" title="Plain">Plain</button>',
+ 		)
+@@ -315,6 +313,58 @@ describe('Tooltip', () => {
+ 		expect(await quick).toBe(true)
+ 	})
+ 
++	it('dispatches shown with no running fade on the tip at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(tooltipCascade)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
++		const root = scene.mount(
++			'<button type="button" id="still" title="Still">Still</button><button type="button" id="slow" title="Slow">Slow</button>',
++		)
++		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still trigger')
++		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow trigger')
++		const order = createRecorder<readonly [string, string]>()
++		const instant = new Tooltip(still, {
++			on: { shown: (event) => order.handler('still', event.type) },
++		})
++		const faded = new Tooltip(slow, {
++			on: { shown: (event) => order.handler('slow', event.type) },
++		})
++		onTestFinished(() => instant.destroy())
++		onTestFinished(() => faded.destroy())
++		const showing = instant.show()
++		const quiet = requireValue(
++			document.getElementById(still.getAttribute('aria-describedby') ?? ''),
++			'No still tip',
++		)
++		expect(Array.from(quiet.classList)).toEqual(['tooltip', 'bs-tooltip-auto', 'fade', 'show'])
++		expect(getComputedStyle(quiet).transitionDuration).toBe('0s')
++		expect(quiet.getAnimations()).toEqual([])
++		expect(await showing).toBe(true)
++		expect(order.calls).toEqual([['still', 'shown.vn.tooltip']])
++		scene.load(':root { --vn-factor-motion: 4 }')
++		const fading = faded.show()
++		const tip = requireValue(
++			document.getElementById(slow.getAttribute('aria-describedby') ?? ''),
++			'No slow tip',
++		)
++		expect(getComputedStyle(tip).transitionDuration).toBe('0.6s')
++		const transition = requireValue(tip.getAnimations()[0], 'No fade')
++		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		await waitForFrame()
++		expect(order.calls).toEqual([['still', 'shown.vn.tooltip']])
++		expect(transition.playState).toBe('running')
++		void transition.finished.then(() => order.handler('slow', 'finished'))
++		expect(await fading).toBe(true)
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.tooltip'],
++			['slow', 'finished'],
++			['slow', 'shown.vn.tooltip'],
++		])
++	})
++
+ 	it('resolves the options from the constructor over the attributes over the defaults', async () => {
+ 		scene.load(tooltipCascade)
+ 		const root = scene.mount(`
+@@ -592,8 +642,9 @@ describe('Tooltip', () => {
+ 	})
+ 
+ 	it('refuses to show when disabled, empty, disconnected, hidden inline, prevented, in flight, or destroyed', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount('<button type="button" id="trigger" title="Saves">Save</button>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
+ 		const events = createRecorder<readonly [string]>()
+@@ -680,8 +731,9 @@ describe('Tooltip', () => {
+ 	})
+ 
+ 	it('rebuilds a settled shown tip on show, and a hide takes a show over after its shown token write and resolves false before it', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount('<button type="button" id="trigger" title="Saves">Save</button>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
+ 		const events = createRecorder<readonly [string]>()
+@@ -830,9 +882,12 @@ describe('Tooltip', () => {
+ 	})
+ 
+ 	it('shows the tip again when the pointer returns while it fades out, once the hide completes', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+-		// A slow fade keeps the hide in flight while the pointer travels back.
+-		scene.load('.fade { transition: opacity 0.6s linear }')
++		// A motion factor of 4 slows the shipped fade to 0.6s, which keeps the hide in flight while the
++		// pointer travels back.
++		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const root = scene.mount(
+ 			'<button type="button" id="away">Away</button><button type="button" id="trigger" title="Back">Back</button>',
+ 		)
+@@ -1372,8 +1427,9 @@ describe('Tooltip', () => {
+ 	})
+ 
+ 	it('resolves a hide false and leaves the tip where a reaction moved it during the wait', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount(
+ 			'<button type="button" id="trigger" title="Moved">Save</button><div id="elsewhere"></div>',
+ 		)
+@@ -2419,8 +2475,9 @@ describe('Tooltip', () => {
+ 	})
+ 
+ 	it('abandons a show in flight on destruction, dispatching no shown event, and releases its hooks and claim', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+-		scene.load(FADE)
+ 		const root = scene.mount('<button type="button" id="trigger" title="Saves">Save</button>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
+ 		const hooked = createRecorder<readonly [string]>()
