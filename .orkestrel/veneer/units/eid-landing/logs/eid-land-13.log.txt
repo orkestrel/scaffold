@@ -1,0 +1,12 @@
+=== unit/r153 ede7a6a
+=== base 877e7c6
+Auto-merging guides/veneer.md
+Auto-merging tests/setupBrowser.test.ts
+CONFLICT (content): Merge conflict in tests/setupBrowser.test.ts
+Auto-merging tests/setupBrowser.ts
+Squash commit -- not updating HEAD
+Automatic merge failed; fix conflicts and then commit the result.
+=== squash merge conflicted; stopped
+M  guides/veneer.md
+UU tests/setupBrowser.test.ts
+M  tests/setupBrowser.ts
