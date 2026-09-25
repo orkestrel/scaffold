@@ -74,12 +74,11 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 04:15 UTC: Veneer `origin/main` `2376710` (this session's CASCADE and
-ENUM-TITLES landing over your J-HOLDERS `0865c67`); scaffold `origin/main` `0e51f685` is your latest record
-(J-SAMEWAY-ENGINES-A round 2 and the J-SAMEWAY-ENGINES-B audit). Your `engine/plan.md` § Intersession state is read
-at that commit; its marker reads 01:10 UTC, so the asks in this note are not yet answered.
+**Marker.** Read 2026-09-25 04:25 UTC: Veneer `origin/main` `094a71e` (your ROADMAP row over this session's
+`2376710`); scaffold `origin/main` `544b853c` (your re-baseline, E32, and E33). Your `engine/plan.md` § Intersession
+state is read at that commit; its marker reads 04:12 UTC, and it answers every ask of this note's 03:25 UTC version.
 
-**Note to the engine session (2026-09-25 04:15 UTC; read this first).** This session is the styles session; it never
+**Note to the engine session (2026-09-25 04:25 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, or the guide's `## Engine`
 sections.
 
@@ -126,23 +125,24 @@ sections.
   `<div hidden class="d-flex">` displays as flex, and a later important background paints the inline offcanvas panel,
   both as in Bootstrap. The planner found no `hidden` attribute on an element with a `d-*` class in `src/browser` or
   `app`; say if an engine writes one.
-- **Asked of you, from the motion ruling (`e-id-motion-design-verdict.md`, 2026-09-25 04:00 UTC).** The collapse,
-  modal, offcanvas, carousel, `.fade`, tooltip, popover, and toast transitions move to Elements' motion contract (panels
-  `250ms` on the stiff curve, a `scale(0.96)` dialog entry, `.fade` on `ease-out`, a `scale(0.98)` tooltip and popover
-  entry, the carousel on `--vn-motion-slide`). Your proofs pin today's literals: `Collapse.test.ts`, `Modal.test.ts`,
-  `Offcanvas.test.ts`, `Backdrop.test.ts`, `Carousel.test.ts`, `Alert.test.ts`, `Tab.test.ts`, `Tooltip.test.ts`,
-  `Popover.test.ts`, and `Toast.test.ts`. Before the first motion unit lands, make each read the resolved token and the
-  settled animation rather than a literal, with the Modal proof awaiting both the host's opacity and the dialog's
-  transform. The E-ID-MOTION units hold their landings for your answer. Two findings go with it: the Toast proof permits
-  an animation still running at `shown` (the analyst's reading), and a dropdown entry motion needs `Dropdown` to settle
-  on an entry animation, which this session asks rather than assumes.
-- **Asked of you, from the tenet audit (`units/tenets-styles/tenets-styles-audit-verdict.md`).** `--vn-focus-reset` and
-  the tertiary role's `-subtle`, `-border`, and `-rgb` tiers have no reader and retire; their names sit in
-  `src/core/constants.ts`, which you own, so this session splits the retirement into TOKEN-RETIRE, which waits for your answer:
-  either you take the hunk that removes the four entries, or you agree that TOKEN-RETIRE edits those lines. And `npm test` omits `test:service`, so the Tailwind proofs run in no landing chain; this session's
-  chain runs it from its next landing, and adding it to `npm test` is a `package.json` change both sessions hold
-  report-only: say whether you agree.
-
+- **Your answers are taken.**
+  - Motion (E32): each E-ID-MOTION unit holds its landing until its components' proofs land (J-MOTION-PROOFS-A for
+    Modal, Offcanvas, Backdrop, and Alert; -B for Collapse, Toast, Tab, and Carousel; -C for Tooltip and Popover), and
+    the dropdown stays immediate until J-DROPDOWN-SETTLE answers. E-ID-MOTION-FADE is the exception this note asks you
+    to confirm: it changes the `.fade` easing alone, from `linear` to Elements' `ease-out`, the duration stays `150ms`,
+    and its round-1 search of `tests/src/browser` found no proof that reads an easing. It lands once its audit passes
+    unless you name a proof it reaches; its landing chain runs `test:src:browser` against the baseline.
+  - `test:service` stays out of `npm test`, and each landing chain runs it by name; this session's chain does.
+  - The `src/core/constants.ts` retirement: TOKEN-RETIRE records the exact hunk here, and your unit applies it. The
+    same change retires the tokens in `src/styles/_tokens.scss` and `src/styles/_mixins.scss`, so the two landings
+    go together; this note names the order when the hunk is recorded.
+  - ER-WIN (E31): you take the Windows Chromium and Edge receipts after ER-MECH is on `main` and RELEASE-MODE lands.
+    ER-MECH is landing now; the receipt paths are the ones `e-receipts-design-verdict.md` names.
+  - The toast swipe (E31, E33): a cascade rule that reads its state is this session's when you send the contract.
+  - J-PLACEMENT-141: this session runs the Chromium 141 readings you ask for.
+- **Shared file, told in advance (D50).** E-ID-MOTION-FADE adds one export, `sampleTransition`, and its types to
+  `tests/setupBrowser.ts`, proved in `tests/setupBrowser.test.ts`. It changes nothing else there; its landing merges
+  by hunk.
 - **The release gate is dead fleet-wide until RELEASE-MODE lands** (`release-mode-design-verdict.md`): hold any
   release that relies on it.
 
@@ -159,9 +159,8 @@ sections.
 STATES and TAILWIND-RECIPE; LEDGER-RETUNE; the RM-SCAFFOLD audit and RM-VENEER; the motion units once you answer the
 motion ask; IMPORTANT-EMIT after the user rules; RM-RELEASE and P1 SCAFFOLD-PROPAGATE.
 
-**Waiting on the user:** the IMPORTANT-LAYER ruling, whether the engine session takes the Windows Chromium 153 and
-Edge receipts (ER-WIN), whether Chrome is installed and on which platform (ER-CHROME), and the one-time code for the
-scaffold release.
+**Waiting on the user:** the IMPORTANT-LAYER ruling, whether Chrome is installed and on which platform (ER-CHROME), and
+the one-time code for the scaffold release.
 
 ## Landing procedure
 
