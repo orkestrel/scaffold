@@ -62,7 +62,7 @@ that retunes the tokens the button surface reads. Each proof reads red when its 
 ## Scope
 
 **Owned.** `tests/src/styles/components/{close,navbar,accordion,dropdown,nav,list-group,pagination,carousel}.test.ts`;
-`tests/src/styles/elements/button.test.ts`; the eight partials the Context names, where a reading shows a defect. **Shared** (return the hunks in the
+`tests/src/styles/elements/button.test.ts`; `tests/src/styles/mixins.test.ts` for the minifier guard; the eight partials the Context names, where a reading shows a defect. **Shared** (return the hunks in the
 report): `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `guides/veneer.md`. **Off-limits:** `src/browser/**`,
 `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, `tests/setupServer.ts`, `tests/setupBrowser.ts`,
 `tests/app/**`, `app/**`, the vendored files (`tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/config.test.ts`),
@@ -77,9 +77,15 @@ Perform the assignment directly and spawn nothing.
 2. Add one proof per class, in its component's test file, reading its button form against its non-button form in both
    cascades under the holder, at rest and in each state the class takes, with the case matrix exported from
    `tests/setupStyles.ts`. Each proof is red when its partial's include goes; run that mutation per partial.
-3. Update the guide's § Outside the ledger paragraph that begins "The button reboot rules come after those names" so it
+3. Guard the reset against the minifier. The build's minifier folds a longhand written after a `revert` shorthand in
+   the same rule into one invalid shorthand (`transition: revert; transition-delay: 1s` compiles to
+   `transition:revert 0s 1s`, which the browser drops; E-ID-BUTTON-CASCADE round 5 measured it). Add a proof, beside the
+   mixin's property-set case in `tests/src/styles/mixins.test.ts`, that every declaration the `components` layer's
+   `:where()` reset rules write whose value names `revert` has `revert` as its whole value; it reads red under that
+   plant.
+4. Update the guide's § Outside the ledger paragraph that begins "The button reboot rules come after those names" so it
    names the proofs that read the resets.
-4. Run the owned files, then `npm run test:src:styles`, `npm run test:setup`, `npm run test:conformance`,
+5. Run the owned files, then `npm run test:src:styles`, `npm run test:setup`, `npm run test:conformance`,
    `npm run test:guides`, and `npm run test:policy`. Record each gate's exit code in its log (append `echo "exit=$?"`)
    and each mutation's restore check in its log.
 
@@ -100,5 +106,5 @@ if a class needs a fix outside its own partial, or a selector the tenets forbid.
 ## Acceptance criteria
 
 Each class the Context names has a proof reading its button form at rest and in each state it takes; each proof is red
-when its partial's include goes, with an assertion failure;
-the guide's paragraph names the proofs; every gate named in Execution step 4 exits 0.
+when its partial's include goes, with an assertion failure; the minifier guard reads red under its plant;
+the guide's paragraph names the proofs; every gate named in Execution step 5 exits 0.

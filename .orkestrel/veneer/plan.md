@@ -118,6 +118,15 @@ resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e
   `src/styles/_mixins.scss` (the `box-reset` mixin is gone), their element tests, `tests/setupStyles.ts`, and the
   guide's `reboot` ledger rows. `dl`, `pre`, and `figure` now end with a 16px block margin and `hr` has 16px on each
   block edge, so a fixture that reads the box below one of them moves by that margin.
+- **A fleet-wide defect, measured 2026-09-25 03:00 UTC: `--mode release` never reaches a project test.** In Veneer
+  (`main` at `4cd56a8`) and in scaffold, a probe under `vitest run --project probe --mode release` reads
+  `import.meta.env.MODE` and `process.env.MODE` as `test`, and no other channel carries the mode. So
+  `const RELEASE = import.meta.env.MODE === 'release'` in every distribution proof is always false, every
+  `if (RELEASE) throw` branch is dead, and `prepublishOnly` skips where it must fail. The pattern is scaffold's
+  template (`src/core/templates.ts`), and the vendored `tests/config.test.ts` pins the false premise. Its design round
+  (`units/release-mode-design-brief.md`, planner on Opus 5.5 and analyst on Astra) is running here; hold any release
+  that relies on the release gate until it rules. Veneer's distribution proof also reads red today on the packed link
+  colour (`units/erm-instruments/logs/erm-base-distribution.log.txt`); ER-MECH's next round carries it.
 - **In a fix round here:** E-ID-BUTTON-CASCADE (`e-id-button-design-verdict.md`; round 3 per `units/ebc-audit-verdict.md`).
   Its audits run `analyst` on Astra, `reviewer` on Opus 5.5, and `checker` on Sonnet, and your replay rule binds them:
   a mutation counts as a kill only when the failure names an assertion.
