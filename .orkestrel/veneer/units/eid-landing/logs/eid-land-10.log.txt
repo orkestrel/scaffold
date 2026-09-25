@@ -1,0 +1,19 @@
+=== unit/mred 19e044f
+=== unit/ebcl 76676d6
+=== fast-forward to origin/main (06:42:59)
+Already up to date.
+=== fast-forward to origin/main exit=0
+=== base 73326c7
+=== integrate mred over 21c821a (unit tip 19e044f)
+  guides/veneer.md: 1 conflict(s)
+table: ours=390 base=174 theirs=179 -> 395
+Finished in 31908ms on 5 files using 4 threads.
+=== landed mred as 0879800
+=== integrate ebcl over 2376710 (unit tip 76676d6)
+  guides/veneer.md: 1 conflict(s)
+base-union: ours=0 base=8 theirs=22 -> 21
+  tests/setupBrowser.ts: 1 conflict(s)
+concatenated: ours=27 base=0 theirs=221 -> 248
+Finished in 29930ms on 15 files using 4 threads.
+=== landed ebcl as dd5d1b1
+=== stopped after integration: a line union needs reading

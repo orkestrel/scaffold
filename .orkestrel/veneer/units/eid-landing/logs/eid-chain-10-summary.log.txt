@@ -1,0 +1,60 @@
+=== head 611f381
+=== format:check (06:48:27)
+=== format:check exit=0
+=== lint:check (06:48:55)
+=== lint:check exit=0
+=== check (06:48:57)
+=== check exit=0
+=== build:src (06:49:25)
+=== build:src exit=0
+=== test:src:styles (06:49:37)
+=== test:src:styles exit=0
+=== test:setup (06:52:51)
+=== test:setup exit=0
+=== test:conformance (06:53:15)
+=== test:conformance exit=0
+=== test:guides (06:53:51)
+=== test:guides exit=0
+=== test:policy (06:53:57)
+=== test:policy exit=0
+=== src:browser against the 0865c67 baseline (06:54:02)
+=== src:browser exit=0;  Tests 1036 passed | 2 skipped (1038)
+=== src:browser: no red outside the baseline
+=== test:service (06:56:19)
+=== test:service exit=0
+=== build (06:56:44)
+=== build exit=0
+=== test:distribution (06:57:02)
+=== test:distribution exit=0
+=== app:browser (06:57:22)
+=== app:browser exit=0
+=== setup:browser (06:58:14)
+=== setup:browser exit=0
+=== journey, CAPTURE=1 (06:58:45)
+=== journey, CAPTURE=1 exit=0
+=== journey, CAPTURE unset (07:06:56)
+=== journey, CAPTURE unset exit=0
+=== status after chain: [] (07:14:05)
+=== eid chain 10 done
+ Test Files  115 passed (115)
+      Tests  1529 passed (1529)
+ Test Files  4 passed (4)
+      Tests  336 passed (336)
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+=== src:browser exit=0;  Tests 1036 passed | 2 skipped (1038)
+ Test Files  3 passed (3)
+      Tests  21 passed (21)
+ Test Files  1 passed (1)
+      Tests  13 passed | 5 skipped (18)
+ Test Files  61 passed (61)
+      Tests  223 passed (223)
+ Test Files  1 passed (1)
+      Tests  98 passed (98)
+ Test Files  4 passed (4)
+      Tests  252 passed (252)
+ Test Files  4 passed (4)
+      Tests  252 passed (252)

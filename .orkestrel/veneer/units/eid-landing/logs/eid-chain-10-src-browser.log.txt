@@ -1,0 +1,30 @@
+ > #writeBack src/browser/HostSnapshot.ts:319:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:146:67
+ > tests/src/browser/HostSnapshot.test.ts:346:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:319:27
+ > writeHostValue src/browser/helpers.ts:925:45
+ > #writeBack src/browser/HostSnapshot.ts:319:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:146:67
+ > tests/src/browser/HostSnapshot.test.ts:348:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=34d7b9df:302:11
+
+6:56:10 AM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63316/@fs/home/user/veneer/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at writeHostValue (http://localhost:63316/src/browser/helpers.ts:755:46)
+    at #writeBack (http://localhost:63316/src/browser/HostSnapshot.ts:305:3)
+    at HostSnapshot.restore (http://localhost:63316/src/browser/HostSnapshot.ts:133:67)
+    at http://localhost:63316/home/user/veneer/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790319370896:478:11
+    at http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=34d7b9df:302:11
+    at http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=34d7b9df:1903:26
+    at http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=34d7b9df:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=34d7b9df:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:311:2 > HostSnapshot > withdraws a shared target when the last holder restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+································································································································································································································--····················································································································
+
+ Test Files  26 passed (26)
+      Tests  1036 passed | 2 skipped (1038)
+   Start at  06:54:03
+   Duration  135.38s (transform 0ms, setup 3.48s, import 2.13s, tests 114.90s, environment 0ms)
+
