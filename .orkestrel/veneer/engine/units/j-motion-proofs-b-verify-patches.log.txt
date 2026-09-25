@@ -1,0 +1,23 @@
+veneer.md.patch 102 lines
+types.ts.patch 20 lines
+EngineSection.test.ts.patch 42 lines
+applied guides/veneer.md
+applied src/browser/types.ts
+applied tests/app/browser/sections/EngineSection.test.ts
+format check exit 0
+All matched files use the correct format.
+Finished in 10583ms on 3 files using 16 threads.
+lint exit 0
+npm run check exit 0
+guides exit 0
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+npm run test:guides exit 0
+[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 03:03:01
+[2m   Duration [22m 3.60s[2m (transform 532ms, setup 113ms, import 2.09s, tests 1.25s, environment 0ms)[22m
+
+EngineSection exit 0
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+scratch removed: yes

@@ -1,0 +1,20 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -2246,7 +2246,7 @@
+ 	/**
+ 	 * Shows the toast and starts the delay after which it hides itself.
+ 	 *
+-	 * @returns Resolves true after the `shown` event, also when the toast gained the `shown` token before the call wrote it; false when a transition was in flight, a listener prevented `show` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast lost the `shown` token after the call found it at its end and before the call dispatched its completed event.
++	 * @returns Resolves true after the `shown` event, also when the toast gained the `shown` token before the call wrote it; false when the toast carried its `transition` token, a listener prevented `show` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast lost the `shown` token after the call found it at its end and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await toast.show()
+@@ -2256,7 +2256,7 @@
+ 	/**
+ 	 * Hides the toast.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event, also when the toast lost the `shown` token before the call removed it; false when the toast was hidden, a transition was in flight, a listener prevented `hide` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast gained the `shown` token back after the call found it removed and before the call dispatched its completed event.
++	 * @returns Resolves true after the `hidden` event, also when the toast lost the `shown` token before the call removed it; false when the toast was hidden, the toast carried its `transition` token, a listener prevented `hide` or started a call of its own inside it, the toast is destroyed, a later call took the change over, the toast's `transition` token read otherwise than the call's phase requires, or the toast gained the `shown` token back after the call found it removed and before the call dispatched its completed event.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await toast.hide()

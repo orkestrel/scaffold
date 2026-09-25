@@ -1,0 +1,6 @@
+1
+click exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 847ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+source restored

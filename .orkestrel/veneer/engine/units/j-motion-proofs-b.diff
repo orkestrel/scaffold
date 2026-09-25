@@ -1,0 +1,1221 @@
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+index e9aaefc..ed76bc4 100644
+--- a/src/browser/Toast.ts
++++ b/src/browser/Toast.ts
+@@ -33,12 +33,12 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * `attributes` group names, and the constructor, claims the host, binds the hooks, and listens for
+  * the pointer and focus entering and leaving the host. Showing writes the `fade` token when
+  * `animated` is `true`, then the `shown` and `transition` tokens, waits for the host's transitions
+- * to settle when `animated` is `true`, removes the `transition` token, and dispatches the `shown`
+- * event; hiding writes the `transition` token, waits the same way, and removes the `transition` and
+- * `shown` tokens. Showing a shown toast runs the sequence again and restarts the delay. With
+- * `autohide`, a shown toast hides itself through a native timer `delay` milliseconds after it
+- * shows; the timer is cleared while the pointer or focus is inside the host and started again in
+- * full when both have left.
++ * to settle when `animated` is `true`, removes the `transition` token, waits the same way for the
++ * fade in that removal starts, and dispatches the `shown` event; hiding writes the `transition`
++ * token, waits the same way, and removes the `transition` and `shown` tokens. Showing a shown toast
++ * runs the sequence again and restarts the delay. With `autohide`, a shown toast hides itself
++ * through a native timer `delay` milliseconds after it shows; the timer is cleared while the
++ * pointer or focus is inside the host and started again in full when both have left.
+  *
+  * A call carries the change identity it sets when its change starts. After each write, dispatch,
+  * and await, it reads whether the toast is live and whether a later `show` or `hide` call has
+@@ -46,11 +46,13 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * `false`. A listener that starts a call of its own inside the pre-change dispatch supersedes the
+  * call this way, whether that call is still waiting or has completed, while a prevented call starts
+  * no change. The call also reads the `transition` token: before a show writes it the host must lack
+- * it, and from its write until its removal the host must carry it; a call that finds the host
+- * otherwise stops the same way. The host's `shown` token at the change's end is agreement: a
+- * listener or a reaction that moves the token there has made the call's token write for it, so the
+- * call writes the `shown` token only when the host has not, completes every other write, dispatches
+- * its completed event, and resolves `true`. From the moment the call finds the token at its end,
++ * it, from its write until its removal the host must carry it, and after its removal the host must
++ * lack it again; a call that finds the host otherwise stops the same way. A `show` or `hide` call
++ * made during a show's fade in is accepted, because the token has left, and supersedes that show.
++ * The host's `shown` token at the change's end is agreement: a listener or a reaction that moves
++ * the token there has made the call's token write for it, so the call writes the `shown` token only
++ * when the host has not, completes every other write, dispatches its completed event, and resolves
++ * `true`. From the moment the call finds the token at its end,
+  * after the pre-change dispatch or at its token write, each door also reads the token there. A host
+  * that moves the token back from that end takes the change over: the call resolves `false` and
+  * takes one further step that returns what the change wrote. That step writes each target the
+@@ -218,6 +220,12 @@ export class Toast implements ToastInterface {
+ 		if (!this.#apply(change, true, [], [transition], () => host.classList.remove(transition))) {
+ 			return this.#rewind(change, written)
+ 		}
++		// The `transition` token holds a showing toast transparent, so the fade in starts as it leaves,
++		// and the shown event follows that motion too.
++		if (this.#animated) {
++			await settleAnimations(host, this.#controller.signal)
++			if (!this.#holds(change, true, [], [transition])) return this.#rewind(change, written)
++		}
+ 		emitEvent(host, TOAST_EVENTS.shown, null, false)
+ 		if (!host.matches(':hover') && !host.matches(':focus-within')) this.#arm()
+ 		return !this.#controller.signal.aborted
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index b36763b..97a05d7 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -28,7 +28,7 @@ import {
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import carouselCascade from '../../../src/styles/components/_carousel.scss?inline'
+-import { recordListeners, scene } from '../../setupBrowser.js'
++import { readDuration, recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -83,7 +83,7 @@ describe('Carousel', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped carousel declarations the motion proofs run under', () => {
++	it('reads the shipped carousel declarations the motion proofs run under: an item declares a positive duration in either variant', () => {
+ 		const sheet = requireValue(scene.load(carouselCascade).sheet, 'The cascade sheet did not load')
+ 		const root = scene.mount(`
+ 			<div id="track" class="carousel pointer-event">
+@@ -101,11 +101,10 @@ describe('Carousel', () => {
+ 		expect(getComputedStyle(track).touchAction).toBe('pan-y')
+ 		expect(getComputedStyle(resting).display).toBe('none')
+ 		expect(getComputedStyle(incoming).display).toBe('block')
+-		expect(getComputedStyle(incoming).transitionProperty).toBe('transform')
+-		expect(getComputedStyle(incoming).transitionDuration).toBe('0.6s')
++		expect(readDuration(incoming)).toBeGreaterThan(0)
+ 		expect(getComputedStyle(incoming).transform).not.toBe('none')
+ 		expect(getComputedStyle(started).transform).toBe('none')
+-		expect(getComputedStyle(faded).transitionProperty).toBe('opacity')
++		expect(readDuration(faded)).toBeGreaterThan(0)
+ 	})
+ 
+ 	it('slides to the following item through its order and direction tokens under the shipped cascade, moving the indicator between slide and slid', async () => {
+@@ -147,13 +146,11 @@ describe('Carousel', () => {
+ 			'carousel-item-next',
+ 			'carousel-item-start',
+ 		])
+-		expect(
+-			two
+-				?.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-				),
+-		).toEqual(['transform'])
++		const sliding = two?.getAnimations() ?? []
++		expect(sliding).not.toEqual([])
++		for (const animation of sliding) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(first?.classList.contains('active')).toBe(false)
+ 		expect(first?.hasAttribute('aria-current')).toBe(false)
+ 		expect(second?.classList.contains('active')).toBe(true)
+@@ -337,7 +334,11 @@ describe('Carousel', () => {
+ 		expect(carousel.index).toBe(0)
+ 	})
+ 
+-	it('dispatches slid after the incoming transform transition finishes, with no animation left on the incoming item', async () => {
++	// The slide moves the outgoing item out and the incoming item in, and starts both motions before
++	// its first wait, so they are read as the call returns. The completed event reads how many of them
++	// have not finished and how many run on either item, so a motion the event overtakes or the slide
++	// cuts short reads as unfinished.
++	it('dispatches slid after every motion the slide starts on the outgoing and the incoming items finishes', async () => {
+ 		scene.load(carouselCascade)
+ 		const root = scene.mount(`
+ 			<div id="gallery" class="carousel slide">
+@@ -345,28 +346,78 @@ describe('Carousel', () => {
+ 				<div class="carousel-item">Two</div>
+ 			</div>`)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
+-		const two = requireValue(root.querySelectorAll<HTMLElement>('.carousel-item')[1], 'No item')
+-		const order = createRecorder<readonly [string]>()
+-		const remaining = createRecorder<readonly [number]>()
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No outgoing item')
++		const incoming = requireValue(two, 'No incoming item')
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, number, number]>()
+ 		const carousel = new Carousel(host, {
+ 			on: {
+-				slid: (event) => {
+-					order.handler(event.type)
+-					remaining.handler(two.getAnimations().length)
+-				},
++				slid: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						outgoing.getAnimations().length + incoming.getAnimations().length,
++					),
+ 			},
+ 		})
+ 		onTestFinished(() => carousel.destroy())
+ 		const moving = carousel.next()
+-		const [transition] = two.getAnimations()
+-		expect(transition).toBeInstanceOf(CSSTransition)
+-		void transition?.finished.then(() => order.handler('finished'))
++		for (const item of [outgoing, incoming]) {
++			const animations = item.getAnimations()
++			expect(animations).not.toEqual([])
++			for (const animation of animations) {
++				motions.handler(animation)
++				expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++			}
++		}
+ 		expect(await moving).toBe(true)
+-		expect(order.calls).toEqual([['finished'], ['slid.vn.carousel']])
+-		expect(remaining.calls).toEqual([[0]])
++		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
+ 	})
+ 
+-	it('waits on the incoming opacity transition under the fade variant', async () => {
++	// The inline duration lengthens the incoming item's motion to twice the shipped duration read on
++	// the outgoing item, to set up the case's order; it copies no shipped rule.
++	it('dispatches slid after the incoming item motion when it outlasts the outgoing item motion', async () => {
++		scene.load(carouselCascade)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No outgoing item')
++		const incoming = requireValue(two, 'No incoming item')
++		const shipped = readDuration(outgoing)
++		expect(shipped).toBeGreaterThan(0)
++		incoming.style.setProperty('transition-duration', `${2 * shipped}ms`)
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, number, number]>()
++		const carousel = new Carousel(host, {
++			on: {
++				slid: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						outgoing.getAnimations().length + incoming.getAnimations().length,
++					),
++			},
++		})
++		onTestFinished(() => carousel.destroy())
++		const moving = carousel.next()
++		for (const item of [outgoing, incoming]) {
++			const animations = item.getAnimations()
++			expect(animations).not.toEqual([])
++			for (const animation of animations) motions.handler(animation)
++		}
++		expect(await moving).toBe(true)
++		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
++	})
++
++	// Under the fade variant the incoming item fades in, and the outgoing item keeps its opacity until
++	// its delayed change drops it, so the outgoing motion is read by its end time rather than by its
++	// duration.
++	it('dispatches slid after every motion the slide starts under the fade variant finishes', async () => {
+ 		scene.load(carouselCascade)
+ 		const root = scene.mount(`
+ 			<div id="gallery" class="carousel slide carousel-fade">
+@@ -374,20 +425,37 @@ describe('Carousel', () => {
+ 				<div class="carousel-item">Two</div>
+ 			</div>`)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
+-		const two = requireValue(root.querySelectorAll<HTMLElement>('.carousel-item')[1], 'No item')
+-		const order = createRecorder<readonly [string]>()
+-		const carousel = new Carousel(host, { on: { slid: (event) => order.handler(event.type) } })
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No outgoing item')
++		const incoming = requireValue(two, 'No incoming item')
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, number, number]>()
++		const carousel = new Carousel(host, {
++			on: {
++				slid: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						outgoing.getAnimations().length + incoming.getAnimations().length,
++					),
++			},
++		})
+ 		onTestFinished(() => carousel.destroy())
+ 		const moving = carousel.next()
+-		const animations = two.getAnimations()
+-		expect(
+-			animations.map((animation) =>
+-				animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-			),
+-		).toEqual(['opacity'])
+-		void animations[0]?.finished.then(() => order.handler('finished'))
++		const fading = incoming.getAnimations()
++		expect(fading).not.toEqual([])
++		for (const animation of fading) {
++			motions.handler(animation)
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		const leaving = outgoing.getAnimations()
++		expect(leaving).not.toEqual([])
++		for (const animation of leaving) {
++			motions.handler(animation)
++			expect(Number(animation.effect?.getComputedTiming().endTime)).toBeGreaterThan(0)
++		}
+ 		expect(await moving).toBe(true)
+-		expect(order.calls).toEqual([['finished'], ['slid.vn.carousel']])
++		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
+ 	})
+ 
+ 	it('completes with no animation created under staged reduced motion', async () => {
+@@ -407,7 +475,6 @@ describe('Carousel', () => {
+ 		})
+ 		onTestFinished(() => carousel.destroy())
+ 		const moving = carousel.next()
+-		expect(getComputedStyle(two).transitionDuration).toBe('0s')
+ 		expect(two.getAnimations()).toEqual([])
+ 		expect(await moving).toBe(true)
+ 		expect(slid.calls).toEqual([[0]])
+@@ -873,6 +940,7 @@ describe('Carousel', () => {
+ 			</div>
+ 			<button type="button">Outside</button>`)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const item = requireValue(host.querySelector<HTMLElement>('.carousel-item'), 'No item')
+ 		const slid = createRecorder<readonly [string]>()
+ 		await hoverAccessible('Outside')
+ 		const carousel = new Carousel(host, {
+@@ -885,9 +953,12 @@ describe('Carousel', () => {
+ 		await hoverAccessible('Inside')
+ 		expect(await moving).toBe(true)
+ 		const count = slid.count
+-		// A timer armed after the slide would start a 0.6s slide within 30ms, so a quiet 0.9s shows
+-		// that none was armed.
+-		await waitForDelay(900)
++		// A timer armed after the slide would start a slide within the 30ms interval, and that slide
++		// would finish within the item's shipped duration, so a quiet window of the interval and twice
++		// that duration shows that none was armed.
++		const duration = readDuration(item)
++		expect(duration).toBeGreaterThan(0)
++		await waitForDelay(30 + 2 * duration)
+ 		expect(slid.count).toBe(count)
+ 		await hoverAccessible('Outside')
+ 		await waitForCondition('the carousel cycles after the pointer leaves', () => slid.count > count)
+diff --git a/tests/src/browser/Collapse.test.ts b/tests/src/browser/Collapse.test.ts
+index 8decf5d..9114931 100644
+--- a/tests/src/browser/Collapse.test.ts
++++ b/tests/src/browser/Collapse.test.ts
+@@ -13,12 +13,17 @@ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForCondition, waitForEvent } from '@orkestrel/test'
+ import { clickAccessible, releaseMedia, stageMedia } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import collapseCascade from '../../../src/styles/components/_collapse.scss?inline'
+-import { recordListeners, scene } from '../../setupBrowser.js'
++import { readDuration, recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+ describe('Collapse', () => {
++	// The motion proofs run under the shipped collapse key. A timing the key reads from a motion token
++	// resolves only where the tokens partial has declared it, so the tokens load beside the key.
++	const cascade = `${tokensCascade}\n${collapseCascade}`
++
+ 	it('publishes frozen default tables that name the cascade tokens, Bootstrap attributes, and wire events', () => {
+ 		expect(COLLAPSE_CLASSES).toStrictEqual({
+ 			host: 'collapse',
+@@ -48,15 +53,14 @@ describe('Collapse', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped collapse declarations the motion proofs run under', () => {
+-		const sheet = requireValue(scene.load(collapseCascade).sheet, 'The cascade sheet did not load')
++	it('reads the shipped collapse declarations the motion proofs run under: the transition token declares a positive duration on either axis', () => {
++		const sheet = requireValue(scene.load(cascade).sheet, 'The cascade sheet did not load')
+ 		const panel = scene.mount('<div class="collapsing collapse-horizontal"></div>')
+ 		const probe = requireValue(panel.querySelector('div'), 'No probe')
+ 		expect(sheet.cssRules.length).toBeGreaterThan(0)
+-		expect(getComputedStyle(probe).transitionProperty).toBe('width')
+-		expect(getComputedStyle(probe).transitionDuration).toBe('0.35s')
++		expect(readDuration(probe)).toBeGreaterThan(0)
+ 		probe.classList.remove('collapse-horizontal')
+-		expect(getComputedStyle(probe).transitionProperty).toBe('height')
++		expect(readDuration(probe)).toBeGreaterThan(0)
+ 		expect(getComputedStyle(probe).height).toBe('0px')
+ 		expect(getComputedStyle(probe).overflow).toBe('hidden')
+ 		probe.className = 'collapse'
+@@ -64,7 +68,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('shows and hides through the transition token and an inline pixel size, keeping every trigger in step', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+ 			<a href="#details" role="button" data-bs-toggle="collapse">Details link</a>
+@@ -80,13 +84,11 @@ describe('Collapse', () => {
+ 		const showing = collapse.show()
+ 		expect(Array.from(panel.classList)).toEqual(['collapsing'])
+ 		expect(panel.style.height).toBe('40px')
+-		expect(
+-			panel
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-				),
+-		).toEqual(['height'])
++		const opening = panel.getAnimations()
++		expect(opening).not.toEqual([])
++		for (const animation of opening) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(button?.classList.contains('collapsed')).toBe(false)
+ 		expect(button?.getAttribute('aria-expanded')).toBe('true')
+ 		expect(link?.getAttribute('aria-expanded')).toBe('true')
+@@ -103,13 +105,11 @@ describe('Collapse', () => {
+ 		expect(later.classList.contains('collapsed')).toBe(true)
+ 		expect(later.getAttribute('aria-expanded')).toBe('false')
+ 		expect(Array.from(panel.classList)).toEqual(['collapsing'])
+-		expect(
+-			panel
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-				),
+-		).toEqual(['height'])
++		const closing = panel.getAnimations()
++		expect(closing).not.toEqual([])
++		for (const animation of closing) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(button?.classList.contains('collapsed')).toBe(true)
+ 		expect(button?.getAttribute('aria-expanded')).toBe('false')
+ 		expect(link?.classList.contains('collapsed')).toBe(true)
+@@ -125,7 +125,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('sizes the width of a panel carrying the horizontal token, and its height never', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<div id="side" class="collapse collapse-horizontal"><div style="width: 30px; height: 10px"></div></div>`)
+ 		const panel = requireValue(root.querySelector<HTMLElement>('#side'), 'No panel')
+@@ -135,24 +135,20 @@ describe('Collapse', () => {
+ 		expect(Array.from(panel.classList)).toEqual(['collapse-horizontal', 'collapsing'])
+ 		expect(panel.style.width).toBe('30px')
+ 		expect(panel.style.height).toBe('')
+-		expect(
+-			panel
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-				),
+-		).toEqual(['width'])
++		const opening = panel.getAnimations()
++		expect(opening).not.toEqual([])
++		for (const animation of opening) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(await showing).toBe(true)
+ 		expect(Array.from(panel.classList)).toEqual(['collapse-horizontal', 'collapse', 'show'])
+ 		expect(panel.style.width).toBe('')
+ 		const hiding = collapse.hide()
+-		expect(
+-			panel
+-				.getAnimations()
+-				.map((animation) =>
+-					animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-				),
+-		).toEqual(['width'])
++		const closing = panel.getAnimations()
++		expect(closing).not.toEqual([])
++		for (const animation of closing) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(await hiding).toBe(true)
+ 		expect(panel.style.width).toBe('')
+ 		expect(panel.style.height).toBe('')
+@@ -182,7 +178,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('hides the open first-level sibling in its parent through the sibling engine and its own events, and owns the engine it constructs', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<div id="accordion">
+ 				<div id="first" class="collapse show" data-bs-parent="#accordion">
+@@ -280,7 +276,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('leaves tokens, size, and triggers untouched when a listener prevents show or hide, and resolves false', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+ 			<div id="details" class="collapse"><div style="height: 40px"></div></div>`)
+@@ -328,7 +324,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('resolves false for a call while the panel or an open sibling transitions, and completes the transition in flight once', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<div id="group">
+ 				<div id="first" class="collapse show" data-bs-parent="#group"><div style="height: 20px"></div></div>
+@@ -368,7 +364,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('keeps focus on the trigger a trusted click activated, before and after the panel shows', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+ 			<div id="details" class="collapse" tabindex="-1"><div style="height: 40px"></div></div>`)
+@@ -397,48 +393,63 @@ describe('Collapse', () => {
+ 		expect(trigger.getAttribute('aria-expanded')).toBe('true')
+ 	})
+ 
+-	it('dispatches shown after the height transition finishes, with no animation left on the panel', async () => {
+-		scene.load(collapseCascade)
++	// The watcher reads the panel's motions after each class or size write the change makes, so it
++	// reads every motion whichever write starts it. Each completed event reads whether the change
++	// started a motion, how many of the motions it started have not finished, and how many run on the
++	// panel, so a motion the event overtakes or the change cuts short reads as unfinished.
++	it('dispatches shown and hidden after every motion its change starts on the panel finishes', async () => {
++		scene.load(cascade)
+ 		const root = scene.mount(
+ 			`<div id="details" class="collapse"><div style="height: 40px"></div></div>`,
+ 		)
+ 		const panel = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
+-		const order = createRecorder<readonly [string]>()
+-		const remaining = createRecorder<readonly [number]>()
++		const motions = createRecorder<readonly [Animation]>()
++		const watcher = new MutationObserver(() => {
++			for (const animation of panel.getAnimations()) motions.handler(animation)
++		})
++		onTestFinished(() => watcher.disconnect())
++		watcher.observe(panel, { attributeFilter: ['class', 'style'] })
++		const readings = createRecorder<readonly [string, boolean, number, number]>()
+ 		const collapse = new Collapse(panel, {
+ 			on: {
+-				shown: (event) => {
+-					order.handler(event.type)
+-					remaining.handler(panel.getAnimations().length)
+-				},
+-				hidden: (event) => {
+-					order.handler(event.type)
+-					remaining.handler(panel.getAnimations().length)
+-				},
++				shown: (event) =>
++					readings.handler(
++						event.type,
++						motions.count > 0,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						panel.getAnimations().length,
++					),
++				hidden: (event) =>
++					readings.handler(
++						event.type,
++						motions.count > 0,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						panel.getAnimations().length,
++					),
+ 			},
+ 		})
+ 		onTestFinished(() => collapse.destroy())
+ 		const showing = collapse.show()
+-		const [transition] = panel.getAnimations()
+-		expect(transition).toBeInstanceOf(CSSTransition)
+-		expect(getComputedStyle(panel).transitionDuration).toBe('0.35s')
+-		void transition?.finished.then(() => order.handler('finished'))
++		expect(readDuration(panel)).toBeGreaterThan(0)
+ 		expect(await showing).toBe(true)
++		for (const [animation] of motions.calls) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		motions.clear()
+ 		const hiding = collapse.hide()
+-		const [closing] = panel.getAnimations()
+-		void closing?.finished.then(() => order.handler('finished'))
++		expect(readDuration(panel)).toBeGreaterThan(0)
+ 		expect(await hiding).toBe(true)
+-		expect(order.calls).toEqual([
+-			['finished'],
+-			['shown.vn.collapse'],
+-			['finished'],
+-			['hidden.vn.collapse'],
++		for (const [animation] of motions.calls) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		expect(readings.calls).toEqual([
++			['shown.vn.collapse', true, 0, 0],
++			['hidden.vn.collapse', true, 0, 0],
+ 		])
+-		expect(remaining.calls).toEqual([[0], [0]])
+ 	})
+ 
+ 	it('dispatches shown with no animation created under staged reduced motion', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		await stageMedia({ motion: false })
+ 		onTestFinished(() => releaseMedia())
+ 		const root = scene.mount(
+@@ -452,8 +463,6 @@ describe('Collapse', () => {
+ 		onTestFinished(() => collapse.destroy())
+ 		const showing = collapse.show()
+ 		expect(panel.classList.contains('collapsing')).toBe(true)
+-		expect(getComputedStyle(panel).transitionProperty).toBe('none')
+-		expect(getComputedStyle(panel).transitionDuration).toBe('0s')
+ 		expect(panel.getAnimations()).toEqual([])
+ 		expect(await showing).toBe(true)
+ 		expect(shown.calls).toEqual([[0]])
+@@ -461,7 +470,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+ 			<div id="details" class="collapse"><div style="height: 40px"></div></div>`)
+@@ -1111,7 +1120,7 @@ describe('Collapse', () => {
+ 				}
+ 			},
+ 		)
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount('<div></div>')
+ 		const panel = document.createElement(name)
+ 		panel.className = 'collapse show'
+@@ -1146,7 +1155,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('returns a hide when the shown token returns during its transition, leaving the panel shown at its full height with no hidden event', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(
+ 			'<div id="details" class="collapse show"><div style="height: 40px"></div></div>',
+ 		)
+@@ -1259,7 +1268,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('completes a show whose listener adds the shown token, expanding its trigger, clearing the size, and dispatching shown', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" class="collapsed" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+ 			<div id="details" class="collapse"><div style="height: 40px"></div></div>`)
+@@ -1286,7 +1295,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('completes a show whose open sibling hide listener adds the shown token to its panel', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<div id="accordion">
+ 				<div id="first" class="collapse show" data-bs-parent="#accordion"><div style="height: 20px"></div></div>
+@@ -1319,7 +1328,7 @@ describe('Collapse', () => {
+ 	})
+ 
+ 	it('completes a hide whose listener removes the shown token, collapsing its trigger and dispatching hidden', async () => {
+-		scene.load(collapseCascade)
++		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+ 			<div id="details" class="collapse show"><div style="height: 40px"></div></div>`)
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index 0bb38d5..d14e38c 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import navCascade from '../../../src/styles/components/_nav.scss?inline'
+-import { recordListeners, scene } from '../../setupBrowser.js'
++import { readDuration, recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -42,34 +42,31 @@ describe('Tab', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped nav and fade declarations the pane proofs run under: a control color transition and a pane fade at the feedback motion duration', () => {
++	// The tab waits for motion only on a pane that carries the fade token, so the pane proofs rest on
++	// a fading pane declaring a positive duration and a pane without the token declaring none.
++	it('reads the shipped nav and fade declarations the pane proofs run under: a pane declares a transition only through the fade token', () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		const sheet = requireValue(scene.load(navCascade).sheet, 'The cascade sheet did not load')
+ 		const root = scene.mount(`
+-			<ul class="nav"><li class="nav-item"><button type="button" class="nav-link" id="link">Link</button></li></ul>
+ 			<div class="tab-content">
+ 				<div class="tab-pane fade" id="hidden"></div>
+ 				<div class="tab-pane fade active" id="active"></div>
+ 				<div class="tab-pane fade active show" id="shown"></div>
+ 				<div class="tab-pane active" id="plain"></div>
+ 			</div>`)
+-		const link = requireValue(root.querySelector<HTMLElement>('#link'), 'No control')
+ 		const hidden = requireValue(root.querySelector<HTMLElement>('#hidden'), 'No hidden pane')
+ 		const active = requireValue(root.querySelector<HTMLElement>('#active'), 'No active pane')
+ 		const shown = requireValue(root.querySelector<HTMLElement>('#shown'), 'No shown pane')
+ 		const plain = requireValue(root.querySelector<HTMLElement>('#plain'), 'No plain pane')
+ 		expect(sheet.cssRules.length).toBeGreaterThan(0)
+-		expect(getComputedStyle(link).transitionProperty).toBe('color, background-color, border-color')
+-		expect(getComputedStyle(link).transitionDuration).toBe('0.15s, 0.15s, 0.15s')
+ 		expect(getComputedStyle(hidden).display).toBe('none')
+ 		expect(getComputedStyle(active).display).toBe('block')
+ 		expect(getComputedStyle(active).opacity).toBe('0')
+-		expect(getComputedStyle(active).transitionProperty).toBe('opacity')
+-		expect(getComputedStyle(active).transitionDuration).toBe('0.15s')
++		expect(readDuration(active)).toBeGreaterThan(0)
+ 		expect(getComputedStyle(shown).opacity).toBe('1')
+ 		expect(getComputedStyle(plain).opacity).toBe('1')
+-		expect(getComputedStyle(plain).transitionDuration).toBe('0s')
++		expect(readDuration(plain)).toBe(0)
+ 	})
+ 
+ 	it('claims the host and resolves its pane by the target attribute before its href', () => {
+@@ -402,7 +399,12 @@ describe('Tab', () => {
+ 		])
+ 	})
+ 
+-	it('waits for the pane fade to settle before dispatching the completed events, leaving no animation on the pane', async () => {
++	// The swap moves the panes: the outgoing pane leaves the layout as its tokens leave, and the
++	// incoming pane fades in. The watcher reads both panes' motions after each class write the swap
++	// makes, so it reads every motion whichever write starts it. Each completed event reads whether
++	// the swap started a motion, how many of the motions it started have not finished, and how many
++	// run on either pane, so a motion the event overtakes or the swap cuts short reads as unfinished.
++	it('dispatches hidden and shown after every motion the swap starts on the panes finishes', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(navCascade)
+@@ -416,32 +418,54 @@ describe('Tab', () => {
+ 				<div class="tab-pane fade" id="profile"></div>
+ 			</div>`)
+ 		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const home = requireValue(root.querySelector<HTMLElement>('#home'), 'No home pane')
+ 		const pane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile pane')
+-		const order = createRecorder<readonly [string]>()
+-		const remaining = createRecorder<readonly [number]>()
++		const motions = createRecorder<readonly [Animation]>()
++		const watcher = new MutationObserver(() => {
++			for (const animation of [...home.getAnimations(), ...pane.getAnimations()]) {
++				motions.handler(animation)
++			}
++		})
++		onTestFinished(() => watcher.disconnect())
++		for (const element of [home, pane]) watcher.observe(element, { attributeFilter: ['class'] })
++		const readings = createRecorder<readonly [string, boolean, number, number]>()
+ 		const tab = new Tab(profile, {
+ 			on: {
+-				shown: (event) => {
+-					order.handler(event.type)
+-					remaining.handler(pane.getAnimations().length)
+-				},
++				shown: (event) =>
++					readings.handler(
++						event.type,
++						motions.count > 0,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						home.getAnimations().length + pane.getAnimations().length,
++					),
+ 			},
+ 		})
+ 		onTestFinished(() => tab.destroy())
+-		root.addEventListener('hidden.vn.tab', (event) => order.handler(event.type), { once: true })
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		root.addEventListener(
++			'hidden.vn.tab',
++			(event) =>
++				readings.handler(
++					event.type,
++					motions.count > 0,
++					motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++					home.getAnimations().length + pane.getAnimations().length,
++				),
++			{ signal: controller.signal },
++		)
+ 		const showing = tab.show()
+ 		expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade', 'active', 'show'])
+-		expect(order.calls).toEqual([])
+-		const animations = pane.getAnimations()
+-		expect(
+-			animations.map((animation) =>
+-				animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
+-			),
+-		).toEqual(['opacity'])
+-		void animations[0]?.finished.then(() => order.handler('finished'))
++		expect(readings.calls).toEqual([])
++		expect(readDuration(pane)).toBeGreaterThan(0)
+ 		expect(await showing).toBe(true)
+-		expect(order.calls).toEqual([['finished'], ['hidden.vn.tab'], ['shown.vn.tab']])
+-		expect(remaining.calls).toEqual([[0]])
++		for (const [animation] of motions.calls) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		expect(readings.calls).toEqual([
++			['hidden.vn.tab', true, 0, 0],
++			['shown.vn.tab', true, 0, 0],
++		])
+ 		expect(getComputedStyle(pane).opacity).toBe('1')
+ 	})
+ 
+@@ -449,9 +473,6 @@ describe('Tab', () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(navCascade)
+-		// The root carries the factor, because the tokens partial resolves the motion tokens there and
+-		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
+-		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+ 				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
+@@ -469,19 +490,45 @@ describe('Tab', () => {
+ 			</div>`)
+ 		const second = requireValue(root.querySelector<HTMLElement>('#second'), 'No second pane')
+ 		const fourth = requireValue(root.querySelector<HTMLElement>('#fourth'), 'No fourth pane')
++		// The slow pane's duration is read at the release's factor and again at the large one, and the
++		// ratio of the two readings is the factor.
++		const released = readDuration(fourth)
++		expect(released).toBeGreaterThan(0)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const order = createRecorder<readonly [string, string]>()
++		// Each completed event reads how many of the motions its swap started on its pane have not
++		// finished.
++		const motions = createRecorder<readonly [Animation]>()
++		const completions = createRecorder<readonly [string, number]>()
+ 		const instant = new Tab(requireValue(root.querySelector<HTMLElement>('#still'), 'No control'), {
+-			on: { shown: (event) => order.handler('still', event.type) },
++			on: {
++				shown: (event) => {
++					order.handler('still', event.type)
++					completions.handler(
++						'still',
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++					)
++				},
++			},
+ 		})
+ 		const faded = new Tab(requireValue(root.querySelector<HTMLElement>('#slow'), 'No control'), {
+-			on: { shown: (event) => order.handler('slow', event.type) },
++			on: {
++				shown: (event) => {
++					order.handler('slow', event.type)
++					completions.handler(
++						'slow',
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++					)
++				},
++			},
+ 		})
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const showing = instant.show()
+ 		void showing.then(() => order.handler('still', 'resolved'))
+ 		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+-		expect(getComputedStyle(second).transitionDuration).toBe('0s')
+ 		expect(second.getAnimations()).toEqual([])
+ 		expect(await showing).toBe(true)
+ 		await frame
+@@ -493,18 +540,20 @@ describe('Tab', () => {
+ 		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.show()
+-		expect(getComputedStyle(fourth).transitionDuration).toBe('0.6s')
+-		const transition = requireValue(fourth.getAnimations()[0], 'No fade')
+-		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		const scaled = readDuration(fourth)
++		expect(scaled / released).toBeCloseTo(4)
++		const fade = fourth.getAnimations()
++		for (const animation of fade) motions.handler(animation)
++		expect(fade).not.toEqual([])
+ 		await waitForFrame()
+ 		expect(order.calls).toEqual([
+ 			['still', 'shown.vn.tab'],
+ 			['still', 'resolved'],
+ 			['still', 'frame'],
+ 		])
+-		expect(transition.playState).toBe('running')
++		for (const animation of fade) expect(animation.playState).toBe('running')
+ 		// The event arrives after the fade finishes and before one further frame passes.
+-		const settled = transition.finished.then(async () => {
++		const settled = Promise.all(fade.map((animation) => animation.finished)).then(async () => {
+ 			order.handler('slow', 'finished')
+ 			await waitForFrame()
+ 			order.handler('slow', 'frame')
+@@ -519,6 +568,10 @@ describe('Tab', () => {
+ 			['slow', 'shown.vn.tab'],
+ 			['slow', 'frame'],
+ 		])
++		expect(completions.calls).toEqual([
++			['still', 0],
++			['slow', 0],
++		])
+ 	})
+ 
+ 	it('marks the toggle, the menu, and the wrapper of a dropdown holding the active control, and clears them when a sibling activates', async () => {
+@@ -1373,7 +1426,7 @@ describe('Tab', () => {
+ 		const tab = new Tab(profile)
+ 		onTestFinished(() => tab.destroy())
+ 		const showing = tab.show()
+-		expect(pane.getAnimations()).toHaveLength(1)
++		expect(pane.getAnimations()).not.toEqual([])
+ 		pane.classList.remove('show')
+ 		expect(await showing).toBe(false)
+ 		expect(events.calls).toEqual([['hide.vn.tab'], ['show.vn.tab']])
+@@ -1574,7 +1627,7 @@ describe('Tab', () => {
+ 		const tab = new Tab(profile)
+ 		onTestFinished(() => tab.destroy())
+ 		const showing = tab.show()
+-		expect(pane.getAnimations()).toHaveLength(1)
++		expect(pane.getAnimations()).not.toEqual([])
+ 		profile.classList.remove('active')
+ 		expect(await showing).toBe(false)
+ 		expect(events.calls).toEqual([['hide.vn.tab'], ['show.vn.tab']])
+@@ -1621,7 +1674,7 @@ describe('Tab', () => {
+ 		onTestFinished(() => back.destroy())
+ 		expect(await tab.show()).toBe(true)
+ 		const showing = back.show()
+-		expect(homePane.getAnimations()).toHaveLength(1)
++		expect(homePane.getAnimations()).not.toEqual([])
+ 		home.classList.remove('active')
+ 		expect(await showing).toBe(false)
+ 		expect(settings.classList.contains('active')).toBe(true)
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index 1255870..ae67d9d 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -16,7 +16,7 @@ import { userEvent } from 'vitest/browser'
+ import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+ import toastCascade from '../../../src/styles/components/_toast.scss?inline'
+-import { recordListeners, scene } from '../../setupBrowser.js'
++import { readDuration, recordListeners, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -54,7 +54,9 @@ describe('Toast', () => {
+ 		}
+ 	})
+ 
+-	it('reads the shipped toast and fade declarations: a toast runs no transition of its own and fades through the fade token at the feedback motion duration', () => {
++	// The toast waits for motion only when it writes the fade token, so the proofs rest on a toast
++	// without that token declaring no transition, and on one with it declaring a positive duration.
++	it('reads the shipped toast and fade declarations: a toast declares a transition only through the fade token', () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		const sheet = requireValue(scene.load(toastCascade).sheet, 'The cascade sheet did not load')
+@@ -62,21 +64,26 @@ describe('Toast', () => {
+ 		const probe = requireValue(root.querySelector<HTMLElement>('.toast'), 'No probe')
+ 		expect(sheet.cssRules.length).toBeGreaterThan(0)
+ 		expect(getComputedStyle(probe).display).toBe('none')
+-		expect(getComputedStyle(probe).transitionDuration).toBe('0s')
++		expect(readDuration(probe)).toBe(0)
+ 		probe.classList.add('show')
+ 		expect(getComputedStyle(probe).display).toBe('block')
+ 		expect(getComputedStyle(probe).opacity).toBe('1')
+ 		probe.classList.add('showing')
+ 		expect(getComputedStyle(probe).opacity).toBe('0')
+-		expect(getComputedStyle(probe).transitionDuration).toBe('0s')
++		expect(readDuration(probe)).toBe(0)
+ 		probe.classList.add('fade')
+-		expect(getComputedStyle(probe).transitionProperty).toBe('opacity')
+-		expect(getComputedStyle(probe).transitionDuration).toBe('0.15s')
++		expect(readDuration(probe)).toBeGreaterThan(0)
+ 		probe.classList.remove('show', 'showing')
+ 		expect(getComputedStyle(probe).display).toBe('none')
+ 	})
+ 
+-	it('shows through the fade and showing tokens and hides back under the shipped cascade, awaiting the fade out', async () => {
++	// A show of a hidden toast takes it from no display to displayed while the showing token holds it
++	// transparent, so its motion starts as the showing token leaves; a hide's motion starts as the
++	// showing token arrives. The watcher reads the toast's motions after each class write the change
++	// makes, so it reads each of them whichever write starts it. Each completed event reads whether
++	// the change started a motion, how many of the motions it started have not finished, and how many
++	// run on the toast, so a motion the event overtakes or the change cuts short reads as unfinished.
++	it('shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+@@ -84,19 +91,30 @@ describe('Toast', () => {
+ 			'<div class="toast" id="note"><div class="toast-body">Saved</div></div>',
+ 		)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+-		const order = createRecorder<readonly [string]>()
+-		const running = createRecorder<readonly [number]>()
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, boolean, number, number]>()
++		const watcher = new MutationObserver(() => {
++			for (const animation of host.getAnimations()) motions.handler(animation)
++		})
++		onTestFinished(() => watcher.disconnect())
++		watcher.observe(host, { attributeFilter: ['class'] })
+ 		const toast = new Toast(host, {
+ 			autohide: false,
+ 			on: {
+-				shown: (event) => {
+-					order.handler(event.type)
+-					running.handler(host.getAnimations().length)
+-				},
+-				hidden: (event) => {
+-					order.handler(event.type)
+-					running.handler(host.getAnimations().length)
+-				},
++				shown: (event) =>
++					readings.handler(
++						event.type,
++						motions.count > 0,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						host.getAnimations().length,
++					),
++				hidden: (event) =>
++					readings.handler(
++						event.type,
++						motions.count > 0,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						host.getAnimations().length,
++					),
+ 			},
+ 		})
+ 		onTestFinished(() => toast.destroy())
+@@ -105,54 +123,77 @@ describe('Toast', () => {
+ 		const showing = toast.show()
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
+ 		expect(toast.shown).toBe(true)
+-		// The toast goes from no display to displayed at no opacity, so no transition starts.
+-		expect(host.getAnimations()).toEqual([])
++		expect(readDuration(host)).toBeGreaterThan(0)
+ 		expect(await showing).toBe(true)
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
+-		await waitForAnimations(host)
+-		expect(getComputedStyle(host).opacity).toBe('1')
++		for (const [animation] of motions.calls) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
++		motions.clear()
+ 		const hiding = toast.hide()
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
+-		const [fading] = host.getAnimations()
+-		expect(fading).toBeInstanceOf(CSSTransition)
+-		expect(fading instanceof CSSTransition ? fading.transitionProperty : '').toBe('opacity')
+-		void fading?.finished.then(() => order.handler('finished'))
+ 		expect(await hiding).toBe(true)
++		for (const [animation] of motions.calls) {
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
+ 		expect(getComputedStyle(host).display).toBe('none')
+ 		expect(toast.shown).toBe(false)
+-		// The shown event's reading starts the fade in, which runs after the showing token has left.
+-		expect(order.calls).toEqual([['shown.vn.toast'], ['finished'], ['hidden.vn.toast']])
+-		expect(running.calls).toEqual([[1], [0]])
++		expect(readings.calls).toEqual([
++			['shown.vn.toast', true, 0, 0],
++			['hidden.vn.toast', true, 0, 0],
++		])
+ 	})
+ 
+ 	it('dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+-		// The root carries the factor, because the tokens partial resolves the motion tokens there and
+-		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
+-		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const root = scene.mount(`
+ 			<div class="toast fade show" id="still">Saved</div>
+ 			<div class="toast fade show" id="slow">Saved</div>`)
+ 		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still toast')
+ 		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow toast')
++		// The slow toast's duration is read at the release's factor and again at the large one, and
++		// the ratio of the two readings is the factor.
++		const released = readDuration(slow)
++		expect(released).toBeGreaterThan(0)
++		// The root carries the factor, because the tokens partial resolves the motion tokens there and
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const order = createRecorder<readonly [string, string]>()
++		// Each completed event reads how many of the motions its hide started have not finished.
++		const motions = createRecorder<readonly [Animation]>()
++		const completions = createRecorder<readonly [string, number]>()
+ 		const instant = new Toast(still, {
+ 			autohide: false,
+-			on: { hidden: (event) => order.handler('still', event.type) },
++			on: {
++				hidden: (event) => {
++					order.handler('still', event.type)
++					completions.handler(
++						'still',
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++					)
++				},
++			},
+ 		})
+ 		const faded = new Toast(slow, {
+ 			autohide: false,
+-			on: { hidden: (event) => order.handler('slow', event.type) },
++			on: {
++				hidden: (event) => {
++					order.handler('slow', event.type)
++					completions.handler(
++						'slow',
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++					)
++				},
++			},
+ 		})
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const hiding = instant.hide()
+ 		void hiding.then(() => order.handler('still', 'resolved'))
+ 		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+-		expect(getComputedStyle(still).transitionDuration).toBe('0s')
+ 		expect(still.getAnimations()).toEqual([])
+ 		expect(await hiding).toBe(true)
+ 		await frame
+@@ -164,18 +205,20 @@ describe('Toast', () => {
+ 		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.hide()
+-		expect(getComputedStyle(slow).transitionDuration).toBe('0.6s')
+-		const transition = requireValue(slow.getAnimations()[0], 'No fade')
+-		expect(transition.effect?.getComputedTiming().duration).toBe(600)
++		const scaled = readDuration(slow)
++		expect(scaled / released).toBeCloseTo(4)
++		const fade = slow.getAnimations()
++		for (const animation of fade) motions.handler(animation)
++		expect(fade).not.toEqual([])
+ 		await waitForFrame()
+ 		expect(order.calls).toEqual([
+ 			['still', 'hidden.vn.toast'],
+ 			['still', 'resolved'],
+ 			['still', 'frame'],
+ 		])
+-		expect(transition.playState).toBe('running')
++		for (const animation of fade) expect(animation.playState).toBe('running')
+ 		// The event arrives after the fade finishes and before one further frame passes.
+-		const settled = transition.finished.then(async () => {
++		const settled = Promise.all(fade.map((animation) => animation.finished)).then(async () => {
+ 			order.handler('slow', 'finished')
+ 			await waitForFrame()
+ 			order.handler('slow', 'frame')
+@@ -190,31 +233,88 @@ describe('Toast', () => {
+ 			['slow', 'hidden.vn.toast'],
+ 			['slow', 'frame'],
+ 		])
++		expect(completions.calls).toEqual([
++			['still', 0],
++			['slow', 0],
++		])
+ 	})
+ 
+-	it('dispatches shown after the fade out that a show of a shown toast runs through the showing token finishes', async () => {
++	// The watcher reads the toast's motions after each class write, naming each by whether the showing
++	// token is on: the fade out it starts, and the fade in its removal starts.
++	it('dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+ 		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+-		const order = createRecorder<readonly [string]>()
++		const motions = createRecorder<readonly [string, Animation]>()
++		const watcher = new MutationObserver(() => {
++			const phase = host.classList.contains('showing') ? 'out' : 'in'
++			for (const animation of host.getAnimations()) motions.handler(phase, animation)
++		})
++		onTestFinished(() => watcher.disconnect())
++		watcher.observe(host, { attributeFilter: ['class'] })
++		const readings = createRecorder<readonly [string, boolean, boolean, number, number]>()
+ 		const toast = new Toast(host, {
+ 			autohide: false,
+-			on: { shown: (event) => order.handler(event.type) },
++			on: {
++				shown: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.some(([phase]) => phase === 'out'),
++						motions.calls.some(([phase]) => phase === 'in'),
++						motions.calls.filter(([, animation]) => animation.playState !== 'finished').length,
++						host.getAnimations().length,
++					),
++			},
+ 		})
+ 		onTestFinished(() => toast.destroy())
+ 		const showing = toast.show()
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
+-		const transition = requireValue(host.getAnimations()[0], 'No fade')
+-		expect(transition).toBeInstanceOf(CSSTransition)
+-		expect(transition instanceof CSSTransition ? transition.transitionProperty : '').toBe('opacity')
+-		void transition.finished.then(() => order.handler('finished'))
+ 		expect(await showing).toBe(true)
+-		expect(order.calls).toEqual([['finished'], ['shown.vn.toast']])
++		expect(readings.calls).toEqual([['shown.vn.toast', true, true, 0, 0]])
++		for (const [, animation] of motions.calls) {
++			expect(animation).toBeInstanceOf(CSSTransition)
++			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
++		}
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
+ 	})
+ 
++	// The hide starts while the show waits for its fade in, which begins as the showing token leaves,
++	// so the show's call is superseded and the hide's own motion is the one the toast ends on.
++	it('resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(toastCascade)
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const hides = createRecorder<readonly [Promise<boolean>]>()
++		const toast: ToastInterface = new Toast(host, {
++			autohide: false,
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++				hide: (event) => events.handler(event.type),
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const watcher = new MutationObserver(() => {
++			if (hides.count > 0 || host.classList.contains('showing')) return
++			if (!host.classList.contains('show')) return
++			hides.handler(toast.hide())
++		})
++		onTestFinished(() => watcher.disconnect())
++		watcher.observe(host, { attributeFilter: ['class'] })
++		expect(await toast.show()).toBe(false)
++		expect(hides.count).toBe(1)
++		expect(await hides.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([['show.vn.toast'], ['hide.vn.toast'], ['hidden.vn.toast']])
++		expect(toast.shown).toBe(false)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++	})
++
+ 	it('shows and hides at once with animated false, writing no fade token and awaiting nothing', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+@@ -266,7 +366,6 @@ describe('Toast', () => {
+ 		onTestFinished(() => toast.destroy())
+ 		const showing = toast.show()
+ 		expect(host.classList.contains('showing')).toBe(true)
+-		expect(getComputedStyle(host).transitionDuration).toBe('0s')
+ 		expect(host.getAnimations()).toEqual([])
+ 		expect(await showing).toBe(true)
+ 		expect(shown.calls).toEqual([[0]])
+@@ -670,7 +769,7 @@ describe('Toast', () => {
+ 		expect(targets).toEqual([host, host, host, host, host, host, lifetime.signal])
+ 		const showing = toast?.show()
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
+-		expect(host.getAnimations()).toHaveLength(1)
++		expect(host.getAnimations()).not.toEqual([])
+ 		toast?.destroy()
+ 		expect(await showing).toBe(false)
+ 		expect(hooks.calls).toEqual([['show.vn.toast']])
+@@ -1140,7 +1239,7 @@ describe('Toast', () => {
+ 		onTestFinished(() => toast.destroy())
+ 		onTestFinished(() => control.destroy())
+ 		expect(await toast.show()).toBe(true)
+-		// The fade in runs after the first show; the second show fades out from full opacity.
++		// The second show fades out from full opacity.
+ 		await waitForAnimations(host)
+ 		const again = toast.show()
+ 		const transition = requireValue(host.getAnimations()[0], 'No transition')

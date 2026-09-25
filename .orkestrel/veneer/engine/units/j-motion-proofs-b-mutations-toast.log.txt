@@ -1,0 +1,54 @@
+== toast-base: exit 1, restored True
+    Tests  4 failed | 41 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once
+    FAIL Toast > clears a pending delay when a show is accepted, even when that show stops before it completes
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ [ 'shown.vn.toast', true, …(3) ] ] to deeply equal [ [ 'shown.vn.toast', true, …(3) ] ]
+      AssertionError: expected true to be false // Object.is equality
+      Error: No transition
+== toast-fadein-skip: exit 1, restored True
+    Tests  4 failed | 41 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once
+    FAIL Toast > clears a pending delay when a show is accepted, even when that show stops before it completes
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ [ 'shown.vn.toast', true, …(3) ] ] to deeply equal [ [ 'shown.vn.toast', true, …(3) ] ]
+      AssertionError: expected true to be false // Object.is equality
+      Error: No transition
+== toast-fadein-door: exit 1, restored True
+    Tests  1 failed | 44 passed (45)
+    FAIL Toast > resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once
+      AssertionError: expected true to be false // Object.is equality
+== toast-show-skip: exit 1, restored True
+    Tests  9 failed | 36 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > dispatches shown with no animation created under staged reduced motion
+    FAIL Toast > resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once
+    FAIL Toast > abandons the transition in flight on destruction, resolving false and restoring the toast
+    FAIL Toast > writes, removes, tests, and reads only the replacing values when every group is replaced
+    FAIL Toast > resolves false for the call whose transition another call took over during the await, and dispatches shown once
+    FAIL Toast > stops a show when the transition token leaves during its await, dispatching no shown event
+    FAIL Toast > clears a pending delay when a show is accepted, even when that show stops before it completes
+      AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected false to be true // Object.is equality
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected [ 'note', 'is-faded', 'is-open' ] to deeply equal [ 'note', 'is-faded', 'is-open', …(1) ]
+      AssertionError: expected false to be true // Object.is equality
+      Error: No transition
+      Error: No transition
+== toast-hide-skip: exit 1, restored True
+    Tests  4 failed | 41 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+    FAIL Toast > resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once
+    FAIL Toast > completes a hide when the shown token leaves during its transition, dispatching hidden and leaving no showing token
+      AssertionError: expected [ 'toast', 'fade' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected [] to not deeply equal []
+      AssertionError: expected true to be false // Object.is equality
+      Error: No transition

@@ -1,0 +1,8 @@
+departures before 67 after 66
+only before: ['{"bootstrap": "trigger", "facet": "focus", "plugin": "offcanvas", "step": "offcanvas.reduced.point.backdrop", "subject": "document", "veneer": "body"}']
+only after: []
+focus departures after: []
+offcanvas bootstrap changed steps: []
+offcanvas veneer changed steps: [('offcanvas.reduced.point.backdrop', ['focus'], 'body', 'trigger')]
+modal bootstrap changed steps: []
+modal veneer changed steps: []

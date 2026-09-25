@@ -1,0 +1,70 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Offcanvas.test.ts -t MEASURE
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas
+
+ ❯ |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts (63 tests | 1 failed | 62 skipped) 845ms
+     × MEASURE focus after a trusted backdrop press 844ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:600:2 > Offcanvas > MEASURE focus after a trusted backdrop press
+AssertionError: expected { …(2) } to deeply equal {}
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- {}[39m
+[31m+ {[39m
+[31m+   "motion": {[39m
+[31m+     "final": "body",[39m
+[31m+     "hidden": "body",[39m
+[31m+     "log": [[39m
+[31m+       "focusin opener opener",[39m
+[31m+       "focusout -> body",[39m
+[31m+       "focusin panel panel",[39m
+[31m+       "focusout -> body",[39m
+[31m+       "focusin opener opener",[39m
+[31m+       "mousedown bubbled, active opener, hiding offcanvas offcanvas-start hiding, backdrop true",[39m
+[31m+       "focusout -> body",[39m
+[31m+       "mouseup active body",[39m
+[31m+       "press returned body",[39m
+[31m+       "hidden body",[39m
+[31m+     ],[39m
+[31m+     "returned": "body",[39m
+[31m+   },[39m
+[31m+   "reduced": {[39m
+[31m+     "final": "body",[39m
+[31m+     "hidden": "opener",[39m
+[31m+     "log": [[39m
+[31m+       "focusin opener opener",[39m
+[31m+       "focusout -> body",[39m
+[31m+       "focusin panel panel",[39m
+[31m+       "focusout -> body",[39m
+[31m+       "focusin opener opener",[39m
+[31m+       "hidden opener",[39m
+[31m+       "mousedown bubbled, active opener, hiding offcanvas offcanvas-start, backdrop undefined",[39m
+[31m+       "focusout -> body",[39m
+[31m+       "mouseup active body",[39m
+[31m+       "press returned body",[39m
+[31m+     ],[39m
+[31m+     "returned": "body",[39m
+[31m+   },[39m
+[31m+ }[39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:634:19
+    632|    scene.load(cascade)
+    633|   }
+    634|   expect(readings).toEqual({})
+       |                   ^
+    635|  })
+    636|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 62 skipped (63)
+   Start at  03:03:16
+   Duration  2.70s (transform 0ms, setup 492ms, import 351ms, tests 845ms, environment 0ms)
+

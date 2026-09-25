@@ -1,0 +1,102 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2409,22 +2409,23 @@
+ 
+ Showing adds the `fade` token when the `animated` option is `true`, reads the layout, and adds the
+ `shown` and `transition` tokens; when `animated` is `true` it then waits for the toast's transitions
+-to settle. It removes the `transition` token and dispatches `shown.vn.toast`. Hiding reads the
+-layout, adds the `transition` token, waits the same way, removes the `transition` and `shown`
+-tokens, and dispatches `hidden.vn.toast`. With `animated` set to `false`, neither call waits, so
+-each dispatches its completed event before it returns. The `show` and `hide` methods resolve `true`
+-after the completed event. Each resolves `false` when a transition is in flight on the toast, a
+-listener prevented the pre-change event, or the toast is destroyed, and `hide` also resolves
+-`false` when the toast is hidden. Showing a shown toast runs the sequence again, dispatching both
+-events, and restarts the delay. The `shown` property reads the `shown` token on every access.
++to settle. It removes the `transition` token, waits the same way for the fade in that removal
++starts, and dispatches `shown.vn.toast`. Hiding reads the layout, adds the `transition` token,
++waits the same way, removes the `transition` and `shown` tokens, and dispatches `hidden.vn.toast`.
++With `animated` set to `false`, neither call waits, so each dispatches its completed event before
++it returns. The `show` and `hide` methods resolve `true` after the completed event. Each resolves
++`false` when the toast carries the `transition` token, a listener prevented the pre-change event,
++or the toast is destroyed, and `hide` also resolves `false` when the toast is hidden. Showing a
++shown toast runs the sequence again, dispatching both events, and restarts the delay. The `shown`
++property reads the `shown` token on every access.
+ 
+ The toast partial declares no transition of its own, and the shipped fade partial fades a toast
+ carrying the `fade` token through its opacity over the `--vn-motion-feedback` duration. Hiding
+ therefore waits for the fade out the `transition` token starts, and the `--vn-factor-motion` factor
+ on the root rescales the wait. Showing a hidden toast takes it from no display to displayed at no
+-opacity, which starts no transition, so `shown.vn.toast` dispatches in a microtask and the fade in
+-runs after it, as the `transition` token leaves. Showing a shown toast first fades it out under
+-the `transition` token and waits for that fade.
++opacity, which starts no transition; the fade in starts as the `transition` token leaves, and
++`shown.vn.toast` dispatches after it finishes. Showing a shown toast first fades it out under the
++`transition` token and waits for that fade, then waits for the fade in.
+ 
+ With the `autohide` option `true`, a shown toast hides itself through a native `setTimeout` timer
+ `delay` milliseconds after `shown.vn.toast`. The timer is cleared while the pointer or focus is
+@@ -2477,26 +2478,28 @@
+ The toast dispatches the following events on its host. Each one bubbles and carries no detail,
+ which the platform reads as `null`.
+ 
+-| Key      | Wire name         | Cancelable | Dispatched                                      |
+-| -------- | ----------------- | ---------- | ----------------------------------------------- |
+-| `show`   | `show.vn.toast`   | Yes        | Before any write; prevention refuses the show   |
+-| `shown`  | `shown.vn.toast`  | No         | After the `transition` token leaves             |
+-| `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide   |
+-| `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave |
++| Key      | Wire name         | Cancelable | Dispatched                                                |
++| -------- | ----------------- | ---------- | --------------------------------------------------------- |
++| `show`   | `show.vn.toast`   | Yes        | Before any write; prevention refuses the show             |
++| `shown`  | `shown.vn.toast`  | No         | After the fade in the `transition` token's removal starts |
++| `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide             |
++| `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave           |
+ 
+ A call carries the change identity it sets when its change starts, and after each write, dispatch,
+ and await it reads whether the toast is live and whether a later `show` or `hide` call has started.
+-It also reads the `transition` token: before a show writes it the toast must lack it, and from a
+-call's write of it until the call removes it the toast must carry it. A call that finds the toast
+-destroyed, a later call started, or the `transition` token otherwise stops, writing and dispatching
+-nothing more, and resolves `false`. A listener that calls `show` or `hide` inside `show.vn.toast`
+-or `hide.vn.toast` therefore supersedes the call whose event it heard, whether the listener's call
+-is still waiting or has already completed: the call whose event it heard resolves `false` and
+-writes nothing, and the listener's call completes or stops by its own cancellation, lifetime, and
+-door reads. A listener that prevents the pre-change event starts no change, whatever else it wrote,
+-so a listener that prevents the nested `show.vn.toast` its own call dispatches leaves the outer call
+-to complete: the nested call resolves `false`, and the outer call dispatches `shown.vn.toast` once
+-and resolves `true`.
++It also reads the `transition` token: before a show writes it the toast must lack it, from a
++call's write of it until the call removes it the toast must carry it, and after a show removes it
++the toast must lack it again. A call that finds the toast destroyed, a later call started, or the
++`transition` token otherwise stops, writing and dispatching nothing more, and resolves `false`. A
++listener that calls `show` or `hide` inside `show.vn.toast` or `hide.vn.toast` therefore supersedes
++the call whose event it heard, whether the listener's call is still waiting or has already
++completed: the call whose event it heard resolves `false` and writes nothing, and the listener's
++call completes or stops by its own cancellation, lifetime, and door reads. A listener that prevents
++the pre-change event starts no change, whatever else it wrote, so a listener that prevents the
++nested `show.vn.toast` its own call dispatches leaves the outer call to complete: the nested call
++resolves `false`, and the outer call dispatches `shown.vn.toast` once and resolves `true`. The toast
++lacks the `transition` token during a show's fade in, so a `show` or `hide` call made then is
++accepted and supersedes that show, which resolves `false` and dispatches no `shown.vn.toast`.
+ 
+ The toast's `shown` token at the change's end is agreement. A listener or a reaction that adds the
+ token before a show writes it, or removes it before a hide does, has made that write for the call:
+@@ -2545,11 +2548,13 @@
+   by default, and no `data-bs-config` attribute is read.
+ - The events carry the `.vn.` namespace, such as `shown.vn.toast`, where Bootstrap's carry `.bs.`.
+ - Completion waits on the toast's running finite animations, and the delay runs on a native
+-  `setTimeout` timer with no fallback timer beside it. Bootstrap waits on a `transitionend`
+-  listener with a fallback timer, so its `shown.bs.toast` event arrives after the fade's duration
+-  even though showing starts no transition.
+-- A call while a transition is in flight resolves `false`. Bootstrap's `show` and `hide` methods
+-  have no such guard, and each runs its sequence again.
++  `setTimeout` timer with no fallback timer beside it. Showing also waits for the fade in that
++  removing the `transition` token starts, so `shown.vn.toast` arrives after the toast has faded in.
++  Bootstrap waits on a `transitionend` listener with a fallback timer, so its `shown.bs.toast` event
++  arrives after the fade's duration even though showing starts no transition, and its fade in runs
++  after the event.
++- A call while the toast carries the `transition` token resolves `false`. Bootstrap's `show` and
++  `hide` methods have no such guard, and each runs its sequence again.
+ - Hiding reads the layout before it writes the `transition` token, so a toast inserted shown in the
+   same task still fades out. Bootstrap's `hide` method reads no layout.
+ - The toast reads whether the pointer or focus is still inside through the `:hover` and

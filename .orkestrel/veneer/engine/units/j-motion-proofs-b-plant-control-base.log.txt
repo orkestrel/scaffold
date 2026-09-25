@@ -1,0 +1,64 @@
+planted src/styles/_tokens.scss
+planted src/styles/components/_collapse.scss
+planted src/styles/components/_fade.scss
+planted src/styles/components/_toast.scss
+planted src/styles/components/_carousel.scss
+base 1290162 src/browser/Toast.ts
+base 1290162 tests/src/browser/Collapse.test.ts
+base 1290162 tests/src/browser/Toast.test.ts
+base 1290162 tests/src/browser/Tab.test.ts
+base 1290162 tests/src/browser/Carousel.test.ts
+PlantProbe exit 0
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+Collapse exit 1
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:51:2 > Collapse > reads the shipped collapse declarations the motion proofs run under
+AssertionError: expected 'all' to be 'width' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:66:2 > Collapse > shows and hides through the transition token and an inline pixel size, keeping every trigger in step
+AssertionError: expected [] to deeply equal [ 'height' ]
+- Expected
++ Received
+- [
+-   "height",
+- ]
++ []
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:127:2 > Collapse > sizes the width of a panel carrying the horizontal token, and its height never
+AssertionError: expected [] to deeply equal [ 'width' ]
+- Expected
++ Received
+- [
+-   "width",
+- ]
++ []
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:330:2 > Collapse > resolves false for a call while the panel or an open sibling transitions, and completes the transition in flight once
+AssertionError: expected true to be false // Object.is equality
+- Expected
++ Received
+- false
++ true
+Toast exit 1
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:57:2 > Toast > reads the shipped toast and fade declarations: a toast runs no transition of its own and fades through the fade token at the feedback motion duration
+AssertionError: expected 'opacity, transform' to be 'opacity' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:79:2 > Toast > shows through the fade and showing tokens and hides back under the shipped cascade, awaiting the fade out
+AssertionError: expected [ [ 2 ], [ +0 ] ] to deeply equal [ [ 1 ], [ +0 ] ]
+- Expected
++ Received
+-     1,
++     2,
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:129:2 > Toast > dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+AssertionError: expected '0s, 0s' to be '0s' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:649:2 > Toast > abandons the transition in flight on destruction, resolving false and restoring the toast
+AssertionError: expected [ CSSTransition{}, CSSTransition{} ] to have a length of 1 but got 2
+- Expected
++ Received
+- 1
++ 2
+ Test Files  1 failed (1)
+      Tests  4 failed | 40 passed (44)
+Tab exit 0
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+Carousel exit 0
+ Test Files  1 passed (1)
+      Tests  69 passed (69)
+scratch removed: yes

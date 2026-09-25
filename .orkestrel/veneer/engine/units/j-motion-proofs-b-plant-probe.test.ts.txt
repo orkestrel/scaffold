@@ -1,0 +1,77 @@
+import { requireValue } from '@orkestrel/test'
+import { afterEach, describe, expect, it } from 'vitest'
+import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+import carouselCascade from '../../../src/styles/components/_carousel.scss?inline'
+import collapseCascade from '../../../src/styles/components/_collapse.scss?inline'
+import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+import toastCascade from '../../../src/styles/components/_toast.scss?inline'
+import { scene } from '../../setupBrowser.js'
+
+afterEach(() => scene.clear())
+
+// Reads the planted values on the scratch copy's cascade, loaded the way the owned proofs load it,
+// so the plant run is known to have run under the motion ruling's values. It never ships.
+describe('PlantProbe', () => {
+	it('reads the motion ruling values the plant wrote', () => {
+		for (const css of [tokensCascade, fadeCascade, collapseCascade, toastCascade, carouselCascade]) {
+			scene.load(css)
+		}
+		const root = scene.mount(`
+			<div class="collapsing" id="panel"></div>
+			<div class="collapsing collapse-horizontal" id="side"></div>
+			<div class="alert fade show" id="fading"></div>
+			<div class="toast fade show showing" id="toast"></div>
+			<div class="carousel slide"><div class="carousel-item carousel-item-next" id="item"></div></div>
+			<div class="carousel slide carousel-fade">
+				<div class="carousel-item carousel-item-next" id="faded"></div>
+				<div class="carousel-item active carousel-item-start" id="leaving"></div>
+			</div>`)
+		const read = (id: string) =>
+			getComputedStyle(requireValue(root.querySelector<HTMLElement>(`#${id}`), `No ${id}`))
+		const panel = read('panel')
+		const side = read('side')
+		const fading = read('fading')
+		const toast = read('toast')
+		const item = read('item')
+		const faded = read('faded')
+		const leaving = read('leaving')
+		expect({
+			panel: [panel.transitionProperty, panel.transitionDuration, panel.transitionTimingFunction],
+			side: [side.transitionProperty, side.transitionDuration, side.transitionTimingFunction],
+			fading: [fading.transitionDuration, fading.transitionTimingFunction],
+			toast: [
+				toast.transitionProperty,
+				toast.transitionDuration,
+				toast.transitionTimingFunction,
+				toast.transform,
+			],
+			item: [item.transitionProperty, item.transitionDuration, item.transitionTimingFunction],
+			faded: [faded.transitionProperty, faded.transitionDuration, faded.transitionTimingFunction],
+			leaving: [leaving.transitionDuration, leaving.transitionDelay],
+		}).toEqual({
+			panel: ['height', '0.25s', 'cubic-bezier(0.32, 0.72, 0, 1)'],
+			side: ['width', '0.25s', 'cubic-bezier(0.32, 0.72, 0, 1)'],
+			fading: ['0.15s', 'ease-out'],
+			toast: [
+				'opacity, transform',
+				'0.15s, 0.15s',
+				'ease-out, ease',
+				'matrix(0.98, 0, 0, 0.98, 0, 0)',
+			],
+			item: ['transform', '0.6s', 'cubic-bezier(0.32, 0.72, 0, 1)'],
+			faded: ['opacity', '0.6s', 'ease-out'],
+			leaving: ['0s', '0.6s'],
+		})
+	})
+
+	it('reads the planted slide timing on the carousel key loaded alone, as the carousel proofs load it', () => {
+		scene.load(carouselCascade)
+		const root = scene.mount(`
+			<div class="carousel slide"><div class="carousel-item carousel-item-next" id="item"></div></div>`)
+		const item = getComputedStyle(requireValue(root.querySelector<HTMLElement>('#item'), 'No item'))
+		expect([item.transitionDuration, item.transitionTimingFunction]).toEqual([
+			'0.6s',
+			'cubic-bezier(0.32, 0.72, 0, 1)',
+		])
+	})
+})

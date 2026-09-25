@@ -1,0 +1,103 @@
+{
+	"toast-base": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"base": "1290162"
+	},
+	"toast-fadein-skip": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tawait settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true, [], [transition]))",
+		"new": "\t\t\tvoid settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true, [], [transition]))"
+	},
+	"toast-fadein-door": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tif (!this.#holds(change, true, [], [transition])) return this.#rewind(change, written)\n",
+		"new": ""
+	},
+	"toast-show-skip": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tawait settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true, [transition], []))",
+		"new": "\t\t\tvoid settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true, [transition], []))"
+	},
+	"toast-hide-skip": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tawait settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, expected, [transition], []))",
+		"new": "\t\t\tvoid settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, expected, [transition], []))"
+	},
+	"collapse-show-skip": {
+		"file": "src/browser/Collapse.ts",
+		"test": "tests/src/browser/Collapse.test.ts",
+		"old": "\t\tawait settleAnimations(host, this.#controller.signal)\n\t\tif (!this.#holds(change, expected, during, []))",
+		"new": "\t\tvoid settleAnimations(host, this.#controller.signal)\n\t\tif (!this.#holds(change, expected, during, []))"
+	},
+	"collapse-hide-skip": {
+		"file": "src/browser/Collapse.ts",
+		"test": "tests/src/browser/Collapse.test.ts",
+		"old": "\t\tawait settleAnimations(host, this.#controller.signal)\n\t\tif (!this.#holds(change, false, during, []))",
+		"new": "\t\tvoid settleAnimations(host, this.#controller.signal)\n\t\tif (!this.#holds(change, false, during, []))"
+	},
+	"tab-skip": {
+		"file": "src/browser/Tab.ts",
+		"test": "tests/src/browser/Tab.test.ts",
+		"old": "\t\t\t\tawait settleAnimations(pane, this.#controller.signal)",
+		"new": "\t\t\t\tvoid settleAnimations(pane, this.#controller.signal)"
+	},
+	"carousel-skip": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"old": "\t\t\t\tawait settleAnimations(incoming, this.#controller.signal)",
+		"new": "\t\t\t\tvoid settleAnimations(incoming, this.#controller.signal)"
+	},
+	"toast-fadein-yield": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tawait settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true, [], [transition]))",
+		"new": "\t\t\tawait Promise.resolve()\n\t\t\tif (!this.#holds(change, true, [], [transition]))"
+	},
+	"toast-show-yield": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tawait settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true, [transition], []))",
+		"new": "\t\t\tawait Promise.resolve()\n\t\t\tif (!this.#holds(change, true, [transition], []))"
+	},
+	"toast-hide-yield": {
+		"file": "src/browser/Toast.ts",
+		"test": "tests/src/browser/Toast.test.ts",
+		"old": "\t\t\tawait settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, expected, [transition], []))",
+		"new": "\t\t\tawait Promise.resolve()\n\t\t\tif (!this.#holds(change, expected, [transition], []))"
+	},
+	"collapse-show-yield": {
+		"file": "src/browser/Collapse.ts",
+		"test": "tests/src/browser/Collapse.test.ts",
+		"old": "\t\tawait settleAnimations(host, this.#controller.signal)\n\t\tif (!this.#holds(change, expected, during, []))",
+		"new": "\t\tawait Promise.resolve()\n\t\tif (!this.#holds(change, expected, during, []))"
+	},
+	"collapse-hide-yield": {
+		"file": "src/browser/Collapse.ts",
+		"test": "tests/src/browser/Collapse.test.ts",
+		"old": "\t\tawait settleAnimations(host, this.#controller.signal)\n\t\tif (!this.#holds(change, false, during, []))",
+		"new": "\t\tawait Promise.resolve()\n\t\tif (!this.#holds(change, false, during, []))"
+	},
+	"tab-yield": {
+		"file": "src/browser/Tab.ts",
+		"test": "tests/src/browser/Tab.test.ts",
+		"old": "\t\t\t\tawait settleAnimations(pane, this.#controller.signal)",
+		"new": "\t\t\t\tawait Promise.resolve()"
+	},
+	"carousel-yield": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"old": "\t\t\t\tawait settleAnimations(incoming, this.#controller.signal)",
+		"new": "\t\t\t\tawait Promise.resolve()"
+	},
+	"carousel-outgoing": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"old": "\t\t\t\tawait settleAnimations(incoming, this.#controller.signal)",
+		"new": "\t\t\t\tawait settleAnimations(outgoing, this.#controller.signal)"
+	}
+}
