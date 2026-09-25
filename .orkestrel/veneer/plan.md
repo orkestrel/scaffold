@@ -103,8 +103,9 @@ sections it writes only the hunks named here.
   passes (`units/carousel-token-probe/run.log.txt`). CAROUSEL is held until that change is on `main`
   (`units/e-id-motion-carousel-brief.md`). Its `src/core/constants.ts` hunk, which it sends before it lands, adds
   `slide: '--vn-motion-slide'` to the `motion` group of `TOKEN_NAMES`.
-- **E-ID-MOTION-OFFCANVAS is in a prose-and-proof fix round** (`units/moff-audit-verdict.md`, FAIL 3, 6): the responsive
-  exit gets its proof and the guide states the `250ms` the panel's tokens resolve to. The panel rests transparent and
+- **E-ID-MOTION-OFFCANVAS round 2 returned and is in audit** (`32a6c28`, `units/e-id-motion-offcanvas-report-2.md`,
+  on `units/moff-audit-verdict.md`'s FAIL 3, 6): the responsive exit has its proof and the guide states the `250ms` the
+  panel's tokens resolve to; round 2 changes no rule, and your `Offcanvas` and `Backdrop` proofs read `75 passed` on it. The panel rests transparent and
   fades beside its slide; a responsive panel in its in-flow range and the expanded navbar's `.offcanvas` panel stay
   opaque. Your `Offcanvas` and `Backdrop` proofs and `npm run test:app` pass on round 1. It changes this sentence of the
   `## Engine` Offcanvas paragraph, which your J-ORACLE-FIX-OFFCANVAS landing may also touch; the later landing merges by
@@ -123,27 +124,61 @@ sections it writes only the hunks named here.
   `getAnimations({ subtree: true })` filtered to the target and its `pseudoElement`) and adds a `describe('sampleTransition')`
   case in `tests/setupBrowser.test.ts`. The report returns both exact hunks, and this file names them before the landing;
   J-MOTION-RECORDER merges them by hunk under D50.
-- **E-ID-MOTION-TOAST is writing** from `6586b11` (`units/e-id-motion-toast-brief.md`, the toast third of unit 6): the
-  toast scales from `0.98` as it fades in and back as it fades out, on the `.fade` compound only, so your case "a toast
-  declares a transition only through the fade token" and the factor case must pass unchanged.
-- **LEDGER-RETUNE's round 2 failed its audit** (`units/lret-audit-2-verdict.md`, FAIL 1, 2, 6, 8). It is the third round
-  at the resolver's faithfulness seam, so a design round rules the boundary before round 3
-  (`units/ledger-boundary-design-brief.md`). It still merges your J-ORACLE-RECORD hunks by hunk at its landing (D49).
+- **E-ID-MOTION-TOAST is writing its continuation** (`units/e-id-motion-toast-brief-2.md`): the toast scales from `0.98`
+  as it fades in and back as it fades out, on the `.toast.fade` compound only, and your `Toast.test.ts` passes unchanged
+  (`Tests 45 passed (45)`). It changes the first sentence group of the `## Engine` Toast paragraph, which begins "The
+  toast partial declares no transition of its own"; the new text says the toast partial transitions a toast carrying the
+  `fade` token through its opacity and its scale over the `--vn-motion-feedback` duration
+  (`units/e-id-motion-toast-report.md` names the hunk; its landing report quotes it as applied).
+- **LEDGER-RETUNE round 3 is writing** on the LEDGER-BOUNDARY ruling (`ledger-boundary-design-verdict.md`): the
+  resolver decides alike only within one declared model (`RESOLVER_MODEL`), names each undecided pair's reason, reads
+  unscoped pairs in both modes, and reads a `:root` site at the document element. It still merges your J-ORACLE-RECORD
+  hunks by hunk at its landing (D49).
+- **J-PLACEMENT-141-FIX owning the Chromium 141 sentences is accepted.** They sit in files this session owns: the
+  `_dropdown.scss` include comment, the guide's § Dropdown classes paragraph, and the dropdown rows' Reason cell in
+  § Additions. Land them with the fix and name the hunks here; this session's planned ANCHOR-PAINT unit is struck.
+- **The dropdown entry motion is next here**, now that J-DROPDOWN-SETTLE is struck: an entry animation on the shown
+  menu, which your J-CONCERNS-B case already runs beside.
 - **Your standing rows.** Your J-CONCERNS-B landing's reading closes the reboot rows, which answers REBOOT-153's request.
-- **Standing answers.** TOKEN-RETIRE retires `--vn-focus-reset` and the tertiary `-subtle`, `-border`, and `-rgb` tiers,
-  and sends its `src/core/constants.ts` hunk here before it lands; it runs after LEDGER-RETUNE. The tooltip and popover
+- **TOKEN-RETIRE returned and is in audit** (`a5a85d8`, `units/token-retire-report.md`): `--vn-focus-reset` and the
+  tertiary `-subtle`, `-border`, and `-rgb` tiers retire, and no painted reading moves (`units/tret-instruments/`).
+  **Pending shared change in your `src/core/constants.ts`**, applied in its worktree for the gates, lands with it after
+  LEDGER-RETUNE (`units/tret-instruments/tret-constants.diff.txt`); `TokenMap` and `TokenName` derive from the tree and
+  need no edit:
+
+  ```diff
+   		tertiary: Object.freeze({
+   			base: '--vn-color-tertiary-base',
+  -			rgb: '--vn-color-tertiary-rgb',
+  -			subtle: '--vn-color-tertiary-subtle',
+   			emphasis: '--vn-color-tertiary-emphasis',
+  -			border: '--vn-color-tertiary-border',
+   		} as const),
+  @@
+   		highlight: '--vn-focus-highlight',
+  -		reset: '--vn-focus-reset',
+   	} as const),
+  ```
+- **The Astra bench is dark here until 2026-09-30 15:18 UTC** (Codex usage limit, read from both 10:24 audit journals;
+  `units/moff-audit-2-analyst-dark.log.txt`). Under § Engine assignment, Opus 5.5 runs every lane of this session's
+  audits in separate clean contexts, and each verdict records the substitution. If your bench shares the account, the
+  same limit applies there.
+- **Standing answers.** The tooltip and popover
   motion units wait on your J-MOTION-PROOFS-C. This session runs the Chromium 141 readings you ask for.
 
-**In flight (this session), 2026-09-25 10:05 UTC.** Implementation and its audit first, the user's instruction.
-- **Writing:** E-ID-MOTION-TOAST and TOKEN-RETIRE (`opus`).
-- **Fix rounds:** E-ID-MOTION-OFFCANVAS and E-ID-MOTION-COLLAPSE round 2 (`opus`).
-- **Designing:** LEDGER-BOUNDARY (`planner` on Opus 5.5, `analyst` on Astra).
+**In flight (this session), 2026-09-25 11:05 UTC.** Implementation and its audit first, the user's instruction.
+- **Writing:** E-ID-MOTION-TOAST's continuation and E-ID-MOTION-COLLAPSE round 2 (`opus`).
+- **In audit, both lanes on Opus 5.5 while Astra is dark:** E-ID-MOTION-OFFCANVAS round 2 and TOKEN-RETIRE.
+- **Drafting:** the dropdown entry motion unit, after a probe at `92ca407` read your `src:browser` dropdown, delegate,
+  placement, tab, scrollspy, and snapshot proofs, `setup:browser`, and the `app:browser` sections green under a
+  candidate `@starting-style` entry (`451`, `101`, and `46 passed`, as at base); only this session's `dropdown.test.ts`
+  cases read the menu mid-entry.
+- **Writing on a ruling:** LEDGER-RETUNE round 3 (`opus`), on `ledger-boundary-design-verdict.md`.
 
-**Next here, in order:** the landings of OFFCANVAS and COLLAPSE; LEDGER-RETUNE round 3 on the boundary ruling, then its
-audit and landing; the TOAST audit and landing; E-ID-MOTION-CAROUSEL after your carousel cascade change and
-LEDGER-RETUNE; TOKEN-RETIRE; the tooltip and popover motion units after J-MOTION-PROOFS-C; ANCHOR-PAINT after
-J-PLACEMENT-141-FIX; RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt;
-IMPORTANT-EMIT after the user rules.
+**Next here, in order:** the audits and landings of OFFCANVAS, COLLAPSE, TOAST, and TOKEN-RETIRE; LEDGER-RETUNE round 3's
+audit and landing; the dropdown entry motion unit; E-ID-MOTION-CAROUSEL after your carousel cascade change and
+LEDGER-RETUNE; the tooltip and popover motion units after J-MOTION-PROOFS-C; RM-RELEASE with the user's one-time code, then
+P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; IMPORTANT-EMIT after the user rules.
 
 **Waiting on the user:** the IMPORTANT-LAYER ruling, whether Chrome is installed and on which platform (ER-CHROME), and
 the one-time code for the scaffold release.

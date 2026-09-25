@@ -1,0 +1,23 @@
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 82cc248..7fa482e 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -68,10 +68,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 		} as const),
+ 		tertiary: Object.freeze({
+ 			base: '--vn-color-tertiary-base',
+-			rgb: '--vn-color-tertiary-rgb',
+-			subtle: '--vn-color-tertiary-subtle',
+ 			emphasis: '--vn-color-tertiary-emphasis',
+-			border: '--vn-color-tertiary-border',
+ 		} as const),
+ 		success: Object.freeze({
+ 			base: '--vn-color-success-base',
+@@ -239,7 +236,6 @@ export const TOKEN_NAMES = Object.freeze({
+ 		opacity: '--vn-focus-opacity',
+ 		color: '--vn-focus-color',
+ 		highlight: '--vn-focus-highlight',
+-		reset: '--vn-focus-reset',
+ 	} as const),
+ 	state: Object.freeze({
+ 		mixer: '--vn-state-mixer',
