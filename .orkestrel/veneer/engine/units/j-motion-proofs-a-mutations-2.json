@@ -1,0 +1,9 @@
+{
+	"reader-seconds": {
+		"file": "tests/setupBrowser.ts",
+		"test": "tests/setupBrowser.test.ts",
+		"project": "setup:browser",
+		"old": "time.endsWith('ms') ? 1 : 1000",
+		"new": "time.endsWith('ms') ? 1 : 1"
+	}
+}
