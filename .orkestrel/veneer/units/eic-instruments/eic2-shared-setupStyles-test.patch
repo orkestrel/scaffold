@@ -1,0 +1,44 @@
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 46925ab..f4cecf9 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -205,6 +205,7 @@ import {
+ 	RATIO_CASES,
+ 	REDUCED_MOTION,
+ 	REFERENCE_MARKUP,
++	RELEASE_TAG_PAIRS,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
+ 	SHADOW_CASES,
+@@ -518,6 +519,7 @@ describe('styles setup', () => {
+ 				'RATIO_CASES',
+ 				'REDUCED_MOTION',
+ 				'REFERENCE_MARKUP',
++				'RELEASE_TAG_PAIRS',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
+ 				'SHADOW_CASES',
+@@ -2990,6 +2992,23 @@ describe('styles setup', () => {
+ 			),
+ 		).toEqual([])
+ 	})
++	it('holds the tag pairs the release reboot writes, frozen, and none of them a mandated pair', () => {
++		// The release writes these three contextual rules in its reboot, so the positional scan
++		// excuses them beside the content model's pairs. A pair already mandated would be excused
++		// twice, and a pair the reboot does not write would widen the law past the release.
++		expect(RELEASE_TAG_PAIRS).toEqual([
++			['pre', 'code'],
++			['a', 'code'],
++			['kbd', 'kbd'],
++		])
++		expect(Object.isFrozen(RELEASE_TAG_PAIRS)).toBe(true)
++		expect(RELEASE_TAG_PAIRS.every((pair) => Object.isFrozen(pair))).toBe(true)
++		expect(
++			RELEASE_TAG_PAIRS.filter(([ancestor, descendant]) =>
++				MANDATED_TAG_PAIRS.some(([outer, inner]) => outer === ancestor && inner === descendant),
++			),
++		).toEqual([])
++	})
+ 	// The retained value lists and settled readings copied from outside this workspace.
+ 	it('names in every calibration row a role tier the token registry declares, in a mode the theme scopes', () => {
+ 		const declared = new Set(collectTokenNames(TOKEN_NAMES))

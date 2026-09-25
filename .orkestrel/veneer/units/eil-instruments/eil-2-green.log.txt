@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-eil
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  23:39:27
+   Duration  10.78s (transform 0ms, setup 506ms, import 413ms, tests 10ms, environment 0ms)
+
