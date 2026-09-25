@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-mmod
+
+
+ Test Files  3 passed (3)
+      Tests  136 passed (136)
+   Start at  06:53:48
+   Duration  89.93s (transform 0ms, setup 821ms, import 753ms, tests 75.42s, environment 0ms)
+
+exit=0
+3.46 3.98 5.56 2/302 7087

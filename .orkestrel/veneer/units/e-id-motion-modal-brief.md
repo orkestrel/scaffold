@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native Claude subagent reached through the harness's Agent tool, the sole writer in
-`/home/user/veneer-mmod` (branch `unit/mmod`, cut from Veneer `LANDING_HEAD`, the session branch after J-MOTION-PROOFS-A
+`/home/user/veneer-mmod` (branch `unit/mmod`, cut from Veneer `73326c7`, the session branch after J-MOTION-PROOFS-A
 and LEDGER-ADDITIONS, `node_modules` hardlinked from `/home/user/veneer`). The proofs launch Chromium, which a bench
 sandbox cannot drive. Start every shell command with `cd /home/user/veneer-mmod &&` and give every file tool an absolute
 path under it. Read, in order: `/home/user/scaffold/AGENTS.md`; the rules
@@ -21,7 +21,7 @@ blur. Each value is read from the rendered transition and recorded as a departur
 
 ## Context
 
-**Evidence.** Measured at `LANDING_HEAD`. Re-take each reading in the worktree before editing, and report any that
+**Evidence.** Measured at `73326c7`. Re-take each reading in the worktree before editing, and report any that
 differs.
 - `src/styles/components/_modal.scss` writes the dialog's entrance as `transform: translate(0, -50px)` with
   `@include transition(transform 0.3s ease-out)` (around lines 61 to 70), the shown `transform: none`, and
@@ -110,7 +110,7 @@ Perform the assignment directly and spawn nothing.
 
 Write `tmp/units/mmod-report.md` and return the same text: the searches; the Unknowns' answers; the failing-first and
 green readings with commands and counts; the rules as written; the guide rows; the plant table; the gate table;
-`tmp/units/mmod.diff` (`git diff LANDING_HEAD`) and `tmp/units/mmod-status.txt`. State no count in prose.
+`tmp/units/mmod.diff` (`git diff 73326c7`) and `tmp/units/mmod-status.txt`. State no count in prose.
 
 ## Deviation contract
 

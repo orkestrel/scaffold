@@ -1,0 +1,126 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mmod
+
+········xx·x·x···············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(7) ], [ …(2) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "modal | .modal.fade .modal-dialog | transform",
++     "modal | .modal.fade .modal-dialog | transition",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "modal | .modal.fade .modal-dialog | transform",
++     "modal | .modal.fade .modal-dialog | transition",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:202:20
+    200|   // The component-owned dark images are a second record of the same r…
+    201|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    202|   expect(darkened).toEqual([
+       |                    ^
+    203|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    204|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "modal | .modal.fade .modal-dialog | transform | — | translate(0, -50px) | scale(0.96) | declared",
++   "modal | .modal.fade .modal-dialog | transition | — | transform 0.3s ease-out | transform var(--vn-motion-panel) var(--vn-ease-panel) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:210:33
+    208|
+    209|  it('records every measured value difference in the guide ledger', () …
+    210|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    211|  })
+    212|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "modal | .modal { transition } | — | declaration | opacity var(--vn-motion-panel) var(--vn-ease-out)",
++   "modal | .modal { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
++   "modal | .modal-backdrop.fade { transition } | — | declaration | opacity var(--vn-motion-panel) var(--vn-ease-out)",
++   "modal | .modal-backdrop.fade { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
++   "offcanvas | .offcanvas-backdrop.fade { transition } | — | declaration | opacity var(--vn-motion-panel) var(--vn-ease-out)",
++   "offcanvas | .offcanvas-backdrop.fade { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
++ ]
+
+ ❯ tests/conformance.test.ts:218:32
+    216|
+    217|  it('records every emitted name the official inventory lacks', () => {
+    218|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    219|  })
+    220|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(7) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "modal | .modal { transition } | — | declaration | opacity var(--vn-motion-panel) var(--vn-ease-out)",
++   "modal | .modal { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
++   "modal | .modal-backdrop.fade { transition } | — | declaration | opacity var(--vn-motion-panel) var(--vn-ease-out)",
++   "modal | .modal-backdrop.fade { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
++   "offcanvas | .offcanvas-backdrop.fade { transition } | — | declaration | opacity var(--vn-motion-panel) var(--vn-ease-out)",
++   "offcanvas | .offcanvas-backdrop.fade { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
+    "form-control | .form-control { letter-spacing } | — | declaration | 0.01em",
+  ]
+
+ ❯ tests/conformance.test.ts:230:30
+    228|   // browser case reads only the properties a row values. This ledger …
+    229|   // it, and the unmodified cascade is the control that reports nothin…
+    230|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    231|    'form-control | .form-control { letter-spacing } | — | declaration …
+    232|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 25 passed (29)
+   Start at  06:45:34
+   Duration  34.00s (transform 734ms, setup 176ms, import 21.45s, tests 12.20s, environment 0ms)
+
+exit=1
+2.83 3.46 6.97 2/179 32739

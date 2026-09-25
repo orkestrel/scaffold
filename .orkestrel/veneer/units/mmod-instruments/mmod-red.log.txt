@@ -1,0 +1,486 @@
+build=0
+
+ RUN  v4.1.11 /home/user/veneer-mmod
+
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:19 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+13 │ @import 'bootstrap/scss/functions';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 13:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+14 │ @import 'bootstrap/scss/variables';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 14:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+     ╷
+1753 │ @import "variables-dark"; // TODO: can be removed safely in v6, only here to avoid breaking changes in v5.3
+     │         ^^^^^^^^^^^^^^^^
+     ╵
+    node_modules/bootstrap/scss/_variables.scss 1753:9  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+WARNING: 35 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ ❯ |[object Object] (chromium)| tests/src/styles/mixins.test.ts (48 tests | 1 failed) 2862ms
+     × fades a fading backdrop to its opacity over the panel duration on the ease-out curve, and leaves a backdrop without the fade class still 19ms
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:23 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts (31 tests | 1 failed) 2042ms
+     × fades the backdrop in over the panel duration on the ease-out curve, rescaled by the motion factor and still under the reduced-motion preference 172ms
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+6:44:26 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/modal.test.ts (32 tests | 5 failed) 1768ms
+     × enters the dialog from a 0.96 scale to none over the panel duration on the panel curve as the show class joins, and leaves on the same timing 17ms
+     × bounces a shown dialog to a 1.02 scale over the panel duration on the panel curve as the static class joins 17ms
+     × fades the modal host over the panel duration on the ease-out curve in place of the feedback timing of the fade rule 19ms
+     × doubles the running duration of the host, the dialog, and the backdrop at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference 176ms
+     × fades the backdrop from transparent to its opacity over the panel duration on the ease-out curve, with no blur 20ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:208:2 > declaration mixins > fades a fading backdrop to its opacity over the panel duration on the ease-out curve, and leaves a backdrop without the fade class still
+AssertionError: expected [ 150, 'ease-out', '0' ] to deeply equal [ 250, 'ease-out', '0' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   250,[39m
+[31m+   150,[39m
+[2m    "ease-out",[22m
+[2m    "0",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/mixins.test.ts:228:60
+    226|   still.classList.add('show')
+    227|   const showing = requireValue(sampleTransition(backdrop, 'opacity'), …
+    228|   expect([showing.duration, showing.easing, showing.start]).toEqual([p…
+       |                                                            ^
+    229|   expect(still.getAnimations()).toEqual([])
+    230|   showing.transition.finish()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/modal.test.ts:484:2 > modal motion > enters the dialog from a 0.96 scale to none over the panel duration on the panel curve as the show class joins, and leaves on the same timing
+AssertionError: expected 'matrix(1, 0, 0, 1, 0, -50)' to be 'matrix(0.96, 0, 0, 0.96, 0, 0)' // Object.is equality
+
+Expected: [32m"matrix([7m0.96[27m, 0, 0, [7m0.96[27m, 0, 0)"[39m
+Received: [31m"matrix([7m1[27m, 0, 0, [7m1[27m, 0, [7m-5[27m0)"[39m
+
+ ❯ tests/src/styles/components/modal.test.ts:500:41
+    498|   const dialog = requireValue(modal.firstElementChild, 'No dialog')
+    499|   const entrance = 'matrix(0.96, 0, 0, 0.96, 0, 0)'
+    500|   expect(readStyle(dialog, 'transform')).toBe(entrance)
+       |                                         ^
+    501|   modal.classList.add('show')
+    502|   const entering = requireValue(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/modal.test.ts:526:2 > modal motion > bounces a shown dialog to a 1.02 scale over the panel duration on the panel curve as the static class joins
+AssertionError: expected [ 300, 'ease-out' ] to deeply equal [ 250, …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   250,[39m
+[32m-   "cubic-bezier(0.32, 0.72, 0, 1)",[39m
+[31m+   300,[39m
+[31m+   "ease-out",[39m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/modal.test.ts:544:47
+    542|   modal.classList.add('modal-static')
+    543|   const bouncing = requireValue(sampleTransition(dialog, 'transform'),…
+    544|   expect([bouncing.duration, bouncing.easing]).toEqual([panel, curve])
+       |                                               ^
+    545|   expect(new DOMMatrix(bouncing.start).a).toBe(1)
+    546|   const midpoint = new DOMMatrix(bouncing.midpoint).a
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/modal.test.ts:558:2 > modal motion > fades the modal host over the panel duration on the ease-out curve in place of the feedback timing of the fade rule
+AssertionError: expected [ 150, 'ease-out', '0' ] to deeply equal [ 250, 'ease-out', '0' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   250,[39m
+[31m+   150,[39m
+[2m    "ease-out",[22m
+[2m    "0",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/modal.test.ts:579:60
+    577|   const showing = requireValue(sampleTransition(modal, 'opacity'), 'No…
+    578|   expect(modal.getAnimations()).toEqual([showing.transition])
+    579|   expect([showing.duration, showing.easing, showing.start]).toEqual([p…
+       |                                                            ^
+    580|   const shown = Number.parseFloat(showing.midpoint)
+    581|   expect(shown).toBeGreaterThan(0.5)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/modal.test.ts:599:2 > modal motion > doubles the running duration of the host, the dialog, and the backdrop at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference
+AssertionError: expected [ 2, 1, 2 ] to deeply equal [ 2, 2, 2 ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    2,[22m
+[32m-   2,[39m
+[31m+   1,[39m
+[2m    2,[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/modal.test.ts:647:4
+    645|      requireValue(base[index], 'No resting duration'),
+    646|    ),
+    647|   ).toEqual([2, 2, 2])
+       |    ^
+    648|   expect(doubled?.map(([, value]) => value)).toEqual(settled)
+    649|   expect(stopped).toEqual(settled.map((value) => [undefined, value]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/modal.test.ts:702:2 > modal backdrop > fades the backdrop from transparent to its opacity over the panel duration on the ease-out curve, with no blur
+AssertionError: expected [ 150, 'ease-out', '0' ] to deeply equal [ 250, 'ease-out', '0' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   250,[39m
+[31m+   150,[39m
+[2m    "ease-out",[22m
+[2m    "0",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/modal.test.ts:719:60
+    717|   const showing = requireValue(sampleTransition(backdrop, 'opacity'), …
+    718|   expect(backdrop.getAnimations()).toEqual([showing.transition])
+    719|   expect([showing.duration, showing.easing, showing.start]).toEqual([p…
+       |                                                            ^
+    720|   const shown = Number.parseFloat(showing.midpoint)
+    721|   expect(shown).toBeGreaterThan(Number.parseFloat(MODAL_GEOMETRY.opaci…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:140:2 > offcanvas classes > fades the backdrop in over the panel duration on the ease-out curve, rescaled by the motion factor and still under the reduced-motion preference
+AssertionError: expected [ 150, 'ease-out' ] to deeply equal [ 250, 'ease-out' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   250,[39m
+[31m+   150,[39m
+[2m    "ease-out",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:182:31
+    180|   const opacity = OFFCANVAS_GEOMETRY.opacity
+    181|   const [showing, resting, doubling, doubled, ...rest] = readings
+    182|   expect(showing?.slice(0, 2)).toEqual([panel, curve])
+       |                               ^
+    183|   const midpoint = Number.parseFloat(requireValue(showing?.[2], 'No mi…
+    184|   expect(midpoint).toBeGreaterThan(Number.parseFloat(opacity) / 2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  7 failed | 104 passed (111)
+   Start at  06:44:05
+   Duration  22.62s (transform 0ms, setup 1.92s, import 1.36s, tests 6.67s, environment 0ms)
+
+exit=1
+3.33 3.74 7.45 5/230 31361

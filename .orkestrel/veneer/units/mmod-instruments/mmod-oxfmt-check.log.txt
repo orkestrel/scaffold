@@ -1,0 +1,6 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 30963ms on 6 files using 4 threads.
+exit=0
+6.18 4.44 5.36 6/537 10540
