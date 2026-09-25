@@ -1,0 +1,1677 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 4fad046..bacd7eb 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -61,8 +61,8 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `Registry`                                | class     | Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.                                                                                               |
+ | `HostSnapshotCategory`                    | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                                                                        |
+ | `HostSnapshotTarget`                      | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                                                                                       |
+-| `HostSnapshotInterface`                   | interface | Records host state before an engine writes it and writes that state back on restore.                                                                                                         |
+-| `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back on restore.                                                                                                  |
++| `HostSnapshotInterface`                   | interface | Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores.                                                                        |
++| `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.                                                                  |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                         |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                     |
+ | `matchesReducedMotion`                    | function  | Checks whether the view an element's document belongs to prefers reduced motion.                                                                                                             |
+@@ -179,7 +179,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `TabAttributeMap`                         | interface | Names the attribute a tab reads; its default is Bootstrap's attribute name.                                                                                                                  |
+ | `TabSelectorMap`                          | interface | Names the selectors a tab matches with; each default is Bootstrap's selector.                                                                                                                |
+ | `TabOptions`                              | interface | Configures a tab's markup vocabulary, hooks, and lifetime.                                                                                                                                   |
+-| `TabInitialWrite`                         | interface | Describes one attribute a tab writes at construction: the element, the attribute's name, and the value it takes.                                                                             |
++| `TabInitialWrite`                         | interface | Describes one role or state a tab's construction sets on its list: the element, the attribute's name, and the value it takes.                                                                |
+ | `TabDropdown`                             | interface | Describes the dropdown a tab control's wrapper forms: the wrapper and the toggle and menu inside it.                                                                                         |
+ | `TabInterface`                            | interface | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                                                                  |
+ | `Tab`                                     | class     | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                                                                  |
+@@ -890,7 +890,7 @@ released and restored. When a click route serves it, its next delegated click ac
+ a fresh engine; a host the delegate acquired by its construction scan stays released. A click that
+ reaches a delegate while a host is being restored, such as one a custom element's attribute reaction
+ sends, finds no owner, and the first live delegate whose root contains the host to reach it acquires
+-a fresh engine at once; that engine's snapshot takes the values the restoration has still to write
++a fresh engine at once; that engine's snapshot joins the records the restoration has still to write
+ back. At each click and each delivery the delegate also drops every engine you destroyed directly,
+ and it stops observing when it owns none. Destruction removes the listeners and the observer and
+ restores every host the delegate still owns; an engine you constructed stays yours.
+@@ -928,7 +928,14 @@ destruction: a value the record reads as absent is removed. The host returns to
+ the last engine holding them is destroyed, in whatever order the engines are destroyed, as a list
+ whose tabs are destroyed one by one does. An engine whose lifetime ends without a restoration, such
+ as an alert whose close completed, clears its snapshot with the `clear` method, which relinquishes
+-its targets without writing, so it never keeps a record from its last holder.
++its targets without writing, so the last remaining holder of each record it shared writes that
++record back, and a later save reads a record it held alone from the host. A construction that
++throws after the engine claims its host, such as one whose option getter throws, destroys the
++engine before the error propagates: it releases the claim and the listeners and writes back what it
++saved, so a failed construction holds no record. A placement reads every option before its first
++write. A target is named as the platform reads it: an attribute of an HTML element in an HTML
++document, and an inline property other than a custom property, match in any ASCII case, so
++`data-state` and `DATA-STATE` share one record.
+ 
+ Every snapshot that saves a class token on an element also shares one presence record of whether
+ the element carried a `class` attribute, and every snapshot that saves an inline property shares one
+@@ -1334,13 +1341,13 @@ removal. Destruction aborts the wait, so a call awaiting the fade resolves `fals
+ completed event, and restoration writes back every value the tab wrote that no live engine still
+ holds: the roles and states it wrote at construction, and the tokens and states of the control, its
+ pane, the sibling it deactivated, that sibling's pane, and each dropdown. The tabs of one list share
+-one record of each of those targets, as § Ownership and restoration states. Each tab joins the record
+-of every initial role and state its list's plan names, whether it writes the value or finds it
+-already written, and each swap joins the records of the targets it writes. A tab destroyed while
+-another tab of its list lives leaves the list as the live tab shows it, and the last tab of the list
+-to be destroyed writes the list's markup values back, in whatever order the tabs are destroyed and
+-whichever tab swapped first, a tab acquired by a click on a control that was already active
+-included.
++one record of each of those targets, as § Ownership and restoration states. Each tab joins the
++record of every role and state construction writes on its list, whether it writes the value or
++finds it already written, and each swap joins the records of the targets it writes. A tab destroyed
++while another tab of its list lives leaves the list as the live tab shows it, and the last tab of
++the list to be destroyed writes the list's markup values back, in whatever order the tabs are
++destroyed and whichever tab swapped first, a tab acquired by a click on a control that was already
++active included.
+ 
+ The delegate's `tab` option carries the tab's groups. A click inside a control the resolved
+ `trigger` selector matches prevents the click's default action when the control is an anchor or an
+@@ -1826,8 +1833,9 @@ of a touch or pen pointer measures the distance from where the same pointer went
+ distance past the `threshold` option, `40` pixels by default, calls the handler with `left` or
+ `right`, the way the content moved. A pointer going down replaces the pointer recorded before it, a
+ cancelled pointer is discarded, and a mouse pointer is never read. Destruction removes the listeners
+-and restores the token. A carousel passes its own `pointer` token to the swipe it constructs, and a
+-swipe constructed while a reaction to its token write destroyed the carousel is destroyed at once.
++and writes the token back when the swipe holds it last. A carousel passes its own `pointer` token to
++the swipe it constructs, and a swipe constructed while a reaction to its token write destroyed the
++carousel is destroyed at once.
+ 
+ The carousel writes and tests the following class tokens, under the names its `classes` group
+ resolves; each default is the token the shipped cascade selects on.
+@@ -1911,13 +1919,13 @@ takes the change over: its own calls resolve as their slides do, and the call wh
+ resolves `false`. Destruction aborts the wait, so a slide awaiting the transition resolves `false`
+ and dispatches no completed event, and a `slide` call waiting on it resolves `false` as well.
+ Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+-value first, and the swipe then writes back the host's `pointer` token from its own snapshot, so a
+-carousel a reaction to that token constructs finds the items restored. Every swipe on the host
+-shares one record of the `pointer` token, as § Ownership and restoration states: a carousel
+-constructed while the items are restored joins the destroyed carousel's record, so the destroyed
+-swipe's restoration leaves the token to the live carousel, and the last swipe on the host to be
+-destroyed writes the markup's value back. A swipe you construct on a carousel's host shares that
+-record the same way.
++value first, and the swipe then writes back the host's `pointer` token when it holds the token
++last, so a carousel a reaction to that token constructs finds the items restored. Every swipe on
++the host shares one record of the `pointer` token, as § Ownership and restoration states: a
++carousel constructed while the items are restored joins the destroyed carousel's record, so the
++destroyed swipe writes nothing for the token while the live carousel's swipe holds it, and the last
++swipe on the host to be destroyed writes the markup's value back. A swipe you construct on a
++carousel's host shares that record the same way.
+ 
+ The delegate's `carousel` option carries the carousel's groups. A click inside a slide control, an
+ element carrying the resolved `step` or `index` attribute, slides the carousel the control's target
+@@ -1990,8 +1998,8 @@ The carousel departs from Bootstrap's in these ways:
+ - Completion waits on the incoming item's running finite animations. Bootstrap waits on the
+   outgoing item's `transitionend` event with a fallback timer.
+ - Destruction clears both timers, abandons a slide in flight, and restores the items and the
+-  indicators, then the host's `pointer` token. Bootstrap's `dispose` method removes its swipe and its instance data and
+-  restores nothing.
++  indicators, then the host's `pointer` token when its swipe holds the token last. Bootstrap's
++  `dispose` method removes its swipe and its instance data and restores nothing.
+ - A slide control whose `step` value is neither `next` nor `prev` does nothing. Bootstrap's data API
+   reads any value other than `next` as a backward step.
+ - The delegate leaves a carousel outside its root alone, and it acquires the carousels whose ride
+@@ -2846,15 +2854,16 @@ The placement reads the same door after the promotion: when a listener to the pl
+ positions nothing, and the show resolves `false` with the tip where the listener put it. When a
+ listener refuses the tip's promotion, the show removes the tip it built and resolves `false`.
+ Destruction clears the timer, abandons a wait in flight, restores the placement, removes the tip
+-with no event unless other code moved it, takes the tip's id out of `aria-describedby`, and restores
+-the trigger's `title`, `aria-label`, and `aria-describedby` attributes. A popover on the same trigger
+-shares the record of `aria-describedby`, as § Ownership and restoration states, so a tooltip
+-destroyed while that popover lives leaves the attribute naming the popover's tip and no removed tip,
+-and the last of the two to be destroyed writes the markup's value back. An aborted `signal` destroys the tooltip, and so does one that aborts
+-while construction runs. A `destroy` call made from a custom element's reaction to one of the
+-restoration's own attribute writes completes the restoration before it returns: it writes back
+-every target the interrupted restoration still owns, so no write of the destroyed tooltip lands
+-after it.
++with no event unless other code moved it, takes the tip's id out of `aria-describedby`, and
++restores the trigger's `title`, `aria-label`, and `aria-describedby` attributes. A popover on the
++same trigger shares the record of `aria-describedby`, as § Ownership and restoration states, so a
++tooltip destroyed while that popover lives leaves the attribute naming the popover's tip and no
++removed tip, a destruction a listener runs inside a hide's removal of the tip included, and the
++last of the two to be destroyed writes the markup's value back. An aborted `signal` destroys the
++tooltip, and so does one that aborts while construction runs. A `destroy` call made from a custom
++element's reaction to one of the restoration's own attribute writes completes the restoration
++before it returns: it writes back every target the interrupted restoration still owns, so no write
++of the destroyed tooltip lands after it.
+ 
+ The tooltip departs from Bootstrap's in these ways:
+ 
+diff --git a/src/browser/Alert.ts b/src/browser/Alert.ts
+index d9438c4..dbbc223 100644
+--- a/src/browser/Alert.ts
++++ b/src/browser/Alert.ts
+@@ -27,13 +27,14 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * its running animations to settle; it then removes the host from the document, dispatches `closed`
+  * on the removed host, and releases its hooks and its claim as Bootstrap's `dispose` after `closed`
+  * does, keeping the host as the close left it and clearing its snapshot without a write, so an
+- * engine that saves the `shown` token later reads the host. A close is in flight from its dispatch of `close`,
+- * so a close a listener or a reaction starts inside that dispatch resolves `false` and dispatches
+- * nothing. After each write, dispatch, and await, a close reads its lifetime and the host again:
+- * from the removal of the `shown` token on, the host must lack it, and after the removal of the
+- * host, the host must be out of the document. A close that finds the alert destroyed or the host
+- * otherwise stops, writing and dispatching nothing more, and resolves `false`. Destruction restores the `shown` token without removing the host, and an aborted
+- * `signal` destroys the alert.
++ * engine that saves the `shown` token later reads the host. A close is in flight from its dispatch
++ * of `close`, so a close a listener or a reaction starts inside that dispatch resolves `false` and
++ * dispatches nothing. After each write, dispatch, and await, a close reads its lifetime and the
++ * host again: from the removal of the `shown` token on, the host must lack it, and after the
++ * removal of the host, the host must be out of the document. A close that finds the alert destroyed
++ * or the host otherwise stops, writing and dispatching nothing more, and resolves `false`.
++ * Destruction restores the `shown` token without removing the host, and an aborted `signal`
++ * destroys the alert.
+  *
+  * @example
+  * ```ts
+@@ -81,16 +82,23 @@ export class Alert implements AlertInterface {
+ 			options?.attributes,
+ 		)
+ 		resolveVocabulary('ALERT_OPTION_INVALID', ALERT_SELECTORS, isSelector, options?.selectors)
+-		Alert.#registry.claim(host, this)
+ 		this.#host = host
+-		bindEventMap(host, ALERT_EVENTS, isBareEvent, options?.on, this.#controller.signal)
+-		const signal = options?.signal
+-		if (signal?.aborted) this.destroy()
+-		else {
+-			signal?.addEventListener('abort', () => this.destroy(), {
+-				once: true,
+-				signal: this.#controller.signal,
+-			})
++		Alert.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the alert then releases its claim and its listeners before the error propagates.
++		try {
++			bindEventMap(host, ALERT_EVENTS, isBareEvent, options?.on, this.#controller.signal)
++			const signal = options?.signal
++			if (signal?.aborted) this.destroy()
++			else {
++				signal?.addEventListener('abort', () => this.destroy(), {
++					once: true,
++					signal: this.#controller.signal,
++				})
++			}
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+ 	}
+ 
+@@ -150,7 +158,7 @@ export class Alert implements AlertInterface {
+ 	destroy(): void {
+ 		if (this.#controller.signal.aborted) return
+ 		// The claim goes before the host is restored, so an engine constructed while restoration runs
+-		// can claim the host, and its snapshot takes the values this one has still to write back.
++		// can claim the host, and its snapshot joins the records this one has still to write back.
+ 		this.#release()
+ 		this.#snapshot.restore()
+ 	}
+diff --git a/src/browser/Button.ts b/src/browser/Button.ts
+index 620bdd1..60cbbba 100644
+--- a/src/browser/Button.ts
++++ b/src/browser/Button.ts
+@@ -52,18 +52,25 @@ export class Button implements ButtonInterface {
+ 		// The delegate routes by the selectors and the button itself matches with none, so the resolved
+ 		// group is not kept; resolving it still refuses an invalid value at construction.
+ 		resolveVocabulary('BUTTON_OPTION_INVALID', BUTTON_SELECTORS, isSelector, options?.selectors)
+-		Button.#registry.claim(host, this)
+ 		this.#host = host
+-		this.#snapshot.save({ category: 'token', element: host, name: this.#classes.pressed })
+-		this.#snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
+-		bindEventMap(host, BUTTON_EVENTS, isButtonEvent, options?.on, this.#controller.signal)
+-		const signal = options?.signal
+-		if (signal?.aborted) this.destroy()
+-		else {
+-			signal?.addEventListener('abort', () => this.destroy(), {
+-				once: true,
+-				signal: this.#controller.signal,
+-			})
++		Button.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so the
++		// button then releases its claim, its listeners, and its records before the error propagates.
++		try {
++			this.#snapshot.save({ category: 'token', element: host, name: this.#classes.pressed })
++			this.#snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
++			bindEventMap(host, BUTTON_EVENTS, isButtonEvent, options?.on, this.#controller.signal)
++			const signal = options?.signal
++			if (signal?.aborted) this.destroy()
++			else {
++				signal?.addEventListener('abort', () => this.destroy(), {
++					once: true,
++					signal: this.#controller.signal,
++				})
++			}
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+ 	}
+ 
+@@ -107,7 +114,7 @@ export class Button implements ButtonInterface {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+ 		// The claim goes before the host is restored, so an engine constructed while restoration runs
+-		// can claim the host, and its snapshot takes the values this one has still to write back.
++		// can claim the host, and its snapshot joins the records this one has still to write back.
+ 		Button.#registry.release(this.#host, this)
+ 		this.#snapshot.restore()
+ 	}
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index 9a499e6..c31f64f 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -159,48 +159,56 @@ export class Carousel implements CarouselInterface {
+ 			},
+ 			options,
+ 		)
+-		Carousel.#registry.claim(host, this)
+ 		this.#host = host
+-		this.#interval = resolved.interval
+-		this.#ride = resolved.ride
+-		this.#wrap = resolved.wrap
+-		this.#hover = resolved.pause
+-		const signal = this.#controller.signal
+-		bindEventMap(host, CAROUSEL_EVENTS, isCarouselEvent, options?.on, signal)
+-		if (resolved.keyboard) {
+-			host.addEventListener('keydown', (event) => this.#navigate(event), { signal })
+-		}
+-		if (resolved.pause) {
+-			host.addEventListener('mouseenter', () => this.#disarm(), { signal })
+-			host.addEventListener('mouseleave', () => this.#leave(), { signal })
+-		}
+-		const swipe = resolved.touch
+-			? new Swipe(host, {
+-					handler: this.#swiped.bind(this),
+-					classes: { pointer: this.#classes.pointer },
+-				})
+-			: undefined
+-		// A reaction to the swipe's token write can destroy this carousel before the swipe is assigned,
+-		// so a swipe constructed for a destroyed carousel is destroyed rather than kept.
+-		if (signal.aborted) {
+-			swipe?.destroy()
+-			this.#swipe = undefined
+-		} else this.#swipe = swipe
+-		if (resolved.touch) {
+-			host.addEventListener('dragstart', (event) => this.#refuse(event), { signal })
+-		}
+-		if (resolved.touch && resolved.pause) {
+-			host.addEventListener('pointerup', (event) => this.#defer(event), { signal })
+-			host.addEventListener('pointermove', (event) => this.#notice(event), { signal })
+-			host.addEventListener('pointerdown', (event) => this.#notice(event), { signal })
+-			host.addEventListener('pointerup', (event) => this.#notice(event), { signal })
+-		}
+-		const lifetime = options?.signal
+-		if (lifetime?.aborted) this.destroy()
+-		else {
+-			lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
++		Carousel.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the carousel then releases its claim, its listeners, its timer, and its swipe before the
++		// error propagates.
++		try {
++			this.#interval = resolved.interval
++			this.#ride = resolved.ride
++			this.#wrap = resolved.wrap
++			this.#hover = resolved.pause
++			const signal = this.#controller.signal
++			bindEventMap(host, CAROUSEL_EVENTS, isCarouselEvent, options?.on, signal)
++			if (resolved.keyboard) {
++				host.addEventListener('keydown', (event) => this.#navigate(event), { signal })
++			}
++			if (resolved.pause) {
++				host.addEventListener('mouseenter', () => this.#disarm(), { signal })
++				host.addEventListener('mouseleave', () => this.#leave(), { signal })
++			}
++			const swipe = resolved.touch
++				? new Swipe(host, {
++						handler: this.#swiped.bind(this),
++						classes: { pointer: this.#classes.pointer },
++					})
++				: undefined
++			// A reaction to the swipe's token write can destroy this carousel before the swipe is
++			// assigned, so a swipe constructed for a destroyed carousel is destroyed rather than kept.
++			if (signal.aborted) {
++				swipe?.destroy()
++				this.#swipe = undefined
++			} else this.#swipe = swipe
++			if (resolved.touch) {
++				host.addEventListener('dragstart', (event) => this.#refuse(event), { signal })
++			}
++			if (resolved.touch && resolved.pause) {
++				host.addEventListener('pointerup', (event) => this.#defer(event), { signal })
++				host.addEventListener('pointermove', (event) => this.#notice(event), { signal })
++				host.addEventListener('pointerdown', (event) => this.#notice(event), { signal })
++				host.addEventListener('pointerup', (event) => this.#notice(event), { signal })
++			}
++			const lifetime = options?.signal
++			if (lifetime?.aborted) this.destroy()
++			else {
++				lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
++			}
++			if (this.#ride === 'load') this.start()
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+-		if (this.#ride === 'load') this.start()
+ 	}
+ 
+ 	/**
+@@ -265,7 +273,7 @@ export class Carousel implements CarouselInterface {
+ 		this.#disarm()
+ 		clearTimeout(this.#touch)
+ 		// The claim goes before the host is restored, so an engine constructed while restoration runs
+-		// can claim the host, and its snapshot takes the values this one has still to write back. The
++		// can claim the host, and its snapshot joins the records this one has still to write back. The
+ 		// items and indicators restore before the swipe's token, so a carousel a reaction to that token
+ 		// constructs finds them restored.
+ 		Carousel.#registry.release(this.#host, this)
+diff --git a/src/browser/Collapse.ts b/src/browser/Collapse.ts
+index fb3c977..0905ed7 100644
+--- a/src/browser/Collapse.ts
++++ b/src/browser/Collapse.ts
+@@ -115,16 +115,23 @@ export class Collapse implements CollapseInterface {
+ 			{ parent: parseElement },
+ 			options,
+ 		).parent
+-		Collapse.#registry.claim(host, this)
+ 		this.#host = host
+-		bindEventMap(host, COLLAPSE_EVENTS, isBareEvent, options?.on, this.#controller.signal)
+-		const signal = options?.signal
+-		if (signal?.aborted) this.destroy()
+-		else {
+-			signal?.addEventListener('abort', () => this.destroy(), {
+-				once: true,
+-				signal: this.#controller.signal,
+-			})
++		Collapse.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so the
++		// collapse then releases its claim and its listeners before the error propagates.
++		try {
++			bindEventMap(host, COLLAPSE_EVENTS, isBareEvent, options?.on, this.#controller.signal)
++			const signal = options?.signal
++			if (signal?.aborted) this.destroy()
++			else {
++				signal?.addEventListener('abort', () => this.destroy(), {
++					once: true,
++					signal: this.#controller.signal,
++				})
++			}
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+ 	}
+ 
+@@ -268,7 +275,7 @@ export class Collapse implements CollapseInterface {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+ 		// The claim goes before the panel is restored, so an engine constructed while restoration runs
+-		// can claim the panel, and its snapshot takes the values this one has still to write back.
++		// can claim the panel, and its snapshot joins the records this one has still to write back.
+ 		Collapse.#registry.release(this.#host, this)
+ 		this.#snapshot.restore()
+ 		for (const engine of this.#owned) engine.destroy()
+diff --git a/src/browser/Dropdown.ts b/src/browser/Dropdown.ts
+index 25e89a6..91d5c27 100644
+--- a/src/browser/Dropdown.ts
++++ b/src/browser/Dropdown.ts
+@@ -149,24 +149,31 @@ export class Dropdown implements DropdownInterface {
+ 		this.#offset = placement.offset
+ 		this.#static = placement.static
+ 		this.#reference = options?.reference ?? this.#resolveReference(host)
+-		Dropdown.#registry.claim(host, this)
+ 		this.#host = host
+-		this.#menu = menu
+-		bindEventMap(host, DROPDOWN_EVENTS, isDropdownEvent, options?.on, this.#controller.signal)
+-		const owner = host.ownerDocument
+-		owner.addEventListener('click', (event) => this.#lightDismiss(event), {
+-			signal: this.#controller.signal,
+-		})
+-		owner.addEventListener('keyup', (event) => this.#lightDismiss(event), {
+-			signal: this.#controller.signal,
+-		})
+-		const signal = options?.signal
+-		if (signal?.aborted) this.destroy()
+-		else {
+-			signal?.addEventListener('abort', () => this.destroy(), {
+-				once: true,
++		Dropdown.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the dropdown then releases its claim and its listeners before the error propagates.
++		try {
++			this.#menu = menu
++			bindEventMap(host, DROPDOWN_EVENTS, isDropdownEvent, options?.on, this.#controller.signal)
++			const owner = host.ownerDocument
++			owner.addEventListener('click', (event) => this.#lightDismiss(event), {
+ 				signal: this.#controller.signal,
+ 			})
++			owner.addEventListener('keyup', (event) => this.#lightDismiss(event), {
++				signal: this.#controller.signal,
++			})
++			const signal = options?.signal
++			if (signal?.aborted) this.destroy()
++			else {
++				signal?.addEventListener('abort', () => this.destroy(), {
++					once: true,
++					signal: this.#controller.signal,
++				})
++			}
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+ 	}
+ 
+@@ -250,7 +257,7 @@ export class Dropdown implements DropdownInterface {
+ 	destroy(): void {
+ 		if (!this.#controller.signal.aborted) {
+ 			// The claim goes before anything is restored, so an engine constructed while restoration runs
+-			// can claim the toggle, and its snapshot takes the values this one has still to write back.
++			// can claim the toggle, and its snapshot joins the records this one has still to write back.
+ 			// The abort destroys the placement, which holds this dropdown's signal.
+ 			Dropdown.#registry.release(this.#host, this)
+ 			this.#controller.abort()
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index 4ac86bd..260f813 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -1,33 +1,37 @@
+-import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget } from './types.js'
++import type { HostSnapshotInterface, HostSnapshotTarget } from './types.js'
+ 
+ /**
+- * Records host state before an engine first writes it, and writes that state back on restore.
++ * Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.
+  *
+  * @remarks
+  * A record holds an attribute's value, whether a class token is present, or an inline property's
+  * value and priority, and treats absence as a value of its own. Every snapshot that saves one
+  * attribute, class token, or inline property of one element shares one record of it: the first save
+  * made while no snapshot holds the target and no restoration has it still to write back reads the
+- * element, and every later save joins the record. A restoration relinquishes every target its
+- * snapshot holds before its first write, writes nothing for a target another snapshot still holds,
+- * and writes back each target it held last from the record, so the value the target carried before
+- * any holder wrote it returns when the last holder restores, whatever order the holders restore in.
+- * A restoration writes class tokens, removes the `class` attribute when the presence record reads it
+- * absent and the list is empty, writes inline properties, removes the `style` attribute when the
+- * presence record reads it absent and the inline style is empty, and writes attributes last,
+- * whatever order the targets were saved in.
++ * element, and every later save joins the record. A target is named as the platform reads it: an
++ * attribute of an HTML element in an HTML document, and an inline property other than a custom
++ * property, match in any ASCII case, so every spelling of one name joins one record, while another
++ * element's attribute names, custom property names, and class tokens keep their case.
++ *
++ * A restoration relinquishes every target its snapshot holds before its first write, writes nothing
++ * for a target another snapshot still holds, and writes back each target it held last from the
++ * record, so the value the target carried before any holder wrote it returns when the last holder
++ * restores, whatever order the holders restore in. A restoration writes class tokens, removes the
++ * `class` attribute when the presence record reads it absent and the list is empty, writes inline
++ * properties, removes the `style` attribute when the presence record reads it absent and the inline
++ * style is empty, and writes attributes last, whatever order the targets were saved in.
+  *
+  * Every snapshot that saves a class token on an element shares one presence record for the
+  * element's `class` attribute, and every snapshot that saves an inline property shares one for its
+  * `style` attribute. The first of those saves while no snapshot holds the presence record reads
+  * whether the element carries the attribute, each later save joins that reading, and the presence
+- * record is forgotten after the last snapshot holding it restores, so a later save reads the element
+- * again. Every restoration holding a presence record that reads the attribute absent removes it when
+- * the list or the inline style is empty after its own writes, whether or not it held any target
+- * last, including when a save during the restoration takes the snapshot's holding back for its next
+- * restoration. No complete set of restorations, in any order and overlapping or one after another,
+- * and no partial one leaves the attribute present and empty unless a write throws or a `clear` call
+- * ends the restoration.
++ * record is forgotten after the last snapshot holding it restores, so a later save reads the
++ * element again. Every restoration holding a presence record that reads the attribute absent
++ * removes it when the list or the inline style is empty after its own writes, whether or not it
++ * held any target last, including when a save during the restoration rejoins the snapshot's holding
++ * for its next restoration. No complete set of restorations, in any order and overlapping or one
++ * after another, and no partial one leaves the attribute present and empty unless a write throws or
++ * a `clear` call ends the restoration.
+  *
+  * A restoration owns each target it holds last until it writes that target back. A snapshot saved
+  * for such a target, by any engine of any class and by the restoring snapshot itself, joins the
+@@ -36,8 +40,8 @@ import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget }
+  *
+  * A restoration runs synchronously, so only a synchronous reaction to one of its writes, such as a
+  * custom element's attribute reaction, can save, restore, or clear during it; an observer delivery
+- * is a microtask and runs after it. A restore that such a reaction calls on the same snapshot, as an
+- * engine's `destroy` does, writes back every target the interrupted restoration still owns and
++ * is a microtask and runs after it. A restore that such a reaction calls on the same snapshot, as
++ * an engine's `destroy` does, writes back every target the interrupted restoration still owns and
+  * finishes its token and property writes, so when it returns nothing the snapshot held last is left
+  * to write; the target whose write the reaction runs inside is already written, and the interrupted
+  * restoration, resuming, finds every target written back and writes nothing more. A restoration
+@@ -56,8 +60,8 @@ import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget }
+ export class HostSnapshot implements HostSnapshotInterface {
+ 	// The record of every saved target, per element and target key: the value and priority the first
+ 	// save read, the snapshots that hold it, and, once its last holder's restoration has it still to
+-	// write back, the snapshot that owns that write and whether the write has started. The mark is set
+-	// before the write runs, and the record stays owned while it runs, so a save a reaction makes
++	// write back, the snapshot that owns that write and whether the write has started. The mark is
++	// set before the write runs, and the record stays owned while it runs, so a save a reaction makes
+ 	// inside the write still joins it, and a restoration that reaction runs skips it.
+ 	static readonly #records = new WeakMap<
+ 		HTMLElement,
+@@ -86,7 +90,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	#targets: readonly HostSnapshotTarget[] = []
+ 	// Every target this snapshot's restorations in progress own, which a restoration nested in one of
+ 	// them writes back as well.
+-	#published: readonly HostSnapshotTarget[] = []
++	#owned: readonly HostSnapshotTarget[] = []
+ 	// The presence records this snapshot holds: those its saves joined since its last restoration
+ 	// began, and those a restoration in progress leaves after its token or property writes.
+ 	#joined: ReadonlyArray<{ readonly element: HTMLElement; readonly attribute: 'class' | 'style' }> =
+@@ -98,11 +102,11 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 
+ 	save(target: HostSnapshotTarget): void {
+ 		const { category, element, name } = target
++		const key = HostSnapshot.#key(target)
+ 		const held = this.#targets.some(
+-			(saved) => saved.category === category && saved.element === element && saved.name === name,
++			(saved) => saved.element === element && HostSnapshot.#key(saved) === key,
+ 		)
+ 		if (held) return
+-		const key = HostSnapshot.#key(category, name)
+ 		const records =
+ 			HostSnapshot.#records.get(element) ??
+ 			new Map<
+@@ -148,16 +152,16 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	}
+ 
+ 	restore(): void {
+-		const owned = this.#relinquish(true)
++		const passed = this.#relinquish(true)
+ 		// A reaction to one of these writes can call restore on this snapshot again. That nested
+ 		// restoration walks every target an interrupted one owns and leaves every presence record it
+ 		// holds, so this call, resuming, finds each written or left and skips it.
+-		this.#published = [...this.#published, ...owned]
++		this.#owned = [...this.#owned, ...passed]
+ 		this.#leaving = [...this.#leaving, ...this.#joined]
+ 		this.#joined = []
+-		const targets = this.#published
++		const targets = this.#owned
+ 		// The presence records this call holds when its writes begin. A save a reaction makes during
+-		// those writes can take one back, and the call still removes the attribute left empty.
++		// those writes can rejoin one, and the call still removes the attribute left empty.
+ 		const held = this.#leaving
+ 		try {
+ 			for (const target of targets) {
+@@ -192,20 +196,20 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 				})
+ 			}
+ 		} finally {
+-			for (const { category, element, name } of targets) {
+-				HostSnapshot.#withdraw(element, HostSnapshot.#key(category, name), this)
++			for (const target of targets) {
++				HostSnapshot.#withdraw(target.element, HostSnapshot.#key(target), this)
+ 			}
+ 			for (const { element, attribute } of this.#leaving) this.#leave(element, attribute)
+-			this.#published = []
++			this.#owned = []
+ 		}
+ 	}
+ 
+ 	clear(): void {
+ 		this.#relinquish(false)
+-		for (const { category, element, name } of this.#published) {
+-			HostSnapshot.#withdraw(element, HostSnapshot.#key(category, name), this)
++		for (const target of this.#owned) {
++			HostSnapshot.#withdraw(target.element, HostSnapshot.#key(target), this)
+ 		}
+-		this.#published = []
++		this.#owned = []
+ 		// Leaving every presence record without reading it judges no removal, so a restoration this
+ 		// clear interrupts finds none left to judge.
+ 		this.#leaving = [...this.#leaving, ...this.#joined]
+@@ -220,9 +224,9 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	#relinquish(restoring: boolean): readonly HostSnapshotTarget[] {
+ 		const targets = this.#targets
+ 		this.#targets = []
+-		const owned: HostSnapshotTarget[] = []
++		const passed: HostSnapshotTarget[] = []
+ 		for (const target of targets) {
+-			const key = HostSnapshot.#key(target.category, target.name)
++			const key = HostSnapshot.#key(target)
+ 			const records = HostSnapshot.#records.get(target.element)
+ 			const record = records?.get(key)
+ 			if (records === undefined || record === undefined) continue
+@@ -230,18 +234,18 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			if (holders.size > 0) records.set(key, { ...record, holders })
+ 			else if (restoring) {
+ 				records.set(key, { ...record, holders, owner: this, written: false })
+-				owned.push(target)
++				passed.push(target)
+ 			} else {
+ 				records.delete(key)
+ 				if (records.size === 0) HostSnapshot.#records.delete(target.element)
+ 			}
+ 		}
+-		return owned
++		return passed
+ 	}
+ 
+ 	// Joins the element's presence record for the attribute a token or a property lives in, reading
+ 	// whether the element carries the attribute when no snapshot holds the record. A save made while
+-	// a restoration of this snapshot has still to leave the record takes that holding back, and the
++	// a restoration of this snapshot has still to leave the record rejoins that holding, and the
+ 	// snapshot then leaves the record at its next restoration, the one that writes the saved target.
+ 	#join(element: HTMLElement, attribute: 'class' | 'style'): void {
+ 		const joined = this.#joined.some(
+@@ -308,9 +312,18 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		return HostSnapshot.#presence.get(element)?.get(attribute)?.present === false
+ 	}
+ 
+-	// Names a target inside an element's records.
+-	static #key(category: HostSnapshotCategory, name: string): string {
+-		return `${category}:${name}`
++	// Names a target inside its element's records by the name the platform resolves, so every
++	// spelling of one name keys one record. The attribute accessors of an element in the HTML
++	// namespace whose node document is an HTML document, and the inline style accessors for a
++	// property that is not a custom property, read and write the name in ASCII lowercase; every other
++	// name, and every class token, keeps its case.
++	static #key({ category, element, name }: HostSnapshotTarget): string {
++		const folded =
++			(category === 'attribute' &&
++				element.namespaceURI === 'http://www.w3.org/1999/xhtml' &&
++				element.ownerDocument.contentType === 'text/html') ||
++			(category === 'property' && !name.startsWith('--'))
++		return `${category}:${folded ? name.replace(/[A-Z]/g, (letter) => letter.toLowerCase()) : name}`
+ 	}
+ 
+ 	// Runs one write back of a target the snapshot owns and no restoration has started writing, with
+@@ -322,7 +335,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		write: (value: string | undefined, priority: string) => void,
+ 	): void {
+ 		const { element } = target
+-		const key = HostSnapshot.#key(target.category, target.name)
++		const key = HostSnapshot.#key(target)
+ 		const records = HostSnapshot.#records.get(element)
+ 		const record = records?.get(key)
+ 		if (records === undefined || record === undefined || record.owner !== owner || record.written) {
+diff --git a/src/browser/Placement.ts b/src/browser/Placement.ts
+index 471618d..ffd9c21 100644
+--- a/src/browser/Placement.ts
++++ b/src/browser/Placement.ts
+@@ -43,7 +43,9 @@ import { isAttributeName } from './validators.js'
+  * before the first positioning write: when it returns `false`, the placement hides the element,
+  * restores what it wrote, positions nothing, and leaves the element where it is, so an owner whose
+  * element a `beforetoggle` listener took over keeps no promotion of it. When it throws, the placement
+- * restores what it wrote the same way before the error reaches the caller.
++ * restores what it wrote the same way before the error reaches the caller. Every other option and
++ * the input's `popover` member are read before the first write, so a read that throws leaves the
++ * element as the placement found it.
+  * Destruction hides the popover and restores every attribute and declaration the placement wrote,
+  * keeping every later edit.
+  *
+@@ -97,6 +99,14 @@ export class Placement implements PlacementInterface {
+ 		this.#reference = reference
+ 		this.#element = element
+ 		this.#arrow = arrow
++		// Every option and input member is read before the first save, so a read that throws leaves
++		// nothing recorded, promoted, or written.
++		const popover = input.popover ?? 'manual'
++		const area = PLACEMENT_AREAS[options?.position ?? PLACEMENT_DEFAULTS.position]
++		const side = area.split(' ')[0]
++		const vertical = side === 'top' || side === 'bottom'
++		const [skid, distance] = options?.offset ?? PLACEMENT_DEFAULTS.offset
++		const fallbacks = options?.fallbacks
+ 		const signal = options?.signal
+ 		signal?.addEventListener('abort', () => this.destroy(), {
+ 			once: true,
+@@ -110,7 +120,7 @@ export class Placement implements PlacementInterface {
+ 		const style = getComputedStyle(element)
+ 		const unpromoted = POPOVER_PROPERTIES.map((name) => style.getPropertyValue(name))
+ 		this.#snapshot.save({ category: 'attribute', element, name: 'popover' })
+-		element.setAttribute('popover', input.popover ?? 'manual')
++		element.setAttribute('popover', popover)
+ 		// A reaction to the attribute write, and a listener to the `beforetoggle` event the promotion
+ 		// dispatches, can abort the signal or refuse the promotion, so both are read after each one.
+ 		if (this.#halted(signal)) return
+@@ -143,11 +153,6 @@ export class Placement implements PlacementInterface {
+ 				this.#write(element, name, value)
+ 			}
+ 		})
+-		const area = PLACEMENT_AREAS[options?.position ?? PLACEMENT_DEFAULTS.position]
+-		const side = area.split(' ')[0]
+-		const vertical = side === 'top' || side === 'bottom'
+-		const [skid, distance] = options?.offset ?? PLACEMENT_DEFAULTS.offset
+-		const fallbacks = options?.fallbacks
+ 		const anchor = `--vn-placement-${Placement.#count++}`
+ 		this.#write(element, 'position', 'fixed')
+ 		for (const edge of ['top', 'right', 'bottom', 'left']) this.#write(element, edge, 'auto')
+diff --git a/src/browser/ScrollLock.ts b/src/browser/ScrollLock.ts
+index 482ddbb..8c19872 100644
+--- a/src/browser/ScrollLock.ts
++++ b/src/browser/ScrollLock.ts
+@@ -118,7 +118,7 @@ export class ScrollLock implements ScrollLockInterface {
+ 		if (held === undefined || !held.holders.delete(this)) return
+ 		if (held.holders.size > 0) return
+ 		// The count leaves the record before the restoration, so a lock taken in reaction to a
+-		// restoring write starts a fresh count, and its snapshot takes the values still to write back.
++		// restoring write starts a fresh count, and its snapshot joins the records still to write back.
+ 		ScrollLock.#locks.delete(this.#document)
+ 		held.snapshot.restore()
+ 	}
+diff --git a/src/browser/ScrollSpy.ts b/src/browser/ScrollSpy.ts
+index 2bd3aaf..f8e5cfa 100644
+--- a/src/browser/ScrollSpy.ts
++++ b/src/browser/ScrollSpy.ts
+@@ -150,23 +150,31 @@ export class ScrollSpy implements ScrollSpyInterface {
+ 		this.#margin = margin
+ 		// A copy, so a later change to the caller's array leaves the ratios read here.
+ 		this.#threshold = Object.freeze([...threshold])
+-		ScrollSpy.#registry.claim(host, this)
+ 		this.#host = host
+-		this.#target = resolved.target ?? host.ownerDocument.body
+-		bindEventMap(host, SCROLL_SPY_EVENTS, isScrollSpyEvent, options?.on, this.#controller.signal)
+-		if (resolved.smooth === true) {
+-			this.#target.addEventListener('click', (event) => this.#scrollTo(event), {
+-				signal: this.#controller.signal,
+-			})
+-		}
+-		const signal = options?.signal
+-		if (signal?.aborted) this.destroy()
+-		else {
+-			signal?.addEventListener('abort', () => this.destroy(), {
+-				once: true,
+-				signal: this.#controller.signal,
+-			})
+-			this.refresh()
++		ScrollSpy.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the scroll spy then releases its claim, its listeners, and its observer before the error
++		// propagates.
++		try {
++			this.#target = resolved.target ?? host.ownerDocument.body
++			bindEventMap(host, SCROLL_SPY_EVENTS, isScrollSpyEvent, options?.on, this.#controller.signal)
++			if (resolved.smooth === true) {
++				this.#target.addEventListener('click', (event) => this.#scrollTo(event), {
++					signal: this.#controller.signal,
++				})
++			}
++			const signal = options?.signal
++			if (signal?.aborted) this.destroy()
++			else {
++				signal?.addEventListener('abort', () => this.destroy(), {
++					once: true,
++					signal: this.#controller.signal,
++				})
++				this.refresh()
++			}
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+ 	}
+ 
+@@ -232,7 +240,7 @@ export class ScrollSpy implements ScrollSpyInterface {
+ 		this.#observer = undefined
+ 		this.#link = undefined
+ 		// The claim goes before the links are restored, so an engine constructed while restoration runs
+-		// can claim the host, and its snapshot takes the values this one has still to write back.
++		// can claim the host, and its snapshot joins the records this one has still to write back.
+ 		ScrollSpy.#registry.release(this.#host, this)
+ 		this.#snapshot.restore()
+ 	}
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+index fe9edba..fe76b8a 100644
+--- a/src/browser/Tab.ts
++++ b/src/browser/Tab.ts
+@@ -47,8 +47,8 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * each write to the pane the pane must carry every token written so far. A call that finds the tab
+  * destroyed, a later call started, or the list, the host, or the pane otherwise stops, writing and
+  * dispatching nothing more, and resolves `false`. Destruction restores every value the tab wrote
+- * that no live engine still holds. Each tab joins the record of every initial role and state its
+- * list's plan names, whether it writes the value or finds it already written, and the last engine
++ * that no live engine still holds. Each tab joins the record of every role and state construction
++ * writes on its list, whether it writes the value or finds it already written, and the last engine
+  * holding a record writes its value back, so the list returns to its markup after its last tab is
+  * destroyed. An aborted `signal` destroys the tab. The keyboard is the delegate's: the tab listens
+  * for no key.
+@@ -109,18 +109,26 @@ export class Tab implements TabInterface {
+ 		)
+ 		this.#host = host
+ 		this.#pane = readTarget(host, this.#attributes)
+-		// The list's plan is read before the claim, so a pane selector that throws leaves the host unclaimed.
++		// The initial roles and states are read before the claim, so a pane selector that throws leaves
++		// the host unclaimed.
+ 		const plan = this.#planInitial()
+ 		Tab.#registry.claim(host, this)
+-		bindEventMap(host, TAB_EVENTS, isRelatedEvent, options?.on, this.#controller.signal)
+-		const signal = options?.signal
+-		if (signal?.aborted) this.destroy()
+-		else {
+-			signal?.addEventListener('abort', () => this.destroy(), {
+-				once: true,
+-				signal: this.#controller.signal,
+-			})
+-			this.#writeInitial(plan)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the tab then releases its claim, its listeners, and its records before the error propagates.
++		try {
++			bindEventMap(host, TAB_EVENTS, isRelatedEvent, options?.on, this.#controller.signal)
++			const signal = options?.signal
++			if (signal?.aborted) this.destroy()
++			else {
++				signal?.addEventListener('abort', () => this.destroy(), {
++					once: true,
++					signal: this.#controller.signal,
++				})
++				this.#writeInitial(plan)
++			}
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+ 	}
+ 
+@@ -219,7 +227,7 @@ export class Tab implements TabInterface {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+ 		// The claim goes before the controls are restored, so an engine constructed while restoration
+-		// runs can claim the host, and its snapshot takes the values this one has still to write back.
++		// runs can claim the host, and its snapshot joins the records this one has still to write back.
+ 		Tab.#registry.release(this.#host, this)
+ 		this.#snapshot.restore()
+ 	}
+@@ -287,7 +295,7 @@ export class Tab implements TabInterface {
+ 		}
+ 	}
+ 
+-	// Lists every initial role and state the list's plan names, each with the value the attribute
++	// Lists every role and state construction writes on the list, each with the value the attribute
+ 	// takes: the value Bootstrap writes, or, for an attribute it sets only when absent, the value the
+ 	// element already carries. The first entry planned for an attribute wins, as Bootstrap's
+ 	// `_setAttributeIfNotExists` leaves the first value in place.
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+index 437d067..b79e662 100644
+--- a/src/browser/Toast.ts
++++ b/src/browser/Toast.ts
+@@ -108,23 +108,30 @@ export class Toast implements ToastInterface {
+ 		this.#animated = resolved.animated
+ 		this.#autohide = resolved.autohide
+ 		this.#delay = resolved.delay
+-		Toast.#registry.claim(host, this)
+ 		this.#host = host
+-		const signal = this.#controller.signal
+-		bindEventMap(host, TOAST_EVENTS, isBareEvent, options?.on, signal)
+-		host.addEventListener('mouseover', () => this.#disarm(), { signal })
+-		host.addEventListener('focusin', () => this.#disarm(), { signal })
+-		host.addEventListener(
+-			'mouseout',
+-			(event) => this.#leave(event.relatedTarget, ':focus-within'),
+-			{ signal },
+-		)
+-		host.addEventListener('focusout', (event) => this.#leave(event.relatedTarget, ':hover'), {
+-			signal,
+-		})
+-		const lifetime = options?.signal
+-		if (lifetime?.aborted) this.destroy()
+-		else lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
++		Toast.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the toast then releases its claim and its listeners before the error propagates.
++		try {
++			const signal = this.#controller.signal
++			bindEventMap(host, TOAST_EVENTS, isBareEvent, options?.on, signal)
++			host.addEventListener('mouseover', () => this.#disarm(), { signal })
++			host.addEventListener('focusin', () => this.#disarm(), { signal })
++			host.addEventListener(
++				'mouseout',
++				(event) => this.#leave(event.relatedTarget, ':focus-within'),
++				{ signal },
++			)
++			host.addEventListener('focusout', (event) => this.#leave(event.relatedTarget, ':hover'), {
++				signal,
++			})
++			const lifetime = options?.signal
++			if (lifetime?.aborted) this.destroy()
++			else lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
++		} catch (error) {
++			this.destroy()
++			throw error
++		}
+ 	}
+ 
+ 	/**
+@@ -226,7 +233,7 @@ export class Toast implements ToastInterface {
+ 		this.#controller.abort()
+ 		this.#disarm()
+ 		// The claim goes before the host is restored, so an engine constructed while restoration runs
+-		// can claim the host, and its snapshot takes the values this one has still to write back.
++		// can claim the host, and its snapshot joins the records this one has still to write back.
+ 		Toast.#registry.release(this.#host, this)
+ 		this.#snapshot.restore()
+ 	}
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index d636496..26238ef 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -344,28 +344,36 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		this.#profile = profile
+ 		this.#class = new.target
+ 		this.#registry = Tooltip.#resolveRegistry(profile)
+-		this.#registry.claim(host, this)
+ 		this.#host = host
+-		const signal = this.#controller.signal
+-		bindEventMap(host, profile.events, isBareEvent, settings?.on, signal)
+-		if (hover) {
+-			host.addEventListener('mouseover', (event) => this.#over(event), { signal })
+-			host.addEventListener('mouseout', (event) => this.#out(event), { signal })
+-		}
+-		if (focus) {
+-			host.addEventListener('focusin', (event) => this.#focus(event), { signal })
+-			host.addEventListener('focusout', (event) => this.#blur(event), { signal })
++		this.#registry.claim(host, this)
++		// An option read or a hook read can throw after the claim, which ends the construction, so
++		// the tooltip then releases its claim, its listeners, and its records before the error
++		// propagates.
++		try {
++			const signal = this.#controller.signal
++			bindEventMap(host, profile.events, isBareEvent, settings?.on, signal)
++			if (hover) {
++				host.addEventListener('mouseover', (event) => this.#over(event), { signal })
++				host.addEventListener('mouseout', (event) => this.#out(event), { signal })
++			}
++			if (focus) {
++				host.addEventListener('focusin', (event) => this.#focus(event), { signal })
++				host.addEventListener('focusout', (event) => this.#blur(event), { signal })
++			}
++			if (click) host.addEventListener('click', (event) => this.#click(event), { signal })
++			readClosest(host, `.${CSS.escape(this.#classes.modal)}`)?.addEventListener(
++				MODAL_EVENTS.hide,
++				() => void this.hide(),
++				{ signal },
++			)
++			if (fallback !== undefined) this.#retitle(fallback)
++			const lifetime = settings?.signal
++			if (lifetime?.aborted) this.destroy()
++			else lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
++		} catch (error) {
++			this.destroy()
++			throw error
+ 		}
+-		if (click) host.addEventListener('click', (event) => this.#click(event), { signal })
+-		readClosest(host, `.${CSS.escape(this.#classes.modal)}`)?.addEventListener(
+-			MODAL_EVENTS.hide,
+-			() => void this.hide(),
+-			{ signal },
+-		)
+-		if (fallback !== undefined) this.#retitle(fallback)
+-		const lifetime = settings?.signal
+-		if (lifetime?.aborted) this.destroy()
+-		else lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
+ 	}
+ 
+ 	/**
+@@ -496,9 +504,10 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		}
+ 		this.#disarm()
+ 		this.#discard(false)
+-		// The discard of a destroyed tooltip leaves its tip's id in `aria-describedby`, and a restoration
+-		// that is not the last holder of that attribute writes nothing, so the id is taken out here,
+-		// before the restoration, while another engine's tip stays named.
++		// The discard of a destroyed tooltip leaves its tip's id in `aria-describedby`, and a
++		// restoration that is not the last holder of that attribute writes nothing, so the id is taken
++		// out here, before the restoration, while another engine's tip stays named. A destroy a
++		// listener runs inside a hide's discard finds the tip forgotten and the id still linked.
+ 		const linked = this.#linked
+ 		if (linked !== undefined) this.#link(linked, false)
+ 		this.#release(() => false)
+@@ -743,8 +752,9 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 	}
+ 
+ 	// Adds an id to the trigger's `aria-describedby` list, or takes it out and removes an emptied
+-	// attribute, joining the attribute's record before its first write so destruction restores it. The id
+-	// is marked linked before the write, so a destroy a reaction to the write runs takes it out.
++	// attribute, joining the attribute's record before its first write so destruction restores it.
++	// The id is marked linked before the write, so a destroy a reaction to the write runs takes it
++	// out.
+ 	#link(id: string, present: boolean): void {
+ 		const name = 'aria-describedby'
+ 		const host = this.#host
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 694fb9e..5d91644 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -339,7 +339,7 @@ export interface HostSnapshotTarget {
+ 	readonly name: string
+ }
+ 
+-/** Records host state before an engine writes it and writes that state back on restore. */
++/** Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores. */
+ export interface HostSnapshotInterface {
+ 	/**
+ 	 * Joins the target's record, reading the element's value only when no snapshot holds the target and no restoration has it still to write back.
+@@ -353,7 +353,10 @@ export interface HostSnapshotInterface {
+ 	 * save made while a restoration has the target still to write back, this snapshot's own included,
+ 	 * joins that record rather than reading the half-restored element, and the restoration leaves the
+ 	 * target to the saving snapshot. A later save of a target the snapshot already holds changes
+-	 * nothing.
++	 * nothing. A target is named as the platform reads it: an attribute of an HTML element in an HTML
++	 * document, and an inline property other than a custom property, match in any ASCII case, so
++	 * `data-state` and `DATA-STATE` name one record, while another element's attribute names, custom
++	 * property names, and class tokens keep their case.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.save({ category: 'attribute', element: host, name: 'aria-expanded' })
+@@ -372,13 +375,13 @@ export interface HostSnapshotInterface {
+ 	 * consumer edit. Every snapshot that saves a class token on an element shares one presence record
+ 	 * of whether the element carried a `class` attribute, and every snapshot that saves an inline
+ 	 * property shares one of its `style` attribute. The presence record is read at the first of those
+-	 * saves while no snapshot holds it, and forgotten after the last snapshot holding it restores, so a
+-	 * later save reads the element again. The writes run in a fixed order: class tokens, then the
++	 * saves while no snapshot holds it, and forgotten after the last snapshot holding it restores, so
++	 * a later save reads the element again. The writes run in a fixed order: class tokens, then the
+ 	 * removal of a `class` attribute the presence record reads as absent when the list is empty, then
+ 	 * inline properties, then the removal of a `style` attribute the presence record reads as absent
+-	 * when the inline style is empty, and attributes last. Every restoration holding a presence record
+-	 * that reads the attribute absent judges that removal after its own writes, whether or not it
+-	 * holds any target last, so a restoration that leaves a live holder removes an attribute left
++	 * when the inline style is empty, and attributes last. Every restoration holding a presence
++	 * record that reads the attribute absent judges that removal after its own writes, whether or not
++	 * it holds any target last, so a restoration that leaves a live holder removes an attribute left
+ 	 * empty. No complete set of restorations, in any order and overlapping or one after another, by
+ 	 * engines of any class, and no partial one leaves the attribute present and empty unless a write
+ 	 * throws or a `clear` call ends the restoration. A target the restoration has still to write back
+@@ -400,12 +403,12 @@ export interface HostSnapshotInterface {
+ 	 * Relinquishes every target this snapshot holds and every target its restorations have still to write back, writing nothing.
+ 	 *
+ 	 * @remarks
+-	 * A record another snapshot still holds keeps its value, and that snapshot's restoration writes it
+-	 * back. A record the clear leaves with no holder is forgotten, so a later save reads the element
+-	 * again. The snapshot leaves its presence records without judging a removal, so a restoration a
+-	 * reaction interrupts with a clear writes nothing more. A clear of a snapshot that holds nothing
+-	 * does nothing. An engine calls it where its lifetime ends without restoring, as an alert's
+-	 * completed close does.
++	 * A record another snapshot still holds keeps its value, and that snapshot's restoration writes
++	 * it back. A record the clear leaves with no holder is forgotten, so a later save reads the
++	 * element again. The snapshot leaves its presence records without judging a removal, so a
++	 * restoration a reaction interrupts with a clear writes nothing more. A clear of a snapshot that
++	 * holds nothing does nothing. An engine calls it where its lifetime ends without restoring, as an
++	 * alert's completed close does.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.clear()
+@@ -1141,7 +1144,7 @@ export interface TabOptions {
+ 	readonly signal?: AbortSignal
+ }
+ 
+-/** Describes one attribute a tab writes at construction: the element, the attribute's name, and the value it takes. */
++/** Describes one role or state a tab's construction sets on its list: the element, the attribute's name, and the value it takes. */
+ export interface TabInitialWrite {
+ 	/** Carries the element the attribute is written on: the list, a control, a control's wrapper, or a control's pane. */
+ 	readonly element: HTMLElement
+diff --git a/tests/src/browser/Alert.test.ts b/tests/src/browser/Alert.test.ts
+index ea79278..8697fc5 100644
+--- a/tests/src/browser/Alert.test.ts
++++ b/tests/src/browser/Alert.test.ts
+@@ -335,6 +335,24 @@ describe('Alert', () => {
+ 		expect(Alert.find(host)).toBe(alert)
+ 	})
+ 
++	it('releases its claim when an option read throws during construction', () => {
++		const root = scene.mount('<div class="alert show">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
++		const failed = attempt(
++			() =>
++				new Alert(host, {
++					get on(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Alert.find(host)).toBeUndefined()
++		const replacement = new Alert(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Alert.find(host)).toBe(replacement)
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(Alert, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index 511a7dd..fbf37ce 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -1,5 +1,5 @@
+ import type { ButtonDetail, ButtonInterface } from '@src/browser'
+-import { Button, BUTTON_CLASSES, BUTTON_EVENTS, BUTTON_SELECTORS } from '@src/browser'
++import { Button, BUTTON_CLASSES, BUTTON_EVENTS, BUTTON_SELECTORS, HostSnapshot } from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder } from '@orkestrel/test'
+@@ -8,6 +8,28 @@ import { describe, expect, it, onTestFinished } from 'vitest'
+ import { BUTTON_RESTORATIONS, recordEvents } from '../../setupBrowser.js'
+ 
+ describe('Button', () => {
++	it('releases its claim and its records when an option read throws during construction', () => {
++		const host = build('button')
++		const failed = attempt(
++			() =>
++				new Button(host, {
++					get on(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Button.find(host)).toBeUndefined()
++		const snapshot = new HostSnapshot()
++		snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
++		host.setAttribute('aria-pressed', 'true')
++		snapshot.restore()
++		expect(host.hasAttribute('aria-pressed')).toBe(false)
++		const button = new Button(host)
++		onTestFinished(() => button.destroy())
++		expect(Button.find(host)).toBe(button)
++	})
++
+ 	it('constructs over button and anchor hosts without normalizing their markup', () => {
+ 		const host = build('button')
+ 		const anchor = build('a', { attributes: { href: '#target', role: 'button' } })
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index d124836..2e9fc0f 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -2138,6 +2138,31 @@ describe('Carousel', () => {
+ 		expect(Carousel.find(host)).toBe(carousel)
+ 	})
+ 
++	it('releases its claim and restores the pointer token when an option read throws during construction', () => {
++		const root = scene.mount(`
++			<div class="carousel">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('.carousel'), 'No carousel')
++		const failed = attempt(
++			() =>
++				new Carousel(host, {
++					get signal(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Carousel.find(host)).toBeUndefined()
++		expect(Array.from(host.classList)).toEqual(['carousel'])
++		const replacement = new Carousel(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Carousel.find(host)).toBe(replacement)
++		replacement.destroy()
++		expect(Array.from(host.classList)).toEqual(['carousel'])
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(Carousel, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/Collapse.test.ts b/tests/src/browser/Collapse.test.ts
+index b8feab2..77d3029 100644
+--- a/tests/src/browser/Collapse.test.ts
++++ b/tests/src/browser/Collapse.test.ts
+@@ -661,6 +661,24 @@ describe('Collapse', () => {
+ 		expect(Collapse.find(panel)).toBe(parented)
+ 	})
+ 
++	it('releases its claim when an option read throws during construction', () => {
++		const root = scene.mount('<div id="details" class="collapse"></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
++		const failed = attempt(
++			() =>
++				new Collapse(host, {
++					get on(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Collapse.find(host)).toBeUndefined()
++		const collapse = new Collapse(host)
++		onTestFinished(() => collapse.destroy())
++		expect(Collapse.find(host)).toBe(collapse)
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(Collapse, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/Dropdown.test.ts b/tests/src/browser/Dropdown.test.ts
+index 1d21fb0..bb00d08 100644
+--- a/tests/src/browser/Dropdown.test.ts
++++ b/tests/src/browser/Dropdown.test.ts
+@@ -864,6 +864,28 @@ describe('Dropdown', () => {
+ 		expect(second.menu.id).toBe('markup')
+ 	})
+ 
++	it('releases its claim and its listeners when an option read throws during construction', () => {
++		const root = scene.mount(`
++			<div class="dropdown">
++				<button type="button" id="toggle" data-bs-toggle="dropdown">Menu</button>
++				<ul class="dropdown-menu"></ul>
++			</div>`)
++		const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
++		const failed = attempt(
++			() =>
++				new Dropdown(toggle, {
++					get signal(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Dropdown.find(toggle)).toBeUndefined()
++		const replacement = new Dropdown(toggle)
++		onTestFinished(() => replacement.destroy())
++		expect(Dropdown.find(toggle)).toBe(replacement)
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(Dropdown, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/HostSnapshot.test.ts b/tests/src/browser/HostSnapshot.test.ts
+index 8760b2c..ee1e0b0 100644
+--- a/tests/src/browser/HostSnapshot.test.ts
++++ b/tests/src/browser/HostSnapshot.test.ts
+@@ -154,7 +154,7 @@ describe('HostSnapshot', () => {
+ 
+ 	// A custom element's attribute reaction runs inside the write that triggers it, so a snapshot the
+ 	// reaction saves is saved while the first snapshot is still restoring the same element.
+-	it('hands a pending original to a snapshot saved during a restoration, which then skips that target', () => {
++	it('joins a snapshot saved during a restoration to the record the restoration still owns, which then skips that target', () => {
+ 		const name = 'vn-probe-snapshot-handoff'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -228,7 +228,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('class')).toBe(false)
+ 	})
+ 
+-	it('records the live element for a target already written back when a reaction to a later write saves it', () => {
++	it('reads the live element for a target already written back when a reaction to a later write saves it', () => {
+ 		const name = 'vn-probe-snapshot-written'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -264,7 +264,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('aria-expanded')).toBe('false')
+ 	})
+ 
+-	it('hands a snapshot its own pending original when it saves the target during its own restoration', () => {
++	it('rejoins a snapshot to its own record when it saves the target during its own restoration', () => {
+ 		const name = 'vn-probe-snapshot-self'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -356,7 +356,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.style.getPropertyValue('height')).toBe('30px')
+ 	})
+ 
+-	it('writes an overlapping target back from its first save value at the last holder restoration, whichever restoration starts first', () => {
++	it('writes an overlapping target back from its record at the last holder restoration, whichever restoration starts first', () => {
+ 		const name = 'vn-probe-snapshot-overlap'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -417,8 +417,8 @@ describe('HostSnapshot', () => {
+ 		expect(reversed.getAttribute('data-state')).toBe('live')
+ 	})
+ 
+-	it('writes the first save value back after three overlapping holders, one saved inside another restoration, have all restored', () => {
+-		const name = 'vn-probe-snapshot-stamp'
++	it('writes the record value back after three overlapping holders, one saved inside another restoration, have all restored', () => {
++		const name = 'vn-probe-snapshot-three-holders'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+ 			name,
+@@ -455,7 +455,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('data-state')).toBe('original')
+ 	})
+ 
+-	it('leaves a shared target to the holder a reaction restores, which writes the first save value back', () => {
++	it('leaves a shared target to the holder a reaction restores, which writes the record value back', () => {
+ 		const name = 'vn-probe-snapshot-written-overlap'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -665,7 +665,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('class')).toBe(false)
+ 	})
+ 
+-	it('removes the class attribute its own writes left empty when a save during its restoration takes its share back', () => {
++	it('removes the class attribute its own writes left empty when a save during its restoration rejoins its share', () => {
+ 		const name = 'vn-probe-snapshot-taken-back'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -982,7 +982,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('style')).toBe(false)
+ 	})
+ 
+-	it('writes a target two snapshots share back only at the last holder restoration, from the first save value, in either order', () => {
++	it('writes a target two snapshots share back only at the last holder restoration, from its record, in either order', () => {
+ 		for (const ordered of [true, false]) {
+ 			const host = build('div', { attributes: { 'data-state': 'original' } })
+ 			host.style.setProperty('height', '10px', 'important')
+@@ -1013,7 +1013,7 @@ describe('HostSnapshot', () => {
+ 		}
+ 	})
+ 
+-	it('keeps the value a live holder wrote when a save during another holder restoration joins the target, and writes the first save value after the last holder restores', () => {
++	it('keeps the value a live holder wrote when a save during another holder restoration joins the target, and writes the record value back after the last holder restores', () => {
+ 		const name = 'vn-probe-snapshot-joined-during'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -1100,7 +1100,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('data-state')).toBe('original')
+ 	})
+ 
+-	it('relinquishes its holdings on clear without writing, so the last remaining holder writes the first save value back', () => {
++	it('relinquishes its holdings on clear without writing, so the last remaining holder writes the record value back', () => {
+ 		const host = build('div', { attributes: { 'data-state': 'original' } })
+ 		const cleared = new HostSnapshot()
+ 		cleared.save({ category: 'attribute', element: host, name: 'data-state' })
+@@ -1176,7 +1176,103 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('data-state')).toBe('changed')
+ 	})
+ 
+-	it('keeps the first recording of a target saved twice', () => {
++	it('joins one record for an attribute or a property saved under two spellings of its name on an HTML element, in either release order', () => {
++		for (const ordered of [true, false]) {
++			const host = build('div', { attributes: { 'data-state': 'original' } })
++			host.style.setProperty('height', '10px')
++			const first = new HostSnapshot()
++			first.save({ category: 'attribute', element: host, name: 'data-state' })
++			first.save({ category: 'property', element: host, name: 'height' })
++			host.setAttribute('data-state', 'first')
++			host.style.setProperty('height', '20px')
++			const second = new HostSnapshot()
++			second.save({ category: 'attribute', element: host, name: 'DATA-STATE' })
++			second.save({ category: 'property', element: host, name: 'HEIGHT' })
++			host.setAttribute('DATA-STATE', 'second')
++			host.style.setProperty('HEIGHT', '30px')
++			const [earlier, later] = ordered ? [first, second] : [second, first]
++			earlier.restore()
++			expect(host.getAttribute('data-state')).toBe('second')
++			expect(host.style.getPropertyValue('height')).toBe('30px')
++			later.restore()
++			expect(host.getAttribute('data-state')).toBe('original')
++			expect(host.style.getPropertyValue('height')).toBe('10px')
++		}
++	})
++
++	it('joins the record a restoration still owns when a reaction saves the attribute under another spelling of its name', () => {
++		const name = 'vn-probe-snapshot-spelling'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		host.setAttribute('data-state', 'original')
++		const first = new HostSnapshot()
++		first.save({ category: 'token', element: host, name: 'show' })
++		first.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.classList.add('show')
++		host.setAttribute('data-state', 'first')
++		const second = new HostSnapshot()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			second.save({ category: 'attribute', element: host, name: 'DATA-STATE' })
++			host.setAttribute('DATA-STATE', 'live')
++		})
++		first.restore()
++		expect(host.getAttribute('data-state')).toBe('live')
++		second.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
++	it('keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element', () => {
++		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
++		document.body.append(svg)
++		onTestFinished(() => svg.remove())
++		const upper = new HostSnapshot()
++		const lower = new HostSnapshot()
++		Reflect.apply(upper.save, upper, [{ category: 'attribute', element: svg, name: 'viewBox' }])
++		svg.setAttribute('viewBox', '0 0 10 10')
++		Reflect.apply(lower.save, lower, [{ category: 'attribute', element: svg, name: 'viewbox' }])
++		svg.setAttribute('viewbox', 'lower')
++		upper.restore()
++		expect(svg.hasAttribute('viewBox')).toBe(false)
++		expect(svg.getAttribute('viewbox')).toBe('lower')
++		lower.restore()
++		expect(svg.hasAttribute('viewbox')).toBe(false)
++		const xml = document.implementation.createDocument(null, 'root')
++		const foreign = xml.createElementNS('http://www.w3.org/1999/xhtml', 'div')
++		xml.documentElement?.append(foreign)
++		upper.save({ category: 'attribute', element: foreign, name: 'data-State' })
++		foreign.setAttribute('data-State', 'upper')
++		lower.save({ category: 'attribute', element: foreign, name: 'data-state' })
++		foreign.setAttribute('data-state', 'lower')
++		upper.restore()
++		expect(foreign.hasAttribute('data-State')).toBe(false)
++		expect(foreign.getAttribute('data-state')).toBe('lower')
++		lower.restore()
++		expect(foreign.hasAttribute('data-state')).toBe(false)
++		const host = build('div')
++		const mixed = new HostSnapshot()
++		const plain = new HostSnapshot()
++		mixed.save({ category: 'property', element: host, name: '--vn-Gap' })
++		host.style.setProperty('--vn-Gap', '1px')
++		plain.save({ category: 'property', element: host, name: '--vn-gap' })
++		host.style.setProperty('--vn-gap', '2px')
++		mixed.restore()
++		expect(host.style.getPropertyValue('--vn-Gap')).toBe('')
++		expect(host.style.getPropertyValue('--vn-gap')).toBe('2px')
++		plain.restore()
++		expect(host.hasAttribute('style')).toBe(false)
++	})
++
++	it('keeps one record of a target it saves twice, holding the value the first save read', () => {
+ 		const host = build('button', { attributes: { 'aria-pressed': 'mixed' } })
+ 		const snapshot = new HostSnapshot()
+ 		snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
+diff --git a/tests/src/browser/Placement.test.ts b/tests/src/browser/Placement.test.ts
+index b3b035f..3047de8 100644
+--- a/tests/src/browser/Placement.test.ts
++++ b/tests/src/browser/Placement.test.ts
+@@ -83,6 +83,29 @@ describe('Placement', () => {
+ 		expect(placement.side).toBeUndefined()
+ 	})
+ 
++	it('writes nothing when an option read throws during construction', () => {
++		const root = scene.mount(`
++			<button type="button" id="reference">Reference</button>
++			<div id="element">Element</div>`)
++		const markup = root.innerHTML
++		const reference = requireValue(root.querySelector<HTMLElement>('#reference'), 'No reference')
++		const element = requireValue(root.querySelector<HTMLElement>('#element'), 'No element')
++		const failed = attempt(
++			() =>
++				new Placement(
++					{ reference, element },
++					{
++						get position(): never {
++							throw new Error('stop')
++						},
++					},
++				),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(element.matches(':popover-open')).toBe(false)
++		expect(root.innerHTML).toBe(markup)
++	})
++
+ 	it('anchors each placement position at the side and edge it names', () => {
+ 		const root = scene.mount(`
+ 			<button type="button" id="reference" style="margin: 200px; width: 80px; height: 30px">Reference</button>
+diff --git a/tests/src/browser/ScrollSpy.test.ts b/tests/src/browser/ScrollSpy.test.ts
+index f719bd9..2e283ab 100644
+--- a/tests/src/browser/ScrollSpy.test.ts
++++ b/tests/src/browser/ScrollSpy.test.ts
+@@ -652,6 +652,23 @@ describe('ScrollSpy', () => {
+ 		expect(ScrollSpy.find(host)).toBe(spy)
+ 	})
+ 
++	it('releases its claim when an option read throws during construction', () => {
++		const host = scene.mount('')
++		const failed = attempt(
++			() =>
++				new ScrollSpy(host, {
++					get on(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(ScrollSpy.find(host)).toBeUndefined()
++		const replacement = new ScrollSpy(host)
++		onTestFinished(() => replacement.destroy())
++		expect(ScrollSpy.find(host)).toBe(replacement)
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(ScrollSpy, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index 393d799..5432711 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -87,6 +87,30 @@ describe('Tab', () => {
+ 		expect(one.active).toBe(false)
+ 	})
+ 
++	it('releases its claim and writes nothing when an option read throws during construction', () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>`)
++		const markup = root.innerHTML
++		const host = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No control')
++		const failed = attempt(
++			() =>
++				new Tab(host, {
++					get signal(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Tab.find(host)).toBeUndefined()
++		expect(root.innerHTML).toBe(markup)
++		const replacement = new Tab(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Tab.find(host)).toBe(replacement)
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(Tab, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index a831f52..a5f81dc 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -711,6 +711,24 @@ describe('Toast', () => {
+ 		expect(Toast.find(host)).toBe(toast)
+ 	})
+ 
++	it('releases its claim when an option read throws during construction', () => {
++		const root = scene.mount('<div class="toast" id="note"></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const failed = attempt(
++			() =>
++				new Toast(host, {
++					get signal(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Toast.find(host)).toBeUndefined()
++		const replacement = new Toast(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Toast.find(host)).toBe(replacement)
++	})
++
+ 	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
+ 		const absent = attempt(() => Reflect.construct(Toast, [null]))
+ 		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index 6bc10f8..d328017 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -2351,6 +2351,73 @@ describe('Tooltip', () => {
+ 		}
+ 	})
+ 
++	it('takes its tip id out when a closing beforetoggle listener destroys it inside a hide while a popover on the same trigger lives, holding no record after', async () => {
++		const root = scene.mount(
++			'<button type="button" id="trigger" aria-describedby="help" data-bs-title="Saves" data-bs-content="Body">Save</button><p id="help">Help</p>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const tooltip = new Tooltip(host, { animated: false })
++		onTestFinished(() => tooltip.destroy())
++		const popover = new Popover(host, { animated: false })
++		onTestFinished(() => popover.destroy())
++		expect(await popover.show()).toBe(true)
++		expect(await tooltip.show()).toBe(true)
++		const ids = (host.getAttribute('aria-describedby') ?? '').split(' ')
++		const popoverTip = requireValue(
++			ids.find((id) => id.startsWith('vn-popover-')),
++			'No popover tip',
++		)
++		const tip = requireValue(
++			document.getElementById(
++				requireValue(
++					ids.find((id) => id.startsWith('vn-tooltip-')),
++					'No tooltip tip',
++				),
++			),
++			'No tip',
++		)
++		const readings = createRecorder<readonly [string | null]>()
++		tip.addEventListener(
++			'beforetoggle',
++			(event) => {
++				if (event.newState !== 'closed') return
++				tooltip.destroy()
++				readings.handler(host.getAttribute('aria-describedby'))
++			},
++			{ once: true },
++		)
++		expect(await tooltip.hide()).toBe(false)
++		expect(readings.calls).toEqual([[`help ${popoverTip}`]])
++		expect(Tooltip.find(host)).toBeUndefined()
++		expect(tip.isConnected).toBe(false)
++		expect(host.getAttribute('aria-describedby')).toBe(`help ${popoverTip}`)
++		host.setAttribute('aria-describedby', `help ${popoverTip} extra`)
++		popover.destroy()
++		expect(host.getAttribute('aria-describedby')).toBe('help')
++	})
++
++	it('releases its claim and restores the title and label it moved when an option read throws during construction', () => {
++		const root = scene.mount('<button type="button" id="trigger" title="Saves"></button>')
++		const markup = root.innerHTML
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const failed = attempt(
++			() =>
++				new Tooltip(host, {
++					get signal(): never {
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(Tooltip.find(host)).toBeUndefined()
++		expect(root.innerHTML).toBe(markup)
++		const replacement = new Tooltip(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Tooltip.find(host)).toBe(replacement)
++		replacement.destroy()
++		expect(root.innerHTML).toBe(markup)
++	})
++
+ 	it('abandons a show in flight on destruction, dispatching no shown event, and releases its hooks and claim', async () => {
+ 		scene.load(tooltipCascade)
+ 		scene.load(FADE)

@@ -1,0 +1,21 @@
+# The Orchestrator's red reading of J-SAMEWAY's cases on the base 4b62bca sources (2026-09-24, Chromium 153.0.8010.12), tests at 622181f Complete a modal or offcanvas change the host moves toward its own end, and carry one change identity through every write
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Backdrop.test.ts:207:2 > Backdrop > writes no shown token when its owner no longer holds the change after the insertion, and reads the owner only after an insertion
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1950:2 > Modal > completes a show whose shown token the host adds first at each door before its token step, skipping that write
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2165:2 > Modal > completes a hide whose shown token the host removes first at each door before its token step, skipping that write
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2297:2 > Modal > returns a show whose shown token the host adds early to the hidden state when the host removes it at a later door
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2412:2 > Modal > writes nothing for a change a listener to its pre-change event supersedes or prevents, and refuses a show on a shown host
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2568:2 > Modal > keeps the shown state of a hide whose shown token the host removes at its hide event and adds back at a later door before its token step
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2672:2 > Modal > writes nothing of a stopped show's returning step after a reaction inside the isolation's release starts a change of its own
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2809:2 > Modal > writes no backdrop shown token after a hide a reaction inside the returning step's insertion starts
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2991:2 > Modal > reads its door after the hide's closing destruction of a backdrop a consumer put back
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2380:2 > Offcanvas > completes a show whose shown token the host adds first at each door before its token step, skipping that write
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2550:2 > Offcanvas > completes a hide whose shown token the host removes first at each door before its token step, skipping that write
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2677:2 > Offcanvas > returns a show whose shown token the host adds early to the hidden state when the host removes it at a later door
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2784:2 > Offcanvas > keeps the shown state of a hide whose shown token the host removes at its hide event and adds back at a later door before its token step
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2891:2 > Offcanvas > writes nothing for a show a listener to its show event supersedes or prevents, and refuses a show on a shown host
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3012:2 > Offcanvas > writes nothing of a stopped show's returning step after a reaction inside the isolation's release starts a change of its own
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3139:2 > Offcanvas > writes no backdrop shown token after a hide a reaction inside the returning step's insertion starts
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3278:2 > Offcanvas > reads its door after the hide's closing destruction of a backdrop a consumer put back
+      Tests  17 failed | 103 passed (120)
+restored byte for byte (the Orchestrator's digest)
