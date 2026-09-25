@@ -1,0 +1,345 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 9de2e22..5aac16b 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4712,15 +4712,16 @@ placement its wrapper names while it carries the `data-bs-popper` attribute, whi
+ dropdown engine writes when it leaves a menu to the stylesheet. No rule opens, closes, or places a
+ menu on its own. The Dropdown `plugin` row in § Compatibility records the behavior J-ENGINE owns.
+ 
+-A menu the engine promotes to the top layer shows only while its toggle is visible. The
+-`:where(.dropdown-menu):popover-open` rule declares the `position-visibility: anchors-visible`
+-value, under which the browser does not paint a promoted menu whose toggle is clipped out of view,
+-such as a toggle scrolled out of its scroller. Chromium 153 starts the property at that value and
+-Chromium 141 starts it at `always`, so the rule gives both builds the same menu. The
+-`anchor-visibility` mixin in the `src/styles/_mixins.scss` file writes the rule, and the tooltip
+-and popover partials include the same mixin. The class sits inside `:where()`, so a consumer class
+-that declares the `position-visibility` property overrides the rule without `!important`.
+-§ Additions records the rule and its declaration.
++A menu the engine promotes to the top layer computes the `position-visibility: anchors-visible`
++value while it is open, through the `:where(.dropdown-menu):popover-open` rule, and the initial
++value while it is closed. The initial value is `anchors-visible` on Chromium 153 and `always` on
++Chromium 141, so the open menu computes the same value on both builds. Under that value Chromium 153
++does not paint an open menu whose toggle a scroll container clips entirely. Chromium 141 still
++paints that menu, because the engine does not anchor the menu there. The `anchor-visibility` mixin
++in the `src/styles/_mixins.scss` file writes the rule, and the tooltip and popover partials include
++the same mixin. The rule sits in the `components` layer and declares nothing important, so a class
++of your own in a later layer, or in none, that names the `position-visibility` property overrides
++the rule without a specificity contest. § Additions records the rule and its declaration.
+ 
+ Every value the partial paints is Bootstrap 5.3.8's own. A length reads the Veneer scale token that
+ already resolves to it, so the menu padding, the item and header insets, the divider margin, and the
+@@ -5638,14 +5639,15 @@ and offset on the element, so the showcase stands in for them with the shipped `
+ utility with the `start-50` and `translate-middle-x` utilities, or the `top-50` and
+ `translate-middle-y` utilities, on its arrow.
+ 
+-A tip the engine promotes to the top layer shows only while its trigger is visible. The
+-`:where(.tooltip):popover-open` rule declares the `position-visibility: anchors-visible` value,
+-under which the browser does not paint a promoted tip whose trigger is clipped out of view, such as
+-a trigger scrolled out of its scroller. Chromium 153 starts the property at that value and Chromium
+-141 starts it at `always`, so the rule gives both builds the same tip. The `anchor-visibility` mixin
+-writes the rule, as it writes the menu's and the popover's. The class sits inside `:where()`, so a
+-consumer class that declares the `position-visibility` property overrides the rule without
+-`!important`. § Additions records the rule and its declaration.
++A tip the engine promotes to the top layer computes the `position-visibility: anchors-visible` value
++while it is open, through the `:where(.tooltip):popover-open` rule, and the initial value while it
++is closed. The initial value is `anchors-visible` on Chromium 153 and `always` on Chromium 141, so
++the open tip computes the same value on both builds. Under that value neither build paints an open
++tip whose trigger a scroll container clips entirely. The `anchor-visibility` mixin writes the rule,
++as it writes the menu's and the popover's. The rule sits in the `components` layer and declares
++nothing important, so a class of your own in a later layer, or in none, that names the
++`position-visibility` property overrides the rule without a specificity contest. § Additions records
++the rule and its declaration.
+ 
+ These are the key's recorded departures.
+ 
+@@ -5719,14 +5721,15 @@ element, so the showcase stands in for them with the shipped `position-absolute`
+ with the `start-50` and `translate-middle-x` utilities, or the `top-50` and `translate-middle-y`
+ utilities, on its arrow.
+ 
+-A popover the engine promotes to the top layer shows only while its trigger is visible. The
+-`:where(.popover):popover-open` rule declares the `position-visibility: anchors-visible` value,
+-under which the browser does not paint a promoted popover whose trigger is clipped out of view, such
+-as a trigger scrolled out of its scroller. Chromium 153 starts the property at that value and
+-Chromium 141 starts it at `always`, so the rule gives both builds the same popover. The
+-`anchor-visibility` mixin writes the rule, as it writes the menu's and the tip's. The class sits
+-inside `:where()`, so a consumer class that declares the `position-visibility` property overrides
+-the rule without `!important`. § Additions records the rule and its declaration.
++A popover the engine promotes to the top layer computes the `position-visibility: anchors-visible`
++value while it is open, through the `:where(.popover):popover-open` rule, and the initial value
++while it is closed. The initial value is `anchors-visible` on Chromium 153 and `always` on Chromium
++141, so the open popover computes the same value on both builds. Under that value neither build
++paints an open popover whose trigger a scroll container clips entirely. The `anchor-visibility`
++mixin writes the rule, as it writes the menu's and the tip's. The rule sits in the `components`
++layer and declares nothing important, so a class of your own in a later layer, or in none, that
++names the `position-visibility` property overrides the rule without a specificity contest.
++§ Additions records the rule and its declaration.
+ 
+ These are the key's recorded departures.
+ 
+@@ -10484,8 +10487,8 @@ leaving both ledgers unread.
+ | `dropdown`     | `:where(button.dropdown-item) { opacity }`                                                | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `dropdown`     | `:where(button.dropdown-item) { pointer-events }`                                         | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `dropdown`     | `:where(button.dropdown-item) { transition }`                                             | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+-| `dropdown`     | `:where(.dropdown-menu):popover-open`                                                     | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | Chromium 141 starts the property at `always`, so the open menu restates the `anchors-visible` value Chromium 153 starts at, and a promoted menu whose toggle is clipped out of view is not painted on either build.             |
+-| `dropdown`     | `:where(.dropdown-menu):popover-open { position-visibility }`                             | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | Chromium 141 starts the property at `always`, so the open menu restates the `anchors-visible` value Chromium 153 starts at, and a promoted menu whose toggle is clipped out of view is not painted on either build.             |
++| `dropdown`     | `:where(.dropdown-menu):popover-open`                                                     | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The open menu computes `anchors-visible` on both builds. Chromium 153 then does not paint a menu whose toggle a scroll container clips entirely, and Chromium 141 paints it, because the engine does not anchor the menu there. |
++| `dropdown`     | `:where(.dropdown-menu):popover-open { position-visibility }`                             | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | The open menu computes `anchors-visible` on both builds. Chromium 153 then does not paint a menu whose toggle a scroll container clips entirely, and Chromium 141 paints it, because the engine does not anchor the menu there. |
+ | `nav`          | `:where(button.nav-link)`                                                                 | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `nav`          | `:where(button.nav-link) { padding }`                                                     | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `nav`          | `:where(button.nav-link) { font-family }`                                                 | —                                                | declaration | `inherit`                                                                                                                                                                                                                                                                                                              | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+@@ -10581,10 +10584,10 @@ leaving both ledgers unread.
+ | `btn-close`    | `:where(button.btn-close) { pointer-events }`                                             | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `btn-close`    | `:where(button.btn-close) { transition }`                                                 | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `btn-close`    | `.btn-close:focus { outline }`                                                            | `@media (forced-colors: active)`                 | declaration | `var(--vn-focus-width) solid var(--vn-focus-highlight)`                                                                                                                                                                                                                                                                | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                                                                            |
+-| `tooltip`      | `:where(.tooltip):popover-open`                                                           | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | Chromium 141 starts the property at `always`, so the open tip restates the `anchors-visible` value Chromium 153 starts at, and a promoted tip whose trigger is clipped out of view is not painted on either build.              |
+-| `tooltip`      | `:where(.tooltip):popover-open { position-visibility }`                                   | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | Chromium 141 starts the property at `always`, so the open tip restates the `anchors-visible` value Chromium 153 starts at, and a promoted tip whose trigger is clipped out of view is not painted on either build.              |
+-| `popover`      | `:where(.popover):popover-open`                                                           | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | Chromium 141 starts the property at `always`, so the open popover restates the `anchors-visible` value Chromium 153 starts at, and a promoted popover whose trigger is clipped out of view is not painted on either build.      |
+-| `popover`      | `:where(.popover):popover-open { position-visibility }`                                   | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | Chromium 141 starts the property at `always`, so the open popover restates the `anchors-visible` value Chromium 153 starts at, and a promoted popover whose trigger is clipped out of view is not painted on either build.      |
++| `tooltip`      | `:where(.tooltip):popover-open`                                                           | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The open tip computes `anchors-visible` on both builds, and neither build then paints a tip whose trigger a scroll container clips entirely.                                                                                    |
++| `tooltip`      | `:where(.tooltip):popover-open { position-visibility }`                                   | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | The open tip computes `anchors-visible` on both builds, and neither build then paints a tip whose trigger a scroll container clips entirely.                                                                                    |
++| `popover`      | `:where(.popover):popover-open`                                                           | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The open popover computes `anchors-visible` on both builds, and neither build then paints a popover whose trigger a scroll container clips entirely.                                                                            |
++| `popover`      | `:where(.popover):popover-open { position-visibility }`                                   | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | The open popover computes `anchors-visible` on both builds, and neither build then paints a popover whose trigger a scroll container clips entirely.                                                                            |
+ | `carousel`     | `:where(button.carousel-control-prev, button.carousel-control-next)`                      | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `carousel`     | `:where(button.carousel-control-prev, button.carousel-control-next) { padding }`          | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `carousel`     | `:where(button.carousel-control-prev, button.carousel-control-next) { font-family }`      | —                                                | declaration | `inherit`                                                                                                                                                                                                                                                                                                              | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 54edc71..c0a9d5d 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -641,11 +641,15 @@
+ 	}
+ }
+ 
+-// Emits the rule that shows an overlay the engine promotes to the top layer only while its anchor is
+-// visible, on the open popover state of the `$class` class. The value is Chromium 153's initial
+-// value and Chromium 141 starts from `always`, so the rule gives both builds the same overlay. The
+-// class sits inside `:where()`, so the rule's specificity is the open state's alone, and a consumer
+-// class that declares the property overrides it without `!important`.
++// Emits `position-visibility: anchors-visible` on the open popover state of the `$class` class, so
++// an overlay the engine promotes to the top layer computes that value while it is open and the
++// initial value while it is closed. The initial value is `anchors-visible` on Chromium 153 and
++// `always` on Chromium 141, so the open overlay computes the same value on both builds. Under that
++// value neither build paints a tooltip or a popover whose trigger a scroll container clips entirely.
++// Chromium 153 does not paint a dropdown menu whose toggle a scroll container clips entirely, and
++// Chromium 141 paints it, because the engine does not anchor the menu there. Each caller writes the
++// rule in the `components` layer and declares nothing important, so a class of your own in a later
++// layer, or in none, overrides it without a specificity contest.
+ @mixin anchor-visibility($class) {
+ 	:where(.#{$class}):popover-open {
+ 		position-visibility: anchors-visible;
+diff --git a/src/styles/components/_dropdown.scss b/src/styles/components/_dropdown.scss
+index 1a74aa3..8d2cfe7 100644
+--- a/src/styles/components/_dropdown.scss
++++ b/src/styles/components/_dropdown.scss
+@@ -270,8 +270,11 @@ $carets: (
+ 		display: block;
+ 	}
+ 
+-	// A menu the engine promotes to the top layer shows only while its toggle is visible, so a menu
+-	// whose toggle scrolls out of a scroller's clip is not painted.
++	// A menu the engine promotes to the top layer computes `position-visibility: anchors-visible`
++	// while it is open, on both builds. Chromium 153 then does not paint a menu whose toggle a scroll
++	// container clips entirely, and Chromium 141 paints it, because the engine does not anchor the
++	// menu there. The rule sits in the `components` layer and declares nothing important, so a class
++	// of your own in a later layer, or in none, overrides it without a specificity contest.
+ 	@include anchor-visibility(dropdown-menu);
+ 
+ 	.dropdown-header {
+diff --git a/src/styles/components/_popover.scss b/src/styles/components/_popover.scss
+index 2d7b42e..3a84541 100644
+--- a/src/styles/components/_popover.scss
++++ b/src/styles/components/_popover.scss
+@@ -73,8 +73,11 @@ $sides: (
+ 		border-radius: var(--bs-popover-border-radius);
+ 	}
+ 
+-	// A popover the engine promotes to the top layer shows only while its trigger is visible, so a
+-	// popover whose trigger scrolls out of a scroller's clip is not painted.
++	// A popover the engine promotes to the top layer computes `position-visibility: anchors-visible`
++	// while it is open, on both builds, and neither build then paints a popover whose trigger a
++	// scroll container clips entirely. The rule sits in the `components` layer and declares nothing
++	// important, so a class of your own in a later layer, or in none, overrides it without a
++	// specificity contest.
+ 	@include anchor-visibility(popover);
+ 
+ 	.popover .popover-arrow {
+diff --git a/src/styles/components/_tooltip.scss b/src/styles/components/_tooltip.scss
+index b2d0fd9..62b425b 100644
+--- a/src/styles/components/_tooltip.scss
++++ b/src/styles/components/_tooltip.scss
+@@ -68,8 +68,11 @@ $sides: (
+ 		opacity: var(--bs-tooltip-opacity);
+ 	}
+ 
+-	// A tip the engine promotes to the top layer shows only while its trigger is visible, so a tip
+-	// whose trigger scrolls out of a scroller's clip is not painted.
++	// A tip the engine promotes to the top layer computes `position-visibility: anchors-visible`
++	// while it is open, on both builds, and neither build then paints a tip whose trigger a scroll
++	// container clips entirely. The rule sits in the `components` layer and declares nothing
++	// important, so a class of your own in a later layer, or in none, overrides it without a
++	// specificity contest.
+ 	@include anchor-visibility(tooltip);
+ 
+ 	.tooltip .tooltip-arrow {
+diff --git a/tests/src/styles/components/dropdown.test.ts b/tests/src/styles/components/dropdown.test.ts
+index 46a2fea..dd245cb 100644
+--- a/tests/src/styles/components/dropdown.test.ts
++++ b/tests/src/styles/components/dropdown.test.ts
+@@ -49,10 +49,10 @@ describe('dropdown classes', () => {
+ 		// A state or placement rule the partial stopped writing resolves to the resting treatment
+ 		// on a fixture that never reaches it, so the selectors are held against the rules the
+ 		// shipped cascade carries. The reading is the set of components-layer selectors, so a missing
+-		// selector reports here, while an extra selector and a second rule on a recorded selector
+-		// leave the reading unchanged. The anchored visibility selector on the open popover state is
+-		// this cascade's addition, recorded in the guide's Additions table rather than under the key,
+-		// so it is read beside the key's list.
++		// selector reports here, and an extra selector or a second rule on a recorded selector passes
++		// unreported. The anchored visibility selector on the open popover state is this cascade's
++		// addition, recorded in the guide's Additions table rather than under the key, so it is read
++		// beside the key's list.
+ 		const selected = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule ? splitTopLevelList(rule.selectorText) : [],
+@@ -65,11 +65,15 @@ describe('dropdown classes', () => {
+ 		).toEqual([])
+ 	})
+ 
+-	// The mutation this catches is the open-state rule dropped, written on the closed menu, or written
+-	// important. The initial value differs by build, Chromium 141 starting at `always` and Chromium
+-	// 153 at `anchors-visible`, so it is read off a bare element on the same page. The consumer's
+-	// sheet is unlayered and declares nothing important, so an important rule in the components layer
+-	// would outrank it.
++	// The reading is the computed `position-visibility` value of the menu before, during, and
++	// after its open popover state, of a bare element beside it, and of an open twin that carries
++	// an unlayered consumer class. The initial value is `always` on Chromium 141 and
++	// `anchors-visible` on Chromium 153, so the case reads it off the bare element. On a build
++	// whose initial value is `always`, such as Chromium 141, the case catches the open-state rule
++	// dropped or written on the closed menu; on a build whose initial value is `anchors-visible`,
++	// those two mutations pass it. On every build it catches the rule written important, which
++	// would outrank the consumer class. The `position-visibility` case in the `mixins.test.ts`
++	// file holds the rule's text on every build.
+ 	it('computes anchored visibility while the promoted menu is open and the initial value while it is closed, and yields to a consumer class', () => {
+ 		expect(CSS.supports('position-visibility', 'anchors-visible')).toBe(true)
+ 		scene.load('.vn-consumer-visibility { position-visibility: always }')
+diff --git a/tests/src/styles/components/popover.test.ts b/tests/src/styles/components/popover.test.ts
+index 973bb2f..53d1de1 100644
+--- a/tests/src/styles/components/popover.test.ts
++++ b/tests/src/styles/components/popover.test.ts
+@@ -60,11 +60,15 @@ describe('popover rules', () => {
+ })
+ 
+ describe('popover anchored visibility', () => {
+-	// The mutation this catches is the open-state rule dropped, written on the closed popover, or
+-	// written important. The initial value differs by build, Chromium 141 starting at `always` and
+-	// Chromium 153 at `anchors-visible`, so it is read off a bare element on the same page. The
+-	// consumer's sheet is unlayered and declares nothing important, so an important rule in the
+-	// components layer would outrank it.
++	// The reading is the computed `position-visibility` value of the popover before, during, and
++	// after its open popover state, of a bare element beside it, and of an open twin that carries
++	// an unlayered consumer class. The initial value is `always` on Chromium 141 and
++	// `anchors-visible` on Chromium 153, so the case reads it off the bare element. On a build
++	// whose initial value is `always`, such as Chromium 141, the case catches the open-state rule
++	// dropped or written on the closed popover; on a build whose initial value is `anchors-visible`,
++	// those two mutations pass it. On every build it catches the rule written important, which
++	// would outrank the consumer class. The `position-visibility` case in the `mixins.test.ts`
++	// file holds the rule's text on every build.
+ 	it('computes anchored visibility while the promoted popover is open and the initial value while it is closed, and yields to a consumer class', () => {
+ 		expect(CSS.supports('position-visibility', 'anchors-visible')).toBe(true)
+ 		scene.load('.vn-consumer-visibility { position-visibility: always }')
+diff --git a/tests/src/styles/components/tooltip.test.ts b/tests/src/styles/components/tooltip.test.ts
+index 06e2d42..d74c2a5 100644
+--- a/tests/src/styles/components/tooltip.test.ts
++++ b/tests/src/styles/components/tooltip.test.ts
+@@ -152,11 +152,15 @@ describe('tooltip box', () => {
+ })
+ 
+ describe('tooltip anchored visibility', () => {
+-	// The mutation this catches is the open-state rule dropped, written on the closed tip, or written
+-	// important. The initial value differs by build, Chromium 141 starting at `always` and Chromium
+-	// 153 at `anchors-visible`, so it is read off a bare element on the same page. The consumer's
+-	// sheet is unlayered and declares nothing important, so an important rule in the components layer
+-	// would outrank it.
++	// The reading is the computed `position-visibility` value of the tip before, during, and
++	// after its open popover state, of a bare element beside it, and of an open twin that carries
++	// an unlayered consumer class. The initial value is `always` on Chromium 141 and
++	// `anchors-visible` on Chromium 153, so the case reads it off the bare element. On a build
++	// whose initial value is `always`, such as Chromium 141, the case catches the open-state rule
++	// dropped or written on the closed tip; on a build whose initial value is `anchors-visible`,
++	// those two mutations pass it. On every build it catches the rule written important, which
++	// would outrank the consumer class. The `position-visibility` case in the `mixins.test.ts`
++	// file holds the rule's text on every build.
+ 	it('computes anchored visibility while the promoted tip is open and the initial value while it is closed, and yields to a consumer class', () => {
+ 		expect(CSS.supports('position-visibility', 'anchors-visible')).toBe(true)
+ 		scene.load('.vn-consumer-visibility { position-visibility: always }')
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 18b7dd4..46b6a7d 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -37,6 +37,11 @@ import {
+ import './fixtures/contrast.scss'
+ import './fixtures/mixins.scss'
+ 
++// The button reboot's population: a rule whose whole selector is one `:where()` group, with one
++// level of nested parentheses inside it. A rule that follows its group with a state, such as an
++// anchored visibility rule on the open popover state, sits outside it.
++const WHOLE_GROUP = /^:where\((?:[^()]|\([^()]*\))*\)$/u
++
+ afterEach(async () => {
+ 	await releaseMedia()
+ 	scene.clear()
+@@ -209,12 +214,8 @@ describe('declaration mixins', () => {
+ 		expect(written.filter((longhand) => BUTTON_KEPT_LONGHANDS.includes(longhand))).toEqual(
+ 			[...BUTTON_KEPT_LONGHANDS].sort(),
+ 		)
+-		// Each reset's whole selector is one `:where()` group. The anchored visibility rules follow
+-		// their group with the open popover state, so they sit outside this population.
+ 		const resets = collectLayer('components').flatMap((rule) =>
+-			rule instanceof CSSStyleRule && /^:where\((?:[^()]|\([^()]*\))*\)$/u.test(rule.selectorText)
+-				? [rule]
+-				: [],
++			rule instanceof CSSStyleRule && WHOLE_GROUP.test(rule.selectorText) ? [rule] : [],
+ 		)
+ 		expect(resets.map((rule) => normalizeSelectorText(rule.selectorText)).sort()).toEqual(
+ 			[...BUTTON_REBOOT_SELECTORS].sort(),
+@@ -244,7 +245,7 @@ describe('declaration mixins', () => {
+ 		parse(cascade).walkAtRules('layer', (layer) => {
+ 			if (layer.params !== 'components') return
+ 			layer.walkRules((rule) => {
+-				if (!rule.selector.startsWith(':where(')) return
++				if (!WHOLE_GROUP.test(rule.selector)) return
+ 				rule.walkDecls((declaration) => {
+ 					if (/\brevert\b/u.test(declaration.value))
+ 						declarations.push({
+@@ -262,16 +263,28 @@ describe('declaration mixins', () => {
+ 	it('writes anchored visibility on the open popover state of each promoted overlay class inside a zero-specificity group, and in no other rule of the built cascade', () => {
+ 		// The reading is every declaration of the property in the shipped text, whatever its layer, so
+ 		// an overlay that stops including the mixin, a rule that writes the property outside the open
+-		// state, and a caller that writes it important each report here.
+-		const written: Array<{ selector: string; declaration: string; important: boolean }> = []
++		// state, and a caller that writes it important each report here. It reads text rather than a
++		// computed value, so it holds on every build, whatever the build's initial value. A
++		// declaration outside a style rule has no selector, and it sorts after every selector.
++		const written: Array<{
++			selector: string | undefined
++			declaration: string
++			important: boolean
++		}> = []
+ 		parse(cascade).walkDecls('position-visibility', (declaration) => {
+ 			written.push({
+-				selector: declaration.parent instanceof Rule ? declaration.parent.selector : '',
++				selector: declaration.parent instanceof Rule ? declaration.parent.selector : undefined,
+ 				declaration: `${declaration.prop}: ${declaration.value}`,
+ 				important: declaration.important === true,
+ 			})
+ 		})
+-		expect(written.sort((left, right) => left.selector.localeCompare(right.selector))).toEqual(
++		expect(
++			written.sort((left, right) =>
++				left.selector === undefined || right.selector === undefined
++					? Number(left.selector === undefined) - Number(right.selector === undefined)
++					: left.selector.localeCompare(right.selector),
++			),
++		).toEqual(
+ 			['dropdown-menu', 'popover', 'tooltip'].map((name) => ({
+ 				selector: `:where(.${name}):popover-open`,
+ 				declaration: 'position-visibility: anchors-visible',

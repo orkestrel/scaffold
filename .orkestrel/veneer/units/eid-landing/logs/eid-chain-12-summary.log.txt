@@ -1,0 +1,49 @@
+=== head d45b365
+=== format:check (08:27:59)
+=== format:check exit=0
+=== lint:check (08:28:20)
+=== lint:check exit=0
+=== check (08:28:23)
+=== check exit=0
+=== build:src (08:28:50)
+=== build:src exit=0
+=== test:src:styles (08:29:02)
+      Tests  1556 passed (1556)
+=== test:src:styles exit=0
+=== test:setup (08:32:10)
+      Tests  357 passed (357)
+=== test:setup exit=0
+=== test:conformance (08:32:40)
+      Tests  45 passed (45)
+=== test:conformance exit=0
+=== test:guides (08:34:40)
+[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+=== test:guides exit=0
+=== test:policy (08:34:49)
+      Tests  109 passed | 1 skipped (110)
+=== test:policy exit=0
+=== src:browser against the 0865c67 baseline (08:34:54)
+=== src:browser exit=0;  Tests 1059 passed | 2 skipped (1061)
+=== src:browser: no red outside the baseline
+=== test:service (08:37:24)
+      Tests  24 passed (24)
+=== test:service exit=0
+=== build (08:38:02)
+=== build exit=0
+=== test:distribution (08:38:19)
+      Tests  13 passed | 5 skipped (18)
+=== test:distribution exit=0
+=== app:browser (08:38:45)
+      Tests  223 passed (223)
+=== app:browser exit=0
+=== setup:browser (08:39:33)
+      Tests  100 passed (100)
+=== setup:browser exit=0
+=== journey, CAPTURE=1 (08:40:08)
+      Tests  252 passed (252)
+=== journey, CAPTURE=1 exit=0
+=== journey, CAPTURE unset (08:49:42)
+      Tests  252 passed (252)
+=== journey, CAPTURE unset exit=0
+=== status after chain: [] (08:56:40)
+=== eid chain 12 done
