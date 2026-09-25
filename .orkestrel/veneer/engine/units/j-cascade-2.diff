@@ -1,0 +1,321 @@
+diff --git a/tests/src/browser/Alert.test.ts b/tests/src/browser/Alert.test.ts
+index 79a4583..4f299ee 100644
+--- a/tests/src/browser/Alert.test.ts
++++ b/tests/src/browser/Alert.test.ts
+@@ -114,7 +114,7 @@ describe('Alert', () => {
+ 		expect(Array.from(host.classList)).toEqual(['alert', 'alert-info', 'fade'])
+ 	})
+ 
+-	it('dispatches closed with no running fade at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++	it('dispatches closed with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(alertCascade)
+@@ -134,25 +134,46 @@ describe('Alert', () => {
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const closing = instant.close()
++		void closing.then(() => order.handler('still', 'resolved'))
++		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+ 		expect(getComputedStyle(still).transitionDuration).toBe('0s')
+ 		expect(still.getAnimations()).toEqual([])
+ 		expect(await closing).toBe(true)
+-		expect(order.calls).toEqual([['still', 'closed.vn.alert']])
++		await frame
++		// The event and the resolution arrive before one frame passes.
++		expect(order.calls).toEqual([
++			['still', 'closed.vn.alert'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.close()
+ 		expect(getComputedStyle(slow).transitionDuration).toBe('0.6s')
+ 		const transition = requireValue(slow.getAnimations()[0], 'No fade')
+ 		expect(transition.effect?.getComputedTiming().duration).toBe(600)
+ 		await waitForFrame()
+-		expect(order.calls).toEqual([['still', 'closed.vn.alert']])
++		expect(order.calls).toEqual([
++			['still', 'closed.vn.alert'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		expect(transition.playState).toBe('running')
+ 		expect(slow.isConnected).toBe(true)
+-		void transition.finished.then(() => order.handler('slow', 'finished'))
++		// The event arrives after the fade finishes and before one further frame passes.
++		const settled = transition.finished.then(async () => {
++			order.handler('slow', 'finished')
++			await waitForFrame()
++			order.handler('slow', 'frame')
++		})
+ 		expect(await fading).toBe(true)
++		await settled
+ 		expect(order.calls).toEqual([
+ 			['still', 'closed.vn.alert'],
++			['still', 'resolved'],
++			['still', 'frame'],
+ 			['slow', 'finished'],
+ 			['slow', 'closed.vn.alert'],
++			['slow', 'frame'],
+ 		])
+ 	})
+ 
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index eb7545f..74eb168 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -223,7 +223,7 @@ describe('Popover', () => {
+ 		expect(tip.isConnected).toBe(false)
+ 	})
+ 
+-	it('dispatches shown with no running fade on the tip at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++	it('dispatches shown with no running fade on the tip within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(popoverCascade)
+@@ -245,6 +245,8 @@ describe('Popover', () => {
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const showing = instant.show()
++		void showing.then(() => order.handler('still', 'resolved'))
++		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+ 		const quiet = requireValue(
+ 			document.getElementById(still.getAttribute('aria-describedby') ?? ''),
+ 			'No still tip',
+@@ -253,7 +255,13 @@ describe('Popover', () => {
+ 		expect(getComputedStyle(quiet).transitionDuration).toBe('0s')
+ 		expect(quiet.getAnimations()).toEqual([])
+ 		expect(await showing).toBe(true)
+-		expect(order.calls).toEqual([['still', 'shown.vn.popover']])
++		await frame
++		// The event and the resolution arrive before one frame passes.
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.popover'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.show()
+ 		const tip = requireValue(
+@@ -264,14 +272,27 @@ describe('Popover', () => {
+ 		const transition = requireValue(tip.getAnimations()[0], 'No fade')
+ 		expect(transition.effect?.getComputedTiming().duration).toBe(600)
+ 		await waitForFrame()
+-		expect(order.calls).toEqual([['still', 'shown.vn.popover']])
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.popover'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		expect(transition.playState).toBe('running')
+-		void transition.finished.then(() => order.handler('slow', 'finished'))
++		// The event arrives after the fade finishes and before one further frame passes.
++		const settled = transition.finished.then(async () => {
++			order.handler('slow', 'finished')
++			await waitForFrame()
++			order.handler('slow', 'frame')
++		})
+ 		expect(await fading).toBe(true)
++		await settled
+ 		expect(order.calls).toEqual([
+ 			['still', 'shown.vn.popover'],
++			['still', 'resolved'],
++			['still', 'frame'],
+ 			['slow', 'finished'],
+ 			['slow', 'shown.vn.popover'],
++			['slow', 'frame'],
+ 		])
+ 	})
+ 
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index c23137e..9429fa5 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -445,7 +445,7 @@ describe('Tab', () => {
+ 		expect(getComputedStyle(pane).opacity).toBe('1')
+ 	})
+ 
+-	it('dispatches shown with no running pane fade at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++	it('dispatches shown with no running pane fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(navCascade)
+@@ -479,24 +479,45 @@ describe('Tab', () => {
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const showing = instant.show()
++		void showing.then(() => order.handler('still', 'resolved'))
++		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+ 		expect(getComputedStyle(second).transitionDuration).toBe('0s')
+ 		expect(second.getAnimations()).toEqual([])
+ 		expect(await showing).toBe(true)
+-		expect(order.calls).toEqual([['still', 'shown.vn.tab']])
++		await frame
++		// The event and the resolution arrive before one frame passes.
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.tab'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.show()
+ 		expect(getComputedStyle(fourth).transitionDuration).toBe('0.6s')
+ 		const transition = requireValue(fourth.getAnimations()[0], 'No fade')
+ 		expect(transition.effect?.getComputedTiming().duration).toBe(600)
+ 		await waitForFrame()
+-		expect(order.calls).toEqual([['still', 'shown.vn.tab']])
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.tab'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		expect(transition.playState).toBe('running')
+-		void transition.finished.then(() => order.handler('slow', 'finished'))
++		// The event arrives after the fade finishes and before one further frame passes.
++		const settled = transition.finished.then(async () => {
++			order.handler('slow', 'finished')
++			await waitForFrame()
++			order.handler('slow', 'frame')
++		})
+ 		expect(await fading).toBe(true)
++		await settled
+ 		expect(order.calls).toEqual([
+ 			['still', 'shown.vn.tab'],
++			['still', 'resolved'],
++			['still', 'frame'],
+ 			['slow', 'finished'],
+ 			['slow', 'shown.vn.tab'],
++			['slow', 'frame'],
+ 		])
+ 	})
+ 
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index bc15361..de0bdda 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -126,7 +126,7 @@ describe('Toast', () => {
+ 		expect(running.calls).toEqual([[1], [0]])
+ 	})
+ 
+-	it('dispatches hidden with no running fade at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++	it('dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(toastCascade)
+@@ -150,24 +150,45 @@ describe('Toast', () => {
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const hiding = instant.hide()
++		void hiding.then(() => order.handler('still', 'resolved'))
++		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+ 		expect(getComputedStyle(still).transitionDuration).toBe('0s')
+ 		expect(still.getAnimations()).toEqual([])
+ 		expect(await hiding).toBe(true)
+-		expect(order.calls).toEqual([['still', 'hidden.vn.toast']])
++		await frame
++		// The event and the resolution arrive before one frame passes.
++		expect(order.calls).toEqual([
++			['still', 'hidden.vn.toast'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.hide()
+ 		expect(getComputedStyle(slow).transitionDuration).toBe('0.6s')
+ 		const transition = requireValue(slow.getAnimations()[0], 'No fade')
+ 		expect(transition.effect?.getComputedTiming().duration).toBe(600)
+ 		await waitForFrame()
+-		expect(order.calls).toEqual([['still', 'hidden.vn.toast']])
++		expect(order.calls).toEqual([
++			['still', 'hidden.vn.toast'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		expect(transition.playState).toBe('running')
+-		void transition.finished.then(() => order.handler('slow', 'finished'))
++		// The event arrives after the fade finishes and before one further frame passes.
++		const settled = transition.finished.then(async () => {
++			order.handler('slow', 'finished')
++			await waitForFrame()
++			order.handler('slow', 'frame')
++		})
+ 		expect(await fading).toBe(true)
++		await settled
+ 		expect(order.calls).toEqual([
+ 			['still', 'hidden.vn.toast'],
++			['still', 'resolved'],
++			['still', 'frame'],
+ 			['slow', 'finished'],
+ 			['slow', 'hidden.vn.toast'],
++			['slow', 'frame'],
+ 		])
+ 	})
+ 
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index 7d076f1..b71dc9a 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -313,7 +313,7 @@ describe('Tooltip', () => {
+ 		expect(await quick).toBe(true)
+ 	})
+ 
+-	it('dispatches shown with no running fade on the tip at a zero motion factor, and only after the fade the factor lengthens finishes at a large one', async () => {
++	it('dispatches shown with no running fade on the tip within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(tooltipCascade)
+@@ -335,6 +335,8 @@ describe('Tooltip', () => {
+ 		onTestFinished(() => instant.destroy())
+ 		onTestFinished(() => faded.destroy())
+ 		const showing = instant.show()
++		void showing.then(() => order.handler('still', 'resolved'))
++		const frame = waitForFrame().then(() => order.handler('still', 'frame'))
+ 		const quiet = requireValue(
+ 			document.getElementById(still.getAttribute('aria-describedby') ?? ''),
+ 			'No still tip',
+@@ -343,7 +345,13 @@ describe('Tooltip', () => {
+ 		expect(getComputedStyle(quiet).transitionDuration).toBe('0s')
+ 		expect(quiet.getAnimations()).toEqual([])
+ 		expect(await showing).toBe(true)
+-		expect(order.calls).toEqual([['still', 'shown.vn.tooltip']])
++		await frame
++		// The event and the resolution arrive before one frame passes.
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.tooltip'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.show()
+ 		const tip = requireValue(
+@@ -354,14 +362,27 @@ describe('Tooltip', () => {
+ 		const transition = requireValue(tip.getAnimations()[0], 'No fade')
+ 		expect(transition.effect?.getComputedTiming().duration).toBe(600)
+ 		await waitForFrame()
+-		expect(order.calls).toEqual([['still', 'shown.vn.tooltip']])
++		expect(order.calls).toEqual([
++			['still', 'shown.vn.tooltip'],
++			['still', 'resolved'],
++			['still', 'frame'],
++		])
+ 		expect(transition.playState).toBe('running')
+-		void transition.finished.then(() => order.handler('slow', 'finished'))
++		// The event arrives after the fade finishes and before one further frame passes.
++		const settled = transition.finished.then(async () => {
++			order.handler('slow', 'finished')
++			await waitForFrame()
++			order.handler('slow', 'frame')
++		})
+ 		expect(await fading).toBe(true)
++		await settled
+ 		expect(order.calls).toEqual([
+ 			['still', 'shown.vn.tooltip'],
++			['still', 'resolved'],
++			['still', 'frame'],
+ 			['slow', 'finished'],
+ 			['slow', 'shown.vn.tooltip'],
++			['slow', 'frame'],
+ 		])
+ 	})
+ 
