@@ -1,0 +1,38 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Tooltip.test.ts tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/snapshot-shared
+
+···························································x·············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2354:2 > Tooltip > takes its tip id out when a closing beforetoggle listener destroys it inside a hide while a popover on the same trigger lives, holding no record after
+AssertionError: expected [ Array(1) ] to deeply equal [ [ 'help vn-popover-90' ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     "help vn-popover-90",[39m
+[31m+     "help vn-popover-90 vn-tooltip-91",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tooltip.test.ts:2390:25
+    2388|   )
+    2389|   expect(await tooltip.hide()).toBe(false)
+    2390|   expect(readings.calls).toEqual([[`help ${popoverTip}`]])
+       |                         ^
+    2391|   expect(Tooltip.find(host)).toBeUndefined()
+    2392|   expect(tip.isConnected).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 72 passed (73)
+   Start at  20:07:14
+   Duration  9.55s (transform 0ms, setup 574ms, import 320ms, tests 7.53s, environment 0ms)
+

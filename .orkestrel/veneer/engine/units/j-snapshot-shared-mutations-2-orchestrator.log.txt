@@ -1,0 +1,90 @@
+# The Orchestrator's re-run of the J-SNAPSHOT-SHARED mutations (2026-09-24, Chromium 153.0.8010.12), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/snapshot-shared at e3167f7 Key a snapshot record by the name the platform resolves, release what a failed construction claimed, and state the shared record
+instrument: the worktree copy equals the retained copy (151e713dd6751228108fc34719e97e91ff73f8f4cfaa2c816893d5a25bbfd3c1)
+--- results (the instrument's stdout)
+digest src/browser/HostSnapshot.ts 814a17d481d421079459d4082fea95be19bb7a2f99b5f8d04d53d6824117a8d3
+digest src/browser/Alert.ts c11f5dcc78dbd6e15d4f86577045e6a6ef4a5366a190306be9448cd993fbd191
+digest src/browser/Tab.ts c68264acba1325e7e633debdd007b06376e357563cc93323bae7b1b44c313164
+digest src/browser/Tooltip.ts b4f48b3d6868a20cfa67023e7c7b04aa3aae1e75d7543d695e1d0b0352db704b
+digest src/browser/Button.ts 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+digest src/browser/Carousel.ts dff80b8caa7a4238c55cd3fe73011ebbb2adbd531fd6e83447321b87d2b50c53
+digest src/browser/Collapse.ts d5924fe6894e3762337da42ee219b90f8792df20868f7945900e46e62d872738
+digest src/browser/Dropdown.ts e8afef68897340e8d70e9c42fca7ecfb0eb8e69a0f9bcad7c384bc044053b90e
+digest src/browser/ScrollSpy.ts 8d39eba242d0eaf7a3fe8ea972eb46fcdc9d12a125eb417e84ca081336889545
+digest src/browser/Toast.ts 67bd93c4b99a7324a39ab967f710893cfcaa094b435efc9a790f62bad4ec17d0
+digest src/browser/Placement.ts 1bcd7f3fa3ee4f47f595c85bf07ab13631218c9756dd7225913df136ac92d997
+| Row | Obligation | Mutation | Case | Expected | Reading | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| READ | S1 | every save reads the element, even while another snapshot holds the target | tests/src/browser/Swipe.test.ts > Swipe keeps the pointer token while a carousel or a swipe on the same host lives, and removes it after the last is destroyed, in either order | failed | failed | KILLED |
+| JOIN | S1 | a later save replaces the holders of the record it joins | tests/src/browser/HostSnapshot.test.ts > HostSnapshot writes a target two snapshots share back only at the last holder restoration, from its record, in either order | failed | failed | KILLED |
+| SILENT | S1 | a restoration that is not the last holder owns and writes the target too | tests/src/browser/Carousel.test.ts > Carousel keeps the pointer token of a touch replacement a reaction to an item restoration constructs, and removes it after the replacement is destroyed | failed | failed | KILLED |
+| LAST | S1 | the last holder restoration owns no target and writes nothing back | tests/src/browser/HostSnapshot.test.ts > HostSnapshot leaves a shared target to the holder a reaction restores, which writes the record value back | failed | failed | KILLED |
+| CLEAR | S3 | clear keeps every holding | tests/src/browser/HostSnapshot.test.ts > HostSnapshot relinquishes its holdings on clear without writing, so the last remaining holder writes the record value back | failed | failed | KILLED |
+| CLEAR-PENDING | S3 | clear keeps the ownership of a restoration in progress | tests/src/browser/HostSnapshot.test.ts > HostSnapshot writes nothing more, removing no emptied class attribute, for an interrupted restoration a reaction to one of its writes clears | failed | failed | KILLED |
+| CLEAR-ALERT | S3 | a completed alert close keeps its snapshot holding | tests/src/browser/Alert.test.ts > Alert holds no record of the shown token after a completed close, so a fresh alert on the reused host restores the token its destruction finds recorded | failed | failed | KILLED |
+| TAB | S4 | a tab saves only the initial attributes it writes | tests/src/browser/Tab.test.ts > Tab keeps the roles and states of a live sibling tab when another tab of its list is destroyed, and restores the markup after the last | failed | failed | KILLED |
+| S5 | S5 | destruction leaves its tip id in aria-describedby | tests/src/browser/Tooltip.test.ts > Tooltip names only live tips in aria-describedby after it is destroyed while a popover on the same trigger lives, and restores its title and label | failed | failed | KILLED |
+| R1-FOLD | R1 | every name keys its record as written | tests/src/browser/HostSnapshot.test.ts > HostSnapshot joins one record for an attribute or a property saved under two spellings of its name on an HTML element, in either release order | failed | failed | KILLED |
+| R1-TAKEOVER | R1 | an attribute name keys its record as written, a property name still folded | tests/src/browser/HostSnapshot.test.ts > HostSnapshot joins the record a restoration still owns when a reaction saves the attribute under another spelling of its name | failed | failed | KILLED |
+| R1-NAMESPACE | R1 | an attribute name folds on an element outside the HTML namespace | tests/src/browser/HostSnapshot.test.ts > HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element | failed | failed | KILLED |
+| R1-DOCUMENT | R1 | an attribute name folds on an HTML element outside an HTML document | tests/src/browser/HostSnapshot.test.ts > HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element | failed | failed | KILLED |
+| R1-CUSTOM | R1 | a custom property name folds | tests/src/browser/HostSnapshot.test.ts > HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element | failed | failed | KILLED |
+| R2-BUTTON | R2 | Button rethrows a construction failure without destroying itself | tests/src/browser/Button.test.ts > Button releases its claim and its records when an option read throws during construction | failed | failed | KILLED |
+| R2-COLLAPSE | R2 | Collapse rethrows a construction failure without destroying itself | tests/src/browser/Collapse.test.ts > Collapse releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-ALERT | R2 | Alert rethrows a construction failure without destroying itself | tests/src/browser/Alert.test.ts > Alert releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-TOAST | R2 | Toast rethrows a construction failure without destroying itself | tests/src/browser/Toast.test.ts > Toast releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-SCROLLSPY | R2 | ScrollSpy rethrows a construction failure without destroying itself | tests/src/browser/ScrollSpy.test.ts > ScrollSpy releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-DROPDOWN | R2 | Dropdown rethrows a construction failure without destroying itself | tests/src/browser/Dropdown.test.ts > Dropdown releases its claim and its listeners when an option read throws during construction | failed | failed | KILLED |
+| R2-TAB | R2 | Tab rethrows a construction failure without destroying itself | tests/src/browser/Tab.test.ts > Tab releases its claim and writes nothing when an option read throws during construction | failed | failed | KILLED |
+| R2-CAROUSEL | R2 | Carousel rethrows a construction failure without destroying itself | tests/src/browser/Carousel.test.ts > Carousel releases its claim and restores the pointer token when an option read throws during construction | failed | failed | KILLED |
+| R2-TOOLTIP | R2 | Tooltip rethrows a construction failure without destroying itself | tests/src/browser/Tooltip.test.ts > Tooltip releases its claim and restores the title and label it moved when an option read throws during construction | failed | failed | KILLED |
+| R2-PLACEMENT | R2 | placement reads its position after the promotion again | tests/src/browser/Placement.test.ts > Placement writes nothing when an option read throws during construction | failed | failed | KILLED |
+| R4-LINKED | R4 | the simpler shape: no destroy unlink, the teardown unlinks whatever the lifetime | tests/src/browser/Tooltip.test.ts > Tooltip takes its tip id out when a closing beforetoggle listener destroys it inside a hide while a popover on the same trigger lives, holding no record after | failed | failed | KILLED |
+| HELD | control | a last holder refuses to own a record another restoration already owns, the only case a save-order comparison decides | tests/src/browser/HostSnapshot.test.ts > HostSnapshot writes an overlapping target back from its record at the last holder restoration, whichever restoration starts first | passed | passed | HELD |
+restored byte for byte
+rows 26, missed 0
+instrument exit=0
+--- the instrument's log
+digest src/browser/HostSnapshot.ts 814a17d481d421079459d4082fea95be19bb7a2f99b5f8d04d53d6824117a8d3
+digest src/browser/Alert.ts c11f5dcc78dbd6e15d4f86577045e6a6ef4a5366a190306be9448cd993fbd191
+digest src/browser/Tab.ts c68264acba1325e7e633debdd007b06376e357563cc93323bae7b1b44c313164
+digest src/browser/Tooltip.ts b4f48b3d6868a20cfa67023e7c7b04aa3aae1e75d7543d695e1d0b0352db704b
+digest src/browser/Button.ts 993c63d05d9f523894251be82afc8033d2a6252b463dc912520df6be4b2b52e4
+digest src/browser/Carousel.ts dff80b8caa7a4238c55cd3fe73011ebbb2adbd531fd6e83447321b87d2b50c53
+digest src/browser/Collapse.ts d5924fe6894e3762337da42ee219b90f8792df20868f7945900e46e62d872738
+digest src/browser/Dropdown.ts e8afef68897340e8d70e9c42fca7ecfb0eb8e69a0f9bcad7c384bc044053b90e
+digest src/browser/ScrollSpy.ts 8d39eba242d0eaf7a3fe8ea972eb46fcdc9d12a125eb417e84ca081336889545
+digest src/browser/Toast.ts 67bd93c4b99a7324a39ab967f710893cfcaa094b435efc9a790f62bad4ec17d0
+digest src/browser/Placement.ts 1bcd7f3fa3ee4f47f595c85bf07ab13631218c9756dd7225913df136ac92d997
+| Row | Obligation | Mutation | Case | Expected | Reading | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| READ | S1 | every save reads the element, even while another snapshot holds the target | tests/src/browser/Swipe.test.ts > Swipe keeps the pointer token while a carousel or a swipe on the same host lives, and removes it after the last is destroyed, in either order | failed | failed | KILLED |
+| JOIN | S1 | a later save replaces the holders of the record it joins | tests/src/browser/HostSnapshot.test.ts > HostSnapshot writes a target two snapshots share back only at the last holder restoration, from its record, in either order | failed | failed | KILLED |
+| SILENT | S1 | a restoration that is not the last holder owns and writes the target too | tests/src/browser/Carousel.test.ts > Carousel keeps the pointer token of a touch replacement a reaction to an item restoration constructs, and removes it after the replacement is destroyed | failed | failed | KILLED |
+| LAST | S1 | the last holder restoration owns no target and writes nothing back | tests/src/browser/HostSnapshot.test.ts > HostSnapshot leaves a shared target to the holder a reaction restores, which writes the record value back | failed | failed | KILLED |
+| CLEAR | S3 | clear keeps every holding | tests/src/browser/HostSnapshot.test.ts > HostSnapshot relinquishes its holdings on clear without writing, so the last remaining holder writes the record value back | failed | failed | KILLED |
+| CLEAR-PENDING | S3 | clear keeps the ownership of a restoration in progress | tests/src/browser/HostSnapshot.test.ts > HostSnapshot writes nothing more, removing no emptied class attribute, for an interrupted restoration a reaction to one of its writes clears | failed | failed | KILLED |
+| CLEAR-ALERT | S3 | a completed alert close keeps its snapshot holding | tests/src/browser/Alert.test.ts > Alert holds no record of the shown token after a completed close, so a fresh alert on the reused host restores the token its destruction finds recorded | failed | failed | KILLED |
+| TAB | S4 | a tab saves only the initial attributes it writes | tests/src/browser/Tab.test.ts > Tab keeps the roles and states of a live sibling tab when another tab of its list is destroyed, and restores the markup after the last | failed | failed | KILLED |
+| S5 | S5 | destruction leaves its tip id in aria-describedby | tests/src/browser/Tooltip.test.ts > Tooltip names only live tips in aria-describedby after it is destroyed while a popover on the same trigger lives, and restores its title and label | failed | failed | KILLED |
+| R1-FOLD | R1 | every name keys its record as written | tests/src/browser/HostSnapshot.test.ts > HostSnapshot joins one record for an attribute or a property saved under two spellings of its name on an HTML element, in either release order | failed | failed | KILLED |
+| R1-TAKEOVER | R1 | an attribute name keys its record as written, a property name still folded | tests/src/browser/HostSnapshot.test.ts > HostSnapshot joins the record a restoration still owns when a reaction saves the attribute under another spelling of its name | failed | failed | KILLED |
+| R1-NAMESPACE | R1 | an attribute name folds on an element outside the HTML namespace | tests/src/browser/HostSnapshot.test.ts > HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element | failed | failed | KILLED |
+| R1-DOCUMENT | R1 | an attribute name folds on an HTML element outside an HTML document | tests/src/browser/HostSnapshot.test.ts > HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element | failed | failed | KILLED |
+| R1-CUSTOM | R1 | a custom property name folds | tests/src/browser/HostSnapshot.test.ts > HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an HTML element outside an HTML document, and custom property names apart on any element | failed | failed | KILLED |
+| R2-BUTTON | R2 | Button rethrows a construction failure without destroying itself | tests/src/browser/Button.test.ts > Button releases its claim and its records when an option read throws during construction | failed | failed | KILLED |
+| R2-COLLAPSE | R2 | Collapse rethrows a construction failure without destroying itself | tests/src/browser/Collapse.test.ts > Collapse releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-ALERT | R2 | Alert rethrows a construction failure without destroying itself | tests/src/browser/Alert.test.ts > Alert releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-TOAST | R2 | Toast rethrows a construction failure without destroying itself | tests/src/browser/Toast.test.ts > Toast releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-SCROLLSPY | R2 | ScrollSpy rethrows a construction failure without destroying itself | tests/src/browser/ScrollSpy.test.ts > ScrollSpy releases its claim when an option read throws during construction | failed | failed | KILLED |
+| R2-DROPDOWN | R2 | Dropdown rethrows a construction failure without destroying itself | tests/src/browser/Dropdown.test.ts > Dropdown releases its claim and its listeners when an option read throws during construction | failed | failed | KILLED |
+| R2-TAB | R2 | Tab rethrows a construction failure without destroying itself | tests/src/browser/Tab.test.ts > Tab releases its claim and writes nothing when an option read throws during construction | failed | failed | KILLED |
+| R2-CAROUSEL | R2 | Carousel rethrows a construction failure without destroying itself | tests/src/browser/Carousel.test.ts > Carousel releases its claim and restores the pointer token when an option read throws during construction | failed | failed | KILLED |
+| R2-TOOLTIP | R2 | Tooltip rethrows a construction failure without destroying itself | tests/src/browser/Tooltip.test.ts > Tooltip releases its claim and restores the title and label it moved when an option read throws during construction | failed | failed | KILLED |
+| R2-PLACEMENT | R2 | placement reads its position after the promotion again | tests/src/browser/Placement.test.ts > Placement writes nothing when an option read throws during construction | failed | failed | KILLED |
+| R4-LINKED | R4 | the simpler shape: no destroy unlink, the teardown unlinks whatever the lifetime | tests/src/browser/Tooltip.test.ts > Tooltip takes its tip id out when a closing beforetoggle listener destroys it inside a hide while a popover on the same trigger lives, holding no record after | failed | failed | KILLED |
+| HELD | control | a last holder refuses to own a record another restoration already owns, the only case a save-order comparison decides | tests/src/browser/HostSnapshot.test.ts > HostSnapshot writes an overlapping target back from its record at the last holder restoration, whichever restoration starts first | passed | passed | HELD |
+restored byte for byte
+rows 26, missed 0
+--- the Orchestrator's restore check
+every source restored byte for byte (the Orchestrator's digest)
+--- status after

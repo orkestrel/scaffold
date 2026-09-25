@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+ ❯ |src:browser (chromium)| tests/src/browser/Modal.test.ts (52 tests | 1 failed | 51 skipped) 844ms
+     × writes no backdrop shown token after a hide a reaction inside the returning step's insertion starts 842ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 51 skipped (52)
+   Start at  20:07:08
+   Duration  2.78s (transform 0ms, setup 500ms, import 338ms, tests 844ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:2809:2 > Modal > writes no backdrop shown token after a hide a reaction inside the returning step's insertion starts
+AssertionError: expected [ [ { …(8) } ], [ { …(8) } ], …(3) ] to deeply equal [ [ { …(8) } ], [ { …(8) } ], …(3) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -37,11 +37,13 @@[39m
+[2m        "outer": false,[22m
+[2m        "row": [[22m
+[2m          "removal",[22m
+[2m          true,[22m
+[2m        ],[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "modal-backdrop fade -> modal-backdrop fade show",[39m
+[31m+       ],[39m
+[2m        "state": [[22m
+[2m          "false",[22m
+[2m          "none",[22m
+[2m          "true",[22m
+[2m          null,[22m
+
+ ❯ tests/src/browser/Modal.test.ts:2970:25
+    2968|    }
+    2969|   }
+    2970|   expect(readings.calls).toEqual(
+       |                         ^
+    2971|    MODAL_REINSERTIONS.map(({ door, animated }) => [
+    2972|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

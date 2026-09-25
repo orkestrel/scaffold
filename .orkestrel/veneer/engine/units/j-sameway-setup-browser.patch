@@ -1,0 +1,151 @@
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index e185f7c..0d66900 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -871,12 +871,21 @@ describe('browser setup', () => {
+ 			[
+ 				'BUTTON_CLASS',
+ 				'BUTTON_RESTORATIONS',
++				'CLOSING_REACTIONS',
+ 				'FrameManager',
++				'MODAL_HIDE_DOORS',
++				'MODAL_REINSERTIONS',
++				'MODAL_SHOW_DOORS',
++				'OFFCANVAS_HIDE_DOORS',
++				'OFFCANVAS_REINSERTIONS',
++				'OFFCANVAS_SHOW_DOORS',
+ 				'ORACLE_ACTIONS',
+ 				'ORACLE_EXCLUDED',
+ 				'PROBE_CASCADE',
++				'RELEASE_REENTRIES',
+ 				'SANITIZER_CASES',
+ 				'SANITIZER_CONFIGS',
++				'SHOW_REVERSALS',
+ 				'SPECIMEN_ATTRIBUTE',
+ 				'SceneManager',
+ 				'applyTheme',
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index e2e2ec0..d6eb97c 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -2715,3 +2715,120 @@ export function mountFrameDocument(): Document {
+ 	const frame = requireValue(host.querySelector('iframe'), 'The mounted host renders no iframe')
+ 	return requireValue(frame.contentDocument, 'The mounted iframe has no document')
+ }
++
++/**
++ * Lists the doors of a modal's show before its token step, where the agreement proof has the host add the `shown` token first.
++ *
++ * @remarks
++ * Each door follows the `show.vn.modal` dispatch, the scroll lock's construction, the body's `open`
++ * token, the host's padding, the backdrop's show, the host's insertion into the body, or one of the
++ * host's `display`, `aria-hidden`, `aria-modal`, and `role` writes.
++ */
++export const MODAL_SHOW_DOORS = Object.freeze([
++	'event',
++	'lock',
++	'open',
++	'adjust',
++	'backdrop',
++	'append',
++	'display',
++	'aria-hidden',
++	'aria-modal',
++	'role',
++] as const)
++
++/**
++ * Lists the doors of an offcanvas panel's show before its token step, where the agreement proof has the host add the `shown` token first.
++ *
++ * @remarks
++ * Each door follows the `show.vn.offcanvas` dispatch, the scroll lock's construction, the held
++ * backdrop's insertion, or one of the host's `aria-modal`, `role`, and `showing` writes.
++ */
++export const OFFCANVAS_SHOW_DOORS = Object.freeze([
++	'event',
++	'lock',
++	'insertion',
++	'aria-modal',
++	'role',
++	'showing',
++] as const)
++
++/**
++ * Lists the doors of a modal's hide before its token step, where the agreement proof has the host remove the `shown` token first, each with and without the `fade` token.
++ *
++ * @remarks
++ * Each door follows the `hide.vn.modal` dispatch or the isolation's release.
++ */
++export const MODAL_HIDE_DOORS = Object.freeze(
++	(['event', 'isolation'] as const).flatMap((door) =>
++		[false, true].map((fade) => Object.freeze({ door, fade })),
++	),
++)
++
++/**
++ * Lists the doors of an offcanvas panel's hide before its token step, where the agreement proof has the host remove the `shown` token first.
++ *
++ * @remarks
++ * Each door follows the `hide.vn.offcanvas` dispatch, the isolation's release, or the `hiding` write.
++ */
++export const OFFCANVAS_HIDE_DOORS = Object.freeze(['event', 'isolation', 'hiding'] as const)
++
++/**
++ * Lists the reversal proof's rows: the door at which the host moves the `shown` token to a show's end, and the later door at which it moves the token back.
++ *
++ * @remarks
++ * A row whose `early` door is the pre-change dispatch reverses before the show's token step, and a
++ * row whose `early` door is the `role` write reverses after it, inside the focus move.
++ */
++export const SHOW_REVERSALS = Object.freeze([
++	Object.freeze({ early: 'event', late: 'role' } as const),
++	Object.freeze({ early: 'role', late: 'focus' } as const),
++])
++
++/**
++ * Lists the reactions inside a stopped show's isolation release that start a change of their own, for the modal and the offcanvas panel.
++ *
++ * @remarks
++ * The `source` names what reacts: a sibling whose `inert` claim is released, the trigger the release
++ * focuses, or a host that carried `inert` before the show. The `nested` call is a `show`, or a `hide`
++ * after the reaction adds the `shown` token back. The `backdrop` value is the engine's option.
++ */
++export const RELEASE_REENTRIES = Object.freeze([
++	Object.freeze({ source: 'sibling', nested: 'show', backdrop: true } as const),
++	Object.freeze({ source: 'sibling', nested: 'show', backdrop: false } as const),
++	Object.freeze({ source: 'trigger', nested: 'show', backdrop: true } as const),
++	Object.freeze({ source: 'sibling', nested: 'hide', backdrop: true } as const),
++	Object.freeze({ source: 'host', nested: 'show', backdrop: true } as const),
++])
++
++/**
++ * Lists the doors of a modal's hide at which the host takes the hide over before the returning step inserts the backdrop again, with and without the `fade` token.
++ *
++ * @remarks
++ * Each door follows the backdrop's removal, the scroll lock's release, the host's `padding-right`
++ * removal, or the body's `open` token release.
++ */
++export const MODAL_REINSERTIONS = Object.freeze([
++	Object.freeze({ door: 'removal', animated: false } as const),
++	Object.freeze({ door: 'removal', animated: true } as const),
++	Object.freeze({ door: 'lock', animated: false } as const),
++	Object.freeze({ door: 'padding', animated: false } as const),
++	Object.freeze({ door: 'open', animated: false } as const),
++])
++
++/**
++ * Lists the doors of an offcanvas panel's hide at which the host takes the hide over before the returning step inserts the backdrop again, with and without the shipped cascade's transitions.
++ *
++ * @remarks
++ * Each door follows the backdrop's removal or the scroll lock's release.
++ */
++export const OFFCANVAS_REINSERTIONS = Object.freeze([
++	Object.freeze({ door: 'removal', animated: false } as const),
++	Object.freeze({ door: 'removal', animated: true } as const),
++	Object.freeze({ door: 'lock', animated: false } as const),
++])
++
++/**
++ * Lists the reactions inside a hide's closing destruction of a backdrop a consumer put back: one destroys the engine, and one adds the `shown` token back.
++ */
++export const CLOSING_REACTIONS = Object.freeze(['destroy', 'token'] as const)

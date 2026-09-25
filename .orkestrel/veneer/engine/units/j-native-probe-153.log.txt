@@ -1,0 +1,35 @@
+# J-NATIVE-PROBE on Chromium 153.0.8010.12 (builder on Sonnet, run 2026-09-24; retained from its report). Command:
+# npx vitest run --config <scratchpad>/vite.probe-browser.config.ts --root C:/Users/mikes/WebstormProjects/veneer --reporter=verbose tmp/probe/j-native-probe.test.ts
+# Tests  3 passed (3)
+ROW control.present true
+ROW control.absent false
+ROW size.calcSize.supported true
+ROW size.show.pixel.midpoint "transition=unknown height=48.1406px"
+ROW size.show.calcSize.midpoint "transition=unknown height=48.1406px"
+ROW size.hide.pixel.midpoint "transition=none height=0px"
+ROW size.hide.calcSize.midpoint "transition=unknown height=11.8438px"
+ROW size.pixel.completion.growingContent "height=58.4688px scrollHeight=120"
+ROW size.calcSize.completion.growingContent "height=116.922px scrollHeight=120"
+ROW size.pixel.completion.border "height=58.4688px scrollHeight=60 rectHeight=58.46875"
+ROW size.calcSize.completion.border "height=64.3125px scrollHeight=60 rectHeight=64.3125"
+ROW size.horizontal.pixel.midpointAndCompletion "midpoint=24.0625px completion=24.0625px scrollWidth=30"
+ROW size.horizontal.calcSize.midpointAndCompletion "midpoint=240.719px completion=240.719px scrollWidth=241"
+ROW size.calcSize.interpolateSizeNumericOnly "transition=unknown height=48.1406px"
+ROW size.calcSize.zeroDuration "count=0"
+ROW control.present true
+ROW control.absent false
+ROW arrow.centre.anchored "referenceCentre=20.00 arrowCentre=43.00 delta=23.00"
+ROW arrow.centre.control.noAnchor "referenceCentre=20.00 arrowCentre=172.00 delta=152.00"
+ROW arrow.clamp.topSpanRight.widerReference "arrowLeftWithinTip=18.00 clampLimit=36.00 withinBounds=true"
+ROW arrow.border3px "arrowLeftWithinTip=38.00 tipWidth=86.00"
+ROW arrow.flippedSide "flippedBelow=true tipTop=20.00 referenceBottom=20.00"
+ROW control.present true
+ROW control.absent false
+ROW risk.invokerHidePopover.closesPromotedMenu "openBefore=true openAfter=false"
+# The Orchestrator's reading (2026-09-24): the controls hold and the risk row is decisive (a consumer's
+# hide-popover invoker closes an engine-promoted popover). The size and arrow rows are not yet evidence:
+# transitionProperty reads "unknown" because the instrument reads it from getComputedTiming() rather than
+# the CSSTransition, the pixel path's hide midpoint reads "transition=none", the pixel completion rows read
+# a height the cleared inline size should have released, and the "centred" arrow sits 23px off the
+# reference's centre. No adoption rests on these rows; J-NATIVE-PROBE round 2 corrects the instrument
+# before the Chromium 141 run is asked for.
