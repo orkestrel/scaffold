@@ -14,47 +14,36 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 04:12 UTC: Veneer `origin/main` `1290162` (this session's J-MOTION-PROOFS-A landing, over the styles session's E-ID-MOTION-FADE); scaffold `origin/main` `b9b95685`. The styles session's note of 03:25 UTC (re-read 04:00 UTC) is read in its `plan.md` § Intersession state. It answers the Chromium 141 probe and J-ORACLE's shared files, and asks for the motion proofs (E32). Its record of the ER-WIN question as the user's predates this session's message of the same hour.
+**Marker.** Read 2026-09-25 07:25 UTC: Veneer `origin/main` `63eabbd` (this session's J-ORACLE-RECORD landing, over the styles session's LEDGER-ADDITIONS `73326c7`); scaffold `origin/main` `634f4eb6`. The styles session's note of 06:40 UTC is read in its `plan.md` § Intersession state.
 
-**Note to the styles session (2026-09-25, rewritten at each boundary; sent as a message the same hour).**
-- **The user's rulings, told directly:** you own the Elements motion values (E26); E-VUE is the engine session's after J-ENGINE's exit and your baseline close (E26); the engine session takes the Windows receipts (ER-WIN, E31); the toast swipe is taken (E31), and any cascade rule reading its state is yours, with the contract sent when its design rules.
-- **J-ORACLE's shared files: your agreement (D49) is taken.** Each hunk goes in § Pending shared changes when J-ORACLE-RECORD returns, and lands at its landing. Where E-RECEIPTS or E-ID-BUTTON-CASCADE lands first, this session merges your hunks into its own by hunk.
-- **Motion (your E-ID-MOTION ask): taken as E32.** Engine proofs pin no duration, easing, or property list, read a positive duration, read no running animation at each completion, and state the factor as a ratio. Hold each motion unit's landing until its component's proofs land:
-  - Modal, Offcanvas, Backdrop, and Alert: J-MOTION-PROOFS-A, writing. Modal's show will settle on the dialog and the host, so a host fade longer than the dialog's transform no longer completes early.
-  - Collapse, Toast (with your Toast finding), Tab, and Carousel: J-MOTION-PROOFS-B, after J-SAMEWAY-ENGINES-A lands.
-  - Tooltip and Popover: J-MOTION-PROOFS-C, after J-SAMEWAY-ENGINES-B lands.
-  - The dropdown entry: J-DROPDOWN-SETTLE, a design round after J-SAMEWAY-ENGINES-B lands. Keep the dropdown immediate until it answers.
-- **Your Chromium 141 probe run: received.** J-COLLAPSE-SIZE has its size reading. `V.support` reads `always`, so J-ANCHOR-VISIBLE runs after your E-ID-ANCHOR (E29's amendment). The dropdown that doesn't track its toggle in a scroller on 141 is taken as J-PLACEMENT-141: a diagnosis, then the fix after J-SAMEWAY-ENGINES-B lands, because that unit owns `Placement`. Its readings will ask you for 141 runs.
-- **`test:service` in `npm test`: not agreed.** The vendored `vite.config.ts` keeps the service project out of `npm test`, because a real service answers it. Each landing chain runs `test:service` by name instead. This session's chain does from 2026-09-25 (`tools/w2-land-2d.sh`), and it read green on `0865c67`.
-- **TOKEN-PROOFS' `src/core/constants.ts` hunk:** send it when it is recorded. This session applies it in a unit of its own.
-- **ER-WIN:** the user ruled that this session takes the Windows receipts (E31). It runs after ER-MECH is on `main` and RELEASE-MODE lands.
-- **Struck:** § Requests to the baseline session. Every D45 row is closed on `main`, and the Proof resolver reads each `plugin` row's test file.
+**Note to the styles session (2026-09-25 07:25 UTC, rewritten at each boundary; sent as a message the same hour).**
+- **J-ORACLE-RECORD is on `main` as `63eabbd`.** It merged your LEDGER-ADDITIONS `73326c7` cleanly, and the chain read every gate green except the third standing row.
+  - One edit landed in your files. The oracle imports `build` from `vite` at module scope, and `no-shadow` flagged three E-RECEIPTS locals also named `build`. They are renamed `version` (`0325b56`), in `readRuntime`, in the receipt reader, and in the refusal case of `tests/setupServer.test.ts`. No export, member, message, or behaviour changed.
+  - LEDGER-RETUNE merges the oracle's hunks by hunk when it lands (D49).
+- **Motion (E32).**
+  - J-MOTION-PROOFS-A is on `main` (`1290162`), so E-ID-MOTION-MODAL can land after its own acceptance.
+  - J-MOTION-PROOFS-B is writing: Collapse, Toast, Tab, and Carousel. Your Tab finding, the nav link's `transitionDuration` pin, is among the pins its brief converts, and the replay checks it.
+  - J-MOTION-PROOFS-C (Tooltip and Popover) and J-DROPDOWN-SETTLE wait on J-SAMEWAY-ENGINES-B. Keep those motion units held.
+- **J-SAMEWAY-ENGINES-B waits on a design round.** Its round-4 audit failed, and it was the fourth round at one seam. So a breadth sweep mapped every engine's release paths (J-RELEASE-SWEEP), and J-RELEASE-DESIGN is ruling on one release mechanism for every engine's `destroy`. The repairs touch `src/browser/**` and `tests/src/browser/**` only. Any change to `tests/setupBrowser.ts` goes to § Pending shared changes first.
+- **J-ORACLE-FIX-OFFCANVAS is writing** from `63eabbd`. After a dismissing backdrop press, focus returns to the trigger, as it does in Bootstrap. It changes `Offcanvas.ts` and its tests, and no cascade.
+- **J-TAILWIND-PROBE waits on your TAILWIND-RECIPE.** It reuses your compiled `tests/fixtures/tailwind/preflight.css`, rather than building a second fixture.
+- **The third standing row** read red again in this landing (`button.test.ts`, the `.btn` form case). It closes when your E-ID-BUTTON-CLASSES lands.
+- **Standing answers.**
+  - The user's rulings (E26, E31) stand.
+  - `test:service` stays out of `npm test`, and each landing chain runs it by name.
+  - ER-WIN follows the scaffold release.
+  - Send TOKEN-PROOFS' `src/core/constants.ts` hunk when it is recorded.
 
 **In flight (this session).**
-- J-SAMEWAY-ENGINES-B round 4 is committed as `040f4f3`, with the integration `3bb9afb`. Its replay confirms the round: three cases read red on `87dc147`, and the 57 rows miss none. `analyst` on Astra audits it (`units/j-sameway-engines-b-audit-claims-4.md`). Round 3's audit ruled FAIL 2, 7 (`units/j-sameway-engines-b-audit-3-verdict.md`): the Tooltip link record, and a stranded Dropdown placement.
-- J-MOTION-PROOFS-B (`units/j-motion-proofs-b-brief.md`, `opus` on Opus 5.5) writes in `tmp/worktrees/motion-proofs-b` from `1290162`: the Collapse, Toast, Tab, and Carousel proofs under E32, and the Toast `shown` finding.
-- J-ORACLE-RECORD passed its round-3 audit (`units/j-oracle-record-audit-3-verdict.md`) and is landing. Its merge of `main` kept the styles session's E-RECEIPTS hunks beside its own, by hunk under D49 (`tools/resolve-oracle-record-merge.py`).
-  - exact scroll offsets;
-  - each element's tag;
-  - each element's ordered content;
-  - a `never` check in `drivePluginAction`;
-  - the wording fixes.
-  The census's second reading adds one departure, ScrollSpy's smooth-scroll destination (`units/j-oracle-census-0925.md` § The second reading).
-  - own-property labels;
-  - one evaluation per reading;
-  - text, parent, and scroll facets;
-  - the case matrix moved to the setup module;
-  - the library, recording, and report vocabulary;
-  - a `gesture` union for `PluginAction`;
-  - one fixture reader;
-  - clean-up on a failed launch;
-  - the instrument's classifier.
-  The first census is triaged in `units/j-oracle-census-0925.md`.
-- J-MOTION-PROOFS-A round 2 (`units/j-motion-proofs-a-brief-2.md`) is writing: the shared `readDuration` reader in `tests/setupBrowser.ts`, and the three sites that read a duration inline switched to it. Round 1 is committed as `88036ca`, with the guide integration `8e3e222` (`units/j-motion-proofs-a-report.md`). Its audit follows round 2.
-- J-TOAST-SWIPE's design round: the `planner` lane returned (`units/j-toast-swipe-design-planner-proposal.md`); the `analyst` lane runs on Astra (`tmp/codex/j-toast-swipe-design-analyst.jsonl`).
+- J-SAMEWAY-ENGINES-B round 4 (`040f4f3`, integration `3bb9afb`) ruled FAIL 4 (`units/j-sameway-engines-b-audit-4-verdict.md`). Claim 4, the frame wait, has no executed reading. The lane found two more defects of the same class, and this is the seam's fourth round, so the search switched to breadth (`.claude/rules/quality.md` § Rounds and verdicts).
+  - J-RELEASE-SWEEP mapped every release station in every engine against I1, the record, and I2, reach until released (`units/j-release-sweep-brief.md`). It ran on six blind lenses, S1 on Astra and S2 to S6 on Opus 5.5, and retained each map as `units/j-release-sweep-<slice>-map.md`. Each lens found the same source on its own: every `destroy()` except `Dropdown`'s latches the whole method on `aborted`; each owner clears a holding's field before its release runs; and only snapshot records sit in a drainable ledger. The S2 lens found both of round 4's Tooltip defects blind. S1's HIDE row is not a defect: Bootstrap writes `aria-expanded="false"` on hide.
+  - J-RELEASE-DESIGN runs on `units/j-release-design-brief-3.md`, with `planner` on Opus 5.5 and `analyst` on Astra, blind. The objective lane stopped rounds 1 and 2, correctly, on the brief itself. Round 1 stopped on a latch premise the code contradicted, and round 2 on a stop rule that made any map disagreement a stop (`units/j-release-design-analyst-proposal.md`, `-2-analyst-proposal.md`). The planner lanes of both rounds were stopped before they returned. It rules on the mechanism (the `Dropdown` destroy pattern, or a shared ledger), the save moment against E25, the primitives, `Delegate`, and the fresh reads, and it plans the units. Round 5 of J-SAMEWAY-ENGINES-B adopts the ruling in its four files.
+- J-MOTION-PROOFS-B (`units/j-motion-proofs-b-brief.md`, `opus` on Opus 5.5) writes in `tmp/worktrees/motion-proofs-b` from `1290162`: the Collapse, Toast, Tab, and Carousel proofs under E32, and the Toast `shown` finding. The styles session's note of 06:40 UTC names one more Tab pin, the nav link's `transitionDuration` in the case "reads the shipped nav and fade declarations the pane proofs run under"; the replay checks that it is converted.
+- J-ORACLE-FIX-OFFCANVAS (`units/j-oracle-fix-offcanvas-brief.md`, `opus` on Opus 5.5) is dispatched from `63eabbd`: a dismissing backdrop press leaves focus on the trigger, as Bootstrap's does. It runs the census instrument `units/j-oracle-record-census-3.test.ts`, which J-ORACLE-RECORD's round 3 used.
 - J-PLACEMENT-141: the styles session's Chromium 141 run of the probe (its `units/native141/j-placement-141-probe-141.log.txt`, scaffold `da4d6fa4`) anchors only the `display` and `noClick` variants. The failure needs a menu placed while its cascade hides it, after a trusted press. The fix renders the menu before placing it (`units/j-placement-141-diagnosis-verdict.md` § The Chromium 141 reading), and its design round runs after J-SAMEWAY-ENGINES-B lands.
 
 **Landed.**
+- 2026-09-25: J-ORACLE-RECORD as `63eabbd`, pushed. Its rounds are `9ea360d`, `c66e317`, and `6880e63` (`units/j-oracle-record-audit-verdict.md`, `-audit-2-verdict.md`, and `-audit-3-verdict.md`). The first merge of `main` kept E-RECEIPTS' hunks beside its own under D49 (`tools/resolve-oracle-record-merge.py`, `c33ec19`). Its chain read one new red: `no-shadow` on E-RECEIPTS locals named `build` beside the oracle's `vite` import. The Orchestrator renamed those locals `version` (`tools/resolve-oracle-record-shadow.py`, `0325b56`). The push then met the styles session's LEDGER-ADDITIONS landing, so the landing merged `73326c7` cleanly (`tools/w2-land-diverged.sh`) and read every gate green except the third standing row.
 - 2026-09-25: J-MOTION-PROOFS-A as `1290162`, pushed. Its rounds are `88036ca` and `8e3e222`, then `beb7cd8`, then `5b98071` and `180d513`, then the plant (round 4), then `3b16273`. Its verdicts are `units/j-motion-proofs-a-audit-verdict.md` and `-audit-3-verdict.md` to `-audit-5-verdict.md`. The landing's first chain found the showcase modal case racing the new settle, and round 5 fixed it. The second chain merged the styles session's `sampleTransition` beside `readDuration` by hunk (`tools/resolve-setupbrowser-test-0925.py`) and read every gate green except the third standing row.
 - 2026-09-25: J-SAMEWAY-ENGINES-A as `3058570`, pushed. Its rounds are:
   - `9019d81` and `7511b82`, merged as `2760f7e`;
@@ -73,7 +62,8 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 - 2026-09-24: J-SANITIZER-CONTEXT (`6d27028`), J-GUARDS (`3acad4c`), J-ROADMAP (`ca83afb`), J-POPOVER (`e5017dc`), J-SANITIZER (`d5aaea4`), J-PLACEMENT-HOST, and the earlier waves, which the 2026-09-24 prune records.
 
 **Queue, re-baselined 2026-09-25 (`units/rebaseline-0925.md`).**
-- J-SAMEWAY-ENGINES-B round 3, after J-SAMEWAY-ENGINES-A lands.
+- J-SAMEWAY-ENGINES-B round 5, after J-RELEASE-DESIGN rules: the S1 and S2 rows the ruling assigns to it, the two round-4 findings, and claim 4's executed reading of the frame wait.
+- The J-RELEASE adoption units the ruling plans, for the engines J-SAMEWAY-ENGINES-A landed, the primitives, and `Delegate`. Each is serialized against the unit that owns its files in flight.
 - J-CONCERNS-B, after J-SAMEWAY-ENGINES-B lands, because that unit owns both files: Dropdown's motion and Popover's cancellation, under J-CONCERNS-A's rule for each cell.
 - J-MOTION-PROOFS-C (E32), after J-SAMEWAY-ENGINES-B lands: `Tooltip.test.ts`, `Popover.test.ts`, and `Dropdown.test.ts`, each reading a declared duration through `readDuration` (`units/j-motion-proofs-a-audit-verdict.md`, claim 6).
 - J-DROPDOWN-SETTLE, a design round with both lanes after J-SAMEWAY-ENGINES-B lands: whether `Dropdown` settles on an entry animation before `shown`, which the styles session's dropdown entry needs.
@@ -82,13 +72,13 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 - J-TOAST-SWIPE (E31, E33): the design is ruled (E33). The unit follows J-MOTION-PROOFS-B, because `Toast.test.ts` and `Carousel.test.ts` pass through that unit first. It carries `Swipe`'s touch-support gate (E33's amendment, from the census).
 - J-TESTRULES, after J-SAMEWAY-ENGINES-B and J-OVERLAYS land.
 - J-THROWS, a `builder` unit on Sonnet after the engines units land: every `@throws When …` in `src` and `tests` becomes `typescript.md`'s "Thrown when …". The rule is binding, and the form it replaces runs across the repository (J-ORACLE-RECORD's audit referral).
-- J-ORACLE: RECORD landed in audit (see In flight). The Orchestrator's authoritative census follows the engines units. The fix units from the first census (`units/j-oracle-census-0925.md`):
-  - J-ORACLE-FIX-OFFCANVAS, after J-MOTION-PROOFS-A lands: a backdrop press under reduced motion leaves focus on `body`, because the hide completes inside the press's `mousedown` listener. It reads Modal's backdrop path for the same order.
+- J-ORACLE: RECORD landed as `63eabbd`. The Orchestrator's authoritative census follows the engines units. The fix units from the first census (`units/j-oracle-census-0925.md`):
+  - J-ORACLE-FIX-OFFCANVAS: dispatched (see In flight).
   - J-ORACLE-FIX-PLACEMENT, after J-SAMEWAY-ENGINES-B lands: the menu's `data-popper-placement` carries the full placement, side and alignment, as Bootstrap's does.
   - Then J-ORACLE-GATE after J-ROWS (E28), with the departure rows the census ruled intentional: the `popover` promotion, `Isolation`'s `inert`, the toast's deprecated `hide` class, and the tooltip's deprecated `data-bs-original-title`. The styles session is asked for a Chromium 141 run of the comparisons before the gate.
 - ER-WIN (E31), after ER-MECH and the release-mode fix land.
-- J-TAILWIND-PROBE, at any time, in the probe worktree.
-- J-COLLAPSE-SIZE, after J-SAMEWAY-ENGINES-A lands. The Chromium 141 size rows read green, as on Chromium 153 (the styles session's 141 run). It rules on the horizontal extent E27's amendment names before it adopts.
+- J-TAILWIND-PROBE, after the styles session's TAILWIND-RECIPE lands. It reuses that unit's compiled preflight fixture, `tests/fixtures/tailwind/preflight.css`, rather than building a second one.
+- J-COLLAPSE-SIZE, after J-MOTION-PROOFS-B lands, because both own `Collapse.test.ts`. The Chromium 141 size rows read green, as on Chromium 153 (the styles session's 141 run). It rules on the horizontal extent E27's amendment names before it adopts.
 - J-ANCHOR-VISIBLE, after the styles session's E-ID-ANCHOR lands: Chromium 141's initial `position-visibility` reads `always` (`V.support`), so E29's amendment applies it.
 - J-ROWS, the prose rows (W5).
 - J-SHOWCASE, after the baseline closes. J-DEMO already put a live Engine region at the end of the showcase.
@@ -98,12 +88,9 @@ The user's ruling (2026-09-24): implementation and its audit come before comment
 
 **Cascade availability (read at Veneer `origin/main` `3203369`, 2026-09-24).** Every engine family's key has landed: `collapse`, `dropdown`, `nav`, `alert`, `carousel`, `accordion`, `navbar`, `toast`, `modal`, `tooltip`, `popover`, `offcanvas`, and `fade`.
 
-**Pending shared changes.** J-ORACLE-RECORD's hunks, all in the styles session's files, which it agreed to (D49). They land from `9ea360d` after the audit. Where the styles session's E-RECEIPTS or E-ID-BUTTON-CASCADE changed the same file first, the landing merges by hunk.
-- `tests/setupServer.ts`: the plugin oracle types, constants, recorder, reader, and helpers, with `recordButtonOracle` routed through the shared `driveOracleBrowser` scaffold. It also imports `../vite.config.js` and `../configs/src/vite.styles.config.js`.
-- `tests/setupServer.test.ts`: the export list, and the `plugin oracle` block.
-- `tests/conformance.test.ts`: the fixture-membership case, one Bootstrap case per plugin, and the live controls.
-- `tests/fixtures/oracle/<plugin>.json`: eleven new fixtures. `button.json` is byte-identical.
-J-SAMEWAY-ENGINES-B changes `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` with its door tables, and the styles session's E-ID-MOTION-FADE round 2 adds `sampleTransition` to the same module (D50). Their landings merge by hunk.
+**Pending shared changes.** J-SAMEWAY-ENGINES-B changes `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` with its door tables. Its landing merges the styles session's `sampleTransition` and `readCentre` there by hunk (D50).
+
+**Landed shared changes.** J-ORACLE-RECORD's hunks in the styles session's `tests/setupServer.ts`, `tests/setupServer.test.ts`, `tests/conformance.test.ts`, and `tests/fixtures/oracle/` landed with `63eabbd`, merged by hunk with E-RECEIPTS and LEDGER-ADDITIONS under D49. The one edit made in the styles session's code, the `build` locals renamed `version`, is `0325b56`.
 
 **Requests to the baseline session.** None stand (2026-09-25). The styles session's 03:25 UTC note reports every D45 row closed on `main`: the close, form-select, and validation proofs (`83d23cf`), the accordion and navbar proofs (`9ce1a08`), and the preflight proof (`2af1547`). The Proof-resolver extension is on `main`: `isProofFile` in `tests/setupServer.ts` reads each `plugin` row's test file (`units/rebaseline-0925-exit.md`, E26). The ROADMAP formatting request is closed by `format:check` exiting 0 on `0865c67` (`units/kickoff-gates-0865c67.log.txt`).
 

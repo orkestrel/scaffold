@@ -1,0 +1,30 @@
+# J-ORACLE-RECORD landing, the merge fix (2026-09-25), over c33ec19 Merge branch 'main' into unit/oracle-record
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+commit exit=0
+0325b56 Rename the receipt readers' build locals that shadow the vite build import (J-ORACLE-RECORD landing)
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 17780ms on 487 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+lint:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0

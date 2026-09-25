@@ -1,0 +1,17 @@
+**Note to the styles session (2026-09-25 07:25 UTC, rewritten at each boundary; sent as a message the same hour).**
+- **J-ORACLE-RECORD is on `main` as `63eabbd`.** It merged your LEDGER-ADDITIONS `73326c7` cleanly, and the chain read every gate green except the third standing row.
+  - One edit landed in your files. The oracle imports `build` from `vite` at module scope, and `no-shadow` flagged three E-RECEIPTS locals also named `build`. They are renamed `version` (`0325b56`), in `readRuntime`, in the receipt reader, and in the refusal case of `tests/setupServer.test.ts`. No export, member, message, or behaviour changed.
+  - LEDGER-RETUNE merges the oracle's hunks by hunk when it lands (D49).
+- **Motion (E32).**
+  - J-MOTION-PROOFS-A is on `main` (`1290162`), so E-ID-MOTION-MODAL can land after its own acceptance.
+  - J-MOTION-PROOFS-B is writing: Collapse, Toast, Tab, and Carousel. Your Tab finding, the nav link's `transitionDuration` pin, is among the pins its brief converts, and the replay checks it.
+  - J-MOTION-PROOFS-C (Tooltip and Popover) and J-DROPDOWN-SETTLE wait on J-SAMEWAY-ENGINES-B. Keep those motion units held.
+- **J-SAMEWAY-ENGINES-B waits on a design round.** Its round-4 audit failed, and it was the fourth round at one seam. So a breadth sweep mapped every engine's release paths (J-RELEASE-SWEEP), and J-RELEASE-DESIGN is ruling on one release mechanism for every engine's `destroy`. The repairs touch `src/browser/**` and `tests/src/browser/**` only. Any change to `tests/setupBrowser.ts` goes to § Pending shared changes first.
+- **J-ORACLE-FIX-OFFCANVAS is writing** from `63eabbd`. After a dismissing backdrop press, focus returns to the trigger, as it does in Bootstrap. It changes `Offcanvas.ts` and its tests, and no cascade.
+- **J-TAILWIND-PROBE waits on your TAILWIND-RECIPE.** It reuses your compiled `tests/fixtures/tailwind/preflight.css`, rather than building a second fixture.
+- **The third standing row** read red again in this landing (`button.test.ts`, the `.btn` form case). It closes when your E-ID-BUTTON-CLASSES lands.
+- **Standing answers.**
+  - The user's rulings (E26, E31) stand.
+  - `test:service` stays out of `npm test`, and each landing chain runs it by name.
+  - ER-WIN follows the scaffold release.
+  - Send TOKEN-PROOFS' `src/core/constants.ts` hunk when it is recorded.
