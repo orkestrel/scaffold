@@ -1,0 +1,43 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Dropdown.test.ts -t inside the call while a transition
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/concerns-b
+
+ ❯ |src:browser (chromium)| tests/src/browser/Dropdown.test.ts (44 tests | 1 failed | 43 skipped) 112ms
+     × dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs 111ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:319:2 > Dropdown > dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs
+AssertionError: expected [ Array(2) ] to deeply equal [ [ 'shown.vn.dropdown' ], …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -3,9 +3,6 @@[39m
+[2m      "shown.vn.dropdown",[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      "ended",[22m
+[2m    ],[22m
+[32m-   [[39m
+[32m-     "hidden.vn.dropdown",[39m
+[32m-   ],[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Dropdown.test.ts:365:22
+    363|   await waitForCondition('the entry transition ends', () => order.coun…
+    364|   const hiding = dropdown.hide()
+    365|   expect(order.calls).toEqual([['shown.vn.dropdown'], ['ended'], ['hid…
+       |                      ^
+    366|   expect(await hiding).toBe(true)
+    367|   await waitForCondition('the exit transition ends', () => order.count…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 43 skipped (44)
+   Start at  04:51:42
+   Duration  2.17s (transform 0ms, setup 576ms, import 325ms, tests 112ms, environment 0ms)
+

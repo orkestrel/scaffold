@@ -1,0 +1,18 @@
+diff --git a/src/browser/Lifetime.ts b/src/browser/Lifetime.ts
+index dd335b2..f9386f1 100644
+--- a/src/browser/Lifetime.ts
++++ b/src/browser/Lifetime.ts
+@@ -52,9 +52,10 @@ export class Lifetime implements LifetimeInterface {
+ 	 * builds a child and destroys it on every change keeps no holding of a destroyed child, an error
+ 	 * a release of the class throws propagates from the owner's destruction and from the class's own,
+ 	 * and a class whose lifetime ended before it joined leaves the owner nothing. Any other signal
+-	 * destroys the class when it aborts, and at once when it has aborted already. The class's
+-	 * `destroy` method then runs in an abort listener, so the platform reports an error it throws and
+-	 * the abort does not propagate it.
++	 * destroys the class when it aborts, and at once when it has aborted already. When it has
++	 * aborted already, the class's `destroy` method runs inside this call, so an error it throws
++	 * propagates from this call. When it aborts later, the method runs in an abort listener, so the
++	 * platform reports an error it throws and the abort does not propagate it.
+ 	 * @example
+ 	 * ```ts
+ 	 * // A class passes the signal its options carry, itself, and its own lifetime, as a button's
