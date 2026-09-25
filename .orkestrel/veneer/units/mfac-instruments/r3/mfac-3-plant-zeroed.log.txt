@@ -1,0 +1,83 @@
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:30:57 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/form-floating.test.ts (20 tests | 3 failed) 1304ms
+     × transitions the label opacity and transform and collapses both under reduced motion 16ms
+     × runs the label transform over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor 17ms
+     × keeps the label transform at the root duration inside a subtree that sets the motion factor alone 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-floating.test.ts:357:2 > form floating motion > transitions the label opacity and transform and collapses both under reduced motion
+AssertionError: expected '0s, 0s' to be '0.1s, 0.1s' // Object.is equality
+
+Expected: [32m"0[7m.1[27ms, 0[7m.1[27ms"[39m
+Received: [31m"0s, 0s"[39m
+
+ ❯ tests/src/styles/components/form-floating.test.ts:361:50
+    359|   const label = requireValue(host.querySelector('label[for="floating-e…
+    360|   expect(readStyle(label, 'transition-property')).toBe('opacity, trans…
+    361|   expect(readStyle(label, 'transition-duration')).toBe('0.1s, 0.1s')
+       |                                                  ^
+    362|   expect(readStyle(label, 'transition-timing-function')).toBe('ease-in…
+    363|   expect(collectMediaConditions(collectLayer('components'), '.form-flo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-floating.test.ts:380:2 > form floating motion > runs the label transform over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor
+AssertionError: expected undefined to be defined
+ ❯ tests/src/styles/components/form-floating.test.ts:391:18
+    389|    return sampleTransition(label, 'transform')
+    390|   })
+    391|   expect(resting).toBeDefined()
+       |                  ^
+    392|   const base = requireValue(resting, 'No transition at the resting fac…
+    393|   expect([base.duration, base.easing]).toEqual([expect.closeTo(100, 6)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-floating.test.ts:408:2 > form floating motion > keeps the label transform at the root duration inside a subtree that sets the motion factor alone
+Error: No label transition
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:516:30
+ ❯ tests/src/styles/components/form-floating.test.ts:417:10
+    415|    readStyle(label, 'transform')
+    416|    control.value = 'berth@example.com'
+    417|    return requireValue(sampleTransition(label, 'transform'), 'No label…
+       |          ^
+    418|   })
+    419|   const [root, subtree] = durations
+ ❯ tests/src/styles/components/form-floating.test.ts:409:60
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 17 passed (20)
+   Start at  07:30:42
+   Duration  16.56s (transform 0ms, setup 1.25s, import 53ms, tests 1.30s, environment 0ms)
+
+exit=1
+2.50 3.39 6.01 4/252 7698

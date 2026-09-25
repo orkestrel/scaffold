@@ -1,0 +1,141 @@
+--- tmp/units/backup/_progress.scss.bak	2026-09-25 07:29:24.274577603 +0000
++++ src/styles/components/_progress.scss	2026-09-25 07:29:32.524855499 +0000
+@@ -23,8 +23,8 @@
+ 		--bs-progress-bar-color: var(--vn-palette-white-base);
+ 		--bs-progress-bar-bg: var(--vn-palette-blue);
+ 		// The fill's width change is feedback to the value the bar reports, so its transition reads
+-		// the feedback token scaled by the release's own ratio to it, and keeps the release's curve;
+-		// the motion factor reaches it only through that token.
++		// four times the feedback token on the release's curve, and the motion factor reaches the
++		// transition only through that token.
+ 		--bs-progress-bar-transition: width calc(var(--vn-motion-feedback) * 4) ease;
+ 		display: flex;
+ 		height: var(--bs-progress-height);
+--- tmp/units/backup/_form-floating.scss.bak	2026-09-25 07:29:24.276589296 +0000
++++ src/styles/components/_form-floating.scss	2026-09-25 07:31:02.375910651 +0000
+@@ -6,12 +6,13 @@
+ 	// inset, which no token carries, multiply `--vn-space-8` by the release's own ratio to its 1rem,
+ 	// so each resolves the release's length at the resting factor and the height and the insets
+ 	// scale together. The backdrop's `em` height and the `1.25` line height are relative to the text
+-	// already, and the stacking, the transform, and its origin are the release's own bytes. The label's
+-	// lift is feedback to the control's own input, so its transition reads the feedback token scaled
+-	// by the release's own ratio to it, the way the height reads a multiple of a space token, and the
+-	// motion factor reaches it only through that token. Every value the release writes as a `--bs-*`
+-	// variable reads that variable, so a consumer retuning the border width, the body color, the body
+-	// or secondary surface, or the base radius moves this family with the rest of the cascade.
++	// already, and the stacking, the transform, and its origin are the release's own bytes. The
++	// label's lift is feedback to the control's own input, so its transition reads the feedback
++	// token scaled by the release's own ratio to that token, the way the height reads a multiple of
++	// a space token; the motion factor reaches the transition only through the feedback token. Every
++	// value the release writes as a `--bs-*` variable reads that variable, so a consumer retuning the
++	// border width, the body color, the body or secondary surface, or the base radius moves this
++	// family with the rest of the cascade.
+ 	//
+ 	// The control's own border and paint are `.form-control` and `.form-select` rules; this partial
+ 	// writes only the geometry the floating container changes about them. The validation partial
+--- tmp/units/backup/_pagination.scss.bak	2026-09-25 07:29:24.278380064 +0000
++++ src/styles/components/_pagination.scss	2026-09-25 07:29:39.008834516 +0000
+@@ -56,9 +56,9 @@
+ 		background-color: var(--bs-pagination-bg);
+ 		border: var(--bs-pagination-border-width) solid var(--bs-pagination-border-color);
+ 		// The duration reads the feedback token, which resolves to the release's `0.15s` value and
+-		// scales with the motion factor. The curve stays the release's `ease-in-out`, because
+-		// `--vn-ease-standard` resolves to `ease`. The mixin emits the reduced-motion twin the
+-		// release records beside it.
++		// scales with the motion factor. The curve stays the release's `ease-in-out`, which no
++		// `--vn-ease-*` token resolves to. The mixin emits the reduced-motion twin the release
++		// records beside it.
+ 		@include transition(
+ 			(
+ 				color var(--vn-motion-feedback) ease-in-out,
+--- tmp/units/backup/veneer.md.bak	2026-09-25 07:29:24.280172797 +0000
++++ guides/veneer.md	2026-09-25 07:29:47.540834321 +0000
+@@ -7105,17 +7105,18 @@
+ 
+ The motion factor scales every transition duration the cascade writes except the collapse, modal
+ dialog, offcanvas panel, carousel slide and indicator, and accordion chevron timings, which keep the
+-release's literals as their own sections record. A scaled duration reads a `--vn-motion-*` token or
+-a multiple of one, so it doubles from its own resting value at a factor of `2` and starts no
+-transition at a factor of `0`. At a factor of `1`, a scaled duration that keeps the release's timing
+-resolves to the release's value, and one § Departures records against the release, such as the
+-`.icon-link` transform's, resolves to its token's value.
++release's literals as their own sections record. A scaled duration reads a `--vn-motion-*` token, alone or scaled by a fixed ratio, so it doubles from
++its own resting value at a factor of `2` and starts no transition at a factor of `0`. At a factor of
++`1`, it resolves to the value its token and ratio give, which is the release's duration wherever
++Veneer keeps that duration. § Departures records each scaled duration that differs from the
++release's, such as the `.icon-link` transform's, and § Additions records each transition the release
++does not write.
+ 
+ A factor takes effect where the scale it multiplies is declared. Veneer declares the scales on the
+ `:root` selector, so a factor set on the root element rescales the document. A subtree that sets a
+-factor alone keeps the root's lengths, because a custom property carries its `var()` references
+-already substituted; to rescale a subtree, declare the factor and the scale together on that
+-subtree.
++factor alone keeps the root's lengths and durations, because a custom property carries its `var()`
++references already substituted; to rescale a subtree, declare the factor and the scale together on
++that subtree.
+ 
+ #### Palette and gray ramp
+ 
+--- tmp/units/backup/setupBrowser.ts.bak	2026-09-25 07:29:24.282971967 +0000
++++ tests/setupBrowser.ts	2026-09-25 07:29:40.332834485 +0000
+@@ -1957,8 +1957,8 @@
+  *   starts the change, and returns what it read, such as the {@link sampleTransition} result. It
+  *   runs synchronously.
+  * @returns Each factor's reading, in the order of the factors `1`, `2`, and `0`.
+- * @throws Thrown when the drive throws, with the drive's own error, after the factor and the scene
+- *   are restored.
++ * @throws Thrown when the drive throws, with the drive's own error, after the factor is restored
++ *   and the scene is cleared.
+  *
+  * @remarks
+  * The factor is set on the document element because Veneer declares the motion tokens on the `:root`
+--- tmp/units/backup/form-floating.test.ts.bak	2026-09-25 07:29:24.284941778 +0000
++++ tests/src/styles/components/form-floating.test.ts	2026-09-25 07:30:06.440833888 +0000
+@@ -388,8 +388,10 @@
+ 			control.value = 'harbor@example.com'
+ 			return sampleTransition(label, 'transform')
+ 		})
++		expect(resting).toBeDefined()
+ 		const base = requireValue(resting, 'No transition at the resting factor')
+ 		expect([base.duration, base.easing]).toEqual([expect.closeTo(100, 6), 'ease-in-out'])
++		expect(doubled).toBeDefined()
+ 		const slowed = requireValue(doubled, 'No transition at the doubled factor')
+ 		expect([slowed.duration / base.duration, slowed.easing]).toEqual([
+ 			expect.closeTo(2, 6),
+--- tmp/units/backup/progress.test.ts.bak	2026-09-25 07:29:24.286772506 +0000
++++ tests/src/styles/components/progress.test.ts	2026-09-25 07:30:08.252833847 +0000
+@@ -214,8 +214,10 @@
+ 			bar.style.width = '75%'
+ 			return sampleTransition(bar, 'width')
+ 		})
++		expect(resting).toBeDefined()
+ 		const base = requireValue(resting, 'No transition at the resting factor')
+ 		expect([base.duration, base.easing]).toEqual([600, 'ease'])
++		expect(doubled).toBeDefined()
+ 		const slowed = requireValue(doubled, 'No transition at the doubled factor')
+ 		expect([slowed.duration / base.duration, slowed.easing]).toEqual([2, 'ease'])
+ 		expect(zeroed).toBeUndefined()
+--- tmp/units/backup/navbar.test.ts.bak	2026-09-25 07:29:24.288596130 +0000
++++ tests/src/styles/components/navbar.test.ts	2026-09-25 07:30:10.124833804 +0000
+@@ -561,8 +561,10 @@
+ 			toggler.focus()
+ 			return sampleTransition(toggler, 'box-shadow')
+ 		})
++		expect(resting).toBeDefined()
+ 		const base = requireValue(resting, 'No transition at the resting factor')
+ 		expect([base.duration, base.easing]).toEqual([150, 'ease-in-out'])
++		expect(doubled).toBeDefined()
+ 		const slowed = requireValue(doubled, 'No transition at the doubled factor')
+ 		expect([slowed.duration / base.duration, slowed.easing]).toEqual([2, 'ease-in-out'])
+ 		expect(zeroed).toBeUndefined()
+--- tmp/units/backup/fade.test.ts.bak	2026-09-25 07:29:24.290385157 +0000
++++ tests/src/styles/components/fade.test.ts	2026-09-25 07:30:11.188833780 +0000
+@@ -220,6 +220,7 @@
+ 		readings.push([sampleTransition(element, 'opacity')?.duration, readStyle(element, 'opacity')])
+ 		expect(element.getAnimations()).toEqual([])
+ 		const [resting, ...rest] = readings
++		expect(resting?.[0]).toBeDefined()
+ 		const base = requireValue(resting?.[0], 'No transition at the resting factor')
+ 		expect(resting).toEqual([base, '0'])
+ 		expect(base).toBeGreaterThan(0)

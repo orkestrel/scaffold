@@ -1,0 +1,7 @@
+./node_modules/.bin/oxfmt --config .oxfmtrc.json --check src/styles/components/_progress.scss src/styles/components/_form-floating.scss src/styles/components/_pagination.scss tests/setupBrowser.ts tests/src/styles/components/form-floating.test.ts tests/src/styles/components/progress.test.ts tests/src/styles/components/navbar.test.ts tests/src/styles/components/fade.test.ts
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 97ms on 8 files using 4 threads.
+exit=0
+2.09 3.18 5.81 4/216 8325
