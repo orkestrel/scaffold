@@ -1,0 +1,2 @@
+Finished in 113ms on 2 files using 4 threads.
+exit=0

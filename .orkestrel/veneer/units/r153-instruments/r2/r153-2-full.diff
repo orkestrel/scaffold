@@ -1,0 +1,198 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 02f3b16..c72462f 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10754,22 +10754,24 @@ never writes reaches neither table here nor § Deferred selectors, whose rows mu
+ inventory the `scanCompatibilityPresence` function reads.
+ 
+ The button reboot rules sit in the ledger, which § Additions describes: each one is written on a
+-`:where()` selector, such as `:where(button.nav-link)`, and answers to the component its class names.
+-The ledger measures what each reset declares; the styles proofs read what it does. The
++`:where()` selector, such as `:where(button.nav-link)`, and answers to the component its class
++names. The ledger measures what each reset declares; the styles proofs read what it does. The
+ `tests/src/styles/mixins.test.ts` proof holds each rule's longhands equal to the longhands the
+ button surface writes, and it reads the built cascade to hold every reset declaration that names
+ `revert` at `revert` alone, because the minifier folds a longhand written after a `revert` shorthand
+ into a shorthand the browser drops. Each class's form proof sits in the test file of the partial
+-that writes its include, such as [the close proof](../tests/src/styles/components/close.test.ts), and
+-the carousel file holds the controls and the indicator. Each proof hands the class's button form and
+-its counterpart that is no button, the anchor where the release builds the class on one and a
++that writes its include, such as [the close proof](../tests/src/styles/components/close.test.ts),
++and the carousel file holds the controls and the indicator. Each proof hands the class's button form
++and its counterpart that is no button, the anchor where the release builds the class on one and a
+ focusable `div` otherwise, to the `readFormDifferences` function, under a holder that retunes every
+ token the button surface reads outside forced colors. The function reads both forms at rest,
+ hovered, pressed, under keyboard focus, and disabled, once under this package's cascade and once
+ under the release's stylesheet, and the button form must resolve apart from its counterpart on the
+-same longhands, at the same button values, under both. A counterpart cannot be `:disabled`, so it
+-takes the release's `disabled` class where the release writes that class beside the `:disabled`
+-state, and stays at rest where the release writes no `:disabled` rule for the class.
++same longhands, at the same button values, under both. It reads an outline or border width whose
++line style paints no line at `0px`, whatever length a build computes it at, because such a width
++paints nothing. A counterpart cannot be `:disabled`, so it takes the release's `disabled` class
++where the release writes that class beside the `:disabled` state, and stays at rest where the
++release writes no `:disabled` rule for the class.
+ [The button proof](../tests/src/styles/elements/button.test.ts) reads each `.btn` form on a button
+ and on an anchor through the same function and holds the two cascades' differences equal, and it
+ reads a `button.nav-link` element at the release's corner, type, and shadow.
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 9157782..ead171b 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -59,6 +59,7 @@ import {
+ 	mountTraversalStart,
+ 	measureDifference,
+ 	measureVariation,
++	normalizeLineWidths,
+ 	ORACLE_ACTIONS,
+ 	ORACLE_EXCLUDED,
+ 	PROBE_CASCADE,
+@@ -915,6 +916,7 @@ describe('browser setup', () => {
+ 				'CLOSING_REACTIONS',
+ 				'FORM_ENTRIES',
+ 				'FrameManager',
++				'LINE_STYLES',
+ 				'MODAL_HIDE_DOORS',
+ 				'MODAL_REINSERTIONS',
+ 				'MODAL_SHOW_DOORS',
+@@ -955,6 +957,7 @@ describe('browser setup', () => {
+ 				'mountShowcase',
+ 				'mountTrail',
+ 				'mountTraversalStart',
++				'normalizeLineWidths',
+ 				'pressOracleKeys',
+ 				'readButton',
+ 				'readCascadeSheet',
+@@ -1980,6 +1983,65 @@ describe('readFormDifferences', () => {
+ 	})
+ })
+ 
++describe('normalizeLineWidths', () => {
++	it('reads an outline or border width whose style paints no line at 0px, and leaves every other entry unchanged', () => {
++		expect(
++			normalizeLineWidths({
++				'outline-style': 'none',
++				'outline-width': '3px',
++				'border-top-style': 'solid',
++				'border-top-width': '1px',
++				'border-right-style': 'none',
++				'border-right-width': '0px',
++				'border-left-style': 'hidden',
++				'border-left-width': '2px',
++				'border-bottom-width': '4px',
++				color: 'rgb(255, 0, 0)',
++			}),
++		).toEqual({
++			'outline-style': 'none',
++			'outline-width': '0px',
++			'border-top-style': 'solid',
++			'border-top-width': '1px',
++			'border-right-style': 'none',
++			'border-right-width': '0px',
++			'border-left-style': 'hidden',
++			'border-left-width': '0px',
++			'border-bottom-width': '4px',
++			color: 'rgb(255, 0, 0)',
++		})
++		expect(normalizeLineWidths({ 'outline-style': 'auto', 'outline-width': '1px' })).toEqual({
++			'outline-style': 'auto',
++			'outline-width': '1px',
++		})
++		expect(
++			normalizeLineWidths({
++				'outline-style': 'none',
++				'outline-width': '3px',
++				'border-top-style': 'none',
++				'border-top-width': '1px',
++				'border-right-style': 'hidden',
++				'border-right-width': '2px',
++				'border-bottom-style': 'none',
++				'border-bottom-width': '4px',
++				'border-left-style': 'hidden',
++				'border-left-width': '5px',
++			}),
++		).toEqual({
++			'outline-style': 'none',
++			'outline-width': '0px',
++			'border-top-style': 'none',
++			'border-top-width': '0px',
++			'border-right-style': 'hidden',
++			'border-right-width': '0px',
++			'border-bottom-style': 'none',
++			'border-bottom-width': '0px',
++			'border-left-style': 'hidden',
++			'border-left-width': '0px',
++		})
++	})
++})
++
+ describe('scanPositionalPairs', () => {
+ 	it('excludes a nesting the content model mandates, and reports it when nothing mandates it', () => {
+ 		// The exclusion is the one place the reader can stay silent, so the same plant runs with the
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 89533c7..86835b6 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1841,6 +1841,45 @@ export function readDuration(element: Element): number {
+ 	)
+ }
+ 
++/**
++ * Names the line style longhand that decides whether each outline and border width longhand paints.
++ *
++ * @remarks
++ * `normalizeLineWidths` reads a width whose style paints no line as `0px`.
++ */
++export const LINE_STYLES: Readonly<Record<string, string>> = Object.freeze({
++	'outline-width': 'outline-style',
++	'border-top-width': 'border-top-style',
++	'border-right-width': 'border-right-style',
++	'border-bottom-width': 'border-bottom-style',
++	'border-left-width': 'border-left-style',
++})
++
++/**
++ * Returns a computed style reading with every outline and border width whose line style paints no line read as
++ * `0px`.
++ *
++ * @remarks
++ * A line style of `none` or `hidden` paints no line whatever its width, so a reading compared across builds takes
++ * such a width at `0px`, whatever length a build computes it at. Every other entry, and a width whose style
++ * longhand the reading lacks, is returned unchanged.
++ *
++ * @param reading - The longhands and their computed values
++ * @returns The reading with each unpainted width at `0px`
++ */
++export function normalizeLineWidths(
++	reading: Readonly<Record<string, string>>,
++): Readonly<Record<string, string>> {
++	return Object.fromEntries(
++		Object.entries(reading).map(([longhand, value]) => {
++			const style = LINE_STYLES[longhand]
++			return style !== undefined && (reading[style] === 'none' || reading[style] === 'hidden')
++				? [longhand, '0px']
++				: [longhand, value]
++		}),
++	)
++}
++
+ /** Names a state the {@link readFormDifferences} reader drives a form into before reading it. */
+ export type FormState = 'rest' | 'hovered' | 'pressed' | 'focused' | 'disabled'
+ 
+@@ -2019,10 +2058,12 @@ export async function readFormDifferences(
+ 				if (!element.matches(entries[state])) missed.push(`${key} ${state}`)
+ 				readings.set(
+ 					`${key} ${state}`,
+-					Object.fromEntries(
+-						Array.from(getComputedStyle(element))
+-							.filter((longhand) => !longhand.startsWith('--'))
+-							.map((longhand) => [longhand, readStyle(element, longhand)]),
++					normalizeLineWidths(
++						Object.fromEntries(
++							Array.from(getComputedStyle(element))
++								.filter((longhand) => !longhand.startsWith('--'))
++								.map((longhand) => [longhand, readStyle(element, longhand)]),
++						),
+ 					),
+ 				)
+ 				await releasePointer()
