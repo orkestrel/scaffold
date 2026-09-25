@@ -1,0 +1,59 @@
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 606c248..75f38e9 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -971,7 +971,7 @@ export interface DropdownEventMap {
+ 	readonly show: CustomEvent<DropdownDetail>
+ 	/** Names the `shown.vn.dropdown` event, dispatched after the menu opens; it is not cancelable. */
+ 	readonly shown: CustomEvent<DropdownDetail>
+-	/** Names the `hide.vn.dropdown` event, whose prevention refuses the hide; after a prevented hide that the platform's close of the promoted menu started has promoted the menu again once, the next platform close of the same placement hides it despite prevention. */
++	/** Names the `hide.vn.dropdown` event, whose prevention refuses the hide; after a prevented hide that the platform's close of the promoted menu started, the menu is promoted again once, and a promotion the platform leaves closed, or the next platform close of the same placement, hides it despite prevention. */
+ 	readonly hide: CustomEvent<DropdownDetail>
+ 	/** Names the `hidden.vn.dropdown` event, dispatched after the menu closes; it is not cancelable. */
+ 	readonly hidden: CustomEvent<DropdownDetail>
+@@ -1641,7 +1641,7 @@ export interface TooltipEventMap {
+ 	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.tooltip` event, dispatched after the tip's transition settles; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly shown: CustomEvent<null>
+-	/** Names the `hide.vn.tooltip` event, dispatched before the `shown` token leaves. Prevention refuses an ordinary hide; after a prevented platform hide has re-promoted this tip once, its next platform close hides it despite prevention. */
++	/** Names the `hide.vn.tooltip` event, dispatched before the `shown` token leaves. Prevention refuses an ordinary hide; after a prevented platform hide, the tip is promoted again once, and a promotion the platform leaves closed, or the next platform close of that tip, hides it despite prevention. */
+ 	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.tooltip` event, dispatched after the tip is removed; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly hidden: CustomEvent<null>
+@@ -1855,9 +1855,10 @@ export interface TooltipInterface {
+ 	 *
+ 	 * A host that marks the tip shown before the call's token step has made that write for the call,
+ 	 * which completes. A host that takes the token after the token step, with the tip still in its
+-	 * container, takes the call over: the call restores the placement, removes the tip from its
+-	 * container, and takes the tip's id out of `aria-describedby` before it resolves false, reading
+-	 * the tooltip's lifetime before each of those writes.
++	 * container, takes the call over: before it resolves false, the call destroys the placement, takes
++	 * the tip's id out of `aria-describedby`, and removes the tip from its container, in that order,
++	 * reading the tooltip's lifetime before each of those writes. It keeps every other id in the
++	 * attribute and removes an emptied attribute only when the attribute was absent before the call.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await tooltip.show()
+@@ -1945,7 +1946,7 @@ export interface PopoverEventMap {
+ 	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.popover` event, dispatched after the tip's transition settles; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly shown: CustomEvent<null>
+-	/** Names the `hide.vn.popover` event, dispatched before the `shown` token leaves. Prevention refuses an ordinary hide; after a prevented platform hide has re-promoted this tip once, its next platform close hides it despite prevention. */
++	/** Names the `hide.vn.popover` event, dispatched before the `shown` token leaves. Prevention refuses an ordinary hide; after a prevented platform hide, the tip is promoted again once, and a promotion the platform leaves closed, or the next platform close of that tip, hides it despite prevention. */
+ 	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.popover` event, dispatched after the tip is removed; it is not cancelable. The change is released before this event is dispatched, so a listener can start another change; that change does not undo the completion already announced. */
+ 	readonly hidden: CustomEvent<null>
+@@ -2028,9 +2029,10 @@ export interface PopoverInterface {
+ 	 *
+ 	 * A host that marks the tip shown before the call's token step has made that write for the call,
+ 	 * which completes. A host that takes the token after the token step, with the tip still in its
+-	 * container, takes the call over: the call restores the placement, removes the tip from its
+-	 * container, and takes the tip's id out of `aria-describedby` before it resolves false, reading
+-	 * the popover's lifetime before each of those writes.
++	 * container, takes the call over: before it resolves false, the call destroys the placement, takes
++	 * the tip's id out of `aria-describedby`, and removes the tip from its container, in that order,
++	 * reading the popover's lifetime before each of those writes. It keeps every other id in the
++	 * attribute and removes an emptied attribute only when the attribute was absent before the call.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await popover.show()

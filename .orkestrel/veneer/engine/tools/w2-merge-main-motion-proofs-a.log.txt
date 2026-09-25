@@ -1,0 +1,27 @@
+# J-MOTION-PROOFS-A landing: the merge of main into unit/motion-proofs-a (2026-09-24)
+3b16273 Wait for the modal's completion in the showcase modal case (J-MOTION-PROOFS-A round 5)
+efb32fb Merge branch 'main' into unit/motion-proofs-a
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+   3058570..b613ae4  main       -> origin/main
+fetch exit=0
+Updating 3058570..b613ae4
+Fast-forward
+ ROADMAP.md                                     |   6 +-
+ guides/veneer.md                               |  61 +++++---
+ src/styles/components/_fade.scss               |   6 +-
+ tests/setupBrowser.test.ts                     | 122 ++++++++++++++++
+ tests/setupBrowser.ts                          | 106 ++++++++++++++
+ tests/src/styles/components/button.test.ts     |  27 ++++
+ tests/src/styles/components/fade.test.ts       | 102 ++++++++++++--
+ tests/src/styles/components/form-range.test.ts | 186 ++++++++++++++++++++++---
+ 8 files changed, 563 insertions(+), 53 deletions(-)
+main ff to origin exit=0
+b613ae4 Fold the E-ID-MOTION-FADE and STATES landing into the roadmap
+Auto-merging guides/veneer.md
+Auto-merging tests/setupBrowser.test.ts
+CONFLICT (content): Merge conflict in tests/setupBrowser.test.ts
+Auto-merging tests/setupBrowser.ts
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/motion-proofs-a exit=1
+conflicts: tests/setupBrowser.test.ts

@@ -1,0 +1,79 @@
+import { requireValue } from '@orkestrel/test'
+import { expect, it } from 'vitest'
+import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+import modalCascade from '../../../src/styles/components/_modal.scss?inline'
+import offcanvasCascade from '../../../src/styles/components/_offcanvas.scss?inline'
+import { scene, visitBreakpoint } from '../../setupBrowser.js'
+
+// The plant's value probe. plant.sh copies this file into the planted scratch copy as
+// tests/src/browser/PlantProbe.test.ts and runs it beside the four owned proofs, so each plant run
+// reads the values it ran under. It reads the transitioned properties, durations, easings,
+// transforms, and opacity the planted cascade resolves on the fade, the modal host, its dialog, and
+// its backdrop, on a bare panel, and on a responsive `.offcanvas-sm` panel inside its fixed range,
+// which the tester's 414px viewport is. At 600px the responsive panel sits in the flow, where the
+// ruling keeps full opacity and the plant writes nothing.
+it('reads the planted motion values on the fade, the modal, a bare panel, and a responsive panel inside its fixed range', async () => {
+	scene.load(`${tokensCascade}\n${fadeCascade}\n${modalCascade}\n${offcanvasCascade}`)
+	const root = scene.mount(`
+		<div class="modal fade" id="host" style="display: block"><div class="modal-dialog"></div></div>
+		<div class="modal-backdrop fade" id="shade"></div>
+		<div class="alert fade show" id="alert"></div>
+		<div class="offcanvas offcanvas-start" id="bare"></div>
+		<div class="offcanvas-sm offcanvas-end" id="responsive"></div>`)
+	const find = (selector: string): HTMLElement =>
+		requireValue(root.querySelector<HTMLElement>(selector), selector)
+	const read = (selector: string): readonly string[] => {
+		const style = getComputedStyle(find(selector))
+		return [
+			style.transitionProperty,
+			style.transitionDuration,
+			style.transitionTimingFunction,
+			style.opacity,
+		]
+	}
+	expect(window.innerWidth).toBeLessThan(576)
+	expect({
+		host: read('#host'),
+		dialog: read('.modal-dialog'),
+		shade: read('#shade'),
+		alert: read('#alert'),
+		bare: read('#bare'),
+		responsive: read('#responsive'),
+	}).toEqual({
+		host: ['opacity', '0.25s', 'ease-out', '0'],
+		dialog: ['transform', '0.25s', 'cubic-bezier(0.32, 0.72, 0, 1)', '1'],
+		shade: ['opacity', '0.25s', 'ease-out', '0'],
+		alert: ['opacity', '0.15s', 'ease-out', '1'],
+		bare: [
+			'transform, opacity',
+			'0.25s, 0.25s',
+			'cubic-bezier(0.32, 0.72, 0, 1), ease-out',
+			'0',
+		],
+		responsive: [
+			'transform, opacity',
+			'0.25s, 0.25s',
+			'cubic-bezier(0.32, 0.72, 0, 1), ease-out',
+			'0',
+		],
+	})
+	expect(getComputedStyle(find('.modal-dialog')).transform).toBe('matrix(0.96, 0, 0, 0.96, 0, 0)')
+	// The ruling keeps the release's travel, so each hidden panel sits off its own edge.
+	expect(getComputedStyle(find('#bare')).transform).toMatch(/^matrix\(1, 0, 0, 1, -\d/)
+	expect(getComputedStyle(find('#responsive')).transform).toMatch(/^matrix\(1, 0, 0, 1, \d/)
+	for (const selector of ['#bare', '#responsive']) {
+		const panel = find(selector)
+		panel.style.setProperty('transition', 'none')
+		panel.classList.add('show')
+		expect([selector, getComputedStyle(panel).opacity]).toEqual([selector, '1'])
+		panel.classList.remove('show')
+		panel.style.removeProperty('transition')
+	}
+	const flowing = await visitBreakpoint(600, () => {
+		const style = getComputedStyle(find('#responsive'))
+		return [style.transitionDuration, style.opacity]
+	})
+	expect(flowing).toEqual(['0s', '1'])
+	scene.clear()
+})

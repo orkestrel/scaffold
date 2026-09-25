@@ -1,0 +1,4655 @@
+{
+	"version": "5.3.8",
+	"plugin": "carousel",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "carousel.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.click.next",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "next",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.click.next.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "next",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.click.next.wrap",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "next",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.click.previous",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "previous",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.click.indicator",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "indicator-1",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.press.left",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "indicator-1",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.click.next",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "next",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.click.next.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "next",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.click.next.wrap",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "next",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.click.previous",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "previous",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.click.indicator",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "indicator-1",
+				"locked": false
+			}
+		},
+		{
+			"name": "carousel.reduced.press.left",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "carousel"
+							}
+						],
+						"parent": "html"
+					},
+					"carousel": {
+						"tag": "div",
+						"classes": [
+							"carousel",
+							"slide"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicators"
+							},
+							{
+								"element": "inner"
+							},
+							{
+								"element": "previous"
+							},
+							{
+								"element": "next"
+							}
+						],
+						"parent": "body"
+					},
+					"indicators": {
+						"tag": "div",
+						"classes": [
+							"carousel-indicators"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "indicator-0"
+							},
+							{
+								"element": "indicator-1"
+							},
+							{
+								"element": "indicator-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"indicator-0": {
+						"tag": "button",
+						"classes": [
+							"active"
+						],
+						"attributes": {
+							"aria-current": "true",
+							"aria-label": "Slide 1",
+							"data-bs-slide-to": "0",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-1": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 2",
+							"data-bs-slide-to": "1",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"indicator-2": {
+						"tag": "button",
+						"classes": [],
+						"attributes": {
+							"aria-label": "Slide 3",
+							"data-bs-slide-to": "2",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "indicators"
+					},
+					"inner": {
+						"tag": "div",
+						"classes": [
+							"carousel-inner"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "item-0"
+							},
+							{
+								"element": "item-1"
+							},
+							{
+								"element": "item-2"
+							}
+						],
+						"parent": "carousel"
+					},
+					"item-0": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "slide-0"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-0": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "First"
+							}
+						],
+						"parent": "item-0"
+					},
+					"item-1": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-1"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-1": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Second"
+							}
+						],
+						"parent": "item-1"
+					},
+					"item-2": {
+						"tag": "div",
+						"classes": [
+							"carousel-item"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "slide-2"
+							}
+						],
+						"parent": "inner"
+					},
+					"slide-2": {
+						"tag": "div",
+						"classes": [
+							"bg-secondary",
+							"d-block",
+							"w-100"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Third"
+							}
+						],
+						"parent": "item-2"
+					},
+					"previous": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-prev"
+						],
+						"attributes": {
+							"data-bs-slide": "prev",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "previous-icon"
+							},
+							{
+								"element": "previous-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"previous-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-prev-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "previous"
+					},
+					"previous-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Previous"
+							}
+						],
+						"parent": "previous",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"next": {
+						"tag": "button",
+						"classes": [
+							"carousel-control-next"
+						],
+						"attributes": {
+							"data-bs-slide": "next",
+							"data-bs-target": "#carousel",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "next-icon"
+							},
+							{
+								"element": "next-label"
+							}
+						],
+						"parent": "carousel"
+					},
+					"next-icon": {
+						"tag": "span",
+						"classes": [
+							"carousel-control-next-icon"
+						],
+						"attributes": {
+							"aria-hidden": "true"
+						},
+						"visible": true,
+						"parent": "next"
+					},
+					"next-label": {
+						"tag": "span",
+						"classes": [
+							"visually-hidden"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Next"
+							}
+						],
+						"parent": "next",
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					}
+				},
+				"focus": "indicator-1",
+				"locked": false
+			}
+		}
+	]
+}

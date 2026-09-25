@@ -1,0 +1,13 @@
+# The Orchestrator's red reading of J-SAMEWAY-ENGINES-B round 4's cases on 87dc147's sources (2026-09-25, Chromium 153.0.8010.12), tests at 3bb9afb State the recorded link and the replaced placement in the contracts and the guide (J-SAMEWAY-ENGINES-B round 4 integration)
+[Error: ResizeObserver loop completed with undelivered notifications.]
+2:27:32 AM [vite] (client) [Unhandled error] Error: ResizeObserver loop completed with undelivered notifications.
+2:27:32 AM [vite] (client) [console.error] Error: ResizeObserver loop completed with undelivered notifications.
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:2238:2 > Dropdown > leaves a show a reaction starts inside a stopped show write-back as that show wrote it, and its later hide writes back every placement target
+AssertionError: expected { hidden: true, shown: false, …(6) } to deeply equal { hidden: true, shown: false, …(6) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:3327:2 > Tooltip > keeps an aria-describedby token the stopped show found there when its tip takes that id
+AssertionError: expected { tips: [ 'vn-tooltip-119' ], …(2) } to deeply equal { tips: [ 'vn-tooltip-119' ], …(2) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:3379:2 > Tooltip > takes out the id it linked when the tip id changes before the host takes the show over
+AssertionError: expected { linked: 1, …(2) } to deeply equal { linked: 1, described: null, …(1) }
+      Tests  3 failed | 132 passed (135)
+restored byte for byte (the Orchestrator's digest)

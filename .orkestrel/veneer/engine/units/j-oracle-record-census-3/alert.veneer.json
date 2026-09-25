@@ -1,0 +1,1667 @@
+{
+	"version": "5.3.8",
+	"plugin": "alert",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "alert.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "fading"
+							},
+							{
+								"element": "plain"
+							},
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"fading": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-dismissible",
+							"alert-warning",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "fading-text"
+							},
+							{
+								"element": "fading-close"
+							}
+						],
+						"parent": "body"
+					},
+					"fading-text": {
+						"tag": "strong",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Fading"
+							}
+						],
+						"parent": "fading"
+					},
+					"fading-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "fading"
+					},
+					"plain": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-dismissible",
+							"alert-info"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "plain-text"
+							},
+							{
+								"element": "plain-close"
+							}
+						],
+						"parent": "body"
+					},
+					"plain-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Plain"
+							}
+						],
+						"parent": "plain"
+					},
+					"plain-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "plain"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.click.fading",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "plain"
+							},
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"plain": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-dismissible",
+							"alert-info"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "plain-text"
+							},
+							{
+								"element": "plain-close"
+							}
+						],
+						"parent": "body"
+					},
+					"plain-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Plain"
+							}
+						],
+						"parent": "plain"
+					},
+					"plain-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "plain"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.press.plain",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.press.guarded",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "guarded-close",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.click.remote",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							}
+						],
+						"parent": "html"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "remote",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "fading"
+							},
+							{
+								"element": "plain"
+							},
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"fading": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-dismissible",
+							"alert-warning",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "fading-text"
+							},
+							{
+								"element": "fading-close"
+							}
+						],
+						"parent": "body"
+					},
+					"fading-text": {
+						"tag": "strong",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Fading"
+							}
+						],
+						"parent": "fading"
+					},
+					"fading-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "fading"
+					},
+					"plain": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-dismissible",
+							"alert-info"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "plain-text"
+							},
+							{
+								"element": "plain-close"
+							}
+						],
+						"parent": "body"
+					},
+					"plain-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Plain"
+							}
+						],
+						"parent": "plain"
+					},
+					"plain-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "plain"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.reduced.click.fading",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "plain"
+							},
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"plain": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-dismissible",
+							"alert-info"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "plain-text"
+							},
+							{
+								"element": "plain-close"
+							}
+						],
+						"parent": "body"
+					},
+					"plain-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Plain"
+							}
+						],
+						"parent": "plain"
+					},
+					"plain-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "plain"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.reduced.press.plain",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.reduced.press.guarded",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							},
+							{
+								"element": "named"
+							}
+						],
+						"parent": "html"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					},
+					"named": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-success",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "named-text"
+							}
+						],
+						"parent": "body"
+					},
+					"named-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Named"
+							}
+						],
+						"parent": "named"
+					}
+				},
+				"focus": "guarded-close",
+				"locked": false
+			}
+		},
+		{
+			"name": "alert.reduced.click.remote",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded"
+							},
+							{
+								"element": "remote"
+							}
+						],
+						"parent": "html"
+					},
+					"guarded": {
+						"tag": "div",
+						"classes": [
+							"alert",
+							"alert-danger",
+							"alert-dismissible",
+							"fade",
+							"show"
+						],
+						"attributes": {
+							"role": "alert"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "guarded-text"
+							},
+							{
+								"element": "guarded-close"
+							}
+						],
+						"parent": "body"
+					},
+					"guarded-text": {
+						"tag": "span",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Guarded"
+							}
+						],
+						"parent": "guarded"
+					},
+					"guarded-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close",
+							"disabled"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "alert",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "guarded"
+					},
+					"remote": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "alert",
+							"data-bs-target": "#named",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Close named"
+							}
+						],
+						"parent": "body"
+					}
+				},
+				"focus": "remote",
+				"locked": false
+			}
+		}
+	]
+}

@@ -1,0 +1,135 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 2780e83..ac970e1 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1760,12 +1760,12 @@ The options take the following defaults when neither an attribute nor the constr
+ The dropdown dispatches the following events on its toggle, which is each event's target. Each one
+ bubbles and carries a detail whose `click` member is the click that hid the menu, or undefined.
+ 
+-| Key      | Wire name            | Cancelable | Dispatched                                                                                                                                                                                                          |
+-| -------- | -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `show`   | `show.vn.dropdown`   | Yes        | Before any write; prevention refuses the show                                                                                                                                                                       |
+-| `shown`  | `shown.vn.dropdown`  | No         | After the menu and the toggle carry the `shown` token                                                                                                                                                               |
+-| `hide`   | `hide.vn.dropdown`   | Yes        | Before any write; prevention refuses the hide, and after a prevented hide that a platform close started has promoted the menu again once, the next platform close of the same placement hides it despite prevention |
+-| `hidden` | `hidden.vn.dropdown` | No         | After the toggle reads `aria-expanded="false"`                                                                                                                                                                      |
++| Key      | Wire name            | Cancelable | Dispatched                                                                                                                                                                                                                                                         |
++| -------- | -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `show`   | `show.vn.dropdown`   | Yes        | Before any write; prevention refuses the show                                                                                                                                                                                                                      |
++| `shown`  | `shown.vn.dropdown`  | No         | After the menu and the toggle carry the `shown` token                                                                                                                                                                                                              |
++| `hide`   | `hide.vn.dropdown`   | Yes        | Before any write; prevention refuses the hide, and after a prevented hide that a platform close started the menu is promoted again once, and a promotion the platform leaves closed, or the next platform close of the same placement, hides it despite prevention |
++| `hidden` | `hidden.vn.dropdown` | No         | After the toggle reads `aria-expanded="false"`                                                                                                                                                                                                                     |
+ 
+ A call carries the change identity it sets when its change starts, and after each write and
+ dispatch it reads whether the dropdown is live and whether a later `show` or `hide` call has
+@@ -1792,12 +1792,13 @@ A call the host took over resolves `false`, dispatches nothing, ends the change
+ one further step that returns what the change wrote to the state the host chose. The step reads no
+ door; before each of its writes it reads only the call's identity and the dropdown's lifetime, so a
+ destruction a reaction runs inside one stops the step, and a `show` or `hide` call a reaction starts
+-inside one supersedes it. A show the host took over restores the placement, sets `aria-expanded` to
+-`false`, and removes the toggle's `shown` token when the show had added it, as far as the show had
+-written them. A hide the host took over adds the toggle's `shown` token back when the hide had
+-removed it and sets `aria-expanded` to `true`, as far as the hide had written them. The placement
+-the hide restored before its token step stays restored, because placing the menu again is an
+-acquisition, so the menu shows in flow where the cascade puts it until the next hide.
++inside one supersedes it. The step writes each toggle target the call changed back to the value it
++held before the call's first changing write to it, in reverse order of those first writes: the
++toggle's `shown` token and its `aria-expanded` attribute, which returns to its earlier value or to
++absent. A write that left a target as the call found it is not written back. A show the host took
++over then destroys its placement, its first write, which takes the menu out of the top layer. The
++placement a hide destroyed before its token step stays destroyed, because placing the menu again
++is an acquisition, so the menu shows in flow where the cascade puts it until the next hide.
+ 
+ The dropdown passes its lifetime to the placement as the `signal` option, and the placement reads
+ that signal after its `popover` attribute write and after the promotion, so a dropdown destroyed by
+@@ -1812,9 +1813,11 @@ The platform closes the promoted menu when a `hide-popover` or `toggle-popover`
+ your `hidePopover` call, aims at it. The dropdown reads that close from the menu's `toggle` event and
+ hides the menu through its own sequence, dispatching `hide.vn.dropdown` and `hidden.vn.dropdown`
+ with an undefined `click`; like light dismissal, that hide reads no disabled state. When a listener
+-prevents that hide, the dropdown promotes the menu again, so it stays open and anchored. It does so
+-once per placement: the platform's next close of the same shown menu hides it with
+-`hide.vn.dropdown` dispatched and its prevention ignored.
++prevents that hide, the dropdown promotes the menu again, once per placement, and reads whether it
++opened. A menu that opened stays open and anchored. A menu the platform leaves closed, because a
++`beforetoggle` listener cancelled the promotion or for any other reason, is hidden at once with
++`hide.vn.dropdown` dispatched again and its prevention ignored, so the dropdown never reads a closed
++menu as shown. The platform's next close of a menu that opened again hides it the same way.
+ 
+ The delegate's `dropdown` option carries the dropdown's groups. A click inside a toggle the resolved
+ `trigger` selector matches, unless the toggle carries the `disabled` token or is disabled, prevents
+@@ -2972,9 +2975,11 @@ dispatching `hide.vn.tooltip` and `hidden.vn.tooltip`.
+ Chromium 153 dispatches the closing `beforetoggle` event with `cancelable` set to `false`, so no
+ listener can keep the platform from closing the tip; a listener that prevents that `hide.vn.tooltip`
+ event keeps the tip by having the tooltip promote it again after the platform closed it. The tooltip
+-promotes a shown tip again once: the platform's next close of that tip hides it with the
+-`hide.vn.tooltip` event dispatched and its prevention ignored, so two tooltips whose listeners
+-prevent every hide settle with one tip shown.
++promotes a shown tip again once and reads whether it opened. A tip the platform leaves closed,
++because a `beforetoggle` listener cancelled the promotion or for any other reason, is hidden at once
++with `hide.vn.tooltip` dispatched again and its prevention ignored. The platform's next close of a
++tip that opened again hides it the same way, so two tooltips whose listeners prevent every hide
++settle with one tip shown.
+ 
+ The `trigger` group selects the interactions. With `hover`, the pointer entering the trigger from
+ outside asks for the tip, and leaving it for outside lets the tip go; with `focus`, focus entering
+@@ -3064,13 +3069,13 @@ selector.
+ The tooltip dispatches the following events on its trigger. Each one bubbles and carries no detail,
+ which the platform reads as `null`.
+ 
+-| Key        | Wire name             | Cancelable | Dispatched                                                                                                                                                                                   |
+-| ---------- | --------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `show`     | `show.vn.tooltip`     | Yes        | Before the tip is built; prevention refuses the show                                                                                                                                         |
+-| `inserted` | `inserted.vn.tooltip` | No         | After the tip enters its container                                                                                                                                                           |
+-| `shown`    | `shown.vn.tooltip`    | No         | After the tip's transitions settle                                                                                                                                                           |
+-| `hide`     | `hide.vn.tooltip`     | Yes        | Before the `shown` token leaves; prevention refuses an ordinary hide, and after a prevented platform hide has re-promoted this tip once, its next platform close hides it despite prevention |
+-| `hidden`   | `hidden.vn.tooltip`   | No         | After the tip leaves its container                                                                                                                                                           |
++| Key        | Wire name             | Cancelable | Dispatched                                                                                                                                                                                                                                                |
++| ---------- | --------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `show`     | `show.vn.tooltip`     | Yes        | Before the tip is built; prevention refuses the show                                                                                                                                                                                                      |
++| `inserted` | `inserted.vn.tooltip` | No         | After the tip enters its container                                                                                                                                                                                                                        |
++| `shown`    | `shown.vn.tooltip`    | No         | After the tip's transitions settle                                                                                                                                                                                                                        |
++| `hide`     | `hide.vn.tooltip`     | Yes        | Before the `shown` token leaves; prevention refuses an ordinary hide, and after a prevented platform hide the tip is promoted again once, and a promotion the platform leaves closed, or the next platform close of that tip, hides it despite prevention |
++| `hidden`   | `hidden.vn.tooltip`   | No         | After the tip leaves its container                                                                                                                                                                                                                        |
+ 
+ A show takes its identity before it dispatches `show.vn.tooltip`, so a show a listener starts inside
+ that dispatch resolves `false` as in flight. A hide takes a show over while the tip is shown: after
+@@ -3102,13 +3107,21 @@ when the host has not, and the call completes every other step, dispatches its c
+ and resolves `true`. From the moment the call finds the token at the change's end, after
+ `hide.vn.tooltip` or at its own token step, each door also reads the token there, and a host that
+ moves it back takes the change over: the call resolves `false` and dispatches nothing more. A show
+-taken over takes one further step that returns what it wrote to the hidden state a hide writes: it
+-restores the placement, removes the tip from its container while the tip is still there without the
+-token, and takes the tip's id out of `aria-describedby`. Before each of those writes it reads only
+-the call's identity and the tooltip's lifetime, so a destruction a reaction runs inside one stops the
+-step, and a hide a reaction starts inside one supersedes it. The step runs only when the token alone
+-moved, so a show whose tip other code moved takes none. A hide writes nothing but its token before
+-its discard, so a hide taken over returns nothing and leaves the tip shown and named.
++taken over takes one further step that writes its writes back in reverse order of its first writes:
++it destroys the placement, takes the tip's id out of `aria-describedby`, and removes the tip from its
++container while the tip is still there without the token. The attribute is a token list that a
++popover on the same trigger shares, so the step takes out only the tooltip's id and keeps every other
++id. It removes an emptied attribute only when the attribute was absent before the call, so an
++attribute present before the call, `aria-describedby=""` included, stays present; spacing the list
++had is not written back. Before each of those writes the step reads only the call's identity and the
++tooltip's lifetime, so a destruction a reaction runs inside one stops the step, and a hide a
++reaction starts inside one supersedes it. The step runs only when the token alone moved, so a show
++whose tip other code moved takes none. A hide writes nothing on the page but its token before its
++discard, and the interaction state it clears first is the tooltip's own, so a hide taken over before
++the discard writes nothing back and leaves the tip shown and named. A hide taken over inside its
++discard, by a listener to the tip's closing `beforetoggle` event that adds the token back while the
++placement is destroyed, leaves the tip shown where it is but unpromoted, forgets it, and takes its id
++out of `aria-describedby`.
+ 
+ The placement reads the same door after the promotion: when a listener to the platform's opening
+ `beforetoggle` event moves the tip, the placement hides the tip, restores what it wrote, and
+@@ -3193,8 +3206,9 @@ removes it. The tip is promoted with the `manual` popover value, so the platform
+ Escape key press, outside click, or other tip opening; the interactions the `trigger` group
+ selects, the `hide` method, the modal hide event § Tooltip names, and destruction hide it. A
+ `hide-popover` or `toggle-popover` invoker of yours, or your `hidePopover` call, aimed at the tip
+-closes it, and the popover follows that close through its hide sequence as § Tooltip states,
+-promoting the tip again once when a listener prevents that hide. The popover keeps its own registry
++closes it, and the popover follows that close through its hide sequence as § Tooltip states. When a
++listener prevents that hide, the popover promotes the tip again once, and hides it at once with its
++prevention ignored when the tip stays closed. The popover keeps its own registry
+ beside the tooltip's, and a popover whose `descendants` option is set
+ constructs a popover for each matching descendant.
+ 

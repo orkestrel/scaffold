@@ -1,0 +1,32 @@
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 75f38e9..69f190f 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -1856,9 +1856,10 @@ export interface TooltipInterface {
+ 	 * A host that marks the tip shown before the call's token step has made that write for the call,
+ 	 * which completes. A host that takes the token after the token step, with the tip still in its
+ 	 * container, takes the call over: before it resolves false, the call destroys the placement, takes
+-	 * the tip's id out of `aria-describedby`, and removes the tip from its container, in that order,
+-	 * reading the tooltip's lifetime before each of those writes. It keeps every other id in the
+-	 * attribute and removes an emptied attribute only when the attribute was absent before the call.
++	 * the id it linked out of `aria-describedby`, and removes the tip from its container, in that
++	 * order, reading the tooltip's lifetime before each of those writes. It takes the id out only when
++	 * the call added it to the list, reads no id from the tip again, keeps every other id, and removes an
++	 * emptied attribute only when the attribute was absent before the call.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await tooltip.show()
+@@ -2030,9 +2031,10 @@ export interface PopoverInterface {
+ 	 * A host that marks the tip shown before the call's token step has made that write for the call,
+ 	 * which completes. A host that takes the token after the token step, with the tip still in its
+ 	 * container, takes the call over: before it resolves false, the call destroys the placement, takes
+-	 * the tip's id out of `aria-describedby`, and removes the tip from its container, in that order,
+-	 * reading the popover's lifetime before each of those writes. It keeps every other id in the
+-	 * attribute and removes an emptied attribute only when the attribute was absent before the call.
++	 * the id it linked out of `aria-describedby`, and removes the tip from its container, in that
++	 * order, reading the popover's lifetime before each of those writes. It takes the id out only when
++	 * the call added it to the list, reads no id from the tip again, keeps every other id, and removes an
++	 * emptied attribute only when the attribute was absent before the call.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await popover.show()

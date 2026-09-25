@@ -1,0 +1,3859 @@
+{
+	"version": "5.3.8",
+	"plugin": "tab",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "tab.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.click.profile",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.right",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.home",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "home-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.end",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.left",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.click.profile",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.right",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.home",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "home-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.end",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.left",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "tabs"
+							},
+							{
+								"element": "panes"
+							}
+						],
+						"parent": "html"
+					},
+					"tabs": {
+						"tag": "ul",
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-item"
+							},
+							{
+								"element": "profile-item"
+							},
+							{
+								"element": "contact-item"
+							},
+							{
+								"element": "locked-item"
+							}
+						],
+						"parent": "body"
+					},
+					"home-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "home-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Home"
+							}
+						],
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "profile-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"tag": "button",
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile"
+							}
+						],
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "contact-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Contact"
+							}
+						],
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"tag": "li",
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "locked-tab"
+							}
+						],
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"tag": "button",
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Locked"
+							}
+						],
+						"parent": "locked-item"
+					},
+					"panes": {
+						"tag": "div",
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "home"
+							},
+							{
+								"element": "profile"
+							},
+							{
+								"element": "contact"
+							},
+							{
+								"element": "locked"
+							}
+						],
+						"parent": "body"
+					},
+					"home": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Home pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"profile": {
+						"tag": "div",
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Profile pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"contact": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Contact pane"
+							}
+						],
+						"parent": "panes"
+					},
+					"locked": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"content": [
+							{
+								"text": "Locked pane"
+							}
+						],
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		}
+	]
+}

@@ -1,0 +1,9 @@
+M	guides/veneer.md
+M	src/browser/Dropdown.ts
+M	src/browser/Tooltip.ts
+M	src/browser/types.ts
+M	tests/setupBrowser.test.ts
+M	tests/setupBrowser.ts
+M	tests/src/browser/Dropdown.test.ts
+M	tests/src/browser/Popover.test.ts
+M	tests/src/browser/Tooltip.test.ts

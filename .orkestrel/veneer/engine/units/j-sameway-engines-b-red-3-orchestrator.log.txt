@@ -1,0 +1,18 @@
+# The Orchestrator's red reading of J-SAMEWAY-ENGINES-B round 3's cases on 45aebaa's sources (2026-09-25, Chromium 153.0.8010.12), tests at 87dc147 State Dropdown's, Tooltip's, and Popover's returns and platform close in their contracts and the guide (J-SAMEWAY-ENGINES-B round 3 integration)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1441:2 > Dropdown > returns a show to the hidden state when the host removes the menu shown token after the show found it at its end
+AssertionError: expected [ [ { …(11) } ], [ { …(11) } ], …(3) ] to deeply equal [ [ { …(11) } ], [ { …(11) } ], …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:2077:2 > Dropdown > writes back only the toggle targets a stopped change altered, to their prior values, in reverse order of its first writes
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:2177:2 > Dropdown > hides the menu with its events when a listener cancels the promotion again after a prevented platform close
+AssertionError: expected { Object (events, shown, ...) } to deeply equal { Object (events, shown, ...) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Popover.test.ts:959:2 > Popover > hides the tip with its events when a listener cancels the promotion again after a prevented platform close
+AssertionError: expected { events: [ 'hide.vn.popover' ], …(4) } to deeply equal { Object (events, shown, ...) }
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:3082:2 > Tooltip > takes only its own id out of aria-describedby when the host takes a show over, keeping a present attribute and another engine id
+AssertionError: expected [ [ …(3) ], …(3) ] to deeply equal [ [ …(3) ], …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:3163:2 > Tooltip > destroys the placement and takes its id out before it removes the tip, when the host takes a show over
+AssertionError: expected [ [ 'vn-tooltip-115', false ] ] to deeply equal [ [ null, false ] ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:3223:2 > Tooltip > hides the tip with its events when a listener cancels the promotion again after a prevented platform close
+AssertionError: expected { events: [ 'hide.vn.tooltip' ], …(4) } to deeply equal { Object (events, shown, ...) }
+      Tests  7 failed | 126 passed (133)
+restored byte for byte (the Orchestrator's digest)

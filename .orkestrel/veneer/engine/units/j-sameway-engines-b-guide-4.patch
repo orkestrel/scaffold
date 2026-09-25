@@ -1,0 +1,33 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ac970e1..7733fe3 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1796,7 +1796,10 @@ inside one supersedes it. The step writes each toggle target the call changed ba
+ held before the call's first changing write to it, in reverse order of those first writes: the
+ toggle's `shown` token and its `aria-expanded` attribute, which returns to its earlier value or to
+ absent. A write that left a target as the call found it is not written back. A show the host took
+-over then destroys its placement, its first write, which takes the menu out of the top layer. The
++over then destroys its placement, its first write, which takes the menu out of the top layer. A
++`show` call a reaction starts inside that step, before the placement's destruction, finds the
++stopped show's placement still held, so it destroys that placement before it places the menu, and
++one placement holds the menu's targets for the next hide to write back. The
+ placement a hide destroyed before its token step stays destroyed, because placing the menu again
+ is an acquisition, so the menu shows in flow where the cascade puts it until the next hide.
+ 
+@@ -3108,10 +3111,12 @@ and resolves `true`. From the moment the call finds the token at the change's en
+ `hide.vn.tooltip` or at its own token step, each door also reads the token there, and a host that
+ moves it back takes the change over: the call resolves `false` and dispatches nothing more. A show
+ taken over takes one further step that writes its writes back in reverse order of its first writes:
+-it destroys the placement, takes the tip's id out of `aria-describedby`, and removes the tip from its
+-container while the tip is still there without the token. The attribute is a token list that a
+-popover on the same trigger shares, so the step takes out only the tooltip's id and keeps every other
+-id. It removes an emptied attribute only when the attribute was absent before the call, so an
++it destroys the placement, takes the id it linked out of `aria-describedby`, and removes the tip from
++its container while the tip is still there without the token. The attribute is a token list that a
++popover on the same trigger shares, so the call records the id it linked and whether the list held
++that id before the call. The step takes out that recorded id only when the call added it, even when
++the tip's `id` changed since, and keeps every other id. It removes an emptied attribute only when the
++attribute was absent before the call, so an
+ attribute present before the call, `aria-describedby=""` included, stays present; spacing the list
+ had is not written back. Before each of those writes the step reads only the call's identity and the
+ tooltip's lifetime, so a destruction a reaction runs inside one stops the step, and a hide a

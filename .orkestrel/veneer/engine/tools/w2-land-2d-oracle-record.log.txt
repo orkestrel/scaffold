@@ -1,0 +1,41 @@
+# J-ORACLE-RECORD landing, step 2: the merge commit, the kickoff gates, the fast-forward (2026-09-25)
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --write guides/veneer.md
+Finished in 11362ms on 1 files using 16 threads.
+oxfmt write exit=0
+unmerged: 
+[unit/oracle-record c33ec19] Merge branch 'main' into unit/oracle-record
+merge commit exit=0
+lockfile moved: []
+c33ec19 Merge branch 'main' into unit/oracle-record
+1290162 Merge branch 'main' into unit/motion-proofs-a
+3b16273 Wait for the modal's completion in the showcase modal case (J-MOTION-PROOFS-A round 5)
+lockfile unchanged by the merge; no reinstall
+--- integration gates (read-only, in the worktree)
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 15528ms on 487 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+file:///C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-record/tests/setupServer.ts:2490:8: warning eslint(no-shadow): 'build' is already declared in the upper scope. help: Consider renaming 'build' to avoid shadowing the variable from the outer scope.
+file:///C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-record/tests/setupServer.ts:2602:36: warning eslint(no-shadow): 'build' is already declared in the upper scope. help: Consider renaming 'build' to avoid shadowing the variable from the outer scope.
+file:///C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-record/tests/setupServer.test.ts:3989:14: warning eslint(no-shadow): 'build' is already declared in the upper scope. help: Consider renaming 'build' to avoid shadowing the variable from the outer scope.
+lint:check exit=1
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json

@@ -1,0 +1,4993 @@
+{
+	"version": "5.3.8",
+	"plugin": "offcanvas",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "offcanvas.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							},
+							{
+								"element": "+.offcanvas-backdrop[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					},
+					"+.offcanvas-backdrop[0]": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"offcanvas-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "offcanvas",
+				"locked": true
+			}
+		},
+		{
+			"name": "offcanvas.click.close",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.click.trigger.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							},
+							{
+								"element": "+.offcanvas-backdrop[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					},
+					"+.offcanvas-backdrop[0]": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"offcanvas-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "offcanvas",
+				"locked": true
+			}
+		},
+		{
+			"name": "offcanvas.press.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.click.trigger.third",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							},
+							{
+								"element": "+.offcanvas-backdrop[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					},
+					"+.offcanvas-backdrop[0]": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"offcanvas-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "offcanvas",
+				"locked": true
+			}
+		},
+		{
+			"name": "offcanvas.point.backdrop",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.click.scrolling",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "scroll-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.click.scrolling.close",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "scroll-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.reduced.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							},
+							{
+								"element": "+.offcanvas-backdrop[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					},
+					"+.offcanvas-backdrop[0]": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"offcanvas-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "offcanvas",
+				"locked": true
+			}
+		},
+		{
+			"name": "offcanvas.reduced.click.close",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.reduced.click.trigger.again",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							},
+							{
+								"element": "+.offcanvas-backdrop[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					},
+					"+.offcanvas-backdrop[0]": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"offcanvas-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "offcanvas",
+				"locked": true
+			}
+		},
+		{
+			"name": "offcanvas.reduced.press.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.reduced.click.trigger.third",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							},
+							{
+								"element": "+.offcanvas-backdrop[0]"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					},
+					"+.offcanvas-backdrop[0]": {
+						"tag": "div",
+						"classes": [
+							"fade",
+							"offcanvas-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "offcanvas",
+				"locked": true
+			}
+		},
+		{
+			"name": "offcanvas.reduced.point.backdrop",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.reduced.click.scrolling",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "scroll-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "offcanvas.reduced.click.scrolling.close",
+			"state": {
+				"elements": {
+					"html": {
+						"tag": "html",
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"content": [
+							{
+								"element": "body"
+							}
+						],
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"tag": "body",
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"content": [
+							{
+								"element": "trigger"
+							},
+							{
+								"element": "scroll-trigger"
+							},
+							{
+								"element": "offcanvas"
+							},
+							{
+								"element": "scrolling"
+							}
+						],
+						"parent": "html"
+					},
+					"trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "offcanvas",
+							"data-bs-target": "#offcanvas",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open panel"
+							}
+						],
+						"parent": "body"
+					},
+					"scroll-trigger": {
+						"tag": "button",
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-controls": "scrolling",
+							"data-bs-target": "#scrolling",
+							"data-bs-toggle": "offcanvas",
+							"type": "button"
+						},
+						"visible": true,
+						"content": [
+							{
+								"text": "Open scrolling panel"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-start"
+						],
+						"attributes": {
+							"aria-labelledby": "offcanvas-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-header"
+							},
+							{
+								"element": "offcanvas-body"
+							}
+						],
+						"parent": "body"
+					},
+					"offcanvas-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-title"
+							},
+							{
+								"element": "offcanvas-close"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Panel"
+							}
+						],
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "offcanvas-header"
+					},
+					"offcanvas-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "offcanvas-text"
+							}
+						],
+						"parent": "offcanvas"
+					},
+					"offcanvas-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "offcanvas-body"
+					},
+					"scrolling": {
+						"tag": "div",
+						"classes": [
+							"offcanvas",
+							"offcanvas-end"
+						],
+						"attributes": {
+							"aria-labelledby": "scrolling-title",
+							"data-bs-backdrop": "false",
+							"data-bs-scroll": "true",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-header"
+							},
+							{
+								"element": "scrolling-body"
+							}
+						],
+						"parent": "body"
+					},
+					"scrolling-header": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-title"
+							},
+							{
+								"element": "scrolling-close"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-title": {
+						"tag": "h5",
+						"classes": [
+							"offcanvas-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Scrolling"
+							}
+						],
+						"parent": "scrolling-header"
+					},
+					"scrolling-close": {
+						"tag": "button",
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "offcanvas",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "scrolling-header"
+					},
+					"scrolling-body": {
+						"tag": "div",
+						"classes": [
+							"offcanvas-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"element": "scrolling-text"
+							}
+						],
+						"parent": "scrolling"
+					},
+					"scrolling-text": {
+						"tag": "p",
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"content": [
+							{
+								"text": "Body"
+							}
+						],
+						"parent": "scrolling-body"
+					}
+				},
+				"focus": "scroll-trigger",
+				"locked": false
+			}
+		}
+	]
+}

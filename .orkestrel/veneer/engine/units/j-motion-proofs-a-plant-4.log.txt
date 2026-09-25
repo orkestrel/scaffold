@@ -1,0 +1,43 @@
+# The Orchestrator's plant run for J-MOTION-PROOFS-A round 4 (2026-09-25, Chromium 153), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/motion-proofs-a at 180d513 Say that Modal reads its dialog when each change runs (J-MOTION-PROOFS-A round 3 integration)
+--- the plant (round 4's planter)
+planted src/styles/components/_fade.scss
+planted src/styles/components/_modal.scss
+planted src/styles/components/_offcanvas.scss
+PlantProbe exit 0
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+Modal exit 0
+ Test Files  1 passed (1)
+      Tests  61 passed (61)
+Offcanvas exit 0
+ Test Files  1 passed (1)
+      Tests  62 passed (62)
+Backdrop exit 0
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+Alert exit 0
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+scratch removed: yes
+--- the control (round 3's planter)
+planted src/styles/components/_fade.scss
+planted src/styles/components/_modal.scss
+planted src/styles/components/_offcanvas.scss
+PlantProbe exit 1
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+Modal exit 0
+ Test Files  1 passed (1)
+      Tests  61 passed (61)
+Offcanvas exit 0
+ Test Files  1 passed (1)
+      Tests  62 passed (62)
+Backdrop exit 0
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+Alert exit 0
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+scratch removed: yes
+--- status after
