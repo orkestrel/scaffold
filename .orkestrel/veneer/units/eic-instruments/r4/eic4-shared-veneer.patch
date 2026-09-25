@@ -1,0 +1,21 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 53130d3..5590466 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -6613,6 +6613,8 @@ function in the `tests/setupServer.ts` module reads the `Name`, `Owner`, and `Re
+ the conformance proof refuses a deferred name it finds in the built cascade. That reader is why this
+ table carries an owner and a reason: every row here names a name the pinned inventory carries, so a
+ name this release declares nowhere is recorded in § Outside the ledger instead.
++Every `Excluded` row whose reason names tag composition or adjacency applies the "Give semantic tags
++useful defaults without inferring components" tenet in the `ROADMAP.md` file.
+ 
+ | Name                                                                             | Owner    | Reason                                                                                                                                                                                                          |
+ | -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -9919,6 +9921,7 @@ measurement fixes.
+ | `reboot`       | `samp { padding }`                                            | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
+ | `reboot`       | `samp { color }`                                              | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
+ | `reboot`       | `samp { background-color }`                                   | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
++| `reboot`       | `samp { border-radius }`                                      | —                                                | declaration | Elements gives sample output the chip corner the `code`, `kbd`, and `var` elements also wear.                                                                               |
+ | `reboot`       | `var`                                                         | —                                                | selector    | Elements paints a variable name as inline code, which the release leaves unstyled.                                                                                          |
+ | `reboot`       | `figure { display }`                                          | —                                                | declaration | Elements stacks a figure and its caption in a column.                                                                                                                       |
+ | `reboot`       | `figure { flex-direction }`                                   | —                                                | declaration | Elements stacks a figure and its caption in a column.                                                                                                                       |

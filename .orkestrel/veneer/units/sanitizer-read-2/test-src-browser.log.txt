@@ -1,0 +1,45 @@
+
+> @orkestrel/veneer@0.0.1 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+
+ RUN  v4.1.11 /home/user/veneer-read
+
+·············································································································································································································································································································································································································································································································································································································12:32:41 AM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > src/browser/HostSnapshot.ts:159:30
+    157 |  				if (target.category !== 'token') continue
+    158 |  				HostSnapshot.#writeBack(target, this, (value) =>
+    159 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    160 |  				)
+    161 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:320:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:158:28
+ > tests/src/browser/HostSnapshot.test.ts:346:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:319:27
+ > src/browser/HostSnapshot.ts:159:30
+ > #writeBack src/browser/HostSnapshot.ts:320:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:158:28
+ > tests/src/browser/HostSnapshot.test.ts:348:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=b0f9c927:302:11
+
+12:32:41 AM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/home/user/veneer-read/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:128:79
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:257:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:128:28)
+    at http://localhost:63315/home/user/veneer-read/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790296361548:478:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=b0f9c927:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=b0f9c927:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=b0f9c927:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=b0f9c927:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:311:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+···························································································································································································--···················································································································
+
+ Test Files  26 passed (26)
+      Tests  891 passed | 2 skipped (893)
+   Start at  00:31:20
+   Duration  85.82s (transform 0ms, setup 2.74s, import 1.62s, tests 64.73s, environment 0ms)
+

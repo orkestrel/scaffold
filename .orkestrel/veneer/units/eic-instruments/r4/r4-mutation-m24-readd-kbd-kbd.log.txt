@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+ ❯ |app:browser (chromium)| tests/app/browser/sections/ContentSection.test.ts (3 tests | 1 failed) 2373ms
+     × keeps each tag its own treatment inside a link, a code block, and a key 21ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  00:45:18
+   Duration  10.26s (transform 0ms, setup 641ms, import 396ms, tests 2.37s, environment 0ms)
+
+exit=1
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ContentSection.test.ts:239:2 > ContentSection > keeps each tag its own treatment inside a link, a code block, and a key
+AssertionError: expected 'none' to be 'solid' // Object.is equality
+
+Expected: [32m"solid"[39m
+Received: [31m"none"[39m
+
+ ❯ tests/app/browser/sections/ContentSection.test.ts:281:47
+    279|    expect(inner.map((key) => key.textContent)).toEqual(['Ctrl', 'S'])
+    280|    for (const key of inner) {
+    281|     expect(readStyle(key, 'border-top-style')).toBe('solid')
+       |                                               ^
+    282|     expect(readPixels(key, 'border-top-width')).toBeGreaterThan(0)
+    283|     expect(readPixels(key, 'border-top-width')).toBe(readPixels(outer,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+restore src/styles/elements/_kbd.scss: before 6eab8bc05f088acf28da6b8647c326128fc40f7d86c15c22a5d212d178d58517 after 6eab8bc05f088acf28da6b8647c326128fc40f7d86c15c22a5d212d178d58517 identical

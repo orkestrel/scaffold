@@ -1,0 +1,13 @@
+ M guides/veneer.md
+ M src/styles/_mixins.scss
+ M src/styles/elements/_address.scss
+ M src/styles/elements/_p.scss
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/components/card.test.ts
+ M tests/src/styles/components/type.test.ts
+ M tests/src/styles/elements/address.test.ts
+ M tests/src/styles/elements/heading.test.ts
+ M tests/src/styles/elements/ol.test.ts
+ M tests/src/styles/elements/p.test.ts
+ M tests/src/styles/elements/ul.test.ts

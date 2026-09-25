@@ -1,0 +1,239 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 53130d3..ab7c1f0 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7050,19 +7050,19 @@ token. The dark mixer is white.
+ The hover and active percentages reproduce the run-6 filled-role readings in managed Chromium
+ and Edge; the bare fills carry the same endpoint at the corresponding alpha.
+ 
+-| Token                     | Value                                                                                   | Source                                                                                                          | Alias                                           |
+-| ------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+-| `--vn-state-mixer`        | light `color(srgb 0.00742457 0.0232852 0.0925134)`; dark `var(--vn-palette-white-base)` | `elements` — the bare hover and active endpoints                                                                | Bare `button` and `.btn` hover and active veils |
+-| `--vn-state-hover`        | `12%`                                                                                   | `elements` — hover tint                                                                                         | Button hover backgrounds                        |
+-| `--vn-state-active`       | `22%`                                                                                   | `elements` — active tint                                                                                        | Button active backgrounds                       |
+-| `--vn-state-stripe`       | `5%`                                                                                    | `bootstrap` — retained `$table-striped-bg-factor` for the baseline; the Elements identity phase rules the value | Striped table-row backgrounds                   |
+-| `--vn-button-opacity`     | `0.65`                                                                                  | `bootstrap` — retained disabled opacity; Elements' opacity was not calibrated                                   | `--bs-btn-disabled-opacity`                     |
+-| `--vn-button-shadow`      | `none`                                                                                  | `elements` — button elevation                                                                                   | `--bs-btn-box-shadow`, `--bs-btn-active-shadow` |
+-| `--vn-button-transparent` | `transparent`                                                                           | `elements` — bare resting fill                                                                                  | Neutral Button backgrounds and borders          |
+-| `--vn-button-face`        | `ButtonFace`                                                                            | `derived` — system button surface under forced colors                                                           | Button background fallbacks                     |
+-| `--vn-button-text`        | `ButtonText`                                                                            | `derived` — system button foreground under forced colors                                                        | Button foreground and border fallbacks          |
+-| `--vn-button-highlight`   | `Highlight`                                                                             | `derived` — system focus and selection under forced colors                                                      | Button focus outline and state backgrounds      |
+-| `--vn-button-disabled`    | `GrayText`                                                                              | `derived` — system disabled foreground under forced colors                                                      | Button disabled foreground and border fallbacks |
++| Token                     | Value                                                                                   | Source                                                                                                       | Alias                                           |
++| ------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
++| `--vn-state-mixer`        | light `color(srgb 0.00742457 0.0232852 0.0925134)`; dark `var(--vn-palette-white-base)` | `elements` — the bare hover and active endpoints                                                             | Bare `button` and `.btn` hover and active veils |
++| `--vn-state-hover`        | `12%`                                                                                   | `elements` — hover tint                                                                                      | Button hover backgrounds                        |
++| `--vn-state-active`       | `22%`                                                                                   | `elements` — active tint                                                                                     | Button active backgrounds                       |
++| `--vn-state-stripe`       | `5%`                                                                                    | `bootstrap` — retained `$table-striped-bg-factor`, kept below the table's 7.5% hover and 10% active overlays | Striped table-row backgrounds                   |
++| `--vn-button-opacity`     | `0.65`                                                                                  | `bootstrap` — retained disabled opacity; Elements' opacity was not calibrated                                | `--bs-btn-disabled-opacity`                     |
++| `--vn-button-shadow`      | `none`                                                                                  | `elements` — button elevation                                                                                | `--bs-btn-box-shadow`, `--bs-btn-active-shadow` |
++| `--vn-button-transparent` | `transparent`                                                                           | `elements` — bare resting fill                                                                               | Neutral Button backgrounds and borders          |
++| `--vn-button-face`        | `ButtonFace`                                                                            | `derived` — system button surface under forced colors                                                        | Button background fallbacks                     |
++| `--vn-button-text`        | `ButtonText`                                                                            | `derived` — system button foreground under forced colors                                                     | Button foreground and border fallbacks          |
++| `--vn-button-highlight`   | `Highlight`                                                                             | `derived` — system focus and selection under forced colors                                                   | Button focus outline and state backgrounds      |
++| `--vn-button-disabled`    | `GrayText`                                                                              | `derived` — system disabled foreground under forced colors                                                   | Button disabled foreground and border fallbacks |
+ 
+ The state tokens are declared at the root and inside each explicit theme scope, so a light island
+ inside a dark island restores the light mixer. The declaration-only `focus-ring` mixin takes a
+@@ -7086,7 +7086,7 @@ The following table names the compatible properties declared on the base class.
+ | `--bs-btn-line-height`           | `var(--vn-line-body)`                                                                            |
+ | `--bs-btn-color`                 | `var(--vn-text-body-base)`; each filled role overrides with its label                            |
+ | `--bs-btn-bg`                    | `var(--vn-button-transparent)`                                                                   |
+-| `--bs-btn-border-width`          | `var(--vn-border-width)`                                                                         |
++| `--bs-btn-border-width`          | `var(--bs-border-width)`                                                                         |
+ | `--bs-btn-border-color`          | `var(--vn-button-transparent)`                                                                   |
+ | `--bs-btn-border-radius`         | `var(--vn-radius-base)`                                                                          |
+ | `--bs-btn-box-shadow`            | `var(--vn-button-shadow)`                                                                        |
+@@ -7277,7 +7277,6 @@ declaration.
+ 
+ | Component | Selector                                        | Property                         | Condition | Bootstrap 5.3.8                                                                                                             | Veneer                                                                                                                                                                                                                                                                                                                 | Departure |
+ | --------- | ----------------------------------------------- | -------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+-| `btn`     | `.btn-check`                                    | `clip`                           | —         | `rect(0, 0, 0, 0)`                                                                                                          | —                                                                                                                                                                                                                                                                                                                      | dropped   |
+ | `btn`     | `.btn-check[disabled] + .btn`                   | `filter`                         | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
+ | `btn`     | `.btn-check[disabled] + .btn`                   | `opacity`                        | —         | `0.65`                                                                                                                      | `var(--bs-btn-disabled-opacity)`                                                                                                                                                                                                                                                                                       | aliased   |
+ | `btn`     | `.btn-check:disabled + .btn`                    | `filter`                         | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
+@@ -7290,7 +7289,6 @@ declaration.
+ | `btn`     | `.btn`                                          | `--bs-btn-line-height`           | —         | `1.5`                                                                                                                       | `var(--vn-line-body)`                                                                                                                                                                                                                                                                                                  | tokenized |
+ | `btn`     | `.btn`                                          | `--bs-btn-color`                 | —         | `var(--bs-body-color)`                                                                                                      | `var(--vn-text-body-base)`                                                                                                                                                                                                                                                                                             | tokenized |
+ | `btn`     | `.btn`                                          | `--bs-btn-bg`                    | —         | `transparent`                                                                                                               | `var(--vn-button-transparent)`                                                                                                                                                                                                                                                                                         | tokenized |
+-| `btn`     | `.btn`                                          | `--bs-btn-border-width`          | —         | `var(--bs-border-width)`                                                                                                    | `var(--vn-border-width)`                                                                                                                                                                                                                                                                                               | tokenized |
+ | `btn`     | `.btn`                                          | `--bs-btn-border-color`          | —         | `transparent`                                                                                                               | `var(--vn-button-transparent)`                                                                                                                                                                                                                                                                                         | tokenized |
+ | `btn`     | `.btn`                                          | `--bs-btn-border-radius`         | —         | `var(--bs-border-radius)`                                                                                                   | `var(--vn-radius-base)`                                                                                                                                                                                                                                                                                                | tokenized |
+ | `btn`     | `.btn`                                          | `--bs-btn-hover-border-color`    | —         | `transparent`                                                                                                               | `var(--vn-button-transparent)`                                                                                                                                                                                                                                                                                         | tokenized |
+@@ -9209,7 +9207,7 @@ declaration.
+ | `reboot`  | `body`        | `-webkit-text-size-adjust`         | —                            | `100%`                                                      | —                                                               | dropped   |
+ | `reboot`  | `body`        | `-webkit-tap-highlight-color`      | —                            | `rgba(0, 0, 0, 0)`                                          | `transparent`                                                   | declared  |
+ | `reboot`  | `hr`          | `margin`                           | —                            | `1rem 0`                                                    | `0`                                                             | declared  |
+-| `reboot`  | `hr`          | `border-top`                       | —                            | `var(--bs-border-width) solid`                              | `var(--vn-border-width) solid currentColor`                     | tokenized |
++| `reboot`  | `hr`          | `border-top`                       | —                            | `var(--bs-border-width) solid`                              | `var(--bs-border-width) solid currentColor`                     | declared  |
+ | `reboot`  | `hr`          | `opacity`                          | —                            | `0.25`                                                      | `0.2`                                                           | declared  |
+ | `reboot`  | `h6`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+ | `reboot`  | `h6`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+@@ -9995,11 +9993,6 @@ measurement fixes.
+ | `btn`          | `.btn-check:disabled + .btn { background-color }`             | —                                                | declaration | The disabled paint is repeated on the labelled control, which the release leaves to the base class.                                                                         |
+ | `btn`          | `.btn-check:disabled + .btn { border-color }`                 | —                                                | declaration | The disabled paint is repeated on the labelled control, which the release leaves to the base class.                                                                         |
+ | `btn`          | `.btn-check:disabled + .btn { box-shadow }`                   | —                                                | declaration | The calibrated elevation is declared where the release declares none.                                                                                                       |
+-| `btn`          | `.btn-check { width }`                                        | —                                                | declaration | The control is hidden with the current clipping technique rather than the release’s deprecated `clip` rectangle.                                                            |
+-| `btn`          | `.btn-check { height }`                                       | —                                                | declaration | The control is hidden with the current clipping technique rather than the release’s deprecated `clip` rectangle.                                                            |
+-| `btn`          | `.btn-check { clip-path }`                                    | —                                                | declaration | The control is hidden with the current clipping technique rather than the release’s deprecated `clip` rectangle.                                                            |
+-| `btn`          | `.btn-check { overflow }`                                     | —                                                | declaration | The control is hidden with the current clipping technique rather than the release’s deprecated `clip` rectangle.                                                            |
+-| `btn`          | `.btn-check { white-space }`                                  | —                                                | declaration | The control is hidden with the current clipping technique rather than the release’s deprecated `clip` rectangle.                                                            |
+ | `btn`          | `.btn-tertiary`                                               | —                                                | selector    | The tertiary role has no release counterpart, so its filled class is this package’s own.                                                                                    |
+ | `btn`          | `.btn-outline-tertiary`                                       | —                                                | selector    | The tertiary role has no release counterpart, so its outline class is this package’s own.                                                                                   |
+ | `btn`          | `.btn-link { --bs-btn-hover-bg }`                             | —                                                | declaration | The link button keeps a transparent surface in each state, which the release leaves at its own default.                                                                     |
+diff --git a/src/styles/components/_button.scss b/src/styles/components/_button.scss
+index 186ca5d..f2ac16e 100644
+--- a/src/styles/components/_button.scss
++++ b/src/styles/components/_button.scss
+@@ -20,7 +20,7 @@ $sizes: (
+ 		--bs-btn-line-height: var(--vn-line-body);
+ 		--bs-btn-color: var(--vn-text-body-base);
+ 		--bs-btn-bg: var(--vn-button-transparent);
+-		--bs-btn-border-width: var(--vn-border-width);
++		--bs-btn-border-width: var(--bs-border-width);
+ 		--bs-btn-border-color: var(--vn-button-transparent);
+ 		--bs-btn-border-radius: var(--vn-radius-base);
+ 		--bs-btn-box-shadow: var(--vn-button-shadow);
+@@ -126,11 +126,7 @@ $sizes: (
+ 
+ 	.btn-check {
+ 		position: absolute;
+-		width: 1px;
+-		height: 1px;
+-		clip-path: inset(50%);
+-		overflow: hidden;
+-		white-space: nowrap;
++		clip: rect(0, 0, 0, 0);
+ 		pointer-events: none;
+ 	}
+ 
+diff --git a/src/styles/elements/_hr.scss b/src/styles/elements/_hr.scss
+index 40d22d0..6dd6667 100644
+--- a/src/styles/elements/_hr.scss
++++ b/src/styles/elements/_hr.scss
+@@ -5,7 +5,7 @@
+ 		@include box-reset {
+ 			color: inherit;
+ 		}
+-		border-top: var(--vn-border-width) solid currentColor;
++		border-top: var(--bs-border-width) solid currentColor;
+ 		opacity: 0.2;
+ 	}
+ }
+diff --git a/src/styles/elements/_tr.scss b/src/styles/elements/_tr.scss
+index 1200636..dbfaba0 100644
+--- a/src/styles/elements/_tr.scss
++++ b/src/styles/elements/_tr.scss
+@@ -9,7 +9,7 @@
+ 	td,
+ 	th {
+ 		@include cell-space;
+-		border-bottom: var(--vn-border-width) var(--vn-border-style) var(--vn-border-color);
++		border-bottom: var(--bs-border-width) var(--vn-border-style) var(--vn-border-color);
+ 		vertical-align: middle;
+ 		text-align: inherit;
+ 	}
+diff --git a/tests/src/styles/components/button-group.test.ts b/tests/src/styles/components/button-group.test.ts
+index 2c079d4..a9d6064 100644
+--- a/tests/src/styles/components/button-group.test.ts
++++ b/tests/src/styles/components/button-group.test.ts
+@@ -578,13 +578,13 @@ describe('button group tokens', () => {
+ 		expect(readPixels(group, 'border-top-left-radius')).toBe(11)
+ 		expect(readPixels(second, 'margin-left')).toBe(-3)
+ 		expect(readPixels(second, 'border-top-left-radius')).toBe(0)
+-		// The children carry the Button family's own radius and border width rather than the two
+-		// names retuned here, so the retune moves the group's own box and the overlap it declares
+-		// and leaves each child's corners where Button put them.
++		// The children carry the Button family's own radius, so the retune leaves each child's
++		// corners where Button put them; their border width reads the retuned `--bs-border-width`,
++		// as the overlap does, so the pulled-back child still paints one shared line.
+ 		expect(readPixels(requireValue(children[0], 'No first child'), 'border-top-left-radius')).toBe(
+ 			6,
+ 		)
+-		expect(readPixels(second, 'border-left-width')).toBe(1)
++		expect(readPixels(second, 'border-left-width')).toBe(3)
+ 	})
+ 
+ 	it('rescales its radius with the radius factor and its children with the density factor', () => {
+diff --git a/tests/src/styles/components/button.test.ts b/tests/src/styles/components/button.test.ts
+index 58e81d5..6840d8b 100644
+--- a/tests/src/styles/components/button.test.ts
++++ b/tests/src/styles/components/button.test.ts
+@@ -15,6 +15,7 @@ import {
+ 	releaseMedia,
+ 	releasePointer,
+ 	stageMedia,
++	traverseAccessible,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { CONTRAST_BAR } from '../../../setup.js'
+@@ -360,7 +361,7 @@ describe('button classes', () => {
+ 		const input = requireValue(container.querySelector('input'), 'No input')
+ 		const label = requireValue(container.querySelector('label'), 'No label')
+ 		await stageMedia({ motion: false })
+-		expect(readStyle(input, 'clip-path')).toBe('inset(50%)')
++		expect(readStyle(input, 'clip')).toBe('rect(0px, 0px, 0px, 0px)')
+ 		await hoverAccessible('button', 'Check specimen')
+ 		expect(matchesColor(readStyle(label, 'background-color'), 'oklch(0.48 0.255 264)')).toBe(true)
+ 		await clickAccessible('button', 'Check specimen')
+@@ -380,6 +381,28 @@ describe('button classes', () => {
+ 		expect(matchesColor(readStyle(label, 'background-color'), 'oklch(0.48 0.255 264)')).toBe(true)
+ 	})
+ 
++	it('toggles the checkbox from the keyboard and keeps the label focus paint', async () => {
++		const container = scene.mount(
++			'<button>Before check</button><input class="btn-check" type="checkbox" id="tabbed-check"><label class="btn btn-outline-primary" for="tabbed-check" role="button" tabindex="0">Tabbed specimen</label>',
++		)
++		const input = requireValue(container.querySelector('input'), 'No tabbed input')
++		const label = requireValue(container.querySelector('label'), 'No tabbed label')
++		await stageMedia({ motion: false })
++		await traverseAccessible('Before check')
++		await pressKeys('{Tab}')
++		expect(document.activeElement).toBe(input)
++		expect(input.matches(':focus-visible')).toBe(true)
++		expect(extractShadowLayers(readStyle(label, 'box-shadow')).map((ring) => ring.lengths)).toEqual(
++			[[0, 0, 0, 3]],
++		)
++		await pressKeys('{Space}')
++		expect(input.checked).toBe(true)
++		expect(input.matches(':focus-visible')).toBe(true)
++		expect(extractShadowLayers(readStyle(label, 'box-shadow')).map((ring) => ring.lengths)).toEqual(
++			[[0, 0, 0, 3]],
++		)
++	})
++
+ 	it('applies disabled paint to native, class, fieldset, and ARIA anchor hosts', async () => {
+ 		const container = scene.mount(
+ 			'<button class="btn btn-primary" disabled>Native</button><button class="btn btn-primary disabled">Class</button><fieldset disabled><button class="btn btn-primary">Fieldset</button></fieldset><a href="#disabled" class="btn btn-primary" role="button" aria-disabled="true" tabindex="-1">Anchor</a>',
+diff --git a/tests/src/styles/elements/hr.test.ts b/tests/src/styles/elements/hr.test.ts
+index 7ee0098..3fdea07 100644
+--- a/tests/src/styles/elements/hr.test.ts
++++ b/tests/src/styles/elements/hr.test.ts
+@@ -22,4 +22,10 @@ describe('hr text treatment', () => {
+ 		).toEqual(values)
+ 		expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 	})
++
++	it('moves the top border to a scope-set --bs-border-width', () => {
++		const host = scene.mount('<div style="--bs-border-width: 3px"><hr></div>')
++		const element = requireValue(host.querySelector('hr'), 'No hr specimen')
++		expect(readStyle(element, 'border-top-width')).toBe('3px')
++	})
+ })
+diff --git a/tests/src/styles/elements/tr.test.ts b/tests/src/styles/elements/tr.test.ts
+index 85e8721..e341c7e 100644
+--- a/tests/src/styles/elements/tr.test.ts
++++ b/tests/src/styles/elements/tr.test.ts
+@@ -42,4 +42,12 @@ describe('tr calibrated treatment', () => {
+ 			'600',
+ 		)
+ 	})
++
++	it('moves a cell bottom border to a scope-set --bs-border-width', () => {
++		const host = scene.mount(
++			'<div style="--bs-border-width: 3px"><table><tbody><tr><th>Label</th><td>Value</td></tr></tbody></table></div>',
++		)
++		const cell = requireValue(host.querySelector('td'), 'No cell specimen')
++		expect(readStyle(cell, 'border-bottom-width')).toBe('3px')
++	})
+ })

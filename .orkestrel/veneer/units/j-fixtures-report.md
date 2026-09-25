@@ -38,7 +38,7 @@ export function requireMatch(matched: readonly Element[], messages: MatchMessage
 The command was `npx vitest run --config vite.config.ts --no-cache --project setup:browser`. It ran
 with the interface and the tests in place and before the helper existed. The run exited 1 because
 `tests/setupBrowser.test.ts` failed to import: "does not provide an export named 'requireMatch'". The
-log is `tmp/units/jf-red.log.txt`. The same command then exited 0 after the helper landed (see the
+log is `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-red.log.txt`. The same command then exited 0 after the helper landed (see the
 gate table).
 
 The helper's cases are in the `requireMatch` describe block of `tests/setupBrowser.test.ts`. Each case
@@ -57,21 +57,21 @@ The following table lists each gate with its exit code and log.
 
 | Gate                                                                                 | Exit | Log                                  |
 | ------------------------------------------------------------------------------------ | ---- | ------------------------------------ |
-| `npx vitest run --config vite.config.ts --no-cache --project setup:browser` (before) | 1    | `tmp/units/jf-red.log.txt`           |
-| `npx vitest run --config vite.config.ts --no-cache --project setup:browser`          | 0    | `tmp/units/jf-setup-browser.log.txt` |
-| `npx vitest run --config vite.config.ts --no-cache --project app:browser`            | 0    | `tmp/units/jf-app-browser.log.txt`   |
-| `npm run format:check`                                                               | 0    | `tmp/units/jf-format.log.txt`        |
-| `npm run lint:check`                                                                 | 0    | `tmp/units/jf-lint.log.txt`          |
-| `npm run check`                                                                      | 0    | `tmp/units/jf-check.log.txt`         |
+| `npx vitest run --config vite.config.ts --no-cache --project setup:browser` (before) | 1    | `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-red.log.txt`           |
+| `npx vitest run --config vite.config.ts --no-cache --project setup:browser`          | 0    | `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-setup-browser.log.txt` |
+| `npx vitest run --config vite.config.ts --no-cache --project app:browser`            | 0    | `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-app-browser.log.txt`   |
+| `npm run format:check`                                                               | 0    | `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-format.log.txt`        |
+| `npm run lint:check`                                                                 | 0    | `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-lint.log.txt`          |
+| `npm run check`                                                                      | 0    | `/home/user/scaffold/.orkestrel/veneer/units/jf-instruments/jf-check.log.txt`         |
 
 `npm run lint:check` includes the policy rules. It reported no name collision for `requireMatch` or
 `MatchMessages`.
 
 ## Diff and status
 
-- `/home/user/veneer-jf/tmp/units/jf.diff` holds the output of `git diff 6882751`.
+- `/home/user/scaffold/.orkestrel/veneer/units/jf.diff` holds the output of `git diff 6882751`.
 - `git diff 6882751 --stat` lists only `tests/setupBrowser.test.ts` and `tests/setupBrowser.ts`.
-- `/home/user/veneer-jf/tmp/units/jf-status.txt` holds the output of `git status --short`: ` M tests/setupBrowser.test.ts` and
+- `/home/user/scaffold/.orkestrel/veneer/units/jf-status.txt` holds the output of `git status --short`: ` M tests/setupBrowser.test.ts` and
   ` M tests/setupBrowser.ts`.
 
 ## Deviation state

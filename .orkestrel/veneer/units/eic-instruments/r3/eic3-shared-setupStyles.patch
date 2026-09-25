@@ -1,0 +1,12 @@
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 8f883b6..5ebc750 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1469,6 +1469,7 @@ export const TEXT_SAMP_CASES = Object.freeze(
+ 				'padding-top': '1.575px',
+ 				'padding-left': '3.15px',
+ 			}),
++			radius: 4,
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+ 			background: mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 			family:

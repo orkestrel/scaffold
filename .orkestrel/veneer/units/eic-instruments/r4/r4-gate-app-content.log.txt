@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  00:52:39
+   Duration  13.22s (transform 0ms, setup 564ms, import 476ms, tests 3.17s, environment 0ms)
+
+exit=0

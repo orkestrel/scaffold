@@ -1,0 +1,67 @@
+## classless-grid (src/styles/elements/_dl.scss)
+  summary: ['Tests  1 failed | 25 passed (26)']
+   × keeps the grid on a list that carries a utility class 4ms
+     AssertionError: expected 'block' to be 'grid' // Object.is equality
+  restore byte-identical: True
+## restored-gap (src/styles/elements/_dl.scss)
+  summary: ['Tests  5 failed | 21 passed (26)']
+   × resolves the dl values in 'light' mode 9ms
+   × resolves the dl values in 'dark' mode 2ms
+   × lays a horizontal description list out beside its terms from the sm breakpoint 28ms
+   × keeps the grid on a list that carries a utility class 1ms
+   × keeps every term in the term column and every description in the description column 2ms
+     AssertionError: expected { Object (margin, display, ...) } to deeply equal { Object (margin, display, ...) }
+     AssertionError: description 0 top: expected 29 to be close to +0, received difference is 29, but expected 0.05
+     AssertionError: expected 186.65625 to be 176 // Object.is equality
+     AssertionError: expected [ 186.65625, 186.65625, 186.65625 ] to deeply equal [ 176, 176, 176 ]
+  restore byte-identical: True
+## no-term-padding (src/styles/elements/_dl.scss)
+  summary: ['Tests  2 failed | 24 passed (26)']
+   × resolves the dl values in 'light' mode 8ms
+   × resolves the dl values in 'dark' mode 2ms
+     AssertionError: expected '0px' to be '16px' // Object.is equality
+  restore byte-identical: True
+## classless-blockquote (src/styles/elements/_blockquote.scss)
+  summary: ['Tests  1 failed | 25 passed (26)']
+   × keeps the bar, the inset, and the italics on a quotation that carries a utility class 4ms
+     AssertionError: expected '0px' to be '4px' // Object.is equality
+  restore byte-identical: True
+## no-quote-resets (src/styles/components/_quote.scss)
+  summary: ['Tests  1 failed | 25 passed (26)']
+   × clears the bar, the inset, and the italics the tag gives a quotation 4ms
+     AssertionError: expected '4px' to be '0px' // Object.is equality
+  restore byte-identical: True
+## restored-figure-gap (src/styles/elements/_figure.scss)
+  summary: ['Tests  6 failed | 20 passed (26)']
+   × resolves the calibrated values in light mode 5ms
+   × resolves the calibrated values in dark mode 1ms
+   × starts the footer at the quotation edge inside 'a bare figure' 2ms
+   × starts the footer at the quotation edge inside 'a centered figure' 1ms
+   × starts the footer at the quotation edge inside 'an end-aligned figure' 1ms
+   × spaces the caption 8px under its image inside 'a bare figure' 2ms
+     AssertionError: expected '8px' to be 'normal' // Object.is equality
+     AssertionError: expected 38 to be close to 30, received difference is 8, but expected 0.05
+     AssertionError: expected 16 to be close to 8, received difference is 8, but expected 0.05
+  restore byte-identical: True
+## no-caption-margin (src/styles/elements/_figure.scss)
+  summary: ['Tests  4 failed | 22 passed (26)']
+   × resolves the calibrated values in light mode 4ms
+   × resolves the calibrated values in dark mode 1ms
+   × spaces the caption 8px under its image inside 'a bare figure' 2ms
+   × spaces the caption 8px under its image inside 'a figure a display utility turns to b…' 0ms
+     AssertionError: expected '0px' to be '8px 0px 0px' // Object.is equality
+     AssertionError: expected +0 to be close to 8, received difference is 8, but expected 0.05
+  restore byte-identical: True
+## no-figure-display (src/styles/components/_image.scss)
+  summary: ['Tests  3 failed | 23 passed (26)']
+   × paints the thumbnail frame and the figure caption in 'light' mode 6ms
+   × paints the thumbnail frame and the figure caption in 'dark' mode 2ms
+   × lays the figure class pattern out as the release does 3ms
+     AssertionError: expected 'flex' to be 'inline-block' // Object.is equality
+     AssertionError: expected 320 to be less than 320
+  restore byte-identical: True
+## no-caption-reset (src/styles/components/_image.scss)
+  summary: ['Tests  1 failed | 25 passed (26)']
+   × puts the classed caption on the edge of a box that carries no image class 2ms
+     AssertionError: expected 158 to be close to 150, received difference is 8, but expected 0.05
+  restore byte-identical: True

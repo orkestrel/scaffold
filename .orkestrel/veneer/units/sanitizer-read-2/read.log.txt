@@ -1,0 +1,5 @@
+head 6d27028 chromium Chromium 141.0.7390.37 
+file tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+ConfigSanitizer alone exit=0
+test:src:browser exit=0
+done

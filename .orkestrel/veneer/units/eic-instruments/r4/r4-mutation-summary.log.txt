@@ -1,0 +1,13 @@
+m21-var-drop-corner | src/styles/elements/_var.scss | restore identical 6db55a49fdde | counts ['2 failed (2)']
+  failed: resolves the var values in 'dark' mode
+  failed: resolves the var values in 'light' mode
+   AssertionError: expected +0 to be 4 // Object.is equality
+m22-readd-a-code | src/styles/elements/_code.scss | restore identical 2b5e293c2081 | counts ['1 failed | 2 passed (3)']
+  failed: keeps each tag its own treatment inside a link, a code block, and a key
+   AssertionError: expected true to be false // Object.is equality
+m23-readd-pre-code | src/styles/elements/_code.scss | restore identical 2b5e293c2081 | counts ['1 failed | 2 passed (3)']
+  failed: keeps each tag its own treatment inside a link, a code block, and a key
+   AssertionError: expected false to be true // Object.is equality
+m24-readd-kbd-kbd | src/styles/elements/_kbd.scss | restore identical 6eab8bc05f08 | counts ['1 failed | 2 passed (3)']
+  failed: keeps each tag its own treatment inside a link, a code block, and a key
+   AssertionError: expected 'none' to be 'solid' // Object.is equality

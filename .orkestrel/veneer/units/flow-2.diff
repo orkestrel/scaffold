@@ -1,0 +1,650 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ee5fa61..4c9f263 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -6653,10 +6653,10 @@ name this release declares nowhere is recorded in § Outside the ledger instead.
+ 
+ | Name                                                                             | Owner    | Reason                                                                                                                                                                                                          |
+ | -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `ol ol`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
+-| `ul ul`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
+-| `ol ul`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
+-| `ul ol`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
++| `ol ol`                                                                          | Excluded | Nested list treatment infers styling from tag composition, so an inner list keeps the list's `1rem` bottom margin where the release writes `0`; the `.mb-0` class removes it.                                   |
++| `ul ul`                                                                          | Excluded | Nested list treatment infers styling from tag composition, so an inner list keeps the list's `1rem` bottom margin where the release writes `0`; the `.mb-0` class removes it.                                   |
++| `ol ul`                                                                          | Excluded | Nested list treatment infers styling from tag composition, so an inner list keeps the list's `1rem` bottom margin where the release writes `0`; the `.mb-0` class removes it.                                   |
++| `ul ol`                                                                          | Excluded | Nested list treatment infers styling from tag composition, so an inner list keeps the list's `1rem` bottom margin where the release writes `0`; the `.mb-0` class removes it.                                   |
+ | `pre code`                                                                       | Excluded | Contextual code treatment infers styling from tag composition.                                                                                                                                                  |
+ | `a > code`                                                                       | Excluded | Contextual code treatment infers styling from tag composition.                                                                                                                                                  |
+ | `kbd kbd`                                                                        | Excluded | Nested keyboard treatment infers styling from tag composition.                                                                                                                                                  |
+@@ -8250,8 +8250,7 @@ declaration.
+ 
+ | Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
+ | --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
+-| `h1`      | `.h1`    | `margin-top`    | —                          | `0`                      | —                                                                                             | dropped   |
+-| `h1`      | `.h1`    | `margin-bottom` | —                          | `0.5rem`                 | —                                                                                             | dropped   |
++| `h1`      | `.h1`    | `margin-bottom` | —                          | `0.5rem`                 | `var(--vn-space-4)`                                                                           | tokenized |
+ | `h1`      | `.h1`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `h1`      | `.h1`    | `line-height`   | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `h1`      | `.h1`    | `font-size`     | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -8261,8 +8260,7 @@ declaration.
+ 
+ | Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
+ | --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
+-| `h2`      | `.h2`    | `margin-top`    | —                          | `0`                      | —                                                                                             | dropped   |
+-| `h2`      | `.h2`    | `margin-bottom` | —                          | `0.5rem`                 | —                                                                                             | dropped   |
++| `h2`      | `.h2`    | `margin-bottom` | —                          | `0.5rem`                 | `var(--vn-space-4)`                                                                           | tokenized |
+ | `h2`      | `.h2`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `h2`      | `.h2`    | `line-height`   | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `h2`      | `.h2`    | `font-size`     | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -8272,8 +8270,7 @@ declaration.
+ 
+ | Component | Selector | Property        | Condition                  | Bootstrap 5.3.8        | Veneer                                                                                        | Departure |
+ | --------- | -------- | --------------- | -------------------------- | ---------------------- | --------------------------------------------------------------------------------------------- | --------- |
+-| `h3`      | `.h3`    | `margin-top`    | —                          | `0`                    | —                                                                                             | dropped   |
+-| `h3`      | `.h3`    | `margin-bottom` | —                          | `0.5rem`               | —                                                                                             | dropped   |
++| `h3`      | `.h3`    | `margin-bottom` | —                          | `0.5rem`               | `var(--vn-space-4)`                                                                           | tokenized |
+ | `h3`      | `.h3`    | `font-weight`   | —                          | `500`                  | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `h3`      | `.h3`    | `line-height`   | —                          | `1.2`                  | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `h3`      | `.h3`    | `font-size`     | —                          | `calc(1.3rem + 0.6vw)` | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -8283,8 +8280,7 @@ declaration.
+ 
+ | Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
+ | --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
+-| `h4`      | `.h4`    | `margin-top`    | —                          | `0`                      | —                                                                                             | dropped   |
+-| `h4`      | `.h4`    | `margin-bottom` | —                          | `0.5rem`                 | —                                                                                             | dropped   |
++| `h4`      | `.h4`    | `margin-bottom` | —                          | `0.5rem`                 | `var(--vn-space-4)`                                                                           | tokenized |
+ | `h4`      | `.h4`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `h4`      | `.h4`    | `line-height`   | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `h4`      | `.h4`    | `font-size`     | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -8294,8 +8290,7 @@ declaration.
+ 
+ | Component | Selector | Property        | Condition | Bootstrap 5.3.8 | Veneer                                                                                        | Departure |
+ | --------- | -------- | --------------- | --------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
+-| `h5`      | `.h5`    | `margin-top`    | —         | `0`             | —                                                                                             | dropped   |
+-| `h5`      | `.h5`    | `margin-bottom` | —         | `0.5rem`        | —                                                                                             | dropped   |
++| `h5`      | `.h5`    | `margin-bottom` | —         | `0.5rem`        | `var(--vn-space-4)`                                                                           | tokenized |
+ | `h5`      | `.h5`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `h5`      | `.h5`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `h5`      | `.h5`    | `font-size`     | —         | `1.25rem`       | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -8304,8 +8299,7 @@ declaration.
+ 
+ | Component | Selector | Property        | Condition | Bootstrap 5.3.8 | Veneer                                                                                        | Departure |
+ | --------- | -------- | --------------- | --------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
+-| `h6`      | `.h6`    | `margin-top`    | —         | `0`             | —                                                                                             | dropped   |
+-| `h6`      | `.h6`    | `margin-bottom` | —         | `0.5rem`        | —                                                                                             | dropped   |
++| `h6`      | `.h6`    | `margin-bottom` | —         | `0.5rem`        | `var(--vn-space-4)`                                                                           | tokenized |
+ | `h6`      | `.h6`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `h6`      | `.h6`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `h6`      | `.h6`    | `font-size`     | —         | `1rem`          | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -9253,28 +9247,22 @@ declaration.
+ | `reboot`  | `hr`          | `margin`                           | —                          | `1rem 0`                                                    | `0`                                                                                           | declared  |
+ | `reboot`  | `hr`          | `border-top`                       | —                          | `var(--bs-border-width) solid`                              | `var(--vn-border-width) solid currentColor`                                                   | tokenized |
+ | `reboot`  | `hr`          | `opacity`                          | —                          | `0.25`                                                      | `0.2`                                                                                         | declared  |
+-| `reboot`  | `h6`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `h6`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h6`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `h6`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `reboot`  | `h6`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
+-| `reboot`  | `h5`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `h5`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h5`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `h5`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `reboot`  | `h5`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
+-| `reboot`  | `h4`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `h4`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h4`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `h4`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `reboot`  | `h4`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
+-| `reboot`  | `h3`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `h3`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h3`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `h3`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `reboot`  | `h3`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
+-| `reboot`  | `h2`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `h2`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h2`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `h2`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `reboot`  | `h2`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
+-| `reboot`  | `h1`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `h1`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h1`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `h1`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+ | `reboot`  | `h1`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
+ | `reboot`  | `h1`          | `font-size`                        | —                          | `calc(1.375rem + 1.5vw)`                                    | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+@@ -9287,17 +9275,14 @@ declaration.
+ | `reboot`  | `h4`          | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-5)`                                                                            | tokenized |
+ | `reboot`  | `h5`          | `font-size`                        | —                          | `1.25rem`                                                   | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+ | `reboot`  | `h6`          | `font-size`                        | —                          | `1rem`                                                      | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+-| `reboot`  | `p`           | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `p`           | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `p`           | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
+ | `reboot`  | `abbr[title]` | `-webkit-text-decoration`          | —                          | `underline dotted`                                          | —                                                                                             | dropped   |
+ | `reboot`  | `abbr[title]` | `-webkit-text-decoration-skip-ink` | —                          | `none`                                                      | —                                                                                             | dropped   |
+-| `reboot`  | `address`     | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `address`     | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
+ | `reboot`  | `ol`          | `padding-left`                     | —                          | `2rem`                                                      | `calc(var(--vn-space-8) * 2)`                                                                 | tokenized |
+ | `reboot`  | `ul`          | `padding-left`                     | —                          | `2rem`                                                      | `calc(var(--vn-space-8) * 2)`                                                                 | tokenized |
+-| `reboot`  | `ol`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `ol`          | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
+-| `reboot`  | `ul`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+-| `reboot`  | `ul`          | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `ol`          | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
++| `reboot`  | `ul`          | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
+ | `reboot`  | `dl`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
+ | `reboot`  | `dl`          | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
+ | `reboot`  | `dt`          | `font-weight`                      | —                          | `700`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
+@@ -9929,19 +9914,10 @@ measurement fixes.
+ | -------------- | ------------------------------------------------------------- | ------------------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `reboot`       | `:root`                                                       | `@media (prefers-reduced-motion: no-preference)` | selector    | The reset layer answers to `reboot`, whose vocabulary records no `:root` rule; the release records the same declaration under the `theme` key, whose comparison matches it. |
+ | `reboot`       | `html`                                                        | —                                                | selector    | The document element carries keyword size interpolation and the unprefixed text-size adjustment the release writes prefixed on the body.                                    |
+-| `reboot`       | `h1 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `reboot`       | `h2 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `reboot`       | `h3 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `reboot`       | `h4 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `reboot`       | `h5 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `reboot`       | `h6 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `h5 { font-size }`                                            | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+ | `reboot`       | `h6 { font-size }`                                            | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+-| `reboot`       | `p { margin }`                                                | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `a:hover { color }`                                           | —                                                | declaration | Elements repaints a link on hover from its own hover token.                                                                                                                 |
+-| `reboot`       | `ul { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `ul { list-style-type }`                                      | —                                                | declaration | Elements names the marker each list writes rather than inheriting the user agent default.                                                                                   |
+-| `reboot`       | `ol { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `ol { list-style-type }`                                      | —                                                | declaration | Elements names the marker each list writes rather than inheriting the user agent default.                                                                                   |
+ | `reboot`       | `dl { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `dl { display }`                                              | —                                                | declaration | Elements lays a description list out as a two-column grid, which the release leaves as flow content.                                                                        |
+@@ -9952,7 +9928,6 @@ measurement fixes.
+ | `reboot`       | `blockquote { padding-left }`                                 | —                                                | declaration | Elements marks a quotation with an inline-start rule, inset text, and italic type.                                                                                          |
+ | `reboot`       | `blockquote { border-left }`                                  | —                                                | declaration | Elements marks a quotation with an inline-start rule, inset text, and italic type.                                                                                          |
+ | `reboot`       | `blockquote { font-style }`                                   | —                                                | declaration | Elements marks a quotation with an inline-start rule, inset text, and italic type.                                                                                          |
+-| `reboot`       | `address { margin }`                                          | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `address { color }`                                           | —                                                | declaration | Elements paints an address in muted text.                                                                                                                                   |
+ | `reboot`       | `code { padding }`                                            | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
+ | `reboot`       | `code { background-color }`                                   | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
+@@ -10071,13 +10046,7 @@ measurement fixes.
+ | `btn`          | `.btn { --bs-btn-disabled-color }`                            | `@media (forced-colors: active)`                 | declaration | Under forced colors the button rebinds its state variables to the system button keywords, which the release leaves to the platform.                                         |
+ | `btn`          | `.btn { --bs-btn-disabled-bg }`                               | `@media (forced-colors: active)`                 | declaration | Under forced colors the button rebinds its state variables to the system button keywords, which the release leaves to the platform.                                         |
+ | `btn`          | `.btn { --bs-btn-disabled-border-color }`                     | `@media (forced-colors: active)`                 | declaration | Under forced colors the button rebinds its state variables to the system button keywords, which the release leaves to the platform.                                         |
+-| `h1`           | `.h1 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `h2`           | `.h2 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `h3`           | `.h3 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `h4`           | `.h4 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+-| `h5`           | `.h5 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `h5`           | `.h5 { font-size }`                                           | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+-| `h6`           | `.h6 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `h6`           | `.h6 { font-size }`                                           | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+ | `fs`           | `.fs-5 { font-size }`                                         | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+ | `fs`           | `.fs-6 { font-size }`                                         | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 2b7bf73..5a4023a 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -17,7 +17,8 @@
+ }
+ 
+ @mixin heading-text {
+-	margin: 0;
++	margin-top: 0;
++	margin-bottom: var(--vn-space-4);
+ 	font-weight: var(--vn-weight-heading);
+ 	line-height: var(--vn-line-heading);
+ 	color: var(--bs-heading-color);
+@@ -109,7 +110,8 @@
+ }
+ 
+ @mixin list-space {
+-	margin: 0;
++	margin-top: 0;
++	margin-bottom: var(--vn-space-8);
+ 	padding-left: calc(var(--vn-space-8) * 2);
+ }
+ 
+diff --git a/src/styles/elements/_address.scss b/src/styles/elements/_address.scss
+index 12fe20f..570e1bb 100644
+--- a/src/styles/elements/_address.scss
++++ b/src/styles/elements/_address.scss
+@@ -1,6 +1,6 @@
+ @layer elements {
+ 	address {
+-		margin: 0 0 var(--vn-space-7);
++		margin-bottom: var(--vn-space-8);
+ 		font-style: normal;
+ 		line-height: inherit;
+ 		color: var(--vn-text-muted);
+diff --git a/src/styles/elements/_p.scss b/src/styles/elements/_p.scss
+index 64305b1..7b672bf 100644
+--- a/src/styles/elements/_p.scss
++++ b/src/styles/elements/_p.scss
+@@ -1,5 +1,6 @@
+ @layer elements {
+ 	p {
+-		margin: 0;
++		margin-top: 0;
++		margin-bottom: var(--vn-space-8);
+ 	}
+ }
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index fa40353..ee9484e 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -411,6 +411,7 @@ describe('styles setup', () => {
+ 				'FLUID_WIDTHS',
+ 				'FOCUS_RING_ROLES',
+ 				'FLOAT_VALUES',
++				'FLOW_MARGIN',
+ 				'FONT_ENTRY_CASES',
+ 				'FONT_STEP_TABLES',
+ 				'FONT_STYLE_VALUES',
+@@ -438,6 +439,7 @@ describe('styles setup', () => {
+ 				'GRID_COLUMN_STEPS',
+ 				'GRID_COUNT_STEPS',
+ 				'GRID_OFFSET_STEPS',
++				'HEADING_MARGIN',
+ 				'HIT_CORNERS',
+ 				'ICON_LINK_MARKUP',
+ 				'IMAGE_PAINT_CASES',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 057df1e..7135dfc 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1202,6 +1202,27 @@ export const IMAGE_SOURCE =
+ /** Lists the modes exercised by the text element cases. */
+ export const TEXT_MODES = Object.freeze(['light', 'dark'] as const)
+ 
++/**
++ * Holds the block-end margin Bootstrap 5.3.8's reboot writes on the headings and the `.h1` to `.h6`
++ * classes, the release's `$headings-margin-bottom` value.
++ *
++ * @remarks
++ * A proof resolves this literal on a plain specimen, so the expected length comes from the release
++ * rather than from the space token the cascade reads.
++ */
++export const HEADING_MARGIN = '0.5rem'
++
++/**
++ * Holds the block-end margin Bootstrap 5.3.8's reboot writes on the `p`, `address`, `ol`, and `ul`
++ * tags: the release's `$paragraph-margin-bottom` value and the literal its address and list rules
++ * write.
++ *
++ * @remarks
++ * A proof resolves this literal on a plain specimen, so the expected length comes from the release
++ * rather than from the space token the cascade reads.
++ */
++export const FLOW_MARGIN = '1rem'
++
+ /** Holds the mode and resolved readings for the a element family. */
+ export const TEXT_A_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+@@ -1281,7 +1302,8 @@ export const TEXT_ADDRESS_CASES = Object.freeze(
+ 		Object.freeze({
+ 			mode,
+ 			values: Object.freeze({
+-				'margin-bottom': '14px',
++				'margin-top': '0px',
++				'margin-bottom': '16px',
+ 				'font-style': 'normal',
+ 				'line-height': '21px',
+ 			}),
+@@ -1452,7 +1474,8 @@ export const TEXT_OL_CASES = Object.freeze(
+ 		Object.freeze({
+ 			mode,
+ 			values: Object.freeze({
+-				margin: '0px',
++				'margin-top': '0px',
++				'margin-bottom': '16px',
+ 				'padding-left': '32px',
+ 				'list-style-type': 'decimal',
+ 			}),
+@@ -1468,7 +1491,7 @@ export const TEXT_P_CASES = Object.freeze(
+ 			mode,
+ 			values: Object.freeze({
+ 				'margin-top': '0px',
+-				'margin-bottom': '0px',
++				'margin-bottom': '16px',
+ 				'font-size': '14px',
+ 				'line-height': '21px',
+ 			}),
+@@ -1582,7 +1605,8 @@ export const TEXT_UL_CASES = Object.freeze(
+ 		Object.freeze({
+ 			mode,
+ 			values: Object.freeze({
+-				margin: '0px',
++				'margin-top': '0px',
++				'margin-bottom': '16px',
+ 				'padding-left': '32px',
+ 				'list-style-type': 'disc',
+ 			}),
+diff --git a/tests/src/styles/components/card.test.ts b/tests/src/styles/components/card.test.ts
+index b941774..52c1401 100644
+--- a/tests/src/styles/components/card.test.ts
++++ b/tests/src/styles/components/card.test.ts
+@@ -210,10 +210,11 @@ describe('card geometry', () => {
+ 		expect(readPixels(tabs, 'margin-bottom')).toBe(-8)
+ 		expect(readPixels(tabs, 'border-bottom-width')).toBe(0)
+ 		// The pills pull sideways alone, which is what separates one header navigation from the
+-		// other.
++		// other: the pills write no block-end margin, so the list keeps the 1rem the `ul` element
++		// takes from the release's reboot, where the tabs pull it below the cap.
+ 		expect(readPixels(pills, 'margin-left')).toBe(-8)
+ 		expect(readPixels(pills, 'margin-right')).toBe(-8)
+-		expect(readPixels(pills, 'margin-bottom')).toBe(0)
++		expect(readPixels(pills, 'margin-bottom')).toBe(16)
+ 		const active = requireValue(tabs.querySelector('.nav-link.active'), 'No active tab')
+ 		const resting = requireValue(tabs.querySelector('a[href="#two"]'), 'No resting tab')
+ 		// The resting link sits inside the same navigation as the active one, so the `.active` guard
+diff --git a/tests/src/styles/components/type.test.ts b/tests/src/styles/components/type.test.ts
+index f705dec..e4731a7 100644
+--- a/tests/src/styles/components/type.test.ts
++++ b/tests/src/styles/components/type.test.ts
+@@ -5,6 +5,7 @@ import { scene, visitBreakpoint } from '../../../setupBrowser.js'
+ import {
+ 	CAPPED_WIDTHS,
+ 	FLUID_WIDTHS,
++	HEADING_MARGIN,
+ 	TYPE_DISPLAY_CASES,
+ 	TYPE_DISPLAY_TOKEN_CASES,
+ 	TYPE_HEADING_CASES,
+@@ -61,7 +62,7 @@ describe('type classes', () => {
+ 			}
+ 			expect(readStyle(element, 'font-weight')).toBe('600')
+ 			expect(readStyle(element, 'font-weight')).toBe(readStyle(tag, 'font-weight'))
+-			expect(readStyle(element, 'margin')).toBe('0px')
++			expect(readStyle(element, 'margin')).toBe('0px 0px 8px')
+ 			expect(readStyle(element, 'margin')).toBe(readStyle(tag, 'margin'))
+ 			// `--bs-heading-color` resolves through `--vn-text-heading` to `inherit`, so on a host
+ 			// that declares none of its own the pair agrees whether or not either carries the
+@@ -86,6 +87,34 @@ describe('type classes', () => {
+ 		},
+ 	)
+ 
++	// The class sits on a `div`, whose user agent margins are zero, so the reading is the class's own
++	// rule. The specimen beside it resolves the release's literal, and doubling the density factor
++	// doubles the class's margin and leaves the literal alone, which separates the space token from a
++	// literal the rule could have written.
++	it.each(TYPE_HEADING_CASES)(
++		'takes the release block margins on the $twin class at the default density and scales the block-end margin with the density factor',
++		({ twin }) => {
++			const host = scene.mount(
++				`<div class="${twin}">Class twin</div><div style="margin-bottom: ${HEADING_MARGIN}"></div>`,
++			)
++			const element = requireValue(host.querySelector(`.${twin}`), 'No heading class')
++			const release = readPixels(
++				requireValue(host.querySelector('[style]'), 'No release specimen'),
++				'margin-bottom',
++			)
++			expect(release).toBe(8)
++			expect(readPixels(element, 'margin-top')).toBe(0)
++			expect(readPixels(element, 'margin-bottom')).toBe(release)
++			document.documentElement.style.setProperty('--vn-factor-density', '2')
++			try {
++				expect(readPixels(element, 'margin-top')).toBe(0)
++				expect(readPixels(element, 'margin-bottom')).toBe(release * 2)
++			} finally {
++				document.documentElement.style.removeProperty('--vn-factor-density')
++			}
++		},
++	)
++
+ 	it.each(TYPE_DISPLAY_CASES)(
+ 		'resolves $name from its own display token below and from the 1200px boundary',
+ 		async ({ name, size, line }) => {
+diff --git a/tests/src/styles/elements/address.test.ts b/tests/src/styles/elements/address.test.ts
+index bd977a0..465771b 100644
+--- a/tests/src/styles/elements/address.test.ts
++++ b/tests/src/styles/elements/address.test.ts
+@@ -1,8 +1,8 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+-import { TEXT_ADDRESS_CASES } from '../../../setupStyles.js'
++import { FLOW_MARGIN, TEXT_ADDRESS_CASES } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -25,4 +25,29 @@ describe('address text treatment', () => {
+ 			expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 		},
+ 	)
++
++	// The specimen beside the tag resolves the release's literal, so the tag's margin is read against
++	// the release rather than against the token the rule reads. Doubling the density factor doubles
++	// the tag's margin and leaves the literal alone, which separates the space token from a literal
++	// the rule could have written.
++	it('takes the release block margins at the default density and scales the block-end margin with the density factor', () => {
++		const host = scene.mount(
++			`<address>Example Company</address><div style="margin-bottom: ${FLOW_MARGIN}"></div>`,
++		)
++		const element = requireValue(host.querySelector('address'), 'No address specimen')
++		const release = readPixels(
++			requireValue(host.querySelector('div'), 'No release specimen'),
++			'margin-bottom',
++		)
++		expect(release).toBe(16)
++		expect(readPixels(element, 'margin-top')).toBe(0)
++		expect(readPixels(element, 'margin-bottom')).toBe(release)
++		document.documentElement.style.setProperty('--vn-factor-density', '2')
++		try {
++			expect(readPixels(element, 'margin-top')).toBe(0)
++			expect(readPixels(element, 'margin-bottom')).toBe(release * 2)
++		} finally {
++			document.documentElement.style.removeProperty('--vn-factor-density')
++		}
++	})
+ })
+diff --git a/tests/src/styles/elements/heading.test.ts b/tests/src/styles/elements/heading.test.ts
+index c365476..711d6b8 100644
+--- a/tests/src/styles/elements/heading.test.ts
++++ b/tests/src/styles/elements/heading.test.ts
+@@ -5,6 +5,7 @@ import { scene, visitBreakpoint } from '../../../setupBrowser.js'
+ import {
+ 	CAPPED_WIDTHS,
+ 	FLUID_WIDTHS,
++	HEADING_MARGIN,
+ 	TEXT_FLOOR_CASES,
+ 	TEXT_HEADING_CASES,
+ 	computeFluidSize,
+@@ -55,7 +56,7 @@ describe('heading scale', () => {
+ 			}
+ 			for (const element of headings) {
+ 				expect(readStyle(element, 'font-weight')).toBe('600')
+-				expect(readStyle(element, 'margin')).toBe('0px')
++				expect(readStyle(element, 'margin')).toBe('0px 0px 8px')
+ 				expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 			}
+ 		},
+@@ -99,4 +100,45 @@ describe('heading scale', () => {
+ 			'rgb(20, 80, 140)',
+ 		)
+ 	})
++
++	// The specimen beside the headings resolves the release's literal, so each level's margin is read
++	// against the release rather than against the token the rule reads. Doubling the density factor
++	// doubles every level's margin and leaves the literal alone, which separates the space token from
++	// a literal the rule could have written.
++	it('takes the release block margins on every level at the default density and scales the block-end margin with the density factor', () => {
++		const host = scene.mount(
++			`<h1>First</h1><h2>Second</h2><h3>Third</h3><h4>Fourth</h4><h5>Fifth</h5><h6>Sixth</h6><div style="margin-bottom: ${HEADING_MARGIN}"></div>`,
++		)
++		const headings = [...host.querySelectorAll('h1,h2,h3,h4,h5,h6')]
++		const release = readPixels(
++			requireValue(host.querySelector('div'), 'No release specimen'),
++			'margin-bottom',
++		)
++		expect(headings.map((element) => element.localName)).toEqual([
++			'h1',
++			'h2',
++			'h3',
++			'h4',
++			'h5',
++			'h6',
++		])
++		expect(release).toBe(8)
++		expect(headings.map((element) => readPixels(element, 'margin-top'))).toEqual(
++			headings.map(() => 0),
++		)
++		expect(headings.map((element) => readPixels(element, 'margin-bottom'))).toEqual(
++			headings.map(() => release),
++		)
++		document.documentElement.style.setProperty('--vn-factor-density', '2')
++		try {
++			expect(headings.map((element) => readPixels(element, 'margin-top'))).toEqual(
++				headings.map(() => 0),
++			)
++			expect(headings.map((element) => readPixels(element, 'margin-bottom'))).toEqual(
++				headings.map(() => release * 2),
++			)
++		} finally {
++			document.documentElement.style.removeProperty('--vn-factor-density')
++		}
++	})
+ })
+diff --git a/tests/src/styles/elements/ol.test.ts b/tests/src/styles/elements/ol.test.ts
+index 80f9bc8..a659ef1 100644
+--- a/tests/src/styles/elements/ol.test.ts
++++ b/tests/src/styles/elements/ol.test.ts
+@@ -1,8 +1,8 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+-import { TEXT_OL_CASES } from '../../../setupStyles.js'
++import { FLOW_MARGIN, TEXT_OL_CASES } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -22,4 +22,29 @@ describe('ol text treatment', () => {
+ 		).toEqual(values)
+ 		expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 	})
++
++	// The specimen beside the tag resolves the release's literal, so the tag's margin is read against
++	// the release rather than against the token the rule reads. Doubling the density factor doubles
++	// the tag's margin and leaves the literal alone, which separates the space token from a literal
++	// the rule could have written.
++	it('takes the release block margins at the default density and scales the block-end margin with the density factor', () => {
++		const host = scene.mount(
++			`<ol><li>Entry</li></ol><div style="margin-bottom: ${FLOW_MARGIN}"></div>`,
++		)
++		const element = requireValue(host.querySelector('ol'), 'No ol specimen')
++		const release = readPixels(
++			requireValue(host.querySelector('div'), 'No release specimen'),
++			'margin-bottom',
++		)
++		expect(release).toBe(16)
++		expect(readPixels(element, 'margin-top')).toBe(0)
++		expect(readPixels(element, 'margin-bottom')).toBe(release)
++		document.documentElement.style.setProperty('--vn-factor-density', '2')
++		try {
++			expect(readPixels(element, 'margin-top')).toBe(0)
++			expect(readPixels(element, 'margin-bottom')).toBe(release * 2)
++		} finally {
++			document.documentElement.style.removeProperty('--vn-factor-density')
++		}
++	})
+ })
+diff --git a/tests/src/styles/elements/p.test.ts b/tests/src/styles/elements/p.test.ts
+index bc35223..5381209 100644
+--- a/tests/src/styles/elements/p.test.ts
++++ b/tests/src/styles/elements/p.test.ts
+@@ -1,8 +1,8 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+-import { TEXT_P_CASES } from '../../../setupStyles.js'
++import { FLOW_MARGIN, TEXT_P_CASES } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -22,4 +22,27 @@ describe('p text treatment', () => {
+ 		).toEqual(values)
+ 		expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 	})
++
++	// The specimen beside the tag resolves the release's literal, so the tag's margin is read against
++	// the release rather than against the token the rule reads. Doubling the density factor doubles
++	// the tag's margin and leaves the literal alone, which separates the space token from a literal
++	// the rule could have written.
++	it('takes the release block margins at the default density and scales the block-end margin with the density factor', () => {
++		const host = scene.mount(`<p>Paragraph</p><div style="margin-bottom: ${FLOW_MARGIN}"></div>`)
++		const element = requireValue(host.querySelector('p'), 'No p specimen')
++		const release = readPixels(
++			requireValue(host.querySelector('div'), 'No release specimen'),
++			'margin-bottom',
++		)
++		expect(release).toBe(16)
++		expect(readPixels(element, 'margin-top')).toBe(0)
++		expect(readPixels(element, 'margin-bottom')).toBe(release)
++		document.documentElement.style.setProperty('--vn-factor-density', '2')
++		try {
++			expect(readPixels(element, 'margin-top')).toBe(0)
++			expect(readPixels(element, 'margin-bottom')).toBe(release * 2)
++		} finally {
++			document.documentElement.style.removeProperty('--vn-factor-density')
++		}
++	})
+ })
+diff --git a/tests/src/styles/elements/ul.test.ts b/tests/src/styles/elements/ul.test.ts
+index 434ec8c..2ffc526 100644
+--- a/tests/src/styles/elements/ul.test.ts
++++ b/tests/src/styles/elements/ul.test.ts
+@@ -1,8 +1,8 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+-import { TEXT_UL_CASES } from '../../../setupStyles.js'
++import { FLOW_MARGIN, TEXT_UL_CASES } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -22,4 +22,43 @@ describe('ul text treatment', () => {
+ 		).toEqual(values)
+ 		expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 	})
++
++	// The specimen beside the tag resolves the release's literal, so the tag's margin is read against
++	// the release rather than against the token the rule reads. Doubling the density factor doubles
++	// the tag's margin and leaves the literal alone, which separates the space token from a literal
++	// the rule could have written.
++	it('takes the release block margins at the default density and scales the block-end margin with the density factor', () => {
++		const host = scene.mount(
++			`<ul><li>Entry</li></ul><div style="margin-bottom: ${FLOW_MARGIN}"></div>`,
++		)
++		const element = requireValue(host.querySelector('ul'), 'No ul specimen')
++		const release = readPixels(
++			requireValue(host.querySelector('div'), 'No release specimen'),
++			'margin-bottom',
++		)
++		expect(release).toBe(16)
++		expect(readPixels(element, 'margin-top')).toBe(0)
++		expect(readPixels(element, 'margin-bottom')).toBe(release)
++		document.documentElement.style.setProperty('--vn-factor-density', '2')
++		try {
++			expect(readPixels(element, 'margin-top')).toBe(0)
++			expect(readPixels(element, 'margin-bottom')).toBe(release * 2)
++		} finally {
++			document.documentElement.style.removeProperty('--vn-factor-density')
++		}
++	})
++
++	// The release writes `margin-bottom: 0` on a list nested in a list, and Veneer excludes that
++	// contextual rule, so the inner list keeps the tag's own block-end margin. The `.mb-0` class is the
++	// explicit way to remove it.
++	it('keeps the block-end margin on a list nested in a list item, and the .mb-0 class removes it', () => {
++		const host = scene.mount(
++			'<ul><li>Outer<ul><li>Inner</li></ul></li><li>Outer<ul class="mb-0"><li>Inner</li></ul></li></ul>',
++		)
++		const [inner, flush] = host.querySelectorAll('li > ul')
++		expect(inner?.className).toBe('')
++		expect(flush?.className).toBe('mb-0')
++		expect(readPixels(requireValue(inner, 'No inner list'), 'margin-bottom')).toBe(16)
++		expect(readPixels(requireValue(flush, 'No inner list with the class'), 'margin-bottom')).toBe(0)
++	})
+ })

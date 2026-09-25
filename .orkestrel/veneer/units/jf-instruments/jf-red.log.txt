@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /home/user/veneer-jf
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+11:57:20 PM [vite] (client) [optimizer] bundling dependencies...
+ ❯ |setup:browser (chromium)| tests/setupBrowser.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts [ tests/setupBrowser.test.ts ]
+Error: Failed to import test file /home/user/veneer-jf/tests/setupBrowser.test.ts
+Caused by: SyntaxError: The requested module '/tests/setupBrowser.ts' does not provide an export named 'requireMatch'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  23:57:18
+   Duration  7.58s (transform 0ms, setup 281ms, import 0ms, tests 0ms, environment 0ms)
+

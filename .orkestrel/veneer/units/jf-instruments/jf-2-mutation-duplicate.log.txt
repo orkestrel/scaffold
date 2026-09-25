@@ -1,0 +1,126 @@
+5ad6fa3292155bd306a76ef466ddf86336ac8b1f8d9e418c00a9259714357c4a  tests/setupBrowser.ts
+--- mutation duplicate applied:
+470d469
+< 	if (matched.length > 1) throw new Error(`${String(matched.length)} ${messages.duplicate}`)
+
+ RUN  v4.1.11 /home/user/veneer-jf
+
+Port 63315 is in use, trying another one...
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:45:32 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |setup:browser (chromium)| tests/setupBrowser.test.ts (88 tests | 5 failed) 17290ms
+     × resolves a capture subject through a specimen label, a region name, or a rendered host 171ms
+     × refuses a name two buttons in one root announce, and answers for each root on its own 106ms
+     × reads one labelled specimen, and refuses an absent label and a duplicated one 117ms
+     × refuses a lookup that matched several candidates, and names their count 0ms
+     × refuses several candidates as a duplicate before it checks the first as an HTML element 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:550:2 > browser setup > resolves a capture subject through a specimen label, a region name, or a rendered host
+AssertionError: expected [Function] to throw an error
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/setupBrowser.test.ts:563:52
+    561|    // The showcase labels a Content specimen `Table` and a region `Tab…
+    562|    // reaches two declarations and neither is preferred over the other.
+    563|    expect(() => readSubject(mounted.host, 'Table')).toThrow('rendered …
+       |                                                    ^
+    564|   } finally {
+    565|    mounted.cleanup()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1331:2 > browser setup > refuses a name two buttons in one root announce, and answers for each root on its own
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/setupBrowser.test.ts:1339:55
+    1337|    // Document order would have answered with the section's own host a…
+    1338|    // the second, so every reading after it would have been about whic…
+    1339|    expect(() => readButton(mounted.section, 'Toggle')).toThrow(
+       |                                                       ^
+    1340|     new Error('2 buttons in the root announce the accessible name "Tog…
+    1341|    )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1351:2 > browser setup > reads one labelled specimen, and refuses an absent label and a duplicated one
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/setupBrowser.test.ts:1366:65
+    1364|    capped.after(twin)
+    1365|    try {
+    1366|     expect(() => readSpecimen(mounted.host, 'Capped container')).toThr…
+       |                                                                 ^
+    1367|      new Error('2 specimens in the root are named "Capped container"'),
+    1368|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1777:2 > requireMatch > refuses a lookup that matched several candidates, and names their count
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/setupBrowser.test.ts:1778:77
+    1776|
+    1777|  it('refuses a lookup that matched several candidates, and names their…
+    1778|   expect(() => requireMatch([build('div'), build('span')], SAMPLE_MESS…
+       |                                                                             ^
+    1779|    new Error('2 samples in the root are named "Placeholder"'),
+    1780|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1794:2 > requireMatch > refuses several candidates as a duplicate before it checks the first as an HTML element
+AssertionError: expected a thrown error to be Error: 2 samples in the root are named "P…
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  Error {[22m
+[32m-   "message": "2 samples in the root are named \"Placeholder\"",[39m
+[31m+   "message": "The \"Placeholder\" sample is not an HTML element",[39m
+[2m  }[22m
+
+ ❯ tests/setupBrowser.test.ts:1798:71
+    1796|   // the order runs several matches, then none, then non-HTML.
+    1797|   const graphic = document.createElementNS('http://www.w3.org/2000/svg…
+    1798|   expect(() => requireMatch([graphic, build('div')], SAMPLE_MESSAGES))…
+       |                                                                       ^
+    1799|    new Error('2 samples in the root are named "Placeholder"'),
+    1800|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 83 passed (88)
+   Start at  00:45:21
+   Duration  28.97s (transform 0ms, setup 318ms, import 991ms, tests 17.29s, environment 0ms)
+
+exit=1
+--- restore:
+5ad6fa3292155bd306a76ef466ddf86336ac8b1f8d9e418c00a9259714357c4a  tests/setupBrowser.ts
+restore byte-identical: cmp exit=0
