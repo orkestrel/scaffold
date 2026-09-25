@@ -1,0 +1,2304 @@
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 9d4830b..3cc4086 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -1,10 +1,11 @@
++import type { PluginRuntime } from './setupServer.js'
+ import { requireValue } from '@orkestrel/test'
+ import { readInventory, resolveContained } from '@orkestrel/test/server'
+ import { parseJSON } from '@orkestrel/contract'
+-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
++import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { dirname, resolve } from 'node:path'
+ import { COMPONENT_DARK_ASSETS, ELEMENT_TAGS } from './setupStyles.js'
+-import { describe, expect, it } from 'vitest'
++import { beforeAll, describe, expect, it } from 'vitest'
+ import {
+ 	BOOTSTRAP_BUNDLE_DIGEST,
+ 	BOOTSTRAP_CSS_DIGEST,
+@@ -15,7 +16,16 @@ import {
+ 	FORM_PARTIALS,
+ 	ELEMENT_RELATIVES,
+ 	ORACLE_TIMEOUT,
++	PLUGIN_CONTROLS,
++	PLUGIN_ORACLE_TIMEOUT,
++	PLUGIN_SCENARIOS,
+ 	WORKSPACE_ROOT,
++	compileVeneerRuntime,
++	readBootstrapRuntime,
++	recordPluginControl,
++	recordPluginOracle,
++	scanPluginFixture,
++	scanPluginSteps,
+ 	collectBreakpoints,
+ 	collectDeclarationPriorities,
+ 	collectElementTags,
+@@ -283,6 +293,50 @@ describe('Bootstrap component oracle', () => {
+ 	)
+ })
+ 
++describe('Bootstrap plugin oracle', () => {
++	it('keeps one fixture for each plugin scenario beside the Button recording and the inventory', () => {
++		expect(readdirSync(resolve(WORKSPACE_ROOT, 'tests/fixtures/oracle')).sort()).toEqual(
++			[
++				'button.json',
++				'inventory.json',
++				...PLUGIN_SCENARIOS.map((scenario) => `${scenario.plugin}.json`),
++			].sort(),
++		)
++	})
++
++	it.for(PLUGIN_SCENARIOS)(
++		'records Bootstrap $plugin end states, each unrefused action changing them, and matches its fixture',
++		{ timeout: PLUGIN_ORACLE_TIMEOUT },
++		async (scenario) => {
++			const path = resolve(WORKSPACE_ROOT, `tests/fixtures/oracle/${scenario.plugin}.json`)
++			if (process.env.ORACLE_REFRESH !== '1' && !existsSync(path))
++				throw new Error(
++					`Missing oracle fixture: tests/fixtures/oracle/${scenario.plugin}.json; record with ORACLE_REFRESH=1`,
++				)
++			const recording = await recordPluginOracle(scenario, readBootstrapRuntime())
++			expect(scanPluginSteps(scenario, recording)).toBeUndefined()
++			if (process.env.ORACLE_REFRESH === '1')
++				writeFileSync(path, `${JSON.stringify(recording, undefined, '\t')}\n`)
++			expect(scanPluginFixture(recording, parseJSON(readFileSync(path, 'utf8')))).toBeUndefined()
++		},
++	)
++})
++
++describe('Veneer plugin controls', () => {
++	let runtime: PluginRuntime
++	beforeAll(async () => {
++		runtime = await compileVeneerRuntime()
++	}, PLUGIN_ORACLE_TIMEOUT)
++
++	it.for(PLUGIN_CONTROLS)(
++		'reports $name against the Bootstrap recording',
++		{ timeout: PLUGIN_ORACLE_TIMEOUT },
++		async (control) => {
++			expect(await recordPluginControl(control, runtime)).toStrictEqual(control.departures)
++		},
++	)
++})
++
+ describe('cascade ledger', () => {
+ 	const cascade = compileExpandedCascade()
+ 	const inventory = readOracleInventory()
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 82d4733..b4a880c 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -3,11 +3,16 @@
+ 
+ import type {
+ 	CompatibilityRow,
++	EngineDeparture,
+ 	LonghandRule,
+ 	OracleBinding,
+ 	OracleFixture,
+ 	OracleInventory,
+ 	OracleVocabulary,
++	PluginFixture,
++	PluginNode,
++	PluginScenario,
++	PluginState,
+ } from './setupServer.js'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+ import { TOKEN_NAMES } from '@src/core'
+@@ -16,7 +21,7 @@ import { existsSync, readFileSync } from 'node:fs'
+ import { resolve } from 'node:path'
+ import { createScratch } from '@orkestrel/test/server'
+ import { beforeAll, describe, expect, it } from 'vitest'
+-import { parseSync, Visitor } from 'vite'
++import { build, parseSync, Visitor } from 'vite'
+ import * as setup from './setupServer.js'
+ import {
+ 	ABSENT_CELL,
+@@ -35,7 +40,12 @@ import {
+ 	LEDGER_INVENTORY,
+ 	LEDGER_SHIPPED,
+ 	ORACLE_BINDINGS,
++	ORACLE_OMITTED_ATTRIBUTES,
++	ORACLE_REFERENCE_ATTRIBUTES,
+ 	ORACLE_TIMEOUT,
++	PLUGIN_CONTROLS,
++	PLUGIN_ORACLE_TIMEOUT,
++	PLUGIN_SCENARIOS,
+ 	LAYER_COMPONENTS,
+ 	SHARED_LONGHANDS,
+ 	SheetReader,
+@@ -62,8 +72,23 @@ import {
+ 	collectShippedComponents,
+ 	collectValueGaps,
+ 	collectValueNames,
++	collectEngineDepartures,
+ 	compileExpandedCascade,
++	compileVeneerRuntime,
+ 	computeArtifactDigest,
++	driveOracleBrowser,
++	drivePluginAction,
++	filterAddedDepartures,
++	inferPluginState,
++	isPluginState,
++	readBootstrapRuntime,
++	readBuildOutput,
++	readPluginFixture,
++	readPluginState,
++	recordPluginOracle,
++	scanPluginFixture,
++	scanPluginSteps,
++	settlePluginState,
+ 	describeAddition,
+ 	describeDeparture,
+ 	describeSite,
+@@ -505,7 +530,14 @@ describe('server setup', () => {
+ 			'LEDGER_INVENTORY',
+ 			'LEDGER_SHIPPED',
+ 			'ORACLE_BINDINGS',
++			'ORACLE_OMITTED_ATTRIBUTES',
++			'ORACLE_REFERENCE_ATTRIBUTES',
+ 			'ORACLE_TIMEOUT',
++			'PLUGIN_CONTROLS',
++			'PLUGIN_ORACLE_TIMEOUT',
++			'PLUGIN_SCENARIOS',
++			'PLUGIN_SETTLE_BUDGET',
++			'PLUGIN_SETTLE_INTERVAL',
+ 			'SHARED_LONGHANDS',
+ 			'SheetReader',
+ 			'SpecifierReader',
+@@ -517,6 +549,7 @@ describe('server setup', () => {
+ 			'collectDeclarationPriorities',
+ 			'collectDeclarationReads',
+ 			'collectElementTags',
++			'collectEngineDepartures',
+ 			'collectImportClosure',
+ 			'collectImportantNames',
+ 			'collectInlineSources',
+@@ -531,19 +564,25 @@ describe('server setup', () => {
+ 			'collectValueGaps',
+ 			'collectValueNames',
+ 			'compileExpandedCascade',
++			'compileVeneerRuntime',
+ 			'computeArtifactDigest',
+ 			'describeAddition',
+ 			'describeDeparture',
+ 			'describeSite',
+ 			'describeValueCell',
++			'driveOracleBrowser',
++			'drivePluginAction',
+ 			'expandConditions',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
++			'filterAddedDepartures',
+ 			'filterComparableBlocks',
+ 			'findDuplication',
+ 			'indexRecordingKeys',
++			'inferPluginState',
+ 			'isAdditionCategory',
+ 			'isDeparture',
++			'isPluginState',
+ 			'isProofFile',
+ 			'matchSelectorKey',
+ 			'matchShippedKey',
+@@ -556,6 +595,8 @@ describe('server setup', () => {
+ 			'normalizeMediaFeature',
+ 			'readAdditions',
+ 			'readBootstrapCascade',
++			'readBootstrapRuntime',
++			'readBuildOutput',
+ 			'readBuiltCascade',
+ 			'readCascadeBlocks',
+ 			'readCompatibility',
+@@ -567,9 +608,13 @@ describe('server setup', () => {
+ 			'readManifestMember',
+ 			'readOracleControl',
+ 			'readOracleInventory',
++			'readPluginFixture',
++			'readPluginState',
+ 			'readValueCell',
+ 			'readVeneerGuide',
+ 			'recordButtonOracle',
++			'recordPluginControl',
++			'recordPluginOracle',
+ 			'renderBreakpointTemplate',
+ 			'renderRuleKey',
+ 			'scanCompatibilityPresence',
+@@ -580,8 +625,11 @@ describe('server setup', () => {
+ 			'scanLedgerDrift',
+ 			'scanOracleFixture',
+ 			'scanOracleObligation',
++			'scanPluginFixture',
++			'scanPluginSteps',
+ 			'scanShippedDeferrals',
+ 			'scanStyleBlocks',
++			'settlePluginState',
+ 			'splitTopLevelCompounds',
+ 		])
+ 		expect(Object.isFrozen(SHARED_LONGHANDS)).toBe(true)
+@@ -1067,6 +1115,474 @@ describe('server setup', () => {
+ 		})
+ 	})
+ 
++	describe('plugin oracle', () => {
++		const sample: PluginScenario = {
++			plugin: 'sample',
++			markup: '<button id="trigger" type="button">Toggle</button><div id="panel">Panel</div>',
++			spawned: [],
++			setup: { bootstrap: '', veneer: '' },
++			actions: [
++				{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
++				{ name: 'press.trigger', gesture: 'press', target: 'trigger', key: 'Enter', refused: true },
++			],
++		}
++		const closed: PluginState = {
++			elements: { panel: { classes: ['collapse'], attributes: {}, visible: false } },
++			focus: 'body',
++			locked: false,
++		}
++		const open: PluginState = {
++			elements: { panel: { classes: ['collapse', 'show'], attributes: {}, visible: true } },
++			focus: 'trigger',
++			locked: false,
++		}
++		const recorded: PluginFixture = {
++			version: BOOTSTRAP_VERSION,
++			plugin: 'sample',
++			browser: '153.0.0.0',
++			steps: ['', 'reduced.'].flatMap((prefix) => [
++				{ name: `sample.${prefix}initial`, state: closed },
++				{ name: `sample.${prefix}click.trigger`, state: open },
++				{ name: `sample.${prefix}press.trigger`, state: open },
++			]),
++		}
++
++		it('declares one scenario for each plugin the engine drives, each action named once and each call scripted for both engines', () => {
++			expect(PLUGIN_SCENARIOS.map((scenario) => scenario.plugin)).toEqual([
++				'collapse',
++				'alert',
++				'tab',
++				'scrollspy',
++				'dropdown',
++				'carousel',
++				'modal',
++				'offcanvas',
++				'toast',
++				'tooltip',
++				'popover',
++			])
++			for (const scenario of PLUGIN_SCENARIOS) {
++				const names = scenario.actions.map((action) => action.name)
++				expect({ plugin: scenario.plugin, names: [...new Set(names)] }).toEqual({
++					plugin: scenario.plugin,
++					names,
++				})
++				for (const action of scenario.actions.filter((candidate) => candidate.gesture === 'call')) {
++					expect({
++						action: action.name,
++						bootstrap: action.call?.bootstrap.startsWith('bootstrap.'),
++						veneer: action.call?.veneer.startsWith('veneer.'),
++					}).toEqual({ action: action.name, bootstrap: true, veneer: true })
++				}
++			}
++			expect(Object.isFrozen(PLUGIN_SCENARIOS)).toBe(true)
++			expect(Object.isFrozen(PLUGIN_CONTROLS)).toBe(true)
++			expect(ORACLE_OMITTED_ATTRIBUTES).toEqual(['id', 'class', 'style'])
++			expect(Object.isFrozen(ORACLE_REFERENCE_ATTRIBUTES)).toBe(true)
++			for (const control of PLUGIN_CONTROLS) {
++				expect({
++					control: control.name,
++					driven: PLUGIN_SCENARIOS.find(
++						(scenario) => scenario.plugin === control.plugin,
++					)?.actions.some((action) => `${control.plugin}.${action.name}` === control.step),
++					steps: [...new Set(control.departures.map((departure) => departure.step))],
++				}).toEqual({ control: control.name, driven: true, steps: [control.step] })
++			}
++		})
++
++		it('labels authored, root, and inserted elements, and writes every id reference as the label it names', () => {
++			const node: PluginNode = {
++				tag: 'div',
++				id: undefined,
++				key: 'div',
++				classes: ['zeta', 'alpha'],
++				attributes: {},
++				visible: true,
++				focused: false,
++			}
++			const inferred = inferPluginState(
++				{
++					nodes: [
++						{ ...node, tag: 'html', key: 'html', attributes: { lang: 'en' } },
++						{
++							...node,
++							tag: 'body',
++							key: 'body',
++							attributes: { class: 'modal-open', style: 'overflow: hidden' },
++						},
++						{
++							...node,
++							tag: 'button',
++							id: 'trigger',
++							key: 'button',
++							attributes: {
++								id: 'trigger',
++								'aria-describedby': 'tip-81 panel  gone',
++								'data-bs-target': '#panel',
++								type: 'button',
++							},
++							focused: true,
++						},
++						{ ...node, id: 'panel', attributes: { id: 'panel', 'aria-labelledby': 'trigger' } },
++						{
++							...node,
++							id: 'tip-81',
++							key: '.tooltip',
++							attributes: { id: 'tip-81', role: 'tooltip' },
++						},
++						{ ...node, key: '.tooltip' },
++						{ ...node, tag: 'span', key: 'span', visible: false },
++					],
++					locked: true,
++				},
++				['trigger', 'panel'],
++			)
++			expect(Object.keys(inferred.elements)).toEqual([
++				'html',
++				'body',
++				'trigger',
++				'panel',
++				'+.tooltip[0]',
++				'+.tooltip[1]',
++				'+span[0]',
++			])
++			expect(inferred.elements.trigger).toEqual({
++				classes: ['alpha', 'zeta'],
++				attributes: {
++					'aria-describedby': '+.tooltip[0] panel ?',
++					'data-bs-target': '#panel',
++					type: 'button',
++				},
++				visible: true,
++			})
++			expect(Object.keys(inferred.elements.trigger?.attributes ?? {})).toEqual([
++				'aria-describedby',
++				'data-bs-target',
++				'type',
++			])
++			expect(inferred.elements.body?.attributes).toEqual({})
++			expect(inferred.elements.panel?.attributes).toEqual({ 'aria-labelledby': 'trigger' })
++			expect(inferred.elements['+.tooltip[0]']?.attributes).toEqual({ role: 'tooltip' })
++			expect(inferred.elements['+span[0]']?.visible).toBe(false)
++			expect(inferred.focus).toBe('trigger')
++			expect(inferred.locked).toBe(true)
++			expect(
++				inferPluginState({ nodes: [{ ...node, tag: 'body', key: 'body' }], locked: false }, [])
++					.focus,
++			).toBe('body')
++			expect(() =>
++				inferPluginState(
++					{
++						nodes: [
++							{ ...node, id: 'panel' },
++							{ ...node, tag: 'p', id: 'panel', key: 'p' },
++						],
++						locked: false,
++					},
++					['panel'],
++				),
++			).toThrow('Plugin reading labels two elements panel')
++		})
++
++		it('reports each differing element, class, attribute, visibility, focus, and lock, and nothing for identical recordings', () => {
++			const official: PluginFixture = {
++				...recorded,
++				steps: [
++					{
++						name: 'sample.initial',
++						state: {
++							elements: {
++								panel: {
++									classes: ['collapse', 'show'],
++									attributes: { 'aria-hidden': 'false', role: 'region' },
++									visible: true,
++								},
++								'+div[0]': { classes: ['backdrop'], attributes: {}, visible: true },
++							},
++							focus: 'panel',
++							locked: true,
++						},
++					},
++				],
++			}
++			expect(collectEngineDepartures(official, official)).toEqual([])
++			const own: PluginFixture = {
++				...recorded,
++				steps: [
++					{
++						name: 'sample.initial',
++						state: {
++							elements: {
++								panel: {
++									classes: ['collapse', 'open'],
++									attributes: { role: 'group', 'data-state': 'open' },
++									visible: false,
++								},
++								'+div[1]': { classes: ['backdrop'], attributes: {}, visible: true },
++							},
++							focus: 'body',
++							locked: false,
++						},
++					},
++				],
++			}
++			const row = { plugin: 'sample', step: 'sample.initial' }
++			expect(collectEngineDepartures(official, own)).toStrictEqual([
++				{ ...row, subject: 'panel', facet: 'class', name: 'open', bootstrap: false, veneer: true },
++				{ ...row, subject: 'panel', facet: 'class', name: 'show', bootstrap: true, veneer: false },
++				{
++					...row,
++					subject: 'panel',
++					facet: 'attribute',
++					name: 'aria-hidden',
++					bootstrap: 'false',
++					veneer: undefined,
++				},
++				{
++					...row,
++					subject: 'panel',
++					facet: 'attribute',
++					name: 'data-state',
++					bootstrap: undefined,
++					veneer: 'open',
++				},
++				{
++					...row,
++					subject: 'panel',
++					facet: 'attribute',
++					name: 'role',
++					bootstrap: 'region',
++					veneer: 'group',
++				},
++				{
++					...row,
++					subject: 'panel',
++					facet: 'visible',
++					name: undefined,
++					bootstrap: true,
++					veneer: false,
++				},
++				{
++					...row,
++					subject: '+div[0]',
++					facet: 'element',
++					name: undefined,
++					bootstrap: true,
++					veneer: false,
++				},
++				{
++					...row,
++					subject: '+div[1]',
++					facet: 'element',
++					name: undefined,
++					bootstrap: false,
++					veneer: true,
++				},
++				{
++					...row,
++					subject: 'document',
++					facet: 'focus',
++					name: undefined,
++					bootstrap: 'panel',
++					veneer: 'body',
++				},
++				{
++					...row,
++					subject: 'document',
++					facet: 'lock',
++					name: undefined,
++					bootstrap: true,
++					veneer: false,
++				},
++			])
++			expect(() =>
++				collectEngineDepartures(official, {
++					...official,
++					steps: [{ name: 'sample.other', state: closed }],
++				}),
++			).toThrow('Plugin recordings of sample differ in step membership')
++		})
++
++		it('filters the departures a baseline does not carry, in order', () => {
++			const departure: EngineDeparture = {
++				plugin: 'sample',
++				step: 'sample.initial',
++				subject: 'panel',
++				facet: 'class',
++				name: 'show',
++				bootstrap: true,
++				veneer: false,
++			}
++			const added = { ...departure, name: 'open', bootstrap: false, veneer: true }
++			expect(filterAddedDepartures([departure, added], [departure])).toEqual([added])
++			expect(filterAddedDepartures([departure], [{ ...departure }])).toEqual([])
++			expect(filterAddedDepartures([], [departure])).toEqual([])
++		})
++
++		it('requires every scenario step and a state change at every step Bootstrap does not refuse', () => {
++			expect(scanPluginSteps(sample, recorded)).toBeUndefined()
++			const unchanged: PluginFixture = {
++				...recorded,
++				steps: recorded.steps.map((step) =>
++					step.name === 'sample.reduced.click.trigger' ? { ...step, state: closed } : step,
++				),
++			}
++			expect(scanPluginSteps(sample, unchanged)).toBe(
++				'Plugin step sample.reduced.click.trigger leaves the recorded state unchanged',
++			)
++			expect(
++				scanPluginSteps(
++					{ ...sample, actions: sample.actions.map((action) => ({ ...action, refused: false })) },
++					recorded,
++				),
++			).toBe('Plugin step sample.press.trigger leaves the recorded state unchanged')
++			expect(scanPluginSteps(sample, { ...recorded, steps: recorded.steps.slice(0, 3) })).toBe(
++				'Plugin recording sample step membership differs from its scenario',
++			)
++		})
++
++		it('compares a saved fixture step by step, ignoring the browser build it names', () => {
++			const saved: unknown = parseJSON(JSON.stringify(recorded))
++			expect(scanPluginFixture(recorded, saved)).toBeUndefined()
++			expect(scanPluginFixture(recorded, { ...recorded, browser: '141.0.0.0' })).toBeUndefined()
++			expect(
++				scanPluginFixture(recorded, {
++					...recorded,
++					steps: recorded.steps.map((step) =>
++						step.name === 'sample.click.trigger'
++							? { ...step, state: { ...step.state, focus: 'body' } }
++							: step,
++					),
++				}),
++			).toBe('Plugin oracle differs at step sample.click.trigger')
++			expect(
++				scanPluginFixture(recorded, {
++					...recorded,
++					steps: [...recorded.steps, { name: 'sample.extra', state: closed }],
++				}),
++			).toBe('Plugin oracle fixture metadata or step membership differs')
++			expect(scanPluginFixture(recorded, { ...recorded, plugin: 'other' })).toBe(
++				'Plugin oracle fixture metadata or step membership differs',
++			)
++			expect(scanPluginFixture(recorded, [])).toBe('Invalid plugin oracle fixture')
++			expect(scanPluginFixture(recorded, { steps: [] })).toBe('Invalid plugin oracle fixture')
++		})
++
++		it('reads a saved plugin fixture and refuses a malformed step or another plugin', () => {
++			const collapse = readPluginFixture('collapse')
++			const scenario = PLUGIN_SCENARIOS.find((candidate) => candidate.plugin === 'collapse')
++			if (scenario === undefined) throw new Error('Missing collapse scenario')
++			expect(collapse.version).toBe(BOOTSTRAP_VERSION)
++			expect(scanPluginSteps(scenario, collapse)).toBeUndefined()
++			expect(isPluginState(collapse.steps[0]?.state)).toBe(true)
++			expect(
++				isPluginState({
++					elements: { panel: { classes: [], attributes: { role: 1 }, visible: true } },
++					focus: 'body',
++					locked: false,
++				}),
++			).toBe(false)
++			expect(isPluginState({ elements: {}, focus: 'body' })).toBe(false)
++			const scratch = createScratch()
++			try {
++				const path = scratch.write('sample.json', JSON.stringify(recorded))
++				expect(readPluginFixture('sample', path)).toEqual(recorded)
++				expect(() => readPluginFixture('other', path)).toThrow(
++					'Invalid plugin oracle fixture other',
++				)
++				scratch.write(
++					'sample.json',
++					JSON.stringify({
++						...recorded,
++						steps: [{ name: 'sample.initial', state: { focus: 'body' } }],
++					}),
++				)
++				expect(() => readPluginFixture('sample', path)).toThrow(
++					'Invalid plugin oracle fixture step sample',
++				)
++			} finally {
++				scratch.destroy()
++			}
++		})
++
++		it(
++			'compiles Veneer from source into a classic script and its cascade, and reads the pinned Bootstrap bundle',
++			async () => {
++				const veneer = await compileVeneerRuntime()
++				expect(veneer.engine).toBe('veneer')
++				expect(veneer.script.startsWith('var veneer = (function(exports) {')).toBe(true)
++				expect(veneer.script).toContain('var Delegate = class')
++				expect(veneer.stylesheet).toContain('.collapse:not(.show)')
++				const bootstrap = readBootstrapRuntime()
++				expect(bootstrap.engine).toBe('bootstrap')
++				expect(bootstrap.script).toContain('Bootstrap v5.3.8')
++				expect(createHash('sha256').update(bootstrap.stylesheet).digest('hex')).toBe(
++					BOOTSTRAP_CSS_DIGEST,
++				)
++				const scratch = createScratch()
++				try {
++					const entry = scratch.write('entry.js', 'export const answer = 42\n')
++					const result = await build({
++						configFile: false,
++						logLevel: 'silent',
++						build: {
++							write: false,
++							lib: { entry, formats: ['es'], fileName: () => 'entry.js' },
++						},
++					})
++					expect(readBuildOutput(result, '.js')).toContain('42')
++					expect(() => readBuildOutput(result, '.css')).toThrow('The compile produced no .css file')
++				} finally {
++					scratch.destroy()
++				}
++			},
++			PLUGIN_ORACLE_TIMEOUT,
++		)
++
++		it(
++			'reads a live page, refuses an unlabelled element, an action with no input, and a page error',
++			async () => {
++				await driveOracleBrowser(async (browser) => {
++					const page = await browser.newPage()
++					await page.setContent(
++						'<body style="overflow: hidden"><button id="trigger" type="button" aria-controls="panel">Toggle</button><div id="panel" hidden>Panel</div></body>',
++					)
++					await page.focus('#trigger')
++					const read = await readPluginState(page, sample, ['trigger', 'panel'])
++					expect(read.focus).toBe('trigger')
++					expect(read.locked).toBe(true)
++					expect(read.elements.panel).toEqual({
++						classes: [],
++						attributes: { hidden: '' },
++						visible: false,
++					})
++					expect(read.elements.trigger?.attributes['aria-controls']).toBe('panel')
++					expect(await settlePluginState(page, sample, ['trigger', 'panel'])).toEqual(read)
++					await expect(
++						drivePluginAction(page, { name: 'click.nothing', gesture: 'click' }, 'bootstrap'),
++					).rejects.toThrow('Plugin action click.nothing names no input for its click gesture')
++				})
++				await expect(
++					recordPluginOracle(
++						{ ...sample, markup: '<div id="panel"><p>Unlabelled</p></div>' },
++						readBootstrapRuntime(),
++					),
++				).rejects.toThrow('Plugin markup carries a p element without an id')
++				await expect(
++					recordPluginOracle(
++						{
++							...sample,
++							actions: [],
++							setup: { bootstrap: 'throw new Error("planted")', veneer: '' },
++						},
++						readBootstrapRuntime(),
++					),
++				).rejects.toThrow('The bootstrap sample page reported planted')
++			},
++			PLUGIN_ORACLE_TIMEOUT,
++		)
++	})
++
+ 	it('reads compatibility rows from a written guide and rejects missing columns and invalid statuses', () => {
+ 		const scratch = createScratch()
+ 		try {
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index dba3077..bca1718 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1,7 +1,8 @@
+ // Server setup: the Node-only helpers the conformance and distribution proofs measure this
+ // workspace with — the Bootstrap identity digests, the readers over the guide and the built
+-// cascade, the stylesheet reader the Tailwind readings take in Node, the oracle recorder, the
+-// specifier reader, and the source, build, and dependency sweeps. Node-only, so it takes `node:*`
++// cascade, the stylesheet reader the Tailwind readings take in Node, the Button and plugin oracle
++// recorders with the plugin scenarios they drive, the specifier reader, and the source, build, and
++// dependency sweeps. Node-only, so it takes `node:*`
+ // imports and anchors every path it reads at `WORKSPACE_ROOT`. The `conformance` project loads it
+ // from `tests/conformance.test.ts`, the `distribution` project from `tests/distribution.test.ts`,
+ // and the `setup` project from `tests/setupServer.test.ts` and `tests/setupStyles.test.ts`, each of
+@@ -10,12 +11,14 @@
+ // rules its stage expands as `LonghandRule` values. A helper added here runs under every one of
+ // them.
+ 
+-import type { ESTree } from 'vite'
+-import type { Locator } from 'playwright'
++import type { ESTree, Plugin } from 'vite'
++import type { Browser, Locator, Page } from 'playwright'
+ import type { ChildNode, Root } from 'postcss'
++import type { ScratchInterface } from '@orkestrel/test/server'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+ import { createGuide, extractCellText, selectSectionBlocks } from '@orkestrel/guide'
+ import { createMarkdown } from '@orkestrel/markdown'
++import { waitForCondition } from '@orkestrel/test'
+ import { createScratch, resolveContained } from '@orkestrel/test/server'
+ import { createHash } from 'node:crypto'
+ import { createRequire } from 'node:module'
+@@ -27,6 +30,8 @@ import { chromium } from 'playwright'
+ import { AtRule, Container, list, parse, Rule } from 'postcss'
+ import { TOKEN_NAMES } from '@src/core'
+ import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
++import stylesConfig from '../configs/src/vite.styles.config.js'
++import { srcBrowser } from '../vite.config.js'
+ import {
+ 	collectTokenNames,
+ 	describeIncompleteRow,
+@@ -41,7 +46,7 @@ import {
+ 	walkSelector,
+ } from './setupStyles.js'
+ import { compile } from 'sass'
+-import { parseSync, Visitor } from 'vite'
++import { build, parseSync, Visitor } from 'vite'
+ 
+ /** Describes one compatibility obligation read from the guide's ledger. */
+ export interface CompatibilityRow {
+@@ -329,6 +334,155 @@ export interface OracleInventory {
+ 	readonly media: readonly string[]
+ }
+ 
++/** Names the runtime a plugin recording drives: Bootstrap's pinned bundle or Veneer's source. */
++export type PluginEngine = 'bootstrap' | 'veneer'
++
++/**
++ * Carries one runtime a plugin recording loads: its classic script and its stylesheet.
++ *
++ * @remarks
++ * The `script` member is classic script text that defines the runtime's global, `bootstrap` for
++ * the pinned bundle and `veneer` for the compiled browser entry, and the `stylesheet` member is the
++ * cascade the page links. The page loads both the same way for either engine.
++ */
++export interface PluginRuntime {
++	readonly engine: PluginEngine
++	readonly script: string
++	readonly stylesheet: string
++}
++
++/** Names the trusted input one plugin action sends. */
++export type PluginGesture = 'click' | 'press' | 'hover' | 'focus' | 'wheel' | 'point' | 'call'
++
++/**
++ * Describes one action a plugin scenario performs, and whether Bootstrap refuses it.
++ *
++ * @remarks
++ * The `target` member names the authored id the gesture aims at. A `press` sends the `key` member to
++ * the target, or to the focused element when no target is named; a `wheel` hovers the target and
++ * scrolls by the `delta` member in pixels; a `point` clicks the viewport at the `point` member; and a
++ * `call` runs the `call` member's script for the engine being recorded, the one input that is each
++ * runtime's own API rather than a shared gesture. A `refused` action is one Bootstrap declines, so
++ * its step need not change Bootstrap's state.
++ */
++export interface PluginAction {
++	readonly name: string
++	readonly gesture: PluginGesture
++	readonly target?: string
++	readonly key?: string
++	readonly delta?: number
++	readonly point?: { readonly x: number; readonly y: number }
++	readonly call?: Readonly<Record<PluginEngine, string>>
++	readonly refused?: boolean
++}
++
++/**
++ * Describes one plugin's recorded scenario: its markup, how each engine is set up over it, and the
++ * actions both engines receive.
++ *
++ * @remarks
++ * Every element of the `markup` member carries an id, which labels it in every reading. The
++ * `spawned` member lists the selectors that label the elements an engine inserts, such as a tip or
++ * a backdrop; an inserted element no selector matches is labelled by its tag. The `setup` member
++ * holds each engine's own construction script, run after the page loads.
++ */
++export interface PluginScenario {
++	readonly plugin: string
++	readonly markup: string
++	readonly spawned: readonly string[]
++	readonly setup: Readonly<Record<PluginEngine, string>>
++	readonly actions: readonly PluginAction[]
++}
++
++/** Describes one element's settled classes, attributes, and visibility. */
++export interface PluginElement {
++	readonly classes: readonly string[]
++	readonly attributes: Readonly<Record<string, string>>
++	readonly visible: boolean
++}
++
++/**
++ * Describes a plugin page's settled state, keyed by element label.
++ *
++ * @remarks
++ * An authored element's label is its id, the root and body elements are labelled `html` and
++ * `body`, and an inserted element is labelled `+`, its key, and its position among the inserted
++ * elements with that key, such as `+.tooltip[0]`. The `focus` member holds the focused element's
++ * label, `body` when nothing else holds focus, and the `locked` member reads whether the
++ * viewport's used vertical overflow is `hidden` or `clip`.
++ */
++export interface PluginState {
++	readonly elements: Readonly<Record<string, PluginElement>>
++	readonly focus: string
++	readonly locked: boolean
++}
++
++/** Describes one element as the page reports it, before labelling. */
++export interface PluginNode {
++	readonly tag: string
++	readonly id: string | undefined
++	readonly key: string
++	readonly classes: readonly string[]
++	readonly attributes: Readonly<Record<string, string>>
++	readonly visible: boolean
++	readonly focused: boolean
++}
++
++/** Carries every element the page reports, in document order, and its scroll-lock reading. */
++export interface PluginReading {
++	readonly nodes: readonly PluginNode[]
++	readonly locked: boolean
++}
++
++/** Describes a named action and the settled state it leaves. */
++export interface PluginStep {
++	readonly name: string
++	readonly state: PluginState
++}
++
++/** Describes one engine's recording of a plugin scenario, both motion preferences included. */
++export interface PluginFixture {
++	readonly version: string
++	readonly plugin: string
++	readonly browser: string
++	readonly steps: readonly PluginStep[]
++}
++
++/** Names the reading an engine departure differs in. */
++export type EngineFacet = 'element' | 'class' | 'attribute' | 'visible' | 'focus' | 'lock'
++
++/**
++ * Describes one measured difference between Bootstrap's and Veneer's settled state at one step.
++ *
++ * @remarks
++ * The `subject` member is the element's label, or `document` for the `focus` and `lock` facets.
++ * The `name` member is the class token or the attribute name, and undefined for the other facets.
++ * Each side's value is the attribute's value or undefined where the element lacks it, whether the
++ * token or the element is present for the `class` and `element` facets, the visibility or the lock
++ * for the `visible` and `lock` facets, and the focused label for the `focus` facet.
++ */
++export interface EngineDeparture {
++	readonly plugin: string
++	readonly step: string
++	readonly subject: string
++	readonly facet: EngineFacet
++	readonly name: string | undefined
++	readonly bootstrap: string | boolean | undefined
++	readonly veneer: string | boolean | undefined
++}
++
++/**
++ * Describes one live control: a Veneer setup through a public seam and the departures it must add,
++ * at one step, to the ones Veneer's default setup reports against Bootstrap's recording.
++ */
++export interface PluginControl {
++	readonly name: string
++	readonly plugin: string
++	readonly setup: string
++	readonly step: string
++	readonly departures: readonly EngineDeparture[]
++}
++
+ /**
+  * Names the Bootstrap release this package tracks, pinned exactly in `package.json`.
+  *
+@@ -342,6 +496,675 @@ export const BOOTSTRAP_VERSION = '5.3.8'
+ /** Sets the recorder budget from its 2550 ms contended run: twice that duration plus 5000 ms. */
+ export const ORACLE_TIMEOUT = 10_100
+ 
++/**
++ * Sets the plugin recorder budget from its slowest contended case, the modal recording at 11259 ms:
++ * twice that duration plus 5000 ms.
++ */
++export const PLUGIN_ORACLE_TIMEOUT = 27_518
++
++/** Sets the longest wait, in milliseconds, for one plugin action to reach and settle its target. */
++export const PLUGIN_SETTLE_BUDGET = 5000
++
++/**
++ * Sets the gap, in milliseconds, between plugin page readings, and the margin a settled state holds
++ * past the page's longest declared transition.
++ *
++ * @remarks
++ * A state counts as settled when the readings agree, no finite animation runs and no scroll
++ * position moves, for longer than the longest `transition-duration` plus `transition-delay` any
++ * element of the page declares, plus this margin. Bootstrap completes a change on a timer 5 ms past
++ * the declared duration even when the change starts no animation, as a toast's show does, so a
++ * quiet page is not yet a settled one until that span has passed.
++ */
++export const PLUGIN_SETTLE_INTERVAL = 50
++
++/** Lists the attributes a plugin reading omits: the label, the classes read on their own, and inline style. */
++export const ORACLE_OMITTED_ATTRIBUTES: readonly string[] = Object.freeze(['id', 'class', 'style'])
++
++/**
++ * Lists the attributes whose value is a space-separated list of element ids, which a plugin reading
++ * writes as the labels of the elements they name.
++ *
++ * @remarks
++ * A generated id differs on every run and between engines, so a reading writes each id as its
++ * element's label, and as `?` where no element carries it.
++ */
++export const ORACLE_REFERENCE_ATTRIBUTES: readonly string[] = Object.freeze([
++	'aria-activedescendant',
++	'aria-controls',
++	'aria-describedby',
++	'aria-details',
++	'aria-errormessage',
++	'aria-flowto',
++	'aria-labelledby',
++	'aria-owns',
++	'anchor',
++	'commandfor',
++	'for',
++	'popovertarget',
++])
++
++/**
++ * Lists the plugin scenarios the oracle records, one per plugin, each driven over both engines.
++ *
++ * @remarks
++ * Each scenario's markup is Bootstrap 5.3.8's documented markup for the plugin, with an id on every
++ * element and inline sizes where a layout reading decides the outcome, so both cascades lay the
++ * decisive boxes out alike. Veneer's setup constructs a `Delegate` instance and each engine no
++ * data route reaches; Bootstrap's constructs only what its data API does not. No scenario starts a
++ * timer the recording would race: toasts are recorded without autohide and carousels without a
++ * ride.
++ */
++export const PLUGIN_SCENARIOS: readonly PluginScenario[] = Object.freeze([
++	{
++		plugin: 'collapse',
++		markup: [
++			'<button id="trigger" class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#panel" aria-expanded="false" aria-controls="panel">Toggle panel</button>',
++			'<a id="link" class="btn btn-primary" href="#panel" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="panel">Link to panel</a>',
++			'<div id="panel" class="collapse"><div id="panel-body" class="card card-body">Panel</div></div>',
++			'<div id="accordion" class="accordion">',
++			'<div id="item-one" class="accordion-item"><h2 id="header-one" class="accordion-header"><button id="button-one" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-one" aria-expanded="true" aria-controls="collapse-one">One</button></h2><div id="collapse-one" class="accordion-collapse collapse show" data-bs-parent="#accordion"><div id="body-one" class="accordion-body">First</div></div></div>',
++			'<div id="item-two" class="accordion-item"><h2 id="header-two" class="accordion-header"><button id="button-two" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-two" aria-expanded="false" aria-controls="collapse-two">Two</button></h2><div id="collapse-two" class="accordion-collapse collapse" data-bs-parent="#accordion"><div id="body-two" class="accordion-body">Second</div></div></div>',
++			'</div>',
++			'<button id="wide-trigger" class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#wide" aria-expanded="false" aria-controls="wide">Toggle width</button>',
++			'<div id="wide" class="collapse collapse-horizontal"><div id="wide-body" class="card card-body" style="width: 300px">Wide</div></div>',
++		].join(''),
++		spawned: [],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
++			{ name: 'click.link', gesture: 'click', target: 'link' },
++			{ name: 'press.trigger', gesture: 'press', target: 'trigger', key: 'Enter' },
++			{ name: 'click.two', gesture: 'click', target: 'button-two' },
++			{ name: 'click.one', gesture: 'click', target: 'button-one' },
++			{ name: 'click.wide', gesture: 'click', target: 'wide-trigger' },
++			{ name: 'click.wide.again', gesture: 'click', target: 'wide-trigger' },
++		],
++	},
++	{
++		plugin: 'alert',
++		markup: [
++			'<div id="fading" class="alert alert-warning alert-dismissible fade show" role="alert"><strong id="fading-text">Fading</strong><button id="fading-close" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>',
++			'<div id="plain" class="alert alert-info alert-dismissible" role="alert"><span id="plain-text">Plain</span><button id="plain-close" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>',
++			'<div id="guarded" class="alert alert-danger alert-dismissible fade show" role="alert"><span id="guarded-text">Guarded</span><button id="guarded-close" type="button" class="btn-close disabled" data-bs-dismiss="alert" aria-label="Close"></button></div>',
++			'<button id="remote" type="button" class="btn btn-secondary" data-bs-dismiss="alert" data-bs-target="#named">Close named</button>',
++			'<div id="named" class="alert alert-success fade show" role="alert"><span id="named-text">Named</span></div>',
++		].join(''),
++		spawned: [],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.fading', gesture: 'click', target: 'fading-close' },
++			{ name: 'press.plain', gesture: 'press', target: 'plain-close', key: 'Enter' },
++			{
++				name: 'press.guarded',
++				gesture: 'press',
++				target: 'guarded-close',
++				key: 'Enter',
++				refused: true,
++			},
++			{ name: 'click.remote', gesture: 'click', target: 'remote' },
++		],
++	},
++	{
++		plugin: 'tab',
++		markup: [
++			'<ul id="tabs" class="nav nav-tabs" role="tablist">',
++			'<li id="home-item" class="nav-item" role="presentation"><button id="home-tab" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Home</button></li>',
++			'<li id="profile-item" class="nav-item" role="presentation"><button id="profile-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false" tabindex="-1">Profile</button></li>',
++			'<li id="contact-item" class="nav-item" role="presentation"><button id="contact-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false" tabindex="-1">Contact</button></li>',
++			'<li id="locked-item" class="nav-item" role="presentation"><button id="locked-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#locked" type="button" role="tab" aria-controls="locked" aria-selected="false" tabindex="-1" disabled>Locked</button></li>',
++			'</ul>',
++			'<div id="panes" class="tab-content">',
++			'<div id="home" class="tab-pane fade show active" role="tabpanel" aria-labelledby="home-tab" tabindex="0">Home pane</div>',
++			'<div id="profile" class="tab-pane fade" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">Profile pane</div>',
++			'<div id="contact" class="tab-pane fade" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">Contact pane</div>',
++			'<div id="locked" class="tab-pane fade" role="tabpanel" aria-labelledby="locked-tab" tabindex="0">Locked pane</div>',
++			'</div>',
++		].join(''),
++		spawned: [],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.profile', gesture: 'click', target: 'profile-tab' },
++			{ name: 'press.right', gesture: 'press', target: 'profile-tab', key: 'ArrowRight' },
++			{ name: 'press.home', gesture: 'press', key: 'Home' },
++			{ name: 'press.end', gesture: 'press', key: 'End' },
++			{ name: 'press.left', gesture: 'press', key: 'ArrowLeft' },
++		],
++	},
++	{
++		plugin: 'scrollspy',
++		markup: [
++			'<nav id="navbar" class="navbar bg-body-tertiary px-3"><ul id="nav" class="nav nav-pills">',
++			'<li id="first-item" class="nav-item"><a id="first-link" class="nav-link" href="#first">First</a></li>',
++			'<li id="second-item" class="nav-item"><a id="second-link" class="nav-link" href="#second">Second</a></li>',
++			'<li id="third-item" class="nav-item"><a id="third-link" class="nav-link" href="#third">Third</a></li>',
++			'</ul></nav>',
++			'<div id="spy" data-bs-spy="scroll" data-bs-target="#navbar" data-bs-root-margin="0px 0px -40%" tabindex="0" style="position: relative; height: 200px; overflow-y: scroll">',
++			'<div id="first" style="height: 300px; margin: 0">First section</div>',
++			'<div id="second" style="height: 300px; margin: 0">Second section</div>',
++			'<div id="third" style="height: 300px; margin: 0">Third section</div>',
++			'</div>',
++		].join(''),
++		spawned: [],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'wheel.second', gesture: 'wheel', target: 'spy', delta: 300 },
++			{ name: 'wheel.third', gesture: 'wheel', target: 'spy', delta: 300 },
++			{ name: 'wheel.first', gesture: 'wheel', target: 'spy', delta: -600 },
++			{ name: 'click.third', gesture: 'click', target: 'third-link' },
++		],
++	},
++	{
++		plugin: 'dropdown',
++		markup: [
++			'<div id="dropdown" class="dropdown">',
++			'<button id="toggle" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>',
++			'<ul id="menu" class="dropdown-menu">',
++			'<li id="one-item"><a id="one" class="dropdown-item" href="#one-target">One</a></li>',
++			'<li id="two-item"><a id="two" class="dropdown-item disabled" aria-disabled="true">Two</a></li>',
++			'<li id="three-item"><a id="three" class="dropdown-item" href="#three-target">Three</a></li>',
++			'</ul>',
++			'</div>',
++			'<button id="outside" class="btn btn-light" type="button" style="margin-top: 240px">Outside</button>',
++		].join(''),
++		spawned: [],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.toggle', gesture: 'click', target: 'toggle' },
++			{ name: 'press.down', gesture: 'press', key: 'ArrowDown' },
++			{ name: 'press.down.again', gesture: 'press', key: 'ArrowDown' },
++			{ name: 'press.escape', gesture: 'press', key: 'Escape' },
++			{ name: 'press.toggle', gesture: 'press', target: 'toggle', key: 'ArrowDown' },
++			{ name: 'click.outside', gesture: 'click', target: 'outside' },
++			{ name: 'click.toggle.again', gesture: 'click', target: 'toggle' },
++			{ name: 'click.one', gesture: 'click', target: 'one' },
++		],
++	},
++	{
++		plugin: 'carousel',
++		markup: [
++			'<div id="carousel" class="carousel slide">',
++			'<div id="indicators" class="carousel-indicators">',
++			'<button id="indicator-0" type="button" data-bs-target="#carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>',
++			'<button id="indicator-1" type="button" data-bs-target="#carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>',
++			'<button id="indicator-2" type="button" data-bs-target="#carousel" data-bs-slide-to="2" aria-label="Slide 3"></button>',
++			'</div>',
++			'<div id="inner" class="carousel-inner">',
++			'<div id="item-0" class="carousel-item active"><div id="slide-0" class="d-block w-100 bg-secondary" style="height: 120px">First</div></div>',
++			'<div id="item-1" class="carousel-item"><div id="slide-1" class="d-block w-100 bg-secondary" style="height: 120px">Second</div></div>',
++			'<div id="item-2" class="carousel-item"><div id="slide-2" class="d-block w-100 bg-secondary" style="height: 120px">Third</div></div>',
++			'</div>',
++			'<button id="previous" class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev"><span id="previous-icon" class="carousel-control-prev-icon" aria-hidden="true"></span><span id="previous-label" class="visually-hidden">Previous</span></button>',
++			'<button id="next" class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next"><span id="next-icon" class="carousel-control-next-icon" aria-hidden="true"></span><span id="next-label" class="visually-hidden">Next</span></button>',
++			'</div>',
++		].join(''),
++		spawned: [],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.next', gesture: 'click', target: 'next' },
++			{ name: 'click.next.again', gesture: 'click', target: 'next' },
++			{ name: 'click.next.wrap', gesture: 'click', target: 'next' },
++			{ name: 'click.previous', gesture: 'click', target: 'previous' },
++			{ name: 'click.indicator', gesture: 'click', target: 'indicator-1' },
++			{ name: 'press.left', gesture: 'press', key: 'ArrowLeft' },
++		],
++	},
++	{
++		plugin: 'modal',
++		markup: [
++			'<button id="trigger" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal">Open modal</button>',
++			'<button id="static-trigger" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#static">Open static</button>',
++			'<div id="modal" class="modal fade" tabindex="-1" aria-labelledby="modal-title" aria-hidden="true"><div id="modal-dialog" class="modal-dialog"><div id="modal-content" class="modal-content">',
++			'<div id="modal-header" class="modal-header"><h1 id="modal-title" class="modal-title fs-5">Modal</h1><button id="modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>',
++			'<div id="modal-body" class="modal-body"><p id="modal-text">Body</p></div>',
++			'<div id="modal-footer" class="modal-footer"><button id="modal-cancel" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button></div>',
++			'</div></div></div>',
++			'<div id="static" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="static-title" aria-hidden="true"><div id="static-dialog" class="modal-dialog"><div id="static-content" class="modal-content">',
++			'<div id="static-header" class="modal-header"><h1 id="static-title" class="modal-title fs-5">Static</h1><button id="static-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>',
++			'<div id="static-body" class="modal-body"><p id="static-text">Body</p></div>',
++			'</div></div></div>',
++		].join(''),
++		spawned: ['.modal-backdrop'],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
++			{ name: 'click.close', gesture: 'click', target: 'modal-close' },
++			{ name: 'click.trigger.again', gesture: 'click', target: 'trigger' },
++			{ name: 'press.escape', gesture: 'press', key: 'Escape' },
++			{ name: 'click.trigger.third', gesture: 'click', target: 'trigger' },
++			{ name: 'point.backdrop', gesture: 'point', point: { x: 10, y: 10 } },
++			{ name: 'click.static', gesture: 'click', target: 'static-trigger' },
++			{ name: 'press.static.escape', gesture: 'press', key: 'Escape', refused: true },
++			{ name: 'point.static.backdrop', gesture: 'point', point: { x: 10, y: 10 }, refused: true },
++			{ name: 'click.static.close', gesture: 'click', target: 'static-close' },
++		],
++	},
++	{
++		plugin: 'offcanvas',
++		markup: [
++			'<button id="trigger" class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" aria-controls="offcanvas">Open panel</button>',
++			'<button id="scroll-trigger" class="btn btn-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#scrolling" aria-controls="scrolling">Open scrolling panel</button>',
++			'<div id="offcanvas" class="offcanvas offcanvas-start" tabindex="-1" aria-labelledby="offcanvas-title">',
++			'<div id="offcanvas-header" class="offcanvas-header"><h5 id="offcanvas-title" class="offcanvas-title">Panel</h5><button id="offcanvas-close" type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button></div>',
++			'<div id="offcanvas-body" class="offcanvas-body"><p id="offcanvas-text">Body</p></div>',
++			'</div>',
++			'<div id="scrolling" class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" aria-labelledby="scrolling-title">',
++			'<div id="scrolling-header" class="offcanvas-header"><h5 id="scrolling-title" class="offcanvas-title">Scrolling</h5><button id="scrolling-close" type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button></div>',
++			'<div id="scrolling-body" class="offcanvas-body"><p id="scrolling-text">Body</p></div>',
++			'</div>',
++		].join(''),
++		spawned: ['.offcanvas-backdrop'],
++		setup: { bootstrap: '', veneer: 'new veneer.Delegate()' },
++		actions: [
++			{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
++			{ name: 'click.close', gesture: 'click', target: 'offcanvas-close' },
++			{ name: 'click.trigger.again', gesture: 'click', target: 'trigger' },
++			{ name: 'press.escape', gesture: 'press', key: 'Escape' },
++			{ name: 'click.trigger.third', gesture: 'click', target: 'trigger' },
++			{ name: 'point.backdrop', gesture: 'point', point: { x: 1000, y: 300 } },
++			{ name: 'click.scrolling', gesture: 'click', target: 'scroll-trigger' },
++			{ name: 'click.scrolling.close', gesture: 'click', target: 'scrolling-close' },
++		],
++	},
++	{
++		plugin: 'toast',
++		markup: [
++			'<div id="container" class="toast-container p-3">',
++			'<div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">',
++			'<div id="toast-header" class="toast-header"><strong id="toast-title" class="me-auto">Notice</strong><button id="toast-close" type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button></div>',
++			'<div id="toast-body" class="toast-body">Saved.</div>',
++			'</div>',
++			'<div id="still" class="toast" role="status" aria-live="polite" aria-atomic="true" data-bs-autohide="false" data-bs-animation="false">',
++			'<div id="still-header" class="toast-header"><strong id="still-title" class="me-auto">Still</strong><button id="still-close" type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button></div>',
++			'<div id="still-body" class="toast-body">Unanimated.</div>',
++			'</div>',
++			'</div>',
++		].join(''),
++		spawned: [],
++		setup: {
++			bootstrap: '',
++			veneer:
++				'new veneer.Toast(document.getElementById("toast")); new veneer.Toast(document.getElementById("still")); new veneer.Delegate()',
++		},
++		actions: [
++			{
++				name: 'call.show',
++				gesture: 'call',
++				call: {
++					bootstrap: 'bootstrap.Toast.getOrCreateInstance(document.getElementById("toast")).show()',
++					veneer: 'veneer.Toast.find(document.getElementById("toast")).show()',
++				},
++			},
++			{ name: 'click.close', gesture: 'click', target: 'toast-close' },
++			{
++				name: 'call.show.again',
++				gesture: 'call',
++				call: {
++					bootstrap: 'bootstrap.Toast.getOrCreateInstance(document.getElementById("toast")).show()',
++					veneer: 'veneer.Toast.find(document.getElementById("toast")).show()',
++				},
++			},
++			{
++				name: 'call.hide',
++				gesture: 'call',
++				call: {
++					bootstrap: 'bootstrap.Toast.getOrCreateInstance(document.getElementById("toast")).hide()',
++					veneer: 'veneer.Toast.find(document.getElementById("toast")).hide()',
++				},
++			},
++			{
++				name: 'call.still',
++				gesture: 'call',
++				call: {
++					bootstrap: 'bootstrap.Toast.getOrCreateInstance(document.getElementById("still")).show()',
++					veneer: 'veneer.Toast.find(document.getElementById("still")).show()',
++				},
++			},
++			{ name: 'click.still.close', gesture: 'click', target: 'still-close' },
++		],
++	},
++	{
++		plugin: 'tooltip',
++		markup: [
++			'<div id="stage" style="padding: 120px 200px">',
++			'<button id="hover-trigger" type="button" class="btn btn-secondary" data-bs-title="Hover tip">Hover</button>',
++			'<button id="focus-trigger" type="button" class="btn btn-secondary" title="Focus tip">Focus</button>',
++			'<button id="away" type="button" class="btn btn-light">Away</button>',
++			'</div>',
++		].join(''),
++		spawned: ['.tooltip', '.tooltip-arrow', '.tooltip-inner'],
++		setup: {
++			bootstrap:
++				'new bootstrap.Tooltip(document.getElementById("hover-trigger")); new bootstrap.Tooltip(document.getElementById("focus-trigger"))',
++			veneer:
++				'new veneer.Tooltip(document.getElementById("hover-trigger")); new veneer.Tooltip(document.getElementById("focus-trigger"))',
++		},
++		actions: [
++			{ name: 'hover.trigger', gesture: 'hover', target: 'hover-trigger' },
++			{ name: 'hover.away', gesture: 'hover', target: 'away' },
++			{ name: 'focus.trigger', gesture: 'focus', target: 'focus-trigger' },
++			{ name: 'focus.away', gesture: 'focus', target: 'away' },
++			{
++				name: 'call.show',
++				gesture: 'call',
++				call: {
++					bootstrap:
++						'bootstrap.Tooltip.getInstance(document.getElementById("hover-trigger")).show()',
++					veneer: 'veneer.Tooltip.find(document.getElementById("hover-trigger")).show()',
++				},
++			},
++			{
++				name: 'call.hide',
++				gesture: 'call',
++				call: {
++					bootstrap:
++						'bootstrap.Tooltip.getInstance(document.getElementById("hover-trigger")).hide()',
++					veneer: 'veneer.Tooltip.find(document.getElementById("hover-trigger")).hide()',
++				},
++			},
++		],
++	},
++	{
++		plugin: 'popover',
++		markup: [
++			'<div id="stage" style="padding: 40px">',
++			'<button id="trigger" type="button" class="btn btn-danger" style="display: block; margin-bottom: 160px" data-bs-title="Title" data-bs-content="Body text">Popover</button>',
++			'<button id="body-only" type="button" class="btn btn-secondary" style="display: block; margin-bottom: 160px" data-bs-content="Only body">Body only</button>',
++			'<button id="away" type="button" class="btn btn-light">Away</button>',
++			'</div>',
++		].join(''),
++		spawned: ['.popover', '.popover-arrow', '.popover-header', '.popover-body'],
++		setup: {
++			bootstrap:
++				'new bootstrap.Popover(document.getElementById("trigger")); new bootstrap.Popover(document.getElementById("body-only"))',
++			veneer:
++				'new veneer.Popover(document.getElementById("trigger")); new veneer.Popover(document.getElementById("body-only"))',
++		},
++		actions: [
++			{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
++			{ name: 'click.trigger.again', gesture: 'click', target: 'trigger' },
++			{ name: 'press.trigger', gesture: 'press', target: 'trigger', key: 'Enter' },
++			{ name: 'click.away', gesture: 'click', target: 'away' },
++			{ name: 'click.body', gesture: 'click', target: 'body-only' },
++			{ name: 'click.trigger.close', gesture: 'click', target: 'trigger' },
++			{
++				name: 'call.hide',
++				gesture: 'call',
++				call: {
++					bootstrap: 'bootstrap.Popover.getInstance(document.getElementById("body-only")).hide()',
++					veneer: 'veneer.Popover.find(document.getElementById("body-only")).hide()',
++				},
++			},
++		],
++	},
++])
++
++/**
++ * Lists the live controls: each replaces one scenario's Veneer setup with one that goes through a
++ * public seam, and names every departure the seam adds at one step.
++ *
++ * @remarks
++ * The vocabulary control renames the collapse's `shown` token, the prevention control prevents
++ * `show.vn.modal` on the first modal, the focus control constructs that modal with `focus: false`,
++ * and the boundary control writes an inline style and a `data-*` attribute from a
++ * `shown.vn.collapse` listener, copying the style's value into the attribute so the attribute
++ * proves the style write ran. Each departure list is exactly what the seam adds at its step to the
++ * departures Veneer's default setup reports there.
++ */
++export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
++	{
++		name: 'a renamed shown token',
++		plugin: 'collapse',
++		setup: 'new veneer.Delegate({ collapse: { classes: { shown: "open" } } })',
++		step: 'collapse.click.trigger',
++		departures: [
++			{
++				plugin: 'collapse',
++				step: 'collapse.click.trigger',
++				subject: 'panel',
++				facet: 'class',
++				name: 'open',
++				bootstrap: false,
++				veneer: true,
++			},
++			{
++				plugin: 'collapse',
++				step: 'collapse.click.trigger',
++				subject: 'panel',
++				facet: 'class',
++				name: 'show',
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'collapse',
++				step: 'collapse.click.trigger',
++				subject: 'panel',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'collapse',
++				step: 'collapse.click.trigger',
++				subject: 'panel-body',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++		],
++	},
++	{
++		name: 'a prevented show.vn.modal event',
++		plugin: 'modal',
++		setup:
++			'document.getElementById("modal").addEventListener("show.vn.modal", (event) => { event.preventDefault() }); new veneer.Delegate()',
++		step: 'modal.click.trigger',
++		departures: [
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'body',
++				facet: 'class',
++				name: 'modal-open',
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal',
++				facet: 'class',
++				name: 'show',
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal',
++				facet: 'attribute',
++				name: 'aria-hidden',
++				bootstrap: undefined,
++				veneer: 'true',
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal',
++				facet: 'attribute',
++				name: 'aria-modal',
++				bootstrap: 'true',
++				veneer: undefined,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal',
++				facet: 'attribute',
++				name: 'role',
++				bootstrap: 'dialog',
++				veneer: undefined,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-dialog',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-content',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-header',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-title',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-close',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-body',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-text',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-footer',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'modal-cancel',
++				facet: 'visible',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: '+.modal-backdrop[0]',
++				facet: 'element',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'document',
++				facet: 'focus',
++				name: undefined,
++				bootstrap: 'modal',
++				veneer: 'trigger',
++			},
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'document',
++				facet: 'lock',
++				name: undefined,
++				bootstrap: true,
++				veneer: false,
++			},
++		],
++	},
++	{
++		name: 'a modal constructed with focus off',
++		plugin: 'modal',
++		setup:
++			'new veneer.Modal(document.getElementById("modal"), { focus: false }); new veneer.Delegate()',
++		step: 'modal.click.trigger',
++		departures: [
++			{
++				plugin: 'modal',
++				step: 'modal.click.trigger',
++				subject: 'document',
++				facet: 'focus',
++				name: undefined,
++				bootstrap: 'modal',
++				veneer: 'trigger',
++			},
++		],
++	},
++	{
++		name: 'an inline style and a data attribute written on the shown panel',
++		plugin: 'collapse',
++		setup:
++			'document.getElementById("panel").addEventListener("shown.vn.collapse", (event) => { event.currentTarget.style.outlineStyle = "dotted"; event.currentTarget.setAttribute("data-oracle", event.currentTarget.style.outlineStyle) }); new veneer.Delegate()',
++		step: 'collapse.click.trigger',
++		departures: [
++			{
++				plugin: 'collapse',
++				step: 'collapse.click.trigger',
++				subject: 'panel',
++				facet: 'attribute',
++				name: 'data-oracle',
++				bootstrap: undefined,
++				veneer: 'dotted',
++			},
++		],
++	},
++])
++
+ /**
+  * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
+  *
+@@ -3325,26 +4148,10 @@ export function scanOracleFixture(recording: OracleFixture, fixture: unknown): s
+  * The official Button source registers click.bs.button.data-api and emits no custom events.
+  */
+ export async function recordButtonOracle(): Promise<OracleFixture> {
+-	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+-	if (options.connectOptions !== undefined)
+-		throw new Error('The oracle requires a local browser executable, not a remote connection')
+-	const browser = await chromium.launch({
+-		...options.launchOptions,
+-		headless: true,
+-	})
+-	const scratch = createScratch()
+-	try {
+-		scratch.write(
+-			'bootstrap.css',
+-			readFileSync(resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/css/bootstrap.css'), 'utf8'),
+-		)
+-		scratch.write(
+-			'bootstrap.bundle.js',
+-			readFileSync(
+-				resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/js/bootstrap.bundle.js'),
+-				'utf8',
+-			),
+-		)
++	return driveOracleBrowser(async (browser, scratch) => {
++		const runtime = readBootstrapRuntime()
++		scratch.write('bootstrap.css', runtime.stylesheet)
++		scratch.write('bootstrap.bundle.js', runtime.script)
+ 		const path = scratch.write(
+ 			'button.html',
+ 			'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Button oracle</title><link rel="stylesheet" href="bootstrap.css"></head><body><button type="button" class="btn btn-primary" data-bs-toggle="button">Toggle</button><button type="button" class="btn btn-primary active" data-bs-toggle="button" aria-pressed="true">Pressed</button><a class="btn btn-primary disabled" role="button" aria-disabled="true" tabindex="-1" href="#" data-bs-toggle="button">Disabled</a><script src="bootstrap.bundle.js"></script></body></html>',
+@@ -3449,8 +4256,678 @@ export async function recordButtonOracle(): Promise<OracleFixture> {
+ 			steps,
+ 			excluded: [],
+ 		}
++	})
++}
++
++/**
++ * Launches the pinned local Chromium with a scratch directory, and releases both after the drive.
++ * @param drive - The work to perform with the browser and the scratch directory.
++ * @returns What `drive` resolves to.
++ * @throws When the pinned browser resolves to a remote connection, when the launch fails, or what
++ * `drive` throws; the browser closes and the scratch directory is removed in every case.
++ * @remarks Both oracle recorders launch through this helper, so both record under one browser
++ * configuration.
++ */
++export async function driveOracleBrowser<T>(
++	drive: (browser: Browser, scratch: ScratchInterface) => Promise<T>,
++): Promise<T> {
++	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
++	if (options.connectOptions !== undefined)
++		throw new Error('The oracle requires a local browser executable, not a remote connection')
++	const browser = await chromium.launch({
++		...options.launchOptions,
++		headless: true,
++	})
++	const scratch = createScratch()
++	try {
++		return await drive(browser, scratch)
+ 	} finally {
+ 		await browser.close()
+ 		scratch.destroy()
+ 	}
+ }
++
++/**
++ * Reads the installed Bootstrap bundle and stylesheet as a plugin runtime.
++ * @returns The pinned `bootstrap.bundle.js` script and `bootstrap.css` stylesheet.
++ * @throws The filesystem error when either artifact is missing.
++ */
++export function readBootstrapRuntime(): PluginRuntime {
++	return {
++		engine: 'bootstrap',
++		script: readFileSync(
++			resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/js/bootstrap.bundle.js'),
++			'utf8',
++		),
++		stylesheet: readBootstrapCascade(),
++	}
++}
++
++/**
++ * Compiles Veneer's browser entry and styles from source, in memory, as a plugin runtime.
++ * @param plugins - Vite plugins added to the browser compile, such as a transform that plants a
++ * mutation. Default: none.
++ * @returns The browser entry as one classic script defining the `veneer` global, and the compiled
++ * cascade.
++ * @throws When either compile fails or produces no script or no stylesheet.
++ * @remarks
++ * The browser compile is the workspace's `srcBrowser` configuration with its output bundled whole
++ * as an immediately invoked script, so the page loads it the way it loads Bootstrap's bundle, and
++ * the styles compile is the workspace's styles configuration. Neither writes a file, so a stale
++ * `dist` directory can never stand in for the source.
++ */
++export async function compileVeneerRuntime(
++	plugins: readonly Plugin[] = [],
++): Promise<PluginRuntime> {
++	const browser = srcBrowser()
++	const {
++		external: _external,
++		output: _output,
++		...rolldownOptions
++	} = browser.build?.rolldownOptions ?? {}
++	const script = await build({
++		...browser,
++		configFile: false,
++		logLevel: 'silent',
++		plugins: [...(browser.plugins ?? []), ...plugins],
++		build: {
++			...browser.build,
++			write: false,
++			emptyOutDir: false,
++			sourcemap: false,
++			lib: {
++				entry: resolve(WORKSPACE_ROOT, 'src/browser/index.ts'),
++				formats: ['iife'],
++				name: 'veneer',
++				fileName: () => 'veneer.js',
++			},
++			rolldownOptions,
++		},
++	})
++	const stylesheet = await build({
++		...stylesConfig,
++		configFile: false,
++		logLevel: 'silent',
++		build: { ...stylesConfig.build, write: false, emptyOutDir: false },
++	})
++	return {
++		engine: 'veneer',
++		script: readBuildOutput(script, '.js'),
++		stylesheet: readBuildOutput(stylesheet, '.css'),
++	}
++}
++
++/**
++ * Reads the text of one file an in-memory Vite build produced.
++ * @param result - What Vite's `build` function resolved to.
++ * @param extension - The file extension to find, such as `.js` or `.css`.
++ * @returns The text of the first chunk or asset whose file name ends with `extension`.
++ * @throws When the build is a watcher or produced no such file.
++ */
++export function readBuildOutput(
++	result: Awaited<ReturnType<typeof build>>,
++	extension: string,
++): string {
++	const outputs = Array.isArray(result) ? result : [result]
++	for (const output of outputs) {
++		if (!('output' in output)) throw new Error('The compile returned a watcher, not an output')
++		for (const file of output.output) {
++			if (!file.fileName.endsWith(extension)) continue
++			if (file.type === 'chunk') return file.code
++			return typeof file.source === 'string' ? file.source : new TextDecoder().decode(file.source)
++		}
++	}
++	throw new Error(`The compile produced no ${extension} file`)
++}
++
++/**
++ * Reads a plugin page's state and labels it: each element's classes, its attributes but the
++ * omitted ones, its visibility, and the focus and scroll-lock state.
++ * @param page - The page the scenario's markup is loaded in, under either engine.
++ * @param scenario - The scenario whose `spawned` selectors label the inserted elements.
++ * @param authored - The ids the scenario's markup carries.
++ * @returns The labelled state the {@link inferPluginState} helper derives from the page's report.
++ * @remarks
++ * The page reports the root, the body, and every element in the body. An element is visible when
++ * its `checkVisibility` method, reading opacity and the `visibility` property, returns `true`.
++ * The lock reads the root's computed `overflow-y`, or the body's where the root's is `visible`,
++ * because the platform then propagates the body's to the viewport.
++ */
++export async function readPluginState(
++	page: Page,
++	scenario: PluginScenario,
++	authored: readonly string[],
++): Promise<PluginState> {
++	const reading = await page.evaluate((spawned) => {
++		const root = getComputedStyle(document.documentElement).overflowY
++		const used = root === 'visible' ? getComputedStyle(document.body).overflowY : root
++		return {
++			nodes: [document.documentElement, document.body, ...document.body.querySelectorAll('*')].map(
++				(element) => ({
++					tag: element.localName,
++					id: element.getAttribute('id') ?? undefined,
++					key: spawned.find((selector) => element.matches(selector)) ?? element.localName,
++					classes: [...element.classList],
++					attributes: Object.fromEntries(
++						[...element.attributes].map((attribute) => [attribute.name, attribute.value]),
++					),
++					visible: element.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
++					focused: element === document.activeElement,
++				}),
++			),
++			locked: used === 'hidden' || used === 'clip',
++		}
++	}, scenario.spawned)
++	return inferPluginState(reading, authored)
++}
++
++/**
++ * Derives a plugin page's labelled state from the page's report.
++ * @param reading - The elements the page reported, in document order, and its lock reading.
++ * @param authored - The ids the scenario's markup carries.
++ * @returns Each element keyed by its label, with sorted classes and attributes, the omitted
++ * attributes left out, and every id reference written as the label it names.
++ * @throws When two elements share a label, which a markup id carried twice produces.
++ * @remarks
++ * The `html` and `body` elements take their tag as their label and an element whose id the markup
++ * carries takes that id. Every other element is one an engine inserted, labelled `+`, its key, and
++ * its position among the inserted elements with that key. An id the page no element carries is
++ * written `?`.
++ */
++export function inferPluginState(reading: PluginReading, authored: readonly string[]): PluginState {
++	const ids = new Set(authored)
++	const positions = new Map<string, number>()
++	const labels = reading.nodes.map((node) => {
++		if (node.tag === 'html' || node.tag === 'body') return node.tag
++		if (node.id !== undefined && ids.has(node.id)) return node.id
++		const position = positions.get(node.key) ?? 0
++		positions.set(node.key, position + 1)
++		return `+${node.key}[${position}]`
++	})
++	const references = new Map<string, string>()
++	for (const [index, node] of reading.nodes.entries()) {
++		const label = labels[index]
++		if (node.id !== undefined && label !== undefined && !references.has(node.id))
++			references.set(node.id, label)
++	}
++	const elements: Record<string, PluginElement> = {}
++	let focus = 'body'
++	for (const [index, node] of reading.nodes.entries()) {
++		const label = labels[index]
++		if (label === undefined) continue
++		if (Object.hasOwn(elements, label))
++			throw new Error(`Plugin reading labels two elements ${label}`)
++		const attributes = Object.keys(node.attributes)
++			.filter((name) => !ORACLE_OMITTED_ATTRIBUTES.includes(name))
++			.sort()
++			.map((name): [string, string] => {
++				const value = node.attributes[name] ?? ''
++				return [
++					name,
++					ORACLE_REFERENCE_ATTRIBUTES.includes(name)
++						? value
++								.split(/\s+/u)
++								.filter((token) => token !== '')
++								.map((token) => references.get(token) ?? '?')
++								.join(' ')
++						: value,
++				]
++			})
++		elements[label] = {
++			classes: [...node.classes].sort(),
++			attributes: Object.fromEntries(attributes),
++			visible: node.visible,
++		}
++		if (node.focused) focus = label
++	}
++	return { elements, focus, locked: reading.locked }
++}
++
++/**
++ * Waits for a plugin page to settle, and reads the state it settled in.
++ * @param page - The page the scenario's markup is loaded in.
++ * @param scenario - The scenario being recorded.
++ * @param authored - The ids the scenario's markup carries.
++ * @returns The state the readings, taken {@link PLUGIN_SETTLE_INTERVAL} milliseconds apart, agree
++ * on for longer than the page's longest declared transition plus that interval, with no finite
++ * animation running and no scroll position moving.
++ * @throws When the page does not settle within the {@link PLUGIN_SETTLE_BUDGET} constant's
++ * milliseconds.
++ * @remarks No engine's own completion event is read, so the wait is the same for both engines and
++ * names no event.
++ */
++export async function settlePluginState(
++	page: Page,
++	scenario: PluginScenario,
++	authored: readonly string[],
++): Promise<PluginState> {
++	let previous: string | undefined
++	let since = performance.now()
++	let settled: PluginState = { elements: {}, focus: 'body', locked: false }
++	await waitForCondition(
++		`the ${scenario.plugin} page to settle`,
++		async () => {
++			const motion = await page.evaluate(() => {
++				const elements = [...document.querySelectorAll('*')]
++				return {
++					animating: document
++						.getAnimations()
++						.some(
++							(animation) =>
++								animation.playState === 'running' &&
++								animation.effect?.getComputedTiming().endTime !== Infinity,
++						),
++					scroll: [
++						window.scrollX,
++						window.scrollY,
++						...elements.map((element) => `${element.scrollTop}:${element.scrollLeft}`),
++					].join(),
++					span: Math.max(
++						0,
++						...elements.map((element) => {
++							const style = getComputedStyle(element)
++							return [style.transitionDuration, style.transitionDelay]
++								.map((times) =>
++									Math.max(
++										...times
++											.split(',')
++											.map((time) =>
++												time.trim().endsWith('ms')
++													? Number.parseFloat(time)
++													: Number.parseFloat(time) * 1000,
++											),
++									),
++								)
++								.reduce((total, time) => total + time, 0)
++						}),
++					),
++				}
++			})
++			const state = await readPluginState(page, scenario, authored)
++			const text = `${motion.scroll}|${JSON.stringify(state)}`
++			const now = performance.now()
++			settled = state
++			if (motion.animating || text !== previous) {
++				previous = motion.animating ? undefined : text
++				since = now
++				return false
++			}
++			return now - since >= motion.span + PLUGIN_SETTLE_INTERVAL
++		},
++		{ budget: PLUGIN_SETTLE_BUDGET, interval: PLUGIN_SETTLE_INTERVAL },
++	)
++	return settled
++}
++
++/**
++ * Sends one scenario action to a plugin page as trusted input, or runs its call for one engine.
++ * @param page - The page the scenario's markup is loaded in.
++ * @param action - The action to send.
++ * @param engine - The engine being recorded, which selects a `call` action's script.
++ * @throws When the action names no target, key, delta, point, or call its gesture needs, or when
++ * the browser refuses the input within its timeout.
++ */
++export async function drivePluginAction(
++	page: Page,
++	action: PluginAction,
++	engine: PluginEngine,
++): Promise<void> {
++	const target = action.target === undefined ? undefined : page.locator(`#${action.target}`)
++	if (action.gesture === 'press' && action.key !== undefined) {
++		if (target === undefined) await page.keyboard.press(action.key)
++		else await target.press(action.key)
++	} else if (action.gesture === 'point' && action.point !== undefined) {
++		await page.mouse.click(action.point.x, action.point.y)
++	} else if (action.gesture === 'call' && action.call !== undefined) {
++		await page.addScriptTag({ content: action.call[engine] })
++	} else if (target === undefined) {
++		throw new Error(`Plugin action ${action.name} names no input for its ${action.gesture} gesture`)
++	} else if (action.gesture === 'click') await target.click()
++	else if (action.gesture === 'hover') await target.hover()
++	else if (action.gesture === 'focus') await target.focus()
++	else if (action.gesture === 'wheel' && action.delta !== undefined) {
++		await target.hover()
++		await page.mouse.wheel(0, action.delta)
++	} else
++		throw new Error(`Plugin action ${action.name} names no input for its ${action.gesture} gesture`)
++}
++
++/**
++ * Records one plugin scenario under one engine, reading the settled state each action leaves.
++ * @param scenario - The markup, setups, and actions to record.
++ * @param runtime - The engine's script and stylesheet: Bootstrap's pinned bundle, or Veneer
++ * compiled from source.
++ * @returns The ordered recording, under no motion preference and then under reduced motion,
++ * without writing or accepting a fixture.
++ * @throws When the markup carries an element without an id, when an action or a settle fails, or
++ * when the page reports an error.
++ * @remarks
++ * Both engines load the same page, with the runtime's stylesheet and script in its head, and
++ * receive the same trusted input, so the only difference between the two recordings is the engine.
++ * Each motion preference loads the page afresh, runs the engine's setup, reads the settled
++ * initial state, and then reads the state each action settles in.
++ */
++export async function recordPluginOracle(
++	scenario: PluginScenario,
++	runtime: PluginRuntime,
++): Promise<PluginFixture> {
++	return driveOracleBrowser(async (browser, scratch) => {
++		scratch.write('runtime.css', runtime.stylesheet)
++		scratch.write('runtime.js', runtime.script)
++		const path = scratch.write(
++			'plugin.html',
++			`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${scenario.plugin} oracle</title><link rel="stylesheet" href="runtime.css"><script defer src="runtime.js"></script></head><body>${scenario.markup}</body></html>`,
++		)
++		const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
++		page.setDefaultTimeout(PLUGIN_SETTLE_BUDGET)
++		const errors: string[] = []
++		page.on('pageerror', (error) => {
++			errors.push(error.message)
++		})
++		const steps: PluginStep[] = []
++		for (const reduced of [false, true]) {
++			await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' })
++			await page.mouse.move(0, 0)
++			await page.goto(pathToFileURL(path).href)
++			const authored = await page.evaluate((markup) => {
++				const template = document.createElement('template')
++				template.innerHTML = markup
++				const unlabelled = template.content.querySelector(':not([id])')
++				if (unlabelled !== null)
++					throw new Error(`Plugin markup carries a ${unlabelled.localName} element without an id`)
++				return [...template.content.querySelectorAll('[id]')].map((element) => element.id)
++			}, scenario.markup)
++			const setup = scenario.setup[runtime.engine]
++			if (setup !== '') await page.addScriptTag({ content: setup })
++			const prefix = `${scenario.plugin}.${reduced ? 'reduced.' : ''}`
++			steps.push({
++				name: `${prefix}initial`,
++				state: await settlePluginState(page, scenario, authored),
++			})
++			for (const action of scenario.actions) {
++				await drivePluginAction(page, action, runtime.engine)
++				steps.push({
++					name: `${prefix}${action.name}`,
++					state: await settlePluginState(page, scenario, authored),
++				})
++			}
++		}
++		if (errors.length > 0)
++			throw new Error(`The ${runtime.engine} ${scenario.plugin} page reported ${errors.join('; ')}`)
++		return {
++			version: BOOTSTRAP_VERSION,
++			plugin: scenario.plugin,
++			browser: browser.version(),
++			steps,
++		}
++	})
++}
++
++/**
++ * Scans a plugin recording against its scenario: the step names it must carry, and a change of
++ * state at every step Bootstrap does not refuse.
++ * @param scenario - The scenario the recording drove.
++ * @param recording - The recording to scan.
++ * @returns The first finding, or undefined when every step is present and each non-refused step
++ * changed the recorded state.
++ */
++export function scanPluginSteps(
++	scenario: PluginScenario,
++	recording: PluginFixture,
++): string | undefined {
++	const expected = ['', 'reduced.'].flatMap((prefix) => [
++		`${scenario.plugin}.${prefix}initial`,
++		...scenario.actions.map((action) => `${scenario.plugin}.${prefix}${action.name}`),
++	])
++	if (
++		!isDeepStrictEqual(
++			recording.steps.map((step) => step.name),
++			expected,
++		)
++	)
++		return `Plugin recording ${recording.plugin} step membership differs from its scenario`
++	for (const [index, step] of recording.steps.entries()) {
++		const action = scenario.actions[(index % (scenario.actions.length + 1)) - 1]
++		const before = recording.steps[index - 1]
++		if (action === undefined || action.refused === true || before === undefined) continue
++		if (isDeepStrictEqual(before.state, step.state))
++			return `Plugin step ${step.name} leaves the recorded state unchanged`
++	}
++	return undefined
++}
++
++/**
++ * Scans a saved plugin fixture for a difference from the live recording, in the JSON form the
++ * fixture file carries.
++ * @param recording - The live Bootstrap recording.
++ * @param fixture - The saved fixture.
++ * @returns The first differing step, a metadata or membership finding, or undefined when they
++ * agree. Returns `Invalid plugin oracle fixture` when the fixture is not an object carrying a
++ * browser and a step list.
++ * @remarks The browser build is required provenance and is excluded from the comparison.
++ */
++export function scanPluginFixture(recording: PluginFixture, fixture: unknown): string | undefined {
++	if (!isRecord(fixture) || typeof fixture.browser !== 'string' || !Array.isArray(fixture.steps))
++		return 'Invalid plugin oracle fixture'
++	const saved = fixture.steps
++	for (const [index, step] of recording.steps.entries()) {
++		if (!isDeepStrictEqual(parseJSON(JSON.stringify(step)), saved[index]))
++			return `Plugin oracle differs at step ${step.name}`
++	}
++	const { browser: _recordedBrowser, ...recorded } = recording
++	const { browser: _savedBrowser, ...metadata } = fixture
++	return isDeepStrictEqual(parseJSON(JSON.stringify(recorded)), metadata)
++		? undefined
++		: 'Plugin oracle fixture metadata or step membership differs'
++}
++
++/**
++ * Checks whether a value is a plugin state: labelled elements with string classes, string
++ * attributes, and a visibility, beside a focus label and a lock reading.
++ * @param value - The value to check.
++ * @returns True if the value has that shape; false otherwise.
++ */
++export function isPluginState(value: unknown): value is PluginState {
++	return (
++		isRecord(value) &&
++		typeof value.focus === 'string' &&
++		typeof value.locked === 'boolean' &&
++		isRecord(value.elements) &&
++		Object.values(value.elements).every(
++			(element) =>
++				isRecord(element) &&
++				Array.isArray(element.classes) &&
++				element.classes.every((token) => typeof token === 'string') &&
++				isRecord(element.attributes) &&
++				Object.values(element.attributes).every((attribute) => typeof attribute === 'string') &&
++				typeof element.visible === 'boolean',
++		)
++	)
++}
++
++/**
++ * Reads a saved plugin fixture.
++ * @param plugin - The plugin whose fixture to read.
++ * @param path - The fixture file. Default: `tests/fixtures/oracle/<plugin>.json` under
++ * {@link WORKSPACE_ROOT}.
++ * @returns The fixture's release, plugin, browser, and steps.
++ * @throws When the file is missing, is not JSON, names another plugin, or carries a step that is
++ * not a name and a plugin state.
++ */
++export function readPluginFixture(
++	plugin: string,
++	path: string = resolve(WORKSPACE_ROOT, `tests/fixtures/oracle/${plugin}.json`),
++): PluginFixture {
++	const fixture = parseJSON(readFileSync(path, 'utf8'))
++	if (
++		!isRecord(fixture) ||
++		typeof fixture.version !== 'string' ||
++		fixture.plugin !== plugin ||
++		typeof fixture.browser !== 'string' ||
++		!Array.isArray(fixture.steps)
++	)
++		throw new Error(`Invalid plugin oracle fixture ${plugin}`)
++	const steps = fixture.steps.map((step: unknown) => {
++		if (!isRecord(step) || typeof step.name !== 'string' || !isPluginState(step.state))
++			throw new Error(`Invalid plugin oracle fixture step ${plugin}`)
++		return { name: step.name, state: step.state }
++	})
++	return { version: fixture.version, plugin, browser: fixture.browser, steps }
++}
++
++/**
++ * Collects every difference between Bootstrap's recording of a plugin and Veneer's.
++ * @param bootstrap - Bootstrap's recording, such as a saved fixture.
++ * @param veneer - Veneer's recording of the same scenario.
++ * @returns One departure per step for each element one side lacks, each class token one side
++ * carries alone, each attribute whose value differs, each visibility that differs, and a differing
++ * focus or lock, in step order.
++ * @throws When the two recordings carry different step names.
++ * @remarks An element one side lacks reports that alone, not its classes or attributes.
++ */
++export function collectEngineDepartures(
++	bootstrap: PluginFixture,
++	veneer: PluginFixture,
++): readonly EngineDeparture[] {
++	if (
++		!isDeepStrictEqual(
++			bootstrap.steps.map((step) => step.name),
++			veneer.steps.map((step) => step.name),
++		)
++	)
++		throw new Error(`Plugin recordings of ${bootstrap.plugin} differ in step membership`)
++	const departures: EngineDeparture[] = []
++	for (const [index, expected] of bootstrap.steps.entries()) {
++		const actual = veneer.steps[index]
++		if (actual === undefined) continue
++		const row = { plugin: bootstrap.plugin, step: expected.name }
++		const labels = [
++			...Object.keys(expected.state.elements),
++			...Object.keys(actual.state.elements).filter(
++				(label) => !Object.hasOwn(expected.state.elements, label),
++			),
++		]
++		for (const label of labels) {
++			const official = expected.state.elements[label]
++			const own = actual.state.elements[label]
++			if (official === undefined || own === undefined) {
++				departures.push({
++					...row,
++					subject: label,
++					facet: 'element',
++					name: undefined,
++					bootstrap: official !== undefined,
++					veneer: own !== undefined,
++				})
++				continue
++			}
++			for (const token of [...new Set([...official.classes, ...own.classes])].sort()) {
++				if (official.classes.includes(token) !== own.classes.includes(token))
++					departures.push({
++						...row,
++						subject: label,
++						facet: 'class',
++						name: token,
++						bootstrap: official.classes.includes(token),
++						veneer: own.classes.includes(token),
++					})
++			}
++			for (const name of [
++				...new Set([...Object.keys(official.attributes), ...Object.keys(own.attributes)]),
++			].sort()) {
++				if (official.attributes[name] !== own.attributes[name])
++					departures.push({
++						...row,
++						subject: label,
++						facet: 'attribute',
++						name,
++						bootstrap: official.attributes[name],
++						veneer: own.attributes[name],
++					})
++			}
++			if (official.visible !== own.visible)
++				departures.push({
++					...row,
++					subject: label,
++					facet: 'visible',
++					name: undefined,
++					bootstrap: official.visible,
++					veneer: own.visible,
++				})
++		}
++		if (expected.state.focus !== actual.state.focus)
++			departures.push({
++				...row,
++				subject: 'document',
++				facet: 'focus',
++				name: undefined,
++				bootstrap: expected.state.focus,
++				veneer: actual.state.focus,
++			})
++		if (expected.state.locked !== actual.state.locked)
++			departures.push({
++				...row,
++				subject: 'document',
++				facet: 'lock',
++				name: undefined,
++				bootstrap: expected.state.locked,
++				veneer: actual.state.locked,
++			})
++	}
++	return departures
++}
++
++/**
++ * Records one live control and returns the departures its seam adds at its step.
++ * @param control - The control to record.
++ * @param runtime - Veneer's runtime, compiled from source.
++ * @param fixture - Bootstrap's recording of the control's scenario. Default: the saved fixture the
++ * {@link readPluginFixture} helper reads.
++ * @returns The departures from Bootstrap's recording that the control's setup reports at its step
++ * and Veneer's default setup does not.
++ * @throws When no scenario records the control's plugin or no action of it names the control's
++ * step, or when a recording fails.
++ * @remarks
++ * Both Veneer recordings drive the scenario's actions up to and including the control's step, so
++ * a seam that leaves the page unable to take a later action still records, and Bootstrap's
++ * recording is read at the same steps.
++ */
++export async function recordPluginControl(
++	control: PluginControl,
++	runtime: PluginRuntime,
++	fixture: PluginFixture = readPluginFixture(control.plugin),
++): Promise<readonly EngineDeparture[]> {
++	const scenario = PLUGIN_SCENARIOS.find((candidate) => candidate.plugin === control.plugin)
++	if (scenario === undefined) throw new Error(`No plugin scenario records ${control.plugin}`)
++	const index = scenario.actions.findIndex(
++		(action) => `${scenario.plugin}.${action.name}` === control.step,
++	)
++	if (index === -1) throw new Error(`No ${control.plugin} action names the step ${control.step}`)
++	const trimmed = { ...scenario, actions: scenario.actions.slice(0, index + 1) }
++	const baseline = await recordPluginOracle(trimmed, runtime)
++	const seam = await recordPluginOracle(
++		{ ...trimmed, setup: { ...trimmed.setup, veneer: control.setup } },
++		runtime,
++	)
++	const names = new Set(baseline.steps.map((step) => step.name))
++	const official = { ...fixture, steps: fixture.steps.filter((step) => names.has(step.name)) }
++	return filterAddedDepartures(
++		collectEngineDepartures(official, seam),
++		collectEngineDepartures(official, baseline),
++	).filter((departure) => departure.step === control.step)
++}
++
++/**
++ * Filters the departures a baseline does not carry.
++ * @param departures - The departures a control's recording reports.
++ * @param baseline - The departures the default setup's recording reports.
++ * @returns The members of `departures` no member of `baseline` equals, in order.
++ */
++export function filterAddedDepartures(
++	departures: readonly EngineDeparture[],
++	baseline: readonly EngineDeparture[],
++): readonly EngineDeparture[] {
++	return departures.filter(
++		(departure) => !baseline.some((candidate) => isDeepStrictEqual(candidate, departure)),
++	)
++}

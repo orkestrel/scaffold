@@ -1,0 +1,23 @@
+# The Orchestrator's replay of J-ORACLE-RECORD (2026-09-25, Chromium 153), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-record at 9ea360d Record Bootstrap 5.3.8's settled end states per plugin, and compare Veneer against them (J-ORACLE-RECORD)
+format:check exit=0
+lint:check exit=0
+check exit=0
+ Test Files  1 passed (1)
+      Tests  42 passed (42)
+test:conformance exit=0
+ Test Files  4 passed (4)
+      Tests  330 passed (330)
+test:setup exit=0
+instrument: the worktree copy equals the retained copy (20a3f7cc567f5e8504b5cb0db2f610aa752ae7a6b11019c49e1ad4de4d05f697)
+--- results (the instrument's stdout)
+digest d5924fe6894e3762337da42ee219b90f8792df20868f7945900e46e62d872738 src/browser/Collapse.ts
+digest c11f5dcc78dbd6e15d4f86577045e6a6ef4a5366a190306be9448cd993fbd191 src/browser/Alert.ts
+digest c68264acba1325e7e633debdd007b06376e357563cc93323bae7b1b44c313164 src/browser/Tab.ts
+digest 8d39eba242d0eaf7a3fe8ea972eb46fcdc9d12a125eb417e84ca081336889545 src/browser/ScrollSpy.ts
+digest e8afef68897340e8d70e9c42fca7ecfb0eb8e69a0f9bcad7c384bc044053b90e src/browser/Dropdown.ts
+digest dff80b8caa7a4238c55cd3fe73011ebbb2adbd531fd6e83447321b87d2b50c53 src/browser/Carousel.ts
+digest 4d39e0fce1b42a231a27e2946b3d30e188c332a2b911a40a395bda444437c633 src/browser/Modal.ts
+digest c5deae69adf09ca83b5ea934c2db7eea62a1b59465fc92980ff11d38cfae5847 src/browser/Offcanvas.ts
+digest 67bd93c4b99a7324a39ab967f710893cfcaa094b435efc9a790f62bad4ec17d0 src/browser/Toast.ts
+digest b4f48b3d6868a20cfa67023e7c7b04aa3aae1e75d7543d695e1d0b0352db704b src/browser/Tooltip.ts
+digest cb8be8da27de842dfa24d79870d13eb914feddfdb083aaec9c47c333d0d69f11 src/browser/constants.ts

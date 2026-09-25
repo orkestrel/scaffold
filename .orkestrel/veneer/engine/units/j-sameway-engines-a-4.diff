@@ -1,0 +1,647 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 302dd4a..1ee66d6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -61,7 +61,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `Registry`                                | class     | Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.                                                                                                |
+ | `HostSnapshotCategory`                    | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                                                                         |
+ | `HostSnapshotTarget`                      | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                                                                                        |
+-| `HostChange`                              | interface | Describes one piece of host state a change wrote and the value it held before the change's first write to it.                                                                                 |
++| `HostChange`                              | interface | Describes one piece of host state a change wrote and the value and priority it held before the change's first write to it.                                                                    |
+ | `HostSnapshotInterface`                   | interface | Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores.                                                                         |
+ | `HostSnapshotEntry`                       | interface | Describes one target a snapshot holds: the target under the name the platform resolved at its save, and the record key that save fixed.                                                       |
+ | `HostSnapshotRecord`                      | interface | Describes the one record that every snapshot holding a target shares, and whose value the target's last holder writes back.                                                                   |
+@@ -69,9 +69,10 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `HostSnapshotPresence`                    | interface | Describes the presence record that every snapshot saving a class token or an inline property on one element shares, which reads whether the element carried its `class` or `style` attribute. |
+ | `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.                                                                   |
+ | `readHostValue`                           | function  | Reads the value a piece of host state holds, as a `HostSnapshot` instance records it.                                                                                                         |
++| `readHostPriority`                        | function  | Reads the priority an inline property carries, as a `HostSnapshot` instance records it.                                                                                                       |
+ | `writeHostValue`                          | function  | Writes a value to a piece of host state, in the form the `readHostValue` function reads it.                                                                                                   |
+-| `recordHostChange`                        | function  | Records a target a write is about to change, returning a change's records with the target and the value it reads appended.                                                                    |
+-| `rewindHostChanges`                       | function  | Writes each recorded target back to the value it held before the change's first write to it, in reverse order of those first writes.                                                          |
++| `recordHostChange`                        | function  | Records a target a write is about to change, returning a change's records with the target and the value and priority it reads appended.                                                       |
++| `rewindHostChanges`                       | function  | Writes each recorded target back to the value and priority it held before the change's first write to it, in reverse order of those first writes.                                             |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                          |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                      |
+ | `matchesReducedMotion`                    | function  | Checks whether the view an element's document belongs to prefers reduced motion.                                                                                                              |
+@@ -1113,11 +1114,14 @@ returns what the change wrote. The step restores each target the call changed to
+ target held before the call's first write to it, in reverse order of those first writes: the
+ panel's `transition` and `host` tokens and inline size, and each trigger's `collapsed` token and
+ `aria-expanded` value. A write that changes nothing records nothing, so a trigger that was already
+-expanded or a panel without the `host` token takes no write, and a target the call writes more than
+-once goes back to the value it held before the first of those writes, so an inline size the panel
+-carried before the show comes back. The `shown` token stays as the panel's host moved it. The step
+-reads no door; before each of its writes it reads the call's identity, the collapse's lifetime,
+-and the target's value, and it writes nothing to a target that already holds the recorded value.
++expanded takes no write. The call's first changing write of a target records it, even when that
++write completes the change, so a `host` token a hide added to a panel that lacked it, and an inline
++size the call cleared after its earlier size writes changed nothing, go back as well. A target the
++call writes more than once goes back to the value it held before the first of those writes, so an
++inline size the panel carried before the show comes back with its priority. The `shown` token stays
++as the panel's host moved it. The step reads no door; before each of its writes it reads the call's
++identity, the collapse's lifetime, and the target's value and priority, and it writes nothing to a
++target that already holds the recorded value and priority.
+ A destruction inside one of its writes stops the step and the snapshot's restoration stands, and
+ a call a reaction starts inside one supersedes the step.
+ Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
+diff --git a/src/browser/Collapse.ts b/src/browser/Collapse.ts
+index 2cf8d6a..4c0b073 100644
+--- a/src/browser/Collapse.ts
++++ b/src/browser/Collapse.ts
+@@ -68,12 +68,12 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * wrote. That step restores each target the call changed to the value it held before the call's
+  * first write to it, in reverse order of those first writes: a write that changes nothing records
+  * nothing, and a target the call writes more than once is recorded at its first changing write.
+- * For a collapse those targets are the panel's `transition` and `host` tokens and inline size and
+- * each trigger's `collapsed` token and `aria-expanded` value; the `shown` token stays as the host
+- * moved it. The step dispatches nothing; before each write it reads the call's identity, the
+- * collapse's lifetime, and the target's value, and it writes nothing to a target that already holds
+- * the recorded value, so a call a reaction starts inside the step supersedes it. An aborted `signal`
+- * destroys the collapse.
++ * For a collapse those targets are the panel's `transition` and `host` tokens and inline size, whose
++ * priority returns with its value, and each trigger's `collapsed` token and `aria-expanded` value;
++ * the `shown` token stays as the host moved it. The step dispatches nothing; before each write it
++ * reads the call's identity, the collapse's lifetime, and the target's value and priority, and it
++ * writes nothing to a target that already holds the recorded value and priority, so a call a
++ * reaction starts inside the step supersedes it. An aborted `signal` destroys the collapse.
+  *
+  * @example
+  * ```ts
+@@ -298,6 +298,12 @@ export class Collapse implements CollapseInterface {
+ 		) {
+ 			return this.#rewind(change, written)
+ 		}
++		// The clearing is the first changing write of a size both earlier size writes left as it was.
++		written = recordHostChange(
++			written,
++			{ category: 'property', element: host, name: dimension },
++			undefined,
++		)
+ 		if (
+ 			!this.#apply(change, true, completed, [transition], () =>
+ 				host.style.removeProperty(dimension),
+@@ -400,11 +406,23 @@ export class Collapse implements CollapseInterface {
+ 				return this.#rewind(change, written)
+ 			}
+ 		}
++		// The clearing is the first changing write of a size the measured size write left as it was.
++		written = recordHostChange(
++			written,
++			{ category: 'property', element: host, name: dimension },
++			undefined,
++		)
+ 		if (!this.#apply(change, false, during, [], () => host.style.removeProperty(dimension))) {
+ 			return this.#rewind(change, written)
+ 		}
+ 		await settleAnimations(host, this.#controller.signal)
+ 		if (!this.#holds(change, false, during, [])) return this.#rewind(change, written)
++		// The addition is the first changing write of a `host` token the panel lacked before the hide.
++		written = recordHostChange(
++			written,
++			{ category: 'token', element: host, name: this.#classes.host },
++			this.#classes.host,
++		)
+ 		if (
+ 			!this.#apply(change, false, [...completed, transition], [], () =>
+ 				host.classList.add(this.#classes.host),
+@@ -495,11 +513,11 @@ export class Collapse implements CollapseInterface {
+ 	}
+ 
+ 	// Ends a change the host took over by moving its token back: writes each target the change
+-	// recorded back to the value it held before the change's first write to it, in reverse order,
+-	// through the `rewindHostChanges` function. The step dispatches nothing and reads no door; before
+-	// each write it reads whether the call that set `change` still owns the collapse, so a destruction
+-	// inside one writes nothing more and the snapshot's restoration stands, and a call a reaction
+-	// starts inside one supersedes the step.
++	// recorded back to the value and priority it held before the change's first write to it, in
++	// reverse order, through the `rewindHostChanges` function. The step dispatches nothing and reads no
++	// door; before each write it reads whether the call that set `change` still owns the collapse, so a
++	// destruction inside one writes nothing more and the snapshot's restoration stands, and a call a
++	// reaction starts inside one supersedes the step.
+ 	#rewind(change: object, written: readonly HostChange[]): false {
+ 		rewindHostChanges(written, () => this.#owns(change))
+ 		return false
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index 71311d1..1e0ac7a 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -6,7 +6,7 @@ import type {
+ 	HostSnapshotRecord,
+ 	HostSnapshotTarget,
+ } from './types.js'
+-import { readHostValue } from './helpers.js'
++import { readHostPriority, readHostValue, writeHostValue } from './helpers.js'
+ 
+ /**
+  * Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.
+@@ -111,7 +111,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		let priority = record?.priority ?? ''
+ 		if (record === undefined) {
+ 			value = readHostValue(resolved)
+-			if (category === 'property') priority = element.style.getPropertyPriority(name)
++			priority = readHostPriority(resolved)
+ 		}
+ 		// Joining a record a restoration owns takes the target over: the record has a holder again, so
+ 		// that restoration no longer owns its write.
+@@ -143,23 +143,14 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		const held = this.#leaving
+ 		try {
+ 			for (const entry of targets) {
+-				const { target } = entry
+-				if (target.category !== 'token') continue
+-				HostSnapshot.#writeBack(entry, this, (value) =>
+-					target.element.classList.toggle(target.name, value !== undefined),
+-				)
++				if (entry.target.category === 'token') HostSnapshot.#writeBack(entry, this)
+ 			}
+ 			for (const { element, attribute } of held) {
+ 				if (attribute !== 'class' || !this.#absent(element, attribute)) continue
+ 				if (element.classList.length === 0) element.removeAttribute('class')
+ 			}
+ 			for (const entry of targets) {
+-				const { target } = entry
+-				if (target.category !== 'property') continue
+-				HostSnapshot.#writeBack(entry, this, (value, priority) => {
+-					if (value === undefined) target.element.style.removeProperty(target.name)
+-					else target.element.style.setProperty(target.name, value, priority)
+-				})
++				if (entry.target.category === 'property') HostSnapshot.#writeBack(entry, this)
+ 			}
+ 			for (const { element, attribute } of held) {
+ 				if (attribute !== 'style' || !this.#absent(element, attribute)) continue
+@@ -169,12 +160,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 				}
+ 			}
+ 			for (const entry of targets) {
+-				const { target } = entry
+-				if (target.category !== 'attribute') continue
+-				HostSnapshot.#writeBack(entry, this, (value) => {
+-					if (value === undefined) target.element.removeAttribute(target.name)
+-					else target.element.setAttribute(target.name, value)
+-				})
++				if (entry.target.category === 'attribute') HostSnapshot.#writeBack(entry, this)
+ 			}
+ 		} finally {
+ 			for (const { target, key } of targets) HostSnapshot.#withdraw(target.element, key, this)
+@@ -318,13 +304,10 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	}
+ 
+ 	// Runs one write back of a target the snapshot owns and no restoration has started writing, with
+-	// the record's value, then withdraws the target. A restoration a reaction runs inside the write
+-	// finds the target written and leaves it.
+-	static #writeBack(
+-		entry: HostSnapshotEntry,
+-		owner: HostSnapshot,
+-		write: (value: string | undefined, priority: string) => void,
+-	): void {
++	// the record's value and priority through the `writeHostValue` function the engines' returning
++	// steps write with, then withdraws the target. A restoration a reaction runs inside the write finds
++	// the target written and leaves it.
++	static #writeBack(entry: HostSnapshotEntry, owner: HostSnapshot): void {
+ 		const { target, key } = entry
+ 		const { element } = target
+ 		const records = HostSnapshot.#records.get(element)
+@@ -333,7 +316,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			return
+ 		}
+ 		records.set(key, { ...record, written: true })
+-		write(record.value, record.priority)
++		writeHostValue(target, record.value, record.priority)
+ 		HostSnapshot.#withdraw(element, key, owner)
+ 	}
+ 
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index b5effcb..d8d72fb 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -887,11 +887,27 @@ export function readHostValue(target: HostSnapshotTarget): string | undefined {
+ 	return element.style.getPropertyValue(name) || undefined
+ }
+ 
++/**
++ * Reads the priority an inline property carries, as a `HostSnapshot` instance records it.
++ *
++ * @param target - The attribute, class token, or inline property to read.
++ * @returns The inline property's priority, such as `important`; the empty string for a property without one, an absent property, an attribute, or a class token.
++ * @example
++ * ```ts
++ * const priority = readHostPriority({ category: 'property', element: panel, name: 'height' }) // 'important' or ''
++ * ```
++ */
++export function readHostPriority(target: HostSnapshotTarget): string {
++	const { category, element, name } = target
++	return category === 'property' ? element.style.getPropertyPriority(name) : ''
++}
++
+ /**
+  * Writes a value to a piece of host state, in the form the `readHostValue` function reads it.
+  *
+  * @param target - The attribute, class token, or inline property to write.
+  * @param value - The attribute's or property's value, or any string for a token the element carries; undefined removes the target.
++ * @param priority - The inline property's priority, in the form the `readHostPriority` function reads it; an attribute or a token write ignores it. Default: the empty string, which sets the property without a priority.
+  * @remarks
+  * A token write toggles the token with an explicit force, so a token already in that state takes no
+  * write. An attribute or property write always writes.
+@@ -900,26 +916,32 @@ export function readHostValue(target: HostSnapshotTarget): string | undefined {
+  * writeHostValue({ category: 'attribute', element: trigger, name: 'aria-expanded' }, 'true')
+  * ```
+  */
+-export function writeHostValue(target: HostSnapshotTarget, value: string | undefined): void {
++export function writeHostValue(
++	target: HostSnapshotTarget,
++	value: string | undefined,
++	priority = '',
++): void {
+ 	const { category, element, name } = target
+ 	if (category === 'token') element.classList.toggle(name, value !== undefined)
+ 	else if (category === 'attribute') {
+ 		if (value === undefined) element.removeAttribute(name)
+ 		else element.setAttribute(name, value)
+ 	} else if (value === undefined) element.style.removeProperty(name)
+-	else element.style.setProperty(name, value)
++	else element.style.setProperty(name, value, priority)
+ }
+ 
+ /**
+- * Records a target a write is about to change, returning a change's records with the target and the value it reads appended.
++ * Records a target a write is about to change, returning a change's records with the target and the value and priority it reads appended.
+  *
+  * @param changes - The records the change holds so far, in the order of its first writes.
+  * @param target - The attribute, class token, or inline property the write gives a value.
+  * @param next - The value the write gives the target, in the form the `readHostValue` function reads it.
+- * @returns The records unchanged when the change recorded the target already or the write leaves the target as it reads; otherwise a copy with the target and its value appended.
++ * @returns The records unchanged when the change recorded the target already or the write leaves the target as it reads; otherwise a copy with the target and its value and priority appended.
+  * @remarks
+  * A target is recorded once, at the first write that changes it, so a later write to the same target
+- * keeps the value it held before the change began writing it. The records passed in are not changed.
++ * keeps the value and priority it held before the change began writing it. The write gives no
++ * priority, so it changes an inline property that carries one even when it writes the value the
++ * property holds. The records passed in are not changed.
+  * @example
+  * ```ts
+  * changes = recordHostChange(changes, { category: 'token', element: panel, name: 'collapsing' }, 'collapsing')
+@@ -939,26 +961,29 @@ export function recordHostChange(
+ 	)
+ 	if (recorded) return changes
+ 	const prior = readHostValue(target)
+-	return prior === next ? changes : [...changes, { target, prior }]
++	const priority = readHostPriority(target)
++	return prior === next && priority === '' ? changes : [...changes, { target, prior, priority }]
+ }
+ 
+ /**
+- * Writes each recorded target back to the value it held before the change's first write to it, in reverse order of those first writes.
++ * Writes each recorded target back to the value and priority it held before the change's first write to it, in reverse order of those first writes.
+  *
+  * @param changes - The records a change holds, in the order of its first writes.
+  * @param owns - Reports whether the change still owns its host; read before each write.
+  * @remarks
+- * A target that already reads its recorded value takes no write. The first read of `owns` that
+- * returns `false` ends the step, so a destruction or a later change a reaction starts inside one
+- * write stops the writes after it.
++ * A target that already reads its recorded value and priority takes no write. The first read of
++ * `owns` that returns `false` ends the step, so a destruction or a later change a reaction starts
++ * inside one write stops the writes after it.
+  * @example
+  * ```ts
+  * rewindHostChanges(changes, () => !signal.aborted)
+  * ```
+  */
+ export function rewindHostChanges(changes: readonly HostChange[], owns: () => boolean): void {
+-	for (const { target, prior } of [...changes].reverse()) {
++	for (const { target, prior, priority } of [...changes].reverse()) {
+ 		if (!owns()) return
+-		if (readHostValue(target) !== prior) writeHostValue(target, prior)
++		if (readHostValue(target) !== prior || readHostPriority(target) !== priority) {
++			writeHostValue(target, prior, priority)
++		}
+ 	}
+ }
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index b82a8e7..3764347 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -339,12 +339,14 @@ export interface HostSnapshotTarget {
+ 	readonly name: string
+ }
+ 
+-/** Describes one piece of host state a change wrote and the value it held before the change's first write to it. */
++/** Describes one piece of host state a change wrote and the value and priority it held before the change's first write to it. */
+ export interface HostChange {
+ 	/** Carries the attribute, class token, or inline property the change wrote. */
+ 	readonly target: HostSnapshotTarget
+ 	/** Carries the value before the change's first write: the attribute's value, the token's name, or the property's value, or undefined when the target was absent. */
+ 	readonly prior: string | undefined
++	/** Carries the inline property's priority the record read, and the empty string for an attribute or a class token. */
++	readonly priority: string
+ }
+ 
+ /** Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores. */
+diff --git a/tests/src/browser/Collapse.test.ts b/tests/src/browser/Collapse.test.ts
+index 8c13290..8decf5d 100644
+--- a/tests/src/browser/Collapse.test.ts
++++ b/tests/src/browser/Collapse.test.ts
+@@ -1605,6 +1605,140 @@ describe('Collapse', () => {
+ 		expect(both.getAttribute('aria-expanded')).toBe('true')
+ 	})
+ 
++	it('returns a show whose completing token write a reaction answers by removing the shown token to the inline size and priority held before the show', async () => {
++		const name = 'vn-collapse-show-prior-priority'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse'
++		panel.style.setProperty('height', '12px', 'important')
++		root.append(panel)
++		const collapse = new Collapse(panel)
++		onTestFinished(() => collapse.destroy())
++		reactions.set(panel, (value) => {
++			if (!(value ?? '').split(' ').includes('show')) return
++			reactions.delete(panel)
++			panel.classList.remove('show')
++		})
++		expect(await collapse.show()).toBe(false)
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect([
++			panel.style.getPropertyValue('height'),
++			panel.style.getPropertyPriority('height'),
++		]).toEqual(['12px', 'important'])
++	})
++
++	// The panel carries no `host` token, so the hide's removal of it changes nothing, and the
++	// completing addition is the hide's first changing write of that token.
++	it('returns a hide of a panel without the host token, whose completing host-token write a reaction answers by adding the shown token, removing the host token again', async () => {
++		const name = 'vn-collapse-hide-hostless-completion'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'show'
++		root.append(panel)
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, { on: { hidden: (event) => events.handler(event.type) } })
++		onTestFinished(() => collapse.destroy())
++		reactions.set(panel, (value) => {
++			const tokens = (value ?? '').split(' ')
++			if (!tokens.includes('collapse') || tokens.includes('show')) return
++			reactions.delete(panel)
++			panel.classList.add('show')
++		})
++		expect(await collapse.hide()).toBe(false)
++		expect(events.count).toBe(0)
++		expect(Array.from(panel.classList)).toEqual(['show'])
++		expect(panel.style.height).toBe('')
++	})
++
++	// The panel is laid out at a zero height and holds a zero inline height, so each size the show
++	// writes changes nothing, and the clearing is the show's first changing write of the size.
++	it('returns a show whose size writes change nothing and whose size clearing a reaction answers by removing the shown token, writing the zero size back', async () => {
++		const name = 'vn-collapse-show-zero-cleared'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['style']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse'
++		panel.style.setProperty('display', 'block')
++		panel.style.setProperty('height', '0px')
++		root.append(panel)
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => collapse.destroy())
++		reactions.set(panel, (value) => {
++			if ((value ?? '').includes('height')) return
++			reactions.delete(panel)
++			panel.classList.remove('show')
++		})
++		expect(await collapse.show()).toBe(false)
++		expect(events.count).toBe(0)
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++		expect(panel.style.height).toBe('0px')
++	})
++
++	// The panel is laid out at a zero height and holds a zero inline height, so the size the hide
++	// measures and writes changes nothing, and the clearing is the hide's first changing write of the
++	// size.
++	it('returns a hide whose size write changes nothing and whose size clearing a reaction answers by adding the shown token, writing the zero size back', async () => {
++		const name = 'vn-collapse-hide-zero-cleared'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['style']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse show'
++		panel.style.setProperty('display', 'block')
++		panel.style.setProperty('height', '0px')
++		root.append(panel)
++		const events = createRecorder<readonly [string]>()
++		const collapse = new Collapse(panel, { on: { hidden: (event) => events.handler(event.type) } })
++		onTestFinished(() => collapse.destroy())
++		reactions.set(panel, (value) => {
++			if ((value ?? '').includes('height')) return
++			reactions.delete(panel)
++			panel.classList.add('show')
++		})
++		expect(await collapse.hide()).toBe(false)
++		expect(events.count).toBe(0)
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		expect(panel.style.height).toBe('0px')
++	})
++
+ 	it('destroys a sibling collapse it constructed at its next show or hide call, refused or not, after that sibling panel leaves the document', async () => {
+ 		const root = scene.mount(`
+ 			<div id="accordion">
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index b20a200..baa306d 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -45,6 +45,7 @@ import {
+ 	TARGET_ATTRIBUTE,
+ 	TOOLTIP_TEMPLATE,
+ 	writeContent,
++	readHostPriority,
+ 	readHostValue,
+ 	recordHostChange,
+ 	rewindHostChanges,
+@@ -1447,7 +1448,39 @@ describe('readHostValue', () => {
+ 	})
+ })
+ 
++describe('readHostPriority', () => {
++	it('reads an inline property priority, and the empty string for an unprioritized or absent property, an attribute, and a token', () => {
++		const element = build('div')
++		element.style.setProperty('height', '12px', 'important')
++		element.style.setProperty('width', '30px')
++		element.setAttribute('role', 'dialog')
++		element.classList.add('show')
++		expect([
++			readHostPriority({ category: 'property', element, name: 'height' }),
++			readHostPriority({ category: 'property', element, name: 'width' }),
++			readHostPriority({ category: 'property', element, name: 'top' }),
++			readHostPriority({ category: 'attribute', element, name: 'role' }),
++			readHostPriority({ category: 'token', element, name: 'show' }),
++		]).toEqual(['important', '', '', '', ''])
++	})
++})
++
+ describe('writeHostValue', () => {
++	it('sets an inline property with the priority it is given, and with none by default', () => {
++		const element = build('div')
++		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
++		writeHostValue(size, '12px', 'important')
++		expect([
++			element.style.getPropertyValue('height'),
++			element.style.getPropertyPriority('height'),
++		]).toEqual(['12px', 'important'])
++		writeHostValue(size, '12px')
++		expect([
++			element.style.getPropertyValue('height'),
++			element.style.getPropertyPriority('height'),
++		]).toEqual(['12px', ''])
++	})
++
+ 	it('adds or removes a token, sets or removes an attribute, and sets or clears an inline property', () => {
+ 		const element = build('div')
+ 		writeHostValue({ category: 'token', element, name: 'show' }, 'show')
+@@ -1501,10 +1534,10 @@ describe('recordHostChange', () => {
+ 		const third = recordHostChange(second, { ...expanded }, 'false')
+ 		expect(third).toBe(second)
+ 		expect(third).toEqual([
+-			{ target: expanded, prior: 'false' },
+-			{ target: shown, prior: undefined },
++			{ target: expanded, prior: 'false', priority: '' },
++			{ target: shown, prior: undefined, priority: '' },
+ 		])
+-		expect(first).toEqual([{ target: expanded, prior: 'false' }])
++		expect(first).toEqual([{ target: expanded, prior: 'false', priority: '' }])
+ 	})
+ 
+ 	it('records an attribute and a token of the same name on one element as two targets', () => {
+@@ -1513,10 +1546,41 @@ describe('recordHostChange', () => {
+ 		const attribute: HostSnapshotTarget = { category: 'attribute', element, name: 'hidden' }
+ 		const changes = recordHostChange(recordHostChange([], token, 'hidden'), attribute, '')
+ 		expect(changes).toEqual([
+-			{ target: token, prior: undefined },
+-			{ target: attribute, prior: undefined },
++			{ target: token, prior: undefined, priority: '' },
++			{ target: attribute, prior: undefined, priority: '' },
++		])
++	})
++
++	it('records an inline property with its priority, and an attribute and a token with the empty string', () => {
++		const element = build('div')
++		element.style.setProperty('height', '12px', 'important')
++		element.setAttribute('role', 'dialog')
++		element.classList.add('show')
++		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
++		const role: HostSnapshotTarget = { category: 'attribute', element, name: 'role' }
++		const shown: HostSnapshotTarget = { category: 'token', element, name: 'show' }
++		let changes = recordHostChange([], size, '0px')
++		changes = recordHostChange(changes, role, undefined)
++		changes = recordHostChange(changes, shown, undefined)
++		expect(changes).toEqual([
++			{ target: size, prior: '12px', priority: 'important' },
++			{ target: role, prior: 'dialog', priority: '' },
++			{ target: shown, prior: 'show', priority: '' },
+ 		])
+ 	})
++
++	// A write gives no priority, so writing the value an important property already holds drops the
++	// priority, which the platform reading after the write shows.
++	it('records a write of the value an inline property holds when the property carries a priority', () => {
++		const element = build('div')
++		element.style.setProperty('height', '0px', 'important')
++		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
++		const changes = recordHostChange([], size, '0px')
++		expect(changes).toEqual([{ target: size, prior: '0px', priority: 'important' }])
++		element.style.setProperty('height', '0px')
++		expect(element.style.getPropertyPriority('height')).toBe('')
++		expect(recordHostChange([], size, '0px')).toEqual([])
++	})
+ })
+ 
+ describe('rewindHostChanges', () => {
+@@ -1573,4 +1637,40 @@ describe('rewindHostChanges', () => {
+ 		expect(Array.from(element.classList)).toEqual(['first', 'second'])
+ 		expect(reads.count).toBe(2)
+ 	})
++
++	// The first element's write changes the value, and the second's changes only the priority.
++	it('writes an inline property back with its recorded priority, and skips it once it holds that value and priority', () => {
++		const sized = build('div')
++		const kept = build('div')
++		sized.style.setProperty('height', '12px', 'important')
++		kept.style.setProperty('height', '12px', 'important')
++		let changes = recordHostChange(
++			[],
++			{ category: 'property', element: sized, name: 'height' },
++			'0px',
++		)
++		changes = recordHostChange(
++			changes,
++			{ category: 'property', element: kept, name: 'height' },
++			'12px',
++		)
++		sized.style.setProperty('height', '0px')
++		kept.style.setProperty('height', '12px')
++		rewindHostChanges(changes, () => true)
++		expect(
++			[sized, kept].map((element) => [
++				element.style.getPropertyValue('height'),
++				element.style.getPropertyPriority('height'),
++			]),
++		).toEqual([
++			['12px', 'important'],
++			['12px', 'important'],
++		])
++		const observer = new MutationObserver(() => undefined)
++		onTestFinished(() => observer.disconnect())
++		observer.observe(sized, { attributes: true })
++		observer.observe(kept, { attributes: true })
++		rewindHostChanges(changes, () => true)
++		expect(observer.takeRecords()).toEqual([])
++	})
+ })
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 61525b0..13d4b2e 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -205,6 +205,7 @@ describe('src browser entry', () => {
+ 			'readClosest',
+ 			'readControls',
+ 			'readElementName',
++			'readHostPriority',
+ 			'readHostValue',
+ 			'readOutermost',
+ 			'readScrollbarWidth',

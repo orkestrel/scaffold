@@ -363,3 +363,26 @@ The J-TOAST-SWIPE design round ran both lanes blind on `units/j-toast-swipe-desi
 - **J-TOAST-SWIPE-CASCADE:** `opus` on Opus 5.5, after J-TOAST-SWIPE and the styles session's rule land. It runs trusted drags against the shipped cascade.
 - **The styles session** receives the cascade contract when this ruling is recorded.
 - **J-ORACLE-GATE** writes the departure row: a toast carries `pointer-event`.
+
+E32 amended at J-CONCERNS-A round 2 (2026-09-25). The writer found that the completion bullet read wider than meant. Button's toggle event fires while the cascade's feedback transition runs, which is Bootstrap's behaviour, and the unit's brief asked the case to prove exactly that.
+
+**The completion bullet binds only an engine whose Bootstrap counterpart waits on a transition before its completion event:** Alert, Carousel, Collapse, Modal, Offcanvas, Tab, Toast, Tooltip, Popover, and `Backdrop`. Button and ScrollSpy complete synchronously, as Bootstrap does. Their motion proof reads that the event fires while the cascade's transition runs, and pins no value the cascade owns. Dropdown completes synchronously until J-DROPDOWN-SETTLE rules otherwise.
+
+## E34 — an engine gates the motion it starts in script on the reduced-motion preference (2026-09-25)
+
+Veneer's `ROADMAP.md` § Tenets adopts "reduced-motion gating in script". J-CONCERNS-A's audit found a conflict with that tenet. The objective lane is `analyst` on GPT-6 Astra, thread `01a0d6d1-dee5-74a2-8fc4-65ef95e9b481` (`units/j-concerns-a-audit-objective-verdict.md`, claim 3).
+- `ScrollSpy`'s smooth option calls `scrollTo({ behavior: 'smooth' })` whatever the preference.
+- Chromium 153 animates that scroll under reduced motion (`units/j-concerns-a-report.md` § Unknowns), and Bootstrap makes the same request.
+- The round-1 case pinned Bootstrap's behaviour.
+
+**The rule.** Motion the cascade controls is gated by the cascade's `transition` mixin. Motion an engine starts in script bypasses the cascade, so the engine gates it on `matchesReducedMotion`.
+- Under reduced motion, the requested change still happens, but without motion.
+- This is the rule the carousel follows. There, a requested slide still runs, but the cascade removes its transition. Only the automatic cycle, which is motion in itself, arms nothing.
+
+**Applied.**
+- `ScrollSpy`'s smooth scroll uses `behavior: 'instant'` while the view prefers reduced motion.
+- The end state is Bootstrap's, since the page scrolls to the same section. Only the timing departs, which E9 and E11 leave outside parity, so the change needs no departure row.
+- J-CONCERNS-A round 3 carries it, with the case flipped and read red first.
+- Any later engine that starts motion in script, such as J-TOAST-SWIPE's snap back if an engine writes one, follows this rule.
+
+E33 amended at J-ORACLE-RECORD's census (2026-09-25, `units/j-oracle-census-0925.md`). Bootstrap's carousel adds `pointer-event` only where `Swipe.isSupported()` reads true: `'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0`. Veneer's `Swipe` adds it whenever `touch` is true, so the census reads a departure on a device without touch. **`Swipe` marks and reads a pointer only where the platform supports touch, as Bootstrap's does,** and the toast inherits the same gate. J-TOAST-SWIPE carries the gate. Its proofs emulate touch through `Emulation.setTouchEmulationEnabled`, the route `Carousel.test.ts` already takes, and a case without touch reads no token. The departure row this ruling had named for J-ORACLE-GATE is struck. A toast carries `pointer-event` exactly where Bootstrap's carousel would.
