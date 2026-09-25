@@ -936,14 +936,15 @@ describe('emitted workspaces under their own gates', () => {
 	})
 
 	it('declares every emitted project factory with the override parameter', () => {
-		// Vitest calls a project row with its own environment record, so a factory that
+		// Vitest calls a project row with its own invocation record, so a factory that
 		// declares a parameter receives those fields in the override position. The
 		// emitted `mergeOverride` is what makes the parameter safe: a `UserConfig` declares
-		// `mode` but not `command`, and the record always carries both, so a value carrying
-		// the pair returns the base unchanged. The vendored `tests/config.test.ts` drives
-		// every registered row through that refusal. This rule replaced a seal — a factory
-		// declaring no parameter at all — so the controls are that seal put back: once
-		// into the template text the emitters carry, and once into every emitted
+		// `mode` but not `command`, and the record always carries both, so `mergeOverride`,
+		// given a value carrying the pair, returns the base in the record's mode and
+		// carries none of its other fields. The vendored `tests/config.test.ts` drives
+		// every registered row through that projection. This rule replaced a seal — a
+		// factory declaring no parameter at all — so the controls are that seal put back:
+		// once into the template text the emitters carry, and once into every emitted
 		// configuration the sweep reads.
 		const sealed = sealParameter(CONFIG_TEMPLATES.factories.policy)
 		expect(sealed).not.toBe(CONFIG_TEMPLATES.factories.policy)
@@ -1037,9 +1038,11 @@ describe('emitted workspaces under their own gates', () => {
 			expect(checkTypes(applicationRoot)).toBe('')
 			expect(checkTypes(showcaseRoot)).toBe('')
 
-			// The row is the factory itself, so Vitest calls it and reads the command
-			// line's `--mode` inside the project. An evaluated row passes this `check`
-			// while failing the emitted workspace's own `test` script.
+			// The row is the factory itself, so Vitest calls it with the invocation record,
+			// and the project runs in the command line's `--mode` only because the factory
+			// returns that record's mode. An evaluated row receives no record and runs in
+			// `test` under a release run. It passes this `check` while failing the emitted
+			// workspace's own `test` script, whose vendored `config` proof calls every row.
 			expect(application).toContain('projects: [appBrowser, policy, config, probe]')
 			// The vendored `config` proof finds a called row by its function name and an
 			// evaluated one by its label, so the name and the label both have to agree

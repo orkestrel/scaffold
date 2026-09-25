@@ -6,7 +6,12 @@ import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
-import { extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
+import {
+	DISTRIBUTION_TEST_PATH,
+	extractVersion,
+	MINIMUM_NPM_VERSION,
+	ScaffoldError,
+} from '@src/core'
 import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
 import { readHostFloor } from '@src/server'
 import { buildSnapshot } from './setup.js'
@@ -25,6 +30,7 @@ import {
 	buildOptionArgv,
 	buildOrganization,
 	buildPackument,
+	buildReleaseScenarios,
 	buildServerGuardCases,
 	buildStagedManifest,
 	buildTargetAudit,
@@ -74,6 +80,7 @@ import {
 	readManifestVersion,
 	readNpmFloor,
 	readNpmVersion,
+	parseVitestReport,
 	captureScaffoldRejection,
 	readSpecifiers,
 	readStatements,
@@ -1020,6 +1027,104 @@ describe('the upstream fixtures', () => {
 			'widget',
 			'--target',
 			'sample',
+		])
+	})
+})
+
+describe('the release-mode fixtures', () => {
+	it('parses every test file a Vitest report records, and refuses a text that is not a report', () => {
+		const report = JSON.stringify({
+			testResults: [
+				{
+					name: '/workspace/tests/distribution.test.ts',
+					status: 'failed',
+					message: 'The release gate requires a reachable npm registry',
+					assertionResults: [],
+				},
+				{
+					name: '/workspace/tests/setupBrowser.test.ts',
+					status: 'passed',
+					message: '',
+					assertionResults: [
+						{ title: 'renders the component', status: 'passed', duration: 12 },
+						{ title: 'waits for a browser', status: 'skipped' },
+						'not a case record',
+					],
+				},
+			],
+		})
+		expect(parseVitestReport(report)).toStrictEqual([
+			{
+				name: '/workspace/tests/distribution.test.ts',
+				status: 'failed',
+				message: 'The release gate requires a reachable npm registry',
+				cases: [],
+			},
+			{
+				name: '/workspace/tests/setupBrowser.test.ts',
+				status: 'passed',
+				message: '',
+				cases: [
+					{ title: 'renders the component', status: 'passed' },
+					{ title: 'waits for a browser', status: 'skipped' },
+					{ title: undefined, status: undefined },
+				],
+			},
+		])
+		expect(parseVitestReport('{"testResults":[]}')).toStrictEqual([])
+		// A report missing a structure the reader walks is refused whole, including one whose only
+		// defect is a single malformed file entry beside a well-formed one.
+		for (const text of [
+			'not a report',
+			'{}',
+			'{"testResults":{}}',
+			'{"testResults":[{"assertionResults":[]}]}',
+			'{"testResults":[{"name":7,"assertionResults":[]}]}',
+			'{"testResults":[{"name":"/workspace/a.test.ts"}]}',
+			'{"testResults":[{"name":"/workspace/a.test.ts","assertionResults":[]},"entry"]}',
+		]) {
+			expect(parseVitestReport(text)).toBeUndefined()
+		}
+	})
+
+	it('lists the release and ordinary runs, then every rival release run with its own rewrite', () => {
+		const release = ['run', 'test:distribution', '--', '--mode', 'release']
+		const ordinary = ['run', 'test:distribution', '--']
+		expect(
+			buildReleaseScenarios(
+				release,
+				ordinary,
+				'export default {}\n',
+				"it('proves the artifact', () => {})\n",
+			),
+		).toStrictEqual([
+			{ label: 'release', arguments: release, timeout: 240_000, files: {} },
+			{ label: 'ordinary', arguments: ordinary, timeout: 240_000, files: {} },
+			{
+				label: 'malformed',
+				arguments: release,
+				timeout: 240_000,
+				files: { 'vite.config.ts': 'export default {}\n\nexport const =\n' },
+			},
+			{
+				label: 'collection',
+				arguments: release,
+				timeout: 240_000,
+				files: {
+					[DISTRIBUTION_TEST_PATH]:
+						"import './absent-module.js'\nit('proves the artifact', () => {})\n",
+				},
+			},
+			{
+				label: 'assertion',
+				arguments: release,
+				timeout: 240_000,
+				files: {
+					[DISTRIBUTION_TEST_PATH]:
+						"import { expect, it } from 'vitest'\n\nit('asserts an unrelated value', () => {\n\texpect(1).toBe(2)\n})\n",
+				},
+			},
+			{ label: 'timeout', arguments: release, timeout: 1, files: {} },
 		])
 	})
 })
