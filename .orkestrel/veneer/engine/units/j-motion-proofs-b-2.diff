@@ -1,0 +1,306 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3557b6c..f88becb 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1855,11 +1855,12 @@ attribute carries the incoming position gains the token and an `aria-current` va
+ slide then adds the order token to the incoming item, `next` for a forward slide and `previous` for
+ a backward one, forces a layout read through the `reflow` function, and adds the direction token to
+ both items, `start` for a forward slide and `end` for a backward one, which the cascade's transforms
+-move. When the host carries the `slide` token, the slide waits for the incoming item's transition
+-through the `settleAnimations` function: its transform, or its opacity under the `carousel-fade`
+-class. The slide then removes the order and direction tokens from the incoming item, adds its
+-`active` token, removes the `active`, order, and direction tokens from the outgoing item, and
+-dispatches `slid.vn.carousel`. A host without the `slide` token completes the slide in the same
++move. When the host carries the `slide` token, the slide waits through the `settleAnimations`
++function for the motion of both items, and it goes on only after the longer of them finishes: each
++item's transform, or under the `carousel-fade` class the incoming item's opacity and the outgoing
++item's delayed opacity drop. The slide then removes the order and direction tokens from the
++incoming item, adds its `active` token, removes the `active`, order, and direction tokens from the
++outgoing item, and dispatches `slid.vn.carousel`. A host without the `slide` token completes the slide in the same
+ task, before the call returns.
+ 
+ The `next` and `previous` methods slide one item forward or back, and past either end onto the other
+@@ -2086,8 +2087,8 @@ The carousel departs from Bootstrap's in these ways:
+ - The touch delay follows a touch or pen release alone, and restarts only a timer the `start` method
+   started. Bootstrap's delay follows the end of every swipe gesture and starts any carousel with a
+   ride.
+-- Completion waits on the incoming item's running finite animations. Bootstrap waits on the
+-  outgoing item's `transitionend` event with a fallback timer.
++- Completion waits on the running finite animations of both items, whichever lasts longer.
++  Bootstrap waits on the outgoing item's `transitionend` event with a fallback timer.
+ - Destruction clears both timers, abandons a slide in flight, and restores the items and the
+   indicators, then the host's `pointer` token when its swipe holds the token last. Bootstrap's
+   `dispose` method removes its swipe and its instance data and restores nothing.
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index fdac478..9f7ca5e 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -56,10 +56,10 @@ import { isAttributeName, isCarouselEvent, isClassToken, isSelector } from './va
+  * elements the `entry` selector matches inside the host that sit inside no other item, and the
+  * active item is the first of them carrying the `active` token, both read at each call. A slide
+  * dispatches the cancelable `slide.vn.carousel` event, moves the indicator, writes the incoming
+- * item's order token, the direction token to both items, waits for the incoming item's transition
+- * when the host carries the `slide` token, moves the `active` token, and dispatches
+- * `slid.vn.carousel`. A slide that another slide started inside its `slide.vn.carousel` dispatch
+- * took over resolves `false`. After each write and await, a slide reads its lifetime, that both
++ * item's order token, the direction token to both items, when the host carries the `slide` token
++ * waits for the motion of both items until the longer of them finishes, moves the `active` token,
++ * and dispatches `slid.vn.carousel`. A slide that another slide started inside its
++ * `slide.vn.carousel` dispatch took over resolves `false`. After each write and await, a slide reads its lifetime, that both
+  * items are still items of the host, and the tokens and indicator values the phase requires, and
+  * it stops, writing and dispatching nothing more, and resolves `false`, when any read fails. The
+  * incoming item's `active` token is agreement: a listener or a reaction that adds it has made the
+@@ -524,8 +524,11 @@ export class Carousel implements CarouselInterface {
+ 			) {
+ 				return this.#rewind(change, written)
+ 			}
++			// The direction tokens start the outgoing item's motion and the incoming item's together, and
++			// either can outlast the other, so the slide completes only after both items settle.
+ 			if (this.#host.classList.contains(this.#classes.slide)) {
+-				await settleAnimations(incoming, this.#controller.signal)
++				const signal = this.#controller.signal
++				await Promise.all(pair.map((item) => settleAnimations(item, signal)))
+ 				if (!this.#holds(change, pair, expected, moving, blocked, [])) {
+ 					return this.#rewind(change, written)
+ 				}
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index 97a05d7..bb57bca 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -375,8 +375,59 @@ describe('Carousel', () => {
+ 		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
+ 	})
+ 
++	// The inline duration lengthens the outgoing item's motion to twice the shipped duration read on
++	// the incoming item, to set up the case's order; it copies no shipped rule. Both motions start at
++	// the same style change, so their end times order them, and the case reads that order before the
++	// slide completes.
++	it('dispatches slid after the outgoing item motion when it outlasts the incoming item motion', async () => {
++		scene.load(carouselCascade)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No outgoing item')
++		const incoming = requireValue(two, 'No incoming item')
++		const shipped = readDuration(incoming)
++		expect(shipped).toBeGreaterThan(0)
++		outgoing.style.setProperty('transition-duration', `${2 * shipped}ms`)
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, number, number]>()
++		const carousel = new Carousel(host, {
++			on: {
++				slid: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						outgoing.getAnimations().length + incoming.getAnimations().length,
++					),
++			},
++		})
++		onTestFinished(() => carousel.destroy())
++		const moving = carousel.next()
++		const leaving = outgoing.getAnimations()
++		const arriving = incoming.getAnimations()
++		expect(leaving).not.toEqual([])
++		expect(arriving).not.toEqual([])
++		for (const animation of [...leaving, ...arriving]) motions.handler(animation)
++		expect(
++			Math.max(
++				...leaving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		).toBeGreaterThan(
++			Math.max(
++				...arriving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		)
++		expect(await moving).toBe(true)
++		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
++	})
++
+ 	// The inline duration lengthens the incoming item's motion to twice the shipped duration read on
+-	// the outgoing item, to set up the case's order; it copies no shipped rule.
++	// the outgoing item, to set up the case's order; it copies no shipped rule. The case reads the order
++	// from the two motions' end times.
+ 	it('dispatches slid after the incoming item motion when it outlasts the outgoing item motion', async () => {
+ 		scene.load(carouselCascade)
+ 		const root = scene.mount(`
+@@ -405,11 +456,20 @@ describe('Carousel', () => {
+ 		})
+ 		onTestFinished(() => carousel.destroy())
+ 		const moving = carousel.next()
+-		for (const item of [outgoing, incoming]) {
+-			const animations = item.getAnimations()
+-			expect(animations).not.toEqual([])
+-			for (const animation of animations) motions.handler(animation)
+-		}
++		const leaving = outgoing.getAnimations()
++		const arriving = incoming.getAnimations()
++		expect(leaving).not.toEqual([])
++		expect(arriving).not.toEqual([])
++		for (const animation of [...leaving, ...arriving]) motions.handler(animation)
++		expect(
++			Math.max(
++				...arriving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		).toBeGreaterThan(
++			Math.max(
++				...leaving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		)
+ 		expect(await moving).toBe(true)
+ 		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
+ 	})
+@@ -458,27 +518,139 @@ describe('Carousel', () => {
+ 		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
+ 	})
+ 
+-	it('completes with no animation created under staged reduced motion', async () => {
++	// The inline delay holds the outgoing item's opacity drop for twice the shipped duration read on
++	// the incoming item, the way the cascade itself delays that drop, to set up the case's order; it
++	// copies no shipped rule. The case reads the order from the two motions' end times.
++	it('dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion', async () => {
+ 		scene.load(carouselCascade)
+-		await stageMedia({ motion: false })
+-		onTestFinished(() => releaseMedia())
+ 		const root = scene.mount(`
+-			<div id="gallery" class="carousel slide">
++			<div id="gallery" class="carousel slide carousel-fade">
+ 				<div class="carousel-item active">One</div>
+ 				<div class="carousel-item">Two</div>
+ 			</div>`)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
+-		const two = requireValue(root.querySelectorAll<HTMLElement>('.carousel-item')[1], 'No item')
+-		const slid = createRecorder<readonly [number]>()
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No outgoing item')
++		const incoming = requireValue(two, 'No incoming item')
++		const shipped = readDuration(incoming)
++		expect(shipped).toBeGreaterThan(0)
++		outgoing.style.setProperty('transition-delay', `${2 * shipped}ms`)
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, number, number]>()
+ 		const carousel = new Carousel(host, {
+-			on: { slid: () => slid.handler(two.getAnimations().length) },
++			on: {
++				slid: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						outgoing.getAnimations().length + incoming.getAnimations().length,
++					),
++			},
+ 		})
+ 		onTestFinished(() => carousel.destroy())
+ 		const moving = carousel.next()
+-		expect(two.getAnimations()).toEqual([])
++		const leaving = outgoing.getAnimations()
++		const arriving = incoming.getAnimations()
++		expect(leaving).not.toEqual([])
++		expect(arriving).not.toEqual([])
++		for (const animation of [...leaving, ...arriving]) motions.handler(animation)
++		expect(
++			Math.max(
++				...leaving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		).toBeGreaterThan(
++			Math.max(
++				...arriving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		)
+ 		expect(await moving).toBe(true)
+-		expect(slid.calls).toEqual([[0]])
+-		expect(carousel.index).toBe(1)
++		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
++	})
++
++	// The inline duration lengthens the incoming item's fade in to twice the shipped duration read on
++	// it, to set up the case's order; it copies no shipped rule. The case reads the order from the two
++	// motions' end times, so a cascade whose outgoing drop outlasts that fade in fails the setup.
++	it('dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion', async () => {
++		scene.load(carouselCascade)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide carousel-fade">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No outgoing item')
++		const incoming = requireValue(two, 'No incoming item')
++		const shipped = readDuration(incoming)
++		expect(shipped).toBeGreaterThan(0)
++		incoming.style.setProperty('transition-duration', `${2 * shipped}ms`)
++		const motions = createRecorder<readonly [Animation]>()
++		const readings = createRecorder<readonly [string, number, number]>()
++		const carousel = new Carousel(host, {
++			on: {
++				slid: (event) =>
++					readings.handler(
++						event.type,
++						motions.calls.filter(([animation]) => animation.playState !== 'finished').length,
++						outgoing.getAnimations().length + incoming.getAnimations().length,
++					),
++			},
++		})
++		onTestFinished(() => carousel.destroy())
++		const moving = carousel.next()
++		const leaving = outgoing.getAnimations()
++		const arriving = incoming.getAnimations()
++		expect(leaving).not.toEqual([])
++		expect(arriving).not.toEqual([])
++		for (const animation of [...leaving, ...arriving]) motions.handler(animation)
++		expect(
++			Math.max(
++				...arriving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		).toBeGreaterThan(
++			Math.max(
++				...leaving.map((animation) => Number(animation.effect?.getComputedTiming().endTime)),
++			),
++		)
++		expect(await moving).toBe(true)
++		expect(readings.calls).toEqual([['slid.vn.carousel', 0, 0]])
++	})
++
++	it('completes with no animation created on either item under staged reduced motion, in the slide and the fade variants', async () => {
++		scene.load(carouselCascade)
++		await stageMedia({ motion: false })
++		onTestFinished(() => releaseMedia())
++		const root = scene.mount(`
++			<div id="gallery" class="carousel slide">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>
++			<div id="faded" class="carousel slide carousel-fade">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const slid = createRecorder<readonly [string, number]>()
++		for (const id of ['gallery', 'faded']) {
++			const host = requireValue(root.querySelector<HTMLElement>(`#${id}`), 'No carousel')
++			const [one, two] = Array.from(host.querySelectorAll<HTMLElement>('.carousel-item'))
++			const outgoing = requireValue(one, 'No outgoing item')
++			const incoming = requireValue(two, 'No incoming item')
++			const carousel = new Carousel(host, {
++				on: {
++					slid: () =>
++						slid.handler(id, outgoing.getAnimations().length + incoming.getAnimations().length),
++				},
++			})
++			onTestFinished(() => carousel.destroy())
++			const moving = carousel.next()
++			expect([...outgoing.getAnimations(), ...incoming.getAnimations()]).toEqual([])
++			expect(await moving).toBe(true)
++			expect(carousel.index).toBe(1)
++		}
++		expect(slid.calls).toEqual([
++			['gallery', 0],
++			['faded', 0],
++		])
+ 	})
+ 
+ 	it('resolves false for next and previous while a slide is in flight, and queues each slide call until slid, sliding from where the last one left', async () => {

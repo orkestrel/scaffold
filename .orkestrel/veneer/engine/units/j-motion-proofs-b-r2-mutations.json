@@ -1,0 +1,25 @@
+{
+	"r2-carousel-base": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"base": "f03690f"
+	},
+	"r2-carousel-incoming": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"old": "\t\t\t\tawait Promise.all(pair.map((item) => settleAnimations(item, signal)))\n",
+		"new": "\t\t\t\tawait settleAnimations(incoming, signal)\n"
+	},
+	"r2-carousel-outgoing": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"old": "\t\t\t\tawait Promise.all(pair.map((item) => settleAnimations(item, signal)))\n",
+		"new": "\t\t\t\tawait settleAnimations(outgoing, signal)\n"
+	},
+	"r2-carousel-yield": {
+		"file": "src/browser/Carousel.ts",
+		"test": "tests/src/browser/Carousel.test.ts",
+		"old": "\t\t\t\tconst signal = this.#controller.signal\n\t\t\t\tawait Promise.all(pair.map((item) => settleAnimations(item, signal)))\n",
+		"new": "\t\t\t\tawait Promise.resolve()\n"
+	}
+}

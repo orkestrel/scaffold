@@ -1,0 +1,17 @@
+npm run check exit 0
+npm run lint:check exit 0
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm run format:check exit 0
+
+All matched files use the correct format.
+Finished in 20013ms on 476 files using 16 threads.
+git diff --check exit 0
+Carousel exit 0
+ Test Files  1 passed (1)
+      Tests  73 passed (73)
+npm run test:guides exit 0
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+npm run test:app exit 0
+ Test Files  61 passed (61)
+      Tests  223 passed (223)

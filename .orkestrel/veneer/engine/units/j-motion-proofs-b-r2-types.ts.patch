@@ -1,0 +1,11 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -2290,7 +2290,7 @@
+ export interface CarouselEventMap {
+ 	/** Names the `slide.vn.carousel` event, whose prevention refuses the slide. */
+ 	readonly slide: CustomEvent<CarouselDetail>
+-	/** Names the `slid.vn.carousel` event, dispatched after the active item's transition settles; it is not cancelable. */
++	/** Names the `slid.vn.carousel` event, dispatched after the `active` token moves, and under the `slide` token after the motion of both items finishes; it is not cancelable. */
+ 	readonly slid: CustomEvent<CarouselDetail>
+ }
+ 
