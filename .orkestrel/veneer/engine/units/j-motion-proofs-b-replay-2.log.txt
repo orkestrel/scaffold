@@ -1,0 +1,224 @@
+# J-MOTION-PROOFS-B rounds 1 and 2 replay (2026-09-25) at fd82ae9 Say that slid follows both items' motion in the contract and the showcase (J-MOTION-PROOFS-B round 2 integration)
+Collapse whole-file exit=0
+      Tests  49 passed (49)
+Toast whole-file exit=0
+      Tests  45 passed (45)
+Tab whole-file exit=0
+      Tests  47 passed (47)
+Carousel whole-file exit=0
+      Tests  73 passed (73)
+test:app exit=0
+      Tests  223 passed (223)
+== toast-base: exit 1, restored True
+    Tests  3 failed | 42 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ [ 'shown.vn.toast', true, …(3) ] ] to deeply equal [ [ 'shown.vn.toast', true, …(3) ] ]
+      AssertionError: expected true to be false // Object.is equality
+== toast-fadein-skip: exit 1, restored True
+    Tests  3 failed | 42 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ [ 'shown.vn.toast', true, …(3) ] ] to deeply equal [ [ 'shown.vn.toast', true, …(3) ] ]
+      AssertionError: expected true to be false // Object.is equality
+== toast-fadein-door: exit 1, restored True
+    Tests  1 failed | 44 passed (45)
+    FAIL Toast > resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once
+      AssertionError: expected true to be false // Object.is equality
+== toast-show-skip: exit 1, restored True
+    Tests  9 failed | 36 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > dispatches shown with no animation created under staged reduced motion
+    FAIL Toast > resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once
+    FAIL Toast > abandons the transition in flight on destruction, resolving false and restoring the toast
+    FAIL Toast > writes, removes, tests, and reads only the replacing values when every group is replaced
+    FAIL Toast > resolves false for the call whose transition another call took over during the await, and dispatches shown once
+    FAIL Toast > stops a show when the transition token leaves during its await, dispatching no shown event
+    FAIL Toast > clears a pending delay when a show is accepted, even when that show stops before it completes
+      AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected false to be true // Object.is equality
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected [ 'note', 'is-faded', 'is-open' ] to deeply equal [ 'note', 'is-faded', 'is-open', …(1) ]
+      AssertionError: expected false to be true // Object.is equality
+      Error: No transition
+      Error: No transition
+== toast-hide-skip: exit 1, restored True
+    Tests  4 failed | 41 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+    FAIL Toast > resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once
+    FAIL Toast > completes a hide when the shown token leaves during its transition, dispatching hidden and leaving no showing token
+      AssertionError: expected [ 'toast', 'fade' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+      AssertionError: expected [] to not deeply equal []
+      AssertionError: expected true to be false // Object.is equality
+      Error: No transition
+== collapse-show-skip: exit 1, restored True
+    Tests  8 failed | 41 passed (49)
+    FAIL Collapse > shows and hides through the transition token and an inline pixel size, keeping every trigger in step
+    FAIL Collapse > sizes the width of a panel carrying the horizontal token, and its height never
+    FAIL Collapse > resolves false for a call while the panel or an open sibling transitions, and completes the transition in flight once
+    FAIL Collapse > dispatches shown and hidden after every motion its change starts on the panel finishes
+    FAIL Collapse > dispatches shown with no animation created under staged reduced motion
+    FAIL Collapse > abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers
+    FAIL Collapse > writes, removes, tests, reads, and matches only the replacing values when every group is replaced
+    FAIL Collapse > resolves false for the call whose transition another call took over during the await, and dispatches shown once
+      AssertionError: expected [ 'collapse', 'show' ] to deeply equal [ 'collapsing' ]
+      AssertionError: expected [ 'collapse-horizontal', …(2) ] to deeply equal [ 'collapse-horizontal', 'collapsing' ]
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected 0 to be greater than 0
+      AssertionError: expected false to be true // Object.is equality
+      AssertionError: expected '' to be '40px' // Object.is equality
+      AssertionError: expected [ 'is-wide', 'panel', 'is-open' ] to deeply equal [ 'is-wide', 'is-moving' ]
+      AssertionError: expected false to be true // Object.is equality
+== collapse-hide-skip: exit 1, restored True
+    Tests  6 failed | 43 passed (49)
+    FAIL Collapse > shows and hides through the transition token and an inline pixel size, keeping every trigger in step
+    FAIL Collapse > sizes the width of a panel carrying the horizontal token, and its height never
+    FAIL Collapse > resolves false for a call while the panel or an open sibling transitions, and completes the transition in flight once
+    FAIL Collapse > dispatches shown and hidden after every motion its change starts on the panel finishes
+    FAIL Collapse > writes, removes, tests, reads, and matches only the replacing values when every group is replaced
+    FAIL Collapse > returns a hide when the shown token returns during its transition, leaving the panel shown at its full height with no hidden event
+      AssertionError: expected [ 'collapse' ] to deeply equal [ 'collapsing' ]
+      AssertionError: expected [] to not deeply equal []
+      AssertionError: expected false to be true // Object.is equality
+      AssertionError: expected 0 to be greater than 0
+      AssertionError: expected [ 'panel' ] to deeply equal [ 'is-moving' ]
+      Error: No transition
+== tab-skip: exit 1, restored True
+    Tests  7 failed | 40 passed (47)
+    FAIL Tab > dispatches hidden and shown after every motion the swap starts on the panes finishes
+    FAIL Tab > dispatches shown with no running pane fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+    FAIL Tab > abandons a swap in flight on destruction, resolving false and restoring the control, its pane, and the sibling it deactivated
+    FAIL Tab > stops a swap whose pane loses its shown token during the fade, dispatching no completed event
+    FAIL Tab > returns a swap whose control loses its active token during the pane fade, reactivating the sibling and its pane and deactivating the control and its pane
+    FAIL Tab > returns a swap whose control loses its active token during the pane fade, reopening the dropdown that holds the sibling
+    FAIL Tab > resolves false for the swap a sibling takes over during the fade, which dispatches its own completed events once
+      AssertionError: expected [ …(2) ] to deeply equal []
+      AssertionError: expected [ [ 'still', 'shown.vn.tab' ], …(3) ] to deeply equal [ [ 'still', 'shown.vn.tab' ], …(2) ]
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected true to be false // Object.is equality
+== toast-fadein-yield: exit 1, restored True
+    Tests  2 failed | 43 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ [ 'shown.vn.toast', true, …(3) ] ] to deeply equal [ [ 'shown.vn.toast', true, …(3) ] ]
+== toast-show-yield: exit 1, restored True
+    Tests  3 failed | 42 passed (45)
+    FAIL Toast > dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish
+    FAIL Toast > stops a show when the transition token leaves during its await, dispatching no shown event
+    FAIL Toast > clears a pending delay when a show is accepted, even when that show stops before it completes
+      AssertionError: expected [ [ 'shown.vn.toast', true, …(3) ] ] to deeply equal [ [ 'shown.vn.toast', true, …(3) ] ]
+== toast-hide-yield: exit 1, restored True
+    Tests  3 failed | 42 passed (45)
+    FAIL Toast > shows through the fade and showing tokens and hides back under the shipped cascade, dispatching each completed event after every motion its change starts on the toast finishes
+    FAIL Toast > dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+    FAIL Toast > completes a hide when the shown token leaves during its transition, dispatching hidden and leaving no showing token
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ Array(4) ] to deeply equal [ Array(3) ]
+== collapse-show-yield: exit 1, restored True
+    Tests  2 failed | 47 passed (49)
+    FAIL Collapse > resolves false for a call while the panel or an open sibling transitions, and completes the transition in flight once
+    FAIL Collapse > dispatches shown and hidden after every motion its change starts on the panel finishes
+      AssertionError: expected true to be false // Object.is equality
+      AssertionError: expected [ [ 'shown.vn.collapse', …(3) ], …(1) ] to deeply equal [ [ 'shown.vn.collapse', …(3) ], …(1) ]
+== collapse-hide-yield: exit 1, restored True
+    Tests  2 failed | 47 passed (49)
+    FAIL Collapse > dispatches shown and hidden after every motion its change starts on the panel finishes
+    FAIL Collapse > returns a hide when the shown token returns during its transition, leaving the panel shown at its full height with no hidden event
+      AssertionError: expected [ [ 'shown.vn.collapse', …(3) ], …(1) ] to deeply equal [ [ 'shown.vn.collapse', …(3) ], …(1) ]
+== tab-yield: exit 1, restored True
+    Tests  2 failed | 45 passed (47)
+    FAIL Tab > dispatches hidden and shown after every motion the swap starts on the panes finishes
+    FAIL Tab > dispatches shown with no running pane fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+      AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+      AssertionError: expected [ [ 'still', 'shown.vn.tab' ], …(3) ] to deeply equal [ [ 'still', 'shown.vn.tab' ], …(2) ]
+round 1 rows exit=0
+== r2-carousel-base: exit 1, restored True
+    Tests  2 failed | 71 passed (73)
+    FAIL Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+== r2-carousel-incoming: exit 1, restored True
+    Tests  2 failed | 71 passed (73)
+    FAIL Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+== r2-carousel-outgoing: exit 1, restored True
+    Tests  2 failed | 71 passed (73)
+    FAIL Carousel > dispatches slid after the incoming item motion when it outlasts the outgoing item motion
+    FAIL Carousel > dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+== r2-carousel-yield: exit 1, restored True
+    Tests  7 failed | 66 passed (73)
+    FAIL Carousel > dispatches slid after every motion the slide starts on the outgoing and the incoming items finishes
+    FAIL Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid after the incoming item motion when it outlasts the outgoing item motion
+    FAIL Carousel > dispatches slid after every motion the slide starts under the fade variant finishes
+    FAIL Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion
+    FAIL Carousel > resolves false for next and previous while a slide is in flight, and queues each slide call until slid, sliding from where the last one left
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected true to be false // Object.is equality
+round 2 rows exit=0
+--- error class of each failing case
+toast-base: assertion=3 abort=0 other=0 Tests  3 failed | 42 passed (45)
+toast-fadein-skip: assertion=3 abort=0 other=0 Tests  3 failed | 42 passed (45)
+toast-fadein-door: assertion=1 abort=0 other=0 Tests  1 failed | 44 passed (45)
+toast-show-skip: assertion=7 abort=0 other=2 Tests  9 failed | 36 passed (45)
+toast-hide-skip: assertion=3 abort=0 other=1 Tests  4 failed | 41 passed (45)
+collapse-show-skip: assertion=8 abort=0 other=0 Tests  8 failed | 41 passed (49)
+collapse-hide-skip: assertion=5 abort=0 other=1 Tests  6 failed | 43 passed (49)
+tab-skip: assertion=7 abort=0 other=0 Tests  7 failed | 40 passed (47)
+toast-fadein-yield: assertion=2 abort=0 other=0 Tests  2 failed | 43 passed (45)
+toast-show-yield: assertion=1 abort=2 other=0 Tests  3 failed | 42 passed (45)
+toast-hide-yield: assertion=2 abort=1 other=0 Tests  3 failed | 42 passed (45)
+collapse-show-yield: assertion=2 abort=0 other=0 Tests  2 failed | 47 passed (49)
+collapse-hide-yield: assertion=1 abort=1 other=0 Tests  2 failed | 47 passed (49)
+tab-yield: assertion=2 abort=0 other=0 Tests  2 failed | 45 passed (47)
+r2-carousel-base: assertion=2 abort=0 other=0 Tests  2 failed | 71 passed (73)
+r2-carousel-incoming: assertion=2 abort=0 other=0 Tests  2 failed | 71 passed (73)
+r2-carousel-outgoing: assertion=2 abort=0 other=0 Tests  2 failed | 71 passed (73)
+r2-carousel-yield: assertion=7 abort=0 other=0 Tests  7 failed | 66 passed (73)
+--- the plant
+planted src/styles/_tokens.scss
+planted src/styles/components/_collapse.scss
+planted src/styles/components/_fade.scss
+planted src/styles/components/_toast.scss
+planted src/styles/components/_carousel.scss
+PlantProbe exit 0
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+Collapse exit 0
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+Toast exit 0
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+Tab exit 0
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+Carousel exit 0
+ Test Files  1 passed (1)
+      Tests  73 passed (73)
+scratch removed: yes
+plant exit=0
+--- the tree after the replay

@@ -1,0 +1,34 @@
+== r2-carousel-base: exit 1, restored True
+    Tests  2 failed | 71 passed (73)
+    FAIL Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+== r2-carousel-incoming: exit 1, restored True
+    Tests  2 failed | 71 passed (73)
+    FAIL Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, +0 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+== r2-carousel-outgoing: exit 1, restored True
+    Tests  2 failed | 71 passed (73)
+    FAIL Carousel > dispatches slid after the incoming item motion when it outlasts the outgoing item motion
+    FAIL Carousel > dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 1, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+== r2-carousel-yield: exit 1, restored True
+    Tests  7 failed | 66 passed (73)
+    FAIL Carousel > dispatches slid after every motion the slide starts on the outgoing and the incoming items finishes
+    FAIL Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid after the incoming item motion when it outlasts the outgoing item motion
+    FAIL Carousel > dispatches slid after every motion the slide starts under the fade variant finishes
+    FAIL Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+    FAIL Carousel > dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion
+    FAIL Carousel > resolves false for next and previous while a slide is in flight, and queues each slide call until slid, sliding from where the last one left
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected [ [ 'slid.vn.carousel', 2, 1 ] ] to deeply equal [ [ 'slid.vn.carousel', +0, +0 ] ]
+      AssertionError: expected true to be false // Object.is equality

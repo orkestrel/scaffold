@@ -6,3 +6,55 @@ Isolation whole-file exit=0
 Modal whole-file exit=0
       Tests  61 passed (61)
 1
+never exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 918ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+always exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 366ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+released exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 787ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+outside exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 1183ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+1
+static exit 1
+     × keeps the press focus change when the press moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop 1587ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+source restored
+base exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 824ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+source restored after base
+mutate-2 exit=0
+1
+click exit 1
+     × leaves focus on the trigger after a trusted press on the backdrop hides the panel, at the hidden event and after the press, with motion and under reduced motion 829ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 1 passed | 62 skipped (64)
+source restored
+mutate-3 exit=0
+--- error class of each failing case in the mutation logs
+tmp/j-oracle-fix-offcanvas/mutation-2-always.log.txt: assertion=1 other=0 failed=1
+tmp/j-oracle-fix-offcanvas/mutation-2-base.log.txt: assertion=1 other=0 failed=1
+tmp/j-oracle-fix-offcanvas/mutation-2-never.log.txt: assertion=1 other=0 failed=1
+tmp/j-oracle-fix-offcanvas/mutation-2-outside.log.txt: assertion=1 other=0 failed=1
+tmp/j-oracle-fix-offcanvas/mutation-2-released.log.txt: assertion=1 other=0 failed=1
+tmp/j-oracle-fix-offcanvas/mutation-2-static.log.txt: assertion=1 other=0 failed=1
+tmp/j-oracle-fix-offcanvas/mutation-3-click.log.txt: assertion=1 other=0 failed=1
+--- the census for offcanvas and modal
+census exit=0
+departures rows naming focus: 0
+"modal.departures": 48
+"offcanvas.departures": 18
+--- the tree after the replay

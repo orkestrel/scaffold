@@ -1,0 +1,3 @@
+ M guides/veneer.md
+ M src/browser/Carousel.ts
+ M tests/src/browser/Carousel.test.ts

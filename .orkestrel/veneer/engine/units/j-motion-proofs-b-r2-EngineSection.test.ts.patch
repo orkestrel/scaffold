@@ -1,0 +1,13 @@
+--- a/tests/app/browser/sections/EngineSection.test.ts
++++ b/tests/app/browser/sections/EngineSection.test.ts
+@@ -385,8 +385,8 @@
+ 			false,
+ 		])
+ 		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Next stop')
+-		// The host carries the `slide` token, so the move waits for the incoming item's transition:
+-		// right after the click the item is still sliding in, where a host without the token has
++		// The host carries the `slide` token, so the move waits for the motion of both items: right
++		// after the click the incoming item is still sliding in, where a host without the token has
+ 		// already moved the `active` token and cleared the direction tokens.
+ 		expect(items[1]?.classList.contains('carousel-item-start')).toBe(true)
+ 		expect(items[1]?.classList.contains('active')).toBe(false)
