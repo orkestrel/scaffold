@@ -549,3 +549,35 @@ it is a pattern: both rules include one `cover-block` mixin, with its fixture ca
 change alone as a shared report-only file). A block whose shared declarations each carry a measure
 the release records (a length, a colour, a duration) stays inline. The UTIL-FLOW audit rules on this
 decision with the rest of the unit.
+
+## D47 — The cascade restates anchored visibility on promoted overlays (the Orchestrator, 2026-09-25)
+
+The engine session's J-NATIVE-PROBE round-3 file (`engine/units/j-native-probe-3.test.ts`) ran on this host's Chromium
+141.0.7390.37 at Veneer `main` `0865c67` (`native141/j-native-probe-3-141.log.txt`, run by `native141/run.sh`). The
+initial value of `position-visibility` there is `always`, where Chromium 153's is `anchors-visible`, and the candidate
+rule suppresses a fully clipped tooltip and popover while the `always` control keeps them. E29's amendment names that
+reading as the condition for the rule, so this session adds
+`:where(.dropdown-menu, .tooltip, .popover):popover-open { position-visibility: anchors-visible }` to the cascade as an
+addition row, with a style proof of the computed value on each overlay, and J-ANCHOR-VISIBLE in the engine session
+proves the behaviour. The unit is E-ID-ANCHOR. The same run reads `calc-size()` green on Chromium 141 with the
+horizontal departure Chromium 153 shows, and the anchored arrow centred on its own tip, as on Chromium 153.
+
+## D48 — Elements' motion opens as E-ID-MOTION (the Orchestrator, 2026-09-25)
+
+The user's ruling recorded as the engine session's E26 (2026-09-24) gives this session the motion values of the
+collapse, modal, offcanvas, and carousel transitions. Exit criterion 8 requires the motion rulings to land as recorded
+departures, and no E-IDENTITY ruling covers motion. `--vn-motion-panel` and `--vn-ease-panel` hold Elements' motion
+contract (`/home/user/elements/src/styles/_tokens.scss`, `--set-motion-duration` and `--set-motion-timing-function`)
+and no rule reads them; each panel transition writes Bootstrap's literal. E-ID-MOTION runs a terrain on Cursor Grok, a
+design round (`planner` on Opus 5.5, `analyst` on Astra), and its units. J-CASCADE's engine proofs read the shipped
+tokens, so a unit that changes a panel's duration or geometry names the engine proofs it reaches to the engine session
+before its landing.
+
+## D49 — J-ORACLE's hunks in this session's files land through the engine session (the Orchestrator, 2026-09-25)
+
+The engine session asked (E28) whether J-ORACLE-RECORD's hunks in `tests/setupServer.ts`, `tests/setupServer.test.ts`,
+`tests/conformance.test.ts`, and `tests/fixtures/oracle/**` may be recorded in its § Pending shared changes and applied
+by its landing. They may, for every file. E-RECEIPTS (ER-MECH) changes `tests/setupServer.ts` and
+`tests/setupServer.test.ts`, and E-ID-BUTTON-CASCADE changes `tests/conformance.test.ts`; whichever landing comes second
+merges the other's hunks by hunk and names the merge in its landing log. Button's recording and `button.json` stay
+byte-identical, as E28 rules.

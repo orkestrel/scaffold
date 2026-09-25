@@ -1,0 +1,40 @@
+diff --git a/tests/src/styles/components/accordion.test.ts b/tests/src/styles/components/accordion.test.ts
+index 3997a0a..a0645b7 100644
+--- a/tests/src/styles/components/accordion.test.ts
++++ b/tests/src/styles/components/accordion.test.ts
+@@ -39,7 +39,7 @@ describe('accordion classes', () => {
+ 	// missing rule and an extra rule on the same classes each report here. The dark icon rule is
+ 	// the release's own, recorded under the theme key, so it is read beside the key's list, and so is
+ 	// the button reboot the partial writes back on the header's button form.
+-	it('writes the recorded accordion selectors and the dark icon rule, and no other rule on the accordion classes', () => {
++	it("writes the recorded accordion selectors, the dark icon rule, and the button reboot on the header's button form, and no other rule on the accordion classes", () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/carousel.test.ts b/tests/src/styles/components/carousel.test.ts
+index c32e29a..732fa06 100644
+--- a/tests/src/styles/components/carousel.test.ts
++++ b/tests/src/styles/components/carousel.test.ts
+@@ -41,7 +41,7 @@ describe('carousel track and slides', () => {
+ 	// so a missing rule and an extra rule on the same classes each report here. The button reboot
+ 	// the partial writes back on the controls' and the indicators' button forms is read beside the
+ 	// key's list.
+-	it('writes the recorded carousel selectors and no other rule on their classes', () => {
++	it("writes the recorded carousel selectors and the button reboot on the controls' and the indicators' button forms, and no other rule on their classes", () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/elements/button.test.ts b/tests/src/styles/elements/button.test.ts
+index c288e62..80e2880 100644
+--- a/tests/src/styles/elements/button.test.ts
++++ b/tests/src/styles/elements/button.test.ts
+@@ -83,7 +83,8 @@ describe('button', () => {
+ 	})
+ 	it('paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface', async () => {
+ 		// The holder retunes the weight and the shadow the surface reads, so a button the surface
+-		// misses reads the release's reboot instead, which differs from the surface in both.
++		// misses reads the release's reboot and the browser's own values instead, which differ
++		// from the surface in the weight and the shadow.
+ 		const host = scene.mount(
+ 			`<div style="${BUTTON_HOLDER_STYLE}"><button type="button">Plain control</button>${BUTTON_TAG_CASES.map(({ markup }) => markup).join('')}${BUTTON_TAG_CASES.flatMap(({ utility }) => (utility === undefined ? [] : [`<div data-utility="${utility.name}" class="${utility.name}"></div>`])).join('')}</div>`,
+ 		)
