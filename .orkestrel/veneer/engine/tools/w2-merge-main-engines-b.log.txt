@@ -1,86 +1,38 @@
 # J-ENGINES-B landing: the merge of main into unit/engines-b (2026-09-24)
-b8a8805 State the agreement, the returning step, and the platform's close of Dropdown, Tooltip, and Popover in their contracts and the guide
-54a6c2f Complete a change the host agreed with, return one it took over, and follow the platform's close in Dropdown, Tooltip, and Popover
+13d4aae Claim no more than the measurements show in the frame-wait comments (J-SAMEWAY-ENGINES-B round 6)
+4c9a7dd Name the measured cause of the ResizeObserver loop each frame wait drains (J-SAMEWAY-ENGINES-B round 5)
 From https://github.com/mikesaintsg/veneer
  * branch            main       -> FETCH_HEAD
 fetch exit=0
-Already up to date.
+Updating 63eabbd..0a0a252
+Fast-forward
+ ROADMAP.md                                      |   2 +-
+ guides/veneer.md                                |  88 +++++++---
+ src/styles/components/_placeholder.scss         |  16 +-
+ src/styles/components/_spinner.scss             |  24 +--
+ tests/setupBrowser.test.ts                      | 114 ++++++++++++
+ tests/setupBrowser.ts                           | 221 ++++++++++++++++++++++++
+ tests/setupStyles.test.ts                       |  26 ++-
+ tests/setupStyles.ts                            | 185 +++++++++++++++++---
+ tests/src/styles/components/accordion.test.ts   |  29 +++-
+ tests/src/styles/components/carousel.test.ts    |  35 +++-
+ tests/src/styles/components/close.test.ts       |  24 ++-
+ tests/src/styles/components/dropdown.test.ts    |  24 ++-
+ tests/src/styles/components/list-group.test.ts  |  24 ++-
+ tests/src/styles/components/nav.test.ts         |  29 +++-
+ tests/src/styles/components/navbar.test.ts      |  23 +++
+ tests/src/styles/components/pagination.test.ts  |  23 +++
+ tests/src/styles/components/placeholder.test.ts |  56 ++++--
+ tests/src/styles/components/spinner.test.ts     |  60 +++++--
+ tests/src/styles/elements/button.test.ts        | 129 +++-----------
+ tests/src/styles/mixins.test.ts                 |  28 +++
+ 20 files changed, 945 insertions(+), 215 deletions(-)
 main ff to origin exit=0
-3058570 Merge branch 'main' into unit/engines-a
+0a0a252 Merge origin/main (J-ORACLE-RECORD) into the styles session branch
 Auto-merging guides/veneer.md
-Auto-merging src/browser/types.ts
-Merge made by the 'ort' strategy.
- ROADMAP.md                                      |   79 +-
- app/browser/styles/_shell.scss                  |   14 +-
- guides/veneer.md                                | 1185 +++++++++++++----------
- src/browser/Carousel.ts                         |  273 ++++--
- src/browser/Collapse.ts                         |  380 ++++++--
- src/browser/HostSnapshot.ts                     |  168 ++--
- src/browser/Isolation.ts                        |   66 +-
- src/browser/Modal.ts                            |   70 +-
- src/browser/ScrollLock.ts                       |    6 +
- src/browser/ScrollSpy.ts                        |   15 +-
- src/browser/Tab.ts                              |  275 ++++--
- src/browser/Toast.ts                            |  181 ++--
- src/browser/helpers.ts                          |  122 +++
- src/browser/types.ts                            |   94 +-
- src/styles/_mixins.scss                         |   29 +-
- src/styles/_tokens.scss                         |    6 +-
- src/styles/components/_accordion.scss           |    6 +
- src/styles/components/_carousel.scss            |   12 +
- src/styles/components/_close.scss               |    6 +
- src/styles/components/_dropdown.scss            |    6 +
- src/styles/components/_list-group.scss          |    6 +
- src/styles/components/_nav.scss                 |    6 +
- src/styles/components/_navbar.scss              |    6 +
- src/styles/components/_pagination.scss          |    6 +
- src/styles/elements/_button.scss                |   23 +-
- src/styles/elements/_dl.scss                    |    3 +-
- src/styles/elements/_fieldset.scss              |    3 +-
- src/styles/elements/_figure.scss                |    2 +-
- src/styles/elements/_hr.scss                    |    8 +-
- src/styles/elements/_pre.scss                   |    3 +-
- tests/app/browser/Showcase.test.ts              |    2 +-
- tests/app/browser/integration.test.ts           |    2 +-
- tests/app/browser/sections/BadgeSection.test.ts |    3 +-
- tests/conformance.test.ts                       |    4 +-
- tests/distribution.test.ts                      |   57 +-
- tests/guides.test.ts                            |   95 +-
- tests/service/tailwind/consumer.test.ts         |   46 +-
- tests/setupServer.test.ts                       |  260 ++++-
- tests/setupServer.ts                            |  323 +++++-
- tests/setupStyles.test.ts                       |   13 +-
- tests/setupStyles.ts                            |  206 +++-
- tests/src/browser/Button.test.ts                |   96 +-
- tests/src/browser/Carousel.test.ts              |  357 ++++++-
- tests/src/browser/Collapse.test.ts              |  602 +++++++++++-
- tests/src/browser/ColorMode.test.ts             |   20 +-
- tests/src/browser/HostSnapshot.test.ts          |   69 +-
- tests/src/browser/Isolation.test.ts             |   45 +-
- tests/src/browser/Modal.test.ts                 |   57 +-
- tests/src/browser/ScrollLock.test.ts            |   33 +-
- tests/src/browser/ScrollSpy.test.ts             |  176 +++-
- tests/src/browser/Tab.test.ts                   |  377 ++++++-
- tests/src/browser/Toast.test.ts                 |  236 ++++-
- tests/src/browser/helpers.test.ts               |  283 +++++-
- tests/src/browser/index.test.ts                 |    5 +
- tests/src/styles/components/accordion.test.ts   |   18 +-
- tests/src/styles/components/button.test.ts      |    4 +-
- tests/src/styles/components/carousel.test.ts    |   18 +-
- tests/src/styles/components/close.test.ts       |    4 +-
- tests/src/styles/components/collapse.test.ts    |    9 +-
- tests/src/styles/components/fade.test.ts        |   11 +-
- tests/src/styles/components/modal.test.ts       |    9 +-
- tests/src/styles/components/offcanvas.test.ts   |   11 +-
- tests/src/styles/components/popover.test.ts     |   12 +-
- tests/src/styles/components/toast.test.ts       |   11 +-
- tests/src/styles/components/tooltip.test.ts     |   12 +-
- tests/src/styles/elements/button.test.ts        |  325 +++++--
- tests/src/styles/elements/dl.test.ts            |   27 +-
- tests/src/styles/elements/figure.test.ts        |   59 +-
- tests/src/styles/elements/hr.test.ts            |   26 +-
- tests/src/styles/elements/pre.test.ts           |   25 +-
- tests/src/styles/mixins.test.ts                 |   41 +-
- 71 files changed, 5689 insertions(+), 1359 deletions(-)
-merge main into unit/engines-b exit=0
-conflicts: none
+Auto-merging tests/setupBrowser.test.ts
+CONFLICT (content): Merge conflict in tests/setupBrowser.test.ts
+Auto-merging tests/setupBrowser.ts
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/engines-b exit=1
+conflicts: tests/setupBrowser.test.ts

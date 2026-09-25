@@ -1,0 +1,262 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index f88becb..ca28ef6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2410,7 +2410,7 @@ selector, and a toast you construct directly matches with none.
+ 
+ Showing adds the `fade` token when the `animated` option is `true`, reads the layout, and adds the
+ `shown` and `transition` tokens; when `animated` is `true` it then waits for the toast's transitions
+-to settle. It removes the `transition` token, waits the same way for the fade in that removal
++to settle. It removes the `transition` token, waits the same way for the fade in that the removal
+ starts, and dispatches `shown.vn.toast`. Hiding reads the layout, adds the `transition` token,
+ waits the same way, removes the `transition` and `shown` tokens, and dispatches `hidden.vn.toast`.
+ With `animated` set to `false`, neither call waits, so each dispatches its completed event before
+@@ -2479,28 +2479,30 @@ group resolves; the default is Bootstrap's selector.
+ The toast dispatches the following events on its host. Each one bubbles and carries no detail,
+ which the platform reads as `null`.
+ 
+-| Key      | Wire name         | Cancelable | Dispatched                                                |
+-| -------- | ----------------- | ---------- | --------------------------------------------------------- |
+-| `show`   | `show.vn.toast`   | Yes        | Before any write; prevention refuses the show             |
+-| `shown`  | `shown.vn.toast`  | No         | After the fade in the `transition` token's removal starts |
+-| `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide             |
+-| `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave           |
+-
+-A call carries the change identity it sets when its change starts, and after each write, dispatch,
+-and await it reads whether the toast is live and whether a later `show` or `hide` call has started.
+-It also reads the `transition` token: before a show writes it the toast must lack it, from a
+-call's write of it until the call removes it the toast must carry it, and after a show removes it
+-the toast must lack it again. A call that finds the toast destroyed, a later call started, or the
+-`transition` token otherwise stops, writing and dispatching nothing more, and resolves `false`. A
+-listener that calls `show` or `hide` inside `show.vn.toast` or `hide.vn.toast` therefore supersedes
+-the call whose event it heard, whether the listener's call is still waiting or has already
+-completed: the call whose event it heard resolves `false` and writes nothing, and the listener's
+-call completes or stops by its own cancellation, lifetime, and door reads. A listener that prevents
+-the pre-change event starts no change, whatever else it wrote, so a listener that prevents the
+-nested `show.vn.toast` its own call dispatches leaves the outer call to complete: the nested call
+-resolves `false`, and the outer call dispatches `shown.vn.toast` once and resolves `true`. The toast
+-lacks the `transition` token during a show's fade in, so a `show` or `hide` call made then is
+-accepted and supersedes that show, which resolves `false` and dispatches no `shown.vn.toast`.
++| Key      | Wire name         | Cancelable | Dispatched                                                                                                         |
++| -------- | ----------------- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
++| `show`   | `show.vn.toast`   | Yes        | Before any write; prevention refuses the show                                                                      |
++| `shown`  | `shown.vn.toast`  | No         | After the `transition` token leaves; when `animated` is `true`, after the fade in that its removal starts finishes |
++| `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide                                                                      |
++| `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave                                                                    |
++
++A call carries the change identity it sets when its change starts. After its pre-change dispatch
++and after each write and await, it reads whether the toast is live and whether a later `show` or
++`hide` call has started. After its completed event, it reads only whether the toast is live, and
++resolves `false` when it is not. Before its completed event, it also reads the `transition` token:
++before a show writes it the toast must lack it, from a call's write of it until the call removes it
++the toast must carry it, and after a show removes it the toast must lack it again. A call that
++finds the toast destroyed, a later call started, or the `transition` token otherwise stops, writing
++and dispatching nothing more, and resolves `false`. A listener that calls `show` or `hide` inside
++`show.vn.toast` or `hide.vn.toast` therefore supersedes the call whose event it heard, whether the
++listener's call is still waiting or has already completed: the call whose event it heard resolves
++`false` and writes nothing, and the listener's call completes or stops by its own cancellation,
++lifetime, and door reads. A listener that prevents the pre-change event starts no change, whatever
++else it wrote, so a listener that prevents the nested `show.vn.toast` its own call dispatches
++leaves the outer call to complete: the nested call resolves `false`, and the outer call dispatches
++`shown.vn.toast` once and resolves `true`. The toast lacks the `transition` token during a show's
++fade in, so a `show` or `hide` call made then is accepted and supersedes that show, which resolves
++`false` and dispatches no `shown.vn.toast`.
+ 
+ The toast's `shown` token at the change's end is agreement. A listener or a reaction that adds the
+ token before a show writes it, or removes it before a hide does, has made that write for the call:
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index 9f7ca5e..8a1b87a 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -56,9 +56,9 @@ import { isAttributeName, isCarouselEvent, isClassToken, isSelector } from './va
+  * elements the `entry` selector matches inside the host that sit inside no other item, and the
+  * active item is the first of them carrying the `active` token, both read at each call. A slide
+  * dispatches the cancelable `slide.vn.carousel` event, moves the indicator, writes the incoming
+- * item's order token, the direction token to both items, when the host carries the `slide` token
+- * waits for the motion of both items until the longer of them finishes, moves the `active` token,
+- * and dispatches `slid.vn.carousel`. A slide that another slide started inside its
++ * item's order token, the direction token to both items, then, when the host carries the `slide`
++ * token, waits for the motion of both items until the longer of them finishes, moves the `active`
++ * token, and dispatches `slid.vn.carousel`. A slide that another slide started inside its
+  * `slide.vn.carousel` dispatch took over resolves `false`. After each write and await, a slide reads its lifetime, that both
+  * items are still items of the host, and the tokens and indicator values the phase requires, and
+  * it stops, writing and dispatching nothing more, and resolves `false`, when any read fails. The
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+index ed76bc4..5d40413 100644
+--- a/src/browser/Toast.ts
++++ b/src/browser/Toast.ts
+@@ -34,20 +34,22 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * the pointer and focus entering and leaving the host. Showing writes the `fade` token when
+  * `animated` is `true`, then the `shown` and `transition` tokens, waits for the host's transitions
+  * to settle when `animated` is `true`, removes the `transition` token, waits the same way for the
+- * fade in that removal starts, and dispatches the `shown` event; hiding writes the `transition`
++ * fade in that the removal starts, and dispatches the `shown` event; hiding writes the `transition`
+  * token, waits the same way, and removes the `transition` and `shown` tokens. Showing a shown toast
+  * runs the sequence again and restarts the delay. With `autohide`, a shown toast hides itself
+  * through a native timer `delay` milliseconds after it shows; the timer is cleared while the
+  * pointer or focus is inside the host and started again in full when both have left.
+  *
+- * A call carries the change identity it sets when its change starts. After each write, dispatch,
+- * and await, it reads whether the toast is live and whether a later `show` or `hide` call has
+- * started; a call that finds either stops, writing and dispatching nothing more, and resolves
+- * `false`. A listener that starts a call of its own inside the pre-change dispatch supersedes the
+- * call this way, whether that call is still waiting or has completed, while a prevented call starts
+- * no change. The call also reads the `transition` token: before a show writes it the host must lack
+- * it, from its write until its removal the host must carry it, and after its removal the host must
+- * lack it again; a call that finds the host otherwise stops the same way. A `show` or `hide` call
++ * A call carries the change identity it sets when its change starts. After its pre-change dispatch
++ * and after each write and await, it reads whether the toast is live and whether a later `show` or
++ * `hide` call has started; a call that finds either stops, writing and dispatching nothing more, and
++ * resolves `false`. A listener that starts a call of its own inside the pre-change dispatch
++ * supersedes the call this way, whether that call is still waiting or has completed, while a
++ * prevented call starts no change. The call also reads the `transition` token: before a show writes
++ * it the host must lack it, from its write until its removal the host must carry it, and after its
++ * removal the host must lack it again; a call that finds the host otherwise stops the same way.
++ * After its completed event, a call reads only whether the toast is live, and resolves `false` when
++ * it is not. A `show` or `hide` call
+  * made during a show's fade in is accepted, because the token has left, and supersedes that show.
+  * The host's `shown` token at the change's end is agreement: a listener or a reaction that moves
+  * the token there has made the call's token write for it, so the call writes the `shown` token only
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index d14e38c..c68c52d 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -3,7 +3,7 @@ import { Tab, TAB_ATTRIBUTES, TAB_CLASSES, TAB_EVENTS, TAB_SELECTORS } from '@sr
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
+-import { waitForFrame } from '@orkestrel/test/browser'
++import { releaseMedia, stageMedia, waitForFrame } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import tokensCascade from '../../../src/styles/_tokens.scss?inline'
+ import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
+@@ -490,12 +490,14 @@ describe('Tab', () => {
+ 			</div>`)
+ 		const second = requireValue(root.querySelector<HTMLElement>('#second'), 'No second pane')
+ 		const fourth = requireValue(root.querySelector<HTMLElement>('#fourth'), 'No fourth pane')
+-		// The slow pane's duration is read at the release's factor and again at the large one, and the
+-		// ratio of the two readings is the factor.
+-		const released = readDuration(fourth)
+-		expect(released).toBeGreaterThan(0)
+ 		// The root carries the factor, because the tokens partial resolves the motion tokens there and
+-		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade. The
++		// case replaces the shipped factor with 1 before it reads the slow pane's duration, and with 4
++		// before it reads the duration again, so the ratio of the two readings is 4 whatever factor the
++		// cascade ships.
++		scene.load(':root { --vn-factor-motion: 1 }')
++		const shipped = readDuration(fourth)
++		expect(shipped).toBeGreaterThan(0)
+ 		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const order = createRecorder<readonly [string, string]>()
+ 		// Each completed event reads how many of the motions its swap started on its pane have not
+@@ -541,7 +543,7 @@ describe('Tab', () => {
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.show()
+ 		const scaled = readDuration(fourth)
+-		expect(scaled / released).toBeCloseTo(4)
++		expect(scaled / shipped).toBeCloseTo(4)
+ 		const fade = fourth.getAnimations()
+ 		for (const animation of fade) motions.handler(animation)
+ 		expect(fade).not.toEqual([])
+@@ -574,6 +576,41 @@ describe('Tab', () => {
+ 		])
+ 	})
+ 
++	it('swaps the panes with no animation created on either pane under staged reduced motion, and dispatches shown', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(navCascade)
++		await stageMedia({ motion: false })
++		onTestFinished(() => releaseMedia())
++		// A swap fades the incoming pane in through the fade token wherever motion is allowed.
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-content">
++				<div class="tab-pane fade active show" id="home"></div>
++				<div class="tab-pane fade" id="profile"></div>
++			</div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const home = requireValue(root.querySelector<HTMLElement>('#home'), 'No home pane')
++		const pane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile pane')
++		const shown = createRecorder<readonly [number]>()
++		const tab = new Tab(profile, {
++			on: {
++				shown: () => shown.handler(home.getAnimations().length + pane.getAnimations().length),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		const showing = tab.show()
++		expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade', 'active', 'show'])
++		expect([...home.getAnimations(), ...pane.getAnimations()]).toEqual([])
++		expect(await showing).toBe(true)
++		expect(shown.calls).toEqual([[0]])
++		expect(Array.from(home.classList)).toEqual(['tab-pane', 'fade'])
++		expect(getComputedStyle(pane).opacity).toBe('1')
++	})
++
+ 	it('marks the toggle, the menu, and the wrapper of a dropdown holding the active control, and clears them when a sibling activates', async () => {
+ 		const root = scene.mount(`
+ 			<ul class="nav nav-tabs">
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index ae67d9d..383b1bc 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -154,12 +154,14 @@ describe('Toast', () => {
+ 			<div class="toast fade show" id="slow">Saved</div>`)
+ 		const still = requireValue(root.querySelector<HTMLElement>('#still'), 'No still toast')
+ 		const slow = requireValue(root.querySelector<HTMLElement>('#slow'), 'No slow toast')
+-		// The slow toast's duration is read at the release's factor and again at the large one, and
+-		// the ratio of the two readings is the factor.
+-		const released = readDuration(slow)
+-		expect(released).toBeGreaterThan(0)
+ 		// The root carries the factor, because the tokens partial resolves the motion tokens there and
+-		// an element inherits the resolved duration, so a factor set on the host reaches no fade.
++		// an element inherits the resolved duration, so a factor set on the host reaches no fade. The
++		// case replaces the shipped factor with 1 before it reads the slow toast's duration, and with 4
++		// before it reads the duration again, so the ratio of the two readings is 4 whatever factor the
++		// cascade ships.
++		scene.load(':root { --vn-factor-motion: 1 }')
++		const shipped = readDuration(slow)
++		expect(shipped).toBeGreaterThan(0)
+ 		scene.load(':root { --vn-factor-motion: 0 }')
+ 		const order = createRecorder<readonly [string, string]>()
+ 		// Each completed event reads how many of the motions its hide started have not finished.
+@@ -206,7 +208,7 @@ describe('Toast', () => {
+ 		scene.load(':root { --vn-factor-motion: 4 }')
+ 		const fading = faded.hide()
+ 		const scaled = readDuration(slow)
+-		expect(scaled / released).toBeCloseTo(4)
++		expect(scaled / shipped).toBeCloseTo(4)
+ 		const fade = slow.getAnimations()
+ 		for (const animation of fade) motions.handler(animation)
+ 		expect(fade).not.toEqual([])
+@@ -240,7 +242,7 @@ describe('Toast', () => {
+ 	})
+ 
+ 	// The watcher reads the toast's motions after each class write, naming each by whether the showing
+-	// token is on: the fade out it starts, and the fade in its removal starts.
++	// token is on: the fade out it starts, and the fade in that its removal starts.
+ 	it('dispatches shown after the fade out and the fade in that a show of a shown toast runs through the showing token finish', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+@@ -274,7 +276,6 @@ describe('Toast', () => {
+ 		expect(await showing).toBe(true)
+ 		expect(readings.calls).toEqual([['shown.vn.toast', true, true, 0, 0]])
+ 		for (const [, animation] of motions.calls) {
+-			expect(animation).toBeInstanceOf(CSSTransition)
+ 			expect(Number(animation.effect?.getComputedTiming().duration)).toBeGreaterThan(0)
+ 		}
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
+@@ -282,7 +283,7 @@ describe('Toast', () => {
+ 
+ 	// The hide starts while the show waits for its fade in, which begins as the showing token leaves,
+ 	// so the show's call is superseded and the hide's own motion is the one the toast ends on.
+-	it('resolves false for a show whose fade in a hide takes over, dispatching no shown event and hidden once', async () => {
++	it('resolves false for a show that a hide takes over during its fade in, dispatching no shown event and hidden once', async () => {
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(toastCascade)

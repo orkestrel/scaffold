@@ -1,0 +1,58 @@
+# J-MOTION-PROOFS-B round 3 replay (2026-09-25) at dfd9204 Drop the motion-type pin, prove Tab under reduced motion, set the factor the factor cases compare, and state Toast's completion truly (J-MOTION-PROOFS-B round 3)
+Collapse whole-file exit=0       Tests  49 passed (49)
+Toast whole-file exit=0       Tests  45 passed (45)
+Tab whole-file exit=0       Tests  48 passed (48)
+Carousel whole-file exit=0       Tests  73 passed (73)
+== r3-tab-reduced-force: exit 1, restored True
+    Tests  1 failed | 47 passed (48)
+    FAIL Tab > swaps the panes with no animation created on either pane under staged reduced motion, and dispatches shown
+      AssertionError: expected [ CSSTransition{} ] to deeply equal []
+mutation exit=0
+r3-tab-reduced-force: assertion=1 other=0 Tests  1 failed | 47 passed (48)
+planted a shipped factor of 2 in src/styles/_tokens.scss
+Toast exit 0
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+Tab exit 0
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+scratch removed: yes
+factor plant exit=0
+planted a shipped factor of 2 in src/styles/_tokens.scss
+base fd82ae9 tests/src/browser/Toast.test.ts
+base fd82ae9 tests/src/browser/Tab.test.ts
+Toast exit 1
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:148:2 > Toast > dispatches hidden with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+AssertionError: expected 2 to be close to 4, received difference is 2, but expected 0.005
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 passed (45)
+Tab exit 1
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:472:2 > Tab > dispatches shown with no running pane fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+AssertionError: expected 2 to be close to 4, received difference is 2, but expected 0.005
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 passed (47)
+scratch removed: yes
+factor plant control exit=0
+planted src/styles/_tokens.scss
+planted src/styles/components/_collapse.scss
+planted src/styles/components/_fade.scss
+planted src/styles/components/_toast.scss
+planted src/styles/components/_carousel.scss
+PlantProbe exit 0
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+Collapse exit 0
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+Toast exit 0
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+Tab exit 0
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+Carousel exit 0
+ Test Files  1 passed (1)
+      Tests  73 passed (73)
+scratch removed: yes
+motion plant exit=0
+--- the tree after the replay

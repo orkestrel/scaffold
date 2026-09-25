@@ -61,3 +61,18 @@ J-CONCERNS-A's gate chain read one red outside the earlier rows. `tools/main-red
 | `tests/src/styles/elements/button.test.ts:198` (resolves every `.btn` form on a button as the same form resolves on an anchor at rest, and every enabled form under hover, press, and keyboard focus, apart from the button appearance and the user agent's focus offset on a link; the styles session's E-ID-BUTTON-CASCADE) | the differing longhands per form and state equal the expected list | `appearance` alone in the `pressed` state of the `filled`, `outline`, and `link` forms | `appearance` and `outline-width` in those states |
 
 The styles session is asked to apply D45's reading, so that the proof reads the resolved outline, or names the build-dependent longhand.
+
+## Fourth standing reading (2026-09-25, the J-SAMEWAY-ENGINES-B landing)
+
+The styles session's E-ID-BUTTON-CLASSES (on `main` as `0a0a252`) closes the third row. Its `.btn` form case compares the Veneer map of button-versus-anchor differences with the release's map, read in the same browser. Its four new button-reboot cases read red on this host.
+
+The J-SAMEWAY-ENGINES-B landing chain read the four reds. The Orchestrator re-ran the four files alone on the main checkout at `0a0a252`, with no engine change present, through the styles config after `npm run build:src:styles`, and read the same four failures. So they are `main`'s reading on this host, not the engine landing's.
+
+| Proof | State | The release's map | Veneer's map |
+| --- | --- | --- | --- |
+| `tests/src/styles/components/carousel.test.ts`, "carousel button reboot" (the carousel indicator) | pressed | `outline-width: 0px` | absent |
+| `tests/src/styles/components/dropdown.test.ts`, "dropdown-item button reboot" | pressed | `outline-width: 0px` | absent |
+| `tests/src/styles/components/list-group.test.ts`, "list-group-item button reboot" | pressed | `outline-width: 0px` | absent |
+| `tests/src/styles/components/nav.test.ts`, "nav-link button reboot" | pressed | `outline-width: 0px` | absent |
+
+Each is the same Chromium 153 behaviour as the third row: the user agent's focus outline on a pressed button, which the release's map carries and Veneer's does not. E5 excludes these four as standing rows, and the landing runs `tools/w2-land-rest.sh` past them. The styles session receives the reading.
