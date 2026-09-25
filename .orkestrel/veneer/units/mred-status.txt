@@ -1,0 +1,5 @@
+ M guides/veneer.md
+ M src/styles/components/_placeholder.scss
+ M src/styles/components/_spinner.scss
+ M tests/src/styles/components/placeholder.test.ts
+ M tests/src/styles/components/spinner.test.ts

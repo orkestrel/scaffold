@@ -1,0 +1,135 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mred
+
+·······xx·x·x··········x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(7) ], [ …(2) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "spinner | .spinner-border | --bs-spinner-animation-speed",
++     "spinner | .spinner-grow | --bs-spinner-animation-speed",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "spinner | .spinner-border | --bs-spinner-animation-speed",
++     "spinner | .spinner-grow | --bs-spinner-animation-speed",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:326:20
+    324|   // The component-owned dark images are a second record of the same r…
+    325|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    326|   expect(darkened).toEqual([
+       |                    ^
+    327|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    328|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "spinner | .spinner-border | --bs-spinner-animation-speed | @media (prefers-reduced-motion: reduce) | 1.5s | — | dropped",
++   "spinner | .spinner-grow | --bs-spinner-animation-speed | @media (prefers-reduced-motion: reduce) | 1.5s | — | dropped",
++ ]
+
+ ❯ tests/conformance.test.ts:334:33
+    332|
+    333|  it('records every measured value difference in the guide ledger', () …
+    334|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    335|  })
+    336|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "spinner | .spinner-grow { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++   "spinner | .spinner-border { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++   "spinner | .spinner-grow { opacity } | @media (prefers-reduced-motion: reduce) | declaration",
++   "placeholder | .placeholder-glow .placeholder { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++   "placeholder | .placeholder-wave { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++ ]
+
+ ❯ tests/conformance.test.ts:342:32
+    340|
+    341|  it('records every emitted name the official inventory lacks', () => {
+    342|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    343|  })
+    344|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(6) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "spinner | .spinner-grow { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++   "spinner | .spinner-border { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++   "spinner | .spinner-grow { opacity } | @media (prefers-reduced-motion: reduce) | declaration",
++   "placeholder | .placeholder-glow .placeholder { animation } | @media (prefers-reduced-motion: reduce) | declaration",
++   "placeholder | .placeholder-wave { animation } | @media (prefers-reduced-motion: reduce) | declaration",
+    "form-control | .form-control { letter-spacing } | — | declaration",
+  ]
+
+ ❯ tests/conformance.test.ts:354:30
+    352|   // browser case reads only the properties a row values. This ledger …
+    353|   // it, and the unmodified cascade is the control that reports nothin…
+    354|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    355|    'form-control | .form-control { letter-spacing } | — | declaration',
+    356|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-mred/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:1017:16
+    1015|  signatures: readonly string[],
+    1016| ): string | undefined {
+    1017|  const built = readFileSync(path, 'utf8')
+       |                ^
+    1018|  return (
+    1019|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:821:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 21 passed (26)
+   Start at  05:35:31
+   Duration  35.44s (transform 932ms, setup 280ms, import 21.50s, tests 13.48s, environment 0ms)
+

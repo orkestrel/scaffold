@@ -1,0 +1,418 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index aff38e3..7c375b9 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -5708,16 +5708,21 @@ The border spinner paints a ring from `currentcolor` with a transparent right ed
+ spinner paints a filled circle that scales from nothing, so each one takes its color from the text
+ around it.
+ 
+-Under the reduced-motion preference each spinner slows to `1.5s` and keeps turning. A spinner
+-reports that work is still running, so a still ring would report the opposite of what the component
+-exists to say, and this is Bootstrap's own recorded behavior. The preference retunes the same speed
+-property a consumer retunes, which is why the animation itself is declared once.
++Under the reduced-motion preference both spinners stop, because every animation this cascade writes
++stops there. The release slows each spinner to `1.5s` instead and keeps it turning, so § Departures
++records the dropped speed and § Additions records the stopped animation. A spinner's status role
++and its label are what report the wait, so a still spinner still reports that work is running. The
++grow spinner rests out of sight and only its animation lifts it, so under the preference it renders
++as a whole disc at full opacity with no scale, and its visually hidden label stays in the
++accessibility tree.
+ 
+ The rotation is physical: the ring turns the same way whatever the document's writing direction, so
+ the direction-flipping annotation the release carries on that keyframe does not ship.
+ 
+ The `tests/src/styles/components/spinner.test.ts` proof reads the resolved box, border, paint, and
+-running animation in the browser, under each motion preference and in each color mode.
++animation in the browser: each spinner turns without the reduced-motion preference and stands still
++under it, where the grow spinner reads as a whole disc and keeps its label. It reads the paint in
++each color mode.
+ 
+ ### Offcanvas classes
+ 
+@@ -5850,12 +5855,12 @@ The glow dims every placeholder inside its wrapper rather than the wrapper itsel
+ placeholders pulses as one block. The wave is a mask that travels across the element, so it dims
+ whatever the element paints instead of laying a second color over it.
+ 
+-Neither animation is gated on the reduced-motion preference, because the recorded cascade gates
+-neither. The repository's animation line governs Veneer's own animations, and these are the
+-release's, so the recorded behavior ships as recorded.
+-
+ These are the key's recorded departures.
+ 
++- **Both animations stop under the reduced-motion preference.** The release gates neither, and
++  Veneer stops every animation it writes under that preference. A stopped glow leaves each
++  placeholder at its own half strength, and a stopped wave leaves the mask at its first position, so
++  a placeholder still reads as a stand-in for its text. § Additions records both rules.
+ - **The mask paints through the black tokens.** The recorded gradient writes `#000` and
+   `rgba(0, 0, 0, 0.8)`, and Veneer writes `var(--vn-palette-black-base)` and
+   `rgba(var(--vn-palette-black-rgb), 0.8)`, which are the tokens declaring those bytes.
+@@ -5872,7 +5877,8 @@ These are the key's recorded departures.
+   ledger file.
+ 
+ The `tests/src/styles/components/placeholder.test.ts` proof reads the resolved paint, height floors,
+-button box, and both animations in the browser, in each color mode.
++button box, and both animations in the browser: each animation runs without the reduced-motion
++preference and stands still under it. It reads the paint in each color mode.
+ 
+ ### Helper classes
+ 
+@@ -6765,18 +6771,19 @@ carries, split the same way; and each condition the release does not write is a
+ ### Keyframes
+ 
+ Each row names one animation the release defines, the shipped key whose vocabulary records it, and
+-the treatment the release writes for it under the `prefers-reduced-motion: reduce` preference, read
+-from the release's compiled `bootstrap.css` stylesheet. Veneer defines each animation under the
+-release's name and writes the same treatment. The `readKeyframes` function in the
+-`tests/setupServer.ts` module reads this table.
+-
+-| Name                   | Key           | Reduced motion                                                                                                                                                            |
+-| ---------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `progress-bar-stripes` | `progress`    | Stopped: the `.progress-bar-animated` rule sets its `animation` property to none, so the stripes stand still.                                                             |
+-| `spinner-border`       | `spinner`     | Slowed: the `.spinner-border` rule sets the `--bs-spinner-animation-speed` property to a `1.5s` duration, twice its resting `0.75s` duration, and the ring keeps turning. |
+-| `spinner-grow`         | `spinner`     | Slowed: the `.spinner-grow` rule sets the `--bs-spinner-animation-speed` property to a `1.5s` duration, twice its resting `0.75s` duration, and the dot keeps pulsing.    |
+-| `placeholder-glow`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the glow runs.                                                                                 |
+-| `placeholder-wave`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the wave runs.                                                                                 |
++the treatment this cascade writes for it under the `prefers-reduced-motion: reduce` preference,
++beside the release's own treatment wherever the two differ, read from the release's compiled
++`bootstrap.css` stylesheet. Veneer defines each animation under the release's name and stops every
++one of them under the preference. The `readKeyframes` function in the `tests/setupServer.ts` module
++reads this table.
++
++| Name                   | Key           | Reduced motion                                                                                                                                                                                                                                                       |
++| ---------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `progress-bar-stripes` | `progress`    | Stopped: the `.progress-bar-animated` rule sets its `animation` property to none, so the stripes stand still.                                                                                                                                                        |
++| `spinner-border`       | `spinner`     | Stopped: the `.spinner-border` rule sets its `animation` property to none, so the ring stands still. The release sets the `--bs-spinner-animation-speed` property to a `1.5s` duration instead, and its ring keeps turning.                                          |
++| `spinner-grow`         | `spinner`     | Stopped: the `.spinner-grow` rule sets its `animation` property to none and its `opacity` property to `1`, so the disc stands whole and still. The release sets the `--bs-spinner-animation-speed` property to a `1.5s` duration instead, and its dot keeps pulsing. |
++| `placeholder-glow`     | `placeholder` | Stopped: the `.placeholder-glow .placeholder` rule sets its `animation` property to none, so each placeholder rests at half strength. The release writes no reduced-motion rule for a placeholder, and its glow runs.                                                |
++| `placeholder-wave`     | `placeholder` | Stopped: the `.placeholder-wave` rule sets its `animation` property to none, so the mask stands at its first position. The release writes no reduced-motion rule for a placeholder, and its wave runs.                                                               |
+ 
+ Each written treatment is a rule of its own key, so each key's ledger compares the value its twin
+ rule writes, and no proof reads the treatments as one group. The conformance proof holds the `Name`
+@@ -9524,6 +9531,13 @@ declaration.
+ | `row-gap` | `.row-gap-xxl-4` | `row-gap` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
+ | `row-gap` | `.row-gap-xxl-5` | `row-gap` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-gap-5)` | tokenized |
+ 
++#### `spinner`
++
++| Component | Selector          | Property                       | Condition                                 | Bootstrap 5.3.8 | Veneer | Departure |
++| --------- | ----------------- | ------------------------------ | ----------------------------------------- | --------------- | ------ | --------- |
++| `spinner` | `.spinner-border` | `--bs-spinner-animation-speed` | `@media (prefers-reduced-motion: reduce)` | `1.5s`          | —      | dropped   |
++| `spinner` | `.spinner-grow`   | `--bs-spinner-animation-speed` | `@media (prefers-reduced-motion: reduce)` | `1.5s`          | —      | dropped   |
++
+ #### `sticky`
+ 
+ | Component | Selector             | Property   | Condition                  | Bootstrap 5.3.8  | Veneer                   | Departure |
+@@ -10213,6 +10227,11 @@ measurement fixes.
+ | `accordion`    | `.accordion-button:focus { outline }`                         | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                        |
+ | `navbar`       | `.navbar-toggler:focus { outline }`                           | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                        |
+ | `focus-ring`   | `.focus-ring:focus { outline }`                               | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                        |
++| `spinner`      | `.spinner-grow { animation }`                                 | `@media (prefers-reduced-motion: reduce)`        | declaration | Every animation stops under the reduced-motion preference, which the release answers for a spinner by slowing it to `1.5s`; the status role and label report the wait.      |
++| `spinner`      | `.spinner-border { animation }`                               | `@media (prefers-reduced-motion: reduce)`        | declaration | Every animation stops under the reduced-motion preference, which the release answers for a spinner by slowing it to `1.5s`; the status role and label report the wait.      |
++| `spinner`      | `.spinner-grow { opacity }`                                   | `@media (prefers-reduced-motion: reduce)`        | declaration | The disc rests out of sight and only its animation lifts it, so the stopped disc is written at full opacity.                                                                |
++| `placeholder`  | `.placeholder-glow .placeholder { animation }`                | `@media (prefers-reduced-motion: reduce)`        | declaration | Every animation stops under the reduced-motion preference, which the release writes no rule for; each placeholder rests at half strength.                                   |
++| `placeholder`  | `.placeholder-wave { animation }`                             | `@media (prefers-reduced-motion: reduce)`        | declaration | Every animation stops under the reduced-motion preference, which the release writes no rule for; the mask stands at its first position.                                     |
+ | `theme`        | `:root { color-scheme }`                                      | —                                                | declaration | The build lowers a label that differs by mode into variables it declares only beside a `color-scheme` declaration, so the root names the light scheme its closure carries.  |
+ | `theme`        | `[data-bs-theme=light] { color-scheme }`                      | —                                                | declaration | The light scope names its scheme as the dark scope does, so a light island nested in a dark one returns its form controls and scrollbars to the light scheme.               |
+ | `theme`        | `--bs-primary`                                                | —                                                | property    | The primary fill retunes in dark, and an alias declared at the `:root` selector alone keeps the light fill inside a dark island, so the dark scope declares it again.       |
+@@ -10424,8 +10443,8 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | progress         | selector       | Every official `.progress` selector ships in the components layer, the stacked track and the striped and animated bars included; resolved geometry and motion are proved in `tests/src/styles/components/progress.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | —                                   | shipped  |
+ | progress         | variable       | Every official `--bs-progress-*` custom property is declared on the track, and a wrapper override retunes the bar it drives; both are proved in `tests/src/styles/components/progress.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | —                                   | shipped  |
+ | spinner          | selector       | Every official `.spinner-border` and `.spinner-grow` selector ships in the components layer; resolved box, paint, and animation are proved in `tests/src/styles/components/spinner.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | —                                   | shipped  |
+-| spinner          | variable       | Every official `--bs-spinner-*` custom property ships, each on the spinner that declares it, and the reduced-motion preference retunes the speed property; both are proved in `tests/src/styles/components/spinner.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | —                                   | shipped  |
+-| placeholder      | selector       | Every official `.placeholder` selector ships in the components layer, the size ramp, the glow, the wave, and the button box included; resolved geometry is proved in `tests/src/styles/components/placeholder.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | —                                   | shipped  |
++| spinner          | variable       | Every official `--bs-spinner-*` custom property ships, each on the spinner that declares it, and a spinner-level override retunes what each drives; both are proved in `tests/src/styles/components/spinner.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | —                                   | shipped  |
++| placeholder      | selector       | Every official `.placeholder` selector ships in the components layer, the size ramp, the glow, the wave, and the button box included; resolved geometry and motion are proved in `tests/src/styles/components/placeholder.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | —                                   | shipped  |
+ | btn-group        | selector       | Every official `.btn-group` and `.btn-group-vertical` selector ships in the components layer, the split toggle included; resolved layout, overlap, radius, and stacking are proved in `tests/src/styles/components/button-group.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | —                                   | shipped  |
+ | btn-group        | variable       | The extended `--bs-btn-*` size properties the `.btn-group-sm > .btn` and `.btn-group-lg > .btn` twins declare ship from `src/styles/components/_button.scss`; their resolved padding, font size, and radius are proved in `tests/src/styles/components/button.test.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | —                                   | shipped  |
+ | btn-toolbar      | selector       | The `.btn-toolbar` selector ships in the components layer; its resolved wrapping and leading alignment are proved in `tests/src/styles/components/button-group.test.ts`. The `.btn-toolbar .input-group` combinator ships from `src/styles/components/_input-group.scss`, and `tests/src/styles/components/input-group.test.ts` proves its width.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | —                                   | shipped  |
+diff --git a/src/styles/components/_placeholder.scss b/src/styles/components/_placeholder.scss
+index 8306708..2389254 100644
+--- a/src/styles/components/_placeholder.scss
++++ b/src/styles/components/_placeholder.scss
+@@ -1,3 +1,5 @@
++@use '../mixins' as *;
++
+ // Names each size's minimum height; one loop over this list emits the three size blocks in the
+ // partial's order.
+ $sizes: (('xs', 0.6em), ('sm', 0.8em), ('lg', 1.2em));
+@@ -29,9 +31,14 @@ $sizes: (('xs', 0.6em), ('sm', 0.8em), ('lg', 1.2em));
+ 	}
+ 
+ 	// The glow dims every placeholder inside the wrapper rather than the wrapper itself, so a
+-	// paragraph of placeholders pulses as one block.
++	// paragraph of placeholders pulses as one block. Under the reduced-motion preference the glow
++	// stops and each placeholder rests at its own half strength, which still reads as a stand-in for
++	// the text; the release keeps it pulsing.
+ 	.placeholder-glow .placeholder {
+ 		animation: placeholder-glow 2s ease-in-out infinite;
++		@include reduced-motion {
++			animation: none;
++		}
+ 	}
+ 
+ 	@keyframes placeholder-glow {
+@@ -43,7 +50,9 @@ $sizes: (('xs', 0.6em), ('sm', 0.8em), ('lg', 1.2em));
+ 	// The wave is a mask that travels across the element, so it dims whatever the element paints
+ 	// instead of laying a second color over it. Only the standard mask properties are written: the
+ 	// managed Chromium and Edge receipts this cascade is proved on resolve them, which leaves the
+-	// prefixed aliases the release carries redundant, and the ledger records their absence.
++	// prefixed aliases the release carries redundant, and the ledger records their absence. Under the
++	// reduced-motion preference the mask stands still at its first position; the release keeps it
++	// travelling.
+ 	.placeholder-wave {
+ 		mask-image: linear-gradient(
+ 			130deg,
+@@ -53,6 +62,9 @@ $sizes: (('xs', 0.6em), ('sm', 0.8em), ('lg', 1.2em));
+ 		);
+ 		mask-size: 200% 100%;
+ 		animation: placeholder-wave 2s linear infinite;
++		@include reduced-motion {
++			animation: none;
++		}
+ 	}
+ 
+ 	@keyframes placeholder-wave {
+diff --git a/src/styles/components/_spinner.scss b/src/styles/components/_spinner.scss
+index 8b37974..63e384a 100644
+--- a/src/styles/components/_spinner.scss
++++ b/src/styles/components/_spinner.scss
+@@ -13,6 +13,13 @@
+ 		vertical-align: var(--bs-spinner-vertical-align);
+ 		border-radius: 50%;
+ 		animation: var(--bs-spinner-animation-speed) linear infinite var(--bs-spinner-animation-name);
++		// Every animation stops under the reduced-motion preference, and a spinner is no exception:
++		// the release slows it to `1.5s` instead, which still moves a page the reader asked to hold
++		// still. The spinner's status role and its label are what report the wait, so a still spinner
++		// keeps saying that work is running.
++		@include reduced-motion {
++			animation: none;
++		}
+ 	}
+ 
+ 	// The rotation is physical: the ring turns the same way whatever the document's writing
+@@ -61,21 +68,16 @@
+ 
+ 		background-color: currentcolor;
+ 		opacity: 0;
++		// The disc rests out of sight and only its animation lifts it, so a stopped disc is written
++		// at full opacity. Its scale needs no declaration here: only the keyframe scales it, and the
++		// stopped animation leaves the disc at its whole size.
++		@include reduced-motion {
++			opacity: 1;
++		}
+ 	}
+ 
+ 	.spinner-grow-sm {
+ 		--bs-spinner-width: 1rem;
+ 		--bs-spinner-height: 1rem;
+ 	}
+-
+-	// A spinner reports that work is still running, so the reduced-motion preference slows it to
+-	// half speed rather than stopping it: a still ring would report the opposite of what the
+-	// component exists to say. The speed is a variable, so the preference retunes the same name a
+-	// consumer does and the animation itself is declared once.
+-	@include reduced-motion {
+-		.spinner-border,
+-		.spinner-grow {
+-			--bs-spinner-animation-speed: 1.5s;
+-		}
+-	}
+ }
+diff --git a/tests/src/styles/components/placeholder.test.ts b/tests/src/styles/components/placeholder.test.ts
+index e29cf60..b003470 100644
+--- a/tests/src/styles/components/placeholder.test.ts
++++ b/tests/src/styles/components/placeholder.test.ts
+@@ -11,9 +11,11 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import { collectLayer, scene } from '../../../setupBrowser.js'
+ import {
+ 	normalizeComplexSelector,
++	parseMediaWidth,
+ 	PLACEHOLDER_MARKUP,
+ 	PLACEHOLDER_SELECTORS,
+ 	PLACEHOLDER_SIZE_CASES,
++	REDUCED_MOTION,
+ 	splitTopLevelList,
+ 	TEXT_MODES,
+ 	trimCSSWhitespace,
+@@ -157,29 +159,43 @@ describe('placeholder classes', () => {
+ 		).toBe('none')
+ 	})
+ 
+-	// The mutation this catches is a reduced-motion gate added to either animation. The release
+-	// records none, so both keep running under the preference, and the reading is taken from the
+-	// timeline under each setting rather than from the declaration.
+-	it('keeps the glow and the wave running under the reduced-motion preference', async () => {
++	// The mutation this catches is either animation left running under the reduced-motion
++	// preference, at the release's speed or at any other: the reading is each element's own timeline,
++	// so an animation the browser still runs reports under the preference whatever its declaration
++	// says. Both are read running before the preference and again after its release, which makes the
++	// empty reading between them the preference's rather than a rule that never started them.
++	it('stops the glow and the wave under the reduced-motion preference and runs them again without it', async () => {
+ 		const host = scene.mount(`<div>${PLACEHOLDER_MARKUP}</div>`)
+ 		const glowing = requireValue(
+ 			host.querySelector('.placeholder-glow .placeholder'),
+ 			'No glowing placeholder',
+ 		)
+ 		const waving = requireValue(host.querySelector('.placeholder-wave'), 'No wave wrapper')
++		const moving = [glowing, waving]
++		const running = [[['running', 2000]], [['running', 2000]]]
++		expect(
++			moving.map((element) =>
++				element
++					.getAnimations()
++					.map((animation) => [animation.playState, animation.effect?.getTiming().duration]),
++			),
++		).toEqual(running)
+ 		await stageMedia({ motion: false })
+-		for (const element of [glowing, waving]) {
+-			expect(element.getAnimations()).toHaveLength(1)
+-			const running = requireValue(
+-				element.getAnimations().at(0),
+-				'No animation under the preference',
+-			)
+-			expect(running.playState).toBe('running')
+-			expect(running.effect?.getTiming().duration).toBe(2000)
+-		}
++		expect(moving.map((element) => element.getAnimations())).toEqual([[], []])
++		expect(moving.map((element) => readStyle(element, 'animation-name'))).toEqual(['none', 'none'])
++		// A stopped glow rests at the placeholder's own half strength rather than at the dim the
++		// pulse falls to, so the placeholder still reads as a stand-in for its text.
++		expect(readStyle(glowing, 'opacity')).toBe('0.5')
++		// A stopped wave leaves its mask at the first position rather than partway across.
++		expect(readStyle(waving, 'mask-position')).toBe('0% 0%')
+ 		await releaseMedia()
+-		expect(glowing.getAnimations()).toHaveLength(1)
+-		expect(waving.getAnimations()).toHaveLength(1)
++		expect(
++			moving.map((element) =>
++				element
++					.getAnimations()
++					.map((animation) => [animation.playState, animation.effect?.getTiming().duration]),
++			),
++		).toEqual(running)
+ 	})
+ 
+ 	// The mutation this catches is a placeholder painted from a mode token rather than from the text
+@@ -228,9 +244,10 @@ describe('placeholder classes', () => {
+ 		}
+ 	})
+ 
+-	// The release records no at-rule for this key, so the partial writes none: a reduced-motion
+-	// gate or a width boundary added to any of these selectors reports here.
+-	it('gates no rule of this family on a query', () => {
++	// The reduced-motion rules are the only conditions this family writes, so a width boundary or
++	// any other query the partial gains reports here whatever selector carries it, and so does a
++	// partial that writes no reduced-motion rule at all.
++	it('gates its animations on the reduced-motion preference and nothing on a width boundary', () => {
+ 		const conditions = collectLayer('components').flatMap((rule) =>
+ 			rule instanceof CSSMediaRule &&
+ 			[...rule.cssRules].some(
+@@ -243,6 +260,7 @@ describe('placeholder classes', () => {
+ 				? [rule.conditionText]
+ 				: [],
+ 		)
+-		expect(conditions).toEqual([])
++		expect(conditions.filter((condition) => parseMediaWidth(condition) !== undefined)).toEqual([])
++		expect(new Set(conditions)).toEqual(new Set([REDUCED_MOTION]))
+ 	})
+ })
+diff --git a/tests/src/styles/components/spinner.test.ts b/tests/src/styles/components/spinner.test.ts
+index 034e7db..d8f56ed 100644
+--- a/tests/src/styles/components/spinner.test.ts
++++ b/tests/src/styles/components/spinner.test.ts
+@@ -1,9 +1,11 @@
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	findKeyframes,
++	isRendered,
+ 	matchesColor,
+ 	readPixels,
+ 	readStyle,
++	readText,
+ 	readToken,
+ 	releaseMedia,
+ 	stageMedia,
+@@ -141,11 +143,13 @@ describe('spinner classes', () => {
+ 		expect(requireValue(rules.at(0), 'No grow rule').style.getPropertyValue('opacity')).toBe('0')
+ 	})
+ 
+-	// The mutation this catches is a spinner the preference stops: the duration is read from the
+-	// timeline rather than from the declaration, so an animation the browser cancelled reports as
+-	// absent rather than as declared, and the running state is asserted under each preference.
++	// The mutation each row catches is a spinner the preference slows or leaves running rather than
++	// stops: the reading is the element's own timeline, so an animation the browser still runs
++	// reports under the preference at any speed. Each row is read turning before the preference and
++	// again after its release, which makes the empty reading between them the preference's rather
++	// than a rule that never started the animation.
+ 	it.each(SPINNER_SIZE_CASES)(
+-		'keeps $name turning under the reduced-motion preference and halves its speed',
++		'stops $name under the reduced-motion preference and turns it again without it',
+ 		async ({ classes, animation }) => {
+ 			const host = scene.mount(
+ 				`<div><div class="${classes}" role="status" aria-label="Loading"></div></div>`,
+@@ -154,22 +158,43 @@ describe('spinner classes', () => {
+ 				host.querySelector(`.${classes.split(' ').at(0) ?? ''}`),
+ 				'No spinner',
+ 			)
+-			expect(spinner.getAnimations()).toHaveLength(1)
+-			const resting = requireValue(spinner.getAnimations().at(0), 'No resting animation')
+-			expect(resting.playState).toBe('running')
+-			expect(resting.effect?.getTiming().duration).toBe(750)
++			expect(
++				spinner
++					.getAnimations()
++					.map((running) => [running.playState, running.effect?.getTiming().duration]),
++			).toEqual([['running', 750]])
+ 			expect(readStyle(spinner, 'animation-name')).toBe(animation)
+ 			await stageMedia({ motion: false })
+-			expect(spinner.getAnimations()).toHaveLength(1)
+-			const slowed = requireValue(spinner.getAnimations().at(0), 'No slowed animation')
+-			expect(slowed.playState).toBe('running')
+-			expect(slowed.effect?.getTiming().duration).toBe(1500)
+-			expect(readStyle(spinner, 'animation-name')).toBe(animation)
++			expect(spinner.getAnimations()).toEqual([])
++			expect(readStyle(spinner, 'animation-name')).toBe('none')
+ 			await releaseMedia()
+ 			expect(
+-				requireValue(spinner.getAnimations().at(0), 'No released animation').effect?.getTiming()
+-					.duration,
+-			).toBe(750)
++				spinner
++					.getAnimations()
++					.map((running) => [running.playState, running.effect?.getTiming().duration]),
++			).toEqual([['running', 750]])
++		},
++	)
++
++	// The mutation each row catches is a stopped grow spinner left at its resting opacity, which
++	// hides the disc for as long as the preference holds, or held at a step of its scale. The disc is
++	// read whole and still under the preference, and its label is read there too, because a still
++	// disc reports the wait through the text a reader hears rather than through motion.
++	it.each(SPINNER_SIZE_CASES.filter(({ animation }) => animation === 'spinner-grow'))(
++		'shows $name as a whole still disc under the reduced-motion preference and keeps its label',
++		async ({ classes, box }) => {
++			const host = scene.mount(
++				`<div><div class="${classes}" role="status"><span class="visually-hidden">Loading...</span></div></div>`,
++			)
++			const spinner = requireValue(host.querySelector('.spinner-grow'), 'No spinner')
++			const label = requireValue(spinner.querySelector('.visually-hidden'), 'No label')
++			await stageMedia({ motion: false })
++			expect(readStyle(spinner, 'opacity')).toBe('1')
++			expect(readStyle(spinner, 'transform')).toBe('none')
++			expect(readPixels(spinner, 'width')).toBe(box)
++			expect(readPixels(spinner, 'height')).toBe(box)
++			expect(isRendered(label)).toBe(true)
++			expect(readText(spinner)).toBe('Loading...')
+ 		},
+ 	)
+ 
+@@ -252,7 +277,8 @@ describe('spinner classes', () => {
+ 	})
+ 
+ 	// The reduced-motion rules are the only conditions this family writes, so a query the partial
+-	// gained reports here whatever selector carries it.
++	// gains reports here whatever selector carries it, and so does a partial that writes no
++	// reduced-motion rule at all.
+ 	it('gates nothing on a width boundary', () => {
+ 		// The release writes the two spinners as one selector list under the query, so the reading
+ 		// walks the list rather than comparing the whole selector text.

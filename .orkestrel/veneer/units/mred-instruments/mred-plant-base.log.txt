@@ -1,0 +1,181 @@
+plant=base
+5.82 5.11 3.99 1/439 9011
+build-exit=0
+
+ RUN  v4.1.11 /home/user/veneer-mred
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:56 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts (22 tests | 6 failed) 986ms
+     × stops 'spinner-border' under the reduced-motion preference and turns it again without it 78ms
+     × stops 'spinner-border-sm' under the reduced-motion preference and turns it again without it 80ms
+     × stops 'spinner-grow' under the reduced-motion preference and turns it again without it 67ms
+     × stops 'spinner-grow-sm' under the reduced-motion preference and turns it again without it 64ms
+     × shows 'spinner-grow' as a whole still disc under the reduced-motion preference and keeps its label 67ms
+     × shows 'spinner-grow-sm' as a whole still disc under the reduced-motion preference and keeps its label 63ms
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:40:58 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/placeholder.test.ts (11 tests | 2 failed) 360ms
+     × stops the glow and the wave under the reduced-motion preference and runs them again without it 46ms
+     × gates its animations on the reduced-motion preference and nothing on a width boundary 44ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/placeholder.test.ts:167:2 > placeholder classes > stops the glow and the wave under the reduced-motion preference and runs them again without it
+AssertionError: expected [ [ CSSAnimation{} ], …(1) ] to deeply equal [ [], [] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   [],[39m
+[32m-   [],[39m
+[31m+   [[39m
+[31m+     CSSAnimation {},[39m
+[31m+   ],[39m
+[31m+   [[39m
+[31m+     CSSAnimation {},[39m
+[31m+   ],[39m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/placeholder.test.ts:184:59
+    182|   ).toEqual(running)
+    183|   await stageMedia({ motion: false })
+    184|   expect(moving.map((element) => element.getAnimations())).toEqual([[]…
+       |                                                           ^
+    185|   expect(moving.map((element) => readStyle(element, 'animation-name'))…
+    186|   // A stopped glow rests at the placeholder's own half strength rathe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/placeholder.test.ts:250:2 > placeholder classes > gates its animations on the reduced-motion preference and nothing on a width boundary
+AssertionError: expected Set{} to deeply equal Set{ '(prefers-reduced-motion: reduc…' }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Set {[39m
+[32m-   "(prefers-reduced-motion: reduce)",[39m
+[32m- }[39m
+[31m+ Set {}[39m
+
+ ❯ tests/src/styles/components/placeholder.test.ts:264:30
+    262|   )
+    263|   expect(conditions.filter((condition) => parseMediaWidth(condition) !…
+    264|   expect(new Set(conditions)).toEqual(new Set([REDUCED_MOTION]))
+       |                              ^
+    265|  })
+    266| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts:152:2 > spinner classes > stops 'spinner-border' under the reduced-motion preference and turns it again without it
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts:152:2 > spinner classes > stops 'spinner-border-sm' under the reduced-motion preference and turns it again without it
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts:152:2 > spinner classes > stops 'spinner-grow' under the reduced-motion preference and turns it again without it
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts:152:2 > spinner classes > stops 'spinner-grow-sm' under the reduced-motion preference and turns it again without it
+AssertionError: expected [ CSSAnimation{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   CSSAnimation {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/styles/components/spinner.test.ts:168:35
+    166|    expect(readStyle(spinner, 'animation-name')).toBe(animation)
+    167|    await stageMedia({ motion: false })
+    168|    expect(spinner.getAnimations()).toEqual([])
+       |                                   ^
+    169|    expect(readStyle(spinner, 'animation-name')).toBe('none')
+    170|    await releaseMedia()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts:184:2 > spinner classes > shows 'spinner-grow' as a whole still disc under the reduced-motion preference and keeps its label
+AssertionError: expected '0.0222013' to be '1' // Object.is equality
+
+Expected: [32m"1"[39m
+Received: [31m"0.0222013"[39m
+
+ ❯ tests/src/styles/components/spinner.test.ts:192:41
+    190|    const label = requireValue(spinner.querySelector('.visually-hidden'…
+    191|    await stageMedia({ motion: false })
+    192|    expect(readStyle(spinner, 'opacity')).toBe('1')
+       |                                         ^
+    193|    expect(readStyle(spinner, 'transform')).toBe('none')
+    194|    expect(readPixels(spinner, 'width')).toBe(box)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/spinner.test.ts:184:2 > spinner classes > shows 'spinner-grow-sm' as a whole still disc under the reduced-motion preference and keeps its label
+AssertionError: expected '0.022204' to be '1' // Object.is equality
+
+Expected: [32m"1"[39m
+Received: [31m"0.022204"[39m
+
+ ❯ tests/src/styles/components/spinner.test.ts:192:41
+    190|    const label = requireValue(spinner.querySelector('.visually-hidden'…
+    191|    await stageMedia({ motion: false })
+    192|    expect(readStyle(spinner, 'opacity')).toBe('1')
+       |                                         ^
+    193|    expect(readStyle(spinner, 'transform')).toBe('none')
+    194|    expect(readPixels(spinner, 'width')).toBe(box)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  8 failed | 25 passed (33)
+   Start at  05:40:41
+   Duration  16.93s (transform 0ms, setup 1.97s, import 212ms, tests 1.35s, environment 0ms)
+
+exit=1
+restore=byte-identical
+404f3888b076dc34a199231c260d06d178a27778488e1d82a920f1ea5663cfe0  src/styles/components/_spinner.scss
+8dc4312b4c5fb7c6a5c493f0b7e95927b62c08be86182bad31767be53585897d  src/styles/components/_placeholder.scss
