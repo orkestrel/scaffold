@@ -1,0 +1,8 @@
+Route Modal's open token and Isolation's write-back through the shared snapshot record, and name the record's shapes
+
+Modal kept a static map of holder sets beside a snapshot for the body's open token. Each modal now saves the token through its own snapshot, and the record's last holder writes the body back. Isolation keeps its claims list, because the record cannot express which claim is newest, but its write-back moves to one snapshot per isolation. ScrollLock keeps its holder group, because only the first lock's measurement is valid, and its comment states why.
+
+HostSnapshot's held entry, record, holding, and presence shapes are declared once in `types.ts`. A ScrollLock case proves a body-less refusal leaves no abort listener. A ColorMode case restores a present root reading and rethrows the same error.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

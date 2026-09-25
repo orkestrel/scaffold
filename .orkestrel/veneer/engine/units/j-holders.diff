@@ -1,0 +1,691 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index e38a3d9..264f0b3 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -62,6 +62,10 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `HostSnapshotCategory`                    | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                                                                        |
+ | `HostSnapshotTarget`                      | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                                                                                       |
+ | `HostSnapshotInterface`                   | interface | Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores.                                                                        |
++| `HostSnapshotEntry`                       | interface | Describes one target a snapshot holds: the target under the name the platform resolved at its save, and the record key that save fixed.                                                      |
++| `HostSnapshotRecord`                      | interface | Describes the one record that every snapshot holding a target shares, and that the target's last holder writes back.                                                                         |
++| `HostSnapshotHolding`                     | interface | Names one presence record a snapshot holds: an element and the attribute, `class` or `style`, whose presence the record reads.                                                               |
++| `HostSnapshotPresence`                    | interface | Describes the presence record that every snapshot saving a class token or an inline property on one element shares for the attribute that holds it.                                          |
+ | `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.                                                                  |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                         |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                     |
+@@ -920,7 +924,7 @@ reaction to the restoration sends finds no destroyed engine and can claim the ho
+ destroys itself when the `signal` you pass it aborts, and at construction when that signal has
+ already aborted.
+ 
+-Each engine keeps one `HostSnapshot` instance, and it saves every attribute, class token, and inline
++Each engine keeps a `HostSnapshot` instance, and it saves every attribute, class token, and inline
+ property the engine writes before the first write. Every snapshot that saves one attribute, class
+ token, or inline property of one element shares one record of it, whatever engine class each
+ snapshot belongs to. The first save made while no snapshot holds the target and no restoration has
+@@ -2024,12 +2028,12 @@ cascade's `z-index` rungs and never enter the top layer. Construction validates
+ selector matches inside the host, claims the host, binds the hooks, and listens on the host for
+ Escape and for a press beside the dialog and on the window for a resize. It writes nothing.
+ 
+-Showing takes a reference to the document's scroll lock, adds the `open` token to the body, adjusts
+-the host's padding as the `update` method does, and, when the `backdrop` option is `true`, shows the
+-backdrop and waits for its fade. It then appends the host to the body when the body does not contain
+-it, writes `display: block`, removes `aria-hidden`, writes `aria-modal="true"` and `role="dialog"`,
+-scrolls the host and the element the `body` selector matches inside the dialog to the top, forces a
+-layout read, and adds the `shown` token. When the host carries the `fade` token, the show waits for
++Showing takes a reference to the document's scroll lock, adds the `open` token to the body when the
++body lacks it, adjusts the host's padding as the `update` method does, and, when the `backdrop`
++option is `true`, shows the backdrop and waits for its fade. It then appends the host to the body
++when the body does not contain it, writes `display: block`, removes `aria-hidden`, writes
++`aria-modal="true"` and `role="dialog"`, scrolls the host and the element the `body` selector
++matches inside the dialog to the top, forces a layout read, and adds the `shown` token. When the host carries the `fade` token, the show waits for
+ the dialog's transition to settle, or for the host's own when the host holds no dialog. With the
+ `focus` option `true`, it isolates the rest of the document and moves focus to the host. It then
+ dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown` token, waits for the
+@@ -2092,10 +2096,12 @@ The modal composes the following mechanisms, which the browser entry exports as
+   host included, as not inert, and every HTML element beside that chain at each level as inert, and
+   it observes each of those levels for insertions, so an isolation constructed inside another one
+   keeps its host reachable. The live isolations share their claims on each element: the newest claim
+-  decides the attribute, a release hands the element to the newest claim left, and the last release
+-  restores the recorded value, so isolations may end in any order and an ancestor stays clear while
+-  any isolation beneath it lives. An aborted `signal` destroys the isolation, and one that aborts
+-  inside a claim's write during construction stops the construction there. The modal passes its own
++  decides the attribute, and a release hands the element to the newest claim left. Each isolation
++  saves the `inert` attribute of every element it claims through its own snapshot, so the claiming
++  isolations share one record of it, and the last to release it writes back the value the first
++  claim found. Isolations may end in any order, and an ancestor stays clear while any isolation
++  beneath it lives. An aborted `signal` destroys the isolation, and one that aborts inside a claim's
++  write during construction stops the construction there. The modal passes its own
+   lifetime as that signal. The isolation claims each element its `spare` option lists as not
+   inert, as it claims the chain: at construction when the element is connected, and at each
+   observer delivery that inserts it beside the chain. That claim joins the same precedence and
+@@ -2223,10 +2229,13 @@ its `display` and padding properties, and its `aria-hidden`, `aria-modal`, and `
+ host that a show appended to the body stays in the body.
+ 
+ The modals of one document that resolve the same `open` token share one record of it, and the
+-last to release the token restores the body. Modals that resolve different `open` tokens share the
+-body's `class` presence record, as § Ownership and restoration states, so when the body carried no
+-`class` attribute before the first took its token, each release that leaves the list empty removes
+-the attribute, in whichever order they release.
++last to release the token restores the body. Each modal holds the token through a snapshot of its
++own, which its hide or its destruction restores, so only the last holder writes the body back. A
++show adds the token whenever the body lacks it, as Bootstrap's show does, so a token that other code
++removed while a modal held it returns at the next show. Modals that resolve different `open` tokens
++share the body's `class` presence record, as § Ownership and restoration states, so when the body
++carried no `class` attribute before the first took its token, each release that leaves the list
++empty removes the attribute, in whichever order they release.
+ 
+ The delegate's `modal` option carries the modal's groups. A click inside a trigger the resolved
+ `trigger` selector matches shows the modal the trigger's target attribute or `href` fragment names
+@@ -2284,9 +2293,9 @@ The modal departs from Bootstrap's in these ways:
+   unless its `hidePrevented.bs.modal` event is prevented.
+ - The toggle route arms its focus return before the show, where Bootstrap's data API arms it inside
+   the `show.bs.modal` event, and disarms it when the show resolves `false`.
+-- The scroll lock and the `open` token are shared by reference count, so another shown modal keeps
+-  the page locked until the last one hides. Each Bootstrap modal's hide resets the scrollbar
+-  compensation and removes the `modal-open` class.
++- The scroll lock is shared by reference count and the `open` token by one record, so another shown
++  modal keeps the page locked until the last one hides. Each Bootstrap modal's hide resets the
++  scrollbar compensation and removes the `modal-open` class.
+ - The backdrop is created at each show and destroyed after each hide, and it reads the host's `fade`
+   token at each show. Bootstrap creates one backdrop per modal and reads the `fade` class at
+   construction.
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index c772aa1..a295d1e 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -1,4 +1,11 @@
+-import type { HostSnapshotInterface, HostSnapshotTarget } from './types.js'
++import type {
++	HostSnapshotEntry,
++	HostSnapshotHolding,
++	HostSnapshotInterface,
++	HostSnapshotPresence,
++	HostSnapshotRecord,
++	HostSnapshotTarget,
++} from './types.js'
+ 
+ /**
+  * Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.
+@@ -65,19 +72,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// write back, the snapshot that owns that write and whether the write has started. The mark is
+ 	// set before the write runs, and the record stays owned while it runs, so a save a reaction makes
+ 	// inside the write still joins it, and a restoration that reaction runs skips it.
+-	static readonly #records = new WeakMap<
+-		HTMLElement,
+-		Map<
+-			string,
+-			{
+-				readonly value: string | undefined
+-				readonly priority: string
+-				readonly holders: ReadonlySet<HostSnapshot>
+-				readonly owner: HostSnapshot | undefined
+-				readonly written: boolean
+-			}
+-		>
+-	>()
++	static readonly #records = new WeakMap<HTMLElement, Map<string, HostSnapshotRecord>>()
+ 	// Whether each document folds the attribute names of its HTML elements to ASCII lowercase, as
+ 	// an HTML document does whatever its content type, read once from the platform per document.
+ 	static readonly #folding = new WeakMap<Document, boolean>()
+@@ -86,25 +81,18 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// snapshot that still holds it.
+ 	static readonly #presence = new WeakMap<
+ 		HTMLElement,
+-		Map<
+-			'class' | 'style',
+-			{ readonly present: boolean; readonly holders: ReadonlySet<HostSnapshot> }
+-		>
++		Map<HostSnapshotHolding['attribute'], HostSnapshotPresence>
+ 	>()
+ 	// The targets this snapshot holds, in save order, each under the name the platform resolved and
+ 	// the key its save fixed; every release reads that key and never derives it again.
+-	#targets: ReadonlyArray<{ readonly target: HostSnapshotTarget; readonly key: string }> = []
++	#targets: readonly HostSnapshotEntry[] = []
+ 	// Every target this snapshot's restorations in progress own, which a restoration nested in one of
+ 	// them writes back as well.
+-	#owned: ReadonlyArray<{ readonly target: HostSnapshotTarget; readonly key: string }> = []
++	#owned: readonly HostSnapshotEntry[] = []
+ 	// The presence records this snapshot holds: those its saves joined since its last restoration
+ 	// began, and those a restoration in progress leaves after its token or property writes.
+-	#joined: ReadonlyArray<{ readonly element: HTMLElement; readonly attribute: 'class' | 'style' }> =
+-		[]
+-	#leaving: ReadonlyArray<{
+-		readonly element: HTMLElement
+-		readonly attribute: 'class' | 'style'
+-	}> = []
++	#joined: readonly HostSnapshotHolding[] = []
++	#leaving: readonly HostSnapshotHolding[] = []
+ 
+ 	save(target: HostSnapshotTarget): void {
+ 		const resolved = HostSnapshot.#resolve(target)
+@@ -114,18 +102,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			(saved) => saved.target.element === element && saved.key === key,
+ 		)
+ 		if (held) return
+-		const records =
+-			HostSnapshot.#records.get(element) ??
+-			new Map<
+-				string,
+-				{
+-					readonly value: string | undefined
+-					readonly priority: string
+-					readonly holders: ReadonlySet<HostSnapshot>
+-					readonly owner: HostSnapshot | undefined
+-					readonly written: boolean
+-				}
+-			>()
++		const records = HostSnapshot.#records.get(element) ?? new Map<string, HostSnapshotRecord>()
+ 		const record = records.get(key)
+ 		let value = record?.value
+ 		let priority = record?.priority ?? ''
+@@ -227,12 +204,10 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// value and its other holders; a record this snapshot held last passes to its restoration when
+ 	// `restoring` is true, and is forgotten when it is false. Returns the targets whose records pass
+ 	// to the restoration.
+-	#relinquish(
+-		restoring: boolean,
+-	): ReadonlyArray<{ readonly target: HostSnapshotTarget; readonly key: string }> {
++	#relinquish(restoring: boolean): readonly HostSnapshotEntry[] {
+ 		const targets = this.#targets
+ 		this.#targets = []
+-		const passed: Array<{ readonly target: HostSnapshotTarget; readonly key: string }> = []
++		const passed: HostSnapshotEntry[] = []
+ 		for (const entry of targets) {
+ 			const { target, key } = entry
+ 			const records = HostSnapshot.#records.get(target.element)
+@@ -255,7 +230,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// whether the element carries the attribute when no snapshot holds the record. A save made while
+ 	// a restoration of this snapshot has still to leave the record rejoins that holding, and the
+ 	// snapshot then leaves the record at its next restoration, the one that writes the saved target.
+-	#join(element: HTMLElement, attribute: 'class' | 'style'): void {
++	#join(element: HTMLElement, attribute: HostSnapshotHolding['attribute']): void {
+ 		const joined = this.#joined.some(
+ 			(presence) => presence.element === element && presence.attribute === attribute,
+ 		)
+@@ -272,10 +247,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		}
+ 		const records =
+ 			HostSnapshot.#presence.get(element) ??
+-			new Map<
+-				'class' | 'style',
+-				{ readonly present: boolean; readonly holders: ReadonlySet<HostSnapshot> }
+-			>()
++			new Map<HostSnapshotHolding['attribute'], HostSnapshotPresence>()
+ 		const record = records.get(attribute)
+ 		records.set(attribute, {
+ 			present: record?.present ?? element.hasAttribute(attribute),
+@@ -288,7 +260,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// its last holder leaves. Returns true when the record reads the attribute absent, so the caller
+ 	// removes an attribute left empty; false when the snapshot does not hold it or the record reads
+ 	// the attribute present.
+-	#leave(element: HTMLElement, attribute: 'class' | 'style'): boolean {
++	#leave(element: HTMLElement, attribute: HostSnapshotHolding['attribute']): boolean {
+ 		const leaving = this.#leaving.some(
+ 			(presence) => presence.element === element && presence.attribute === attribute,
+ 		)
+@@ -312,7 +284,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// whose own token or property writes are done: a record the restoration still leaves departs
+ 	// through `#leave`, and a record a save during the restoration took back is read and stays held
+ 	// for the snapshot's next restoration.
+-	#absent(element: HTMLElement, attribute: 'class' | 'style'): boolean {
++	#absent(element: HTMLElement, attribute: HostSnapshotHolding['attribute']): boolean {
+ 		const joined = this.#joined.some(
+ 			(presence) => presence.element === element && presence.attribute === attribute,
+ 		)
+@@ -352,7 +324,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// the record's value, then withdraws the target. A restoration a reaction runs inside the write
+ 	// finds the target written and leaves it.
+ 	static #writeBack(
+-		entry: { readonly target: HostSnapshotTarget; readonly key: string },
++		entry: HostSnapshotEntry,
+ 		owner: HostSnapshot,
+ 		write: (value: string | undefined, priority: string) => void,
+ 	): void {
+diff --git a/src/browser/Isolation.ts b/src/browser/Isolation.ts
+index 9e4f35d..454023b 100644
+--- a/src/browser/Isolation.ts
++++ b/src/browser/Isolation.ts
+@@ -14,17 +14,19 @@ import { HostSnapshot } from './HostSnapshot.js'
+  * beside the chain at each level as inert. It observes each level's children, and an HTML element
+  * inserted at a level beside the chain is claimed as inert at the next observer delivery. The live
+  * isolations share their claims on each element: the newest claim decides whether the element
+- * carries `inert`, a release hands the element to the newest claim left, and the last release
+- * restores the value one snapshot recorded before the first claim, so isolations may end in any
+- * order. Each element the `spare` option lists is claimed as not inert, as the chain is: at
+- * construction when it is connected, and at each observer delivery that inserts it at a level
+- * beside the chain, so an owner keeps an element of its own, such as its backdrop, interactive
+- * while another live isolation claims it inert; the isolation copies the list at construction.
+- * Destruction stops the observation, releases every claim, and moves focus to the trigger, the one
+- * the options name or else the HTML element that held focus at construction; the platform moves no
+- * focus to a trigger that is disconnected or not rendered. An aborted `signal` destroys the
+- * isolation: one that aborts inside a claim's write during construction, such as from a custom
+- * element's attribute reaction, stops the construction there, so nothing more is claimed or observed.
++ * carries `inert`, and a release hands the element to the newest claim left. Every claiming
++ * isolation's snapshot joins one record of the element's `inert` value, so the last isolation to
++ * release it writes back the value the first claim found, and isolations may end in any order. Each
++ * element the `spare` option lists is claimed as not inert, as the chain is: at construction when it
++ * is connected, and at each observer delivery that inserts it at a level beside the chain, so an
++ * owner keeps an element of its own, such as its backdrop, interactive while another live isolation
++ * claims it inert; the isolation copies the list at construction. Destruction stops the
++ * observation, hands each element another isolation still claims to the newest claim left, then
++ * writes back every element it released last, and moves focus to the trigger, the one the options
++ * name or else the HTML element that held focus at construction; the platform moves no focus to a
++ * trigger that is disconnected or not rendered. An aborted `signal` destroys the isolation: one that
++ * aborts inside a claim's write during construction, such as from a custom element's attribute
++ * reaction, stops the construction there, so nothing more is claimed or observed.
+  *
+  * @example
+  * ```ts
+@@ -33,20 +35,22 @@ import { HostSnapshot } from './HostSnapshot.js'
+  * ```
+  */
+ export class Isolation implements IsolationInterface {
+-	// The live claims on each element's `inert` attribute, oldest first, with the snapshot that
+-	// recorded the attribute before the first claim wrote it.
++	// The live claims on each element's `inert` attribute, oldest first. The newest decides the
++	// attribute, and a release hands the element to the newest claim left. The shared record cannot
++	// hold this order: it keeps the value the first save read and writes only at the last release.
+ 	static readonly #claims = new WeakMap<
+ 		HTMLElement,
+-		{
+-			readonly snapshot: HostSnapshot
+-			readonly claims: ReadonlyArray<{ readonly isolation: Isolation; readonly inert: boolean }>
+-		}
++		ReadonlyArray<{ readonly isolation: Isolation; readonly inert: boolean }>
+ 	>()
+ 	readonly #host: HTMLElement
+ 	readonly #trigger: HTMLElement | undefined
+ 	readonly #chain: ReadonlySet<Element>
+ 	readonly #spare: ReadonlySet<HTMLElement>
+ 	readonly #claimed = new Set<HTMLElement>()
++	// Holds the `inert` attribute of every element this isolation claims. Every isolation claiming an
++	// element joins one record of it, so the last to release writes back the value the first claim
++	// found.
++	readonly #snapshot = new HostSnapshot()
+ 	readonly #controller = new AbortController()
+ 	readonly #observer = new MutationObserver((records) => {
+ 		for (const record of records) {
+@@ -124,35 +128,35 @@ export class Isolation implements IsolationInterface {
+ 		this.#observer.disconnect()
+ 		for (const element of this.#claimed) this.#release(element)
+ 		this.#claimed.clear()
++		this.#snapshot.restore()
+ 		this.#trigger?.focus()
+ 	}
+ 
+-	// Adds this isolation's claim on an element as the newest, recording the element's `inert` value
+-	// first when no live claim holds it, and writes the attribute the claim asks for.
++	// Adds this isolation's claim on an element as the newest, joining the element's `inert` record
++	// first, and writes the attribute the claim asks for.
+ 	#claim(element: HTMLElement, inert: boolean): void {
+ 		if (this.#controller.signal.aborted) return
+-		const entry = Isolation.#claims.get(element)
+-		const snapshot = entry?.snapshot ?? new HostSnapshot()
+-		if (entry === undefined) snapshot.save({ category: 'attribute', element, name: 'inert' })
+-		const claims = (entry?.claims ?? []).filter((claim) => claim.isolation !== this)
+-		Isolation.#claims.set(element, { snapshot, claims: [...claims, { isolation: this, inert }] })
++		this.#snapshot.save({ category: 'attribute', element, name: 'inert' })
++		const claims = (Isolation.#claims.get(element) ?? []).filter(
++			(claim) => claim.isolation !== this,
++		)
++		Isolation.#claims.set(element, [...claims, { isolation: this, inert }])
+ 		this.#claimed.add(element)
+ 		element.toggleAttribute('inert', inert)
+ 	}
+ 
+-	// Withdraws this isolation's claim on an element, writing the attribute the newest remaining
+-	// claim asks for, or restoring the recorded value when no claim remains.
++	// Withdraws this isolation's claim on an element and writes the attribute the newest remaining
++	// claim asks for. An element no claim is left on is written back by the snapshot's restoration.
+ 	#release(element: HTMLElement): void {
+-		const entry = Isolation.#claims.get(element)
+-		if (entry === undefined) return
+-		const claims = entry.claims.filter((claim) => claim.isolation !== this)
++		const claims = (Isolation.#claims.get(element) ?? []).filter(
++			(claim) => claim.isolation !== this,
++		)
+ 		const newest = claims.at(-1)
+ 		if (newest === undefined) {
+ 			Isolation.#claims.delete(element)
+-			entry.snapshot.restore()
+ 			return
+ 		}
+-		Isolation.#claims.set(element, { snapshot: entry.snapshot, claims })
++		Isolation.#claims.set(element, claims)
+ 		element.toggleAttribute('inert', newest.inert)
+ 	}
+ }
+diff --git a/src/browser/Modal.ts b/src/browser/Modal.ts
+index d9a8d05..9ab378f 100644
+--- a/src/browser/Modal.ts
++++ b/src/browser/Modal.ts
+@@ -47,15 +47,16 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * `false` turns off, and `dismiss.backdrop`, which only `static` turns off; each path takes the
+  * constructor's value when the constructor supplies one.
+  *
+- * Showing takes a reference to the document's scroll lock, adds the `open` token to the body, which
+- * the modals of one document share by reference count, shows the backdrop when `backdrop` is `true`
+- * and waits for its fade, appends a host the body does not contain to the body, displays the host,
+- * marks it as a modal dialog, scrolls it and its body to the top, and adds the `shown` token. It then
+- * waits for the dialog's transition when the host carries the `fade` token, isolates focus inside the
+- * host and moves focus to it when `focus` is `true`, and dispatches `shown.vn.modal`. Hiding releases
+- * the isolation, removes the `shown` token, waits for the host's own fade, hides the host, hides and
+- * removes the backdrop, and releases the `open` token, the dialog adjustment, and the scroll lock
+- * before it dispatches `hidden.vn.modal`.
++ * Showing takes a reference to the document's scroll lock, joins the one record the modals of one
++ * document share of the body's `open` token and adds the token when the body lacks it, shows the
++ * backdrop when `backdrop` is `true` and waits for its fade, appends a host the body does not
++ * contain to the body, displays the host, marks it as a modal dialog, scrolls it and its body to the
++ * top, and adds the `shown` token. It then waits for the dialog's transition when the host carries
++ * the `fade` token, isolates focus inside the host and moves focus to it when `focus` is `true`, and
++ * dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown` token, waits for
++ * the host's own fade, hides the host, hides and removes the backdrop, and releases the `open`
++ * token, the dialog adjustment, and the scroll lock before it dispatches `hidden.vn.modal`. The last
++ * modal to release the `open` token writes back the body's value the first show found.
+  *
+  * A call carries the change identity it sets when its change starts. After each write, dispatch,
+  * and await, it reads whether the modal is live and whether a later `show` or `hide` call has
+@@ -98,18 +99,16 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  */
+ export class Modal implements ModalInterface {
+ 	static readonly #registry = new Registry<Modal>({ code: 'MODAL_HOST_OWNED' })
+-	// The modals holding each `open` token on each document's body, with the one snapshot that
+-	// recorded the token before the first holder wrote it.
+-	static readonly #opened = new WeakMap<
+-		Document,
+-		Map<string, { readonly holders: Set<Modal>; readonly snapshot: HostSnapshot }>
+-	>()
+ 	readonly #host: HTMLElement
+ 	readonly #dialog: HTMLElement | undefined
+ 	readonly #classes: ModalClassMap
+ 	readonly #selectors: ModalSelectorMap
+ 	readonly #options: typeof MODAL_DEFAULTS
+ 	readonly #snapshot = new HostSnapshot()
++	// Holds the body's `open` token from the show that takes it until the hide or the destruction that
++	// releases it. Every modal holding the token joins one record of it, so the last to release writes
++	// the body's value back.
++	readonly #open = new HostSnapshot()
+ 	readonly #controller = new AbortController()
+ 	// Whether a show or a hide is in flight. Every other call is refused while it is, so only the call
+ 	// in flight, its doors, and destruction clear it.
+@@ -262,7 +261,7 @@ export class Modal implements ModalInterface {
+ 		const expected = this.shown ? true : undefined
+ 		const host = this.#host
+ 		const document = host.ownerDocument
+-		const { shown, fade } = this.#classes
++		const { shown, fade, open } = this.#classes
+ 		this.#save()
+ 		if (this.#lock === undefined) {
+ 			this.#lock = new ScrollLock({
+@@ -272,7 +271,11 @@ export class Modal implements ModalInterface {
+ 			})
+ 			if (!this.#holds(change, expected)) return false
+ 		}
+-		if (!this.#apply(change, expected, () => this.#holdOpen(document))) return false
++		const opened = this.#apply(change, expected, () => {
++			this.#open.save({ category: 'token', element: document.body, name: open })
++			if (!document.body.classList.contains(open)) document.body.classList.add(open)
++		})
++		if (!opened) return false
+ 		if (!this.#apply(change, expected, () => this.#adjust())) return false
+ 		// The backdrop writes this call makes, each an entry its returning step returns on its own: the
+ 		// connection when the call finds the backdrop outside the page, and the token when it finds the
+@@ -401,7 +404,7 @@ export class Modal implements ModalInterface {
+ 			return this.#reshow(change, removed, place)
+ 		}
+ 		const lock = this.#lock
+-		if (lock !== undefined && !this.#apply(change, false, () => this.#releaseOpen(lock.document))) {
++		if (!this.#apply(change, false, () => this.#open.restore())) {
+ 			return this.#reshow(change, removed, place)
+ 		}
+ 		if (!this.#apply(change, false, () => host.style.removeProperty('padding-left'))) {
+@@ -447,9 +450,8 @@ export class Modal implements ModalInterface {
+ 		// modal's lifetime as their signal.
+ 		this.#backdrop?.destroy()
+ 		this.#backdrop = undefined
+-		const lock = this.#lock
+ 		this.#lock = undefined
+-		if (lock !== undefined) this.#releaseOpen(lock.document)
++		this.#open.restore()
+ 		this.#snapshot.restore()
+ 	}
+ 
+@@ -581,33 +583,6 @@ export class Modal implements ModalInterface {
+ 		if (width === 0 && overflowing) host.style.setProperty('padding-left', `${width}px`)
+ 	}
+ 
+-	// Holds the `open` token on the document's body, writing it when this modal is its first holder.
+-	#holdOpen(document: Document): void {
+-		const token = this.#classes.open
+-		const tokens = Modal.#opened.get(document) ?? new Map()
+-		Modal.#opened.set(document, tokens)
+-		const held = tokens.get(token)
+-		if (held !== undefined) {
+-			held.holders.add(this)
+-			return
+-		}
+-		const snapshot = new HostSnapshot()
+-		tokens.set(token, { holders: new Set([this]), snapshot })
+-		snapshot.save({ category: 'token', element: document.body, name: token })
+-		document.body.classList.add(token)
+-	}
+-
+-	// Releases the `open` token this modal holds on the document's body, restoring the body when this
+-	// modal was its last holder.
+-	#releaseOpen(document: Document): void {
+-		const tokens = Modal.#opened.get(document)
+-		const held = tokens?.get(this.#classes.open)
+-		if (tokens === undefined || held === undefined || !held.holders.delete(this)) return
+-		if (held.holders.size > 0) return
+-		tokens.delete(this.#classes.open)
+-		held.snapshot.restore()
+-	}
+-
+ 	// Hides the modal on Escape, or refuses the hide through the `prevent` event when Escape does
+ 	// not dismiss it.
+ 	#escape(event: KeyboardEvent): void {
+diff --git a/src/browser/ScrollLock.ts b/src/browser/ScrollLock.ts
+index 815959a..5a94d2f 100644
+--- a/src/browser/ScrollLock.ts
++++ b/src/browser/ScrollLock.ts
+@@ -33,6 +33,12 @@ import { isSelector } from './validators.js'
+  * ```
+  */
+ export class ScrollLock implements ScrollLockInterface {
++	// The locks holding each document's scroll lock, with the one snapshot the first lock saved its
++	// targets through. A later lock joins this group rather than the record of each target, because
++	// only the first lock's measurement decides which targets exist: a later lock's selectors can
++	// differ, and a measurement taken after the first lock's overflow write reads the width the hidden
++	// scrollbar leaves rather than the width it compensated, so the shared record alone would measure
++	// and write once per lock.
+ 	static readonly #locks = new WeakMap<
+ 		Document,
+ 		{ readonly holders: Set<ScrollLock>; readonly snapshot: HostSnapshot }
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 92124e5..e585544 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -419,6 +419,44 @@ export interface HostSnapshotInterface {
+ 	clear(): void
+ }
+ 
++/** Describes one target a snapshot holds: the target under the name the platform resolved at its save, and the record key that save fixed. */
++export interface HostSnapshotEntry {
++	/** Carries the target under the name the platform resolved when the snapshot saved it. */
++	readonly target: HostSnapshotTarget
++	/** Names the record the save joined, so every release of the target reads that record, even after the element moves into another document. */
++	readonly key: string
++}
++
++/** Describes the one record that every snapshot holding a target shares, and that the target's last holder writes back. */
++export interface HostSnapshotRecord {
++	/** Carries what the first save read: the attribute's or the inline property's value, or the class token when the list carried it. Undefined when the target was absent. */
++	readonly value: string | undefined
++	/** Carries the inline property's priority the first save read, and the empty string for an attribute or a class token. */
++	readonly priority: string
++	/** Carries every snapshot that holds the target. */
++	readonly holders: ReadonlySet<HostSnapshotInterface>
++	/** Carries the snapshot whose restoration has the target still to write back after the last holder relinquished it. Undefined while a snapshot holds the target. */
++	readonly owner: HostSnapshotInterface | undefined
++	/** If `true`, the owner's write of the target has started, so a restoration a reaction runs inside it leaves the target; if `false`, no write has started. */
++	readonly written: boolean
++}
++
++/** Names one presence record a snapshot holds: an element and the attribute, `class` or `style`, whose presence the record reads. */
++export interface HostSnapshotHolding {
++	/** Carries the element whose attribute the presence record reads. */
++	readonly element: HTMLElement
++	/** Names the attribute: `class` for class tokens and `style` for inline properties. */
++	readonly attribute: 'class' | 'style'
++}
++
++/** Describes the presence record that every snapshot saving a class token or an inline property on one element shares for the attribute that holds it. */
++export interface HostSnapshotPresence {
++	/** If `true`, the element carried the attribute when the first snapshot holding the record saved; if `false`, it did not. */
++	readonly present: boolean
++	/** Carries every snapshot that holds the presence record. */
++	readonly holders: ReadonlySet<HostSnapshotInterface>
++}
++
+ /** Configures where focus returns when an isolation ends, the elements it spares, and the lifetime that ends it. */
+ export interface IsolationOptions {
+ 	/** Receives focus when the isolation ends, if connected and visible. Default: the element focused at construction. */
+diff --git a/tests/src/browser/ColorMode.test.ts b/tests/src/browser/ColorMode.test.ts
+index e69d83f..0095ac2 100644
+--- a/tests/src/browser/ColorMode.test.ts
++++ b/tests/src/browser/ColorMode.test.ts
+@@ -25,8 +25,8 @@ describe('ColorMode', () => {
+ 		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 	})
+ 
+-	it('puts the root back when persisting the stored mode throws during construction', () => {
+-		const root = build('div')
++	it('puts the root reading back, absent or present, and rethrows the same error when persisting the stored mode throws during construction', () => {
++		const error = new Error('stop')
+ 		const storage: Storage = {
+ 			length: 1,
+ 			clear: () => {},
+@@ -34,12 +34,20 @@ describe('ColorMode', () => {
+ 			key: () => COLOR_MODE_KEY,
+ 			removeItem: () => {},
+ 			setItem: () => {
+-				throw new Error('stop')
++				throw error
+ 			},
+ 		}
+-		const failed = attempt(() => new ColorMode({ root, storage }))
+-		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
+-		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++		const bare = build('div')
++		const themed = build('div')
++		themed.setAttribute('data-bs-theme', 'light')
++		const unthemed = attempt(() => new ColorMode({ root: bare, storage }))
++		const rethemed = attempt(() => new ColorMode({ root: themed, storage }))
++		expect(unthemed).toMatchObject({ success: false })
++		expect(rethemed).toMatchObject({ success: false })
++		expect(unthemed.success ? undefined : unthemed.error).toBe(error)
++		expect(rethemed.success ? undefined : rethemed.error).toBe(error)
++		expect(bare.hasAttribute('data-bs-theme')).toBe(false)
++		expect(themed.getAttribute('data-bs-theme')).toBe('light')
+ 	})
+ 
+ 	it('toggles, persists, and writes the light attribute', () => {
+diff --git a/tests/src/browser/Modal.test.ts b/tests/src/browser/Modal.test.ts
+index 26f0cac..188d75b 100644
+--- a/tests/src/browser/Modal.test.ts
++++ b/tests/src/browser/Modal.test.ts
+@@ -591,7 +591,7 @@ describe('Modal', () => {
+ 		expect(Modal.find(keyed)).toBe(escaped)
+ 	})
+ 
+-	it('reference-counts the scroll lock and the open token across two modals, restoring the body at the last hide', async () => {
++	it('shares the scroll lock and the open token across two modals, restoring the body at the last hide', async () => {
+ 		scene.load(cascade)
+ 		const root = scene.mount(`
+ 			<button type="button" id="page">Page</button>
+@@ -652,6 +652,34 @@ describe('Modal', () => {
+ 		expect(body.hasAttribute('class')).toBe(false)
+ 	})
+ 
++	it('adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found', async () => {
++		const root = scene.mount(`
++			<div id="first" class="modal"><div class="modal-dialog"></div></div>
++			<div id="second" class="modal"><div class="modal-dialog"></div></div>`)
++		const first = requireValue(root.querySelector<HTMLElement>('#first'), 'No first modal')
++		const second = requireValue(root.querySelector<HTMLElement>('#second'), 'No second modal')
++		const body = document.body
++		const classed = body.getAttribute('class')
++		onTestFinished(() => {
++			if (classed === null) body.removeAttribute('class')
++			else body.setAttribute('class', classed)
++		})
++		body.setAttribute('class', 'page')
++		const one = new Modal(first, { focus: false })
++		const two = new Modal(second, { focus: false })
++		onTestFinished(() => one.destroy())
++		onTestFinished(() => two.destroy())
++		expect(await one.show()).toBe(true)
++		expect(Array.from(body.classList)).toEqual(['page', 'modal-open'])
++		body.classList.remove('modal-open')
++		expect(await two.show()).toBe(true)
++		expect(Array.from(body.classList)).toEqual(['page', 'modal-open'])
++		expect(await one.hide()).toBe(true)
++		expect(Array.from(body.classList)).toEqual(['page', 'modal-open'])
++		expect(await two.hide()).toBe(true)
++		expect(body.getAttribute('class')).toBe('page')
++	})
++
+ 	it('pads the host by the scrollbar width when update finds it overflowing, on a window resize, and removes the padding on hide', async () => {
+ 		scene.load(cascade)
+ 		const root = scene.mount(`
+diff --git a/tests/src/browser/ScrollLock.test.ts b/tests/src/browser/ScrollLock.test.ts
+index 8ff9643..97a2c78 100644
+--- a/tests/src/browser/ScrollLock.test.ts
++++ b/tests/src/browser/ScrollLock.test.ts
+@@ -2,7 +2,7 @@ import { SCROLL_LOCK_SELECTORS, ScrollLock } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+-import { scene } from '../../setupBrowser.js'
++import { recordCalls, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -33,6 +33,37 @@ describe('ScrollLock', () => {
+ 		expect(failed).toMatchObject({ error: { code: 'SCROLL_LOCK_BODY_MISSING' } })
+ 	})
+ 
++	it('leaves no listener on the signal of a lock it refuses for a missing body, so aborting that signal later runs none of it, writes nothing, and throws nothing', () => {
++		const owner = document.implementation.createHTMLDocument('Detached')
++		const body = owner.body
++		body.remove()
++		const controller = new AbortController()
++		const refused = attempt(() => new ScrollLock({ document: owner, signal: controller.signal }))
++		expect(refused).toMatchObject({ success: false, error: { code: 'SCROLL_LOCK_BODY_MISSING' } })
++		owner.documentElement.append(body)
++		const lock = new ScrollLock({ document: owner })
++		onTestFinished(() => lock.destroy())
++		const styled = body.getAttribute('style')
++		expect(styled).toBe('overflow: hidden;')
++		const errors = createRecorder<readonly [ErrorEvent]>()
++		const listening = new AbortController()
++		onTestFinished(() => listening.abort())
++		window.addEventListener('error', errors.handler, { signal: listening.signal })
++		// The platform lists no listener of a signal, so the abort is read through what a listener the
++		// refused lock left behind would run: its destruction aborts the lock's own controller, which
++		// would be a second receiver beside the caller's controller.
++		const aborts = recordCalls(AbortController.prototype, 'abort')
++		onTestFinished(() => aborts.restore())
++		expect(() => controller.abort()).not.toThrow()
++		aborts.restore()
++		expect(aborts.recorder.count).toBe(1)
++		expect(aborts.recorder.calls[0]?.[0]).toBe(controller)
++		expect(errors.count).toBe(0)
++		expect(body.getAttribute('style')).toBe(styled)
++		lock.destroy()
++		expect(body.hasAttribute('style')).toBe(false)
++	})
++
+ 	it('publishes a frozen default table naming Bootstrap fixed and sticky selectors', () => {
+ 		expect(SCROLL_LOCK_SELECTORS).toStrictEqual({
+ 			fixed: '.fixed-top, .fixed-bottom, .is-fixed',

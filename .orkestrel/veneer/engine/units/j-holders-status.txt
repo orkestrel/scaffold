@@ -1,0 +1,9 @@
+M	guides/veneer.md
+M	src/browser/HostSnapshot.ts
+M	src/browser/Isolation.ts
+M	src/browser/Modal.ts
+M	src/browser/ScrollLock.ts
+M	src/browser/types.ts
+M	tests/src/browser/ColorMode.test.ts
+M	tests/src/browser/Modal.test.ts
+M	tests/src/browser/ScrollLock.test.ts
