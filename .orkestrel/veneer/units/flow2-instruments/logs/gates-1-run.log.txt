@@ -1,0 +1,11 @@
+format-check: exit=0 
+lint-check: exit=0 
+check: exit=0 
+build-src: exit=0 
+owned: exit=0       Tests  26 passed (26)
+conformance: exit=0       Tests  26 passed (26)
+src-styles: exit=0       Tests  1500 passed (1500)
+setup: exit=1       Tests  1 failed | 308 passed | 12 skipped (321)
+guides: exit=0 [2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+app-browser: exit=0       Tests  223 passed (223)
+done

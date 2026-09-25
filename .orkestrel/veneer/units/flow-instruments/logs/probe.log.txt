@@ -1,0 +1,41 @@
+## @390
+  h1: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h2: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h3: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h4: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h5: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h6: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h1: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h2: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h3: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h4: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h5: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h6: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  p: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  address: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  ol: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  ul: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  p.mb-0: veneer 0px 0px | bootstrap 0px 0px | same | veneer at density 2 0px 0px
+  ul.list-unstyled: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  p: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+## @1280
+  h1: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h2: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h3: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h4: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h5: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  h6: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h1: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h2: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h3: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h4: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h5: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  div.h6: veneer 0px 8px | bootstrap 0px 8px | same | veneer at density 2 0px 16px
+  p: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  address: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  ol: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  ul: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  p.mb-0: veneer 0px 0px | bootstrap 0px 0px | same | veneer at density 2 0px 0px
+  ul.list-unstyled: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  p: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+exit 0

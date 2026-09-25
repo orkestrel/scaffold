@@ -1,0 +1,172 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+··xxxx····x·xx·········x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+AssertionError: expected 'Excluded name pre code is present in …' to contain '.navbar > .container-fluid'
+
+Expected: ".navbar > .container-fluid"
+Received: "Excluded name pre code is present in the built cascade"
+
+ ❯ tests/conformance.test.ts:87:5
+     85|     cascade.replaceAll(selector, '.omitted-navbar>.container-fluid'),
+     86|    ),
+     87|   ).toContain('.navbar > .container-fluid')
+       |     ^
+     88|  })
+     89|  it('reports an omitted link hover selector even when its resting twin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+AssertionError: expected 'Excluded name pre code is present in …' to contain '.link-opacity-10-hover:hover'
+
+Expected: ".link-opacity-10-hover:hover"
+Received: "Excluded name pre code is present in the built cascade"
+
+ ❯ tests/conformance.test.ts:100:5
+     98|     cascade.replaceAll(selector, '.omitted-link-opacity-10:hover'),
+     99|    ),
+    100|   ).toContain(selector)
+       |     ^
+    101|  })
+    102|  it('reports an omitted dark component rule the theme key records even…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+AssertionError: expected 'Excluded name pre code is present in …' to contain '[data-bs-theme=dark] .navbar-toggler-…'
+
+Expected: "[data-bs-theme=dark] .navbar-toggler-icon"
+Received: "Excluded name pre code is present in the built cascade"
+
+ ❯ tests/conformance.test.ts:113:5
+    111|     cascade.replaceAll(selector, '[data-bs-theme=dark] .omitted-toggle…
+    112|    ),
+    113|   ).toContain(selector)
+       |     ^
+    114|  })
+    115|  it('carries every shipped component selector, custom property, and re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+AssertionError: expected 'Excluded name pre code is present in …' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"Excluded name pre code is present in the built cascade"
+
+ ❯ tests/conformance.test.ts:257:5
+    255|   expect(
+    256|    scanCompatibilityPresence(rows, readOracleInventory(), readDeferral…
+    257|   ).toBeUndefined()
+       |     ^
+    258|   expect(shipped, 'Guide shipped components and conformance component …
+    259|    listed,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "reboot | pre code { padding } | — | declaration",
++   "reboot | pre code { background-color } | — | declaration",
++   "reboot | pre code { border-radius } | — | declaration",
++   "reboot | kbd kbd { background-color } | — | declaration",
++   "reboot | kbd kbd { border } | — | declaration",
++   "reboot | samp { border-radius } | — | declaration",
++ ]
+
+ ❯ tests/conformance.test.ts:342:32
+    340|
+    341|  it('records every emitted name the official inventory lacks', () => {
+    342|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    343|  })
+    344|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(7) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "reboot | pre code { padding } | — | declaration",
++   "reboot | pre code { background-color } | — | declaration",
++   "reboot | pre code { border-radius } | — | declaration",
++   "reboot | kbd kbd { background-color } | — | declaration",
++   "reboot | kbd kbd { border } | — | declaration",
++   "reboot | samp { border-radius } | — | declaration",
+    "form-control | .form-control { letter-spacing } | — | declaration",
+  ]
+
+ ❯ tests/conformance.test.ts:354:30
+    352|   // browser case reads only the properties a row values. This ledger …
+    353|   // it, and the unmodified cascade is the control that reports nothin…
+    354|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    355|    'form-control | .form-control { letter-spacing } | — | declaration',
+    356|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+AssertionError: expected [ 'pre code', 'a > code', 'kbd kbd' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "pre code",
++   "a > code",
++   "kbd kbd",
++ ]
+
+ ❯ tests/conformance.test.ts:364:69
+    362|  // name reads as the stale row it is rather than as one refusal stand…
+    363|  it('defers no name the built cascade ships', () => {
+    364|   expect(scanShippedDeferrals(readDeferrals(), readBuiltCascade())).to…
+       |                                                                     ^
+    365|  })
+    366|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-eic/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:944:16
+    942|  signatures: readonly string[],
+    943| ): string | undefined {
+    944|  const built = readFileSync(path, 'utf8')
+       |                ^
+    945|  return (
+    946|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:821:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 18 passed (26)
+   Start at  23:08:07
+   Duration  35.55s (transform 789ms, setup 207ms, import 22.32s, tests 12.86s, environment 0ms)
+

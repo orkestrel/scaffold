@@ -1,0 +1,99 @@
+== dl-literal
+      Tests  1 failed | 25 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/dl.test.ts:40:2 > dl text treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+AssertionError: expected 16 to be 32 // Object.is equality
+exit 1
+restore identical
+restore: before 90219960b178d458e94cd301b40f245c1d2e10a551bde005ebdfe969b7bf905d after 90219960b178d458e94cd301b40f245c1d2e10a551bde005ebdfe969b7bf905d
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+== dl-zero
+      Tests  3 failed | 23 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/dl.test.ts:14:2 > dl text treatment > resolves the dl values in 'dark' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/dl.test.ts:14:2 > dl text treatment > resolves the dl values in 'light' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/dl.test.ts:40:2 > dl text treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+AssertionError: expected +0 to be 16 // Object.is equality
+AssertionError: expected { Object (margin, display, ...) } to deeply equal { margin: '0px 0px 16px', …(3) }
+exit 1
+restore identical
+restore: before 90219960b178d458e94cd301b40f245c1d2e10a551bde005ebdfe969b7bf905d after 90219960b178d458e94cd301b40f245c1d2e10a551bde005ebdfe969b7bf905d
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+== pre-literal
+      Tests  1 failed | 25 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/pre.test.ts:46:2 > pre text treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+AssertionError: expected 16 to be 32 // Object.is equality
+exit 1
+restore identical
+restore: before ef232e823b0b233fe986e0448fd87669b9a5329367f08261196ea427b6d78afe after ef232e823b0b233fe986e0448fd87669b9a5329367f08261196ea427b6d78afe
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+== pre-zero
+      Tests  3 failed | 23 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/pre.test.ts:14:2 > pre text treatment > resolves the pre values in 'dark' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/pre.test.ts:14:2 > pre text treatment > resolves the pre values in 'light' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/pre.test.ts:46:2 > pre text treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+AssertionError: expected +0 to be 16 // Object.is equality
+AssertionError: expected { 'font-size': '12.25px', …(6) } to deeply equal { 'font-size': '12.25px', …(6) }
+exit 1
+restore identical
+restore: before ef232e823b0b233fe986e0448fd87669b9a5329367f08261196ea427b6d78afe after ef232e823b0b233fe986e0448fd87669b9a5329367f08261196ea427b6d78afe
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+== hr-literal
+      Tests  1 failed | 25 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/hr.test.ts:36:2 > hr text treatment > takes the release block margins at the default density and scales both block margins with the density factor
+AssertionError: expected 16 to be 32 // Object.is equality
+exit 1
+restore identical
+restore: before 26434b4dc30daf1dce544098cf0f2f3e92110ea7611767926e9eb198127b78c3 after 26434b4dc30daf1dce544098cf0f2f3e92110ea7611767926e9eb198127b78c3
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+== hr-zero
+      Tests  3 failed | 23 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/hr.test.ts:13:24 > hr text treatment > resolves the hr values in 'dark' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/hr.test.ts:13:24 > hr text treatment > resolves the hr values in 'light' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/hr.test.ts:36:2 > hr text treatment > takes the release block margins at the default density and scales both block margins with the density factor
+AssertionError: expected +0 to be 16 // Object.is equality
+AssertionError: expected { margin: '0px', …(6) } to deeply equal { margin: '16px 0px', …(6) }
+exit 1
+restore identical
+restore: before 26434b4dc30daf1dce544098cf0f2f3e92110ea7611767926e9eb198127b78c3 after 26434b4dc30daf1dce544098cf0f2f3e92110ea7611767926e9eb198127b78c3
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+== figure-literal
+      Tests  1 failed | 25 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:43:2 > figure calibrated treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+AssertionError: expected 16 to be 32 // Object.is equality
+exit 1
+restore identical
+restore: before 9e9f9257e0bef08169ae842234cf16280f39b1fee62fe4e29ffd4145049ca002 after 9e9f9257e0bef08169ae842234cf16280f39b1fee62fe4e29ffd4145049ca002
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+== figure-zero
+      Tests  4 failed | 22 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:113:2 > figure class around a captioned image > ends the figure at its caption and starts the next block 16px after it
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:20:21 > figure calibrated treatment > resolves the calibrated values in dark mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:20:21 > figure calibrated treatment > resolves the calibrated values in light mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:43:2 > figure calibrated treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+AssertionError: expected '0px' to be '0px 0px 16px' // Object.is equality
+AssertionError: expected +0 to be 16 // Object.is equality
+AssertionError: expected 108 to be close to 124, received difference is 16, but expected 0.05
+exit 1
+restore identical
+restore: before 9e9f9257e0bef08169ae842234cf16280f39b1fee62fe4e29ffd4145049ca002 after 9e9f9257e0bef08169ae842234cf16280f39b1fee62fe4e29ffd4145049ca002
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+== figure-double
+      Tests  7 failed | 19 passed (26)
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:113:2 > figure class around a captioned image > ends the figure at its caption and starts the next block 16px after it
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:20:21 > figure calibrated treatment > resolves the calibrated values in dark mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:20:21 > figure calibrated treatment > resolves the calibrated values in light mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:43:2 > figure calibrated treatment > takes the release block margins at the default density and scales the block-end margin with the density factor
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:90:2 > figure around an attributed quotation > ends 'a bare figure' at the footer edge and starts the next block 16px after it
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:90:2 > figure around an attributed quotation > ends 'a centered figure' at the footer edge and starts the next block 16px after it
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/figure.test.ts:90:2 > figure around an attributed quotation > ends 'an end-aligned figure' at the footer edge and starts the next block 16px after it
+AssertionError: expected '0px 0px 32px' to be '0px 0px 16px' // Object.is equality
+AssertionError: expected 140 to be close to 124, received difference is 16, but expected 0.05
+AssertionError: expected 32 to be 16 // Object.is equality
+AssertionError: expected 82 to be close to 66, received difference is 16, but expected 0.05
+exit 1
+restore identical
+restore: before 9e9f9257e0bef08169ae842234cf16280f39b1fee62fe4e29ffd4145049ca002 after 9e9f9257e0bef08169ae842234cf16280f39b1fee62fe4e29ffd4145049ca002
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+ M src/styles/elements/_dl.scss
+ M src/styles/elements/_figure.scss
+ M src/styles/elements/_hr.scss
+ M src/styles/elements/_pre.scss

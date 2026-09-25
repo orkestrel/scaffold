@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+11:12:14 PM [vite] (client) [optimizer] bundling dependencies...
+ ❯ |app:browser (chromium)| tests/app/browser/sections/ContentSection.test.ts (2 tests | 1 failed) 37ms
+     × renders every Content specimen in table order inside the named region 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ContentSection.test.ts:7:2 > ContentSection > renders every Content specimen in table order inside the named region
+AssertionError: expected [ 'Heading 1', 'Heading 2', …(44) ] to deeply equal [ 'Heading 1', 'Heading 2', …(41) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -19,12 +19,15 @@[39m
+[2m    "Small",[22m
+[2m    "Mark",[22m
+[2m    "Subscript",[22m
+[2m    "Superscript",[22m
+[2m    "Code",[22m
+[31m+   "Linked code",[39m
+[2m    "Preformatted",[22m
+[31m+   "Code block",[39m
+[2m    "Keyboard",[22m
+[31m+   "Key combination",[39m
+[2m    "Sample",[22m
+[2m    "Variable",[22m
+[2m    "Bold",[22m
+[2m    "Figure",[22m
+[2m    "Image",[22m
+
+ ❯ tests/app/browser/sections/ContentSection.test.ts:18:62
+     16|     CONTENT_SPECIMENS.map((specimen) => specimen.name),
+     17|    )
+     18|    expect(CONTENT_SPECIMENS.map((specimen) => specimen.name)).toEqual([
+       |                                                              ^
+     19|     'Heading 1',
+     20|     'Heading 2',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  23:12:13
+   Duration  11.77s (transform 0ms, setup 747ms, import 594ms, tests 37ms, environment 0ms)
+
+exit 1

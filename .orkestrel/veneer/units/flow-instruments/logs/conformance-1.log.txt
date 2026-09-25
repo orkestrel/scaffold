@@ -1,0 +1,215 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-flow
+
+·······xxx·x···········x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(21) ], [ …(16) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "h1 | .h1 | margin-bottom",
++     "h2 | .h2 | margin-bottom",
++     "h3 | .h3 | margin-bottom",
++     "h4 | .h4 | margin-bottom",
++     "h5 | .h5 | margin-bottom",
++     "h6 | .h6 | margin-bottom",
++     "reboot | h6 | margin-bottom",
++     "reboot | h5 | margin-bottom",
++     "reboot | h4 | margin-bottom",
++     "reboot | h3 | margin-bottom",
++     "reboot | h2 | margin-bottom",
++     "reboot | h1 | margin-bottom",
++     "reboot | p | margin-bottom",
++     "reboot | address | margin-bottom",
++     "reboot | ol | margin-bottom",
++     "reboot | ul | margin-bottom",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "h1 | .h1 | margin-bottom",
++     "h2 | .h2 | margin-bottom",
++     "h3 | .h3 | margin-bottom",
++     "h4 | .h4 | margin-bottom",
++     "h5 | .h5 | margin-bottom",
++     "h6 | .h6 | margin-bottom",
++     "reboot | h6 | margin-bottom",
++     "reboot | h5 | margin-bottom",
++     "reboot | h4 | margin-bottom",
++     "reboot | h3 | margin-bottom",
++     "reboot | h2 | margin-bottom",
++     "reboot | h1 | margin-bottom",
++     "reboot | p | margin-bottom",
++     "reboot | address | margin-bottom",
++     "reboot | ol | margin-bottom",
++     "reboot | ul | margin-bottom",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:326:20
+    324|   // The component-owned dark images are a second record of the same r…
+    325|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    326|   expect(darkened).toEqual([
+       |                    ^
+    327|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    328|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(16) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "h1 | .h1 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "h2 | .h2 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "h3 | .h3 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "h4 | .h4 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "h5 | .h5 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "h6 | .h6 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | h6 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | h5 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | h4 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | h3 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | h2 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | h1 | margin-bottom | — | 0.5rem | var(--vn-space-4) | tokenized",
++   "reboot | p | margin-bottom | — | 1rem | var(--vn-space-8) | tokenized",
++   "reboot | address | margin-bottom | — | 1rem | var(--vn-space-8) | tokenized",
++   "reboot | ol | margin-bottom | — | 1rem | var(--vn-space-8) | tokenized",
++   "reboot | ul | margin-bottom | — | 1rem | var(--vn-space-8) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:334:33
+    332|
+    333|  it('records every measured value difference in the guide ledger', () …
+    334|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    335|  })
+    336|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ …(31) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "h1 | .h1 | margin-top | — | 0 | — | dropped",
++   "h1 | .h1 | margin-bottom | — | 0.5rem | — | dropped",
++   "h2 | .h2 | margin-top | — | 0 | — | dropped",
++   "h2 | .h2 | margin-bottom | — | 0.5rem | — | dropped",
++   "h3 | .h3 | margin-top | — | 0 | — | dropped",
++   "h3 | .h3 | margin-bottom | — | 0.5rem | — | dropped",
++   "h4 | .h4 | margin-top | — | 0 | — | dropped",
++   "h4 | .h4 | margin-bottom | — | 0.5rem | — | dropped",
++   "h5 | .h5 | margin-top | — | 0 | — | dropped",
++   "h5 | .h5 | margin-bottom | — | 0.5rem | — | dropped",
++   "h6 | .h6 | margin-top | — | 0 | — | dropped",
++   "h6 | .h6 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | h6 | margin-top | — | 0 | — | dropped",
++   "reboot | h6 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | h5 | margin-top | — | 0 | — | dropped",
++   "reboot | h5 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | h4 | margin-top | — | 0 | — | dropped",
++   "reboot | h4 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | h3 | margin-top | — | 0 | — | dropped",
++   "reboot | h3 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | h2 | margin-top | — | 0 | — | dropped",
++   "reboot | h2 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | h1 | margin-top | — | 0 | — | dropped",
++   "reboot | h1 | margin-bottom | — | 0.5rem | — | dropped",
++   "reboot | p | margin-top | — | 0 | — | dropped",
++   "reboot | p | margin-bottom | — | 1rem | — | dropped",
++   "reboot | address | margin-bottom | — | 1rem | — | dropped",
++   "reboot | ol | margin-top | — | 0 | — | dropped",
++   "reboot | ol | margin-bottom | — | 1rem | — | dropped",
++   "reboot | ul | margin-top | — | 0 | — | dropped",
++   "reboot | ul | margin-bottom | — | 1rem | — | dropped",
++ ]
+
+ ❯ tests/conformance.test.ts:338:28
+    336|
+    337|  it('names no departure the compiled cascade no longer carries', () =>…
+    338|   expect(departures.stale).toEqual([])
+       |                            ^
+    339|  })
+    340|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+AssertionError: expected [ …(16) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "reboot | h1 { margin } | — | declaration",
++   "reboot | h2 { margin } | — | declaration",
++   "reboot | h3 { margin } | — | declaration",
++   "reboot | h4 { margin } | — | declaration",
++   "reboot | h5 { margin } | — | declaration",
++   "reboot | h6 { margin } | — | declaration",
++   "reboot | p { margin } | — | declaration",
++   "reboot | ul { margin } | — | declaration",
++   "reboot | ol { margin } | — | declaration",
++   "reboot | address { margin } | — | declaration",
++   "h1 | .h1 { margin } | — | declaration",
++   "h2 | .h2 { margin } | — | declaration",
++   "h3 | .h3 { margin } | — | declaration",
++   "h4 | .h4 { margin } | — | declaration",
++   "h5 | .h5 { margin } | — | declaration",
++   "h6 | .h6 { margin } | — | declaration",
++ ]
+
+ ❯ tests/conformance.test.ts:346:27
+    344|
+    345|  it('names no addition the compiled cascade no longer emits', () => {
+    346|   expect(additions.stale).toEqual([])
+       |                           ^
+    347|  })
+    348|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-flow/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:944:16
+    942|  signatures: readonly string[],
+    943| ): string | undefined {
+    944|  const built = readFileSync(path, 'utf8')
+       |                ^
+    945|  return (
+    946|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:821:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 21 passed (26)
+   Start at  00:00:35
+   Duration  34.43s (transform 645ms, setup 191ms, import 22.03s, tests 12.06s, environment 0ms)
+
+exit 1

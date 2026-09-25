@@ -1,0 +1,9 @@
+format-check exit 0
+lint-check exit 0
+check exit 0
+owned-files exit 0
+test-src-styles exit 1
+test-setup exit 0
+test-conformance exit 0
+test-guides exit 0
+done

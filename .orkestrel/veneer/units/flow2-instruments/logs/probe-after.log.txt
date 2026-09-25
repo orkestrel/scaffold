@@ -1,0 +1,28 @@
+build exit 0
+## @390: tag margins (top bottom)
+  dl: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  pre: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  hr: veneer 16px 16px | bootstrap 16px 16px | same | veneer at density 2 32px 32px
+  figure: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  dl.mb-0: veneer 0px 0px | bootstrap 0px 0px | same | veneer at density 2 0px 0px
+  p: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+## @390: following paragraph (figure height, next top from figure top, from figure bottom, figure margin-bottom)
+  quotation, bare: veneer 47.14 63.14 16.00 16px | bootstrap 51.00 67.00 16.00 16px | same gap | veneer at density 2 47.14 79.14 32.00 32px
+  quotation, text-center: veneer 47.14 63.14 16.00 16px | bootstrap 51.00 67.00 16.00 16px | same gap | veneer at density 2 47.14 79.14 32.00 32px
+  quotation, fixed heights: veneer 50.00 66.00 16.00 16px | bootstrap 50.00 66.00 16.00 16px | same gap | veneer at density 2 50.00 82.00 32.00 32px
+  .figure pattern: veneer 105.14 121.14 16.00 16px | bootstrap 109.00 125.00 16.00 16px | same gap | veneer at density 2 113.14 145.14 32.00 32px
+  .figure pattern, fixed caption: veneer 108.00 124.00 16.00 16px | bootstrap 108.00 124.00 16.00 16px | same gap | veneer at density 2 116.00 148.00 32.00 32px
+## @1280: tag margins (top bottom)
+  dl: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  pre: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  hr: veneer 16px 16px | bootstrap 16px 16px | same | veneer at density 2 32px 32px
+  figure: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+  dl.mb-0: veneer 0px 0px | bootstrap 0px 0px | same | veneer at density 2 0px 0px
+  p: veneer 0px 16px | bootstrap 0px 16px | same | veneer at density 2 0px 32px
+## @1280: following paragraph (figure height, next top from figure top, from figure bottom, figure margin-bottom)
+  quotation, bare: veneer 47.14 63.14 16.00 16px | bootstrap 51.00 67.00 16.00 16px | same gap | veneer at density 2 47.14 79.14 32.00 32px
+  quotation, text-center: veneer 47.14 63.14 16.00 16px | bootstrap 51.00 67.00 16.00 16px | same gap | veneer at density 2 47.14 79.14 32.00 32px
+  quotation, fixed heights: veneer 50.00 66.00 16.00 16px | bootstrap 50.00 66.00 16.00 16px | same gap | veneer at density 2 50.00 82.00 32.00 32px
+  .figure pattern: veneer 105.14 121.14 16.00 16px | bootstrap 109.00 125.00 16.00 16px | same gap | veneer at density 2 113.14 145.14 32.00 32px
+  .figure pattern, fixed caption: veneer 108.00 124.00 16.00 16px | bootstrap 108.00 124.00 16.00 16px | same gap | veneer at density 2 116.00 148.00 32.00 32px
+exit=0

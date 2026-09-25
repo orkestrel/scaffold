@@ -1,0 +1,8 @@
+m16-added-pair-kbd-code | restore identical | counts ['1 failed | 4 passed (5)']
+  failed: gives every styled tag the same treatment wherever the markup puts it, outside the mandated and release pairs
+   AssertionError: expected [ 'kbd > code' ] to deeply equal []
+m17-dropped-release-pair | restore identical | counts ['1 failed | 4 passed (5)', '1 failed | 152 passed (153)']
+  failed: gives every styled tag the same treatment wherever the markup puts it, outside the mandated and release pairs
+  failed: holds the tag pairs the release reboot writes, frozen, and none of them a mandated pair
+   AssertionError: expected [ 'kbd > kbd' ] to deeply equal []
+   AssertionError: expected [ [ 'pre', 'code' ], [ 'a', 'code' ] ] to deeply equal [ [ 'pre', 'code' ], …(2) ]

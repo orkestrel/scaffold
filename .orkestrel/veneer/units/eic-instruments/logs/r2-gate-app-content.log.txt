@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  23:46:56
+   Duration  10.68s (transform 0ms, setup 506ms, import 379ms, tests 21ms, environment 0ms)
+
+exit 0

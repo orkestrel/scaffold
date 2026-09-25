@@ -1,0 +1,15 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  23:11:09
+   Duration  35.30s (transform 806ms, setup 224ms, import 23.58s, tests 11.29s, environment 0ms)
+
+exit 0

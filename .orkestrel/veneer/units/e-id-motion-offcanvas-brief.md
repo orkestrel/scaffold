@@ -23,7 +23,7 @@ ledger.
 
 ## Context
 
-**Evidence.** Measured at Veneer `0a0a252`; `_offcanvas.scss` does not change in E-ID-MOTION-MODAL. Re-take each
+**Evidence.** Measured at Veneer `6052e25`, the MODAL and FACTOR landing tree; neither unit changes `_offcanvas.scss`. Re-take each
 reading in the worktree before editing, and report any that differs.
 - `src/styles/components/_offcanvas.scss` declares `--bs-offcanvas-transition: transform 0.3s ease-in-out` on every
   panel class (around line 88). The bare `.offcanvas` rule and each responsive panel below its boundary write
@@ -32,7 +32,7 @@ reading in the worktree before editing, and report any that differs.
   comment (around lines 63 to 69) says the transition keeps the release's literal because no Veneer token resolves to
   it.
 - `tests/src/styles/components/offcanvas.test.ts` pins `['transform', '0.3s', 'ease-in-out']` for the panel below its
-  boundary and `['none', '0s', 'ease']` in its in-flow range (around lines 450 to 470).
+  boundary and `['none', '0s', 'ease']` in its in-flow range (around lines 545 to 555).
 - `src/styles/_tokens.scss` declares `--vn-motion-panel: calc(250ms * var(--vn-factor-motion))`,
   `--vn-ease-panel: cubic-bezier(0.32, 0.72, 0, 1)`, and `--vn-ease-out: ease-out`.
 - After E-ID-MOTION-MODAL lands, the offcanvas backdrop already fades over `--vn-motion-panel` on `--vn-ease-out`

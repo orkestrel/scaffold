@@ -1,0 +1,77 @@
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+ ❯ |setup| tests/setupStyles.test.ts (153 tests | 2 failed) 9094ms
+     × exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists 54ms
+     × holds the tag pairs the release reboot writes, frozen, and none of them a mandated pair 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists
+AssertionError: expected [ 'ACCORDION_COLOR_CASES', …(299) ] to deeply equal [ 'ACCORDION_COLOR_CASES', …(300) ]
+
+- Expected
++ Received
+
+@@ -192,11 +192,10 @@
+    "RADIUS_SIDE_CASES",
+    "RADIUS_STEP_CASES",
+    "RATIO_CASES",
+    "REDUCED_MOTION",
+    "REFERENCE_MARKUP",
+-   "RELEASE_TAG_PAIRS",
+    "RETAINED_COLOR_ALIASES",
+    "RETAINED_LENGTH_ALIASES",
+    "SHADOW_CASES",
+    "SIZING_ENTRY_CASES",
+    "SIZING_STEP_CASES",
+
+ ❯ tests/setupStyles.test.ts:325:37
+    323| describe('styles setup', () => {
+    324|  it('exports the cascade and guide readers, the selector grammar the n…
+    325|   expect(Object.keys(setup).sort()).toEqual(
+       |                                     ^
+    326|    [
+    327|     'ACCORDION_COLOR_CASES',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > holds the tag pairs the release reboot writes, frozen, and none of them a mandated pair
+AssertionError: expected undefined to deeply equal [ [ 'pre', 'code' ], …(2) ]
+
+- Expected:
+[
+  [
+    "pre",
+    "code",
+  ],
+  [
+    "a",
+    "code",
+  ],
+  [
+    "kbd",
+    "kbd",
+  ],
+]
+
++ Received:
+undefined
+
+ ❯ tests/setupStyles.test.ts:2999:29
+    2997|   // excuses them beside the content model's pairs. A pair already man…
+    2998|   // twice, and a pair the reboot does not write would widen the law p…
+    2999|   expect(RELEASE_TAG_PAIRS).toEqual([
+       |                             ^
+    3000|    ['pre', 'code'],
+    3001|    ['a', 'code'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 151 passed (153)
+   Start at  23:38:18
+   Duration  12.76s (transform 2.09s, setup 281ms, import 3.22s, tests 9.09s, environment 0ms)
+
+exit 1

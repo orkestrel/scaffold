@@ -1,0 +1,80 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-flow
+
+··························································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-bhC4uX'
+    at finishWithoutResolve (/home/user/veneer-flow/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-flow/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-flow/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-flow/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-flow/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-flow/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-flow/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-flow/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-flow/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-flow/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-bhC4uX'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-bhC4uX or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-bhC4uX/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+·····x·································································································································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists
+AssertionError: expected [ 'ACCORDION_COLOR_CASES', …(310) ] to deeply equal [ 'ACCORDION_COLOR_CASES', …(308) ]
+
+- Expected
++ Received
+
+@@ -74,10 +74,11 @@
+    "FILL_ONLY_RECIPE",
+    "FLEX_ENTRY_CASES",
+    "FLEX_FAMILY_CASES",
+    "FLEX_RESTING_VALUES",
+    "FLOAT_VALUES",
++   "FLOW_MARGIN",
+    "FLUID_SIZE_CASES",
+    "FLUID_WIDTHS",
+    "FOCUS_RING_ROLES",
+    "FONT_ENTRY_CASES",
+    "FONT_STEP_TABLES",
+@@ -104,10 +105,11 @@
+    "GAP_STEP_CASES",
+    "GRID_BREAKPOINT_CASES",
+    "GRID_COLUMN_STEPS",
+    "GRID_COUNT_STEPS",
+    "GRID_OFFSET_STEPS",
++   "HEADING_MARGIN",
+    "HIT_CORNERS",
+    "ICON_LINK_MARKUP",
+    "IMAGE_PAINT_CASES",
+    "IMAGE_SOURCE",
+    "INPUT_GROUP_CASES",
+
+ ❯ tests/setupStyles.test.ts:332:37
+    330| describe('styles setup', () => {
+    331|  it('exports the cascade and guide readers, the selector grammar the n…
+    332|   expect(Object.keys(setup).sort()).toEqual(
+       |                                     ^
+    333|    [
+    334|     'ACCORDION_COLOR_CASES',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 320 passed (321)
+   Start at  00:05:51
+   Duration  20.90s (transform 3.85s, setup 949ms, import 9.48s, tests 32.32s, environment 0ms)
+
+exit 1
