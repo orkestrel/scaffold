@@ -57,7 +57,7 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 | `@orkestrel/tool` | L2 | 0.0.16 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.17 |
 | `@orkestrel/toolbox` | L6 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
 | `@orkestrel/websocket` | L2 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.14 |
-| `@orkestrel/worker` | L4 | 0.0.13 | no bump | dist same; ranges same | 4: 0.0.14 |
+| `@orkestrel/worker` | L4 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 once queue published on it, with database, emitter, pool, and queue | 4: 0.0.14 |
 | `@orkestrel/workflow` | L4 | 0.0.19 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.20 |
 | `@orkestrel/workspace` | L3 | 0.0.9 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.10 |
 
