@@ -35,7 +35,7 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 | `@orkestrel/middleware` | L4 | 0.0.21 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.22 |
 | `@orkestrel/msg` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
 | `@orkestrel/ndjson` | L1 | 0.0.10 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.11 |
-| `@orkestrel/ollama` | L6 | 0.0.18 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/ollama` | L6 | 0.0.18 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 6: 0.0.19 |
 | `@orkestrel/pool` | L2 | 0.0.12 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.13 |
 | `@orkestrel/process` | L2 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.14 |
 | `@orkestrel/program` | L4 | 0.0.14 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.15 |
@@ -55,7 +55,7 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 | `@orkestrel/test` | L1 | 0.0.24 | no bump | dist same; ranges same | 1: no bump, overwrite pushed |
 | `@orkestrel/timeout` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
 | `@orkestrel/tool` | L2 | 0.0.16 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.17 |
-| `@orkestrel/toolbox` | L6 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/toolbox` | L6 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 6: 0.0.16 |
 | `@orkestrel/websocket` | L2 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.14 |
 | `@orkestrel/worker` | L4 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 once queue published on it, with database, emitter, pool, and queue | 4: 0.0.14 |
 | `@orkestrel/workflow` | L4 | 0.0.19 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.20 |
