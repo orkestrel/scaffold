@@ -20,8 +20,10 @@ Apply these rules to every command that outlives the turn that starts it: a benc
 
 ## Kill and relaunch
 
-- `scripts/launch.ts` prints the child's `pid`. Read liveness from it with `kill -0 <pid>`, or by executable name and parent with `ps -eo pid,ppid,comm`. Never read it from a pattern match over command lines; a shell whose own command line contains the pattern matches itself.
-- Kill only a recorded process id and the descendants you listed from it with `ps --ppid <pid> -o pid=`; print the list, then kill. Never `pkill -f` or `pgrep -f`. Refuse a list holding PID 1, the harness shell, or an id outside the descent. At the cap, `launch.ts` kills the tree itself.
+- Take the child's `pid` from the spawn line `scripts/launch.ts` prints when the command starts, or from `<journal>.pid`. Never take it from a pattern match over command lines, and never run `pgrep -f` or `pkill -f`.
+- On a POSIX host, read liveness with `kill -0 <pid>` (exit 0 means alive), list descendants by running `ps -A -o pid= -o ppid=` and taking the rows whose ppid is the recorded pid, then each listed id in turn, print the list, then kill each listed id and the recorded pid with `kill -KILL <id>`.
+- On Windows under Git Bash, write every Windows slash option as `//`. Read liveness from the output of `tasklist //FI "PID eq <pid>" //NH`, never from its exit code: a row naming `<pid>` means alive, and the `INFO:` line means gone. Alternatively, read the `WINPID` column of `ps -W`. Never read liveness with `kill -0` or `ps -eo`. List descendants with `powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter 'ParentProcessId=<pid>' | Select-Object -ExpandProperty ProcessId"` applied to each listed id in turn, print the list, then kill the recorded tree with `taskkill //pid <pid> //T //F`.
+- Refuse a list holding PID 1, the harness shell, or an id outside the descent of the recorded pid. At the cap, `launch.ts` kills the tree on Windows and the command alone on any other host; on a POSIX host, kill the listed descendants of a capped run by hand.
 - Confirm the recorded process and every listed descendant are gone before another writer takes the files. A killed `codex exec` is dead only when its `codex-code-mode-host` child is gone too. Check owned-file mtimes before dispatching the substitute.
 - Re-run a timing failure alone, after the unit exits, before believing it; a unit's own re-run is never alone.
 

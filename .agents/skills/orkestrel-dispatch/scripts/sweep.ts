@@ -6,7 +6,7 @@
 // --tmp deletes launch files older than the threshold (default 60 minutes), removes emptied
 // directories, and refuses while any launch file changed in the last 2 minutes.
 // --unit lists one accepted unit's files under the launch directories (the brief, report, claims,
-// journal, errors, status, and last-message files whose name is UNIT followed by `-` or `.`), and
+// journal, errors, status, pid, and last-message files whose name is UNIT followed by `-` or `.`), and
 // --delete removes them, refusing while one changed in the last 2 minutes.
 // Exit 0 on success, 2 when a deletion is refused, 64 on usage.
 import { existsSync, readdirSync, rmSync } from 'node:fs'

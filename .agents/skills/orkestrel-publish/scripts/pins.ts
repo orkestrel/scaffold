@@ -1,10 +1,14 @@
 // Sweep source and tests for a prior version or range literal after a bump or a re-pin. Run from
 // the publishing package's root:
 //   node .agents/skills/orkestrel-publish/scripts/pins.ts --version 0.0.76 [--range ^0.0.16 ...] [--paths src,tests] [--json]
-// A version hit is the literal bounded by characters other than digits and dots, so `~0.0.76` and
-// `"0.0.76"` both hit and `0.0.760` does not; a range hit is the literal bounded the same way and not
-// preceded by another range operator. Each hit prints as path:line: text so the operator rules on
-// it. Exit 0 with no hits, 3 with hits, 64 on usage.
+// `--range` repeats. A version hit is the literal bounded by characters other than digits and dots,
+// so `~0.0.76` and `"0.0.76"` both hit and `0.0.760` does not. A range that is one comparator over
+// one version (`^8.3.0`, `~8.3.0`, `>=8.3.0`, `v8.3.0`) hits its bare version in any form, bounded the
+// same way, so `--range ^8.3.0` hits `~8.3.0` and `serves 8.3.0` and misses `^8.3.1`; any other
+// range (`>=1.2.0 <2.0.0`, `8.x`) hits its literal bounded the same way and not preceded by another
+// range operator. Each matching line prints once as path:line: text, naming the first requested
+// literal that matched in the order --version then each --range, so the operator rules on it.
+// Exit 0 with no hits, 3 with hits, 64 on usage.
 import { readFileSync, statSync } from 'node:fs'
 import {
 	listFiles,
@@ -13,6 +17,8 @@ import {
 } from '../../orkestrel-dispatch/scripts/helpers.ts'
 
 const BINARY = /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|eot|zip|tgz|gz|pdf|wasm)$/u
+const COMPARATOR =
+	/^(?:\^|~|>=|>|<=|<|=)?v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)$/u
 
 interface Literal {
 	readonly literal: string
@@ -30,11 +36,17 @@ function escapePattern(literal: string): string {
 	return literal.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
 }
 
+function buildVersionPattern(version: string): RegExp {
+	return new RegExp(`(?<![0-9.])${escapePattern(version)}(?![0-9.])`, 'u')
+}
+
 function buildVersionLiteral(literal: string): Literal {
-	return { literal, pattern: new RegExp(`(?<![0-9.])${escapePattern(literal)}(?![0-9.])`, 'u') }
+	return { literal, pattern: buildVersionPattern(literal) }
 }
 
 function buildRangeLiteral(literal: string): Literal {
+	const version = COMPARATOR.exec(literal)?.[1]
+	if (version !== undefined) return { literal, pattern: buildVersionPattern(version) }
 	return {
 		literal,
 		pattern: new RegExp(`(?<![0-9.^~<>=])${escapePattern(literal)}(?![0-9.])`, 'u'),
@@ -49,8 +61,9 @@ function sweepFile(path: string, literals: readonly Literal[]): readonly Hit[] {
 		.toString('utf8')
 		.split(/\r\n|\n/)
 		.forEach((text, index) => {
-			for (const { literal, pattern } of literals) {
-				if (pattern.test(text)) hits.push({ path, line: index + 1, literal, text: text.trim() })
+			const match = literals.find((entry) => entry.pattern.test(text))
+			if (match !== undefined) {
+				hits.push({ path, line: index + 1, literal: match.literal, text: text.trim() })
 			}
 		})
 	return hits

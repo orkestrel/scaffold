@@ -1,6 +1,10 @@
+import { spawn } from 'node:child_process'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { isRecord, parseJSON } from '@orkestrel/contract'
+import { waitForCondition, waitForEvent } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import { runSkillScript } from '../../../../setupServer.js'
+import { WORKSPACE_ROOT, buildSkillRun, runSkillScript } from '../../../../setupServer.js'
 
 const SCRIPT = '.agents/skills/orkestrel-dispatch/scripts/launch.ts'
 
@@ -88,6 +92,117 @@ describe('launch.ts', () => {
 			expect(run.json?.exit).toBe(127)
 			expect(typeof run.json?.error).toBe('string')
 			expect(scratch.read('tmp/units/none.err')).toMatch(/could not start[\s\S]*exit=127 /u)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('prints a spawn line and writes the pid file while the command runs, then the summary last', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-pid-' })
+		let closed: Promise<[number | null]> | undefined
+		try {
+			scratch.write('sleep.cjs', 'setTimeout(() => {}, 20000)')
+			const child = spawn(
+				process.execPath,
+				[
+					join(WORKSPACE_ROOT, SCRIPT),
+					'--journal',
+					'tmp/units/live.jsonl',
+					'--errors',
+					'tmp/units/live.err',
+					'--cap',
+					'3',
+					'--',
+					process.execPath,
+					'sleep.cjs',
+				],
+				{ cwd: scratch.path, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] },
+			)
+			let stdout = ''
+			child.stdout.setEncoding('utf8')
+			child.stdout.on('data', (chunk: string) => {
+				stdout += chunk
+			})
+			closed = waitForEvent<[number | null]>(
+				(listener) => {
+					child.on('close', listener)
+				},
+				'launch.ts exits at the cap',
+				{ budget: 30_000 },
+			)
+			await waitForCondition('launch.ts prints its spawn line', () => stdout.includes('\n'), {
+				budget: 15_000,
+			})
+			const spawned = parseJSON(stdout.split(/\r\n|\n/)[0] ?? '')
+			const pid = isRecord(spawned) ? spawned.pid : undefined
+			expect(typeof pid).toBe('number')
+			if (typeof pid !== 'number') return
+			expect(spawned).toEqual({
+				pid,
+				journal: 'tmp/units/live.jsonl',
+				errors: 'tmp/units/live.err',
+			})
+			expect(() => process.kill(pid, 0)).not.toThrow()
+			expect(scratch.read('tmp/units/live.jsonl.pid')).toBe(`${pid}\n`)
+			const [status] = await closed
+			const run = buildSkillRun(status, stdout, '')
+			expect(run.status).toBe(124)
+			expect(run.stdout.split(/\r\n|\n/).filter((line) => line !== '')).toHaveLength(2)
+			expect(run.json?.pid).toBe(pid)
+			expect(run.json?.capped).toBe(true)
+		} finally {
+			// The launched tree holds files in the scratch directory until the cap ends it.
+			await closed?.catch(() => undefined)
+			scratch.destroy()
+		}
+	})
+
+	it('removes a pid file an earlier run left on the same journal when the command cannot start', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-stale-' })
+		try {
+			scratch.write('tmp/units/none.jsonl.pid', '4242\n')
+			const run = runSkillScript(
+				SCRIPT,
+				[
+					'--journal',
+					'tmp/units/none.jsonl',
+					'--errors',
+					'tmp/units/none.err',
+					'--cap',
+					'5',
+					'--',
+					'this-command-does-not-exist-anywhere',
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(127)
+			expect(scratch.has('tmp/units/none.jsonl.pid')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('prints no spawn line and writes no pid file for a command that cannot start', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-nopid-' })
+		try {
+			const run = runSkillScript(
+				SCRIPT,
+				[
+					'--journal',
+					'tmp/units/none.jsonl',
+					'--errors',
+					'tmp/units/none.err',
+					'--cap',
+					'5',
+					'--',
+					'this-command-does-not-exist-anywhere',
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(127)
+			expect(run.stdout.split(/\r\n|\n/).filter((line) => line !== '')).toHaveLength(1)
+			expect(run.json?.pid).toBeUndefined()
+			expect(scratch.has('tmp/units/none.jsonl.pid')).toBe(false)
 		} finally {
 			scratch.destroy()
 		}

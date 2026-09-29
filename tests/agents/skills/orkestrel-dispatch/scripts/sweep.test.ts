@@ -59,6 +59,32 @@ describe('sweep.ts', () => {
 		}
 	})
 
+	it('lists and deletes the pid file launch.ts writes beside a unit journal, and sweeps a stale one', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-sweep-pid-' })
+		try {
+			scratch.ensure('.git')
+			const pid = scratch.write('tmp/codex/UNIT.jsonl.pid', '4242\n')
+			const stale = scratch.write('tmp/claude/OLD.jsonl.pid', '4343\n')
+			const settled = Date.now() / 1000 - MINUTES_AGO
+			utimesSync(pid, settled, settled)
+			const past = Date.now() / 1000 - HOURS_AGO
+			utimesSync(stale, past, past)
+			const listed = runSkillScript(SCRIPT, ['--unit', 'UNIT'], { cwd: scratch.path })
+			expect(listed.status).toBe(0)
+			expect(listed.stdout).toContain('1 file(s) for UNIT')
+			expect(listed.stdout).toContain('UNIT.jsonl.pid')
+			const deleted = runSkillScript(SCRIPT, ['--unit', 'UNIT', '--delete'], { cwd: scratch.path })
+			expect(deleted.status).toBe(0)
+			expect(scratch.has('tmp/codex/UNIT.jsonl.pid')).toBe(false)
+			expect(scratch.has('tmp/claude/OLD.jsonl.pid')).toBe(true)
+			const swept = runSkillScript(SCRIPT, ['--tmp', '--older-than', '60'], { cwd: scratch.path })
+			expect(swept.status).toBe(0)
+			expect(scratch.has('tmp/claude/OLD.jsonl.pid')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('refuses a unit that opens with a hyphen, a missing unit, a threshold that is not a positive number, and two modes', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-sweep-usage-' })
 		try {

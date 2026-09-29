@@ -4,12 +4,17 @@
 // `--` pass to the command verbatim, so no shell quoting is involved. --cap is in seconds: when it
 // expires the process tree is killed and the errors file records `capped=true`. --status records
 // `git status --porcelain` before and after beside the journal, which is how a read-only lane's
-// containment is checked. The errors file ends with `exit=<code>`, and a JSON summary prints to stdout.
+// containment is checked. Stdout carries up to two JSON lines. The spawn line
+// `{"pid","journal","errors"}` prints as soon as the command starts, and the pid, as decimal digits
+// and a newline, goes to `<journal>.pid`. A pid file an earlier run left on the same journal is
+// removed before the spawn, so neither appears when the command cannot start. The summary line
+// prints last, after the command exits, and the errors file ends with `exit=<code>`. At the cap,
+// Windows kills the process tree; any other host kills the command alone, not its descendants.
 // The launcher's own flags are read before `--` alone. Exit: the command's code; 124 when capped;
 // 127 when the command could not start (the errors file names why); 64 on usage, including a
 // journal and errors path that are the same file and a cap that is not a number of seconds.
 import { spawn, spawnSync } from 'node:child_process'
-import { appendFileSync, closeSync, mkdirSync, openSync, writeFileSync } from 'node:fs'
+import { appendFileSync, closeSync, mkdirSync, openSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { readMissingFlags, readOption } from './helpers.ts'
 
@@ -73,8 +78,13 @@ async function main(argv: readonly string[]): Promise<number> {
 	if (status) writeFileSync(`${journal}.status-before.txt`, readStatus())
 	const journalFd = openSync(journal, 'w')
 	const errorsFd = openSync(errors, 'w')
+	rmSync(`${journal}.pid`, { force: true })
 	const started = Date.now()
 	const child = spawn(command, args, { stdio: ['ignore', journalFd, errorsFd], windowsHide: true })
+	if (child.pid !== undefined) {
+		writeFileSync(`${journal}.pid`, `${child.pid}\n`)
+		console.log(JSON.stringify({ pid: child.pid, journal, errors }))
+	}
 	let capped = false
 	const timer =
 		cap > 0
