@@ -6,15 +6,15 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 
 | Package | Published | Ruling | Evidence | Round |
 | --- | --- | --- | --- | --- |
-| `@orkestrel/scaffold` | 0.0.79 | bump | dist moved: the setup:browser global setup, the generated-chain write, and the scoped roll-up proof | 3: 0.0.80 |
-| `@orkestrel/probe` | 0.0.18 | bump | dist moved: the oxlint peer is dropped | 0 |
+| `@orkestrel/scaffold` | 0.0.79 | bump | dist moved: the setup:browser global setup, the generated-chain write, and the scoped roll-up proof | 0: 0.0.79; then 3: 0.0.80 on the wave re-pins |
+| `@orkestrel/probe` | 0.0.18 | bump | dist moved: the oxlint peer is dropped | 0: 0.0.18; then 5: 0.0.19 on the wave re-pins |
 
 ## Wave
 
 | Package | Layer | Before | Ruling | Evidence | Round |
 | --- | --- | --- | --- | --- | --- |
 | `@orkestrel/abort` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
-| `@orkestrel/agent` | L5 | 0.0.24 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/agent` | L5 | 0.0.24 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 5: 0.0.25 |
 | `@orkestrel/brief` | L4 | 0.0.9 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.10 |
 | `@orkestrel/browser` | L3 | 0.0.17 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.18 |
 | `@orkestrel/budget` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
