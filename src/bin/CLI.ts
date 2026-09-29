@@ -98,6 +98,7 @@ import {
 	errorToEnvelope,
 	fetchToRefusal,
 	manifestToWritableDependencies,
+	manifestToWritableScripts,
 	mergeResults,
 	readGitRecords,
 	releasesToExit,
@@ -371,7 +372,10 @@ export class CLI implements CLIInterface {
 			const result = mergeResults(
 				host.materializer.repair(plan, audit, target),
 				host.materializer.declare(
-					{ pins: versions.pins, scripts: blueprintToWritableScripts(blueprint) },
+					{
+						pins: versions.pins,
+						scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
+					},
 					target,
 				),
 			)
@@ -510,7 +514,7 @@ export class CLI implements CLIInterface {
 			}
 			const declared: ManifestRegionSet = {
 				pins: manifestToWritableDependencies(this.#manifest(target), blueprint),
-				scripts: blueprintToWritableScripts(blueprint),
+				scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
 			}
 			const repaired = host.materializer.repair(plan, audit, target)
 			// The candidate set is re-derived from the plan and target, then held to
@@ -1001,6 +1005,10 @@ export class CLI implements CLIInterface {
 	// script region this package writes itself is not something to ask the
 	// maintainer to paste. Where the region is refused the projection is the
 	// disk text, so a customized chain still raises the advisory it always did.
+	// A writing verb also lands the planned `test` chain over a generated
+	// predecessor, so its projection carries that chain. Audit keeps the chain on
+	// disk, because until a write lands it the gate still skips the project and
+	// no other question reports that.
 	//
 	// The remedy sentence reads the disk text instead, because it states what the
 	// developer's own manifest holds. Deciding it from the projection reported a
@@ -1012,7 +1020,10 @@ export class CLI implements CLIInterface {
 		writing = false,
 	): TargetQuestion | undefined {
 		const text = this.#manifest(target)
-		const manifest = replaceManifestScripts(text, blueprintToWritableScripts(blueprint)) ?? text
+		const writable = writing
+			? manifestToWritableScripts(text, blueprint)
+			: blueprintToWritableScripts(blueprint)
+		const manifest = replaceManifestScripts(text, writable) ?? text
 		const planned = blueprintToRootVite(blueprint)
 		const parsed = parseJSON(manifest)
 		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
@@ -1149,14 +1160,22 @@ export class CLI implements CLIInterface {
 		const direct = names.map((project) => `test:${project}`)
 		const declared = direct.filter((script) => isString(written[script]))
 		const undeclared = direct.filter((script) => !isString(written[script]))
-		const remedies = [
-			declared.length === 0
-				? ''
-				: `${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
-			undeclared.length === 0
-				? ''
-				: `${undeclared.join(', ')} ${undeclared.length === 1 ? 'is' : 'are'} not declared, so the script is missing as well as the gate: declare ${undeclared.length === 1 ? 'it' : 'each of them'} and invoke ${undeclared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
-		]
+		// Over a writable predecessor chain a write closes the gap itself, so the
+		// remedy names that write rather than asking for a hand edit it replaces.
+		const rewritable =
+			!writing && manifestToWritableScripts(text, blueprint).some(({ name }) => name === 'test')
+		const remedies = rewritable
+			? [
+					'The test chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
+				]
+			: [
+					declared.length === 0
+						? ''
+						: `${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
+					undeclared.length === 0
+						? ''
+						: `${undeclared.join(', ')} ${undeclared.length === 1 ? 'is' : 'are'} not declared, so the script is missing as well as the gate: declare ${undeclared.length === 1 ? 'it' : 'each of them'} and invoke ${undeclared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
+				]
 		return {
 			field: 'projects',
 			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.filter((remedy) => remedy !== '').join(' ')}${writing ? ' Exclude configs from --groups to write another group.' : ''}`,

@@ -149,6 +149,8 @@ one environment, so each is its own project:
   exists, and collect that path alone. For each registered project, emit its `test:setup` or
   `test:setup:browser` script and run it from `test`; otherwise emit neither its project nor its
   script.
+- When `tests/setupGlobal.ts` exists, give `src:browser`, `setup:browser`, and `integration` that
+  module as their `globalSetup` option, and give no other project a global setup.
 - When a browser application selects the journey axis, register `journey:<variant>` projects
   through the birth-owned `configs/app/vite.journey.config.ts` wrapper. Keep the adopter's variant
   list there and compose each project through the root `appJourney` factory. Exclude

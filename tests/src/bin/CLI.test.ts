@@ -35,6 +35,7 @@ import {
 	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { readFileHex, readHostFloor, stageHost } from '@src/server'
+import { isRecord } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import {
 	EXIT_CLEAN,
@@ -1843,7 +1844,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('reports a journey invocation missing from test without rewriting the chain', async () => {
+	it('reports a journey invocation missing from a package-owned test chain without rewriting it', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1861,10 +1862,11 @@ describe('CLI audit', () => {
 					target,
 				]),
 			).toBe(EXIT_CLEAN)
-			const manifest = requireValue(workspace.read('fresh/package.json')).replace(
-				' && npm run test:journey',
-				'',
-			)
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			// The chain runs a step the plan does not generate in place of the journey
+			// step, so the package owns it and a write leaves it as it stands.
+			const manifest = generated.replace(' && npm run test:journey', ' && npm run check')
+			expect(manifest).not.toBe(generated)
 			workspace.write('fresh/package.json', manifest)
 			for (const verb of ['repair', 'audit']) {
 				const sink = createSink()
@@ -1888,6 +1890,28 @@ describe('CLI audit', () => {
 				})
 				expect(workspace.read('fresh/package.json')).toBe(manifest)
 			}
+
+			// The control: the same chain with the journey step dropped runs generated
+			// steps only, so repair writes the planned chain back and nothing remains
+			// to report.
+			const predecessor = generated.replace(' && npm run test:journey', '')
+			expect(predecessor).not.toBe(generated)
+			workspace.write('fresh/package.json', predecessor)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'repair',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+				'--groups',
+				'configs',
+				'--json',
+			])
+			const repaired: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(repaired.audit.questions.filter(({ field }) => field === 'projects')).toStrictEqual([])
+			expect(workspace.read('fresh/package.json')).toBe(generated)
 		} finally {
 			workspace.destroy()
 		}
@@ -2450,7 +2474,9 @@ describe('CLI audit', () => {
 			if (test === undefined) throw new Error('The private workspace carries no test gate')
 			const scripts = {
 				...planned,
-				test: test.replace(' && npm run test:service', ''),
+				// A step the plan does not generate keeps the chain package-owned, so the
+				// remedy names the hand edit rather than a write that closes the gap.
+				test: `${test.replace(' && npm run test:service', '')} && npm run lint:check`,
 				prepublishOnly: 'npm run test:service',
 			}
 			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
@@ -2505,7 +2531,9 @@ describe('CLI audit', () => {
 			// entirely, so the script line is the repair that closes it.
 			const scripts: Record<string, string> = {
 				...planned,
-				test: test.replace(' && npm run test:service', ''),
+				// A step the plan does not generate keeps the chain package-owned, so the
+				// remedy names the hand edit rather than a write that closes the gap.
+				test: `${test.replace(' && npm run test:service', '')} && npm run lint:check`,
 			}
 			delete scripts['test:service']
 			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
@@ -2552,17 +2580,18 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			// The proof selects the planned `setup` project. The manifest predates it,
-			// so it declares neither `test:setup` nor a chain that reaches the project.
+			// The proof selects the planned `setup` project. The manifest declares
+			// neither `test:setup` nor a chain that reaches the project, and its chain
+			// runs a step the plan does not generate, so the package owns that chain
+			// and the write leaves the gate to the maintainer.
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
+			const predecessor = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
-					undefined,
-					undefined,
-					undefined,
-					blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
-				),
+				buildTargetManifest(undefined, undefined, undefined, {
+					...predecessor,
+					test: `${requireValue(predecessor.test)} && npm run check`,
+				}),
 			)
 			const sink = createSink()
 			expect(
@@ -2583,6 +2612,7 @@ describe('CLI audit', () => {
 				'test:setup is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test or prepublishOnly chain.',
 			)
 			expect(refusal.error.message).not.toContain('already declared')
+			expect(workspace.read('target/package.json')).not.toContain('"test:setup"')
 		} finally {
 			workspace.destroy()
 		}
@@ -4678,6 +4708,131 @@ describe('CLI overwrite', () => {
 			).toBe(true)
 		} finally {
 			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	// A root browser setup proof plans `setup:browser`, its direct script, and a
+	// chain step. A manifest whose `test` chain holds generated steps only is the
+	// chain an earlier birth left, so overwrite lands the script and the step itself
+	// rather than refusing the configs group over bytes its own plan generates.
+	it('writes the browser setup script and chain step a generated test chain predates', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { src: ['core'], setup: ['browser'] })
+			const planned = blueprintToScripts(blueprint)
+			const predecessor = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+			expect(predecessor).not.toHaveProperty('test:setup:browser')
+			workspace.write('target/tests/setupBrowser.test.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(blueprint, undefined, undefined, predecessor),
+			)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+
+			const before = createSink()
+			expect(
+				await new CLI(before.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const advised: AuditResult = JSON.parse(before.output[0] ?? '')
+			const project = advised.questions.find((question) => question.field === 'projects')
+			// The write closes the gap, so the remedy names it and asks for no hand edit.
+			expect(project?.message).not.toContain('declare it and invoke it')
+			expect(project?.message).toContain(
+				'The test chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
+			)
+
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--dirty',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			// The offline catalog note is what the code carries; nothing refused.
+			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.written).toContain('vite.config.ts')
+			expect(result.audit.questions).toStrictEqual([])
+			expect(workspace.read('target/vite.config.ts')).toContain("label: 'setup:browser'")
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			const scripts = isRecord(manifest) && isRecord(manifest.scripts) ? manifest.scripts : {}
+			expect(scripts['test:setup:browser']).toBe(planned['test:setup:browser'])
+			expect(scripts.test).toBe(planned.test)
+			expect(scripts.test).toContain('npm run test:setup:browser')
+
+			const after = createSink()
+			expect(
+				await new CLI(after.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// A library born with `src` alone that later gains `app/` plans a chain adding
+	// `npm run test:app`, an aggregate outside the writable region. A selection
+	// that excludes `configs` hides the `projects` refusal, so the chain write
+	// itself has to decline rather than land a step naming a missing script.
+	it('keeps a test chain whose planned form adds an aggregate the manifest lacks', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const grown = createBlueprint('sample', { src: ['core'], app: ['core'] })
+			const born = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+			expect(born).not.toHaveProperty('test:app')
+			expect(blueprintToScripts(grown).test).toContain('npm run test:app')
+			workspace.ensure('target/app/core')
+			workspace.write('target/package.json', buildTargetManifest(grown, undefined, undefined, born))
+			const before = requireValue(workspace.read('target/package.json'))
+
+			const sink = createSink()
+			const exit = await new CLI(sink.options).execute([
+				'repair',
+				'--offline',
+				'--groups',
+				'tests',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(result).not.toHaveProperty('error')
+			expect(exit).toBe(EXIT_CLEAN)
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			const scripts = isRecord(manifest) && isRecord(manifest.scripts) ? manifest.scripts : {}
+			expect(scripts.test).toBe(born.test)
+			expect(scripts).not.toHaveProperty('test:app')
+			// The direct app script still lands, so the region wrote rather than refused.
+			expect(scripts['test:app:core']).toBe(blueprintToScripts(grown)['test:app:core'])
+			expect(workspace.read('target/package.json')).not.toBe(before)
+		} finally {
 			workspace.destroy()
 		}
 	})

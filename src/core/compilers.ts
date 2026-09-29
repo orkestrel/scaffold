@@ -731,6 +731,10 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
 export function blueprintToRootVite(blueprint: Blueprint): string {
 	const machinery = blueprintToMachinery(blueprint)
 	const publishes = blueprint.src.length > 0
+	// A browser test runs in the browser, so it cannot start a Node fixture for
+	// itself. That is the case a global setup exists for, and it is why
+	// `src:browser`, `setup:browser`, and `integration` take the same span.
+	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
 	const imports: string[] = []
 	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
 	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
@@ -758,10 +762,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 					? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
 					: '\t\t\t\toutput: {},',
 				exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
-				// A browser test runs in the browser, so it cannot start a Node fixture
-				// for itself. That is the case a global setup exists for, and it is why
-				// this project takes the same span the integration project does.
-				global: blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+				global,
 			}),
 		)
 		projects.push('srcBrowser')
@@ -840,6 +841,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.browser, {
 				plugins: machinery.vue ? '\t\tplugins: [vue()],\n' : '',
+				global,
 			}),
 		)
 		projects.push('setupBrowser')
@@ -865,11 +867,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		projects.push('distribution')
 	}
 	if (blueprint.integration) {
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
-				global: blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
-			}),
-		)
+		factories.push(fillTemplate(CONFIG_TEMPLATES.factories.integration, { global }))
 		projects.push('integration')
 	}
 	factories.push(CONFIG_TEMPLATES.factories.probe)

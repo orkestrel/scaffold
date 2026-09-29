@@ -1003,6 +1003,62 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToScripts(node).test).not.toContain('test:setup:browser')
 	})
 
+	// A browser setup proof cannot start a Node fixture from inside the browser, so
+	// a global workspace hands it the fixture the way it hands one to `src:browser`.
+	// The factory a workspace without the fact receives is pinned byte for byte,
+	// because every target that predates the span regenerates it.
+	it('gives the browser setup project the global setup only a global workspace declares', () => {
+		const bare = [
+			'export function setupBrowser(override?: UserConfig): UserConfig {',
+			'\tconst project: UserConfig = {',
+			'\t\tresolve,',
+			'\t\ttest: {',
+			"\t\t\tname: { label: 'setup:browser', color: 'blue' },",
+			"\t\t\tinclude: ['tests/setupBrowser.test.ts'],",
+			"\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+			'\t\t\tbrowser: {',
+			'\t\t\t\tenabled: true,',
+			'\t\t\t\tprovider: playwright(browserOptions),',
+			"\t\t\t\tinstances: [{ browser: 'chromium', headless: true }],",
+			'\t\t\t},',
+			'\t\t},',
+			'\t}',
+			'\treturn mergeOverride(project, override)',
+			'}',
+			'',
+		].join('\n')
+		const global = bare.replace(
+			"'./tests/setupBrowser.ts'],\n",
+			"'./tests/setupBrowser.ts'],\n\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n",
+		)
+		expect(global).not.toBe(bare)
+
+		const without = blueprintToRootVite(
+			buildBlueprint({ src: ['core', 'browser'], setup: ['node', 'browser'] }),
+		)
+		const withGlobal = blueprintToRootVite(
+			buildBlueprint({ src: ['core', 'browser'], setup: ['node', 'browser'], global: true }),
+		)
+		expect(without).toContain(`\n${bare}`)
+		expect(withGlobal).toContain(`\n${global}`)
+		expect(withGlobal).not.toContain(`\n${bare}`)
+		expect(without).not.toContain('globalSetup:')
+		// The span reaches each browser project over the workspace's own proofs and
+		// the integration project, and never the Node setup project.
+		const setupStart = withGlobal.indexOf('export function setup(')
+		const setupEnd = withGlobal.indexOf('export function setupBrowser(')
+		expect(setupStart).toBeGreaterThan(-1)
+		expect(setupEnd).toBeGreaterThan(setupStart)
+		expect(withGlobal.slice(setupStart, setupEnd)).not.toContain('globalSetup:')
+		const browserStart = withGlobal.indexOf('export function srcBrowser(')
+		const browserEnd = withGlobal.indexOf('export function ', browserStart + 1)
+		expect(browserStart).toBeGreaterThan(-1)
+		expect(browserEnd).toBeGreaterThan(browserStart)
+		expect(withGlobal.slice(browserStart, browserEnd)).toContain(
+			"globalSetup: ['./tests/setupGlobal.ts'],",
+		)
+	})
+
 	it('selects Vue for browser setup only when the browser application selects it', () => {
 		const application = buildBlueprint({ app: ['browser'], setup: ['browser'] })
 		const applicationRoot = blueprintToRootVite(application)

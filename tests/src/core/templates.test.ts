@@ -678,6 +678,11 @@ describe('configuration templates', () => {
 				createBlueprint('browser-library-setup', { src: ['browser'], setup: ['browser'] }),
 				createBlueprint('browser-application-setup', { app: ['browser'], setup: ['browser'] }),
 				createBlueprint('browser-setup', { src: ['core'], setup: ['browser'] }),
+				createBlueprint('browser-global-setup', {
+					src: ['core', 'browser'],
+					setup: ['node', 'browser'],
+					global: true,
+				}),
 				createBlueprint('application', {
 					app: ['core', 'browser', 'server'],
 					integration: true,

@@ -512,7 +512,7 @@ export function appShowcase(override?: UserConfig): UserConfig {
 			name: { label: 'setup:browser', color: 'blue' },
 			include: ['tests/setupBrowser.test.ts'],
 			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-			browser: {
+{{global}}			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
 				instances: [{ browser: 'chromium', headless: true }],

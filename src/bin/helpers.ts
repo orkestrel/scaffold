@@ -6,6 +6,7 @@ import type {
 	DependencyPinSet,
 	Environment,
 	Group,
+	ManifestScript,
 	Mirror,
 	Question,
 	Release,
@@ -25,6 +26,8 @@ import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import { createSession } from '@orkestrel/process/server'
 import {
 	blueprintToDevDependencies,
+	blueprintToScripts,
+	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	compareVersions,
 	DEPENDENCY_NAME_PATTERN,
@@ -329,6 +332,55 @@ export function manifestToWritableDependencies(
 		if (isString(developmentRange)) development.push({ name, range: developmentRange })
 	}
 	return { runtime, development }
+}
+
+/**
+ * Reads the manifest scripts a writing verb may write.
+ *
+ * @param manifest - The target manifest text.
+ * @param blueprint - The workspace shape that supplies the planned scripts.
+ * @returns The blueprint's writable scripts, followed by the planned `test` chain when the
+ * declared chain is a generated predecessor of it.
+ *
+ * @remarks
+ * A declared `test` chain is a generated predecessor when it runs fewer `&&` steps than the
+ * planned chain and every step it runs is a planned step, in the planned order. That is the chain
+ * a birth or an earlier write left before a structural fact planned another step, such as a root
+ * `tests/setupBrowser.test.ts` proof planning `npm run test:setup:browser`, so the write lands the
+ * planned chain in its place. A chain running a step the plan does not generate, or running the
+ * planned steps in another order, is one the package owns, and no entry names it.
+ *
+ * The planned chain joins only when every step it adds runs a script the manifest declares or the
+ * writable scripts supply. The `test:src` and `test:app` aggregates sit outside the writable
+ * scripts, so a planned chain adding an aggregate the manifest lacks stays with the package rather
+ * than landing a step that names a missing script.
+ */
+export function manifestToWritableScripts(
+	manifest: string,
+	blueprint: Blueprint,
+): readonly ManifestScript[] {
+	const writable = blueprintToWritableScripts(blueprint)
+	const planned = blueprintToScripts(blueprint).test
+	const parsed = parseJSON(manifest)
+	const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
+	const declared = scripts.test
+	if (planned === undefined || !isString(declared)) return writable
+	const steps = declared.split('&&').map((step) => step.trim())
+	const expected = planned.split('&&').map((step) => step.trim())
+	if (steps.length >= expected.length) return writable
+	let cursor = 0
+	for (const step of steps) {
+		while (cursor < expected.length && expected[cursor] !== step) cursor += 1
+		if (cursor === expected.length) return writable
+		cursor += 1
+	}
+	const supplied = new Set(writable.map(({ name }) => name))
+	for (const step of expected) {
+		if (steps.includes(step)) continue
+		const name = /^npm run (\S+)$/.exec(step)?.[1]
+		if (name === undefined || (!supplied.has(name) && !isString(scripts[name]))) return writable
+	}
+	return [...writable, { name: 'test', command: planned, accepted: [declared] }]
 }
 
 /**

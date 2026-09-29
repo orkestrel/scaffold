@@ -490,7 +490,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "b226c5f60963fdaafc596537f54aa191ee1512a9940f3a7ff68ff32b91643e39"
+			"digest": "b5f9da510d1d5d387c8538cb5c3e7d9ad3ae24f01008a6d91b5bc4337f8df69e"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -592,7 +592,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "10413ce79cf3a6542b8b43288844d70ff8db4518a6cbc9089ece6d1b76af87f1"
+			"digest": "c41f15b048f534ceb0e0572eed29deaee288c53c69abf1a7e3bc93cee6b90740"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -982,7 +982,7 @@
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "b136f1da1a51485a9c8efb894fe318ca2b325df913f8f929f049aeda7e2c0e9c"
+			"digest": "8082bfb642ba16d64e06aba0e1c5d0774ecebd77443d500821e4482bb0916cbe"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1036,7 +1036,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "8ae47398e145dab91d6eba4d8c201221c486e34075387939eb7d83461000ddc4"
+			"digest": "32b5b6284d7e1c92e692cf2b74c77b6b8ed8e38c20d29c7b23201b6b034dc268"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1090,7 +1090,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "d50b6617ec4bff87db8f1d050a7e6ec2103237b7b97ba5f009360e14bce913d8"
+			"digest": "1a3bea6f17d3c54fd20e4350a76e89c8f1457f2ef1bc83e0b04775a3727af4cd"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -1162,7 +1162,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "cff18c34bd10c836faecddba480523f21223b53831cf760ac57c8b94ee1051f7"
+			"digest": "9a77213f81289f8a0b55df24d6a735371ac4eabb5557a3413004ab221b7d3169"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2138,5 +2138,5 @@
 			]
 		}
 	],
-	"digest": "5de2d67b01f94fb81b632c8cecc9badcb5934d9ffd83b9f054f50c9294d012a0"
+	"digest": "7e9a938815aea1bb7591441767c4e31aeee9b325f71dc9245cd041243ead1805"
 }
