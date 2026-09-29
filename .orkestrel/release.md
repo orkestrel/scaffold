@@ -15,7 +15,7 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 | --- | --- | --- | --- | --- | --- |
 | `@orkestrel/abort` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
 | `@orkestrel/agent` | L5 | 0.0.24 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
-| `@orkestrel/brief` | L4 | 0.0.9 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/brief` | L4 | 0.0.9 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.10 |
 | `@orkestrel/browser` | L3 | 0.0.17 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.18 |
 | `@orkestrel/budget` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
 | `@orkestrel/codec` | L1 | 0.0.4 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.5 |
@@ -31,14 +31,14 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 | `@orkestrel/interpret` | L3 | 0.0.14 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.15 |
 | `@orkestrel/lsp` | L3 | 0.0.9 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.10 |
 | `@orkestrel/markdown` | L2 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.16 |
-| `@orkestrel/mcp` | L4 | 0.0.32 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
-| `@orkestrel/middleware` | L4 | 0.0.21 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/mcp` | L4 | 0.0.32 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.33 |
+| `@orkestrel/middleware` | L4 | 0.0.21 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.22 |
 | `@orkestrel/msg` | L1 | 0.0.11 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.12 |
 | `@orkestrel/ndjson` | L1 | 0.0.10 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 1: 0.0.11 |
 | `@orkestrel/ollama` | L6 | 0.0.18 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
 | `@orkestrel/pool` | L2 | 0.0.12 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.13 |
 | `@orkestrel/process` | L2 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.14 |
-| `@orkestrel/program` | L4 | 0.0.14 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/program` | L4 | 0.0.14 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.15 |
 | `@orkestrel/qualifier` | L3 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.16 |
 | `@orkestrel/queue` | L3 | 0.0.14 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.15 |
 | `@orkestrel/rater` | L3 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.16 |
@@ -57,12 +57,12 @@ Each row carries the package's bump ruling and its evidence: the rebuilt dist co
 | `@orkestrel/tool` | L2 | 0.0.16 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.17 |
 | `@orkestrel/toolbox` | L6 | 0.0.15 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
 | `@orkestrel/websocket` | L2 | 0.0.13 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 2: 0.0.14 |
-| `@orkestrel/worker` | L4 | 0.0.13 | no bump | dist same; ranges same | pending |
-| `@orkestrel/workflow` | L4 | 0.0.19 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | pending |
+| `@orkestrel/worker` | L4 | 0.0.13 | no bump | dist same; ranges same | 4: 0.0.14 |
+| `@orkestrel/workflow` | L4 | 0.0.19 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 4: 0.0.20 |
 | `@orkestrel/workspace` | L3 | 0.0.9 | bump | dist same; ranges @orkestrel/contract ^0.0.17 -> ^0.0.18 | 3: 0.0.10 |
 
 ## Standing readings
 
-- `@orkestrel/worker` keeps `@orkestrel/contract` at `^0.0.17` until `@orkestrel/queue` publishes on contract 0.0.18 in L3; its L4 visit re-pins it.
+- `@orkestrel/worker` kept `@orkestrel/contract` at `^0.0.17` until `@orkestrel/queue` published on contract 0.0.18 in L3; its L4 release 0.0.14 re-pins it to `^0.0.18`.
 - `@orkestrel/timeout` 0.0.12's release commit lists the development re-pin as its moved ranges; its runtime change is contract `^0.0.17` to `^0.0.18`, as this ledger records.
 - `@orkestrel/supervisor` is out of the wave by the user's ruling.
