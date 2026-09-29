@@ -262,8 +262,8 @@ export function computeDigest(content: string): string {
  *
  * @param hex - The exact lowercase hexadecimal bytes to digest.
  * @returns Sixty-four lowercase hexadecimal digits.
- * @throws `ScaffoldError('INVALID', …)` when `hex` is not exact bounded
- * lowercase hexadecimal text.
+ * @throws Thrown when `hex` is not exact bounded lowercase hexadecimal text; the error is a
+ * `ScaffoldError` coded `INVALID`.
  *
  * @example
  * ```ts
@@ -277,6 +277,37 @@ export function hexToDigest(hex: string): string {
 		throw new ScaffoldError('INVALID', 'Digest input is not exact hexadecimal bytes', { hex })
 	}
 	return createHash('sha256').update(Buffer.from(hex, 'hex')).digest('hex')
+}
+
+/**
+ * Decodes exact bytes stated in hexadecimal as strict UTF-8 text.
+ *
+ * @param hex - The exact lowercase hexadecimal bytes to decode.
+ * @returns The decoded text, or `undefined` when the bytes are not valid UTF-8.
+ * @throws Thrown when `hex` is not exact bounded lowercase hexadecimal text; the error is a
+ * `ScaffoldError` coded `INVALID`.
+ *
+ * @remarks
+ * Decoding is strict, so an invalid sequence answers `undefined` rather than
+ * text carrying replacement characters: every caller parses or derives from the
+ * text next, and a lossy decode would hand it bytes the file never held.
+ *
+ * @example
+ * ```ts
+ * import { decodeHexText } from '@orkestrel/scaffold/server'
+ *
+ * decodeHexText('e282ac0a') // '€\n'
+ * decodeHexText('fffe00') // undefined
+ * ```
+ */
+export function decodeHexText(hex: string): string | undefined {
+	if (!isHex(hex)) {
+		throw new ScaffoldError('INVALID', 'Decode input is not exact hexadecimal bytes', { hex })
+	}
+	const decoded = attempt(() =>
+		new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(hex, 'hex')),
+	)
+	return decoded.success ? decoded.value : undefined
 }
 
 /**
@@ -654,7 +685,7 @@ export function isVacant(target: string): boolean {
  * ```ts
  * import { listFiles } from '@orkestrel/scaffold/server'
  *
- * listFiles('./dist/host') // ['AGENTS.md', 'CLAUDE.md', 'LICENSE', …]
+ * listFiles('./dist/host') // ['AGENTS.md', 'LICENSE', 'agents', …]
  * ```
  */
 export function listFiles(root: string): readonly string[] {
@@ -1049,11 +1080,7 @@ export function readFileText(
 	limit: number = MAX_ARTIFACT_BYTES,
 ): string | undefined {
 	const hex = readFileHex(root, path, limit)
-	if (hex === undefined) return undefined
-	const decoded = attempt(() =>
-		new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(hex, 'hex')),
-	)
-	return decoded.success ? decoded.value : undefined
+	return hex === undefined ? undefined : decodeHexText(hex)
 }
 
 /**
@@ -1492,7 +1519,9 @@ export function stageBytes(
  * whichever path the plan reached first. Refusing here fails the build that
  * produced it, where the maintainer can act, and it names every missing path at
  * once. A directory is the same case — declaring an absent directory as an empty
- * root would create an empty directory in every generated workspace.
+ * root would create an empty directory in every generated workspace. A canon file
+ * member the checkout no longer holds is the one exception: scaffold keeps owning
+ * the path so a target's copy reports foreign, and the stage ships nothing for it.
  *
  * The walk covers `HOST_PATHS`, `CANON_PATHS`, and `REFERENCE_PATHS` together.
  * A plan selects the paths a target receives; the installed package also carries
@@ -1553,7 +1582,9 @@ export function stageHost(
 			continue
 		}
 		if (!isPhysicalDirectory(full)) {
-			missing.push(path)
+			// A canon file the checkout no longer holds is owned without being shipped: a target's
+			// copy still reports foreign and `overwrite` still deletes it, so nothing is staged for it.
+			if (!CANON_PATHS.includes(path)) missing.push(path)
 			continue
 		}
 		roots.push(path)

@@ -56,7 +56,6 @@ describe('Compiler artifacts', () => {
 			'guides/README.md',
 			'README.md',
 			'AGENTS.md',
-			'CLAUDE.md',
 		])
 		// The generated packed-package proof is the one template artifact claimed by
 		// presence: a target lacking it reports as drift, and a package that wrote a
@@ -96,6 +95,19 @@ describe('Compiler artifacts', () => {
 				'guides/guide.md',
 				'guides/scaffold.md',
 				'.claude/agents/orkestrel.md',
+				...[
+					'enterprise-bootstrap',
+					'orkestrel-build',
+					'orkestrel-debrief',
+					'orkestrel-falsify',
+					'orkestrel-harden',
+					'orkestrel-journey',
+					'orkestrel-polish',
+				].flatMap((name) => [
+					`.claude/skills/${name}/SKILL.md`,
+					`.agents/skills/${name}/agents/openai.yaml`,
+					`.agents/skills/${name}/SKILL.md`,
+				]),
 			].toSorted(),
 		)
 	})
@@ -111,7 +123,7 @@ describe('Compiler artifacts', () => {
 		const plan = scaffolding.plan
 		if (plan === undefined) throw new Error('The pointer blueprint was blocked')
 
-		for (const path of ['AGENTS.md', 'CLAUDE.md']) {
+		for (const path of ['AGENTS.md']) {
 			const claimants = plan.artifacts.filter((artifact) => artifact.path === path)
 			expect(claimants).toHaveLength(1)
 			expect(claimants[0]?.group).toBe('docs')
@@ -119,6 +131,10 @@ describe('Compiler artifacts', () => {
 			expect(claimants[0]?.ownership).toBe('content')
 			expect(claimants[0]?.content).toContain(`# ${path}`)
 		}
+		// No `CLAUDE.md` is planned: a target holding one stops Claude Code from reading
+		// `AGENTS.md`. The path stays canon without a claimant, so a copy reports foreign
+		// and `overwrite` deletes it.
+		expect(plan.artifacts.some((artifact) => artifact.path === 'CLAUDE.md')).toBe(false)
 		expect(artifactsToQuestions(plan.artifacts)).toStrictEqual([])
 		// The control the collision claim needs: the gate does report a second
 		// claimant, so an empty result is a measurement rather than a silent pass.
@@ -126,19 +142,22 @@ describe('Compiler artifacts', () => {
 			artifactsToQuestions([...plan.artifacts, ...plan.artifacts]).map(({ field }) => field),
 		).toContain('artifacts')
 		// A target holds a file at a canon path only where the plan claims it, and
-		// these are every path the plan claims: the pointer pair as this package's
-		// own template content, and the catalog file as the vendored bytes `catalog`
-		// rewrites in place. Everything else at a canon path a target reads from the
-		// package it installs.
+		// these are every path the plan claims: the pointer as this package's own
+		// template content, the catalog file as the vendored bytes `catalog`
+		// rewrites in place, and the skill pointer set under the two skill
+		// directories as host files. Everything else at a canon path a target reads
+		// from the package it installs.
+		const canon = plan.artifacts.filter((artifact) => isCanonPath(artifact.path))
+		const skills = canon.filter(({ path }) => /^\.(?:agents|claude)\/skills\//u.test(path))
 		expect(
-			plan.artifacts
-				.filter((artifact) => isCanonPath(artifact.path))
+			canon
+				.filter((artifact) => !skills.includes(artifact))
 				.map(({ path, origin }) => `${path}:${origin}`),
-		).toStrictEqual([
-			'AGENTS.md:template',
-			'CLAUDE.md:template',
-			'.claude/agents/orkestrel.md:host',
-		])
+		).toStrictEqual(['AGENTS.md:template', '.claude/agents/orkestrel.md:host'])
+		expect(skills).toHaveLength(21)
+		expect(
+			skills.every(({ origin, ownership }) => origin === 'host' && ownership === 'presence'),
+		).toBe(true)
 	})
 
 	it('emits every conditional config path exactly once', () => {

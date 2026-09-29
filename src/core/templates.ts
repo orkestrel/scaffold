@@ -537,6 +537,25 @@ export function appShowcase(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 `,
+		skills: `// The skill scripts this package ships as canon, each driven as a child process against a
+// scratch fixture from its mirrored proof under \`tests/agents/skills/<skill>/scripts/\`. The
+// \`configs/agents/tsconfig.skills.json\` wrapper selects the project.
+export function skills(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		test: {
+			name: { label: 'skills', color: 'blue' },
+			include: ['tests/agents/**/*.test.ts'],
+			setupFiles: ['./tests/setup.ts'],
+			environment: 'node',
+			browser: { enabled: false },
+			// Each case spawns node on a script; a census case runs \`vitest list\` over this checkout.
+			testTimeout: 60_000,
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
 		conformance: `// Where this package drifts from the official tooling it stays compatible with.
 // The subject is this package, so the proof is hermetic and stays in \`npm test\`.
 export function conformance(override?: UserConfig): UserConfig {
@@ -590,7 +609,7 @@ export function service(override?: UserConfig): UserConfig {
 }
 `,
 		probe: `// A workbench, not a proof. No gate selects this project. Run in test mode by the
-// \`test:probe\` script, it collects \`tmp/probe/**/*.test.ts\`. Run in benchmark mode by the
+// \`test:probe\` script, it collects \`tmp/probes/**/*.test.ts\`. Run in benchmark mode by the
 // \`test:bench\` script, the same workbench also collects \`tests/**/*.test.ts\` for a \`bench\` block,
 // so a suite may carry a bench beside its ordinary tests without a second project. The mode
 // guard around each \`bench\` call keeps it out of test mode, so it never executes there.
@@ -599,13 +618,13 @@ export function probe(override?: UserConfig): UserConfig {
 		resolve,
 		test: {
 			name: { label: 'probe', color: 'black' },
-			include: ['tmp/probe/**/*.test.ts'],
+			include: ['tmp/probes/**/*.test.ts'],
 			setupFiles: ['./tests/setup.ts'],
 			environment: 'node',
 			browser: { enabled: false },
 			fileParallelism: false,
 			pool: 'threads',
-			benchmark: { include: ['tmp/probe/**/*.test.ts', 'tests/**/*.test.ts'] },
+			benchmark: { include: ['tmp/probes/**/*.test.ts', 'tests/**/*.test.ts'] },
 		},
 	}
 	return mergeOverride(project, override)
@@ -745,6 +764,16 @@ export function probe(override?: UserConfig): UserConfig {
 		"../../src/bin/**/*.ts",
 		"../../src/bin/**/*.tsx"
 	]
+}
+`,
+		skills: `{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext"],
+		"types": ["node"]
+	},
+	"include": ["../../.agents/skills/*/scripts/*.ts"],
+	"exclude": ["../../node_modules"]
 }
 `,
 	}),
@@ -2361,20 +2390,21 @@ Resolve every one of those paths against scaffold, never against this repository
   \`node_modules/@orkestrel/scaffold/dist/host/claude/rules/\` directory, and the
   \`node_modules/@orkestrel/scaffold/dist/host/agents/skills/\` directory.
 
-Every path a scaffold-supplied file names resolves the same way. The files this repository carries
+Every path a scaffold-supplied file names resolves the same way. Run a script such a file names
+through its built twin: replace \`node .agents/skills/\` with
+\`node node_modules/@orkestrel/scaffold/dist/agents/skills/\` and the \`.ts\` extension with \`.js\`,
+because Node runs no \`.ts\` file under \`node_modules\`. The files this repository carries
 — the \`.claude/agents/orkestrel.md\` catalog file, the \`.claude/settings.json\` permission file,
-and the bench scripts under \`scripts/\` — are this repository's own copies and resolve here.
+the bench scripts under \`scripts/\`, and the skill pointers under \`.agents/skills/\` and
+\`.claude/skills/\`, which name the canonical skills and how to run their scripts — are this
+repository's own copies and resolve here.
+
+In Claude Code, also read the Claude bridge: \`../scaffold/.claude/AGENTS.md\` beside a checkout, or
+\`node_modules/@orkestrel/scaffold/dist/host/claude/AGENTS.md\` from the installed copy. Keep no
+\`CLAUDE.md\` in this repository; one stops Claude Code from reading this file.
 
 Edit none of the scaffold-owned files here. The \`scaffold repair\` command restores them, so a
 change to one is a commit in the scaffold repository followed by a release.
-`,
-		claude: `# CLAUDE.md
-
-Read the \`AGENTS.md\` file in this repository first. It names the coding and orchestration
-authority and where to read each contract.
-
-This file imports nothing. An \`@path\` import inlines the imported file into every context that
-loads it, which is the cost this pointer removes.
 `,
 	}),
 	guides: Object.freeze({
@@ -2396,6 +2426,20 @@ loads it, which is the cost this pointer removes.
 `,
 	}),
 	orchestration: Object.freeze({
+		skill: `
+# Load the canonical skill
+
+This file is a pointer the \`@orkestrel/scaffold\` package writes into every fleet workspace; the
+skill itself ships with that package. Read the canonical \`SKILL.md\` completely and follow it:
+
+- beside a scaffold checkout, \`../scaffold/.agents/skills/{{name}}/SKILL.md\`;
+- otherwise, \`node_modules/@orkestrel/scaffold/dist/host/agents/skills/{{name}}/SKILL.md\`.
+
+Resolve every path the canonical skill names against the same root; under \`node_modules\` each
+segment drops its opening dot. Run a script the skill names through its built twin, as this
+repository's \`AGENTS.md\` states. This pointer carries no process of its own; \`AGENTS.md\`, the applicable
+rules, and the canonical skill remain authoritative in that order.
+`,
 		service: `#!/usr/bin/env sh
 set -eu
 

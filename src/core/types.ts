@@ -189,13 +189,16 @@ export interface Override {
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
- * `vendors`, `global`, `showcase`, and `journey` are structural facts: each is
+ * `vendors`, `global`, `showcase`, `journey`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
  * `setup` lists the runtimes required by root setup proofs: `node` for generic
  * and server proofs, and `browser` for `tests/setupBrowser.test.ts`.
  * `journey` selects the birth-owned variant wrapper for a browser application.
+ * `skills` registers the `skills` Vitest project over the mirrored proofs of the skill
+ * scripts a workspace ships under each `.agents/skills/<skill>/scripts/` directory, and adds their
+ * scoped typecheck.
  * `showcase` projects only a browser `app`. The gate answers an absent browser
  * axis with a non-blocking question, so a caller that set the flag learns it
  * emitted nothing and the compile still completes.
@@ -229,6 +232,7 @@ export interface Blueprint {
 	readonly global: boolean
 	readonly showcase: boolean
 	readonly journey: boolean
+	readonly skills: boolean
 }
 
 /** Names the runtime a root setup proof requires. */
@@ -383,11 +387,15 @@ export interface ArtifactBase {
  * {@link HydratedArtifact}. Workspace-owned paths and paths whose bytes belong
  * to another verb stay plain host artifacts, because this writer claims only
  * their presence.
+ *
+ * `pointer`, when true, makes hydration derive the bytes from the vendored file
+ * rather than copy them, by `renderSkillPointer`; absence means a copy.
  */
 export interface HostArtifact extends ArtifactBase {
 	readonly origin: 'host'
 	readonly ownership: 'presence' | 'birth'
 	readonly source?: string
+	readonly pointer?: boolean
 	readonly hex?: never
 	readonly content?: never
 }

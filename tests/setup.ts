@@ -197,6 +197,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		global: false,
 		showcase: false,
 		journey: false,
+		skills: false,
 		...fields,
 	}
 }

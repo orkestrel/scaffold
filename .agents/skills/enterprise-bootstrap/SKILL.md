@@ -11,7 +11,7 @@ description: >-
   scales, or must look professional rather than like stock Bootstrap. Covers
   aesthetics, typography, color modes, design tokens, elevation, finishing
   details, accessibility (WCAG 2.2 AA), responsive layout, and enterprise app
-  patterns. The `orkestrel-polish-surface` skill owns a requested verdict,
+  patterns. The `orkestrel-polish` skill owns a requested verdict,
   round, or campaign over a surface that already renders, including a review
   that changes nothing; in that campaign's fix units, use this skill for
   Bootstrap craft.
@@ -58,7 +58,7 @@ as a runtime producer is the exception, and only for the property that lookup na
 4. **Write framework-neutral markup** — semantic HTML plus Bootstrap classes. Wire behavior with the project's stack; in an SPA prefer framework-native Bootstrap wrappers over competing DOM ownership ([bootstrap-reference.md](references/bootstrap-reference.md) → JavaScript lifecycle).
 5. **Keep this folder intact** so its relative links resolve. Install or vendor it wherever the tooling looks for skills; the paths are tooling-specific, the content is not.
 6. **Use the installed Bootstrap.** Otherwise take the pinned CDN example from [bootstrap-reference.md](references/bootstrap-reference.md) → Quick start. Do not upgrade dependencies as a side effect of a visual pass.
-7. **Apply this skill** to the work in its frontmatter. For a requested verdict, round, or campaign over an already rendering surface, use `orkestrel-polish-surface`; use this skill for the campaign's Bootstrap fixes.
+7. **Apply this skill** to the work in its frontmatter. For a requested verdict, round, or campaign over an already rendering surface, use `orkestrel-polish`; use this skill for the campaign's Bootstrap fixes.
 
 ---
 

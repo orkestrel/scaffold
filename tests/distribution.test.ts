@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { globSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, globSync, readdirSync, readFileSync } from 'node:fs'
 import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
@@ -23,6 +23,7 @@ import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
 import {
 	buildReleaseScenarios,
+	buildSkillRun,
 	createUpstreamServer,
 	installGeneratedWorkspace,
 	GENERATED_VUE_SETUP_FILES,
@@ -180,7 +181,6 @@ describe('installed package consumer', () => {
 		// must not enter the published host.
 		const expanded = [
 			'AGENTS.md',
-			'CLAUDE.md',
 			'LICENSE',
 			'.agents/orchestration.md',
 			'.agents/skills/enterprise-bootstrap/SKILL.md',
@@ -193,47 +193,69 @@ describe('installed package consumer', () => {
 			'.agents/skills/enterprise-bootstrap/references/inspection.md',
 			'.agents/skills/enterprise-bootstrap/references/responsive-layout.md',
 			'.agents/skills/enterprise-bootstrap/references/utilities.md',
-			'.agents/skills/orkestrel-align-packages/SKILL.md',
-			'.agents/skills/orkestrel-align-packages/agents/openai.yaml',
-			'.agents/skills/orkestrel-align-packages/references/fleet.md',
-			'.agents/skills/orkestrel-align-packages/references/integration.md',
-			'.agents/skills/orkestrel-build-application/SKILL.md',
-			'.agents/skills/orkestrel-build-application/agents/openai.yaml',
+			'.agents/skills/orkestrel-align/SKILL.md',
+			'.agents/skills/orkestrel-align/agents/openai.yaml',
+			'.agents/skills/orkestrel-align/references/fleet.md',
+			'.agents/skills/orkestrel-align/references/integration.md',
+			'.agents/skills/orkestrel-build/SKILL.md',
+			'.agents/skills/orkestrel-build/agents/openai.yaml',
 			'.agents/skills/orkestrel-debrief/SKILL.md',
 			'.agents/skills/orkestrel-debrief/agents/openai.yaml',
 			'.agents/skills/orkestrel-debrief/references/field-testing.md',
 			'.agents/skills/orkestrel-debrief/references/instruction-audit.md',
 			'.agents/skills/orkestrel-debrief/references/retention.md',
+			'.agents/skills/orkestrel-dispatch/SKILL.md',
+			'.agents/skills/orkestrel-dispatch/agents/openai.yaml',
+			'.agents/skills/orkestrel-dispatch/references/bench.md',
+			'.agents/skills/orkestrel-dispatch/references/launch.md',
+			'.agents/skills/orkestrel-dispatch/scripts/bench.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/brief.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/cite.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/helpers.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/launch.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/login.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/result.ts',
+			'.agents/skills/orkestrel-dispatch/scripts/sweep.ts',
 			'.agents/skills/orkestrel-falsify/SKILL.md',
 			'.agents/skills/orkestrel-falsify/agents/openai.yaml',
 			'.agents/skills/orkestrel-falsify/references/brief.md',
 			'.agents/skills/orkestrel-falsify/references/reconcile.md',
-			'.agents/skills/orkestrel-harden-package/SKILL.md',
-			'.agents/skills/orkestrel-harden-package/agents/openai.yaml',
-			'.agents/skills/orkestrel-harden-package/references/centralization.md',
-			'.agents/skills/orkestrel-harden-package/references/contract.md',
-			'.agents/skills/orkestrel-harden-package/references/hardening.md',
-			'.agents/skills/orkestrel-harden-package/references/research.md',
-			'.agents/skills/orkestrel-prove-journey/SKILL.md',
-			'.agents/skills/orkestrel-prove-journey/agents/openai.yaml',
-			'.agents/skills/orkestrel-prove-journey/references/captures.md',
-			'.agents/skills/orkestrel-prove-journey/references/decide.md',
-			'.agents/skills/orkestrel-prove-journey/references/layer.md',
-			'.agents/skills/orkestrel-prove-journey/references/statechart.md',
-			'.agents/skills/orkestrel-prove-journey/references/styles.md',
-			'.agents/skills/orkestrel-polish-surface/SKILL.md',
-			'.agents/skills/orkestrel-polish-surface/agents/openai.yaml',
-			'.agents/skills/orkestrel-polish-surface/references/capture-harness.md',
+			'.agents/skills/orkestrel-harden/SKILL.md',
+			'.agents/skills/orkestrel-harden/agents/openai.yaml',
+			'.agents/skills/orkestrel-harden/references/centralization.md',
+			'.agents/skills/orkestrel-harden/references/contract.md',
+			'.agents/skills/orkestrel-harden/references/hardening.md',
+			'.agents/skills/orkestrel-harden/references/research.md',
+			'.agents/skills/orkestrel-harden/scripts/discovery.ts',
+			'.agents/skills/orkestrel-journey/SKILL.md',
+			'.agents/skills/orkestrel-journey/agents/openai.yaml',
+			'.agents/skills/orkestrel-journey/references/captures.md',
+			'.agents/skills/orkestrel-journey/references/decide.md',
+			'.agents/skills/orkestrel-journey/references/layer.md',
+			'.agents/skills/orkestrel-journey/references/statechart.md',
+			'.agents/skills/orkestrel-journey/references/styles.md',
+			'.agents/skills/orkestrel-polish/SKILL.md',
+			'.agents/skills/orkestrel-polish/agents/openai.yaml',
+			'.agents/skills/orkestrel-polish/references/capture-harness.md',
 			'.agents/skills/orkestrel-publish/SKILL.md',
 			'.agents/skills/orkestrel-publish/agents/openai.yaml',
+			'.agents/skills/orkestrel-publish/references/release.md',
 			'.agents/skills/orkestrel-publish/references/wave.md',
 			'.agents/skills/orkestrel-publish/references/window.md',
+			'.agents/skills/orkestrel-publish/scripts/compare.ts',
+			'.agents/skills/orkestrel-publish/scripts/pins.ts',
+			'.agents/skills/orkestrel-publish/scripts/wave.ts',
+			'.agents/skills/orkestrel-publish/scripts/window.ts',
+			'.agents/skills/orkestrel-scout/SKILL.md',
+			'.agents/skills/orkestrel-scout/agents/openai.yaml',
+			'.agents/skills/orkestrel-scout/scripts/map.ts',
 			'.agents/templates/brief.md',
-			'.agents/transports/claude.md',
+			'.agents/transports/claude-cli.md',
 			'.agents/transports/codex.md',
 			'.agents/transports/cursor.md',
+			'.claude/AGENTS.md',
 			'.claude/agents/analyst.md',
-			'.claude/agents/application.md',
+			'.claude/agents/astra.md',
 			'.claude/agents/builder.md',
 			'.claude/agents/checker.md',
 			'.claude/agents/distiller.md',
@@ -244,7 +266,6 @@ describe('installed package consumer', () => {
 			'.claude/agents/researcher.md',
 			'.claude/agents/reviewer.md',
 			'.claude/agents/scout.md',
-			'.claude/agents/sol.md',
 			'.claude/agents/verifier.md',
 			'.claude/rules/application.md',
 			'.claude/rules/architecture.md',
@@ -261,16 +282,18 @@ describe('installed package consumer', () => {
 			'.claude/rules/writing.md',
 			'.claude/settings.json',
 			'.claude/skills/enterprise-bootstrap/SKILL.md',
-			'.claude/skills/orkestrel-align-packages/SKILL.md',
-			'.claude/skills/orkestrel-build-application/SKILL.md',
+			'.claude/skills/orkestrel-align/SKILL.md',
+			'.claude/skills/orkestrel-build/SKILL.md',
 			'.claude/skills/orkestrel-debrief/SKILL.md',
+			'.claude/skills/orkestrel-dispatch/SKILL.md',
 			'.claude/skills/orkestrel-falsify/SKILL.md',
-			'.claude/skills/orkestrel-harden-package/SKILL.md',
-			'.claude/skills/orkestrel-prove-journey/SKILL.md',
-			'.claude/skills/orkestrel-polish-surface/SKILL.md',
+			'.claude/skills/orkestrel-harden/SKILL.md',
+			'.claude/skills/orkestrel-journey/SKILL.md',
+			'.claude/skills/orkestrel-polish/SKILL.md',
 			'.claude/skills/orkestrel-publish/SKILL.md',
+			'.claude/skills/orkestrel-scout/SKILL.md',
 			'.codex/agents/analyst.toml',
-			'.codex/agents/application.toml',
+			'.codex/agents/astra.toml',
 			'.codex/agents/builder.toml',
 			'.codex/agents/checker.toml',
 			'.codex/agents/distiller.toml',
@@ -281,7 +304,6 @@ describe('installed package consumer', () => {
 			'.codex/agents/researcher.toml',
 			'.codex/agents/reviewer.toml',
 			'.codex/agents/scout.toml',
-			'.codex/agents/sol.toml',
 			'.codex/agents/verifier.toml',
 			'.codex/config.toml',
 			'configs/helpers.ts',
@@ -358,7 +380,11 @@ describe('installed package consumer', () => {
 		// A release stages the vendored set, the instruction canon, and the reference
 		// guides, so containment runs against all three lists. Reading `HOST_PATHS` alone
 		// reports every canon and reference destination as undeclared.
-		const staged = [...HOST_PATHS, ...CANON_PATHS, ...REFERENCE_PATHS]
+		// A canon file the checkout no longer holds stays a canon path so a target's copy reports
+		// foreign, but the stager ships nothing for it, so it is absent from the declaration.
+		const staged = [...HOST_PATHS, ...CANON_PATHS, ...REFERENCE_PATHS].filter((path) =>
+			existsSync(path),
+		)
 		for (const path of staged) {
 			expect(
 				expanded.some((destination) => destination === path || destination.startsWith(`${path}/`)),
@@ -619,7 +645,7 @@ describe('installed package consumer', () => {
 			])
 			expect(elided).toStrictEqual([
 				"dist/src/server/index.d.ts: listDirectories('./.claude') // ['agents', 'rules', 'skills', …]",
-				"dist/src/server/index.d.ts: listFiles('./dist/host') // ['AGENTS.md', 'CLAUDE.md', 'LICENSE', …]",
+				"dist/src/server/index.d.ts: listFiles('./dist/host') // ['AGENTS.md', 'LICENSE', 'agents', …]",
 				"dist/src/server/index.d.ts: readExpectation('/tmp/project/absent.md') // { path: …, shape: 'absent' }",
 				"dist/src/server/index.d.ts: readFileHex('/tmp/project', 'AGENTS.md') // '2320416765…'",
 				"dist/src/server/index.d.ts: readFileText('/tmp/project', 'package.json') // '{ \"name\": \"@orkestrel/router\", … }'",
@@ -1189,6 +1215,72 @@ describe('installed package consumer', () => {
 			}
 		},
 		1_200_000,
+	)
+
+	// Node refuses to strip types for a file under `node_modules`, so a target runs the built twin
+	// of a skill script rather than its canon. The twin resolves its template from its own location,
+	// which only the installed copy can prove.
+	it.skipIf(!registry && !release)(
+		'runs the built twin of a skill script from the installed package [requires a reachable npm registry]',
+		() => {
+			if (!registry) {
+				throw new Error('The distribution release gate requires a reachable npm registry.')
+			}
+			const workspace = createScratch({ prefix: 'scaffold-skill-twin-' })
+			const cache = workspace.ensure('cache')
+			// Pinned for the reason the core/server install case pins it: an npm environment variable
+			// outranks every `.npmrc`, so a host carrying a peer policy would otherwise answer for it.
+			const environment = {
+				...process.env,
+				npm_config_cache: cache,
+				npm_config_legacy_peer_deps: 'false',
+				npm_config_strict_peer_deps: 'false',
+			}
+			try {
+				installPackedScaffold(workspace, environment)
+				const consumer = workspace.ensure('consumer')
+				workspace.ensure('consumer/.git')
+				const run = spawnSync(
+					process.execPath,
+					[
+						'node_modules/@orkestrel/scaffold/dist/agents/skills/orkestrel-dispatch/scripts/brief.js',
+						'--unit',
+						'twin',
+						'--lane',
+						'units',
+					],
+					{ cwd: consumer, encoding: 'utf8', windowsHide: true },
+				)
+				expect(run.status, `${run.stdout}\n${run.stderr}`).toBe(0)
+				const answer = buildSkillRun(run.status, run.stdout, run.stderr).json
+				if (!isRecord(answer) || !isString(answer.brief) || !isString(answer.template)) {
+					throw new Error(`The twin printed no brief and template: ${run.stdout}`)
+				}
+				expect(answer.brief).toBe(join('tmp', 'units', 'twin-brief.md'))
+				expect(answer.template.endsWith(join('dist', 'agents', 'templates', 'brief.md'))).toBe(true)
+				expect(requireValue(workspace.read('consumer/tmp/units/twin-brief.md'))).toContain(
+					'Unit twin',
+				)
+				// A twin that spawns a sibling names the `.js` beside it, not the `.ts` the checkout runs.
+				const dry = spawnSync(
+					process.execPath,
+					[
+						'node_modules/@orkestrel/scaffold/dist/agents/skills/orkestrel-publish/scripts/wave.js',
+						'--visit',
+						'--dry-run',
+					],
+					{ cwd: consumer, encoding: 'utf8', windowsHide: true },
+				)
+				expect(dry.status, `${dry.stdout}\n${dry.stderr}`).toBe(0)
+				expect(dry.stdout).toContain(
+					join('dist', 'agents', 'skills', 'orkestrel-publish', 'scripts', 'compare.js'),
+				)
+				expect(dry.stdout).not.toContain('compare.ts')
+			} finally {
+				workspace.destroy()
+			}
+		},
+		600_000,
 	)
 
 	// Moved out of the `setup` project, which makes no network call: this case provisions

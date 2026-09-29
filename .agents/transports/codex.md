@@ -1,175 +1,54 @@
 # Codex transport contract
 
-The transport contract every Claude-side driver follows when it carries a brief to the
-GPT-6 Astra bench: work class to transport, the exact exec form, journalling, session ids,
-and recovery. Reach a route by its own name — `analyst` for audit, `sol` for
-implementation. This file is a contract, not a role: it is never dispatched, and the
-drivers that bind it pin their own tools, model, effort, and permission mode.
-
-You dispatch the external Codex Astra bench.
-
-Read `.agents/orchestration.md` first. It owns the role set, the routing, and the dispatch
-contract.
-
-The dispatch names exactly one route and includes the objective, evidence slice, rules,
-skill, guide or spec, scope, output contract, and acceptance criteria. Spawn no Claude
-agent, never implement directly, and never treat Astra's response as authoritative.
+Every driver that carries a brief to the GPT-6 Astra bench follows this file. Routes: `analyst` (audit, objective design argument) and `astra` (implementation). A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs.
 
 ## Models and effort
 
 ```text
-CODEX_ANALYST_MODEL=gpt-6-astra
-CODEX_ANALYST_EFFORT=high
-CODEX_IMPLEMENTER_MODEL=gpt-6-astra
-CODEX_IMPLEMENTER_EFFORT=high
+CODEX_ASTRA_MODEL=gpt-6-astra          effort high; xhigh only for a stated hard-reasoning need
+CODEX_MECHANICAL_MODEL=gpt-6-sol       fully specified, taste-free units and drivers
+CODEX_READING_MODEL=gpt-6-luna         absorption and research when the Cursor bench is dark; record the substitution
 ```
 
-Raise the analyst to `xhigh` only for a stated hard reasoning need. Use `gpt-5.6-terra`
-only for explicitly mechanical, taste-free roles. Use `gpt-5.6-luna` for absorption,
-distillation, scouting, and bounded research when the Cursor bench is dark — it sits
-between Cursor Grok and Sonnet on the tedious-work ladder, and the substitution is
-recorded. Never switch models silently.
+## Command
 
-## Transport — pick by work class
+Use the journaled CLI for every unit. `codex mcp-server` was removed in Codex 0.154.0: never register it in an MCP configuration and never call an `mcp__codex__*` tool.
 
-- **Short interactive exchange** (one bounded question or a follow-up on an existing
-  thread, finishing in about two minutes): use the MCP tools. `mcp__codex__codex` starts
-  the session; `mcp__codex__codex-reply` continues it. Persist the thread id to
-  `tmp/codex/<unit>.session` the moment a response carries it. An interrupted MCP call
-  whose id was never written to disk is unrecoverable, and that exchange is then failed.
-- **Long-running work** (audits, implementation units, anything multi-minute): the
-  journaled CLI is mandatory, the MCP tools are forbidden, and you do not launch it. A
-  long MCP call is one interruption away from losing the session invisibly, and a
-  backgrounded exec you start and walk away from has no owner, no completion signal, and
-  no death notice. Prepare it and hand it back.
+```text
+node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<unit>.jsonl --errors tmp/codex/<unit>.err --cap <seconds> --status -- codex exec --json -C <checkout> --sandbox <sandbox> --model gpt-6-astra -c model_reasoning_effort="high" --output-last-message tmp/codex/<unit>-last.md "Read tmp/codex/<unit>-brief.md from disk and execute it exactly. Your final message is the report it specifies."
+```
 
-## Prepare the journaled CLI launch
+- Launch through the dispatch skill's `launch.ts` as the preceding block shows; it closes stdin, records `git status --porcelain` before and after, and kills the process tree at the cap. Write the brief with `scripts/brief.ts --lane codex`. Never write a `.sh` launcher.
+- Codex appends piped stdin to the prompt; the launcher closes stdin so an inherited pipe adds nothing.
+- Add `--skip-git-repo-check` outside a trusted repository and `--output-schema <file>` when the Orchestrator supplies one.
+- The first journal event, `thread.started`, carries the session id. Read the answer with `node .agents/skills/orkestrel-dispatch/scripts/result.ts --codex tmp/codex/<unit>.jsonl`, which reads the last-message file, never stdout.
+- Follow up with `codex exec resume <session-id> "<prompt>"`. Resume accepts `--model`, `-c`, and output flags, and inherits the session's directory; pass the sandbox and permissions you intend explicitly rather than inferring them from the session's former role.
 
-Your jobs are drafting the brief and running short MCP exchanges. For long work you
-prepare the launch and return it; the Orchestrator runs it as a harness-tracked
-background command under a hard cap.
+## Sandbox by host
 
-Create `tmp/codex/`, then write the full brief to `tmp/codex/<unit>-brief.md`. Briefs
-never travel as shell arguments. Return the exact resolved command with a pointer prompt:
+| Host                                             | `analyst`            | `astra`              |
+| ------------------------------------------------ | -------------------- | -------------------- |
+| POSIX, Claude Code Cloud                         | `read-only`          | `workspace-write`    |
+| Windows (measured 2026-09-28 on the user's host) | `danger-full-access` | `danger-full-access` |
 
-`timeout <cap> codex exec --json -C <working-directory> --sandbox <route-sandbox> --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message tmp/codex/<unit>-last.md "Read and execute the brief at tmp/codex/<unit>-brief.md exactly. Your final message must be the report it specifies." < /dev/null > tmp/codex/<unit>.jsonl`
-
-- Return the brief path, that resolved command, and the journal path. Leave
-  `<cap>` unresolved — the Orchestrator owns it, per **Long-running commands → Launching**
-  in `.agents/orchestration.md`. You hold no record of prior runs.
-- Never launch, background, poll, sleep-loop, restart, or kill an exec.
-- Keep `< /dev/null`. A background-launched exec that inherits an open stdin pipe wedges
-  before its first event, and only the cap ever surfaces it.
-- Add `--skip-git-repo-check` when the working directory is outside a trusted git
-  repository, and `--output-schema <file>` when the Orchestrator supplies one.
-- The journal at `tmp/codex/<unit>.jsonl` is the live progress record and its mtime is
-  the liveness signal the Orchestrator watches. Never re-print the stream into your report.
-- The Orchestrator reads Astra's answer from the `--output-last-message` file rather than
-  stdout, and records the session id (`thread_id` in the journal's opening events)
-  beside the result; a follow-up on a finished exec is a fresh dispatch.
-
-## The exec sandbox denies network
-
-`codex exec` runs with `--unshare-net`. Any unit needing the registry or another remote
-endpoint — lockfile generation, real installs, live fetches — belongs to the
-Orchestrator's own tracked commands or a network-capable native agent. Never put it in a
-brief. A Astra exec hanging on `npm` until its cap fires is this misroute, not a slow bench.
-
-The namespace has its own loopback, so a host daemon on `127.0.0.1` is unreachable and a bind can
-fail `EPERM`. It has no IPv6, so `::1` fails `EAFNOSUPPORT`. Any proof that must reach a daemon,
-bind a port, or drive a built server belongs outside the exec.
-
-## The exec sandbox mounts `.git` read-only
-
-A `workspace-write` exec can write the working tree and cannot write `.git`. Every command
-that takes the index lock fails, `git checkout -- <file>` included.
-
-Never write a git command into a brief as a mechanism. A unit that must restore a file it
-mutated restores it by rewriting the original text, and proves it with
-`git diff --exit-code -- <file>`, which reads the index without locking it. Reading commands
-— `status`, `diff`, `log` — are unaffected and stay available.
-
-## Recovery ladder
-
-On any interruption or missing result, in order:
-
-1. Interrupted MCP call with a persisted thread id → `mcp__codex__codex-reply` asking Astra
-   to re-emit the complete final report. The reasoning may have finished server-side.
-2. No persisted id, or the reply fails → prepare a fresh journaled CLI launch with the
-   same brief file and return it.
-3. Interrupted CLI exec → the journal survives. Report the thread id and the last journal
-   events as a deviation, and let the Orchestrator choose resume or fresh.
-
-`codex exec resume <session-id>` inherits the session's sandbox, model, effort, and
-working directory, and rejects `--sandbox`, `--model`, `-c`, and `-C`. Only output flags
-and the prompt are valid on a resume. A read-only session can therefore never be resumed
-into a writer, so implementation always gets a fresh `workspace-write` session.
-
-## Analyst route
-
-Sandbox `read-only`, current checkout. Use for the objective design argument, diagnosis,
-correctness and security audit, and constraint review. Capture repository status before
-and after. Require evidence for every claim and return unsupported claims as dropped.
-
-An audit brief states its subject as a numbered list of falsifiable claims rather than a
-diff to read, and requires Astra to attempt refutation. The Falsification section of
-`.claude/rules/quality.md` owns the method and the evidence each verdict carries. The verdict shape
-defaults to `orkestrel-falsify`; a dispatch may name a different skill that fixes another. That
-skill owns the value set and the terminal line. Point the brief at both; restate neither.
-
-## Astra route
-
-Sandbox `workspace-write`, the checkout the route writes in, its sole serial writer from a clean committed
-baseline, with owned files, off-limits files, and a deviation contract. The brief forbids
-dependency installation, commits, pushes, publishing, credentials, destructive commands,
-shared-file edits, and tree-wide mutating gates.
-
-The Orchestrator verifies the finished exec with direct evidence — git status, the diff,
-scoped validation — and carries touched files, diffstat, and deviation state into
-integration and review.
-
-On a Windows host a shell write that decodes and re-encodes text can replace a code point the active
-code page cannot represent, so when a bench unit must edit a line carrying a code point above
-`0x7F`, the brief tells it to make that edit through the exec's own patch tool, never through
-`Get-Content`, `Set-Content`, `Out-File`, or a `>` redirection, and to report every such line it
-touched. The Orchestrator's review sweep compares the set of code points above `0x7F` on each
-touched line before and after the edit, and flags a line that lost any of them.
-
-## Routing exclusion — defensive negative-test units
-
-The provider applies a content-safety filter that terminates a turn mid-run when the work
-requires authoring or reproducing a violation construct, even when the purpose is to prove
-a guard rejects it: sandbox escapes, resolution-bypassing imports, boundary evasion,
-injection payloads, credential-handling probes. The filter reads the construct, not the
-intent, so a legitimate negative test trips it exactly like an attack would. Observed twice
-on one unit, at the same point in the work, with nothing written to disk either time.
-
-Route such a unit to `opus` from the start and record the Codex
-bench dark for that unit with this reason. Do not soften or obscure a brief to slip past
-the filter; a bench that declines work is a routing fact, not an obstacle. The exclusion is
-per unit — everything else still routes to Astra, and an audit that merely reads existing
-negative tests is unaffected.
+- On the measured Windows host `read-only` and `workspace-write` reject every shell command with `blocked by policy`. Recheck when the host or the Codex version changes. Under `danger-full-access` the brief states read-only where the route is read-only, and the launch script records `git status --porcelain` before and after; any difference is a deviation. This mode detects tracked changes only; it does not enforce read-only access.
+- Recorded POSIX sandbox behavior, to recheck when conditions change: network denied, `.git` mounted read-only, loopback bind fails `EPERM`, a grandchild process is denied. Route installs, live fetches, servers, process-tree proofs, and lockfile generation to the Orchestrator or a native writer.
+- A nested `git` inside the sandbox has reported `not a git repository` while the unit's own `git status` worked; name this in the brief so the unit does not diagnose the checkout.
+- When a sandbox rejects a write, the unit stops and reports it. It never tries another write mechanism.
+- A Windows shell write can re-encode text. Edit a line carrying a code point above `0x7F` with the exec's patch tool, never with `Set-Content`, `Out-File`, or `>`.
 
 ## Availability
 
-- Verify `codex --version` before first use. On Windows `codex` resolves in Bash through
-  the extensionless npm shim; if it does not, invoke `codex.cmd`.
-- Binary absent: report it so the Orchestrator can record the bench dark and, in the same turn,
-  name to the user the install command for `@openai/codex` and the bench it unblocks. The
-  Orchestrator re-probes when the user answers. Never install it yourself.
-- Binary present but authentication unavailable: report it so the Orchestrator can start
-  device-auth recovery in the same turn. It backgrounds `codex login --device-auth` with
-  output captured to `tmp/codex/login.log`, surfaces the verification URL and one-time code
-  from that file, and re-probes `codex login status` on completion.
-- Recovery impossible — device login unavailable, declined, or expired: the Codex bench is
-  dark. Name the fallback explicitly: `planner` and `reviewer` (Opus 5.5) for judgment, and
-  `builder` for fully specified mechanics.
-- Never authenticate, log out, inspect auth files, or substitute an API key, access token,
-  or copied `auth.json`.
+- Probe with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts --codex` before the first use in a session: it reads `codex --version` and `codex login status`, then runs one bounded exec and reports `live`. Neither the version nor the login status alone is liveness.
+- Binary absent: report it; the Orchestrator names `npm install -g @openai/codex` to the user and re-probes when the user answers.
+- Not logged in: the Orchestrator runs `node .agents/skills/orkestrel-dispatch/scripts/login.ts --codex` in the background, which journals `codex login --device-auth` to `tmp/codex/login.log`, prints the URL and the one-time code for the user, and polls the status until it answers; then it re-probes with `bench.ts --codex`.
+- Recovery impossible: record the bench dark. `planner` and `reviewer` hold the objective lane too; `builder` takes fully specified mechanics.
+- Never authenticate on the user's behalf, read an auth file, or substitute a key or token.
+
+## Routing exclusion
+
+The provider's content filter has ended turns that authored a violation construct, even as a negative test: sandbox escapes, resolution-bypassing imports, injection payloads, credential probes. Route such a unit to `opus` from the start and record the bench dark for that unit only.
 
 ## Journals
 
-Leave `tmp/codex/` to the Orchestrator. `.agents/orchestration.md` § Bench laws owns the
-retention rule for every journal, brief, session file, and last-message file.
-
-Never route orchestration or acceptance across this bridge.
+Journals live under `tmp/codex/` and are never committed. `.agents/orchestration.md` § Cleanup owns their deletion.

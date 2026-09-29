@@ -11,7 +11,7 @@ description: >-
   scales, or must look professional rather than like stock Bootstrap. Covers
   aesthetics, typography, color modes, design tokens, elevation, finishing
   details, accessibility (WCAG 2.2 AA), responsive layout, and enterprise app
-  patterns. The `orkestrel-polish-surface` skill owns a requested verdict,
+  patterns. The `orkestrel-polish` skill owns a requested verdict,
   round, or campaign over a surface that already renders, including a review
   that changes nothing; in that campaign's fix units, use this skill for
   Bootstrap craft.

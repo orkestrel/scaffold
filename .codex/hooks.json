@@ -1,5 +1,16 @@
 {
 	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "[ -f .agents/skills/orkestrel-dispatch/scripts/sweep.ts ] && node .agents/skills/orkestrel-dispatch/scripts/sweep.ts --report || true",
+						"timeout": 30
+					}
+				]
+			}
+		],
 		"Stop": [
 			{
 				"hooks": [

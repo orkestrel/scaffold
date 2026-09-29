@@ -70,6 +70,7 @@ import {
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
+	SKILLS_CONFIG_PATH,
 } from '@src/core'
 import {
 	Materializer,
@@ -964,6 +965,7 @@ export class CLI implements CLIInterface {
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
 		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
+		const skills = resolveContainedPath(target, SKILLS_CONFIG_PATH)
 		const setup = new Set<SetupRuntime>()
 		if (tests !== undefined) {
 			for (const path of listFiles(tests)) {
@@ -987,6 +989,7 @@ export class CLI implements CLIInterface {
 			global: global !== undefined && isExactCaseFile(global),
 			showcase: showcase !== undefined && isExactCaseFile(showcase),
 			journey: journey !== undefined && isExactCaseFile(journey),
+			skills: skills !== undefined && isExactCaseFile(skills),
 		})
 	}
 

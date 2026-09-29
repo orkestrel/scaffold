@@ -1,13 +1,17 @@
-import { rmSync } from 'node:fs'
+import { readFileSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { requireValue } from '@orkestrel/test'
+import { renderSkillPointer } from '@src/core'
 import { POLICY_FILENAMES } from './setup.js'
 import {
 	collectPolicyDeclarations,
 	createPolicyScratch,
 	createPolicySurfaceFixture,
+	inspectBridge,
+	inspectSkill,
+	inspectSkillBridges,
 	inspectSkillImports,
 	inspectPolicyWorkspace,
 	normalizePolicyFilename,
@@ -818,5 +822,41 @@ describe('normalizePolicyPath', () => {
 		expect(normalizePolicyPath('src\\parent\\..\\literal%20#雪.ts')).toBe(
 			'src/parent/../literal%20#雪.ts',
 		)
+	})
+})
+
+describe('inspectSkill', () => {
+	it('accepts the pointer set a target receives for a real skill of this checkout', () => {
+		const name = 'orkestrel-harden'
+		const canonical = readFileSync(join(process.cwd(), `.agents/skills/${name}/SKILL.md`), 'utf8')
+		const files = {
+			[`.agents/skills/${name}/SKILL.md`]: requireValue(renderSkillPointer(canonical, name)),
+			[`.agents/skills/${name}/agents/openai.yaml`]: readFileSync(
+				join(process.cwd(), `.agents/skills/${name}/agents/openai.yaml`),
+				'utf8',
+			),
+			[`.claude/skills/${name}/SKILL.md`]: readFileSync(
+				join(process.cwd(), `.claude/skills/${name}/SKILL.md`),
+				'utf8',
+			),
+		}
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-pointer-' })
+		const control = createPolicyScratch({ prefix: 'orkestrel-skill-canonical-' })
+		try {
+			for (const [path, text] of Object.entries(files)) {
+				scratch.write(path, text)
+				control.write(path, text)
+			}
+			expect(inspectSkill(scratch.path, name, process.cwd())).toStrictEqual([])
+			expect(inspectBridge(scratch.path, name)).toStrictEqual([])
+			expect(inspectSkillBridges(scratch.path)).toStrictEqual([])
+			// The control: the canonical file itself, carried without the references and
+			// scripts it names, is what the pointer keeps out of a target.
+			control.write(`.agents/skills/${name}/SKILL.md`, canonical)
+			expect(inspectSkill(control.path, name, process.cwd())).not.toStrictEqual([])
+		} finally {
+			scratch.destroy()
+			control.destroy()
+		}
 	})
 })

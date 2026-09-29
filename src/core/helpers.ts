@@ -12,6 +12,7 @@ import type {
 	PlanSummary,
 } from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
+import { fillTemplate } from '@orkestrel/template'
 import {
 	CANON_PATHS,
 	CATALOG_AGENT_PATH,
@@ -31,6 +32,7 @@ import {
 	VERSION_PATTERN,
 	WORKSPACE_OWNED_PATHS,
 } from './constants.js'
+import { ARTIFACT_TEMPLATES } from './templates.js'
 
 /**
  * Encodes bytes as exact lowercase hexadecimal text.
@@ -205,10 +207,11 @@ export function isDeferredPath(path: string): boolean {
  * boundary, so a sibling whose name opens with a member's name —
  * `.claude/rulesets` beside `.claude/rules` — stays outside.
  *
- * Membership answers where a path's bytes are staged, not whether a plan claims
- * it. A plan claims `AGENTS.md`, `CLAUDE.md`, and {@link CATALOG_AGENT_PATH} at
- * canon paths deliberately, so a consumer deciding whether to write, restore, or
- * remove a path reads the plan rather than this predicate.
+ * Membership answers whether scaffold owns the path, not whether a plan claims
+ * it. A plan claims `AGENTS.md` and {@link CATALOG_AGENT_PATH} at canon paths
+ * deliberately, so a consumer deciding whether to write, restore, or remove a
+ * path reads the plan rather than this predicate. A member the checkout no
+ * longer holds is still canon, so a copy a target keeps reports as foreign.
  *
  * @example
  * ```ts
@@ -1003,4 +1006,36 @@ export function manifestToDependencies(manifest: string): ManifestDependencySet 
 		development: limitEntries(development, MAX_COLLECTION_ITEMS),
 		peer: limitEntries(peer, MAX_COLLECTION_ITEMS),
 	}
+}
+
+/**
+ * Renders the `SKILL.md` pointer a target carries in place of a canonical skill.
+ *
+ * @param canonical - The canonical `SKILL.md` text, which opens with a frontmatter block.
+ * @param name - The skill directory name the pointer body names.
+ * @returns The canonical frontmatter block copied line for line, from its opening `---` line through
+ * its closing `---` line, then the filled `ARTIFACT_TEMPLATES.orchestration.skill` body, with `\n`
+ * line endings; `undefined` when the canonical text does not open with a complete frontmatter block.
+ *
+ * @remarks
+ * The frontmatter is copied rather than rewritten, so every harness that
+ * discovers the pointer reads the canonical `name` and `description` and
+ * triggers the skill exactly as the canonical file would. A CRLF canonical
+ * text yields the same pointer as its LF form.
+ *
+ * @example
+ * ```ts
+ * import { renderSkillPointer } from '@orkestrel/scaffold'
+ *
+ * renderSkillPointer('---\nname: orkestrel-harden\ndescription: Hardens a package.\n---\n\n# Harden\n', 'orkestrel-harden')?.startsWith('---\nname: orkestrel-harden\ndescription: Hardens a package.\n---\n\n# Load the canonical skill\n') // true
+ * renderSkillPointer('# Harden\n', 'orkestrel-harden') // undefined
+ * ```
+ */
+export function renderSkillPointer(canonical: string, name: string): string | undefined {
+	const lines = canonical.split(/\r\n|\n/u)
+	if (lines[0] !== '---') return undefined
+	const closing = lines.indexOf('---', 1)
+	if (closing === -1) return undefined
+	const frontmatter = lines.slice(0, closing + 1).join('\n')
+	return `${frontmatter}\n${fillTemplate(ARTIFACT_TEMPLATES.orchestration.skill, { name })}`
 }

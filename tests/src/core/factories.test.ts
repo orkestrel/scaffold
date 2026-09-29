@@ -38,6 +38,7 @@ describe('createBlueprint defaults', () => {
 		expect(blueprint.global).toBe(false)
 		expect(blueprint.showcase).toBe(false)
 		expect(blueprint.journey).toBe(false)
+		expect(blueprint.skills).toBe(false)
 	})
 
 	it('keeps the name it was given, including one the gate refuses', () => {

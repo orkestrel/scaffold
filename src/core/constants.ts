@@ -160,8 +160,8 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  * Staging walks these beside {@link HOST_PATHS}, so a release ships them and a
  * reader reaches them two ways: a scaffold checkout sitting beside the
  * repository, or the `node_modules/@orkestrel/scaffold/dist/host/` root inside
- * the installed package. The `AGENTS.md` and `CLAUDE.md` pointers scaffold plans
- * are what name each location.
+ * the installed package. The `AGENTS.md` pointer scaffold plans is what names
+ * each location.
  *
  * This list, {@link HOST_PATHS}, and {@link REFERENCE_PATHS} are disjoint by
  * prefix in every direction: no member equals or sits beneath another list's
@@ -170,18 +170,22 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  * name twice, which refuses the stage.
  *
  * The plan claims paths inside the canon deliberately, and each has a reason.
- * `blueprintToDocumentArtifacts` claims `AGENTS.md` and `CLAUDE.md` as this
- * package's own template pointers. `blueprintToHostArtifacts` claims
+ * `blueprintToDocumentArtifacts` claims `AGENTS.md` as this package's own
+ * template pointer. `blueprintToHostArtifacts` claims
  * {@link CATALOG_AGENT_PATH}, because the catalog verb refuses a target that
  * lacks the file and repair restores its absence.
  *
  * A target therefore holds a file at a canon path only where the plan claims it.
  * That is the rule every verb obeys, and it is what makes a copy found anywhere
- * else superseded.
+ * else superseded. A member this checkout no longer holds, `CLAUDE.md` since
+ * Claude Code began reading `AGENTS.md` directly, stays listed for exactly that
+ * reason: the stager ships nothing for it, `audit` reports a target's copy
+ * `foreign`, and `overwrite` deletes it.
  */
 export const CANON_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',
 	'CLAUDE.md',
+	'.claude/AGENTS.md',
 	'.mcp.json',
 	'.agents/orchestration.md',
 	'.agents/skills',
@@ -317,6 +321,27 @@ export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
  */
 export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
 
+/**
+ * Lists the package-facing skills a target receives pointers for, frozen and alphabetical.
+ *
+ * @remarks
+ * `blueprintToHostArtifacts` plans, for each name, the Claude bridge, the Codex
+ * sidecar, and the derived `SKILL.md` pointer, so every harness discovers the
+ * skill while its body, references, and scripts stay in the installed package.
+ * `orkestrel-align`, `orkestrel-dispatch`, `orkestrel-publish`, and
+ * `orkestrel-scout` are excluded because they run from the scaffold checkout
+ * and a target is not an orchestration host.
+ */
+export const TARGET_SKILL_NAMES: readonly string[] = Object.freeze([
+	'enterprise-bootstrap',
+	'orkestrel-build',
+	'orkestrel-debrief',
+	'orkestrel-falsify',
+	'orkestrel-harden',
+	'orkestrel-journey',
+	'orkestrel-polish',
+])
+
 /** Names the inventory skeleton a workspace with declared service vendors is given once. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 
@@ -365,6 +390,9 @@ export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
 
 /** Names the Vite wrapper whose presence makes a workspace `journey`. */
 export const JOURNEY_CONFIG_PATH = 'configs/app/vite.journey.config.ts'
+
+/** Names the TypeScript wrapper whose presence makes a workspace `skills`. */
+export const SKILLS_CONFIG_PATH = 'configs/agents/tsconfig.skills.json'
 
 /** Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/

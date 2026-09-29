@@ -27,9 +27,12 @@ import {
 	GROUPS,
 	isCanonPath,
 	RELEASE_PROOF_COMMAND,
+	renderSkillPointer,
 	replaceManifestScripts,
 	SHOWCASE_DEV_DEPENDENCIES,
+	SKILLS_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
+	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { readFileHex, readHostFloor, stageHost } from '@src/server'
 import { requireValue } from '@orkestrel/test'
@@ -68,6 +71,7 @@ import {
 	HOSTILE_BYTES,
 	omitDependencies,
 	REFUSED_MANIFEST_TEXT,
+	SKILL_CANON_FILES,
 	TARGET_DEV_DEPENDENCIES,
 	TARGET_MANIFEST_TEXT as TARGET_MANIFEST_FIXTURE,
 	trackFiles,
@@ -1636,7 +1640,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('infers journey and setup runtimes from exact-case structural paths', async () => {
+	it('infers journey, skills, and setup runtimes from exact-case structural paths', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1645,8 +1649,10 @@ describe('CLI audit', () => {
 			for (const state of ['absent', 'wrong', 'node', 'browser', 'present']) {
 				workspace.remove('target/tests')
 				workspace.remove('target/configs/app')
+				workspace.remove('target/configs/agents')
 				if (state === 'wrong') {
 					workspace.write('target/configs/app/vite.Journey.config.ts', 'export {}\n')
+					workspace.write('target/configs/agents/tsconfig.Skills.json', '{}\n')
 					workspace.write('target/tests/SetupBrowser.test.ts', 'export {}\n')
 					workspace.write('target/tests/nested/setup.test.ts', 'export {}\n')
 				}
@@ -1658,11 +1664,13 @@ describe('CLI audit', () => {
 				}
 				if (state === 'present') {
 					workspace.write('target/configs/app/vite.journey.config.ts', '// adopter variants\n')
+					workspace.write('target/configs/agents/tsconfig.skills.json', '{}\n')
 				}
 				const blueprint = createBlueprint('sample', {
 					src: ['core'],
 					app: ['browser'],
 					journey: state === 'present',
+					skills: state === 'present',
 					setup:
 						state === 'present'
 							? ['node', 'browser']
@@ -1686,6 +1694,7 @@ describe('CLI audit', () => {
 				expect(exit, `${state}: ${sink.diagnostic.join('\n')}`).toBe(EXIT_CLEAN)
 				const root = requireValue(workspace.read('target/vite.config.ts'))
 				expect(root.includes('export function appJourney(')).toBe(state === 'present')
+				expect(root.includes('export function skills(')).toBe(state === 'present')
 				expect(root.includes("label: 'setup'")).toBe(state === 'node' || state === 'present')
 				expect(root.includes("label: 'setup:browser'")).toBe(
 					state === 'browser' || state === 'present',
@@ -4512,9 +4521,167 @@ describe('CLI repair', () => {
 			workspace.destroy()
 		}
 	})
+
+	it('reports a hand-edited skill pointer stale and restores the derived bytes', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			const path = '.agents/skills/orkestrel-harden/SKILL.md'
+			const derived = renderSkillPointer(requireValue(SKILL_CANON_FILES[path]), 'orkestrel-harden')
+			expect(workspace.read(`target/${path}`)).toBe(derived)
+			workspace.write(`target/${path}`, '# Hand-edited pointer\n')
+			const audited = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(audited.output[0] ?? '')
+			expect(
+				audit.findings
+					.filter((finding) => finding.drift !== 'aligned')
+					.map((finding) => [finding.path, finding.drift]),
+			).toStrictEqual([[path, 'stale']])
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.written).toStrictEqual([path])
+			expect(workspace.read(`target/${path}`)).toBe(derived)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('plans and writes no skill pointer for a target that ships its own skill canon', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(`target/${SKILLS_CONFIG_PATH}`, '{}\n')
+			// The skills fact registers its own project, so the target's chain reaches it.
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(createBlueprint('sample', { src: ['core'], skills: true })),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.written).toContain(SKILLS_CONFIG_PATH)
+			expect(
+				result.audit.findings.filter(
+					(finding) =>
+						finding.path.startsWith('.agents/skills/') ||
+						finding.path.startsWith('.claude/skills/'),
+				),
+			).toStrictEqual([])
+			expect(workspace.has('target/.agents')).toBe(false)
+			expect(workspace.has('target/.claude/skills')).toBe(false)
+			// The control: the same fleet without the skills fact receives the pointer set.
+			const control = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const plain = createFleet(control)
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'repair',
+					'--from',
+					plain.host,
+					'--target',
+					plain.target,
+				])
+				expect(control.has('target/.agents/skills/orkestrel-harden/SKILL.md')).toBe(true)
+			} finally {
+				control.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
 })
 
 describe('CLI overwrite', () => {
+	it('writes every skill pointer file into a fresh target and sweeps the skill files the plan leaves out', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/.agents/skills/orkestrel-dispatch/SKILL.md', '# Dispatch\n')
+			workspace.write('target/.agents/skills/orkestrel-harden/references/brief.md', '# Brief\n')
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'overwrite',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			// The empty registry fails the catalog half, and that note is what the code carries.
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.note ?? '').toContain('The catalog step did not complete')
+			const written = result.written.filter(
+				(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
+			)
+			expect(written).toHaveLength(21)
+			expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
+			expect(result.removed.toSorted()).toStrictEqual([
+				'.agents/skills/orkestrel-dispatch/SKILL.md',
+				'.agents/skills/orkestrel-harden/references/brief.md',
+			])
+			for (const name of TARGET_SKILL_NAMES) {
+				const path = `.agents/skills/${name}/SKILL.md`
+				expect(workspace.read(`target/${path}`)).toBe(
+					renderSkillPointer(requireValue(SKILL_CANON_FILES[path]), name),
+				)
+				for (const copied of [
+					`.agents/skills/${name}/agents/openai.yaml`,
+					`.claude/skills/${name}/SKILL.md`,
+				]) {
+					expect(workspace.read(`target/${copied}`)).toBe(SKILL_CANON_FILES[copied])
+				}
+			}
+			expect(
+				result.audit.findings
+					.filter((finding) => written.includes(finding.path))
+					.every((finding) => finding.drift === 'aligned'),
+			).toBe(true)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
 	it('reports replacements, creations, and file deletions as distinct outcomes', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
