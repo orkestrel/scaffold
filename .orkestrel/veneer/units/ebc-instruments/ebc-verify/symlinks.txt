@@ -1,3 +1,0 @@
-setup.ts -> tests/setup.ts
-setupBrowser.ts -> tests/setupBrowser.ts
-setupStyles.ts -> tests/setupStyles.ts

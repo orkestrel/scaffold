@@ -1,7 +1,0 @@
-$ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check src/styles/components/_toast.scss tests/src/styles/components/toast.test.ts tests/src/styles/components/fade.test.ts tests/setupStyles.ts tests/setupStyles.test.ts guides/veneer.md
-Checking formatting...
-
-All matched files use the correct format.
-Finished in 16427ms on 6 files using 4 threads.
-exit=0
-4.76 5.95 5.77 1/397 17175

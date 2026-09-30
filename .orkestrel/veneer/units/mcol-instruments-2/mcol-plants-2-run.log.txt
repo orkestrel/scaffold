@@ -1,8 +1,0 @@
-collapse-literal exit=1 identical=true
-chevron-literal exit=1 identical=true
-collapse-opacity exit=1 identical=true
-fade-order exit=1 identical=true
-chevron-frozen exit=1 identical=true
-reader-pseudo exit=1 identical=true
-reader-target exit=0 identical=true
-exit=0

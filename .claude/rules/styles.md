@@ -12,19 +12,21 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 ## Centralized files
 
-| File           | Sole responsibility                                           |
-| -------------- | ------------------------------------------------------------- |
-| `_mixins.scss` | `@function` values and `@mixin` declaration emitters          |
-| `_tokens.scss` | `:root` public custom-property tokens and cascade-layer order |
-| `_theme.scss`  | Token overrides under theme selectors                         |
-| `index.scss`   | Sole compilation barrel                                       |
+| File                | Sole responsibility                                              |
+| ------------------- | ---------------------------------------------------------------- |
+| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters             |
+| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order    |
+| `_theme.scss`       | Token overrides under theme selectors                            |
+| `_reset.scss`       | The surface's reset declarations, when that surface owns a reset |
+| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet         |
+| `index.scss`        | Sole compilation barrel                                          |
 
 - `_mixins.scss` emits no top-level CSS.
 - Consumers load it with `@use '../mixins' as *`.
 - Never load `mixins` from `index.scss`.
-- `index.scss` is the sole compilation barrel; it loads `tokens`, `theme`, and output partials with `@use`.
+- `index.scss` is the sole compilation barrel of its sheet; it loads `tokens`, `theme` where `_theme.scss` exists, and the output partials with `@use`. Never load `themes/` from `index.scss`.
 - `_tokens.scss` is the token source of truth. Adding a token is allowed; rename/removal is breaking.
-- `_theme.scss` only retunes tokens under selectors such as `[data-theme='…']`.
+- `_theme.scss` and each `themes/` pack only retune tokens under theme selectors such as `[data-theme='…']`.
 - Component partials never override global tokens.
 
 ## Sass mechanisms
@@ -39,8 +41,11 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 - Check `_tokens.scss` before inventing a token.
 - Put global tokens in `_tokens.scss`; put truly component-scoped custom properties on the component selector.
 - Never bury tokens in unrelated partials.
-- Never use literal colors. Use `var(--token)` or `color-mix()` over tokens. The one file a
-  literal color may appear in is `_tokens.scss`, where the token itself is declared.
+- Never use literal colors outside a pinned recreation. Use `var(--token)` or `color-mix()` over
+  tokens. The one file a literal color may appear in is `_tokens.scss`, where the token itself is
+  declared. A surface whose contract is the exact recreation of a pinned external artifact keeps
+  the literals, declarations, and order the pin declares, and records tokenization and
+  accessibility additions in its separate authored surface.
 - Never repeat per-color/per-variant blocks; drive shared structure with one `@each` over a shared list.
 - If a pattern appears in at least two partials, move it to `_mixins.scss`.
 - Treat a declaration block two partials share because each records an external value as a
@@ -50,8 +55,10 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 - Never `@extend` across partials; share through tokens/mixins.
 - Never declare a `transition:` without `prefers-reduced-motion: reduce`. Use the project transition mixin, which emits both.
 - Animations include `@include reduced-motion { animation: none }`.
-- Never wrap rules in a foreign cascade layer. Each partial uses its folder's own layer.
-- Declare cascade-layer order once in the consumer entry before `@import 'tailwindcss'`, so utilities win predictably.
+- Never wrap rules in a foreign cascade layer. Each partial uses its folder's own layer. A sheet
+  that recreates an external framework instead writes every normal declaration into one layer named
+  for that framework and every `!important` declaration outside every layer.
+- Declare cascade-layer order once in the consumer entry before `@import 'tailwindcss'`, so utilities win predictably. When a package publishes several sheets, open every published sheet with the same full order statement, so the order holds whichever sheet loads first.
 
 ## Naming
 

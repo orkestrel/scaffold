@@ -1,2 +1,0 @@
-npm run lint:check
-exit=0
