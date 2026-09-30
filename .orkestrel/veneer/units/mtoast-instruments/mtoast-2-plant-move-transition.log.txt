@@ -1,0 +1,146 @@
+# plant: move-transition
+$ sed -i -e 's/^\t\.toast\.fade {$/\t.toast {/' src/styles/components/_toast.scss
+--- planted diff
+60c60
+< 	.toast.fade {
+---
+> 	.toast {
+$ npm run build:src:styles
+build exit=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/toast.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-mtoast
+
+Port 63315 is in use, trying another one...
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:15:43 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/toast.test.ts (22 tests | 3 failed) 944ms
+     × writes the recorded toast selectors, the fade compound, and no other components-layer selector naming a toast class 140ms
+     × declares the scale and the fade on the fade compound, no transition under the reduced-motion condition, and the 0.98 scale on the showing state 265ms
+     × runs no motion on a toast without the fade class, and rests every shown toast at no transform 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/toast.test.ts:50:2 > toast box > writes the recorded toast selectors, the fade compound, and no other components-layer selector naming a toast class
+AssertionError: expected [ '.toast', '.toast-body', …(6) ] to deeply equal [ '.toast', '.toast-body', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -3,9 +3,8 @@[39m
+[2m    ".toast-body",[22m
+[2m    ".toast-container",[22m
+[2m    ".toast-container > :not(:last-child)",[22m
+[2m    ".toast-header",[22m
+[2m    ".toast-header .btn-close",[22m
+[32m-   ".toast.fade",[39m
+[2m    ".toast.showing",[22m
+[2m    ".toast:not(.show)",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/toast.test.ts:60:30
+     58|    ),
+     59|   )
+     60|   expect([...written].sort()).toEqual(
+       |                              ^
+     61|    [...TOAST_SELECTORS, '.toast.fade']
+     62|     .map((selector) => normalizeComplexSelector(selector))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/toast.test.ts:211:2 > toast motion > declares the scale and the fade on the fade compound, no transition under the reduced-motion condition, and the 0.98 scale on the showing state
+AssertionError: expected [ …(3) ] to deeply equal [ [ [ undefined, '', '' ] ], …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -3,23 +3,22 @@[39m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        "",[22m
+[2m        "",[22m
+[2m      ],[22m
+[32m-   ],[39m
+[2m      [[22m
+[32m-     [[39m
+[2m        undefined,[22m
+[2m        "opacity var(--vn-motion-feedback) var(--vn-ease-out), transform var(--vn-motion-feedback) var(--vn-ease-standard)",[22m
+[2m        "",[22m
+[2m      ],[22m
+[2m      [[22m
+[2m        "(prefers-reduced-motion: reduce)",[22m
+[2m        "none",[22m
+[2m        "",[22m
+[2m      ],[22m
+[2m    ],[22m
+[31m+   [],[39m
+[2m    [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[2m        "",[22m
+[2m        "scale(0.98)",[22m
+
+ ❯ tests/src/styles/components/toast.test.ts:226:4
+    224|      ]),
+    225|    ),
+    226|   ).toEqual([
+       |    ^
+    227|    [[undefined, '', '']],
+    228|    [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/toast.test.ts:337:2 > toast motion > runs no motion on a toast without the fade class, and rests every shown toast at no transform
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "matrix(0.98, 0, 0, 0.98, 0, 0)",[22m
+[2m    "0",[22m
+[32m-   "0s",[39m
+[31m+   "0.15s, 0.15s",[39m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/toast.test.ts:345:4
+    343|   expect(
+    344|    ['transform', 'opacity', 'transition-duration'].map((property) => r…
+    345|   ).toEqual(['matrix(0.98, 0, 0, 0.98, 0, 0)', '0', '0s'])
+       |    ^
+    346|   still.classList.remove('showing')
+    347|   expect(still.getAnimations()).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 19 passed (22)
+   Start at  10:15:36
+   Duration  8.42s (transform 0ms, setup 1.74s, import 103ms, tests 944ms, environment 0ms)
+
+exit=1
+restored sha256 before=4ea04a8b90e6bc2f7f11f8f6dca07bff95474b77589bb5ed243ff5bcc853ce0f after=4ea04a8b90e6bc2f7f11f8f6dca07bff95474b77589bb5ed243ff5bcc853ce0f
+restore identical
+6.57 5.86 4.54 18/543 739

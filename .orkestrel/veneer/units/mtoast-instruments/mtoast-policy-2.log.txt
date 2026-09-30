@@ -1,0 +1,17 @@
+$ npm run test:policy
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer-mtoast
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  10:21:49
+   Duration  3.43s (transform 311ms, setup 165ms, import 469ms, tests 2.55s, environment 0ms)
+
+exit=0
+5.22 7.16 5.84 1/397 10296

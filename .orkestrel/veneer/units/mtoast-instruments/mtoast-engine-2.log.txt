@@ -1,0 +1,14 @@
+$ npx vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Toast.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-mtoast
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+   Start at  10:21:54
+   Duration  17.33s (transform 0ms, setup 732ms, import 674ms, tests 6.42s, environment 0ms)
+
+exit=0
+5.71 7.16 5.87 2/395 10786

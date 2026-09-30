@@ -1,0 +1,29 @@
+--- a/tests/src/styles/components/fade.test.ts
++++ b/tests/src/styles/components/fade.test.ts
+@@ -255,7 +255,9 @@
+ 	// The mutation this catches is the hidden state dropped, which leaves an animated alert, popover,
+ 	// tab pane, or modal painting at the transparent end of its fade. Each component's shown reading
+ 	// is compared with the same classes less the `fade` class, so the fade rule changes no shown
+-	// paint, and every set carrying the class transitions its opacity whichever rule hides it.
++	// paint, and every set carrying the class transitions its opacity whichever rule hides it. The
++	// reading is whether the transitioned list names the opacity, because a component's own compound
++	// can transition another property beside it, as the toast's transitions its scale.
+ 	it('fades the alert, toast, tooltip, popover, tab pane, and modal, and leaves each shown component its own opacity', () => {
+ 		expect(FADE_COMPONENT_CASES).not.toStrictEqual([])
+ 		const readings = FADE_COMPONENT_CASES.map(({ component, hidden, shown }) => {
+@@ -266,13 +268,13 @@
+ 			)
+ 			const [faded, visible, control] = [...host.children].map((element) => [
+ 				readStyle(element, 'opacity'),
+-				readStyle(element, 'transition-property'),
++				splitTopLevelList(readStyle(element, 'transition-property')).includes('opacity'),
+ 			])
+ 			scene.clear()
+ 			return {
+ 				component,
+ 				read: { hidden: faded, shown: visible },
+-				expected: { hidden: ['0', 'opacity'], shown: [control?.[0], 'opacity'] },
++				expected: { hidden: ['0', true], shown: [control?.[0], true] },
+ 			}
+ 		})
+ 		expect(readings.map(({ component, read }) => ({ component, ...read }))).toEqual(

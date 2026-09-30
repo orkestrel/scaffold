@@ -1,0 +1,7 @@
+$ npm run lint:check
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+exit=0
+0.69 1.16 2.60 1/214 3867

@@ -1,0 +1,13 @@
+$ npx vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-mcol
+
+Port 63315 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+   Start at  10:17:16
+   Duration  16.81s (transform 0ms, setup 796ms, import 763ms, tests 4.11s, environment 0ms)
+
+exit=0
+11.23 7.67 5.34 12/427 3079

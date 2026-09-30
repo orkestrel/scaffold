@@ -1,0 +1,388 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index fef6981..6aadde3 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -5616,11 +5616,22 @@ between the toasts it stacks, the header and the close control it fits, and the
+ 
+ Each state is a class set in markup. A toast displays only while it carries the `show` class, so a
+ toast without it is hidden by the release's own rule. The engine writes the `showing` class for the
+-length of a fade, in and out alike, and a toast carrying it drops to no opacity while it stays
+-displayed. The engine also sets the `fade` class when the toast is animated, and the `.fade` rule
+-that § Fade classes describes transitions the toast's opacity, so the toast fades out as it gains
+-the `showing` class and fades in as it loses it. § Compatibility records the Toast plugin that moves
+-a toast between the classes as an engine obligation.
++length of a fade, in and out alike. A toast carrying it drops to no opacity and a `0.98` scale while
++it stays displayed, which is the closed state of Elements' surface motion, and a shown toast without
++it rests at no transform. § Compatibility records the Toast plugin that moves a toast between the
++classes as an engine obligation.
++
++The engine also sets the `fade` class when the toast is animated, and the `.toast.fade` compound
++writes the toast's motion. It transitions the opacity over the `--vn-motion-feedback` token on the
++`--vn-ease-out` curve, the timing of the `.fade` rule that § Fade classes describes, and the
++transform over the same token on the `--vn-ease-standard` curve. So the toast fades out and shrinks
++to the `0.98` scale as it gains the `showing` class, and fades in and grows to its place as it loses
++it. The duration resolves to `150ms` at a factor of `1` and rescales with the `--vn-factor-motion`
++factor. The compound outranks the `.fade` rule, and a transition list replaces the whole list of the
++rule it overrides, so the compound writes the opacity transition again beside the transform. A toast
++without the `fade` class runs no transition, so its scale and opacity change at once as the engine
++writes the `showing` class. The `transition` mixin writes the compound's transition, so it resolves
++to no transition under the reduced-motion preference.
+ 
+ The `.toast` rule declares every slot it reads on itself, so a consumer retunes a toast through a
+ rule of their own that selects the toast, and the same property set on an ancestor is shadowed. The
+@@ -5664,6 +5675,10 @@ These are the key's recorded departures.
+   and `-moz-max-content` values before the `max-content` value; Veneer writes the standard value
+   alone.
+ 
++The showing state's scale and the fade compound are additions rather than departures, because the
++release writes no transform on the `.toast.showing` rule and no `.toast.fade` compound; § Additions
++records each, the compound's transition with its reduced-motion pair.
++
+ The Toast region renders a shown toast with a header and a body, a pair of toasts stacked in a
+ container, and one container centered in its frame. The container is absolutely positioned, so each
+ container specimen renders inside the shell's `viewport` frame, placed with the shipped `top-0` and
+@@ -5683,6 +5698,12 @@ on the container and the slot on a toast outside one, the container's width, poi
+ header's row and inner corners, the header close control beside a control in the body, the body's
+ inset and wrap, and the paint in light and inside a dark island.
+ 
++It also reads the motion: the declared scale and transition with the transition's reduced-motion
++pair; the scale and the fade the browser runs as the `showing` class leaves and as it joins, with
++their durations, their easings, and their midpoint frames; a toast without the `fade` class, which
++runs neither; and each duration under a doubled and a zero motion factor and under the staged
++reduced-motion preference.
++
+ ### Modal classes
+ 
+ The modal key ships whole: the modal and its dialog, the content with its header, title, body, and
+@@ -10848,6 +10869,11 @@ leaving both ledgers unread.
+ | `spinner`      | `.spinner-grow { opacity }`                                                               | `@media (prefers-reduced-motion: reduce)`        | declaration | `1`                                                                                                                                                                                                                                                                                                                    | The disc rests out of sight and only its animation lifts it, so the stopped disc is written at full opacity.                                                                                                                    |
+ | `placeholder`  | `.placeholder-glow .placeholder { animation }`                                            | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | Every animation stops under the reduced-motion preference, which the release writes no rule for; each placeholder rests at half strength.                                                                                       |
+ | `placeholder`  | `.placeholder-wave { animation }`                                                         | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | Every animation stops under the reduced-motion preference, which the release writes no rule for; the mask stands at its first position.                                                                                         |
++| `toast`        | `.toast.showing { transform }`                                                            | —                                                | declaration | `scale(0.98)`                                                                                                                                                                                                                                                                                                          | The showing state takes the `0.98` scale of Elements' surface motion beside the release's transparent opacity, so the toast shrinks as it fades out and grows as it fades in.                                                   |
++| `toast`        | `.toast.fade`                                                                             | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The compound carries the toast's motion, so a toast without the `fade` class runs none.                                                                                                                                         |
++| `toast`        | `.toast.fade { transition }`                                                              | —                                                | declaration | `opacity var(--vn-motion-feedback) var(--vn-ease-out), transform var(--vn-motion-feedback) var(--vn-ease-standard)`                                                                                                                                                                                                    | The toast scales over the `--vn-motion-feedback` duration on the `--vn-ease-standard` curve beside its fade, and the list writes the `.fade` rule's opacity transition again because it replaces that rule's list.              |
++| `toast`        | `.toast.fade`                                                                             | `@media (prefers-reduced-motion: reduce)`        | selector    | —                                                                                                                                                                                                                                                                                                                      | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
++| `toast`        | `.toast.fade { transition }`                                                              | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ | `modal`        | `.modal { transition }`                                                                   | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The modal host fades on Elements' panel timing beside its dialog in place of the shared `.fade` rule's feedback timing, so the host and the dialog settle together.                                                             |
+ | `modal`        | `.modal { transition }`                                                                   | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ | `modal`        | `.modal-backdrop.fade { transition }`                                                     | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` duration on the `--vn-ease-out` curve, in place of the shared `.fade` rule's feedback timing.                                                      |
+diff --git a/src/styles/components/_toast.scss b/src/styles/components/_toast.scss
+index 9b022c7..e9f5de2 100644
+--- a/src/styles/components/_toast.scss
++++ b/src/styles/components/_toast.scss
+@@ -1,3 +1,5 @@
++@use '../mixins' as *;
++
+ @layer components {
+ 	// The toast ships Bootstrap's recorded surface. A toast displays only while it carries the `show`
+ 	// class, and the engine writes the `showing` class for each fade, in and out alike; each state is
+@@ -37,8 +39,31 @@
+ 		border-radius: var(--bs-toast-border-radius);
+ 	}
+ 
++	// The toast moves on Elements' surface motion: its closed state is transparent at a `0.98` scale,
++	// and it scales to its place as it fades in. The engine writes the `showing` class for each fade,
++	// so the class carries that closed state in both directions. A show starts the motion as the class
++	// leaves and a hide as it joins, and the scale and the opacity land at once on a toast without the
++	// `fade` class, because no transition runs there.
+ 	.toast.showing {
+ 		opacity: 0;
++		transform: scale(0.98);
++	}
++
++	// The engine writes the `fade` class on an animated toast, so the transition sits on the compound
++	// with that class, and a toast without it moves nothing. The compound outranks the `.fade` rule in
++	// the same layer, and a transition list replaces the whole list of the rule it overrides, so the
++	// compound writes the fade again over the `--vn-motion-feedback` duration on the `--vn-ease-out`
++	// curve beside the scale. The scale runs over the same duration on the `--vn-ease-standard` curve,
++	// and that duration and curve resolve to Elements' surface timing, `150ms` on the `ease` curve, at
++	// a factor of `1`. The `transition` mixin resolves both to no transition under the reduced-motion
++	// preference, and the duration reads the motion factor.
++	.toast.fade {
++		@include transition(
++			(
++				opacity var(--vn-motion-feedback) var(--vn-ease-out),
++				transform var(--vn-motion-feedback) var(--vn-ease-standard)
++			)
++		);
+ 	}
+ 
+ 	.toast:not(.show) {
+diff --git a/tests/src/styles/components/toast.test.ts b/tests/src/styles/components/toast.test.ts
+index b95253f..f292851 100644
+--- a/tests/src/styles/components/toast.test.ts
++++ b/tests/src/styles/components/toast.test.ts
+@@ -6,10 +6,19 @@ import {
+ 	readRootToken,
+ 	readStyle,
+ 	readToken,
++	releaseMedia,
++	stageMedia,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, scene } from '../../../setupBrowser.js'
+ import {
++	collectLayer,
++	collectMediaConditions,
++	sampleTransition,
++	scene,
++	sweepMotionFactor,
++} from '../../../setupBrowser.js'
++import {
++	REDUCED_MOTION,
+ 	TEXT_MODES,
+ 	TOAST_CLOSE_GEOMETRY,
+ 	TOAST_SELECTORS,
+@@ -19,11 +28,13 @@ import {
+ 	trimCSSWhitespace,
+ } from '../../../setupStyles.js'
+ 
+-afterEach(() => {
++afterEach(async () => {
++	await releaseMedia()
+ 	scene.clear()
+ 	for (const token of [
+ 		TOKEN_NAMES.factor.density,
+ 		TOKEN_NAMES.factor.radius,
++		TOKEN_NAMES.factor.motion,
+ 		TOKEN_NAMES.stack.toast,
+ 	])
+ 		document.documentElement.style.removeProperty(token)
+@@ -34,8 +45,9 @@ describe('toast box', () => {
+ 	// beyond the release: the reading is the set of components-layer selectors naming one of the key's
+ 	// own classes, so a missing selector and an extra selector each report here, a header combinator
+ 	// written against the bare toast class reads as both, and a second rule on a recorded selector
+-	// leaves the reading unchanged.
+-	it('writes the recorded toast selectors and no other components-layer selector naming a toast class', () => {
++	// leaves the reading unchanged. The fade compound the toast's motion rides on is Veneer's own, so
++	// it is read beside the key's list.
++	it('writes the recorded toast selectors, the fade compound, and no other components-layer selector naming a toast class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+@@ -46,7 +58,9 @@ describe('toast box', () => {
+ 			),
+ 		)
+ 		expect([...written].sort()).toEqual(
+-			TOAST_SELECTORS.map((selector) => normalizeComplexSelector(selector)).sort(),
++			[...TOAST_SELECTORS, '.toast.fade']
++				.map((selector) => normalizeComplexSelector(selector))
++				.sort(),
+ 		)
+ 	})
+ 
+@@ -185,6 +199,214 @@ describe('toast states', () => {
+ 	})
+ })
+ 
++// The engine writes the `showing` class for the length of a fade, so a show from hidden starts its
++// motion as the class leaves and a hide starts its motion as the class arrives. Each case drives that
++// class write on a displayed toast and reads what the browser runs.
++describe('toast motion', () => {
++	// The mutations this catches are the transition written on a literal duration or curve, written
++	// outside the `transition` mixin, or written on a selector that does not require the `fade`
++	// class, and the scale dropped from the showing state. The reading is each rule's own
++	// declarations at rest and under the reduced-motion condition, beside the rendered readings the
++	// following cases take.
++	it('declares the scale and the fade on the fade compound, no transition under the reduced-motion condition, and the 0.98 scale on the showing state', () => {
++		const rules = collectLayer('components').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule] : [],
++		)
++		expect(
++			['.toast', '.toast.fade', '.toast.showing'].map((selector) =>
++				rules
++					.filter(
++						(rule) => normalizeComplexSelector(trimCSSWhitespace(rule.selectorText)) === selector,
++					)
++					.map((rule) => [
++						rule.parentRule instanceof CSSMediaRule ? rule.parentRule.conditionText : undefined,
++						...['transition', 'transform'].map((property) => rule.style.getPropertyValue(property)),
++					]),
++			),
++		).toEqual([
++			[[undefined, '', '']],
++			[
++				[
++					undefined,
++					'opacity var(--vn-motion-feedback) var(--vn-ease-out), transform var(--vn-motion-feedback) var(--vn-ease-standard)',
++					'',
++				],
++				[REDUCED_MOTION, 'none', ''],
++			],
++			[[undefined, '', 'scale(0.98)']],
++		])
++		expect(collectMediaConditions(collectLayer('components'), '.toast.fade')).toEqual([
++			REDUCED_MOTION,
++		])
++	})
++
++	// The mutations this catches are the scale dropped from the showing state, which starts no
++	// transform, the scale written on a literal duration or on the fade's curve, and the fade dropped
++	// from the compound's list, which leaves the toast scaling in at full opacity. The readings are the
++	// transitions the browser runs on the toast as the `showing` class leaves, compared with the
++	// feedback duration and both curves resolved on a specimen. The frame halfway through sits past
++	// the linear halfway scale in the direction of travel, which only a decelerating curve produces.
++	it('scales an animated toast from 0.98 to none over the feedback duration on the standard curve beside its fade as the showing class leaves', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: transform var(${TOKEN_NAMES.motion.feedback}) var(${TOKEN_NAMES.ease.standard}), opacity var(${TOKEN_NAMES.motion.feedback}) var(${TOKEN_NAMES.ease.out})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const [feedback] = splitTopLevelList(readStyle(specimen, 'transition-duration')).map(
++			(time) => Number.parseFloat(time) * 1000,
++		)
++		const [standard, out] = splitTopLevelList(readStyle(specimen, 'transition-timing-function'))
++		expect(standard).not.toBe(out)
++		const toast = requireValue(
++			scene.mount('<div class="toast fade show showing">Oak shipment</div>').firstElementChild,
++			'No toast',
++		)
++		const scaled = 'matrix(0.98, 0, 0, 0.98, 0, 0)'
++		expect([readStyle(toast, 'transform'), readStyle(toast, 'opacity')]).toEqual([scaled, '0'])
++		toast.classList.remove('showing')
++		const scale = sampleTransition(toast, 'transform')
++		const fade = sampleTransition(toast, 'opacity')
++		expect(scale).toBeDefined()
++		expect(fade).toBeDefined()
++		const growing = requireValue(scale, 'No scale transition')
++		const appearing = requireValue(fade, 'No fade transition')
++		expect(toast.getAnimations()).toHaveLength(2)
++		expect(toast.getAnimations()).toContain(growing.transition)
++		expect(toast.getAnimations()).toContain(appearing.transition)
++		expect([growing.duration, growing.easing, growing.start]).toEqual([feedback, standard, scaled])
++		expect([appearing.duration, appearing.easing, appearing.start]).toEqual([feedback, out, '0'])
++		const halfway = new DOMMatrix(growing.midpoint)
++		expect(halfway.a).toBe(halfway.d)
++		expect(halfway.a).toBeGreaterThan(0.99)
++		expect(halfway.a).toBeLessThan(1)
++		expect([halfway.b, halfway.c, halfway.e, halfway.f]).toEqual([0, 0, 0, 0])
++		growing.transition.finish()
++		appearing.transition.finish()
++		expect([readStyle(toast, 'transform'), readStyle(toast, 'opacity')]).toEqual(['none', '1'])
++	})
++
++	// The mutations this catches are the same as the entry's, read in the other direction: the
++	// scale and the fade the browser runs as the `showing` class joins a shown toast leave from no
++	// transform and full opacity and settle at the showing state's scale and opacity.
++	it('scales an animated toast from none to 0.98 on the same timing beside its fade as the showing class joins', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: transform var(${TOKEN_NAMES.motion.feedback}) var(${TOKEN_NAMES.ease.standard}), opacity var(${TOKEN_NAMES.motion.feedback}) var(${TOKEN_NAMES.ease.out})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const [feedback] = splitTopLevelList(readStyle(specimen, 'transition-duration')).map(
++			(time) => Number.parseFloat(time) * 1000,
++		)
++		const [standard, out] = splitTopLevelList(readStyle(specimen, 'transition-timing-function'))
++		expect(standard).not.toBe(out)
++		const toast = requireValue(
++			scene.mount('<div class="toast fade show">Oak shipment</div>').firstElementChild,
++			'No toast',
++		)
++		expect([readStyle(toast, 'transform'), readStyle(toast, 'opacity')]).toEqual(['none', '1'])
++		toast.classList.add('showing')
++		const scale = sampleTransition(toast, 'transform')
++		const fade = sampleTransition(toast, 'opacity')
++		expect(scale).toBeDefined()
++		expect(fade).toBeDefined()
++		const shrinking = requireValue(scale, 'No scale transition')
++		const vanishing = requireValue(fade, 'No fade transition')
++		expect(toast.getAnimations()).toHaveLength(2)
++		expect([shrinking.duration, shrinking.easing]).toEqual([feedback, standard])
++		expect([vanishing.duration, vanishing.easing, vanishing.start]).toEqual([feedback, out, '1'])
++		expect(new DOMMatrix(shrinking.start).isIdentity).toBe(true)
++		const halfway = new DOMMatrix(shrinking.midpoint)
++		expect(halfway.a).toBe(halfway.d)
++		expect(halfway.a).toBeGreaterThan(0.98)
++		expect(halfway.a).toBeLessThan(0.99)
++		shrinking.transition.finish()
++		vanishing.transition.finish()
++		expect([readStyle(toast, 'transform'), readStyle(toast, 'opacity')]).toEqual([
++			'matrix(0.98, 0, 0, 0.98, 0, 0)',
++			'0',
++		])
++	})
++
++	// The mutation this catches is the transition moved onto a selector that does not require the
++	// `fade` class: a toast the engine shows with the `animated` option `false` would then move after
++	// its completed event, because the engine waits on no motion there. The plain showing toast carries
++	// the showing state's scale and opacity and declares no duration, and removing the class lands the
++	// shown values at once.
++	it('runs no motion on a toast without the fade class, and rests every shown toast at no transform', () => {
++		const host = scene.mount(
++			'<div class="toast show showing">Oak shipment</div><div class="toast show">Ash shipment</div><div class="toast fade show">Elm shipment</div>',
++		)
++		const [showing, plain, animated] = [...host.children]
++		const still = requireValue(showing, 'No showing toast')
++		expect(
++			['transform', 'opacity', 'transition-duration'].map((property) => readStyle(still, property)),
++		).toEqual(['matrix(0.98, 0, 0, 0.98, 0, 0)', '0', '0s'])
++		still.classList.remove('showing')
++		expect(still.getAnimations()).toEqual([])
++		expect([readStyle(still, 'transform'), readStyle(still, 'opacity')]).toEqual(['none', '1'])
++		expect(
++			[plain, animated].map((toast) =>
++				readStyle(requireValue(toast, 'No shown toast'), 'transform'),
++			),
++		).toEqual(['none', 'none'])
++	})
++
++	// The mutations this catches are a duration written as a literal, which a doubled factor leaves in
++	// place, and the transition written without the `transition` mixin, which keeps running under the
++	// reduced-motion preference. Each reading is the running duration of the scale and of the fade as
++	// the `showing` class leaves, and each doubled reading is compared with the resting one of the
++	// same property as a ratio. A zero factor starts no transition, because the browser starts none at
++	// a zero duration, and the toast is read at rest after the change, so a change that landed with
++	// nothing running reads as the shown value.
++	it('doubles the running duration of the scale and the fade at a doubled motion factor, and runs neither at a zero factor or under the reduced-motion preference', async () => {
++		const readings: Array<ReadonlyArray<readonly [number | undefined, string]>> = []
++		for (const motion of [true, false]) {
++			await stageMedia({ motion })
++			readings.push(
++				...sweepMotionFactor(() => {
++					const toast = requireValue(
++						scene.mount('<div class="toast fade show showing">Oak shipment</div>')
++							.firstElementChild,
++						'No toast',
++					)
++					readStyle(toast, 'transform')
++					readStyle(toast, 'opacity')
++					toast.classList.remove('showing')
++					return (['transform', 'opacity'] as const).map((property) => {
++						const sample = sampleTransition(toast, property)
++						sample?.transition.finish()
++						return [sample?.duration, readStyle(toast, property)] as const
++					})
++				}),
++			)
++		}
++		// The readings run the resting, doubled, and zero factors with motion allowed, then the same
++		// factors under the reduced-motion preference.
++		const [resting, doubled, ...stopped] = readings
++		const settled = ['none', '1']
++		expect(resting?.map(([duration]) => duration)).not.toContain(undefined)
++		expect(doubled?.map(([duration]) => duration)).not.toContain(undefined)
++		const base = requireValue(resting, 'No resting reading').map(([duration]) =>
++			requireValue(duration, 'No transition at the resting factor'),
++		)
++		for (const duration of base) expect(duration).toBeGreaterThan(0)
++		expect(resting?.map(([, value]) => value)).toEqual(settled)
++		expect(
++			requireValue(doubled, 'No doubled reading').map(
++				([duration], index) =>
++					requireValue(duration, 'No transition at the doubled factor') /
++					requireValue(base[index], 'No resting duration'),
++			),
++		).toEqual([2, 2])
++		expect(doubled?.map(([, value]) => value)).toEqual(settled)
++		expect(stopped).toEqual(
++			Array.from({ length: 4 }, () => settled.map((value) => [undefined, value])),
++		)
++	})
++})
++
+ describe('toast container', () => {
+ 	// The mutations this catches are the container's slot written as the recorded literal, which
+ 	// holds the `1090` value through the retune, and the slot dropped from the toast, which leaves

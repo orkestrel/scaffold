@@ -1,0 +1,65 @@
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+ ❯ |conformance| tests/conformance.test.ts (45 tests | 2 failed) 95302ms
+     × records every emitted name the official inventory lacks 5ms
+     × reports an unrecorded literal declaration on a shipped rule as a declaration addition 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "offcanvas | .offcanvas-sm { transition } | @media (width >= 576px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-md { transition } | @media (width >= 768px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-lg { transition } | @media (width >= 992px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-xl { transition } | @media (width >= 1200px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-xxl { transition } | @media (width >= 1400px) | declaration | var(--bs-offcanvas-transition)",
++ ]
+
+ ❯ tests/conformance.test.ts:273:32
+    271|
+    272|  it('records every emitted name the official inventory lacks', () => {
+    273|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    274|  })
+    275|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(6) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "offcanvas | .offcanvas-sm { transition } | @media (width >= 576px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-md { transition } | @media (width >= 768px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-lg { transition } | @media (width >= 992px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-xl { transition } | @media (width >= 1200px) | declaration | var(--bs-offcanvas-transition)",
++   "offcanvas | .offcanvas-xxl { transition } | @media (width >= 1400px) | declaration | var(--bs-offcanvas-transition)",
+    "form-control | .form-control { letter-spacing } | — | declaration | 0.01em",
+  ]
+
+ ❯ tests/conformance.test.ts:285:30
+    283|   // browser case reads only the properties a row values. This ledger …
+    284|   // it, and the unmodified cascade is the control that reports nothin…
+    285|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    286|    'form-control | .form-control { letter-spacing } | — | declaration …
+    287|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 43 passed (45)
+   Start at  10:34:25
+   Duration  117.58s (transform 544ms, setup 131ms, import 21.99s, tests 95.30s, environment 0ms)
+

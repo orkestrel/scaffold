@@ -1,0 +1,24 @@
+diff --git a/src/styles/components/_dropdown.scss b/src/styles/components/_dropdown.scss
+index 9133d13..52ff0a9 100644
+--- a/src/styles/components/_dropdown.scss
++++ b/src/styles/components/_dropdown.scss
+@@ -268,6 +268,19 @@ $carets: (
+ 
+ 	.dropdown-menu.show {
+ 		display: block;
++		@include transition(
++			(
++				opacity var(--vn-motion-feedback) var(--vn-ease-out),
++				transform var(--vn-motion-feedback) var(--vn-ease-standard)
++			)
++		);
++	}
++
++	@starting-style {
++		.dropdown-menu.show {
++			opacity: 0;
++			transform: scale(0.98);
++		}
+ 	}
+ 
+ 	// A menu the engine promotes to the top layer computes `position-visibility: anchors-visible`

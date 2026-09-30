@@ -1,0 +1,25 @@
+tests/src/browser/Toast.test.ts:19: import { readDuration, recordListeners, scene } from '../../setupBrowser.js'
+tests/src/browser/Toast.test.ts:67: 		expect(readDuration(probe)).toBe(0)
+tests/src/browser/Toast.test.ts:70: 		expect(getComputedStyle(probe).opacity).toBe('1')
+tests/src/browser/Toast.test.ts:72: 		expect(getComputedStyle(probe).opacity).toBe('0')
+tests/src/browser/Toast.test.ts:73: 		expect(readDuration(probe)).toBe(0)
+tests/src/browser/Toast.test.ts:75: 		expect(readDuration(probe)).toBeGreaterThan(0)
+tests/src/browser/Toast.test.ts:97: 			for (const animation of host.getAnimations()) motions.handler(animation)
+tests/src/browser/Toast.test.ts:109: 						host.getAnimations().length,
+tests/src/browser/Toast.test.ts:116: 						host.getAnimations().length,
+tests/src/browser/Toast.test.ts:126: 		expect(readDuration(host)).toBeGreaterThan(0)
+tests/src/browser/Toast.test.ts:163: 		const shipped = readDuration(slow)
+tests/src/browser/Toast.test.ts:199: 		expect(still.getAnimations()).toEqual([])
+tests/src/browser/Toast.test.ts:210: 		const scaled = readDuration(slow)
+tests/src/browser/Toast.test.ts:211: 		expect(scaled / shipped).toBeCloseTo(4)
+tests/src/browser/Toast.test.ts:212: 		const fade = slow.getAnimations()
+tests/src/browser/Toast.test.ts:255: 			for (const animation of host.getAnimations()) motions.handler(phase, animation)
+tests/src/browser/Toast.test.ts:269: 						host.getAnimations().length,
+tests/src/browser/Toast.test.ts:340: 		expect(host.getAnimations()).toEqual([])
+tests/src/browser/Toast.test.ts:365: 			on: { shown: () => shown.handler(host.getAnimations().length) },
+tests/src/browser/Toast.test.ts:370: 		expect(host.getAnimations()).toEqual([])
+tests/src/browser/Toast.test.ts:773: 		expect(host.getAnimations()).not.toEqual([])
+tests/src/browser/Toast.test.ts:1219: 		const transition = requireValue(host.getAnimations()[0], 'No transition')
+tests/src/browser/Toast.test.ts:1243: 		// The second show fades out from full opacity.
+tests/src/browser/Toast.test.ts:1246: 		const transition = requireValue(host.getAnimations()[0], 'No transition')
+tests/src/browser/Toast.test.ts:1639: 		const transition = requireValue(host.getAnimations()[0], 'No transition')

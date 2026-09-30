@@ -1,0 +1,9 @@
+// A probe configuration, never shipped: the styles project collecting the patched fade proof
+// under tmp/units/probe/ in place of tests/src/styles/.
+import { defineConfig } from 'vitest/config'
+import styles from '../../../configs/src/vite.styles.config.ts'
+
+export default defineConfig({
+	...styles,
+	test: { ...styles.test, include: ['tmp/units/probe/**/*.test.ts'] },
+})

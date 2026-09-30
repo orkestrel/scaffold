@@ -1,0 +1,163 @@
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 6d8593f..861b8ab 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -2148,7 +2148,59 @@ describe('sampleTransition', () => {
+ 		expect([readStyle(element, 'opacity'), readStyle(element, 'width')]).toEqual(['0', '50px'])
+ 	})
+ 
+-	it('refuses a named transition that carries no effect', () => {
++	// The pseudo-element fixture runs one width transition on a host's `::after` box and nothing on
++	// the host. A second host beside it runs a width transition of its own and none on its `::after`
++	// box, and its child runs one on the child's own `::after` box, each with other timing. A reader
++	// that ignored the pseudo-element would read no transition with it named on the first host, and
++	// one on the first host with `::before` named; one that ignored which element an effect targets
++	// would read the child's `::after` transition with `::after` named on the second host.
++	it("reads the named pseudo-element's running transition on the named element and nothing else, and reads none there when no pseudo-element is named", () => {
++		scene.load(
++			'.vn-probe-pseudo::after, .vn-probe-pseudo > p::after { content: ""; display: block; width: 10px; transition: width 400ms ease-in; } .vn-probe-pseudo > p::after { transition: width 300ms ease-out; } .vn-probe-pseudo.moved:not(.owned)::after, .vn-probe-pseudo.moved > p::after { width: 50px; } .vn-probe-pseudo.owned { width: 100px; transition: width 200ms linear; } .vn-probe-pseudo.owned.moved { width: 60px; }',
++		)
++		const host = scene.mount(
++			'<div class="vn-probe-pseudo">Buoy</div><div class="vn-probe-pseudo owned"><p>Mooring</p></div>',
++		)
++		const [lone, owned] = [...host.children]
++		const bare = requireValue(lone, 'No pseudo-element host')
++		const busy = requireValue(owned, 'No host with its own transition')
++		const child = requireValue(busy.firstElementChild, 'No child')
++		expect([
++			readStyle(bare, 'width', '::after'),
++			readStyle(busy, 'width', '::after'),
++			readStyle(busy, 'width'),
++			readStyle(child, 'width', '::after'),
++		]).toEqual(['10px', '10px', '100px', '10px'])
++		bare.classList.add('moved')
++		busy.classList.add('moved')
++		expect(sampleTransition(bare, 'width')).toBeUndefined()
++		expect(sampleTransition(bare, 'width', '::before')).toBeUndefined()
++		const marker = sampleTransition(bare, 'width', '::after')
++		expect(marker).toBeDefined()
++		const turning = requireValue(marker, 'No pseudo-element transition')
++		expect([turning.duration, turning.easing, turning.start]).toEqual([400, 'ease-in', '10px'])
++		// The ease-in curve trails the linear one at its midpoint, so the box sits strictly between its
++		// endpoints and short of the linear halfway value of 30px.
++		const width = Number.parseFloat(turning.midpoint)
++		expect(width).toBeGreaterThan(10)
++		expect(width).toBeLessThan(30)
++		expect([turning.transition.playState, readStyle(bare, 'width', '::after')]).toEqual([
++			'paused',
++			turning.midpoint,
++		])
++		expect(bare.getAnimations()).toEqual([])
++		const own = sampleTransition(busy, 'width')
++		expect(own).toBeDefined()
++		expect([own?.duration, own?.easing, own?.start]).toEqual([200, 'linear', '100px'])
++		expect(sampleTransition(busy, 'width', '::after')).toBeUndefined()
++		// The child's own `::after` transition runs, so the second host's reading had one to pass over.
++		expect(sampleTransition(child, 'width', '::after')?.duration).toBe(300)
++	})
++
++	// The mutation this catches is a reader that dereferences the effect before checking it: a
++	// transition carrying no keyframe effect targets no element, so it reads as none rather than
++	// throwing, and the width transition beside it still reads.
++	it('reads no transition for a named transition that carries no effect', () => {
+ 		scene.load(cascade)
+ 		const element = requireValue(
+ 			scene.mount('<div class="vn-probe-sample">Buoy</div>').firstElementChild,
+@@ -2168,9 +2220,8 @@ describe('sampleTransition', () => {
+ 		// The native effect setter cancels a CSS transition and drops it from getAnimations, so the
+ 		// own property shadows the accessor instead, keeping the transition findable with no effect.
+ 		Object.defineProperty(transition, 'effect', { value: null })
+-		expect(() => sampleTransition(element, 'opacity')).toThrow(
+-			'The opacity transition carries no effect',
+-		)
++		expect(sampleTransition(element, 'opacity')).toBeUndefined()
++		expect(sampleTransition(element, 'width')?.duration).toBe(400)
+ 	})
+ })
+ 
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index ba3ed73..d423222 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -2139,16 +2139,20 @@ export interface TransitionSample {
+ }
+ 
+ /**
+- * Samples the transition the browser runs on one property of one element.
++ * Samples the transition the browser runs on one property of one element or of one of its
++ * pseudo-elements.
+  *
+- * @param element - The element whose own animations to read, after the style change that starts
+- *   the transition.
++ * @param element - The element whose animations to read, after the style change that starts the
++ *   transition.
+  * @param property - The transitioned property, as the `transitionProperty` member of a
+  *   `CSSTransition` names it, such as `opacity`.
++ * @param pseudo - The pseudo-element of `element` whose transition to read, written with two
++ *   colons as the `pseudoElement` member of a `KeyframeEffect` reports it, such as `::after`.
++ *   Default: the element itself, and no pseudo-element's transition.
+  * @returns The running transition with its duration, its easing, and the computed value at its
+- *   start and at its midpoint, or `undefined` when no transition on that property runs.
+- * @throws Thrown when the transition carries no effect, or reports no numeric duration or no
+- *   easing.
++ *   start and at its midpoint, or `undefined` when no transition on that property of that target
++ *   runs.
++ * @throws Thrown when the transition reports no numeric duration or no easing.
+  *
+  * @remarks
+  * The reading comes from the Web Animations model the browser runs, not from the declared or
+@@ -2158,6 +2162,11 @@ export interface TransitionSample {
+  * or a style change the browser did not animate reads as `undefined` rather than as a declared
+  * value nothing runs.
+  *
++ * An element's own list leaves out its pseudo-elements' animations, so a named pseudo-element is
++ * read from the element's subtree list, keeping the transition whose keyframe effect targets
++ * `element` with that pseudo-element, and its values are read from that pseudo-element's computed
++ * style. A transition carrying no keyframe effect targets neither, so it reads as `undefined`.
++ *
+  * The midpoint is the delay plus half the duration, so a delayed transition is read halfway
+  * through its active phase. The transition stays paused at that midpoint, so a caller's further
+  * readings see the same frame. Call the `finish` or `cancel` method on the returned transition to
+@@ -2173,27 +2182,32 @@ export interface TransitionSample {
+  * sampleTransition(element, 'opacity')?.easing // 'ease-out'
+  * ```
+  */
+-export function sampleTransition(element: Element, property: string): TransitionSample | undefined {
++export function sampleTransition(
++	element: Element,
++	property: string,
++	pseudo?: string,
++): TransitionSample | undefined {
+ 	const transition = element
+-		.getAnimations()
++		.getAnimations({ subtree: pseudo !== undefined })
+ 		.find(
+-			(animation): animation is CSSTransition =>
+-				animation instanceof CSSTransition && animation.transitionProperty === property,
++			(animation): animation is CSSTransition & { readonly effect: KeyframeEffect } =>
++				animation instanceof CSSTransition &&
++				animation.transitionProperty === property &&
++				animation.effect instanceof KeyframeEffect &&
++				animation.effect.target === element &&
++				animation.effect.pseudoElement === (pseudo ?? null),
+ 		)
+ 	if (transition === undefined) return undefined
+-	const timing = requireValue(
+-		transition.effect,
+-		`The ${property} transition carries no effect`,
+-	).getTiming()
++	const timing = transition.effect.getTiming()
+ 	const duration = timing.duration
+ 	if (typeof duration !== 'number')
+ 		throw new Error(`The ${property} transition reports no numeric duration`)
+ 	const easing = requireValue(timing.easing, `The ${property} transition reports no easing`)
+ 	transition.pause()
+ 	transition.currentTime = 0
+-	const start = readStyle(element, property)
++	const start = readStyle(element, property, pseudo)
+ 	transition.currentTime = (timing.delay ?? 0) + duration / 2
+-	const midpoint = readStyle(element, property)
++	const midpoint = readStyle(element, property, pseudo)
+ 	return { transition, duration, easing, start, midpoint }
+ }
+ 

@@ -1,0 +1,87 @@
+# plant: fade-transitions
+$ sed -i -e 's/transitions: Object.freeze(\['opacity', 'transform'\]),/transitions: Object.freeze(['opacity']),/' tests/setupStyles.ts
+--- planted diff
+6100c6100
+< 		transitions: Object.freeze(['opacity', 'transform']),
+---
+> 		transitions: Object.freeze(['opacity']),
+$ npm run build:src:styles
+build exit=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/fade.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-mtoast
+
+Port 63315 is in use, trying another one...
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+10:16:17 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts (10 tests | 1 failed) 866ms
+     × fades the alert, toast, tooltip, popover, tab pane, and modal, and leaves each shown component its own opacity 43ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:261:2 > fade classes > fades the alert, toast, tooltip, popover, tab pane, and modal, and leaves each shown component its own opacity
+AssertionError: expected [ { component: 'alert', …(2) }, …(5) ] to deeply equal [ { component: 'alert', …(2) }, …(5) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -12,15 +12,15 @@[39m
+[2m    },[22m
+[2m    {[22m
+[2m      "component": "toast",[22m
+[2m      "hidden": [[22m
+[2m        "0",[22m
+[32m-       "opacity",[39m
+[31m+       "opacity, transform",[39m
+[2m      ],[22m
+[2m      "shown": [[22m
+[2m        "1",[22m
+[32m-       "opacity",[39m
+[31m+       "opacity, transform",[39m
+[2m      ],[22m
+[2m    },[22m
+[2m    {[22m
+[2m      "component": "tooltip",[22m
+[2m      "hidden": [[22m
+
+ ❯ tests/src/styles/components/fade.test.ts:283:74
+    281|    }
+    282|   })
+    283|   expect(readings.map(({ component, read }) => ({ component, ...read }…
+       |                                                                          ^
+    284|    readings.map(({ component, expected }) => ({ component, ...expected…
+    285|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  10:16:09
+   Duration  9.85s (transform 0ms, setup 1.71s, import 139ms, tests 866ms, environment 0ms)
+
+exit=1
+restored sha256 before=4d20546b822f55a30919cba42e792cc6cb05eb9b2f10a59f8aae9142464a63d0 after=4d20546b822f55a30919cba42e792cc6cb05eb9b2f10a59f8aae9142464a63d0
+restore identical
+8.29 6.37 4.76 11/462 1523

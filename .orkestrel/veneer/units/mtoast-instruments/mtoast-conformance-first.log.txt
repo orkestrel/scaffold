@@ -1,0 +1,70 @@
+$ npm run test:conformance
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mtoast
+
+···························x·x···············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "toast | .toast.showing { transform } | — | declaration | scale(0.98)",
++   "toast | .toast.fade | — | selector | —",
++   "toast | .toast.fade { transition } | — | declaration | opacity var(--vn-motion-feedback) var(--vn-ease-out), transform var(--vn-motion-feedback) var(--vn-ease-standard)",
++   "toast | .toast.fade | @media (prefers-reduced-motion: reduce) | selector | —",
++   "toast | .toast.fade { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
++ ]
+
+ ❯ tests/conformance.test.ts:273:32
+    271|
+    272|  it('records every emitted name the official inventory lacks', () => {
+    273|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    274|  })
+    275|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(6) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "toast | .toast.showing { transform } | — | declaration | scale(0.98)",
++   "toast | .toast.fade | — | selector | —",
++   "toast | .toast.fade { transition } | — | declaration | opacity var(--vn-motion-feedback) var(--vn-ease-out), transform var(--vn-motion-feedback) var(--vn-ease-standard)",
++   "toast | .toast.fade | @media (prefers-reduced-motion: reduce) | selector | —",
++   "toast | .toast.fade { transition } | @media (prefers-reduced-motion: reduce) | declaration | none",
+    "form-control | .form-control { letter-spacing } | — | declaration | 0.01em",
+  ]
+
+ ❯ tests/conformance.test.ts:285:30
+    283|   // browser case reads only the properties a row values. This ledger …
+    284|   // it, and the unmodified cascade is the control that reports nothin…
+    285|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    286|    'form-control | .form-control { letter-spacing } | — | declaration …
+    287|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 43 passed (45)
+   Start at  09:45:51
+   Duration  115.82s (transform 974ms, setup 322ms, import 23.77s, tests 91.55s, environment 0ms)
+
+exit=1
+1.37 3.96 4.28 1/127 27086
