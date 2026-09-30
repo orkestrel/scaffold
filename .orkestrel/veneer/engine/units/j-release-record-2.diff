@@ -1,0 +1,609 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 0252802..9da6338 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1447,9 +1447,10 @@ call dispatches its completed events once. A listener that shows the control aga
+ `true`, and the call whose event it heard resolves `false`. A listener that prevents a pre-change
+ event starts no change, whatever else it wrote. A list whose markup marks two controls with the
+ `active` token never swaps, because the second one fails the read after the first one's removal.
+-The swap reads each control's role and the dropdown that holds it when it starts, before its first
+-write, so the consumer code the sibling's blur runs cannot add a target to the swap: a wrapper a
+-blur listener gives the `dropdown` token takes no write.
++The swap reads each control's role when it starts, and the dropdown that holds a control where it
++writes that control's selection, as Bootstrap does: the sibling's after its blur and its pane's
++writes, and the control's after its `active` token write. So a wrapper a blur listener gives the
++`dropdown` token is the dropdown the swap closes, and destruction writes its state back.
+ 
+ The control's `active` token is agreement. A listener or a reaction that adds the token before the
+ call writes it has made that write for the call: the call writes the token only when the control
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index 81cf880..5793e69 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -477,7 +477,6 @@ export class Carousel implements CarouselInterface {
+ 						[incoming, order],
+ 					],
+ 					blocked,
+-					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -500,7 +499,6 @@ export class Carousel implements CarouselInterface {
+ 						[incoming, order],
+ 					],
+ 					blocked,
+-					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -517,7 +515,7 @@ export class Carousel implements CarouselInterface {
+ 				direction,
+ 				snapshot,
+ 			)
+-			if (!this.#holds(change, pair, expected, moving, blocked, [])) {
++			if (!this.#holds(change, pair, expected, moving, blocked)) {
+ 				return this.#rewind(change, written)
+ 			}
+ 			// The direction tokens start the outgoing item's motion and the incoming item's together, and
+@@ -525,7 +523,7 @@ export class Carousel implements CarouselInterface {
+ 			if (this.#host.classList.contains(this.#classes.slide)) {
+ 				const signal = this.#controller.signal
+ 				await Promise.all(pair.map((item) => settleAnimations(item, signal)))
+-				if (!this.#holds(change, pair, expected, moving, blocked, [])) {
++				if (!this.#holds(change, pair, expected, moving, blocked)) {
+ 					return this.#rewind(change, written)
+ 				}
+ 			}
+@@ -551,7 +549,6 @@ export class Carousel implements CarouselInterface {
+ 						[incoming, direction],
+ 						[outgoing, order],
+ 					],
+-					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -578,7 +575,6 @@ export class Carousel implements CarouselInterface {
+ 						[outgoing, direction],
+ 					],
+ 					settled,
+-					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -596,7 +592,6 @@ export class Carousel implements CarouselInterface {
+ 						[outgoing, direction],
+ 					],
+ 					settled,
+-					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -610,35 +605,19 @@ export class Carousel implements CarouselInterface {
+ 				snapshot,
+ 			)
+ 			if (
+-				!this.#holds(
+-					change,
+-					pair,
+-					true,
+-					[[outgoing, direction]],
+-					[...settled, [outgoing, active]],
+-					[],
+-				)
++				!this.#holds(change, pair, true, [[outgoing, direction]], [...settled, [outgoing, active]])
+ 			) {
+ 				return this.#rewind(change, written)
+ 			}
++			// Every door from the incoming order token's write on reads the outgoing item without the
++			// order token, so this removal, Bootstrap's, changes nothing, runs no consumer code, and takes
++			// no door of its own.
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: outgoing, name: order },
+ 				undefined,
+ 				snapshot,
+ 			)
+-			if (
+-				!this.#holds(
+-					change,
+-					pair,
+-					true,
+-					[[outgoing, direction]],
+-					[...settled, [outgoing, active]],
+-					[],
+-				)
+-			) {
+-				return this.#rewind(change, written)
+-			}
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: outgoing, name: direction },
+@@ -652,7 +631,6 @@ export class Carousel implements CarouselInterface {
+ 					true,
+ 					[],
+ 					[...settled, [outgoing, active], [outgoing, direction]],
+-					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -689,7 +667,7 @@ export class Carousel implements CarouselInterface {
+ 		active: boolean | undefined,
+ 		present: ReadonlyArray<readonly [HTMLElement, string]>,
+ 		absent: ReadonlyArray<readonly [HTMLElement, string]>,
+-		marks: ReadonlyArray<readonly [HTMLElement, string | null]>,
++		marks: ReadonlyArray<readonly [HTMLElement, string | null]> = [],
+ 	): boolean {
+ 		if (!this.#owns(change)) return false
+ 		const items = this.#items()
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+index 21cf478..bb64435 100644
+--- a/src/browser/Tab.ts
++++ b/src/browser/Tab.ts
+@@ -70,8 +70,10 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * dispatches nothing; before each write it reads the call's identity, the tab's lifetime, and the
+  * target's value, and it writes nothing to a target that already holds the recorded value.
+  *
+- * The swap reads the dropdown each control sits in when it starts, before its first write, so the
+- * consumer code the sibling's blur runs cannot add a target to the swap.
++ * The swap reads the dropdown that holds a control where it writes that control's selection, as
++ * Bootstrap does: the sibling's after its blur and its pane's writes, and the host's after its
++ * `active` token write. So a dropdown that consumer code run by the blur forms is the one the swap
++ * closes, and the snapshot records each of those writes as it lands.
+  *
+  * Destruction restores every value the tab changed that no live engine still holds. A tab records
+  * a role or state only at a write that changes it. A value it finds already written joins the
+@@ -216,13 +218,8 @@ export class Tab implements TabInterface {
+ 			outgoing === undefined
+ 				? undefined
+ 				: (Tab.#registry.find(outgoing)?.pane ?? readTarget(outgoing, this.#attributes))
+-		// The selection writes are read once, before the first write: the sibling's blur runs consumer
+-		// code, and a write set read after it could name targets the swap never read.
+-		const deselection =
+-			outgoing !== undefined && outgoing.getAttribute('role') === 'tab'
+-				? this.#selection(outgoing, false)
+-				: []
+-		const selection = host.getAttribute('role') === 'tab' ? this.#selection(host, true) : []
++		const leaving = outgoing?.getAttribute('role') === 'tab'
++		const entering = host.getAttribute('role') === 'tab'
+ 		// Each write goes through the snapshot, which saves a target only at a write that changes it,
+ 		// and each write door reads the list and the pane for its phase: no control but the host active
+ 		// from the sibling's first write on, and each pane token from its write on. Each target the call
+@@ -257,18 +254,25 @@ export class Tab implements TabInterface {
+ 				)
+ 				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 			}
+-			for (const [target, value] of deselection) {
+-				written = recordHostWrite(written, target, value, snapshot)
+-				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
++			// The sibling's selection, the dropdown that holds it included, is read here, after the blur
++			// and the pane writes, as Bootstrap reads it.
++			if (leaving) {
++				for (const [target, value] of this.#selection(outgoing, false)) {
++					written = recordHostWrite(written, target, value, snapshot)
++					if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
++				}
+ 			}
+ 		}
+ 		// A control that carries the `active` token already has made this write for the call, so the
+ 		// write changes nothing and the snapshot records nothing for it.
+ 		snapshot.write({ category: 'token', element: host, name: active }, active)
+ 		if (!this.#holds(change, true, [])) return this.#rewind(change, written)
+-		for (const [target, value] of selection) {
+-			written = recordHostWrite(written, target, value, snapshot)
+-			if (!this.#holds(change, true, [])) return this.#rewind(change, written)
++		// The host's selection is read here, after its `active` token write, as Bootstrap reads it.
++		if (entering) {
++			for (const [target, value] of this.#selection(host, true)) {
++				written = recordHostWrite(written, target, value, snapshot)
++				if (!this.#holds(change, true, [])) return this.#rewind(change, written)
++			}
+ 		}
+ 		const settled = [active, shown]
+ 		if (pane !== undefined) {
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index 261d496..fa66f11 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -1939,6 +1939,101 @@ describe('Carousel', () => {
+ 		expect(second?.hasAttribute('class')).toBe(false)
+ 	})
+ 
++	// The completion removes the incoming item's direction token and its order token in two writes. A
++	// reaction to the first destroys the carousel, whose restoration removes the order token, and then
++	// adds that token back itself, so a second write that landed would remove it.
++	it('writes nothing more after a reaction to its incoming direction removal destroys it, keeping an order token added then', async () => {
++		const name = 'vn-carousel-incoming-direction-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-item active">One</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const incoming = document.createElement(name)
++		incoming.className = 'carousel-item'
++		host.append(incoming)
++		const carousel = new Carousel(host)
++		onTestFinished(() => carousel.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		const seen = createRecorder<readonly [string | null]>()
++		reactions.set(incoming, (value) => {
++			seen.handler(value)
++			// The first reaction is the order token's addition, the second the direction token's, and the
++			// third the direction token's removal.
++			if (seen.count < 3) return
++			reactions.delete(incoming)
++			carousel.destroy()
++			incoming.classList.add('carousel-item-next')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await carousel.next()).toBe(false)
++		expect(seen.calls).toEqual([
++			['carousel-item carousel-item-next'],
++			['carousel-item carousel-item-next carousel-item-start'],
++			['carousel-item carousel-item-next'],
++		])
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(incoming.classList)).toEqual(['carousel-item', 'carousel-item-next'])
++	})
++
++	// The completion removes the outgoing item's `active` token and then its order token. A reaction to
++	// the first destroys the carousel and then adds the order token, so a second write that landed
++	// would remove it.
++	it('writes nothing more after a reaction to its outgoing active removal destroys it, keeping an order token added then', async () => {
++		const name = 'vn-carousel-outgoing-active-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const incoming = requireValue(root.querySelector<HTMLElement>('.carousel-item'), 'No item')
++		const outgoing = document.createElement(name)
++		outgoing.className = 'carousel-item active'
++		incoming.before(outgoing)
++		const carousel = new Carousel(host)
++		onTestFinished(() => carousel.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(outgoing, (value) => {
++			if ((value ?? '').split(' ').includes('active')) return
++			reactions.delete(outgoing)
++			carousel.destroy()
++			outgoing.classList.add('carousel-item-next')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await carousel.next()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(outgoing.classList)).toEqual([
++			'carousel-item',
++			'active',
++			'carousel-item-next',
++		])
++		expect(Array.from(incoming.classList)).toEqual(['carousel-item'])
++	})
++
+ 	it('writes nothing when a listener to its slide event destroys it, resolving false', async () => {
+ 		const root = scene.mount(`
+ 			<div id="gallery" class="carousel">
+diff --git a/tests/src/browser/Collapse.test.ts b/tests/src/browser/Collapse.test.ts
+index 628188b..3d95e35 100644
+--- a/tests/src/browser/Collapse.test.ts
++++ b/tests/src/browser/Collapse.test.ts
+@@ -811,6 +811,77 @@ describe('Collapse', () => {
+ 		expect(trigger.hasAttribute('class')).toBe(false)
+ 	})
+ 
++	// The show adds the `host` token and the `shown` token in two writes, and a reaction to the first
++	// destroys the collapse, so the second never lands.
++	it('writes no shown token after a reaction to its host token write destroys it, leaving the panel restored', async () => {
++		const name = 'vn-collapse-show-host-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse'
++		root.append(panel)
++		const collapse = new Collapse(panel)
++		onTestFinished(() => collapse.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(panel, (value) => {
++			if (value !== 'collapsing collapse') return
++			reactions.delete(panel)
++			collapse.destroy()
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await collapse.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++	})
++
++	// The hide removes the `host` token and the `shown` token in two writes, and a reaction to the
++	// first destroys the collapse, so the second never lands.
++	it('removes no shown token after a reaction to its host token removal destroys it, leaving the panel shown', async () => {
++		const name = 'vn-collapse-hide-host-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const panel = document.createElement(name)
++		panel.className = 'collapse show'
++		root.append(panel)
++		const collapse = new Collapse(panel)
++		onTestFinished(() => collapse.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(panel, (value) => {
++			if (value !== 'show collapsing') return
++			reactions.delete(panel)
++			collapse.destroy()
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await collapse.hide()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect([panel.classList.contains('collapse'), panel.classList.contains('show')]).toEqual([
++			true,
++			true,
++		])
++	})
++
+ 	it('writes nothing when a listener to its show event destroys it, resolving false', async () => {
+ 		const root = scene.mount(`
+ 			<button type="button" aria-expanded="false" data-bs-toggle="collapse" data-bs-target="#details">Details</button>
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index ecc801f..dfde05b 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -801,7 +801,8 @@ describe('Tab', () => {
+ 	})
+ 
+ 	// The sibling's blur runs consumer code before the sibling's selection is written, and here that
+-	// code makes the sibling's wrapper a dropdown.
++	// code makes the sibling's wrapper a dropdown. The swap closes that dropdown, as Bootstrap does,
++	// and destruction writes its state back.
+ 	it('restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown', async () => {
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+@@ -820,17 +821,21 @@ describe('Tab', () => {
+ 		onTestFinished(() => tab.destroy())
+ 		expect(await tab.show()).toBe(true)
+ 		expect(item.classList.contains('dropdown')).toBe(true)
++		expect(item.getAttribute('aria-expanded')).toBe('false')
+ 		tab.destroy()
+ 		expect(item.hasAttribute('aria-expanded')).toBe(false)
+ 	})
+ 
+-	// The swap reads the sibling's dropdown when it starts, before the blur runs consumer code, so a
+-	// wrapper that code makes a dropdown takes no write of the swap.
+-	it('writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched', async () => {
++	// Bootstrap blurs the sibling before it reads the dropdown that holds it, so a dropdown the blur's
++	// consumer code forms is the one the swap closes.
++	it('closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur', async () => {
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+ 				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
+-				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
++				<li class="nav-item">
++					<button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button>
++					<ul class="dropdown-menu show"></ul>
++				</li>
+ 			</ul>
+ 			<div class="tab-pane" id="first"></div>
+ 			<div class="tab-pane active show" id="second"></div>`)
+@@ -838,13 +843,14 @@ describe('Tab', () => {
+ 		const control = requireValue(first, 'No first control')
+ 		const sibling = requireValue(second, 'No second control')
+ 		const item = requireValue(sibling.parentElement, 'No wrapper')
++		const menu = requireValue(item.querySelector('.dropdown-menu'), 'No menu')
+ 		sibling.focus()
+ 		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
+ 		const tab = new Tab(control)
+ 		onTestFinished(() => tab.destroy())
+ 		expect(await tab.show()).toBe(true)
+-		expect(item.classList.contains('dropdown')).toBe(true)
+-		expect(item.hasAttribute('aria-expanded')).toBe(false)
++		expect(item.getAttribute('aria-expanded')).toBe('false')
++		expect(menu.classList.contains('show')).toBe(false)
+ 		expect(sibling.getAttribute('aria-selected')).toBe('false')
+ 	})
+ 
+@@ -1105,6 +1111,50 @@ describe('Tab', () => {
+ 		expect(profile?.hasAttribute('aria-selected')).toBe(false)
+ 	})
+ 
++	// The swap removes the sibling pane's `active` token and its `shown` token in two writes, and a
++	// reaction to the first destroys the tab, so the second never lands.
++	it('removes no shown token from the sibling pane after a reaction to its active token removal destroys it, leaving that pane shown', async () => {
++		const name = 'vn-tab-pane-active-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane" id="profile"></div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const pane = document.createElement(name)
++		pane.id = 'home'
++		pane.className = 'tab-pane active show'
++		root.append(pane)
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(pane, (value) => {
++			if (value !== 'tab-pane show') return
++			reactions.delete(pane)
++			tab.destroy()
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await tab.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect([pane.classList.contains('active'), pane.classList.contains('show')]).toEqual([
++			true,
++			true,
++		])
++	})
++
+ 	it('writes nothing when a listener to its show event destroys it, resolving false', async () => {
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index 941f719..98e0020 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -1009,6 +1009,78 @@ describe('Toast', () => {
+ 		expect(Array.from(host.classList)).toEqual(['toast'])
+ 	})
+ 
++	// The show adds the `shown` token and the `transition` token in two writes, and a reaction to the
++	// first destroys the toast, so the second never lands.
++	it('writes no transition token after a reaction to its shown token write destroys it, leaving the toast restored', async () => {
++		const name = 'vn-toast-show-shown-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const toast = new Toast(host, { animated: false, autohide: false })
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (value !== 'toast show') return
++			reactions.delete(host)
++			toast.destroy()
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++	})
++
++	// The hide removes the `transition` token and the `shown` token in two writes, and a reaction to
++	// the first destroys the toast, so the second never lands.
++	it('removes no shown token after a reaction to its transition token removal destroys it, leaving the toast shown', async () => {
++		const name = 'vn-toast-hide-transition-destroyed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast show'
++		root.append(host)
++		const toast = new Toast(host, { animated: false, autohide: false })
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		const seen = createRecorder<readonly [string | null]>()
++		reactions.set(host, (value) => {
++			seen.handler(value)
++			// The first reaction is the `transition` token's addition and the second its removal.
++			if (seen.count < 2) return
++			reactions.delete(host)
++			toast.destroy()
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.hide()).toBe(false)
++		expect(seen.calls).toEqual([['toast show showing'], ['toast show']])
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++	})
++
+ 	it('writes nothing when a listener to its show event destroys it, resolving false', async () => {
+ 		const root = scene.mount('<div class="toast" id="note">Saved</div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index bf04fbe..1225a62 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -1707,8 +1707,9 @@ describe('recordHostWrite', () => {
+ 	})
+ 
+ 	// A write gives no priority, so writing the value an important property already holds drops the
+-	// priority, which the platform reading after the write shows.
+-	it('records a write of the value an inline property holds when the property carries a priority', () => {
++	// priority, which the platform reading after the write shows. The snapshot records that write
++	// too, so its restoration writes the priority back with the value.
++	it('records a write of the value an inline property holds when the property carries a priority, in the call and in the snapshot', () => {
+ 		const element = build('div')
+ 		element.style.setProperty('height', '0px', 'important')
+ 		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
+@@ -1717,6 +1718,11 @@ describe('recordHostWrite', () => {
+ 		expect(writes).toEqual([{ target: size, value: '0px', priority: 'important' }])
+ 		expect(element.style.getPropertyPriority('height')).toBe('')
+ 		expect(recordHostWrite([], size, '0px', snapshot)).toEqual([])
++		snapshot.restore()
++		expect([
++			element.style.getPropertyValue('height'),
++			element.style.getPropertyPriority('height'),
++		]).toEqual(['0px', 'important'])
+ 	})
+ })
+ 

@@ -1,0 +1,47 @@
+	// The sibling's blur runs consumer code before the sibling's selection is written, and here that
+	// code makes the sibling's wrapper a dropdown.
+	it('restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown', async () => {
+		const root = scene.mount(`
+			<ul class="nav">
+				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
+				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
+			</ul>
+			<div class="tab-pane" id="first"></div>
+			<div class="tab-pane active show" id="second"></div>`)
+		const [first, second] = Array.from(root.querySelectorAll('button'))
+		const control = requireValue(first, 'No first control')
+		const sibling = requireValue(second, 'No second control')
+		const item = requireValue(sibling.parentElement, 'No wrapper')
+		sibling.focus()
+		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
+		const tab = new Tab(control)
+		onTestFinished(() => tab.destroy())
+		expect(await tab.show()).toBe(true)
+		expect(item.classList.contains('dropdown')).toBe(true)
+		tab.destroy()
+		expect(item.hasAttribute('aria-expanded')).toBe(false)
+	})
+
+	// The swap reads the sibling's dropdown when it starts, before the blur runs consumer code, so a
+	// wrapper that code makes a dropdown takes no write of the swap.
+	it('writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched', async () => {
+		const root = scene.mount(`
+			<ul class="nav">
+				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
+				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
+			</ul>
+			<div class="tab-pane" id="first"></div>
+			<div class="tab-pane active show" id="second"></div>`)
+		const [first, second] = Array.from(root.querySelectorAll('button'))
+		const control = requireValue(first, 'No first control')
+		const sibling = requireValue(second, 'No second control')
+		const item = requireValue(sibling.parentElement, 'No wrapper')
+		sibling.focus()
+		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
+		const tab = new Tab(control)
+		onTestFinished(() => tab.destroy())
+		expect(await tab.show()).toBe(true)
+		expect(item.classList.contains('dropdown')).toBe(true)
+		expect(item.hasAttribute('aria-expanded')).toBe(false)
+		expect(sibling.getAttribute('aria-selected')).toBe('false')
+	})

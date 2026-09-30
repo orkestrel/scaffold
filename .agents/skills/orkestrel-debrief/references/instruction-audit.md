@@ -6,9 +6,9 @@ evidence-first treatment as any surface.
 
 ## Blind passes, one brief
 
-Run the subjective lane and the objective lane on the SAME brief, in parallel, neither
-seeing the other's answer before both return. `.agents/orchestration.md` § Engine
-assignment decides which engine and which role holds each lane, including under a dark
+Run the subjective lane and the objective lane on the SAME brief, each in a clean context,
+neither seeing the other's answer before reconciliation. `.agents/orchestration.md` § Roles
+and § Benches decide which engine and which role holds each lane, including under a dark
 bench; read the assignment there and name it in the dispatch.
 
 Each lane returns numbered findings, most severe first, and exactly one terminal line:

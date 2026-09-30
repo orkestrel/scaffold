@@ -13,7 +13,7 @@ import type { ServerResponse } from 'node:http'
 import type { ResolveHookSync } from 'node:module'
 import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
-import { execFileSync, spawnSync } from 'node:child_process'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
 import { chmodSync, globSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -56,6 +56,7 @@ import {
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_TOTAL_ARTIFACT_BYTES,
+	TARGET_SKILL_NAMES,
 } from '@src/core'
 import {
 	computeDigest,
@@ -460,6 +461,20 @@ export interface TestReleaseScenario {
 	readonly arguments: readonly string[]
 	readonly timeout: number
 	readonly files: Readonly<Record<string, string>>
+}
+
+/** Describes one finished run of a skill script: its exit, both streams, and its last JSON line. */
+export interface TestSkillRun {
+	readonly status: number | null
+	readonly stdout: string
+	readonly stderr: string
+	readonly json: Record<string, unknown> | undefined
+}
+
+/** Names where a skill script runs and what its environment adds. */
+export interface TestSkillRunOptions {
+	readonly cwd?: string
+	readonly env?: Readonly<Record<string, string>>
 }
 
 /**
@@ -1810,7 +1825,9 @@ export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'
  * @remarks
  * Each storage file carries the destination it answers for as its content, so
  * every file has bytes of its own and a read that returned the wrong one is
- * visible in the assertion rather than in a length.
+ * visible in the assertion rather than in a length. A destination
+ * {@link SKILL_CANON_FILES} names carries that text instead, because hydration
+ * derives a skill pointer from the canonical frontmatter.
  */
 export function createHostRoot(
 	workspace: ScratchInterface,
@@ -1819,7 +1836,10 @@ export function createHostRoot(
 ): string {
 	const root = workspace.ensure(relative)
 	for (const entry of manifest.entries) {
-		workspace.write(`${relative}/${entry.storage}`, `${entry.destination}\n`)
+		workspace.write(
+			`${relative}/${entry.storage}`,
+			SKILL_CANON_FILES[entry.destination] ?? `${entry.destination}\n`,
+		)
 	}
 	workspace.write(`${relative}/manifest.json`, `${JSON.stringify(manifest, null, '\t')}\n`)
 	return root
@@ -2094,6 +2114,39 @@ export const CHECKOUT_GUIDE_PATHS: readonly string[] = Object.freeze([
 ])
 
 /**
+ * Holds the fixture skill canon a pointer set reads, keyed by destination.
+ *
+ * @remarks
+ * Each name in `TARGET_SKILL_NAMES` carries a canonical `SKILL.md` opening with
+ * its `name` and a `description` holding a `Use ` sentence, the four-line
+ * `agents/openai.yaml` sidecar, and a Claude bridge naming the canonical path.
+ * {@link buildFleetManifest} declares these destinations with the digests of
+ * this text and {@link createHostRoot} writes it, so hydration derives every
+ * pointer from real frontmatter.
+ */
+export const SKILL_CANON_FILES: Readonly<Record<string, string>> = Object.freeze(
+	Object.fromEntries(
+		TARGET_SKILL_NAMES.flatMap((name): ReadonlyArray<readonly [string, string]> => {
+			const frontmatter = `---\nname: ${name}\ndescription: Runs the ${name} fixture workflow. Use when a proof needs the ${name} skill.\n---\n`
+			return [
+				[
+					`.agents/skills/${name}/SKILL.md`,
+					`${frontmatter}\n# Run the ${name} fixture\n\nFollow the fixture steps in order.\n`,
+				],
+				[
+					`.agents/skills/${name}/agents/openai.yaml`,
+					`interface:\n  display_name: '${name}'\n  short_description: 'Runs the ${name} fixture workflow'\n  default_prompt: 'Use $${name} to run the fixture workflow.'\n`,
+				],
+				[
+					`.claude/skills/${name}/SKILL.md`,
+					`${frontmatter}\nRead \`.agents/skills/${name}/SKILL.md\` completely and follow it.\n`,
+				],
+			]
+		}),
+	),
+)
+
+/**
  * Builds the manifest a vendored root storing every planned path declares.
  *
  * @returns A manifest whose digest is computed from the membership it carries.
@@ -2105,7 +2158,8 @@ export const CHECKOUT_GUIDE_PATHS: readonly string[] = Object.freeze([
  * `HOST_PATHS`, and a host that does not carry one of them refuses the write, so
  * a fixture driving the executable needs the complete set rather than a sample.
  *
- * The manifest includes {@link CATALOG_AGENT_PATH} and the reference guides.
+ * The manifest includes {@link CATALOG_AGENT_PATH}, the reference guides, and
+ * the {@link SKILL_CANON_FILES} skill canon the pointer set hydrates from.
  * The fixture reads the checkout's script and guide membership. Hydration must
  * select the claimed files while leaving unclaimed reference guides in the host.
  */
@@ -2129,6 +2183,15 @@ export function buildFleetManifest(): HostManifest {
 				}),
 			)
 		}
+	}
+	for (const [destination, text] of Object.entries(SKILL_CANON_FILES)) {
+		entries.push(
+			buildManifestEntry({
+				storage: pathToStorage(destination),
+				destination,
+				digest: computeDigest(text),
+			}),
+		)
 	}
 	const membership = { entries, roots, surface: [] }
 	return {
@@ -3741,4 +3804,108 @@ export function buildOptionArgv(verb: Verb, option: string): readonly string[] {
 	const argument = verb === 'new' ? ['widget'] : []
 	const value = option.includes(' ') ? ['sample'] : []
 	return [verb, ...argument, `--${optionToName(option)}`, ...value]
+}
+
+/**
+ * Runs a skill script from this checkout as a child of the current Node binary.
+ *
+ * @param script - The script path relative to the checkout root, such as
+ * `.agents/skills/orkestrel-dispatch/scripts/cite.ts`.
+ * @param args - The arguments after the script path.
+ * @param options - `cwd` (Default: the checkout root) and `env` entries laid over the process
+ * environment.
+ * @returns The exit status, both streams as text, and the last non-empty stdout line parsed when it
+ * is a JSON object.
+ */
+export function runSkillScript(
+	script: string,
+	args: readonly string[],
+	options?: TestSkillRunOptions,
+): TestSkillRun {
+	const result = spawnSync(process.execPath, [join(WORKSPACE_ROOT, script), ...args], {
+		cwd: options?.cwd ?? WORKSPACE_ROOT,
+		encoding: 'utf8',
+		env: buildEnvironment(options?.env),
+		windowsHide: true,
+		maxBuffer: 64 * 1024 * 1024,
+	})
+	return buildSkillRun(result.status, result.stdout, result.stderr)
+}
+
+/**
+ * Builds a child environment from this process's environment and the names a run adds.
+ *
+ * @remarks
+ * A Windows environment block folds variable names by case, so an inherited `NPM_CONFIG_CACHE`
+ * would outrank an added `npm_config_cache` and the child would read the value npm launched this
+ * suite with. Every inherited variable whose case-folded name an added variable claims is dropped
+ * on every host, because npm reads its `npm_config_` variables case-insensitively everywhere.
+ *
+ * @param overrides - The variables the run adds, or undefined for none.
+ * @returns The merged environment.
+ */
+export function buildEnvironment(
+	overrides: Readonly<Record<string, string>> | undefined,
+): Record<string, string | undefined> {
+	const claimed = new Set(Object.keys(overrides ?? {}).map((key) => key.toLowerCase()))
+	const inherited = Object.fromEntries(
+		Object.entries(process.env).filter(([key]) => !claimed.has(key.toLowerCase())),
+	)
+	return { ...inherited, ...overrides }
+}
+
+/**
+ * Runs a checkout skill script as a child without blocking the event loop, so a fixture server
+ * in the same test answers the script's requests while it runs.
+ *
+ * @param script - The checkout-relative script path.
+ * @param args - The script's arguments.
+ * @param options - Where the script runs and what its environment adds.
+ * @returns The finished run: its exit, both streams, and its last stdout line parsed as JSON.
+ */
+export function spawnSkillScript(
+	script: string,
+	args: readonly string[],
+	options?: TestSkillRunOptions,
+): Promise<TestSkillRun> {
+	return new Promise((resolve, reject) => {
+		const child = spawn(process.execPath, [join(WORKSPACE_ROOT, script), ...args], {
+			cwd: options?.cwd ?? WORKSPACE_ROOT,
+			env: buildEnvironment(options?.env),
+			windowsHide: true,
+			stdio: ['ignore', 'pipe', 'pipe'],
+		})
+		let stdout = ''
+		let stderr = ''
+		child.stdout.setEncoding('utf8')
+		child.stderr.setEncoding('utf8')
+		child.stdout.on('data', (chunk: string) => {
+			stdout += chunk
+		})
+		child.stderr.on('data', (chunk: string) => {
+			stderr += chunk
+		})
+		child.on('error', reject)
+		child.on('close', (status) => {
+			resolve(buildSkillRun(status, stdout, stderr))
+		})
+	})
+}
+
+/**
+ * Builds the run shape both skill runners return: the exit, both streams, and the last stdout
+ * line parsed as JSON.
+ *
+ * @param status - The exit code, or null when a signal ended the child.
+ * @param stdout - The standard output the child wrote.
+ * @param stderr - The standard error the child wrote.
+ * @returns The finished run.
+ */
+export function buildSkillRun(status: number | null, stdout: string, stderr: string): TestSkillRun {
+	const line = stdout
+		.split(/\r\n|\n/)
+		.filter((candidate) => candidate.trim() !== '')
+		.at(-1)
+	const parsed = line === undefined ? undefined : parseJSON(line)
+	return { status, stdout, stderr, json: isRecord(parsed) ? parsed : undefined }
 }

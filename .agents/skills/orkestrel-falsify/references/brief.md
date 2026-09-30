@@ -1,124 +1,54 @@
 # Writing the claims brief
 
-The brief decides the round. An auditor reads it faithfully, so a claim too vague to attack
-returns a confirmation that proves nothing. Write every claim sharply enough to be broken.
+Write every claim sharply enough to be broken. A claim too vague to attack returns a confirmation that proves nothing.
 
-## Anatomy
+## Rows
 
-**Subject.** The whole chain, not the last commit. A fix round's defect usually lives in what an
-earlier round assumed, so an audit scoped to the newest diff cannot see it. State the tip, the
-branch, and the chain of rounds with one line each on what each claimed to close.
+Give every claims brief these rows.
 
-**What the round decides.** Say it plainly — "this decides whether the package is bumped and
-consumed downstream", "this decides whether the fix is accepted". An auditor that does not know the
-stakes calibrates to politeness, and politeness confirms.
+- **Subject.** The whole chain, not the last commit: the tip, the branch, and one line per prior round on what it claimed to close.
+- **What the round decides.** One sentence, such as "this decides whether the package is bumped and consumed downstream" or "this decides whether the fix is accepted".
+- **Already established.** What the Orchestrator verified directly, so no lane re-derives it or re-reports it. State that the Orchestrator verified each item itself.
+- **Review evidence.** The actual diff and the actual `git status --porcelain` output, by path. For a rendered or externally driven surface, the capture; source is corroboration.
+- **Numbered falsifiable claims.** Written to `tmp/units/<unit>-claims.md`, one file both lanes read. Each claim names a property a concrete input, state, or interleaving could show false. Assign a primary lane where the lanes differ in strength; no lane skips a claim. The claim set is the round's scope: cover what the subject owns, then hold it closed. An attack against something no claim names enters the verdict only when substantiated to the `BROKEN` standard; otherwise it is a claim for the successor brief.
+- **Unknowns.** What the Orchestrator does not know that the round needs, and how the lane reports on it.
+- **The threshold.** State that a finding is worth more than a clean pass: the alternative is a consumer finding it after publication.
 
-**Already established — do not re-run.** List what the orchestrator has already verified, so effort
-goes somewhere new and settled findings are not re-reported as fresh. State that these were verified
-by the orchestrator directly rather than taken from a writer's report; an auditor that suspects the
-established list is hearsay will re-derive all of it.
+## The lane's brief
 
-**Review evidence.** The actual diff and the actual status output, by path. Omitting either is a
-dispatch deviation. For any claim about a rendered or externally driven surface, the capture is the
-evidence and source is corroboration.
+- Give a lane every row of § Rows plus **Role and lane** (the role, its engine, which lane it holds) and **Output** (the verdict shape and its single terminal line from `SKILL.md` § Verdict shape).
+- Omit the writer rows: owned, shared, and off-limits files; acceptance criteria stated as gate commands. Keep the sentence that the lane performs the assignment itself and spawns nothing.
+- Never hand a lane with no shell a gate criterion; it can only rule on the writer's report.
 
-**Numbered falsifiable claims.** Write them to one file both lanes are pointed at,
-`tmp/audit/<unit>-audit-claims.md`, retained beside the round's verdict. One file is what makes
-"both lanes ran the same brief" checkable after the round, and each lane's own brief then carries
-only its role, its lane, its evidence slice, and its output shape. Each claim is a property some
-concrete input, state, or interleaving could show false. Assign the primary lane where auditors
-differ in strength, but do not let an auditor skip a claim because it assumes the other covers it
-better. The claim set is the round's
-scope: write it to cover what the subject owns, then hold it closed. An attack the round invents
-against something no claim names enters the verdict only when it is substantiated to the `BROKEN`
-standard; otherwise it is a claim for the successor brief, not a finding.
+## The successor brief
 
-**Unknowns, named as unknowns.** What the orchestrator does not know that the round needs, and how
-the auditor reports back on it. A brief that cannot be fully specified says so; the alternative is
-an executor inventing an answer and building on it silently.
+A re-run takes a successor brief named per `.agents/orchestration.md` § Dispatch. It never restates the round from scratch and never edits the brief that ran.
 
-**The threshold.** State that a finding is worth more than a clean pass, and why: the alternative is
-a consumer finding it after publication, when the version is already spent.
+- Add the successor round to the chain table.
+- Move the closed findings into "already established".
+- State what changed in the brief itself.
+- Add a claim for each ruling the previous round made: an input refused rather than carried, a widening called deliberate, a site called sound and unchanged. Attack those first.
 
-## The audit lane's brief
+## Claims that find defects
 
-An audit lane changes no source, so its brief carries fewer rows than a writing unit's. `SKILL.md`
-§ "Run the round" fixes what a lane can execute; read it there before deciding which rows a lane
-can use. Give a lane every row § Anatomy names — the subject with the evidence
-§ "Evidence, by subject type" requires of each row it occupies, what the round decides, already
-established, the numbered falsifiable claims, the unknowns, and the threshold — plus its own
-**Role and lane** row (the role, its engine, and which lane it holds) and **Output** row (the
-verdict shape and its single terminal line). Review evidence folds into the subject.
+- "The containment has no remaining door." Require the lane to enumerate the surface itself, never a registry, table, or sweep the writer produced.
+- "No refusal was widened into a regression." Require the broken legitimate caller pattern to be named.
+- "The instruments bind." Attack the instrument's rule: name a change it would not catch.
+- "No instrument is vacuous." Require a control that cannot produce its failing verdict; name a tautology a previous round shipped.
+- "The guide is true." Ask whether a false universal was replaced by an unfalsifiable one.
+- "The package is coherent as a whole. Would you ship this?"
+- "The self-declared sound-and-unchanged verdicts are sound." Require the lane to attack the ones it judges most likely wrong.
 
-Omit the rows a writer needs and a lane cannot use: owned, shared, and off-limits files; the
-Execution line's writer form, keeping the sentence that the lane performs the assignment directly
-and spawns nothing; and acceptance criteria stated as gate commands. A lane that holds no shell
-cannot close a gate criterion, so a brief handing it one is asking for a ruling on the writer's
-report.
+## Sentences that change lane behavior
 
-## The successor rule
+- "CONFIRMED requires naming the attack you tried that failed."
+- "A claim you cannot decide is UNRESOLVED, not CONFIRMED; say what would settle it."
+- "Assume this chain has one more." Name the prior rounds and the defect a previous round believed closed.
+- "Do not hedge toward an imagined consensus."
+- Never write "an audit returning only confirmations has not tried"; a lane that manufactures a finding to satisfy the brief costs a fix unit and the credibility of the true findings beside it. Test the adequacy of an all-confirmed round afterwards, against the brief.
 
-A re-run takes a **successor brief** that carries the previous round forward. It never restates the
-round from scratch and never edits the brief that already ran; `.agents/orchestration.md`
-§ "Every dispatch is a file before it is a launch" fixes the successor's name and its retention.
-Rewriting a brief from scratch loses the shape of what has already been attacked, and the round
-re-derives it at full cost.
+## Keep out of a brief
 
-A successor brief:
-
-- **carries the chain forward** with the new round added to the table;
-- **moves the closed findings into "already established"** so they are not re-reported;
-- **states what changed in the brief itself**, so a reader can see which claims are new;
-- **adds claims that attack the previous round's own rulings.**
-
-Attack the previous round's rulings first. A fix round makes _decisions_ — that some input is
-refused rather than carried, that some widening is deliberate, that some site is sound and needs no
-change. Those rulings are the freshest and least-examined surface in the package, and the engine
-that made them is least able to see their consequences. Write a claim for each one. Expect a
-repair to carry the next defect; a round that finds them is converging, not failing.
-
-## Claims that repeatedly find things
-
-- **"The containment has no remaining door."** Require the auditor to enumerate the surface itself
-  rather than trust any registry, table, or sweep the writer produced.
-- **"No refusal was widened into a regression."** Every hardening round risks over-correcting. Ask
-  which legitimate caller pattern broke, and require it to be named.
-- **"The instruments bind."** Attack the instrument's _rule_, not its output: name a change it would
-  not catch. An instrument nobody has tried to evade is not evidence.
-- **"No instrument is vacuous."** Ask for a control that cannot produce its failing verdict. If a
-  previous round shipped one, say so and name it — a round told a tautology already shipped here
-  looks harder than one told to check generally.
-- **"The guide is true."** Not plausible — true. Ask specifically whether a false universal has been
-  replaced by an **unfalsifiable** one, which is worse, because it reads as rigour.
-- **"The package is coherent as a whole. Would you ship this?"** The only claim that catches
-  accumulated damage no single diff shows.
-- **"The self-declared sound-and-unchanged verdicts are sound."** A writer's table saying a site
-  needed no change is a claim like any other, made by the party least able to test it. Require the
-  auditor to pick the ones it considers most likely wrong and actually attack them.
-
-## Instructions that change auditor behaviour
-
-- _"CONFIRMED requires naming the attack you tried that failed."_ — the single most effective
-  sentence, because it converts a confirmation from an opinion into a report of work done.
-- _"A claim you cannot decide is UNRESOLVED, not CONFIRMED — say what would settle it."_
-- _"Assume this chain has one more."_ — naming the prior rounds and which of them a defect the
-  previous round believed closed provoked.
-- _"Do not hedge toward an imagined consensus."_ — when auditors run blind, each will otherwise
-  soften toward what it guesses the other said.
-
-Do **not** write _"an audit returning only confirmations has not tried."_ It reads as pressure to
-produce a finding, and an auditor that manufactures one to satisfy the brief has corrupted the round
-in the more expensive direction — a false finding costs a fix unit, an argument, and the credibility
-of the true findings beside it. The adequacy of an all-confirmed round is tested afterwards, against
-the brief, by the orchestrator.
-
-## What not to put in a brief
-
-- Laws already binding from `AGENTS.md` and the rule files. Reference them; restating invites drift
-  between the copy and the original. Where the executor's tree carries a vendored copy of an
-  authority the canon has since superseded, quote the landed text with its canonical path and mark
-  the quotation as superseding the vendored copy, because a bare reference resolves to the stale
-  copy the executor holds.
-- Any hint of what the other auditor is finding, or has found.
-- Your own hypothesis about where the defect is, beyond what the claims state. An auditor handed a
-  suspect investigates the suspect and stops.
+- A law already binding from `AGENTS.md` and the rule files: reference it. Where the executor's tree holds a vendored copy the canon has superseded, quote the landed text with its canonical path and mark the quotation as superseding the copy.
+- Any hint of what the other lane is finding or has found.
+- Your own hypothesis about where the defect is, beyond what the claims state.

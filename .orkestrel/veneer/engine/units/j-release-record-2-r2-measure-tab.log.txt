@@ -1,0 +1,59 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts -t sibling blur
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (53 tests | 2 failed | 50 skipped) 17ms
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 11ms
+     × closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:806:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected null to be 'false' // Object.is equality
+
+[32m- Expected:[39m
+"false"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/src/browser/Tab.test.ts:824:45
+    822|   expect(await tab.show()).toBe(true)
+    823|   expect(item.classList.contains('dropdown')).toBe(true)
+    824|   expect(item.getAttribute('aria-expanded')).toBe('false')
+       |                                             ^
+    825|   tab.destroy()
+    826|   expect(item.hasAttribute('aria-expanded')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:831:2 > Tab > closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur
+AssertionError: expected null to be 'false' // Object.is equality
+
+[32m- Expected:[39m
+"false"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/src/browser/Tab.test.ts:852:45
+    850|   onTestFinished(() => tab.destroy())
+    851|   expect(await tab.show()).toBe(true)
+    852|   expect(item.getAttribute('aria-expanded')).toBe('false')
+       |                                             ^
+    853|   expect(menu.classList.contains('show')).toBe(false)
+    854|   expect(sibling.getAttribute('aria-selected')).toBe('false')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed | 50 skipped (53)
+   Start at  05:57:13
+   Duration  2.16s (transform 0ms, setup 563ms, import 357ms, tests 17ms, environment 0ms)
+

@@ -4,26 +4,27 @@ model = "gpt-6-astra"
 model_reasoning_effort = "high"
 review_model = "gpt-6-astra"
 developer_instructions = """
-Read AGENTS.md, .agents/orchestration.md, every applicable .claude/rules/*.md file, the
-dispatch-named .agents/skills workflow and its required references, and the governing
-guide or spec before acting. AGENTS.md controls code substance; .agents/orchestration.md
-controls agent operation; this layer adds only the following Codex specifics and cannot
-weaken either.
+AGENTS.md governs code. .agents/orchestration.md governs agent operation. This layer adds Codex
+mechanics only and cannot weaken either.
 
-Astra orchestrates in this harness. Act as the Orchestrator defined in
-.agents/orchestration.md; everything in that file is unchanged.
+Act as the Orchestrator defined in .agents/orchestration.md, on Astra. When an invocation assigns a
+bounded executor role, perform that role's brief and do not expand its scope.
 
-When an invocation explicitly assigns a bounded executor route, follow that dispatch
-instead of acting as the primary Orchestrator. Do not delegate or expand its scope.
+Codex loads AGENTS.md itself. Read each .claude/rules/*.md file whose paths frontmatter matches the
+files you touch; Codex does not load them for you. Follow a skill under .agents/skills when its
+trigger fires.
 
-Which local agent carries which engine, so the contract's routing resolves here. The
-contract owns when each is used; this is only the mapping:
-- Astra: this session, plus analyst and sol.
-- Cursor Grok: the grok bridge, read-only.
-- Claude Opus 5.5: the planner and reviewer bridges, read-only, and the opus bridge for
-  writes.
-- Luna: distiller, researcher, scout, and checker.
-- Terra: bridge drivers and fully specified units (builder, application, verifier).
+Engine mapping for the roles in .agents/orchestration.md:
+- Astra: this session, analyst, astra.
+- Cursor Grok: the grok driver, read-only, through .agents/transports/cursor.md.
+- Claude Opus 5.5: the planner and reviewer drivers (read-only) and the opus driver (writes),
+  through .agents/transports/claude-cli.md.
+- Luna: distiller, researcher, scout, checker.
+- Sol: drivers and fully specified units (builder, verifier, orkestrel).
+
+Hooks: .codex/hooks.json runs the orkestrel-dispatch sweep script (node
+.agents/skills/orkestrel-dispatch/scripts/sweep.ts --report) on SessionStart and git diff --check
+on Stop. Every script an agent writes is TypeScript run by node, per AGENTS.md.
 """
 
 [agents]
@@ -34,7 +35,3 @@ interrupt_message = true
 [mcp_servers.probe]
 command = "node"
 args = ["node_modules/@orkestrel/probe/dist/bin/main.js"]
-
-[mcp_servers.codex]
-command = "codex"
-args = ["mcp-server"]

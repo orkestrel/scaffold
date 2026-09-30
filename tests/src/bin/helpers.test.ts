@@ -4,6 +4,8 @@ import { width } from '@orkestrel/console'
 import { executeSync } from '@orkestrel/process/server'
 import { resolve } from 'node:path'
 import {
+	blueprintToScripts,
+	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	createBlueprint,
 	MAX_MANIFEST_BYTES,
@@ -11,6 +13,7 @@ import {
 	ScaffoldError,
 } from '@src/core'
 import { MAX_INVENTORY_PATHS } from '@src/server'
+import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import {
 	COMMAND_OPTIONS,
@@ -42,6 +45,7 @@ import {
 	errorToEnvelope,
 	fetchToRefusal,
 	manifestToWritableDependencies,
+	manifestToWritableScripts,
 	mergeResults,
 	optionToName,
 	readGitRecords,
@@ -423,6 +427,78 @@ describe('release evidence', () => {
 			{ name: '@orkestrel/router', range: '^0.0.10' },
 			{ name: '@orkestrel/emitter', range: '^0.0.5' },
 		])
+	})
+})
+
+describe('manifestToWritableScripts', () => {
+	const blueprint = createBlueprint('sample', { src: ['core'], setup: ['node', 'browser'] })
+	const planned = blueprintToScripts(blueprint)
+	const writable = blueprintToWritableScripts(blueprint)
+	const chain = requireValue(planned.test)
+
+	it('writes the planned test chain over a generated predecessor that predates a planned step', () => {
+		const predecessor = chain.replace(' && npm run test:setup:browser', '')
+		expect(predecessor).not.toBe(chain)
+		const manifest = JSON.stringify({ scripts: { ...planned, test: predecessor } })
+		expect(manifestToWritableScripts(manifest, blueprint)).toStrictEqual([
+			...writable,
+			{ name: 'test', command: chain, accepted: [predecessor] },
+		])
+		// A chain missing several planned steps is still a predecessor, and the
+		// spacing around each separator decides nothing.
+		const sparse = 'npm run test:src&&npm run test:config'
+		expect(
+			manifestToWritableScripts(JSON.stringify({ scripts: { test: sparse } }), blueprint).at(-1),
+		).toStrictEqual({ name: 'test', command: chain, accepted: [sparse] })
+	})
+
+	it('leaves a test chain the package owns out of the writable set', () => {
+		const owned = [
+			// A step the plan does not generate.
+			`${chain} && npm run check`,
+			chain.replace(' && npm run test:setup:browser', ' && npm run check'),
+			// The planned steps out of order, in a chain shorter than the planned one
+			// so the order walk decides it rather than the length.
+			'npm run test:config && npm run test:policy',
+			// The planned chain itself needs no write.
+			chain,
+			'',
+		]
+		for (const test of owned) {
+			expect(
+				manifestToWritableScripts(JSON.stringify({ scripts: { ...planned, test } }), blueprint),
+			).toStrictEqual(writable)
+		}
+	})
+
+	it('leaves the chain with the package where the planned chain adds an aggregate the manifest lacks', () => {
+		const grown = createBlueprint('sample', { src: ['core'], app: ['core'] })
+		const born = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+		const target = requireValue(blueprintToScripts(grown).test)
+		expect(target).toContain('npm run test:app')
+		expect(born).not.toHaveProperty('test:app')
+		expect(blueprintToWritableScripts(grown).map(({ name }) => name)).not.toContain('test:app')
+		expect(manifestToWritableScripts(JSON.stringify({ scripts: born }), grown)).toStrictEqual(
+			blueprintToWritableScripts(grown),
+		)
+		// The control: the same chain over a manifest that declares the aggregate,
+		// whatever its value, takes the planned chain.
+		const declared = { ...born, 'test:app': 'vitest run --project app:core' }
+		expect(
+			manifestToWritableScripts(JSON.stringify({ scripts: declared }), grown).at(-1),
+		).toStrictEqual({ name: 'test', command: target, accepted: [born.test] })
+	})
+
+	it('answers the blueprint scripts for a manifest with no readable test chain', () => {
+		for (const manifest of [
+			'{}',
+			'not json',
+			JSON.stringify({ scripts: [] }),
+			JSON.stringify({ scripts: { test: 7 } }),
+			JSON.stringify({ scripts: { lint: 'oxlint' } }),
+		]) {
+			expect(manifestToWritableScripts(manifest, blueprint)).toStrictEqual(writable)
+		}
 	})
 })
 

@@ -11,9 +11,10 @@ import {
 	extractVersion,
 	MINIMUM_NPM_VERSION,
 	ScaffoldError,
+	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
-import { readHostFloor } from '@src/server'
+import { computeDigest, pathToStorage, readHostFloor } from '@src/server'
 import { buildSnapshot } from './setup.js'
 import {
 	AUDIT_EXIT_CASES,
@@ -28,6 +29,9 @@ import {
 	buildManifestEntry,
 	buildMaterializerOptions,
 	buildOptionArgv,
+	runSkillScript,
+	spawnSkillScript,
+	buildEnvironment,
 	buildOrganization,
 	buildPackument,
 	buildReleaseScenarios,
@@ -90,6 +94,7 @@ import {
 	resolveTool,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
+	SKILL_CANON_FILES,
 	STAGED_PATHS,
 	STORAGE_PATH_CASES,
 	supportsMappedLoopback,
@@ -219,6 +224,37 @@ describe('the manifest builders', () => {
 		expect(destinations).toContain('LICENSE')
 		expect(destinations).toContain('guides/router.md')
 		expect(destinations).toContain('guides/supervisor.md')
+		// The skill canon a pointer set hydrates from is declared at the digest of the
+		// text the host root stores, so a value host read from it verifies.
+		for (const [destination, text] of Object.entries(SKILL_CANON_FILES)) {
+			expect(manifest.entries.find((entry) => entry.destination === destination)?.digest).toBe(
+				computeDigest(text),
+			)
+		}
+	})
+
+	it('holds the three skill canon files of every package-facing skill and no other', () => {
+		expect(Object.keys(SKILL_CANON_FILES)).toHaveLength(TARGET_SKILL_NAMES.length * 3)
+		expect(SKILL_CANON_FILES['.agents/skills/orkestrel-dispatch/SKILL.md']).toBeUndefined()
+		for (const name of TARGET_SKILL_NAMES) {
+			const canonical = requireValue(SKILL_CANON_FILES[`.agents/skills/${name}/SKILL.md`])
+			const bridge = requireValue(SKILL_CANON_FILES[`.claude/skills/${name}/SKILL.md`])
+			const sidecar = requireValue(SKILL_CANON_FILES[`.agents/skills/${name}/agents/openai.yaml`])
+			expect(canonical.startsWith(`---\nname: ${name}\ndescription: `)).toBe(true)
+			expect(canonical.split('\n').indexOf('---', 1)).toBe(3)
+			expect(canonical).toMatch(/\. Use /u)
+			expect(bridge.slice(0, bridge.indexOf('\n---\n'))).toBe(
+				canonical.slice(0, canonical.indexOf('\n---\n')),
+			)
+			expect(bridge).toContain(`\`.agents/skills/${name}/SKILL.md\``)
+			expect(sidecar.split('\n')).toStrictEqual([
+				'interface:',
+				`  display_name: '${name}'`,
+				`  short_description: 'Runs the ${name} fixture workflow'`,
+				`  default_prompt: 'Use $${name} to run the fixture workflow.'`,
+				'',
+			])
+		}
 	})
 })
 
@@ -234,6 +270,20 @@ describe('the real host and checkout fixtures', () => {
 			}
 			const written: unknown = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8'))
 			expect(written).toStrictEqual(manifest)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('writes the skill canon text in place of the destination at every skill storage path', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			createHostRoot(workspace, 'host', buildFleetManifest())
+			for (const [destination, text] of Object.entries(SKILL_CANON_FILES)) {
+				expect(workspace.read(`host/${pathToStorage(destination)}`)).toBe(text)
+			}
+			// The control: a destination outside the skill canon still carries its own path.
+			expect(workspace.read('host/LICENSE')).toBe('LICENSE\n')
 		} finally {
 			workspace.destroy()
 		}
@@ -1567,4 +1617,76 @@ describe('the mapped loopback reading', () => {
 			expect(await supportsMappedLoopback()).toBe(existsSync('/proc/net/if_inet6'))
 		},
 	)
+})
+
+describe('the skill script runner', () => {
+	it('runs a checkout script as a child and reads its exit and last JSON line', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-setup-skill-' })
+		try {
+			const run = runSkillScript(
+				'.agents/skills/orkestrel-dispatch/scripts/sweep.ts',
+				['--report'],
+				{
+					cwd: scratch.path,
+				},
+			)
+			expect(run.status).toBe(64)
+			expect(run.stderr).toContain('run from the repository root')
+			expect(run.json).toBeUndefined()
+			scratch.ensure('.git')
+			const report = runSkillScript(
+				'.agents/skills/orkestrel-dispatch/scripts/result.ts',
+				['--cursor', 'absent.jsonl'],
+				{ cwd: scratch.path, env: { ORKESTREL_SKILL_PROBE: 'set' } },
+			)
+			expect(report.status).toBe(64)
+			const brief = runSkillScript(
+				'.agents/skills/orkestrel-dispatch/scripts/brief.ts',
+				['--unit', 'runner', '--lane', 'units'],
+				{ cwd: scratch.path },
+			)
+			expect(brief.status).toBe(0)
+			expect(isObject(brief.json) && isString(brief.json.brief)).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('drops the inherited case variant of every variable a run adds', () => {
+		process.env.ORKESTREL_CASE_PROBE = 'inherited'
+		try {
+			const merged = buildEnvironment({ orkestrel_case_probe: 'added', ORKESTREL_OTHER: 'kept' })
+			expect(merged.orkestrel_case_probe).toBe('added')
+			expect(Object.keys(merged)).not.toContain('ORKESTREL_CASE_PROBE')
+			expect(merged.ORKESTREL_OTHER).toBe('kept')
+			expect(merged.PATH ?? merged.Path).toBe(process.env.PATH ?? process.env.Path)
+			expect(Object.keys(buildEnvironment(undefined))).toEqual(Object.keys(process.env))
+		} finally {
+			delete process.env.ORKESTREL_CASE_PROBE
+		}
+	})
+
+	it('spawns a checkout script without blocking the event loop and reads the same run shape', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-setup-skill-spawn-' })
+		try {
+			const refused = await spawnSkillScript(
+				'.agents/skills/orkestrel-dispatch/scripts/sweep.ts',
+				['--report'],
+				{ cwd: scratch.path },
+			)
+			expect(refused.status).toBe(64)
+			expect(refused.stderr).toContain('run from the repository root')
+			expect(refused.json).toBeUndefined()
+			scratch.ensure('.git')
+			const brief = await spawnSkillScript(
+				'.agents/skills/orkestrel-dispatch/scripts/brief.ts',
+				['--unit', 'runner', '--lane', 'units'],
+				{ cwd: scratch.path },
+			)
+			expect(brief.status).toBe(0)
+			expect(isObject(brief.json) && isString(brief.json.brief)).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
 })

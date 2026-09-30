@@ -1,0 +1,239 @@
+# J-RELEASE-RECORD round 2 replay (2026-09-25) at d3a3969 Read Tab's selection after the blur as Bootstrap does, and bind each split-write door (J-RELEASE-RECORD round 2)
+--- the doors, each deleted
+== collapse-show: Collapse.ts lines 272,274 removed
+		if (!this.#holds(change, expected, [...completed, transition], [])) {
+			return this.#rewind(change, written)
+		}
+exit 1
+     × writes no shown token after a reaction to its host token write destroys it, leaving the panel restored 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:816:2 > Collapse > writes no shown token after a reaction to its host token write destroys it, leaving the panel restored
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:844:63
+ Test Files  1 failed (1)
+      Tests  1 failed | 52 passed (53)
+restored
+== collapse-hide: Collapse.ts lines 352,352 removed
+		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+exit 1
+     × removes no shown token after a reaction to its host token removal destroys it, leaving the panel shown 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:850:2 > Collapse > removes no shown token after a reaction to its host token removal destroys it, leaving the panel shown
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:878:63
+ Test Files  1 failed (1)
+      Tests  1 failed | 52 passed (53)
+restored
+== toast-show: Toast.ts lines 215,215 removed
+		if (!this.#holds(change, true, [], [transition])) return this.#rewind(change, written)
+exit 1
+     × writes no transition token after a reaction to its shown token write destroys it, leaving the toast restored 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1014:2 > Toast > writes no transition token after a reaction to its shown token write destroys it, leaving the toast restored
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:1042:63
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+restored
+== toast-hide: Toast.ts lines 281,281 removed
+		if (!this.#holds(change, expected, [], [transition])) return this.#rewind(change, written)
+exit 1
+     × removes no shown token after a reaction to its transition token removal destroys it, leaving the toast shown 3ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1048:2 > Toast > removes no shown token after a reaction to its transition token removal destroys it, leaving the toast shown
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:1080:63
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+restored
+== tab-pane: Tab.ts lines 248,248 removed
+				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+exit 1
+     × removes no shown token from the sibling pane after a reaction to its active token removal destroys it, leaving that pane shown 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1116:2 > Tab > removes no shown token from the sibling pane after a reaction to its active token removal destroys it, leaving that pane shown
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:1151:63
+ Test Files  1 failed (1)
+      Tests  1 failed | 53 passed (54)
+restored
+== carousel-incoming: Carousel.ts lines 538,555 removed
+			if (
+				!this.#holds(
+					change,
+					pair,
+					expected,
+					[
+						[outgoing, active],
+						[outgoing, direction],
+						[incoming, order],
+					],
+					[
+						[incoming, direction],
+						[outgoing, order],
+					],
+				)
+			) {
+				return this.#rewind(change, written)
+			}
+exit 1
+     × writes nothing more after a reaction to its incoming direction removal destroys it, keeping an order token added then 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1945:2 > Carousel > writes nothing more after a reaction to its incoming direction removal destroys it, keeping an order token added then
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:1987:63
+ Test Files  1 failed (1)
+      Tests  1 failed | 76 passed (77)
+restored
+== carousel-outgoing: Carousel.ts lines 607,611 removed
+			if (
+				!this.#holds(change, pair, true, [[outgoing, direction]], [...settled, [outgoing, active]])
+			) {
+				return this.#rewind(change, written)
+			}
+exit 1
+     × writes nothing more after a reaction to its outgoing active removal destroys it, keeping an order token added then 4ms
+     × returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator 2ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1994:2 > Carousel > writes nothing more after a reaction to its outgoing active removal destroys it, keeping an order token added then
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:2028:63
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2659:2 > Carousel > returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator
+AssertionError: expected [ [ 'one', 'class', …(1) ], …(5) ] to deeply equal [ [ 'one', 'class', …(1) ], …(5) ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:2706:4
+ Test Files  1 failed (1)
+      Tests  2 failed | 75 passed (77)
+restored
+--- Tab's take-time read restored
+exit 1
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 4ms
+     × closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:806:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected null to be 'false' // Object.is equality
+[32m- Expected:[39m
+[31m+ Received:[39m
+ ❯ tests/src/browser/Tab.test.ts:824:45
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:831:2 > Tab > closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur
+AssertionError: expected null to be 'false' // Object.is equality
+[32m- Expected:[39m
+[31m+ Received:[39m
+ ❯ tests/src/browser/Tab.test.ts:852:45
+ Test Files  1 failed (1)
+      Tests  2 failed | 52 passed (54)
+restored
+--- recordHostWrite through writeHostValue
+exit 1
+     × constructs a control with no list, writing nothing, and activates it and its pane with no sibling to hide 3ms
+     × marks the toggle, the menu, and the wrapper of a dropdown holding the active control, and clears them when a sibling activates 1ms
+     × abandons a swap in flight on destruction, resolving false and restoring the control, its pane, and the sibling it deactivated 3ms
+     × restores the controls and panes after a completed swap, keeping consumer edits 1ms
+     × keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction 1ms
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 2ms
+     × stops writing when a reaction to its own write destroys it, resolving false and restoring every control and pane 1ms
+     × removes no shown token from the sibling pane after a reaction to its active token removal destroys it, leaving that pane shown 1ms
+     × dispatches no shown event when a listener to its hidden event destroys it, resolving false and restoring the swap 1ms
+     × restores the markup after a tab refused on its active control swaps back after a sibling, in either destruction order 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:145:2 > Tab > constructs a control with no list, writing nothing, and activates it and its pane with no sibling to hide
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:176:37
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:614:2 > Tab > marks the toggle, the menu, and the wrapper of a dropdown holding the active control, and clears them when a sibling activates
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:649:48
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:652:2 > Tab > abandons a swap in flight on destruction, resolving false and restoring the control, its pane, and the sibling it deactivated
+AssertionError: expected [ 'nav-link' ] to deeply equal [ 'nav-link', 'active' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:687:44
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:709:2 > Tab > restores the controls and panes after a completed swap, keeping consumer edits
+AssertionError: expected [ 'nav-link' ] to deeply equal [ 'nav-link', 'active' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:726:44
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:762:2 > Tab > keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction
+AssertionError: expected [ false, true ] to deeply equal [ true, true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:777:87
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:806:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:826:45
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1061:2 > Tab > stops writing when a reaction to its own write destroys it, resolving false and restoring every control and pane
+AssertionError: expected [ 'tab-pane', 'active' ] to deeply equal [ 'tab-pane' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:1107:37
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1116:2 > Tab > removes no shown token from the sibling pane after a reaction to its active token removal destroys it, leaving that pane shown
+AssertionError: expected [ false, true ] to deeply equal [ true, true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:1152:79
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1227:2 > Tab > dispatches no shown event when a listener to its hidden event destroys it, resolving false and restoring the swap
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:1249:45
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:2196:2 > Tab > restores the markup after a tab refused on its active control swaps back after a sibling, in either destruction order
+AssertionError: expected null to be '' // Object.is equality
+[32m- Expected:[39m
+[31m+ Received:[39m
+ ❯ tests/src/browser/Tab.test.ts:2215:36
+ Test Files  1 failed (1)
+      Tests  10 failed | 44 passed (54)
+restored
+exit 1
+     × writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds 3ms
+     × records an inline property with its priority, and an attribute and a token with the empty string 2ms
+     × records a write of the value an inline property holds when the property carries a priority, in the call and in the snapshot 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1593:2 > recordHostWrite > writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds
+AssertionError: expected 'mixed' to be 'false' // Object.is equality
+Expected: [32m"false"[39m
+Received: [31m"mixed"[39m
+ ❯ tests/src/browser/helpers.test.ts:1603:48
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1683:2 > recordHostWrite > records an inline property with its priority, and an attribute and a token with the empty string
+AssertionError: expected [ '0px', '', null, false ] to deeply equal [ '12px', 'important', 'dialog', true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/helpers.test.ts:1706:5
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1712:2 > recordHostWrite > records a write of the value an inline property holds when the property carries a priority, in the call and in the snapshot
+AssertionError: expected [ '0px', '' ] to deeply equal [ '0px', 'important' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/helpers.test.ts:1725:5
+ Test Files  1 failed (1)
+      Tests  3 failed | 104 passed (107)
+restored
+--- error class of each mutation log
+tmp/j-release-record/logs/r2-door-carousel-incoming.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/r2-door-carousel-outgoing.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/r2-door-collapse-hide.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/r2-door-collapse-show.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/r2-door-tab-pane.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/r2-door-toast-hide.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/r2-door-toast-show.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay2-helpers-helpers.log.txt: assertion=3 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay2-helpers-tab.log.txt: assertion=10 other=0 ⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay2-tab-take.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+--- whole files
+Collapse whole-file       Tests  53 passed (53)
+Toast whole-file       Tests  49 passed (49)
+Tab whole-file       Tests  54 passed (54)
+Carousel whole-file       Tests  77 passed (77)
+Dropdown whole-file       Tests  44 passed (44)
+helpers whole-file       Tests  107 passed (107)
+test:setup:browser exit=0       Tests  98 passed (98)
+--- the tree after the replay

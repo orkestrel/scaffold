@@ -10,6 +10,8 @@ import {
 	createBlueprint,
 	isFinding,
 	RELEASE_PROOF_COMMAND,
+	renderSkillPointer,
+	TARGET_SKILL_NAMES,
 	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
 import {
@@ -18,6 +20,7 @@ import {
 	listDirectories,
 	listFiles,
 	Materializer,
+	pathToStorage,
 	readFileHex,
 	readHostManifest,
 	readHostFloor,
@@ -43,6 +46,7 @@ import {
 	captureScaffoldMessage,
 	TARGET_MANIFEST_TEXT,
 	SCRATCH_PREFIX,
+	SKILL_CANON_FILES,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 import { createScratch } from '@orkestrel/test/server'
@@ -62,6 +66,10 @@ describe('Materializer construction', () => {
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write('checkout/guides/router.md', '# Router\n')
+			// The compiled plan claims the skill pointer set, so the staged canon carries its sources.
+			for (const [path, text] of Object.entries(SKILL_CANON_FILES)) {
+				workspace.write(`checkout/${path}`, text)
+			}
 			const host = join(workspace.path, 'host')
 			stageHost(checkout, host)
 			const floor = readHostFloor(host)
@@ -1879,6 +1887,216 @@ describe('Materializer remove', () => {
 				// untracked file this verb spared keeps `.claude/rules` filled.
 				expect(listDirectories(target)).toEqual(['.claude', '.claude/rules'])
 				expect(workspace.read('project/.claude/rules/kept.md')).toBe('# Kept\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('Materializer skill pointers', () => {
+	it('writes the pointer set into a vacant target and derives each pointer from its canonical skill', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = join(workspace.path, 'project')
+			const plan = buildCompiledPlan()
+			const materializer = new Materializer({ host })
+			try {
+				const written = materializer
+					.materialize(plan, target)
+					.written.filter(
+						(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
+					)
+				expect(written).toHaveLength(21)
+				expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
+				expect(written).not.toContain('.agents/skills/orkestrel-dispatch/SKILL.md')
+				for (const name of TARGET_SKILL_NAMES) {
+					const canonical = requireValue(SKILL_CANON_FILES[`.agents/skills/${name}/SKILL.md`])
+					const pointer = workspace.read(`project/.agents/skills/${name}/SKILL.md`)
+					expect(pointer).toBe(renderSkillPointer(canonical, name))
+					// The pointer keeps the canonical frontmatter and replaces the body, so it is
+					// neither a copy of the canonical file nor a text without its trigger.
+					expect(pointer).not.toBe(canonical)
+					expect(pointer?.startsWith(canonical.slice(0, canonical.indexOf('\n---\n') + 5))).toBe(
+						true,
+					)
+					expect(pointer).toContain(
+						`node_modules/@orkestrel/scaffold/dist/host/agents/skills/${name}/SKILL.md`,
+					)
+					for (const path of [
+						`.agents/skills/${name}/agents/openai.yaml`,
+						`.claude/skills/${name}/SKILL.md`,
+					]) {
+						expect(workspace.read(`project/${path}`)).toBe(SKILL_CANON_FILES[path])
+					}
+				}
+				const skills = materializer
+					.audit(plan, target)
+					.findings.filter((finding) => written.includes(finding.path))
+				expect(skills).toHaveLength(21)
+				for (const finding of skills) {
+					expect(finding).toMatchObject({ ownership: 'content', drift: 'aligned' })
+				}
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports an edited pointer stale and a deleted one missing, and repair restores the derived bytes', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = join(workspace.path, 'project')
+			const plan = buildCompiledPlan()
+			const materializer = new Materializer({ host })
+			try {
+				materializer.materialize(plan, target)
+				const edited = '.agents/skills/orkestrel-harden/SKILL.md'
+				const deleted = '.agents/skills/orkestrel-polish/SKILL.md'
+				workspace.write(`project/${edited}`, '# Hand-edited pointer\n')
+				rmSync(join(target, deleted))
+				const audit = materializer.audit(plan, target)
+				expect(audit.findings.find((finding) => finding.path === edited)).toMatchObject({
+					ownership: 'content',
+					drift: 'stale',
+				})
+				expect(audit.findings.find((finding) => finding.path === deleted)?.drift).toBe('missing')
+				expect(materializer.repair(plan, audit, target).written.toSorted()).toStrictEqual(
+					[edited, deleted].toSorted(),
+				)
+				for (const [path, name] of [
+					[edited, 'orkestrel-harden'],
+					[deleted, 'orkestrel-polish'],
+				] as const) {
+					expect(workspace.read(`project/${path}`)).toBe(
+						renderSkillPointer(requireValue(SKILL_CANON_FILES[path]), name),
+					)
+				}
+				const terminal = materializer.audit(plan, target)
+				expect(materializer.repair(plan, terminal, target).written).toEqual([])
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a canonical skill with no frontmatter and a pointer outside a skill directory', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const broken = '.agents/skills/orkestrel-harden/SKILL.md'
+			workspace.write(`host/${pathToStorage(broken)}`, '# Harden\n')
+			const materializer = new Materializer({ host })
+			try {
+				const target = join(workspace.path, 'project')
+				const plan = buildCompiledPlan()
+				expect(captureScaffoldCode(() => materializer.materialize(plan, target))).toBe('TARGET')
+				expect(captureScaffoldMessage(() => materializer.materialize(plan, target))).toBe(
+					`The vendored skill at ${broken} cannot derive the pointer at ${broken}.`,
+				)
+				expect(workspace.has('project')).toBe(false)
+			} finally {
+				materializer.destroy()
+			}
+			const vendored = createHostRoot(workspace, 'vendored', buildVendoredManifest())
+			const plain = new Materializer({ host: vendored })
+			try {
+				const target = join(workspace.path, 'plain')
+				const misplaced = buildVendoredPlan({
+					artifacts: [buildHostArtifact({ path: 'AGENTS.md', group: 'docs', pointer: true })],
+				})
+				expect(captureScaffoldMessage(() => plain.materialize(misplaced, target))).toBe(
+					'The vendored skill at AGENTS.md cannot derive the pointer at AGENTS.md.',
+				)
+				// The control: the same artifact without the flag is copied as it always was.
+				const copied = buildVendoredPlan({
+					artifacts: [buildHostArtifact({ path: 'AGENTS.md', group: 'docs' })],
+				})
+				expect(plain.materialize(copied, target).written).toStrictEqual(['AGENTS.md'])
+			} finally {
+				plain.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('plans and writes no pointer set for a workspace that ships its own skill canon', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const compiler = new Compiler()
+			const materializer = new Materializer({ host })
+			try {
+				const plan = requireValue(compiler.compile(buildBlueprint({ skills: true })).plan)
+				const target = join(workspace.path, 'project')
+				const written = materializer.materialize(plan, target).written
+				expect(written).toContain('configs/agents/tsconfig.skills.json')
+				expect(
+					written.filter(
+						(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
+					),
+				).toStrictEqual([])
+				expect(workspace.has('project/.agents')).toBe(false)
+				expect(workspace.has('project/.claude/skills')).toBe(false)
+			} finally {
+				materializer.destroy()
+				compiler.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('derives the pointer from a manifest-less checkout root and copies the bridge and the sidecar', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const name = requireValue(TARGET_SKILL_NAMES.at(0))
+			const canonical = `.agents/skills/${name}/SKILL.md`
+			const paths = [
+				canonical,
+				`.agents/skills/${name}/agents/openai.yaml`,
+				`.claude/skills/${name}/SKILL.md`,
+			]
+			for (const path of paths)
+				workspace.write(`raw/${path}`, requireValue(SKILL_CANON_FILES[path]))
+			const host = workspace.ensure('raw')
+			expect(workspace.has('raw/manifest.json')).toBe(false)
+			// The compiled plan's own artifacts carry the pointer flag, so the case reads the shape
+			// the compiler emits rather than one this test restates.
+			const artifacts = buildCompiledPlan().artifacts.filter((artifact) =>
+				paths.includes(artifact.path),
+			)
+			expect(artifacts.map((artifact) => artifact.path).toSorted()).toStrictEqual(paths.toSorted())
+			expect(artifacts.find((artifact) => artifact.path === canonical)).toMatchObject({
+				pointer: true,
+			})
+			const plan = buildVendoredPlan({ artifacts })
+			const target = join(workspace.path, 'project')
+			const materializer = new Materializer({ host })
+			try {
+				expect(materializer.materialize(plan, target).written.toSorted()).toStrictEqual(
+					paths.toSorted(),
+				)
+				const text = requireValue(SKILL_CANON_FILES[canonical])
+				expect(workspace.read(`project/${canonical}`)).toBe(renderSkillPointer(text, name))
+				expect(workspace.read(`project/${canonical}`)).not.toBe(text)
+				for (const path of paths.filter((member) => member !== canonical)) {
+					expect(readFileHex(target, path)).toBe(readFileHex(host, path))
+				}
+				const findings = materializer.audit(plan, target).findings
+				expect(findings).toHaveLength(paths.length)
+				for (const finding of findings) {
+					expect(finding).toMatchObject({ ownership: 'content', drift: 'aligned' })
+				}
 			} finally {
 				materializer.destroy()
 			}

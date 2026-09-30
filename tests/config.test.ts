@@ -186,6 +186,14 @@ describe('root configuration', () => {
 				setup: ['./tests/setup.ts', './tests/setupServer.ts'],
 			})
 		}
+		// The `configs/agents/tsconfig.skills.json` wrapper selects the `skills` blueprint fact, and the
+		// project it registers runs the mirrored proofs under `tests/agents/`.
+		if (existsSync(resolve(root, 'configs/agents/tsconfig.skills.json'))) {
+			expected.set('skills', {
+				include: 'tests/agents/**/*.test.ts',
+				setup: ['./tests/setup.ts'],
+			})
+		}
 		for (const label of [
 			'policy',
 			'config',
@@ -220,8 +228,8 @@ describe('root configuration', () => {
 			})
 		}
 		expected.set('probe', {
-			benchmark: ['tmp/probe/**/*.test.ts', 'tests/**/*.test.ts'],
-			include: 'tmp/probe/**/*.test.ts',
+			benchmark: ['tmp/probes/**/*.test.ts', 'tests/**/*.test.ts'],
+			include: 'tmp/probes/**/*.test.ts',
 			parallel: false,
 			pool: 'threads',
 			setup: ['./tests/setup.ts'],
@@ -2454,12 +2462,18 @@ describe('configuration helpers', () => {
 		'rolls one face into a single declaration and rewrites its core specifier',
 		async () => {
 			const scratch = createPolicyScratch({ prefix: 'orkestrel-config-rollup-' })
-			// The hook's temporary declaration emit is proven removed: no name beginning
-			// `orkestrel-declarations-` present after the builds that was absent before them.
-			const before = new Set(
-				readdirSync(tmpdir()).filter((entry) => entry.startsWith('orkestrel-declarations-')),
-			)
+			// The hook's temporary declaration emit is proven removed from a host temporary
+			// directory this case alone writes to. `os.tmpdir()` reads `TMPDIR`, `TMP`, and `TEMP`
+			// when it is called, so pointing all three into the case's own scratch places every
+			// `orkestrel-declarations-` directory these builds make there, and a build another
+			// process runs meanwhile makes its own elsewhere.
+			const temporary = join(scratch.path, 'temporary')
+			mkdirSync(temporary)
+			const variables = ['TMPDIR', 'TMP', 'TEMP']
+			const inherited = variables.map((name) => [name, process.env[name]] as const)
 			try {
+				for (const name of variables) process.env[name] = temporary
+				expect(tmpdir()).toBe(temporary)
 				const workspace = scratch.path
 				const project = join(workspace, 'tsconfig.json')
 				const source = join(workspace, 'source', 'server', 'index.ts')
@@ -2543,10 +2557,9 @@ describe('configuration helpers', () => {
 				])
 				await Reflect.apply(close, undefined, [])
 
-				const after = readdirSync(tmpdir()).filter((entry) =>
-					entry.startsWith('orkestrel-declarations-'),
-				)
-				expect(after.every((entry) => before.has(entry))).toBe(true)
+				expect(
+					readdirSync(temporary).filter((entry) => entry.startsWith('orkestrel-declarations-')),
+				).toStrictEqual([])
 
 				// The face ships exactly one declaration: the emit's scratch tree leaves with it.
 				expect(globSync('**/*.d.ts', { cwd: rewritten })).toStrictEqual(['index.d.ts'])
@@ -2565,6 +2578,10 @@ describe('configuration helpers', () => {
 				expect(control).toContain('@src/core')
 				expect(control).not.toContain(`from '${name}'`)
 			} finally {
+				for (const [name, value] of inherited) {
+					if (value === undefined) Reflect.deleteProperty(process.env, name)
+					else process.env[name] = value
+				}
 				scratch.destroy()
 			}
 		},

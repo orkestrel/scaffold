@@ -12,7 +12,7 @@ paths:
 
 - Mirror module/application structure:
   `tests/{src,app}/[environment]/[domain]/[module].test.ts`.
-- The mirrored population is `src` and `app` alone. `configs/` is a source directory and is
+- The mirrored population is `src` and `app`, plus the skill scripts: `.agents/skills/<skill>/scripts/<name>.ts` is proved by `tests/agents/skills/<skill>/scripts/<name>.test.ts`, one proof per script, and the policy sweep refuses a script with no proof. `configs/` is a source directory and is
   deliberately not a mirrored root: its leaves produce the workspace's configuration rather than ship
   in it, and they are proved from `tests/config.test.ts` beside the configuration they produce. Do
   not add `tests/configs/`.
@@ -54,6 +54,7 @@ its own:
 | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                        |
 | `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
 | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
+| `tests/agents/**/*.test.ts`  | Each skill script does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; the scaffold checkout alone carries them                     |
 | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
 | `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          |
 | `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
@@ -109,7 +110,7 @@ The kinds split by which tool has to see the probe:
   lives in the source tree beside what it measures. Delete it before the unit returns; a leaked one
   fails the `policy` plugin's placement rules, because a probe filename is not a centralized kind
   file.
-- A **runtime probe** is collected by a Vitest project, so it lives in `tmp/probe/` and runs through
+- A **runtime probe** is collected by a Vitest project, so it lives in `tmp/probes/` and runs through
   the `probe` project. `tmp/` is ignored by git, so no probe enters a commit by accident, and every
   test script names its project, so no gate runs the `probe` project.
 - A **bench** is read by Vitest's benchmark mode, so it lives inside a test file as a block behind
@@ -321,7 +322,9 @@ Coverage rules:
 
 ## Discovery and adequacy audit
 
-Before acceptance:
+For a change the size gate in `AGENTS.md` § Work loop names medium or large, run
+`node .agents/skills/orkestrel-harden/scripts/discovery.ts` before acceptance for the census of
+projects, gates, collected files, and skip markers, then:
 
 - prove every intended test file is discovered by the correct project;
 - prove every declared project is reachable from a gate. A project registered in the root

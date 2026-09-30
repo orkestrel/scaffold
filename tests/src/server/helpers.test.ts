@@ -36,6 +36,7 @@ import {
 	computeFileDigest,
 	computeManifestDigest,
 	filesToHost,
+	decodeHexText,
 	hexToDigest,
 	isHost,
 	isPhysicalDirectory,
@@ -531,7 +532,7 @@ describe('vendored inventory', () => {
 		expect(storage.length).toBe(inventory.entries.length)
 		for (const name of [
 			'AGENTS.md',
-			'CLAUDE.md',
+			'claude/AGENTS.md',
 			'agents/orchestration.md',
 			'agents/skills/orkestrel-falsify/SKILL.md',
 			'agents/templates/brief.md',
@@ -611,6 +612,29 @@ describe('hexToDigest', () => {
 	it('refuses text that does not state exact lowercase hexadecimal bytes', () => {
 		expect(captureScaffoldCode(() => hexToDigest('0'))).toBe('INVALID')
 		expect(captureScaffoldCode(() => hexToDigest('FF'))).toBe('INVALID')
+	})
+})
+
+describe('decodeHexText', () => {
+	it('decodes single-byte and multi-byte UTF-8 to the text it encodes', () => {
+		expect(decodeHexText('68690a')).toBe('hi\n')
+		expect(decodeHexText('e282ac0a')).toBe('€\n')
+	})
+
+	it('decodes empty hex as empty text rather than as absence', () => {
+		expect(decodeHexText('')).toBe('')
+	})
+
+	it('answers undefined for bytes that are not strict UTF-8', () => {
+		expect(decodeHexText('fffe00')).toBeUndefined()
+		expect(decodeHexText('e282')).toBeUndefined()
+		expect(decodeHexText('c0af')).toBeUndefined()
+	})
+
+	it('throws INVALID for input that is not exact lowercase hexadecimal', () => {
+		expect(captureScaffoldCode(() => decodeHexText('0'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => decodeHexText('FF'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => decodeHexText('zz'))).toBe('INVALID')
 	})
 })
 
@@ -2492,9 +2516,12 @@ parentPort.postMessage('ready')`,
 			const entries = stageHost(WORKSPACE_ROOT, join(workspace.path, 'host'))
 			const destinations = entries.map((entry) => entry.destination)
 			const held = new Set(destinations)
-			for (const path of CANON_PATHS) {
+			// A canon member the checkout no longer holds stays owned so a target's copy reports
+			// foreign, and the stage ships nothing for it, so only present members reach the root.
+			for (const path of CANON_PATHS.filter((member) => existsSync(join(WORKSPACE_ROOT, member)))) {
 				expect(held.has(path) || destinations.some((one) => one.startsWith(`${path}/`))).toBe(true)
 			}
+			expect(held.has('CLAUDE.md')).toBe(false)
 			for (const path of ['.claude/settings.json', 'scripts/deps.sh', 'LICENSE']) {
 				expect(held.has(path)).toBe(true)
 			}

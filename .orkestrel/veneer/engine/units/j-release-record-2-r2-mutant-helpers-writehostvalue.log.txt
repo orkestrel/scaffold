@@ -1,0 +1,38 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/helpers.test.ts -t in the call and in the snapshot
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/helpers.test.ts (107 tests | 1 failed | 106 skipped) 7ms
+     × records a write of the value an inline property holds when the property carries a priority, in the call and in the snapshot 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1712:2 > recordHostWrite > records a write of the value an inline property holds when the property carries a priority, in the call and in the snapshot
+AssertionError: expected [ '0px', '' ] to deeply equal [ '0px', 'important' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "0px",[22m
+[32m-   "important",[39m
+[31m+   "",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/helpers.test.ts:1725:5
+    1723|    element.style.getPropertyValue('height'),
+    1724|    element.style.getPropertyPriority('height'),
+    1725|   ]).toEqual(['0px', 'important'])
+       |     ^
+    1726|  })
+    1727| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 106 skipped (107)
+   Start at  06:06:08
+   Duration  1.59s (transform 0ms, setup 502ms, import 36ms, tests 7ms, environment 0ms)
+

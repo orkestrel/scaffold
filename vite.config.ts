@@ -275,6 +275,25 @@ export function guides(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 
+// The skill scripts this package ships as canon, each driven as a child process against a
+// scratch fixture from its mirrored proof under `tests/agents/skills/<skill>/scripts/`. The
+// `configs/agents/tsconfig.skills.json` wrapper selects the project.
+export function skills(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		test: {
+			name: { label: 'skills', color: 'blue' },
+			include: ['tests/agents/**/*.test.ts'],
+			setupFiles: ['./tests/setup.ts'],
+			environment: 'node',
+			browser: { enabled: false },
+			// Each case spawns node on a script; a census case runs `vitest list` over this checkout.
+			testTimeout: 60_000,
+		},
+	}
+	return mergeOverride(project, override)
+}
+
 export function distribution(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
@@ -292,7 +311,7 @@ export function distribution(override?: UserConfig): UserConfig {
 }
 
 // A workbench, not a proof. No gate selects this project. Run in test mode by the
-// `test:probe` script, it collects `tmp/probe/**/*.test.ts`. Run in benchmark mode by the
+// `test:probe` script, it collects `tmp/probes/**/*.test.ts`. Run in benchmark mode by the
 // `test:bench` script, the same workbench also collects `tests/**/*.test.ts` for a `bench` block,
 // so a suite may carry a bench beside its ordinary tests without a second project. The mode
 // guard around each `bench` call keeps it out of test mode, so it never executes there.
@@ -301,13 +320,13 @@ export function probe(override?: UserConfig): UserConfig {
 		resolve,
 		test: {
 			name: { label: 'probe', color: 'black' },
-			include: ['tmp/probe/**/*.test.ts'],
+			include: ['tmp/probes/**/*.test.ts'],
 			setupFiles: ['./tests/setup.ts'],
 			environment: 'node',
 			browser: { enabled: false },
 			fileParallelism: false,
 			pool: 'threads',
-			benchmark: { include: ['tmp/probe/**/*.test.ts', 'tests/**/*.test.ts'] },
+			benchmark: { include: ['tmp/probes/**/*.test.ts', 'tests/**/*.test.ts'] },
 		},
 	}
 	return mergeOverride(project, override)
@@ -316,6 +335,17 @@ export function probe(override?: UserConfig): UserConfig {
 export default defineConfig({
 	resolve,
 	test: {
-		projects: [srcCore, srcServer, srcBin, policy, config, setup, guides, distribution, probe],
+		projects: [
+			srcCore,
+			srcServer,
+			srcBin,
+			policy,
+			config,
+			setup,
+			guides,
+			skills,
+			distribution,
+			probe,
+		],
 	},
 })

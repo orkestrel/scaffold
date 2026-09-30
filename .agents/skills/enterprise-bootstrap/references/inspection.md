@@ -257,7 +257,7 @@ a pass label alone.
 
 Use captures for these judgments, not synthetic negative controls. Record the criterion, capture,
 viewport/theme/state, finding, and disposition. A missing capture leaves the judgment open. For a
-requested review round or campaign, use `orkestrel-polish-surface` rather than creating one here.
+requested review round or campaign, use `orkestrel-polish` rather than creating one here.
 
 - **Task and hierarchy:** the main information and action lead; supporting content remains readable;
   labels, semantics, and destructive rank match the work. Check a grayscale view as a hierarchy aid.

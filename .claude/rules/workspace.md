@@ -58,6 +58,7 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
 - `tsconfig.json`: shared compiler options, all-tree types, and path aliases.
 - `vite.config.ts`: shared builds, test projects, environment loading/mapping, and aliases.
 - `*/types.ts`: public API contracts.
+- `configs/agents/tsconfig.skills.json`: the scoped typecheck of the skill scripts; its presence selects the `skills` blueprint fact.
 - `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
   `configs/src/*bin*` files. Shared logic remains in root configs.
 - `configs/helpers.ts`, `configs/browsers.ts`, and `configs/policy.ts`: the only permitted leaves
@@ -128,18 +129,19 @@ environment axis is one project per src/app axis × environment:
 The workspace-proof axis is cross-cutting. Each proof covers the whole workspace rather than
 one environment, so each is its own project:
 
-| Project             | Files                                                          | Proves                                                                                                                                                                                       | Gate                                  |
-| ------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `policy`            | `tests/policy.test.ts`                                         | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                 | `test`                                |
-| `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs                                                                                                                               | `test`                                |
-| `setup`             | `tests/setup*.test.ts`, excluding `tests/setupBrowser.test.ts` | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                           | `test`                                |
-| `setup:browser`     | `tests/setupBrowser.test.ts`                                   | Prove browser setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                   | `test`                                |
-| `journey:<variant>` | `tests/app/browser/integration.test.ts`                        | Drive the browser application at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                 | `test` through `test:journey`         |
-| `guides`            | `tests/guides.test.ts`                                         | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns | `test`                                |
-| `conformance`       | `tests/conformance.test.ts`                                    | Where this package drifts from the official tooling it tracks                                                                                                                                | `test`                                |
-| `distribution`      | `tests/distribution.test.ts`                                   | The packed package installs and resolves through its public exports                                                                                                                          | `prepublishOnly`; absent when private |
-| `integration`       | `tests/integration.test.ts`                                    | The package's features work together end to end across environments                                                                                                                          | `test`                                |
-| `service`           | `tests/service/**/*.test.ts`                                   | The live external services this package drives, driven for real                                                                                                                              | `prepublishOnly`; `test` when private |
+| Project             | Files                                                          | Proves                                                                                                                                                                                                                      | Gate                                  |
+| ------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `policy`            | `tests/policy.test.ts`                                         | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                                                | `test`                                |
+| `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs                                                                                                                                                              | `test`                                |
+| `setup`             | `tests/setup*.test.ts`, excluding `tests/setupBrowser.test.ts` | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                          | `test`                                |
+| `setup:browser`     | `tests/setupBrowser.test.ts`                                   | Prove browser setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                  | `test`                                |
+| `journey:<variant>` | `tests/app/browser/integration.test.ts`                        | Drive the browser application at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                | `test` through `test:journey`         |
+| `guides`            | `tests/guides.test.ts`                                         | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns                                | `test`                                |
+| `conformance`       | `tests/conformance.test.ts`                                    | Where this package drifts from the official tooling it tracks                                                                                                                                                               | `test`                                |
+| `skills`            | `tests/agents/**/*.test.ts`                                    | Each skill script under `.agents/skills/*/scripts/` does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; `configs/agents/tsconfig.skills.json` selects the project | `test`                                |
+| `distribution`      | `tests/distribution.test.ts`                                   | The packed package installs and resolves through its public exports                                                                                                                                                         | `prepublishOnly`; absent when private |
+| `integration`       | `tests/integration.test.ts`                                    | The package's features work together end to end across environments                                                                                                                                                         | `test`                                |
+| `service`           | `tests/service/**/*.test.ts`                                   | The live external services this package drives, driven for real                                                                                                                                                             | `prepublishOnly`; `test` when private |
 
 - Define the Node `setup` project only when a root file matches `tests/setup*.test.ts`,
   exact-case, other than `tests/setupBrowser.test.ts`. Include those matching files and exclude
@@ -147,6 +149,8 @@ one environment, so each is its own project:
   exists, and collect that path alone. For each registered project, emit its `test:setup` or
   `test:setup:browser` script and run it from `test`; otherwise emit neither its project nor its
   script.
+- When `tests/setupGlobal.ts` exists, give `src:browser`, `setup:browser`, and `integration` that
+  module as their `globalSetup` option, and give no other project a global setup.
 - When a browser application selects the journey axis, register `journey:<variant>` projects
   through the birth-owned `configs/app/vite.journey.config.ts` wrapper. Keep the adopter's variant
   list there and compose each project through the root `appJourney` factory. Exclude
@@ -164,13 +168,13 @@ parallelism in `service`. In a `private: true` workspace, never declare `prepubl
 `distribution`, reach `service` from `test`, and retain the service project's isolated
 configuration.
 
-One project sits on neither axis. `probe` includes `tmp/probe/**/*.test.ts` so an agent can run a
+One project sits on neither axis. `probe` includes `tmp/probes/**/*.test.ts` so an agent can run a
 throwaway instrument against real sources, aliases and setup. Declare no proof there. Keep the
 project composed in the root configuration rather than declared as a path string. The `probe` MCP
-server arms through it — its arming specifications live under the `tmp/probe/` directory and infer
+server arms through it — its arming specifications live under the `tmp/probes/` directory and infer
 this project — so a workspace that removes the project, or declares it as a path string, fails the
 server's arming, and an unarmed server refuses every `prove` call. The `test:bench` script runs the
-same project in benchmark mode, which collects every test file under the `tmp/probe/` directory and
+same project in benchmark mode, which collects every test file under the `tmp/probes/` directory and
 the `tests/` tree while refusing every ordinary test case. Every test script names its project and
 the `test:bench` script joins no chain, so no gate runs either mode; the project's directory is
 ignored by git; and `.claude/rules/tests.md` governs what may live there.
@@ -204,6 +208,8 @@ then runs the configured scoped checks that prove environment isolation.
 - `check:src` mirrors configured `src:*` test projects; optional `src:bin` is its
   own scope.
 - `check:app` mirrors configured `app:*` projects.
+- `check:skills` typechecks `.agents/skills/*/scripts/*.ts` through `configs/agents/tsconfig.skills.json` wherever that wrapper is present: the root project's wildcard never enters a dot-prefixed directory, so the scripts need their own scope.
+- The `build:skills` script emits a `.js` twin of every `.agents/skills/*/scripts/*.ts` script into the `dist/agents/skills/` tree through the same wrapper, rewrites each relative import to `.js`, and copies `.agents/templates/brief.md` into the `dist/agents/templates/` directory; the `build` chain runs it after `build:host`, and `dist/agents` ships in the package.
 - During development, run the narrowest granular scope that covers the change.
 - Lint is a separate complementary gate; neither lint nor root checking replaces
   environment-isolation checks.

@@ -1,0 +1,53 @@
+	// The sibling's blur runs consumer code before the sibling's selection is written, and here that
+	// code makes the sibling's wrapper a dropdown. The swap closes that dropdown, as Bootstrap does,
+	// and destruction writes its state back.
+	it('restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown', async () => {
+		const root = scene.mount(`
+			<ul class="nav">
+				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
+				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
+			</ul>
+			<div class="tab-pane" id="first"></div>
+			<div class="tab-pane active show" id="second"></div>`)
+		const [first, second] = Array.from(root.querySelectorAll('button'))
+		const control = requireValue(first, 'No first control')
+		const sibling = requireValue(second, 'No second control')
+		const item = requireValue(sibling.parentElement, 'No wrapper')
+		sibling.focus()
+		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
+		const tab = new Tab(control)
+		onTestFinished(() => tab.destroy())
+		expect(await tab.show()).toBe(true)
+		expect(item.classList.contains('dropdown')).toBe(true)
+		expect(item.getAttribute('aria-expanded')).toBe('false')
+		tab.destroy()
+		expect(item.hasAttribute('aria-expanded')).toBe(false)
+	})
+
+	// Bootstrap blurs the sibling before it reads the dropdown that holds it, so a dropdown the blur's
+	// consumer code forms is the one the swap closes.
+	it('closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur', async () => {
+		const root = scene.mount(`
+			<ul class="nav">
+				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
+				<li class="nav-item">
+					<button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button>
+					<ul class="dropdown-menu show"></ul>
+				</li>
+			</ul>
+			<div class="tab-pane" id="first"></div>
+			<div class="tab-pane active show" id="second"></div>`)
+		const [first, second] = Array.from(root.querySelectorAll('button'))
+		const control = requireValue(first, 'No first control')
+		const sibling = requireValue(second, 'No second control')
+		const item = requireValue(sibling.parentElement, 'No wrapper')
+		const menu = requireValue(item.querySelector('.dropdown-menu'), 'No menu')
+		sibling.focus()
+		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
+		const tab = new Tab(control)
+		onTestFinished(() => tab.destroy())
+		expect(await tab.show()).toBe(true)
+		expect(item.getAttribute('aria-expanded')).toBe('false')
+		expect(menu.classList.contains('show')).toBe(false)
+		expect(sibling.getAttribute('aria-selected')).toBe('false')
+	})

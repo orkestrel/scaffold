@@ -1,0 +1,37 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Collapse.test.ts (53 tests | 1 failed) 5514ms
+     × writes no shown token after a reaction to its host token write destroys it, leaving the panel restored 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:816:2 > Collapse > writes no shown token after a reaction to its host token write destroys it, leaving the panel restored
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Collapse.test.ts:844:63
+    842|   })
+    843|   expect(await collapse.show()).toBe(false)
+    844|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    845|   expect(Array.from(panel.classList)).toEqual(['collapse'])
+    846|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 52 passed (53)
+   Start at  06:04:10
+   Duration  7.51s (transform 0ms, setup 537ms, import 327ms, tests 5.51s, environment 0ms)
+

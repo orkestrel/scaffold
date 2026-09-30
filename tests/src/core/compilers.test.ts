@@ -414,7 +414,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in a source workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.59.1')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.59.3')
 	})
 
 	it('omits library publishing tools from an app-only workspace', () => {
@@ -428,7 +428,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in an executable workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.59.1')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.59.3')
 	})
 
 	it('keeps the browser application toolchain in an app-only workspace', async () => {
@@ -612,6 +612,34 @@ describe('blueprintToScripts config projects', () => {
 		expect(configuration).not.toContain('isExactCaseFile')
 		expect(scripts['test:guides']).toBe('node --experimental-strip-types tests/guides.test.ts')
 		expect(scripts.test).toContain('npm run test:guides')
+	})
+
+	it('registers and gates the planned skills proof and its scoped typecheck', () => {
+		const blueprint = buildBlueprint({ skills: true })
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+		const artifacts = blueprintToConfigArtifacts(blueprint)
+
+		expect(configuration).toContain('export function skills(override?: UserConfig): UserConfig {')
+		expect(configuration).toContain("include: ['tests/agents/**/*.test.ts']")
+		expect(configuration).toContain(
+			'projects: [srcCore, policy, config, skills, distribution, probe]',
+		)
+		expect(scripts['test:skills']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project skills',
+		)
+		expect(scripts.test).toContain('npm run test:config && npm run test:skills')
+		expect(scripts['check:skills']).toBe('tsc --noEmit -p configs/agents/tsconfig.skills.json')
+		expect(scripts.check).toContain('npm run check:skills')
+		expect(artifacts.map(({ path }) => path)).toContain('configs/agents/tsconfig.skills.json')
+
+		const absent = buildBlueprint()
+		expect(blueprintToRootVite(absent)).not.toContain("name: { label: 'skills',")
+		expect(blueprintToScripts(absent)['test:skills']).toBeUndefined()
+		expect(blueprintToScripts(absent).check).not.toContain('check:skills')
+		expect(blueprintToConfigArtifacts(absent).map(({ path }) => path)).not.toContain(
+			'configs/agents/tsconfig.skills.json',
+		)
 	})
 
 	it('omits the unplanned guides proof', () => {
@@ -975,6 +1003,62 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToScripts(node).test).not.toContain('test:setup:browser')
 	})
 
+	// A browser setup proof cannot start a Node fixture from inside the browser, so
+	// a global workspace hands it the fixture the way it hands one to `src:browser`.
+	// The factory a workspace without the fact receives is pinned byte for byte,
+	// because every target that predates the span regenerates it.
+	it('gives the browser setup project the global setup only a global workspace declares', () => {
+		const bare = [
+			'export function setupBrowser(override?: UserConfig): UserConfig {',
+			'\tconst project: UserConfig = {',
+			'\t\tresolve,',
+			'\t\ttest: {',
+			"\t\t\tname: { label: 'setup:browser', color: 'blue' },",
+			"\t\t\tinclude: ['tests/setupBrowser.test.ts'],",
+			"\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+			'\t\t\tbrowser: {',
+			'\t\t\t\tenabled: true,',
+			'\t\t\t\tprovider: playwright(browserOptions),',
+			"\t\t\t\tinstances: [{ browser: 'chromium', headless: true }],",
+			'\t\t\t},',
+			'\t\t},',
+			'\t}',
+			'\treturn mergeOverride(project, override)',
+			'}',
+			'',
+		].join('\n')
+		const global = bare.replace(
+			"'./tests/setupBrowser.ts'],\n",
+			"'./tests/setupBrowser.ts'],\n\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n",
+		)
+		expect(global).not.toBe(bare)
+
+		const without = blueprintToRootVite(
+			buildBlueprint({ src: ['core', 'browser'], setup: ['node', 'browser'] }),
+		)
+		const withGlobal = blueprintToRootVite(
+			buildBlueprint({ src: ['core', 'browser'], setup: ['node', 'browser'], global: true }),
+		)
+		expect(without).toContain(`\n${bare}`)
+		expect(withGlobal).toContain(`\n${global}`)
+		expect(withGlobal).not.toContain(`\n${bare}`)
+		expect(without).not.toContain('globalSetup:')
+		// The span reaches each browser project over the workspace's own proofs and
+		// the integration project, and never the Node setup project.
+		const setupStart = withGlobal.indexOf('export function setup(')
+		const setupEnd = withGlobal.indexOf('export function setupBrowser(')
+		expect(setupStart).toBeGreaterThan(-1)
+		expect(setupEnd).toBeGreaterThan(setupStart)
+		expect(withGlobal.slice(setupStart, setupEnd)).not.toContain('globalSetup:')
+		const browserStart = withGlobal.indexOf('export function srcBrowser(')
+		const browserEnd = withGlobal.indexOf('export function ', browserStart + 1)
+		expect(browserStart).toBeGreaterThan(-1)
+		expect(browserEnd).toBeGreaterThan(browserStart)
+		expect(withGlobal.slice(browserStart, browserEnd)).toContain(
+			"globalSetup: ['./tests/setupGlobal.ts'],",
+		)
+	})
+
 	it('selects Vue for browser setup only when the browser application selects it', () => {
 		const application = buildBlueprint({ app: ['browser'], setup: ['browser'] })
 		const applicationRoot = blueprintToRootVite(application)
@@ -1328,6 +1412,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			bin: true,
 			guides: true,
 			setup: ['node'],
+			skills: true,
 		})
 		const artifacts = blueprintToConfigArtifacts(blueprint)
 
@@ -1343,6 +1428,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			'configs/src/tsconfig.server.json',
 			'configs/src/vite.bin.config.ts',
 			'configs/src/tsconfig.bin.json',
+			'configs/agents/tsconfig.skills.json',
 		])
 		const current = new Map<string, string>()
 		const generated = new Map<string, string>()
@@ -2104,27 +2190,27 @@ describe('content artifact compilers', () => {
 		expect(guide?.content).toContain('[`app/core`](../app/core)')
 	})
 
-	// The front page is the workspace's own prose, written once. The pointers are
-	// scaffold's, so they are content-owned and restored whenever they drift.
-	it('emits the front page beside the two root instruction pointers', () => {
+	// The front page is the workspace's own prose, written once. The pointer is
+	// scaffold's, so it is content-owned and restored whenever it drifts. No
+	// `CLAUDE.md` is planned: a target holding one stops Claude Code from reading
+	// `AGENTS.md`, so the path stays canon without a claimant and a copy reports foreign.
+	it('emits the front page beside the root instruction pointer', () => {
 		const documents = blueprintToDocumentArtifacts(buildBlueprint({ name: 'widget' }))
-		expect(documents.map(({ path }) => path)).toStrictEqual(['README.md', 'AGENTS.md', 'CLAUDE.md'])
-		expect(documents.map(({ ownership }) => ownership)).toStrictEqual([
-			'birth',
-			'content',
-			'content',
-		])
+		expect(documents.map(({ path }) => path)).toStrictEqual(['README.md', 'AGENTS.md'])
+		expect(documents.map(({ ownership }) => ownership)).toStrictEqual(['birth', 'content'])
 		expect(documents.every(({ group, origin }) => group === 'docs' && origin === 'template')).toBe(
 			true,
 		)
-		const [, agents, claude] = documents
+		const [, agents] = documents
 		expect(agents?.content).toContain('`../scaffold/.agents/orchestration.md`')
 		expect(agents?.content).toContain('`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md`')
-		expect(claude?.content).toContain('`AGENTS.md`')
+		expect(agents?.content).toContain('`../scaffold/.claude/AGENTS.md`')
+		expect(agents?.content).toContain(
+			'`node_modules/@orkestrel/scaffold/dist/host/claude/AGENTS.md`',
+		)
 		// The pointer carries no varying span, so the blueprint's own name never
 		// reaches it. A body that named the workspace would need a fill.
 		expect(agents?.content).not.toContain('widget')
-		expect(claude?.content).not.toContain('widget')
 	})
 
 	// Every host artifact is a path the target receives bytes for. The catalog file
@@ -2135,7 +2221,7 @@ describe('content artifact compilers', () => {
 	it('plans the catalog file inside the canon and none of the moved wiring', () => {
 		const artifacts = blueprintToHostArtifacts(buildBlueprint({ name: 'router', guides: true }))
 		const paths = artifacts.map(({ path }) => path)
-		const canon = paths.filter((path) => isCanonPath(path))
+		const canon = paths.filter((path) => isCanonPath(path) && !path.includes('/skills/'))
 		expect(canon).toStrictEqual(['.claude/agents/orkestrel.md'])
 		expect(artifacts).toContainEqual({
 			path: '.claude/agents/orkestrel.md',
@@ -2158,6 +2244,66 @@ describe('content artifact compilers', () => {
 		expect(
 			artifacts.every(({ ownership, origin }) => ownership === 'presence' && origin === 'host'),
 		).toBe(true)
+	})
+
+	// A target discovers each package-facing skill through a bridge, a sidecar, and a
+	// pointer, while the body stays in the installed package. The names are the
+	// brief's declaration, so a skill added to or dropped from the constant reddens
+	// this case rather than moving with it.
+	it('plans the skill pointer set for each package-facing skill in order', () => {
+		const names = [
+			'enterprise-bootstrap',
+			'orkestrel-build',
+			'orkestrel-debrief',
+			'orkestrel-falsify',
+			'orkestrel-harden',
+			'orkestrel-journey',
+			'orkestrel-polish',
+		]
+		const expected = names.flatMap((name) => [
+			{
+				path: `.claude/skills/${name}/SKILL.md`,
+				group: 'orchestration',
+				ownership: 'presence',
+				origin: 'host',
+			},
+			{
+				path: `.agents/skills/${name}/agents/openai.yaml`,
+				group: 'orchestration',
+				ownership: 'presence',
+				origin: 'host',
+			},
+			{
+				path: `.agents/skills/${name}/SKILL.md`,
+				group: 'orchestration',
+				ownership: 'presence',
+				origin: 'host',
+				pointer: true,
+			},
+		])
+		const artifacts = blueprintToHostArtifacts(buildBlueprint({ name: 'router' }))
+		const skills = artifacts.filter(({ path }) => path.includes('/skills/'))
+		expect(skills).toStrictEqual(expected)
+		expect(artifacts.slice(-expected.length)).toStrictEqual(expected)
+		expect(artifacts.filter((artifact) => 'pointer' in artifact)).toHaveLength(names.length)
+		for (const name of [
+			'orkestrel-align',
+			'orkestrel-dispatch',
+			'orkestrel-publish',
+			'orkestrel-scout',
+		]) {
+			expect(artifacts.some(({ path }) => path.includes(`/${name}/`))).toBe(false)
+		}
+	})
+
+	// A workspace carrying the `skills` fact ships its own skill canon, so a pointer
+	// planned there would overwrite the canonical file it points at.
+	it('plans no skill pointer set for a workspace that ships its own skills', () => {
+		const own = blueprintToHostArtifacts(buildBlueprint({ name: 'router', skills: true }))
+		const plain = blueprintToHostArtifacts(buildBlueprint({ name: 'router' }))
+		expect(own.some(({ path }) => path.includes('/skills/'))).toBe(false)
+		expect(own.some((artifact) => 'pointer' in artifact)).toBe(false)
+		expect(own).toStrictEqual(plain.filter(({ path }) => !path.includes('/skills/')))
 	})
 
 	it('claims only the seed guide mirrors by presence and excludes the target guide', () => {

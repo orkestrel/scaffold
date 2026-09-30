@@ -1,0 +1,824 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/probe-collapse-size/tmp/j-collapse-size/vite.probe.config.ts --root C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/probe-collapse-size --reporter=verbose tmp/probe/j-collapse-size-probe.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/probe-collapse-size
+
+stdout | tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30
+ROW host.userAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30
+ROW control.completion.horizontal.static {"width":"300px","scrollWidth":300,"rectWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30
+CONTROL control.completion.horizontal.static ok expected={"width":"300px","scrollWidth":300,"rectWidth":300} actual={"width":"300px","scrollWidth":300,"rectWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30
+ROW reproduce.size.horizontal.pixel {"transition":"width","midpoint":"24.0625px","finished":"30px","completed":"300px","scrollWidth":300,"rectWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30
+ROW reproduce.size.horizontal.calcSize {"transition":"width","midpoint":"240.719px","finished":"300px","completed":"300px","scrollWidth":300,"rectWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30
+CONTROL control.reproduce.horizontal ok expected={"pixelFinished":"30px","pixelCompleted":"300px","autoFinished":"300px","autoCompleted":"300px"} actual={"pixelFinished":"30px","pixelCompleted":"300px","autoFinished":"300px","autoCompleted":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+ROW control.basis.supports {"auto":true,"maxContent":true,"fitContent":true,"minContent":true,"unknownBasis":false}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+CONTROL control.basis.supports ok expected={"auto":true,"maxContent":true,"fitContent":true,"minContent":true,"unknownBasis":false} actual={"auto":true,"maxContent":true,"fitContent":true,"minContent":true,"unknownBasis":false}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+ROW control.basis.static.horizontal {"auto":300,"maxContent":30,"fitContent":30,"minContent":30,"scrollWidthAtZero":30}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+CONTROL control.basis.static.horizontal ok expected={"auto":300,"maxContent":30,"fitContent":30,"minContent":30,"scrollWidthAtZero":30} actual={"auto":300,"maxContent":30,"fitContent":30,"minContent":30,"scrollWidthAtZero":30}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+ROW control.basis.static.shortText {"auto":300,"maxContent":69.75,"fitContent":69.75,"minContent":39.11,"scrollWidthAtZero":39}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+CONTROL control.basis.static.shortText ok expected="minContent < maxContent = fitContent < auto = 300" actual={"auto":300,"maxContent":69.75,"fitContent":69.75,"minContent":39.11,"scrollWidthAtZero":39}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+ROW control.basis.static.longText {"auto":300,"maxContent":612.25,"fitContent":300,"minContent":53.33,"scrollWidthAtZero":53}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children
+CONTROL control.basis.static.longText ok expected="minContent < fitContent = auto = 300 < maxContent" actual={"auto":300,"maxContent":612.25,"fitContent":300,"minContent":53.33,"scrollWidthAtZero":53}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.show.written "30px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.show.half {"transition":"width","width":"24.0625px","rect":24.06}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.show.end {"width":"30px","rect":30,"inline":"30px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.show.complete {"width":"300px","rect":300}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:590:2 > J-COLLAPSE-SIZE-PROBE reproduction: round 3 horizontal readings before any new row counts > reproduces the static 300px control and the auto basis running to 300 against the pixel path running to 30 164ms
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:661:2 > J-COLLAPSE-SIZE-PROBE basis controls: static panels that separate the four calc-size bases > reads each basis as a static width on the 30px child and on the short and long text children 8ms
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.show.written "calc-size(auto, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.show.half {"transition":"width","width":"240.719px","rect":240.72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.show.end {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.auto.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.show.written "calc-size(max-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.show.half {"transition":"width","width":"24.0625px","rect":24.06}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.show.end {"width":"30px","rect":30,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.hide.written {"width":"30px","rect":30,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.hide.start {"transition":"width","width":"30px","rect":30}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.hide.half {"transition":"width","width":"5.92188px","rect":5.92}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.maxContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.show.written "calc-size(fit-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.show.half {"transition":"width","width":"24.0625px","rect":24.06}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.show.end {"width":"30px","rect":30,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.hide.written {"width":"30px","rect":30,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.hide.start {"transition":"width","width":"30px","rect":30}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.hide.half {"transition":"width","width":"5.92188px","rect":5.92}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.fitContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.show.half {"transition":"width","width":"24.0625px","rect":24.06}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.show.end {"width":"30px","rect":30,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.hide.written {"width":"30px","rect":30,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.hide.start {"transition":"width","width":"30px","rect":30}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.hide.half {"transition":"width","width":"5.92188px","rect":5.92}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW size.horizontal.minContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.auto.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":216.66,"widthEqual":false},"end":{"delta":270,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.auto.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.maxContent.show {"matches":true,"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.maxContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-270,"widthEqual":false},"start":{"delta":-270,"widthEqual":false},"half":{"delta":-53.35,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.fitContent.show {"matches":true,"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.fitContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-270,"widthEqual":false},"start":{"delta":-270,"widthEqual":false},"half":{"delta":-53.35,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.minContent.show {"matches":true,"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+ROW compare.size.horizontal.minContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-270,"widthEqual":false},"start":{"delta":-270,"widthEqual":false},"half":{"delta":-53.35,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+CONTROL control.instrument.pixel.show ok expected="start 0 < half < end 30" actual={"start":0,"half":24.06,"end":30}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion
+CONTROL control.instrument.pixel.hide ok expected="start 300 > half > end 0" actual={"start":300,"half":59.27,"end":0}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:717:2 > J-COLLAPSE-SIZE-PROBE phases: each variant at every phase of show and hide on the 30px child > reads the pixel path and each calc-size basis at start, half, end, and completion 993ms
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.show.written "39px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.show.half {"transition":"width","width":"31.2812px","rect":31.28}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.show.end {"width":"39px","rect":39,"inline":"39px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.show.written "calc-size(auto, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.show.half {"transition":"width","width":"240.719px","rect":240.72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.show.end {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.auto.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.show.written "calc-size(max-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.show.half {"transition":"width","width":"55.9531px","rect":55.95}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.show.end {"width":"69.75px","rect":69.75,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.hide.written {"width":"69.75px","rect":69.75,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.hide.start {"transition":"width","width":"69.75px","rect":69.75}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.hide.half {"transition":"width","width":"13.7812px","rect":13.78}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.maxContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.show.written "calc-size(fit-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.show.half {"transition":"width","width":"55.9531px","rect":55.95}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.show.end {"width":"69.75px","rect":69.75,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.hide.written {"width":"69.75px","rect":69.75,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.hide.start {"transition":"width","width":"69.75px","rect":69.75}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.hide.half {"transition":"width","width":"13.7812px","rect":13.78}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.fitContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.show.half {"transition":"width","width":"31.375px","rect":31.38}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.show.end {"width":"39.1094px","rect":39.11,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.hide.written {"width":"39.1094px","rect":39.11,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.hide.start {"transition":"width","width":"39.1094px","rect":39.11}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.hide.half {"transition":"width","width":"7.71875px","rect":7.72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.short.minContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.auto.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":209.44,"widthEqual":false},"end":{"delta":261,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.auto.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.maxContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":24.67,"widthEqual":false},"end":{"delta":30.75,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.maxContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-230.25,"widthEqual":false},"start":{"delta":-230.25,"widthEqual":false},"half":{"delta":-45.49,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.fitContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":24.67,"widthEqual":false},"end":{"delta":30.75,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.fitContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-230.25,"widthEqual":false},"start":{"delta":-230.25,"widthEqual":false},"half":{"delta":-45.49,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.minContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":0.1,"widthEqual":false},"end":{"delta":0.11,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.short.minContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-260.89,"widthEqual":false},"start":{"delta":-260.89,"widthEqual":false},"half":{"delta":-51.55,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.show.written "53px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.show.half {"transition":"width","width":"42.5156px","rect":42.52}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.show.end {"width":"53px","rect":53,"inline":"53px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.show.written "calc-size(auto, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.show.half {"transition":"width","width":"240.719px","rect":240.72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.show.end {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.auto.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.show.written "calc-size(max-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.show.half {"transition":"width","width":"491.266px","rect":491.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.show.end {"width":"612.25px","rect":612.25,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.hide.written {"width":"612.25px","rect":612.25,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.hide.start {"transition":"width","width":"612.25px","rect":612.25}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.hide.half {"transition":"width","width":"120.969px","rect":120.97}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.maxContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.show.written "calc-size(fit-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.show.half {"transition":"width","width":"240.719px","rect":240.72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.show.end {"width":"300px","rect":300,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.hide.written {"width":"300px","rect":300,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.fitContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.show.half {"transition":"width","width":"42.7812px","rect":42.78}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.show.end {"width":"53.3281px","rect":53.33,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.hide.written {"width":"53.3281px","rect":53.33,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.hide.start {"transition":"width","width":"53.3281px","rect":53.33}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.hide.half {"transition":"width","width":"10.5312px","rect":10.53}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW text.long.minContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.auto.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":198.2,"widthEqual":false},"end":{"delta":247,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.auto.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.maxContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":448.75,"widthEqual":false},"end":{"delta":559.25,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.maxContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":312.25,"widthEqual":false},"start":{"delta":312.25,"widthEqual":false},"half":{"delta":61.7,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.fitContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":198.2,"widthEqual":false},"end":{"delta":247,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.fitContent.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.minContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":0.26,"widthEqual":false},"end":{"delta":0.33,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+ROW compare.text.long.minContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-246.67,"widthEqual":false},"start":{"delta":-246.67,"widthEqual":false},"half":{"delta":-48.74,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children
+CONTROL control.instrument.text.transition ok expected={"short":"width","long":"width"} actual={"short":"width","long":"width"}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:752:2 > J-COLLAPSE-SIZE-PROBE text phases: each variant on children whose min, fit, and max content differ > reads the pixel path and each calc-size basis at every phase on the short and long text children 2000ms
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW control.growth.static {"maxContent":{"before":30,"after":60},"block":{"before":300,"after":300}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+CONTROL control.growth.static ok expected={"maxContent":{"before":30,"after":60},"block":{"before":300,"after":300}} actual={"maxContent":{"before":30,"after":60},"block":{"before":300,"after":300}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW growth.horizontal.pixel {"written":"30px","quarter":{"transition":"width","width":"12.25px","rect":12.25},"grown":{"width":"12.25px","rect":12.25},"half":{"transition":"width","width":"24.0625px","rect":24.06},"end":{"width":"30px","rect":30,"inline":"30px"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW growth.horizontal.auto {"written":"calc-size(auto, size)","quarter":{"transition":"width","width":"122.547px","rect":122.55},"grown":{"width":"122.547px","rect":122.55},"half":{"transition":"width","width":"240.719px","rect":240.72},"end":{"width":"300px","rect":300,"inline":"calc-size(auto, size)"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW growth.horizontal.maxContent {"written":"calc-size(max-content, size)","quarter":{"transition":"width","width":"12.25px","rect":12.25},"grown":{"width":"24.5px","rect":24.5},"half":{"transition":"width","width":"48.1406px","rect":48.14},"end":{"width":"60px","rect":60,"inline":"calc-size(max-content, size)"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW growth.horizontal.fitContent {"written":"calc-size(fit-content, size)","quarter":{"transition":"width","width":"12.25px","rect":12.25},"grown":{"width":"24.5px","rect":24.5},"half":{"transition":"width","width":"48.1406px","rect":48.14},"end":{"width":"60px","rect":60,"inline":"calc-size(fit-content, size)"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW growth.horizontal.minContent {"written":"calc-size(min-content, size)","quarter":{"transition":"width","width":"12.25px","rect":12.25},"grown":{"width":"24.5px","rect":24.5},"half":{"transition":"width","width":"48.1406px","rect":48.14},"end":{"width":"60px","rect":60,"inline":"calc-size(min-content, size)"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW compare.growth.horizontal.auto {"matches":false,"quarter":{"delta":110.3,"widthEqual":false},"grown":{"delta":110.3,"widthEqual":false},"half":{"delta":216.66,"widthEqual":false},"end":{"delta":270,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW compare.growth.horizontal.maxContent {"matches":false,"quarter":{"delta":0,"widthEqual":true},"grown":{"delta":12.25,"widthEqual":false},"half":{"delta":24.08,"widthEqual":false},"end":{"delta":30,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW compare.growth.horizontal.fitContent {"matches":false,"quarter":{"delta":0,"widthEqual":true},"grown":{"delta":12.25,"widthEqual":false},"half":{"delta":24.08,"widthEqual":false},"end":{"delta":30,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion
+ROW compare.growth.horizontal.minContent {"matches":false,"quarter":{"delta":0,"widthEqual":true},"grown":{"delta":12.25,"widthEqual":false},"half":{"delta":24.08,"widthEqual":false},"end":{"delta":30,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:776:2 > J-COLLAPSE-SIZE-PROBE growth: content that widens from 30px to 60px mid-show > reads whether each variant follows the grown content through the end and completion 613ms
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.show.written "30px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.show.half {"transition":"width","width":"24.0625px","rect":24.06}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.show.end {"width":"30px","rect":30,"inline":"30px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.show.half {"transition":"width","width":"24.0625px","rect":24.06}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.show.end {"width":"30px","rect":30,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.horizontal.paired.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.horizontal.paired.show {"matches":true,"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.horizontal.paired.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.show.written "39px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.show.half {"transition":"width","width":"31.2812px","rect":31.28}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.show.end {"width":"39px","rect":39,"inline":"39px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.show.half {"transition":"width","width":"31.375px","rect":31.38}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.show.end {"width":"39.1094px","rect":39.11,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.shortText.paired.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.shortText.paired.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":0.1,"widthEqual":false},"end":{"delta":0.11,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.shortText.paired.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.show.written "53px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.show.half {"transition":"width","width":"42.5156px","rect":42.52}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.show.end {"width":"53px","rect":53,"inline":"53px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.show.start {"transition":"width","width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.show.half {"transition":"width","width":"42.7812px","rect":42.78}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.show.end {"width":"53.3281px","rect":53.33,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.hide.end {"width":"0px","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.longText.paired.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.longText.paired.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":0.26,"widthEqual":false},"end":{"delta":0.33,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.longText.paired.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+CONTROL control.paired.writes ok expected={"show":"calc-size(min-content, size)","hide":"calc-size(auto, size)"} actual={"show":"calc-size(min-content, size)","hide":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+CONTROL control.paired.instrument ok expected="show start < half < end; hide start > half > end" actual={"show":{"start":0,"half":24.06,"end":30},"hide":{"start":300,"half":59.27,"end":0}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.growth.horizontal.pixel {"written":"30px","quarter":{"transition":"width","width":"12.25px","rect":12.25},"grown":{"width":"12.25px","rect":12.25},"half":{"transition":"width","width":"24.0625px","rect":24.06},"end":{"width":"30px","rect":30,"inline":"30px"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW paired.growth.horizontal.paired {"written":"calc-size(min-content, size)","quarter":{"transition":"width","width":"12.25px","rect":12.25},"grown":{"width":"24.5px","rect":24.5},"half":{"transition":"width","width":"48.1406px","rect":48.14},"end":{"width":"60px","rect":60,"inline":"calc-size(min-content, size)"},"complete":{"width":"300px","rect":300},"scrollWidth":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content
+ROW compare.paired.growth.horizontal.paired {"matches":false,"quarter":{"delta":0,"widthEqual":true},"grown":{"delta":12.25,"widthEqual":false},"half":{"delta":24.08,"widthEqual":false},"end":{"delta":30,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:857:2 > J-COLLAPSE-SIZE-PROBE round 2 pairing: min-content on show and auto on hide, on round 1 fixtures > reads the pairing at every phase against the pixel path on the 30px child, the text children, and growing content 1435ms
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW control.boxed.static.contentBox {"boxSizing":"content-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectWidth":300,"rectHeight":13,"scrollWidth":296,"scrollHeight":9,"rectWidthAt100":118}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+CONTROL control.boxed.static.contentBox ok expected={"boxSizing":"content-box","rectWidthAt100":118} actual={"boxSizing":"content-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectWidth":300,"rectHeight":13,"scrollWidth":296,"scrollHeight":9,"rectWidthAt100":118}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW control.boxed.static.horizontal {"boxSizing":"border-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectWidth":300,"rectHeight":13,"scrollWidth":296,"scrollHeight":9,"rectWidthAt100":100}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+CONTROL control.boxed.static.horizontal ok expected={"boxSizing":"border-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectWidth":300,"rectHeight":13,"scrollWidth":296,"scrollHeight":9,"rectWidthAt100":100} actual={"boxSizing":"border-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectWidth":300,"rectHeight":13,"scrollWidth":296,"scrollHeight":9,"rectWidthAt100":100}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.show.written "44px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.show.start {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.show.half {"transition":"width","width":"35.2969px","rect":35.3}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.show.end {"width":"44px","rect":44,"inline":"44px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.hide.written {"width":"300px","rect":300,"inline":"300px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.hide.end {"width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.pixel.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.show.written "calc-size(auto, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.show.start {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.show.half {"transition":"width","width":"240.719px","rect":240.72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.show.end {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.hide.end {"width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.auto.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.show.written "calc-size(max-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.show.start {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.show.half {"transition":"width","width":"38.5px","rect":38.5}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.show.end {"width":"48px","rect":48,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.hide.written {"width":"48px","rect":48,"inline":"calc-size(max-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.hide.start {"transition":"width","width":"48px","rect":48}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.hide.half {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.hide.end {"width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.maxContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.show.written "calc-size(fit-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.show.start {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.show.half {"transition":"width","width":"38.5px","rect":38.5}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.show.end {"width":"48px","rect":48,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.hide.written {"width":"48px","rect":48,"inline":"calc-size(fit-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.hide.start {"transition":"width","width":"48px","rect":48}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.hide.half {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.hide.end {"width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.fitContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.show.start {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.show.half {"transition":"width","width":"38.5px","rect":38.5}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.show.end {"width":"48px","rect":48,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.hide.written {"width":"48px","rect":48,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.hide.start {"transition":"width","width":"48px","rect":48}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.hide.half {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.hide.end {"width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.minContent.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.show.written "calc-size(min-content, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.show.start {"transition":"width","width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.show.half {"transition":"width","width":"38.5px","rect":38.5}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.show.end {"width":"48px","rect":48,"inline":"calc-size(min-content, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.show.complete {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.hide.shown {"width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.hide.written {"width":"300px","rect":300,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.hide.start {"transition":"width","width":"300px","rect":300}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.hide.half {"transition":"width","width":"59.2656px","rect":59.27}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.hide.end {"width":"18px","rect":18}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW boxed.horizontal.paired.hide.complete {"width":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.auto.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":205.42,"widthEqual":false},"end":{"delta":256,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.auto.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.maxContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":3.2,"widthEqual":false},"end":{"delta":4,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.maxContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-252,"widthEqual":false},"start":{"delta":-252,"widthEqual":false},"half":{"delta":-41.27,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.fitContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":3.2,"widthEqual":false},"end":{"delta":4,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.fitContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-252,"widthEqual":false},"start":{"delta":-252,"widthEqual":false},"half":{"delta":-41.27,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.minContent.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":3.2,"widthEqual":false},"end":{"delta":4,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.minContent.hide {"matches":false,"shown":{"delta":0,"widthEqual":true},"written":{"delta":-252,"widthEqual":false},"start":{"delta":-252,"widthEqual":false},"half":{"delta":-41.27,"widthEqual":false},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.paired.show {"matches":false,"start":{"delta":0,"widthEqual":true},"half":{"delta":3.2,"widthEqual":false},"end":{"delta":4,"widthEqual":false},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+ROW compare.boxed.horizontal.paired.hide {"matches":true,"shown":{"delta":0,"widthEqual":true},"written":{"delta":0,"widthEqual":true},"start":{"delta":0,"widthEqual":true},"half":{"delta":0,"widthEqual":true},"end":{"delta":0,"widthEqual":true},"complete":{"delta":0,"widthEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel
+CONTROL control.boxed.instrument.horizontal ok expected="show start < half < end; hide start > half > end" actual={"show":{"start":18,"half":35.3,"end":44},"hide":{"start":300,"half":59.27,"end":18}}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:899:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed horizontal: a 2px border and 4px by 7px padding under border-box > reads every variant and the pairing at every phase on the boxed horizontal panel 1200ms
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW control.boxed.static.vertical {"boxSizing":"border-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectWidth":300,"rectHeight":72,"scrollWidth":296,"scrollHeight":68,"rectWidthAt100":100}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+CONTROL control.boxed.static.vertical ok expected={"boxSizing":"border-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectHeight":72,"scrollHeight":68} actual={"boxSizing":"border-box","border":["2px","2px","2px","2px"],"padding":["4px","7px","4px","7px"],"rectHeight":72,"scrollHeight":68}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.hide.shown {"height":"72px","rect":72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.hide.written {"height":"72px","rect":72,"inline":"72px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.hide.start {"transition":"height","height":"72px","rect":72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.hide.half {"transition":"height","height":"14.2188px","rect":14.22}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.hide.end {"height":"12px","rect":12}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.hide.complete {"height":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.hide.shown {"height":"72px","rect":72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.hide.written {"height":"72px","rect":72,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.hide.start {"transition":"height","height":"72px","rect":72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.hide.half {"transition":"height","height":"14.2188px","rect":14.22}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.hide.end {"height":"12px","rect":12}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.hide.complete {"height":"auto","rect":0}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW compare.boxed.vertical.auto.hide {"matches":true,"shown":{"delta":0,"heightEqual":true},"written":{"delta":0,"heightEqual":true},"start":{"delta":0,"heightEqual":true},"half":{"delta":0,"heightEqual":true},"end":{"delta":0,"heightEqual":true},"complete":{"delta":0,"heightEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.show.written "68px"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.show.start {"transition":"height","height":"12px","rect":12}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.show.half {"transition":"height","height":"54.5625px","rect":54.56}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.show.end {"height":"68px","rect":68,"inline":"68px"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.pixel.show.complete {"height":"72px","rect":72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.show.written "calc-size(auto, size)"
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.show.start {"transition":"height","height":"12px","rect":12}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.show.half {"transition":"height","height":"57.7656px","rect":57.77}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.show.end {"height":"72px","rect":72,"inline":"calc-size(auto, size)"}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW boxed.vertical.auto.show.complete {"height":"72px","rect":72}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+ROW compare.boxed.vertical.auto.show {"matches":false,"start":{"delta":0,"heightEqual":true},"half":{"delta":3.21,"heightEqual":false},"end":{"delta":4,"heightEqual":false},"complete":{"delta":0,"heightEqual":true}}
+stdout | tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation
+CONTROL control.boxed.instrument.vertical ok expected="show start < half < end; hide start > half > end" actual={"show":{"start":12,"half":54.56,"end":68},"hide":{"start":72,"half":14.22,"end":12}}
+ ✓ |[object Object] (chromium)| tmp/probe/j-collapse-size-probe.test.ts:956:2 > J-COLLAPSE-SIZE-PROBE round 2 boxed vertical: calc-size(auto, size) hide against the rect-height pixel path > reads the pixel path and calc-size(auto, size) at every phase of the boxed vertical hide, with the show as an observation 399ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  06:29:46
+   Duration  8.02s (transform 0ms, setup 0ms, import 19ms, tests 6.81s, environment 0ms)
+
+exit=0

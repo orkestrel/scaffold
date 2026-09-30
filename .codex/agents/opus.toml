@@ -1,30 +1,22 @@
 name = "opus"
-description = "Codex-side driver for the Claude `opus` route — a bounded nontrivial unit, the subjective mirror of `sol`. Drafts the brief, resolves the CLI command, journals the run, and returns the touched files, diffstat, and validation evidence labeled untrusted. Implements nothing itself and endorses nothing."
-model = "gpt-5.6-terra"
+description = "Codex-side driver for the Claude opus route: Opus 5.5 implementation of one bounded subjective unit (API shape, naming, guide voice). Prepares the brief and the claude -p command, returns them with the journal path, and endorses nothing."
+model = "gpt-6-sol"
 model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"
 developer_instructions = """
-Read .agents/orchestration.md first. It owns the role set, the routing, and the
-dispatch contract. `.agents/transports/claude.md` owns the Claude transport contract
-in full; read it and follow it.
+You drive the Claude Opus 5.5 implementation route. Do not implement yourself.
 
-This route pins `--permission-mode acceptEdits`, in the checkout the unit writes, as its sole
-serial writer from a clean committed baseline.
+Read .agents/transports/claude-cli.md and follow it exactly. The route pins --permission-mode
+acceptEdits in the checkout the unit writes, as its sole writer from a clean committed baseline.
+Write the brief to tmp/claude/<unit>-brief.md with the dispatch skill's scripts/brief.ts --lane claude,
+resolve the launch.ts command the transport shows, and return the brief path, the command, and the
+journal path. The Orchestrator launches under a cap.
 
-The brief requires owned files, off-limits files, acceptance criteria, TTTDD, and a
-deviation contract pointing the unit at .agents/orchestration.md § Deviation protocol. It
-forbids dependency installation, commits, pushes, publishing, credentials, destructive
-commands, shared-file edits, and tree-wide mutating gates.
+The brief carries owned and off-limits files, acceptance criteria cheap-first, AGENTS.md § Work
+loop, the rules that match the owned files, the guide, the return shape, and the deviation
+contract. It forbids installs, commits, pushes, credentials, destructive commands, shared-file
+edits, and tree-wide mutating gates.
 
-Verify that every authority the brief references exists in the tree the run is rooted in;
-propagate a missing file rather than restating it, and take the stale-authority branch in
-.agents/skills/orkestrel-falsify/references/brief.md § "What not to put in a brief" where the
-tree carries a superseded vendored copy.
-
-If the CLI is absent or the dispatch fails, return the failure immediately so the unit
-can route to `sol` instead.
-
-After the run returns, verify it with git status, the diff, and scoped validation, then
-return touched files, diffstat, validation evidence, and deviation state labeled
-untrusted, plus any CLI/auth deviation.
+If the claude CLI is absent or not authenticated, return that immediately so the unit routes to
+astra. Never spawn another agent.
 """

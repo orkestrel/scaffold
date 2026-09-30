@@ -27,11 +27,15 @@ import {
 	GROUPS,
 	isCanonPath,
 	RELEASE_PROOF_COMMAND,
+	renderSkillPointer,
 	replaceManifestScripts,
 	SHOWCASE_DEV_DEPENDENCIES,
+	SKILLS_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
+	TARGET_SKILL_NAMES,
 } from '@src/core'
 import { readFileHex, readHostFloor, stageHost } from '@src/server'
+import { isRecord } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import {
 	EXIT_CLEAN,
@@ -68,6 +72,7 @@ import {
 	HOSTILE_BYTES,
 	omitDependencies,
 	REFUSED_MANIFEST_TEXT,
+	SKILL_CANON_FILES,
 	TARGET_DEV_DEPENDENCIES,
 	TARGET_MANIFEST_TEXT as TARGET_MANIFEST_FIXTURE,
 	trackFiles,
@@ -97,7 +102,7 @@ const FLEET_NAMES: readonly string[] = Object.freeze([
 	'@orkestrel/scaffold',
 	'@orkestrel/test',
 ])
-const TARGET_MANIFEST_TEXT = TARGET_MANIFEST_FIXTURE.replace('~8.2.0', '~8.3.0')
+const TARGET_MANIFEST_TEXT = TARGET_MANIFEST_FIXTURE.replace('~8.2.0', '~8.3.1')
 
 const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
 	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
@@ -163,7 +168,7 @@ function buildTargetManifest(
 	scripts?: unknown,
 ): string {
 	const dependenciesAligned =
-		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.0' } : dependencies
+		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.1' } : dependencies
 	const declared = development === undefined ? blueprintToDevDependencies(blueprint) : development
 	const aligned =
 		typeof declared === 'object' && declared !== null && !Array.isArray(declared)
@@ -1137,7 +1142,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.3.0 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.1 within major 8.',
 					blocking: false,
 				},
 			])
@@ -1229,7 +1234,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.20",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.24",`,
 					blocking: false,
 				},
 			])
@@ -1308,7 +1313,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.3.0", "vitest": "^4.1.11",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.3.1", "vitest": "^4.1.11",`,
 					blocking: false,
 				},
 			])
@@ -1636,7 +1641,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('infers journey and setup runtimes from exact-case structural paths', async () => {
+	it('infers journey, skills, and setup runtimes from exact-case structural paths', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1645,8 +1650,10 @@ describe('CLI audit', () => {
 			for (const state of ['absent', 'wrong', 'node', 'browser', 'present']) {
 				workspace.remove('target/tests')
 				workspace.remove('target/configs/app')
+				workspace.remove('target/configs/agents')
 				if (state === 'wrong') {
 					workspace.write('target/configs/app/vite.Journey.config.ts', 'export {}\n')
+					workspace.write('target/configs/agents/tsconfig.Skills.json', '{}\n')
 					workspace.write('target/tests/SetupBrowser.test.ts', 'export {}\n')
 					workspace.write('target/tests/nested/setup.test.ts', 'export {}\n')
 				}
@@ -1658,11 +1665,13 @@ describe('CLI audit', () => {
 				}
 				if (state === 'present') {
 					workspace.write('target/configs/app/vite.journey.config.ts', '// adopter variants\n')
+					workspace.write('target/configs/agents/tsconfig.skills.json', '{}\n')
 				}
 				const blueprint = createBlueprint('sample', {
 					src: ['core'],
 					app: ['browser'],
 					journey: state === 'present',
+					skills: state === 'present',
 					setup:
 						state === 'present'
 							? ['node', 'browser']
@@ -1686,6 +1695,7 @@ describe('CLI audit', () => {
 				expect(exit, `${state}: ${sink.diagnostic.join('\n')}`).toBe(EXIT_CLEAN)
 				const root = requireValue(workspace.read('target/vite.config.ts'))
 				expect(root.includes('export function appJourney(')).toBe(state === 'present')
+				expect(root.includes('export function skills(')).toBe(state === 'present')
 				expect(root.includes("label: 'setup'")).toBe(state === 'node' || state === 'present')
 				expect(root.includes("label: 'setup:browser'")).toBe(
 					state === 'browser' || state === 'present',
@@ -1834,7 +1844,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('reports a journey invocation missing from test without rewriting the chain', async () => {
+	it('reports a journey invocation missing from a package-owned test chain without rewriting it', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1852,10 +1862,11 @@ describe('CLI audit', () => {
 					target,
 				]),
 			).toBe(EXIT_CLEAN)
-			const manifest = requireValue(workspace.read('fresh/package.json')).replace(
-				' && npm run test:journey',
-				'',
-			)
+			const generated = requireValue(workspace.read('fresh/package.json'))
+			// The chain runs a step the plan does not generate in place of the journey
+			// step, so the package owns it and a write leaves it as it stands.
+			const manifest = generated.replace(' && npm run test:journey', ' && npm run check')
+			expect(manifest).not.toBe(generated)
 			workspace.write('fresh/package.json', manifest)
 			for (const verb of ['repair', 'audit']) {
 				const sink = createSink()
@@ -1879,6 +1890,28 @@ describe('CLI audit', () => {
 				})
 				expect(workspace.read('fresh/package.json')).toBe(manifest)
 			}
+
+			// The control: the same chain with the journey step dropped runs generated
+			// steps only, so repair writes the planned chain back and nothing remains
+			// to report.
+			const predecessor = generated.replace(' && npm run test:journey', '')
+			expect(predecessor).not.toBe(generated)
+			workspace.write('fresh/package.json', predecessor)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'repair',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				target,
+				'--groups',
+				'configs',
+				'--json',
+			])
+			const repaired: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(repaired.audit.questions.filter(({ field }) => field === 'projects')).toStrictEqual([])
+			expect(workspace.read('fresh/package.json')).toBe(generated)
 		} finally {
 			workspace.destroy()
 		}
@@ -2441,7 +2474,9 @@ describe('CLI audit', () => {
 			if (test === undefined) throw new Error('The private workspace carries no test gate')
 			const scripts = {
 				...planned,
-				test: test.replace(' && npm run test:service', ''),
+				// A step the plan does not generate keeps the chain package-owned, so the
+				// remedy names the hand edit rather than a write that closes the gap.
+				test: `${test.replace(' && npm run test:service', '')} && npm run lint:check`,
 				prepublishOnly: 'npm run test:service',
 			}
 			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
@@ -2496,7 +2531,9 @@ describe('CLI audit', () => {
 			// entirely, so the script line is the repair that closes it.
 			const scripts: Record<string, string> = {
 				...planned,
-				test: test.replace(' && npm run test:service', ''),
+				// A step the plan does not generate keeps the chain package-owned, so the
+				// remedy names the hand edit rather than a write that closes the gap.
+				test: `${test.replace(' && npm run test:service', '')} && npm run lint:check`,
 			}
 			delete scripts['test:service']
 			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
@@ -2543,17 +2580,18 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			// The proof selects the planned `setup` project. The manifest predates it,
-			// so it declares neither `test:setup` nor a chain that reaches the project.
+			// The proof selects the planned `setup` project. The manifest declares
+			// neither `test:setup` nor a chain that reaches the project, and its chain
+			// runs a step the plan does not generate, so the package owns that chain
+			// and the write leaves the gate to the maintainer.
 			workspace.write('target/tests/setup.test.ts', 'export {}\n')
+			const predecessor = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(
-					undefined,
-					undefined,
-					undefined,
-					blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
-				),
+				buildTargetManifest(undefined, undefined, undefined, {
+					...predecessor,
+					test: `${requireValue(predecessor.test)} && npm run check`,
+				}),
 			)
 			const sink = createSink()
 			expect(
@@ -2574,6 +2612,7 @@ describe('CLI audit', () => {
 				'test:setup is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test or prepublishOnly chain.',
 			)
 			expect(refusal.error.message).not.toContain('already declared')
+			expect(workspace.read('target/package.json')).not.toContain('"test:setup"')
 		} finally {
 			workspace.destroy()
 		}
@@ -3270,7 +3309,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.3.0 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.1 within major 8.',
 					blocking: false,
 				},
 			])
@@ -4090,7 +4129,7 @@ describe('CLI repair', () => {
 			expect(written).toContain(
 				'"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release && npm run verify"',
 			)
-			expect(written).toContain('"vite": "^8.3.0"')
+			expect(written).toContain('"vite": "^8.3.1"')
 			expect(workspace.read('target/vite.config.ts')).not.toBe('marker\n')
 
 			const audited = createSink()
@@ -4512,9 +4551,292 @@ describe('CLI repair', () => {
 			workspace.destroy()
 		}
 	})
+
+	it('reports a hand-edited skill pointer stale and restores the derived bytes', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			const path = '.agents/skills/orkestrel-harden/SKILL.md'
+			const derived = renderSkillPointer(requireValue(SKILL_CANON_FILES[path]), 'orkestrel-harden')
+			expect(workspace.read(`target/${path}`)).toBe(derived)
+			workspace.write(`target/${path}`, '# Hand-edited pointer\n')
+			const audited = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(audited.output[0] ?? '')
+			expect(
+				audit.findings
+					.filter((finding) => finding.drift !== 'aligned')
+					.map((finding) => [finding.path, finding.drift]),
+			).toStrictEqual([[path, 'stale']])
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.written).toStrictEqual([path])
+			expect(workspace.read(`target/${path}`)).toBe(derived)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('plans and writes no skill pointer for a target that ships its own skill canon', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(`target/${SKILLS_CONFIG_PATH}`, '{}\n')
+			// The skills fact registers its own project, so the target's chain reaches it.
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(createBlueprint('sample', { src: ['core'], skills: true })),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.written).toContain(SKILLS_CONFIG_PATH)
+			expect(
+				result.audit.findings.filter(
+					(finding) =>
+						finding.path.startsWith('.agents/skills/') ||
+						finding.path.startsWith('.claude/skills/'),
+				),
+			).toStrictEqual([])
+			expect(workspace.has('target/.agents')).toBe(false)
+			expect(workspace.has('target/.claude/skills')).toBe(false)
+			// The control: the same fleet without the skills fact receives the pointer set.
+			const control = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const plain = createFleet(control)
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'repair',
+					'--from',
+					plain.host,
+					'--target',
+					plain.target,
+				])
+				expect(control.has('target/.agents/skills/orkestrel-harden/SKILL.md')).toBe(true)
+			} finally {
+				control.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
 })
 
 describe('CLI overwrite', () => {
+	it('writes every skill pointer file into a fresh target and sweeps the skill files the plan leaves out', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/.agents/skills/orkestrel-dispatch/SKILL.md', '# Dispatch\n')
+			workspace.write('target/.agents/skills/orkestrel-harden/references/brief.md', '# Brief\n')
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'overwrite',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			// The empty registry fails the catalog half, and that note is what the code carries.
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.note ?? '').toContain('The catalog step did not complete')
+			const written = result.written.filter(
+				(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
+			)
+			expect(written).toHaveLength(21)
+			expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
+			expect(result.removed.toSorted()).toStrictEqual([
+				'.agents/skills/orkestrel-dispatch/SKILL.md',
+				'.agents/skills/orkestrel-harden/references/brief.md',
+			])
+			for (const name of TARGET_SKILL_NAMES) {
+				const path = `.agents/skills/${name}/SKILL.md`
+				expect(workspace.read(`target/${path}`)).toBe(
+					renderSkillPointer(requireValue(SKILL_CANON_FILES[path]), name),
+				)
+				for (const copied of [
+					`.agents/skills/${name}/agents/openai.yaml`,
+					`.claude/skills/${name}/SKILL.md`,
+				]) {
+					expect(workspace.read(`target/${copied}`)).toBe(SKILL_CANON_FILES[copied])
+				}
+			}
+			expect(
+				result.audit.findings
+					.filter((finding) => written.includes(finding.path))
+					.every((finding) => finding.drift === 'aligned'),
+			).toBe(true)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	// A root browser setup proof plans `setup:browser`, its direct script, and a
+	// chain step. A manifest whose `test` chain holds generated steps only is the
+	// chain an earlier birth left, so overwrite lands the script and the step itself
+	// rather than refusing the configs group over bytes its own plan generates.
+	it('writes the browser setup script and chain step a generated test chain predates', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { src: ['core'], setup: ['browser'] })
+			const planned = blueprintToScripts(blueprint)
+			const predecessor = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+			expect(predecessor).not.toHaveProperty('test:setup:browser')
+			workspace.write('target/tests/setupBrowser.test.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(blueprint, undefined, undefined, predecessor),
+			)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+
+			const before = createSink()
+			expect(
+				await new CLI(before.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const advised: AuditResult = JSON.parse(before.output[0] ?? '')
+			const project = advised.questions.find((question) => question.field === 'projects')
+			// The write closes the gap, so the remedy names it and asks for no hand edit.
+			expect(project?.message).not.toContain('declare it and invoke it')
+			expect(project?.message).toContain(
+				'The test chain runs generated steps only, so repair and overwrite write the planned chain and every missing direct script.',
+			)
+
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--dirty',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			// The offline catalog note is what the code carries; nothing refused.
+			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.written).toContain('vite.config.ts')
+			expect(result.audit.questions).toStrictEqual([])
+			expect(workspace.read('target/vite.config.ts')).toContain("label: 'setup:browser'")
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			const scripts = isRecord(manifest) && isRecord(manifest.scripts) ? manifest.scripts : {}
+			expect(scripts['test:setup:browser']).toBe(planned['test:setup:browser'])
+			expect(scripts.test).toBe(planned.test)
+			expect(scripts.test).toContain('npm run test:setup:browser')
+
+			const after = createSink()
+			expect(
+				await new CLI(after.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// A library born with `src` alone that later gains `app/` plans a chain adding
+	// `npm run test:app`, an aggregate outside the writable region. A selection
+	// that excludes `configs` hides the `projects` refusal, so the chain write
+	// itself has to decline rather than land a step naming a missing script.
+	it('keeps a test chain whose planned form adds an aggregate the manifest lacks', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const grown = createBlueprint('sample', { src: ['core'], app: ['core'] })
+			const born = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+			expect(born).not.toHaveProperty('test:app')
+			expect(blueprintToScripts(grown).test).toContain('npm run test:app')
+			workspace.ensure('target/app/core')
+			workspace.write('target/package.json', buildTargetManifest(grown, undefined, undefined, born))
+			const before = requireValue(workspace.read('target/package.json'))
+
+			const sink = createSink()
+			const exit = await new CLI(sink.options).execute([
+				'repair',
+				'--offline',
+				'--groups',
+				'tests',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(result).not.toHaveProperty('error')
+			expect(exit).toBe(EXIT_CLEAN)
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			const scripts = isRecord(manifest) && isRecord(manifest.scripts) ? manifest.scripts : {}
+			expect(scripts.test).toBe(born.test)
+			expect(scripts).not.toHaveProperty('test:app')
+			// The direct app script still lands, so the region wrote rather than refused.
+			expect(scripts['test:app:core']).toBe(blueprintToScripts(grown)['test:app:core'])
+			expect(workspace.read('target/package.json')).not.toBe(before)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('reports replacements, creations, and file deletions as distinct outcomes', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
@@ -5097,7 +5419,7 @@ describe('CLI overwrite', () => {
 				name: 'vite',
 				range: '~8.2.0',
 				lookup: 'found',
-				latest: '8.3.0',
+				latest: '8.3.1',
 				major: 8,
 			})
 			const manifest = workspace.read('target/package.json')
@@ -5106,7 +5428,7 @@ describe('CLI overwrite', () => {
 			expect(manifest).toContain(`"@orkestrel/scaffold": "^${published}"`)
 			// Nothing else in the manifest moved, which is the whole promise of
 			// rewriting a range in place rather than re-serializing the file.
-			expect(manifest).toContain('"vite": "^8.3.0"')
+			expect(manifest).toContain('"vite": "^8.3.1"')
 			expect(manifest).toContain('"description": "A sample workspace."')
 		} finally {
 			await server.destroy()

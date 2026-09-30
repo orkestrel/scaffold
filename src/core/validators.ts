@@ -300,6 +300,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		global: isBoolean,
 		showcase: isBoolean,
 		journey: isBoolean,
+		skills: isBoolean,
 	},
 	['description'],
 )
@@ -330,8 +331,9 @@ export const isArtifact: Guard<Artifact> = unionOf(
 			environment: isEnvironment,
 			origin: literalOf('host'),
 			source: isPath,
+			pointer: isBoolean,
 		},
-		['environment', 'source'],
+		['environment', 'source', 'pointer'],
 	),
 	recordOf(
 		{

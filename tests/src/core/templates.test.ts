@@ -556,7 +556,10 @@ describe('pointer documents', () => {
 		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md`')
 		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/claude/rules/`')
 		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/agents/skills/`')
-		expect(ARTIFACT_TEMPLATES.docs.claude).toContain('`AGENTS.md`')
+		expect(agents).toContain('`node node_modules/@orkestrel/scaffold/dist/agents/skills/`')
+		expect(agents).toContain('`../scaffold/.claude/AGENTS.md`')
+		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/claude/AGENTS.md`')
+		expect(agents).toContain('`CLAUDE.md`')
 	})
 
 	// A bare `@` opens a Claude Code import, which inlines the named file into
@@ -564,7 +567,7 @@ describe('pointer documents', () => {
 	// So every `@` a body carries has to sit inside a code span, and the reading
 	// is taken over the body with its code spans removed.
 	it('opens no import outside a code span', () => {
-		for (const body of [ARTIFACT_TEMPLATES.docs.agents, ARTIFACT_TEMPLATES.docs.claude]) {
+		for (const body of [ARTIFACT_TEMPLATES.docs.agents]) {
 			expect(body).toContain('@')
 			expect(body.replaceAll(/`[^`]*`/gu, '')).not.toContain('@')
 		}
@@ -573,7 +576,7 @@ describe('pointer documents', () => {
 	// A pointer carries no varying span, so it is planned as its own bytes rather
 	// than filled. A leftover token would reach a target verbatim.
 	it('carries no template placeholder', () => {
-		for (const body of [ARTIFACT_TEMPLATES.docs.agents, ARTIFACT_TEMPLATES.docs.claude]) {
+		for (const body of [ARTIFACT_TEMPLATES.docs.agents]) {
 			expect(body).not.toMatch(/\{\{[^}]*\}\}/u)
 		}
 	})
@@ -675,6 +678,11 @@ describe('configuration templates', () => {
 				createBlueprint('browser-library-setup', { src: ['browser'], setup: ['browser'] }),
 				createBlueprint('browser-application-setup', { app: ['browser'], setup: ['browser'] }),
 				createBlueprint('browser-setup', { src: ['core'], setup: ['browser'] }),
+				createBlueprint('browser-global-setup', {
+					src: ['core', 'browser'],
+					setup: ['node', 'browser'],
+					global: true,
+				}),
 				createBlueprint('application', {
 					app: ['core', 'browser', 'server'],
 					integration: true,

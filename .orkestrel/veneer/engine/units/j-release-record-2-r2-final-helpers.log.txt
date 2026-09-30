@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/helpers.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+
+ Test Files  1 passed (1)
+      Tests  107 passed (107)
+   Start at  06:07:09
+   Duration  1.78s (transform 0ms, setup 486ms, import 36ms, tests 287ms, environment 0ms)
+

@@ -4,6 +4,7 @@ import type {
 	Artifact,
 	Audit,
 	CatalogEntry,
+	ContentArtifact,
 	Drift,
 	Finding,
 	HostArtifact,
@@ -49,6 +50,7 @@ import {
 	nameToGuide,
 	planToFindings,
 	replaceManifestRanges,
+	renderSkillPointer,
 	replaceManifestScripts,
 	ScaffoldError,
 } from '@src/core'
@@ -56,6 +58,7 @@ import { MANIFEST_NAME } from './constants.js'
 import {
 	computeFileDigest,
 	computeManifestDigest,
+	decodeHexText,
 	hexToDigest,
 	isPhysicalDirectory,
 	isPhysicalFile,
@@ -640,7 +643,9 @@ export class Materializer implements MaterializerInterface {
 				continue
 			}
 			const expanded = this.#expand(artifact, remaining)
-			for (const one of expanded) remaining -= (one.hex?.length ?? 0) / 2
+			for (const one of expanded) {
+				remaining -= one.origin === 'host' ? (one.hex?.length ?? 0) / 2 : computeBytes(one.content)
+			}
 			artifacts.push(...expanded)
 		}
 		if (remaining < 0) {
@@ -865,12 +870,26 @@ export class Materializer implements MaterializerInterface {
 		}
 	}
 
+	// A skill pointer is written as text derived from the vendored skill rather
+	// than copied from it, so it leaves hydration as computed content: the write
+	// path copies every host artifact from its source, which would land the
+	// canonical skill instead of the pointer.
 	#hydrated(
 		artifact: HostArtifact | HydratedArtifact,
 		path: string,
 		destination: string,
 		hex: string,
-	): HydratedArtifact {
+	): HydratedArtifact | ContentArtifact {
+		if ('pointer' in artifact && artifact.pointer === true) {
+			return {
+				path,
+				group: artifact.group,
+				ownership: 'content',
+				origin: 'computed',
+				...(artifact.environment === undefined ? {} : { environment: artifact.environment }),
+				content: this.#point(path, destination, hex),
+			}
+		}
 		return {
 			path,
 			group: artifact.group,
@@ -880,6 +899,24 @@ export class Materializer implements MaterializerInterface {
 			...(artifact.environment === undefined ? {} : { environment: artifact.environment }),
 			hex,
 		}
+	}
+
+	// The pointer names the skill directory that holds it, and a canonical skill
+	// that is not UTF-8 text opening with frontmatter is a broken host rather
+	// than a pointer to derive around.
+	#point(path: string, destination: string, hex: string): string {
+		const name = path.endsWith('/SKILL.md') ? path.split('/').at(-2) : undefined
+		const decoded = decodeHexText(hex)
+		const pointer =
+			name === undefined || decoded === undefined ? undefined : renderSkillPointer(decoded, name)
+		if (pointer === undefined) {
+			throw this.#error(
+				'TARGET',
+				`The vendored skill at ${destination} cannot derive the pointer at ${path}.`,
+				{ host: this.#root, source: destination, path },
+			)
+		}
+		return pointer
 	}
 
 	// One declared file's exact bytes, from the value the caller supplied or from

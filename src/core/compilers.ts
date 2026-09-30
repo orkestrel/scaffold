@@ -56,8 +56,10 @@ import {
 	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
 	SHOWCASE_DEV_DEPENDENCIES,
+	SKILLS_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SRC_MATRIX,
+	TARGET_SKILL_NAMES,
 	VERSION_PATTERN,
 	WORKSPACE_DEV_ENGINES,
 } from './constants.js'
@@ -294,6 +296,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 			'tsc --noEmit --project tsconfig.json',
 			...(compiles ? ['npm run check:src'] : []),
 			...(blueprint.app.length > 0 ? ['npm run check:app'] : []),
+			...(blueprint.skills ? ['npm run check:skills'] : []),
 		].join(' && '),
 	}
 	if (compiles) {
@@ -318,6 +321,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 					: `tsc --noEmit -p configs/app/tsconfig.${environment}.json`
 		}
 	}
+	if (blueprint.skills) scripts['check:skills'] = `tsc --noEmit -p ${SKILLS_CONFIG_PATH}`
 	scripts.test = [
 		...(compiles ? ['npm run test:src'] : []),
 		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
@@ -326,6 +330,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		'npm run test:config',
 		...(blueprint.setup.includes('node') ? ['npm run test:setup'] : []),
 		...(blueprint.setup.includes('browser') ? ['npm run test:setup:browser'] : []),
+		...(blueprint.skills ? ['npm run test:skills'] : []),
 		...(blueprint.guides ? ['npm run test:guides'] : []),
 		...(blueprint.conformance ? ['npm run test:conformance'] : []),
 		...(integrates ? ['npm run test:integration'] : []),
@@ -359,6 +364,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	if (blueprint.journey && blueprint.app.includes('browser')) {
 		scripts['test:journey'] = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
 	}
+	if (blueprint.skills) scripts['test:skills'] = `${vitest} --project skills`
 	if (blueprint.guides) {
 		scripts['test:guides'] = `node --experimental-strip-types ${GUIDES_TEST_PATH}`
 	}
@@ -433,7 +439,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * Every direct `test:<project>` script is writable, together with the probe and
  * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
  * whose package-owned entry runs the guides project and handles explicit parity
- * rewrites. Publishing adds the pack and publication lifecycle scripts.
+ * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication lifecycle scripts.
  * Aggregate test scripts and
  * maintainer-owned gate chains stay outside the region.
  *
@@ -725,6 +731,10 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
 export function blueprintToRootVite(blueprint: Blueprint): string {
 	const machinery = blueprintToMachinery(blueprint)
 	const publishes = blueprint.src.length > 0
+	// A browser test runs in the browser, so it cannot start a Node fixture for
+	// itself. That is the case a global setup exists for, and it is why
+	// `src:browser`, `setup:browser`, and `integration` take the same span.
+	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
 	const imports: string[] = []
 	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
 	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
@@ -752,10 +762,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 					? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
 					: '\t\t\t\toutput: {},',
 				exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
-				// A browser test runs in the browser, so it cannot start a Node fixture
-				// for itself. That is the case a global setup exists for, and it is why
-				// this project takes the same span the integration project does.
-				global: blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+				global,
 			}),
 		)
 		projects.push('srcBrowser')
@@ -834,6 +841,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.browser, {
 				plugins: machinery.vue ? '\t\tplugins: [vue()],\n' : '',
+				global,
 			}),
 		)
 		projects.push('setupBrowser')
@@ -841,6 +849,10 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	if (blueprint.guides) {
 		factories.push(CONFIG_TEMPLATES.factories.guides)
 		projects.push('guides')
+	}
+	if (blueprint.skills) {
+		factories.push(CONFIG_TEMPLATES.factories.skills)
+		projects.push('skills')
 	}
 	if (blueprint.conformance) {
 		factories.push(CONFIG_TEMPLATES.factories.conformance)
@@ -855,11 +867,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		projects.push('distribution')
 	}
 	if (blueprint.integration) {
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
-				global: blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
-			}),
-		)
+		factories.push(fillTemplate(CONFIG_TEMPLATES.factories.integration, { global }))
 		projects.push('integration')
 	}
 	factories.push(CONFIG_TEMPLATES.factories.probe)
@@ -1091,6 +1099,15 @@ ${paths.join('\n')}
 			origin: 'template',
 			environment: 'browser',
 			content: CONFIG_TEMPLATES.vites.app.journey,
+		})
+	}
+	if (blueprint.skills) {
+		artifacts.push({
+			path: SKILLS_CONFIG_PATH,
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			content: CONFIG_TEMPLATES.tsconfigs.skills,
 		})
 	}
 	return artifacts
@@ -1446,21 +1463,23 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
  *
  * @param blueprint - The workspace specification.
  * @returns The birth-owned package front page and the content-owned `AGENTS.md`
- * and `CLAUDE.md` pointers.
+ * pointer.
  *
  * @remarks
  * The front page is the workspace's own prose, so it is written once and left
- * alone from then on. The pointers are scaffold's, so they are content-owned and
- * restored whenever they drift.
+ * alone from then on. The pointer is scaffold's, so it is content-owned and
+ * restored whenever it drifts.
  *
- * A pointer is planned here rather than vendored because `stageHost` refuses two
- * vendored paths at one storage name, and `AGENTS.md` and `CLAUDE.md` already
- * store the canon a release ships. Planning them as this package's own content
- * leaves each path with one claimant.
+ * The pointer is planned here rather than vendored because `stageHost` refuses two
+ * vendored paths at one storage name, and `AGENTS.md` already stores the canon a
+ * release ships. Planning it as this package's own content leaves the path with
+ * one claimant. No `CLAUDE.md` is planned: a target holding one stops Claude Code
+ * from reading `AGENTS.md`, so the path stays canon without a claimant, `audit`
+ * reports a copy `foreign`, and `overwrite` deletes it.
  *
- * Neither pointer carries a varying span, so neither is filled: a workspace's
- * name never reaches the text, and the paths a reader follows are the same in
- * every target.
+ * The pointer carries no varying span, so it is not filled: a workspace's name
+ * never reaches the text, and the paths a reader follows are the same in every
+ * target.
  *
  * @example
  * ```ts
@@ -1468,7 +1487,7 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
  *
  * const blueprint = createBlueprint('router', { src: ['core'] })
  *
- * blueprintToDocumentArtifacts(blueprint).map((artifact) => artifact.path) // ['README.md', 'AGENTS.md', 'CLAUDE.md']
+ * blueprintToDocumentArtifacts(blueprint).map((artifact) => artifact.path) // ['README.md', 'AGENTS.md']
  * ```
  */
 export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
@@ -1493,13 +1512,6 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
 			ownership: 'content',
 			origin: 'template',
 			content: ARTIFACT_TEMPLATES.docs.agents,
-		},
-		{
-			path: 'CLAUDE.md',
-			group: 'docs',
-			ownership: 'content',
-			origin: 'template',
-			content: ARTIFACT_TEMPLATES.docs.claude,
 		},
 	]
 }
@@ -1569,12 +1581,19 @@ export function blueprintToOrchestrationArtifacts(
  * staged bytes; and the `.claude/agents` directory in `CANON_PATHS` is what
  * stages those bytes, so listing the file in `HOST_PATHS` as well would claim one
  * storage name twice and refuse the stage. The rest of the canon a target reads
- * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
- * pointers {@link blueprintToDocumentArtifacts} emits name.
+ * from the installed package, at the locations the `AGENTS.md` pointer
+ * {@link blueprintToDocumentArtifacts} emits names.
  *
  * The {@link SEED_GUIDE_PATHS} mirrors are claimed explicitly
  * from `REFERENCE_PATHS`. The target's own guide is excluded by
  * {@link selectHostPaths}; the remaining reference guides grant no target claim.
+ *
+ * The skill pointer set follows, for each name in {@link TARGET_SKILL_NAMES}:
+ * the `.claude/skills/<name>/SKILL.md` bridge and the
+ * `.agents/skills/<name>/agents/openai.yaml` sidecar as copies, then the
+ * `.agents/skills/<name>/SKILL.md` pointer with `pointer` set, whose bytes
+ * hydration derives from the canonical skill. A blueprint with `skills` set
+ * ships its own skill canon, so it plans no pointer set.
  *
  * @example
  * ```ts
@@ -1584,16 +1603,35 @@ export function blueprintToOrchestrationArtifacts(
  *
  * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'tests/guides.test.ts') // false
  * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'guides/router.md') // false
+ * blueprintToHostArtifacts(blueprint).find((artifact) => artifact.path === '.agents/skills/orkestrel-harden/SKILL.md')?.pointer // true
  * ```
  */
 export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifact[] {
 	const selected = selectHostPaths([...HOST_PATHS, ...SEED_GUIDE_PATHS], blueprint.name)
-	return [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
+	const vendored = [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
 		path,
 		group: inferGroup(path),
 		ownership: 'presence',
 		origin: 'host',
 	}))
+	if (blueprint.skills) return vendored
+	const skills = TARGET_SKILL_NAMES.flatMap((name): readonly Artifact[] => {
+		const bridge = `.claude/skills/${name}/SKILL.md`
+		const sidecar = `.agents/skills/${name}/agents/openai.yaml`
+		const pointer = `.agents/skills/${name}/SKILL.md`
+		return [
+			{ path: bridge, group: inferGroup(bridge), ownership: 'presence', origin: 'host' },
+			{ path: sidecar, group: inferGroup(sidecar), ownership: 'presence', origin: 'host' },
+			{
+				path: pointer,
+				group: inferGroup(pointer),
+				ownership: 'presence',
+				origin: 'host',
+				pointer: true,
+			},
+		]
+	})
+	return [...vendored, ...skills]
 }
 
 /**

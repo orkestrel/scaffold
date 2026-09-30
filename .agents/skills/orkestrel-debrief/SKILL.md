@@ -5,24 +5,16 @@ description: Look back at a long campaign to learn from its mistakes and success
 
 # Debrief a closed campaign
 
-## Load authority
+## Read
 
-Read the current files in this order:
+`AGENTS.md` § Authority and loading names the files every unit reads. This skill adds the
+references the round needs: [instruction-audit.md](references/instruction-audit.md) before
+auditing the agent, rule, skill, and process layer; [field-testing.md](references/field-testing.md)
+before running or judging a live field pass of an agent-facing surface;
+[retention.md](references/retention.md) before retiring the campaign folder.
 
-1. `AGENTS.md`.
-2. Every applicable `.claude/rules/*.md`; the documentation and quality laws bind every
-   finding this round records and every refinement it produces.
-3. The references this round needs: [instruction-audit.md](references/instruction-audit.md)
-   before auditing the agent/rule/skill/process layer;
-   [field-testing.md](references/field-testing.md) before running or judging a live field
-   pass of an agent-facing surface; [retention.md](references/retention.md) before
-   retiring the campaign folder.
-4. `guides/README.md`, the governing guides for what the campaign built, and `ROADMAP.md` when
-   the repository keeps one.
-
-The user's current instruction wins. The debrief judges the artifact and the process that
-produced it; neither is exempt. Capture successes as deliberately as mistakes, and codify
-a practice that worked so it repeats.
+The debrief judges the artifact and the process that produced it; neither is exempt. Record a
+practice that worked as a refinement, so it repeats.
 
 ## The debrief laws
 

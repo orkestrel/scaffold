@@ -1,0 +1,30 @@
+--- src/browser/Tab.ts	2026-09-25 06:06:03.717694300 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/r2-tab-take.ts	2026-09-25 06:05:58.420840100 -0400
+@@ -220,6 +220,9 @@
+ 				: (Tab.#registry.find(outgoing)?.pane ?? readTarget(outgoing, this.#attributes))
+ 		const leaving = outgoing?.getAttribute('role') === 'tab'
+ 		const entering = host.getAttribute('role') === 'tab'
++		const deselection =
++			leaving && outgoing !== undefined ? this.#selection(outgoing, false) : []
++		const selection = entering ? this.#selection(host, true) : []
+ 		// Each write goes through the snapshot, which saves a target only at a write that changes it,
+ 		// and each write door reads the list and the pane for its phase: no control but the host active
+ 		// from the sibling's first write on, and each pane token from its write on. Each target the call
+@@ -257,7 +260,7 @@
+ 			// The sibling's selection, the dropdown that holds it included, is read here, after the blur
+ 			// and the pane writes, as Bootstrap reads it.
+ 			if (leaving) {
+-				for (const [target, value] of this.#selection(outgoing, false)) {
++				for (const [target, value] of deselection) {
+ 					written = recordHostWrite(written, target, value, snapshot)
+ 					if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 				}
+@@ -269,7 +272,7 @@
+ 		if (!this.#holds(change, true, [])) return this.#rewind(change, written)
+ 		// The host's selection is read here, after its `active` token write, as Bootstrap reads it.
+ 		if (entering) {
+-			for (const [target, value] of this.#selection(host, true)) {
++			for (const [target, value] of selection) {
+ 				written = recordHostWrite(written, target, value, snapshot)
+ 				if (!this.#holds(change, true, [])) return this.#rewind(change, written)
+ 			}

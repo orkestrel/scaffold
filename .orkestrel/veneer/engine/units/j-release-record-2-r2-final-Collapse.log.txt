@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+
+ Test Files  1 passed (1)
+      Tests  53 passed (53)
+   Start at  06:06:21
+   Duration  7.19s (transform 0ms, setup 492ms, import 299ms, tests 5.44s, environment 0ms)
+

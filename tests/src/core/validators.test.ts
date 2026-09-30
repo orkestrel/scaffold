@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
 	createBlueprint,
 	Compiler,
+	isArtifact,
 	isAudit,
 	isCollection,
 	isCompilerHooks,
@@ -113,6 +114,25 @@ describe('discriminated branches', () => {
 				note: 'the answer carries no readable latest version',
 			}),
 		).toBe(true)
+	})
+
+	// Only the host branch planned before hydration carries the pointer flag, and
+	// the flag is a boolean behaviour switch, so a string reading of it is refused.
+	it('admits a host artifact with a boolean pointer flag and refuses any other value', () => {
+		const pointer = {
+			path: '.agents/skills/orkestrel-harden/SKILL.md',
+			group: 'orchestration',
+			ownership: 'presence',
+			origin: 'host',
+		}
+		expect(isArtifact({ ...pointer, pointer: true })).toBe(true)
+		expect(isArtifact({ ...pointer, pointer: false })).toBe(true)
+		expect(isArtifact(pointer)).toBe(true)
+		expect(isArtifact({ ...pointer, pointer: 'yes' })).toBe(false)
+		expect(isArtifact({ ...pointer, ownership: 'content', hex: '2d2d2d', pointer: true })).toBe(
+			false,
+		)
+		expect(isArtifact({ ...pointer, ownership: 'content', hex: '2d2d2d' })).toBe(true)
 	})
 
 	it('refuses a found catalog row without peers and admits one with peers: []', () => {

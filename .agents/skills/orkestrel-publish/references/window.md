@@ -9,8 +9,11 @@ rest of the layer either fits inside it or takes another approval.
 
 ## Arm the terminal
 
-- Run the login and every publish under `script -qfc '<command>' <log>`. npm offers the approval
-  only when it sees a TTY; without one it fails `EOTP` with no way to answer.
+- Read the session with `node .agents/skills/orkestrel-publish/scripts/window.ts --whoami`; `--login` prints the command the operator runs in a real terminal and polls `whoami` until it answers. No child of a script holds the TTY npm needs, so the login itself is the operator's.
+
+- Run the login and every browser-authorized publish under `script -qfc '<command>' <log>`. npm
+  offers the browser approval only when it sees a TTY; without one it fails `EOTP` with no way to
+  answer. The one-time-code path runs under captured pipes instead, per § Authorize the upload.
 - Pass `--browser=false` to `npm login` and to every `npm publish`. Without it npm prints
   `Press ENTER to open in the browser...` and blocks. Never answer that prompt with a newline: the
   web flow consumes the newline on a later read, drops to a legacy `Username:` prompt, and exits
@@ -27,13 +30,15 @@ rest of the layer either fits inside it or takes another approval.
   and an overnight gap expires it, so a session-start answer does not hold.
 - Read a login log that shows the spinner and then a legacy `Username:` prompt as a dead attempt
   rather than as a prompt to answer: expired, or refused on its first poll per § Read a `403` on the
-  poll. Kill it by the process id recorded at its launch, per `.agents/orchestration.md` § Confirm
-  dead before relaunching. Every publish here runs under the same `script -qfc` form, so a pattern
-  over the process list reaches a live upload as readily as the dead login.
-- On a Windows host, Git Bash ships no `script` binary, so the upload step is operator-driven:
-  prepare the layer, prove the gates, surface the exact `npm publish` command, and the operator
-  runs it in a real terminal. Everything before and after the upload — bumps, re-pins, gates,
-  registry reads — stays with the Orchestrator. The fifo stdin law still binds on that host.
+  poll. Kill it by the process id recorded at its launch, per the `orkestrel-dispatch` skill's launch
+  reference § Kill and relaunch. Every browser-authorized publish here runs under the same `script -qfc` form, so
+  a pattern over the process list reaches a live upload as readily as the dead login.
+- On a Windows host, Git Bash ships no `script` binary, so a browser-authorized upload is
+  operator-driven: prepare the layer, prove the gates, surface the exact `npm publish` command, and
+  the operator runs it in a real terminal. Everything before and after the upload — bumps, re-pins,
+  gates, registry reads — stays with the Orchestrator, and the one-time-code path in § Authorize the
+  upload runs through `window.ts` on every host. The fifo stdin law still binds a browser-authorized
+  upload on that host.
 
 ## Reach the approval
 
@@ -80,6 +85,8 @@ rest of the layer either fits inside it or takes another approval.
 
 ## Authorize the upload
 
+- Where the account answers with a one-time code, run `node .agents/skills/orkestrel-publish/scripts/window.ts --publish <layer directories> --otp <code>`: it uploads back to back, journals each upload under `tmp/units/`, stops at the first refusal naming the package to resume from on a fresh code, and confirms each accepted version against the registry. The browser path stays the operator's.
+
 - Take the account's one-time code where the account has one. The
   `npm publish --ignore-scripts --otp=<code>` command uploads with no browser authorization and no
   poll. The code has its own life: measured on 2026-09-04 against `registry.npmjs.org`, one code
@@ -93,12 +100,16 @@ rest of the layer either fits inside it or takes another approval.
   describes for the browser path: the chain stops at the refused package, and the layer resumes
   from that package on a fresh code. Never retry the refused upload on the same code.
 - Ask for the code and nothing else. Never ask for a password, an access token, or an auth file.
-  `.agents/orchestration.md` § Publishing the fleet owns that law.
-- Arm a one-time-code upload the way § Arm the terminal arms every other publish.
+  `release.md` § Publishing is the user's owns that law.
+- A one-time-code upload needs no terminal arming: `window.ts --publish` holds the upload under
+  captured pipes, where npm's non-TTY guard rethrows an authentication refusal instead of prompting,
+  so a spent code is refused `EOTP` with no prompt and no browser flow, which is the stop the runner
+  reads. The runner passes `--browser=false` and re-reads `whoami` immediately before the first
+  upload. Never run a one-time-code upload on a TTY: there npm answers a refused code with a prompt
+  the chain cannot see.
 - Fall back to the browser authorization where the account answers with no code. That path mints
   the `auth/cli/<id>` URL, needs the click inside the session's life, and opens the five-minute
-  window. In the `@orkestrel/scaffold` 0.0.56 run on 2026-08-27 that authorization failed on the
-  45-second abandon and the one-time code uploaded the package with no retry.
+  window.
 - Tell the user that approving an `auth/cli/<id>` URL opens a five-minute window covering the rest
   of the layer.
 
@@ -130,7 +141,7 @@ rest of the layer either fits inside it or takes another approval.
 - Expect a large layer to outlast one window. Size batches to what uploads in five minutes and
   name each planned approval point to the user, rather than discovering them mid-run.
 - The contract's serialization law binds every upload in the window, and
-  `.agents/orchestration.md` § Long-running commands binds the chain that runs them.
+  the `orkestrel-dispatch` skill binds the chain that runs them.
 
 ## Read a `403` on the poll
 
@@ -154,6 +165,8 @@ the same status. Rule from the evidence, never from which cause reads likelier.
   process is live, then mint exactly one fresh attempt with the user at the keyboard.
 
 ## Read the verdict from the registry
+
+- Confirm a layer with `node .agents/skills/orkestrel-publish/scripts/window.ts --confirm <name@version>...`, which re-reads the registry until it serves each version or the wait ends.
 
 - Read `+ @orkestrel/<name>@<version>` in the upload's own journal as the accepted verdict, and
   advance the chain on it. The registry's read lags its processing by minutes, which the

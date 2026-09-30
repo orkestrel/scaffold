@@ -20,6 +20,7 @@ import {
 	GROUPS,
 	HOST_PATHS,
 	REFERENCE_PATHS,
+	renderSkillPointer,
 	inferDrift,
 	inferGroup,
 	isCanonPath,
@@ -330,7 +331,7 @@ describe('selectHostPaths', () => {
 		expect(selected.filter((path) => isCanonPath(path))).toStrictEqual([])
 		for (const path of [
 			'AGENTS.md',
-			'CLAUDE.md',
+			'.claude/AGENTS.md',
 			'.agents/orchestration.md',
 			'.claude/rules',
 			'.claude/agents',
@@ -771,5 +772,60 @@ describe('artifactToFinding producer matrix', () => {
 		// show this verdict reaching a write, because `repair` re-derives every
 		// finding and refuses a caller's audit that disagrees, and it names one
 		// member of the gap rather than enumerating it.
+	})
+})
+
+describe('renderSkillPointer', () => {
+	// The frontmatter is what a harness reads to discover and trigger the skill, so
+	// the pointer keeps it byte for byte, folded description included, and replaces
+	// only the body. The expected body is the brief's text, not the template read back.
+	it('keeps a folded frontmatter block byte for byte and appends the filled body', () => {
+		const frontmatter = [
+			'---',
+			'name: orkestrel-harden',
+			'description: >-',
+			'  Hardens one package against its rules. Use when a package needs its',
+			'  placement, names, and tests brought to the contract.',
+			'---',
+		].join('\n')
+		const canonical = `${frontmatter}\n\n# Harden a package\n\nRead the rules first.\n`
+		const expected = [
+			frontmatter,
+			'',
+			'# Load the canonical skill',
+			'',
+			'This file is a pointer the `@orkestrel/scaffold` package writes into every fleet workspace; the',
+			'skill itself ships with that package. Read the canonical `SKILL.md` completely and follow it:',
+			'',
+			'- beside a scaffold checkout, `../scaffold/.agents/skills/orkestrel-harden/SKILL.md`;',
+			'- otherwise, `node_modules/@orkestrel/scaffold/dist/host/agents/skills/orkestrel-harden/SKILL.md`.',
+			'',
+			'Resolve every path the canonical skill names against the same root; under `node_modules` each',
+			'segment drops its opening dot. Run a script the skill names through its built twin, as this',
+			"repository's `AGENTS.md` states. This pointer carries no process of its own; `AGENTS.md`, the applicable",
+			'rules, and the canonical skill remain authoritative in that order.',
+			'',
+		].join('\n')
+		expect(renderSkillPointer(canonical, 'orkestrel-harden')).toBe(expected)
+	})
+
+	it('splits a CRLF canonical text into the same pointer as its LF form', () => {
+		const canonical =
+			'---\nname: orkestrel-polish\ndescription: Polishes a package. Use to finish.\n---\n\n# Polish\n'
+		const pointer = renderSkillPointer(canonical, 'orkestrel-polish')
+		expect(pointer).toBeDefined()
+		expect(renderSkillPointer(canonical.replaceAll('\n', '\r\n'), 'orkestrel-polish')).toBe(pointer)
+		expect(pointer).not.toContain('\r')
+		expect(pointer).toContain('`../scaffold/.agents/skills/orkestrel-polish/SKILL.md`')
+		expect(pointer).not.toContain('{{')
+	})
+
+	it('returns undefined when the canonical text opens with no complete frontmatter block', () => {
+		expect(renderSkillPointer('# Harden a package\n', 'orkestrel-harden')).toBeUndefined()
+		expect(renderSkillPointer('', 'orkestrel-harden')).toBeUndefined()
+		expect(renderSkillPointer('---\nname: orkestrel-harden\n', 'orkestrel-harden')).toBeUndefined()
+		expect(
+			renderSkillPointer('\n---\nname: orkestrel-harden\n---\n', 'orkestrel-harden'),
+		).toBeUndefined()
 	})
 })

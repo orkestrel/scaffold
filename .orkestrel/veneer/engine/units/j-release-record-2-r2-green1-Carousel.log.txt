@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Carousel.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+
+ Test Files  1 passed (1)
+      Tests  77 passed (77)
+   Start at  06:01:17
+   Duration  24.20s (transform 0ms, setup 585ms, import 367ms, tests 22.18s, environment 0ms)
+

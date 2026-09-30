@@ -70,6 +70,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		global: input?.global ?? false,
 		showcase: input?.showcase ?? false,
 		journey: input?.journey ?? false,
+		skills: input?.skills ?? false,
 	}
 	const blueprint = parseBlueprint(cloneValue(candidate))
 	if (blueprint === undefined) {

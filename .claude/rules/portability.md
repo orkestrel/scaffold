@@ -5,6 +5,7 @@ paths:
   - 'configs/**/*'
   - 'tests/**/*'
   - 'scripts/**/*'
+  - '.agents/skills/*/scripts/*.ts'
   - 'guides/**/*'
   - 'package.json'
   - '.gitattributes'
@@ -60,6 +61,10 @@ and the form of a conditional skip.
 - Resolve, spawn, and terminate a child through `@orkestrel/process` where the package declares it.
 - Where it is not declared, spawn `process.execPath` with a JavaScript entry. Never spawn a `.bin`
   shim, and never add `shell: true` to reach one.
+- Merge a child environment by case-folded name: before spawning, drop every inherited variable
+  whose lower-cased name an added variable claims. A Windows environment block folds names by case,
+  so an inherited `NPM_CONFIG_CACHE` outranks an added `npm_config_cache`, and npm reads its
+  `npm_config_` variables case-insensitively on every host.
 - Take a resolver's first match only after splitting its output into lines and trimming each one.
   `where` prints a match per line and can name a file that is not an executable.
 - Treat `fs.constants.X_OK` as an existence check on Windows, where `accessSync` passes on a plain
@@ -89,7 +94,8 @@ and the form of a conditional skip.
 - Write every `package.json` script as a portable command: a Node invocation or an installed binary.
   Never name a `.sh` file there.
 - Keep `#!/usr/bin/env node` on an npm bin. npm writes the Windows shim from it.
-- Keep an agent hook under `scripts/` in bash, and keep `.gitattributes` `eol=lf`.
+- Keep `scripts/` for the Claude Code Cloud session hooks alone, in bash, with `.gitattributes` `eol=lf`. Every other script is TypeScript run by Node per `AGENTS.md`; a skill's scripts live in its `scripts/` directory.
+- Spawn a command from a script with an argument array and no shell, so quoting is the same on every host; resolve a `.cmd` shim to the JavaScript entry it wraps rather than spawning the shim.
 
 ## Claims
 
