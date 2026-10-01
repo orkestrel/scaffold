@@ -287,7 +287,7 @@ Build/check config alignment:
 
 - In a publishing workspace, `prepublishOnly` runs `build:showcase` and every
   `build:showcase:<framework>` script after `npm run build`.
-- List `showcase/` in `.prettierignore`, so formatting never rewrites a committed page.
+- List `showcase/` in `.prettierignore`, so formatting never rewrites a committed page. Never list a source file there; `.claude/rules/styles.md` § Prohibitions states how a pinned recreation stays formatter-stable.
 
 ## Tooling
 

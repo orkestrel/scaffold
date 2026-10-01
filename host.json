@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "54707c4e20210dc0a925274d76bb6b9a5d65d4b9b8d8535252dbd53a1a72fd38"
+			"digest": "357cfbe336a026543ec68f3eb999f1094c3139d33331b0ba5f153352cef75fde"
 		},
 		{
 			"storage": "LICENSE",
@@ -532,7 +532,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "c3695c2deb808b04e55dbea6b06e66af65b46794d08cc7be67f5661e634c4ad0"
+			"digest": "e30f034c8de38ce7c86506dfaa51844201d745181caed45ef427d0325e80afd3"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -574,7 +574,7 @@
 			"storage": "claude/rules/styles.md",
 			"destination": ".claude/rules/styles.md",
 			"executable": false,
-			"digest": "6627dfd041406ae94ef2df1d739e1d781cc2c0dd9bbde0bf66845e0f2cdf4548"
+			"digest": "869f88c392b4795e47af881d668f4dc591e0c419229a843eb4105e38dfb6f831"
 		},
 		{
 			"storage": "claude/rules/tests.md",
@@ -592,7 +592,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "a3c0e392dfe6c1aceac54a00cd4f735600c0ddd49bc2d997b9a977015c81a89e"
+			"digest": "257905e73259ea9039f3027c4b052510b935fb257ce828953553188ce1632c90"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -1174,7 +1174,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "a6155fc5a2653d847014c4e7ec3fcf936bcbd7ab02e05827e6cf1f71beedcced"
+			"digest": "2571274f92e75e6caffa86b2703ef9a38828db4ec8f51a7b38510f8bc48c6aee"
 		}
 	],
 	"roots": [
@@ -2138,5 +2138,5 @@
 			]
 		}
 	],
-	"digest": "5211019024255747945db0ab6a9bd255532146d996fe6ac77b51598e0623f5d0"
+	"digest": "b0ea683a54174861039d437d3325f7490d2bc05fa2f2562833a14dc38de9a472"
 }

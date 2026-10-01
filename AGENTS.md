@@ -34,7 +34,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 
 - **NEVER** use `any`; accept `unknown` and narrow with guards.
 - **NEVER** use non-null assertions (`!`) or type assertions (`as`); narrow or validate.
-- **NEVER** use `@ts-nocheck`, `@ts-ignore`, `@ts-expect-error`, or a lint-disable directive; fix the cause.
+- **NEVER** use `@ts-nocheck`, `@ts-ignore`, `@ts-expect-error`, a lint-disable directive, or a formatter-ignore directive, and never exclude a source file from a gate; fix the cause.
 - **NEVER** add an npm package unless the user explicitly requests it; prefer native APIs.
 - **NEVER** remove a symbol to silence lint. Implement it or annotate `// TODO: [Feature] Brief purpose`.
 - **NEVER** write `public`, `protected`, `private`, or a parameter property; use `#` fields.
