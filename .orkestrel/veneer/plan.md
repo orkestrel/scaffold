@@ -1,6 +1,6 @@
 # `@orkestrel/veneer` campaign plan
 
-The live campaign for `@orkestrel/veneer` after the foundation round of 2026-09-30, accepted by `foundation-audit-2-verdict.md` beside this file once `foundation-fix-11` landed and its two mutation probes reddened the instruments they name. The package's own `ROADMAP.md` is the plan of record for what to build; this file holds what the campaign owes, in what order, on which lanes, and the evidence it rests on. Delete this directory in the acceptance commit of the last chunk.
+The live campaign for `@orkestrel/veneer` after the foundation round of 2026-09-30, accepted by the `foundation-audit-2` verdict after `foundation-fix-11` landed and its two mutation probes reddened the instruments they name; the foundation round's verdicts, briefs, reports, and claims files are archived in git history at the sweep commit's parent (2026-10-01). The package's own `ROADMAP.md` is the plan of record for what to build; this file holds what the campaign owes, in what order, on which lanes, and the evidence it rests on. Delete this directory in the acceptance commit of the last chunk.
 
 ## Goal and exit criterion
 

@@ -1,6 +1,6 @@
 # `@orkestrel/veneer` routing ledger — foundation campaign
 
-Every dispatch of the foundation campaign, its engine, its transport, its duration, and its outcome. Durations are the journal's `durationMs` rounded to seconds. Bench journals live under the scaffold checkout's `tmp/cursor/` and `tmp/codex/` until the sweep.
+Every dispatch of the foundation campaign, its engine, its transport, its duration, and its outcome. Durations are the journal's `durationMs` rounded to seconds. The bench journals under the scaffold checkout's `tmp/cursor/` and `tmp/codex/` were swept on 2026-10-01; each unit's brief and report are archived in git history at the sweep commit's parent.
 
 ## Substitutions and standing readings
 
