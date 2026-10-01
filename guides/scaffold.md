@@ -1221,7 +1221,9 @@ Object.keys(exports) // ['./styles', './styles/scss', './styles/themes', './styl
 ```
 
 Each sheet face adds its `check:src:<face>`, `build:src:<face>`, and `test:src:<face>` scripts, and
-`test:src:<face>` builds the face before it runs the face's project. With themes, `build:src:styles`
+`test:src:<face>` builds the face before it runs the face's project. The face's
+`tests/src/<face>/index.test.ts` imports the built `dist/src/<face>/index.css` with `?raw` by a
+path relative to the test file. With themes, `build:src:styles`
 builds the themes target after the base face. The root configuration registers each face's project
 by its wrapper, and the wrapper composes it through the root `sheetProject` factory, which runs it
 in Playwright Chromium with `isolate: false` and loads `tests/setup.ts`, `tests/setupBrowser.ts`,

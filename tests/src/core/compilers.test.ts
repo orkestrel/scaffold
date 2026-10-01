@@ -1,10 +1,11 @@
 import type { Axis, ManifestScript } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import type { PluginOption, UserConfig } from 'vite'
+import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, symlinkSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, posix, resolve } from 'node:path'
 import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
@@ -645,13 +646,15 @@ describe('sheet planning', () => {
 						content: expect.stringContaining(`sheetProject('src:${label}'`),
 					}),
 				)
-				expect(tests).toContainEqual(
-					expect.objectContaining({
-						path: `tests/src/${name}/index.test.ts`,
-						ownership: 'birth',
-						content: expect.stringContaining(`/dist/src/${name}/index.css?raw`),
-					}),
+				const sheet = requireValue(
+					tests.find(({ path }) => path === `tests/src/${name}/index.test.ts`),
 				)
+				expect(sheet.ownership).toBe('birth')
+				const specifier = requireValue(
+					/^import sheet from '(?<specifier>[^']+)\?raw'$/mu.exec(sheet.content)?.groups?.specifier,
+				)
+				expect(specifier).toMatch(/^\.\.\//u)
+				expect(posix.join(posix.dirname(sheet.path), specifier)).toBe(`dist/src/${name}/index.css`)
 				expect(manifest).toHaveProperty(
 					'files',
 					expect.arrayContaining([`!dist/src/${name}/index.js`]),

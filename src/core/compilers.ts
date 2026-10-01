@@ -1759,6 +1759,9 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 		)
 	}
 	for (const name of sheets) {
+		// Oxlint's `import/no-absolute-path` refuses a root-relative specifier, so both imports
+		// climb from `tests/src/<name>/`.
+		const tests = '../'.repeat(name.split('/').length + 1)
 		artifacts.push({
 			path: `tests/src/${name}/index.test.ts`,
 			group: 'tests',
@@ -1766,7 +1769,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			origin: 'template',
 			content: fillTemplate(ARTIFACT_TEMPLATES.tests.sheet, {
 				name,
-				setup: name === 'styles/themes' ? '../../../setupStyles.js' : '../../setupStyles.js',
+				root: `${tests}../`,
+				setup: `${tests}setupStyles.js`,
 			}),
 		})
 	}

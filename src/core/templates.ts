@@ -1629,7 +1629,7 @@ declare module 'vitest' {
 	}
 }
 `,
-		sheet: `import sheet from '/dist/src/{{name}}/index.css?raw'
+		sheet: `import sheet from '{{root}}dist/src/{{name}}/index.css?raw'
 import { describe, expect, it } from 'vitest'
 import { adoptSheet, readLayerNames } from '{{setup}}'
 
