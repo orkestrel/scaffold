@@ -3877,6 +3877,10 @@ describe('blueprintToRootTsconfig own specifiers', () => {
 	})
 })
 
+// Two child runs of the guides entry take about 4.2 s on an idle host, which leaves the 5 s
+// default no margin under load.
+const ENTRY_RUN_TIMEOUT = 15_000
+
 describe('the guides entry', () => {
 	it('keeps the package-owned entry free of named local command functions', () => {
 		const functions = readStatements(readFileSync(resolve(ENTRY_PATH), 'utf8'), ENTRY_PATH).flatMap(
@@ -4041,33 +4045,37 @@ describe('the guides entry', () => {
 		}
 	})
 
-	it('carries every summary and example to the source, and reads back clean', async () => {
-		const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_FRESH_TEST)
-		try {
-			const written = runEntry(scratch, ['--to', 'source'])
-			const source = scratch.read('src/core/widget.ts') ?? ''
-			const again = runEntry(scratch, [])
+	it(
+		'carries every summary and example to the source, and reads back clean',
+		async () => {
+			const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_FRESH_TEST)
+			try {
+				const written = runEntry(scratch, ['--to', 'source'])
+				const source = scratch.read('src/core/widget.ts') ?? ''
+				const again = runEntry(scratch, [])
 
-			expect(written.lines).toEqual(['wrote src/core/widget.ts', 'next: npm run format'])
-			expect(written.status).toBe(0)
-			expect(source).toContain(' * Shapes a widget from its parts.')
-			expect(source).toContain(" * shape('round')")
-			expect(source).toContain('\t/** Paints the widget onto the surface. */')
-			// The doc block's own frame survives the rewrite: its tags, its
-			// continuation markers, and the member's indentation.
-			expect(source).toContain(' * @param parts - The parts to shape.')
-			expect(source).toContain(' * @example Shape a widget')
-			expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE)
-			expect(again.lines).toEqual([])
-			expect(again.status).toBe(0)
-			scratch.write(ENTRY_OBSERVATION_PATH, ENTRY_FAILING_TEST)
-			const failed = runEntry(scratch, [])
-			expect(failed.lines).toEqual([])
-			expect(failed.status).toBe(1)
-		} finally {
-			await destroyScratch(scratch, { budget: 5000 })
-		}
-	})
+				expect(written.lines).toEqual(['wrote src/core/widget.ts', 'next: npm run format'])
+				expect(written.status).toBe(0)
+				expect(source).toContain(' * Shapes a widget from its parts.')
+				expect(source).toContain(" * shape('round')")
+				expect(source).toContain('\t/** Paints the widget onto the surface. */')
+				// The doc block's own frame survives the rewrite: its tags, its
+				// continuation markers, and the member's indentation.
+				expect(source).toContain(' * @param parts - The parts to shape.')
+				expect(source).toContain(' * @example Shape a widget')
+				expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE)
+				expect(again.lines).toEqual([])
+				expect(again.status).toBe(0)
+				scratch.write(ENTRY_OBSERVATION_PATH, ENTRY_FAILING_TEST)
+				const failed = runEntry(scratch, [])
+				expect(failed.lines).toEqual([])
+				expect(failed.status).toBe(1)
+			} finally {
+				await destroyScratch(scratch, { budget: 5000 })
+			}
+		},
+		ENTRY_RUN_TIMEOUT,
+	)
 
 	it('reports a key no doc block carries and the pitch, and leaves both files', async () => {
 		const scratch = buildEntryWorkspace(ENTRY_REPORTED)
@@ -4139,27 +4147,31 @@ describe('the guides entry', () => {
 	// current text per file so the later row rewrites what the earlier row left
 	// rather than the bytes the run started from. A file that moved is written
 	// once, after every row has run.
-	it('carries every overlapping row into one source file and writes that file once', async () => {
-		const scratch = buildEntryWorkspace(ENTRY_OVERLAP)
-		try {
-			const reported = runEntry(scratch, [])
-			const written = runEntry(scratch, ['--to', 'source'])
-			const source = scratch.read('src/core/panels/panel.ts') ?? ''
+	it(
+		'carries every overlapping row into one source file and writes that file once',
+		async () => {
+			const scratch = buildEntryWorkspace(ENTRY_OVERLAP)
+			try {
+				const reported = runEntry(scratch, [])
+				const written = runEntry(scratch, ['--to', 'source'])
+				const source = scratch.read('src/core/panels/panel.ts') ?? ''
 
-			expect(reported.lines).toEqual([])
-			expect(reported.status).toBe(0)
-			expect(written.lines).toEqual(['wrote src/core/panels/panel.ts', 'next: npm run format'])
-			expect(written.stderr).toBe('')
-			expect(written.status).toBe(0)
-			// Every rewrite in one file, and the file named once: a run that re-seeded
-			// its texts per row keeps the later rewrite alone and names the file again.
-			expect(source).toBe(ENTRY_OVERLAP_WRITTEN)
-			expect(written.lines.filter((line) => line.startsWith('wrote '))).toHaveLength(1)
-			expect(runEntry(scratch, []).lines).toEqual([])
-		} finally {
-			await destroyScratch(scratch, { budget: 5000 })
-		}
-	})
+				expect(reported.lines).toEqual([])
+				expect(reported.status).toBe(0)
+				expect(written.lines).toEqual(['wrote src/core/panels/panel.ts', 'next: npm run format'])
+				expect(written.stderr).toBe('')
+				expect(written.status).toBe(0)
+				// Every rewrite in one file, and the file named once: a run that re-seeded
+				// its texts per row keeps the later rewrite alone and names the file again.
+				expect(source).toBe(ENTRY_OVERLAP_WRITTEN)
+				expect(written.lines.filter((line) => line.startsWith('wrote '))).toHaveLength(1)
+				expect(runEntry(scratch, []).lines).toEqual([])
+			} finally {
+				await destroyScratch(scratch, { budget: 5000 })
+			}
+		},
+		ENTRY_RUN_TIMEOUT,
+	)
 
 	// The index is the run's own input, so a workspace that carries none and an
 	// index naming a guide the workspace lacks are argument faults rather than
