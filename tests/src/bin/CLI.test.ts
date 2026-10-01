@@ -19,6 +19,7 @@ import {
 	blueprintToManifest,
 	blueprintToScripts,
 	blueprintToWritableScripts,
+	BROWSE_DEV_DEPENDENCIES,
 	CATALOG_AGENT_PATH,
 	CATALOG_CLOSING_MARKER,
 	CATALOG_OPENING_MARKER,
@@ -381,6 +382,10 @@ function buildSetupQuestion(target: string, module: string): Question {
 }
 
 const AUDIT_REGISTRY = await createUpstreamServer({
+	'/@orkestrel%2Fbrowser': {
+		status: 200,
+		body: buildPackument(BROWSE_DEV_DEPENDENCIES['@orkestrel/browser']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Fcontract': { status: 200, body: buildPackument('0.0.13') },
 	'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.5') },
 	'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
@@ -1357,6 +1362,7 @@ describe('CLI audit', () => {
 							...TARGET_DEV_DEPENDENCIES,
 							...APP_DEV_DEPENDENCIES,
 							...APP_BROWSER_DEV_DEPENDENCIES,
+							...BROWSE_DEV_DEPENDENCIES,
 						},
 						['@microsoft/api-extractor'],
 					),
@@ -1398,6 +1404,7 @@ describe('CLI audit', () => {
 							...TARGET_DEV_DEPENDENCIES,
 							...APP_DEV_DEPENDENCIES,
 							...APP_BROWSER_DEV_DEPENDENCIES,
+							...BROWSE_DEV_DEPENDENCIES,
 						},
 						['@microsoft/api-extractor', '@orkestrel/test'],
 					),

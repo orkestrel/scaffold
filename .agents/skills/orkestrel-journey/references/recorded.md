@@ -30,6 +30,7 @@ import {
 - Find a `browse` server's files under `tmp/browsers/`: the journey at `NAME/journey.json`, each
   run at `NAME/runs/ID/run.json` beside that run's step captures, and the server's browser profile
   under `.profiles/`. `NAME` is the journey's name and `ID` is the run id the store minted.
+- Register a `browse` server per `.claude/rules/quality.md` § Instruments.
 
 ## Translate a step
 

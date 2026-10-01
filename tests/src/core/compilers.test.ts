@@ -25,6 +25,7 @@ import {
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
+	BROWSE_DEV_DEPENDENCIES,
 	CONFIG_TEMPLATES,
 	Compiler,
 	createBlueprint,
@@ -1179,6 +1180,59 @@ describe('replaceManifestScripts', () => {
 
 	it('returns the text untouched when the region names nothing', () => {
 		expect(replaceManifestScripts(SCRIPT_MANIFEST, [])).toBe(SCRIPT_MANIFEST)
+	})
+})
+
+describe('blueprintToDevDependencies browse server', () => {
+	const range = BROWSE_DEV_DEPENDENCIES['@orkestrel/browser']
+
+	it('reads the browser package range from the manifest table', () => {
+		expect(range).toMatch(ORKESTREL_RANGE_PATTERN)
+	})
+
+	it.each([
+		['a published browser environment', buildBlueprint({ src: ['core', 'browser'] })],
+		['a private browser application', buildBlueprint({ src: [], app: ['core', 'browser'] })],
+	])('adds the browser package to %s', (_label, blueprint) => {
+		expect(blueprintToDevDependencies(blueprint)['@orkestrel/browser']).toBe(range)
+	})
+
+	it('adds the browser package to a Vue extension workspace', () => {
+		const blueprint = buildBlueprint({
+			src: [],
+			app: ['core', 'browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+
+		expect(blueprintToMachinery(blueprint).frameworks).toStrictEqual(['vue'])
+		expect(blueprintToDevDependencies(blueprint)['@orkestrel/browser']).toBe(range)
+	})
+
+	it.each([
+		['the base sheet', buildBlueprint({ src: [], styles: true })],
+		['themes alone', buildBlueprint({ src: [], themes: true })],
+		[
+			'a named sheet',
+			buildBlueprint({ src: [], extensions: [{ surface: 'styles', name: 'paper' }] }),
+		],
+	])('adds the browser package to a styles-only workspace with %s', (_label, blueprint) => {
+		expect(blueprintToDevDependencies(blueprint)['@orkestrel/browser']).toBe(range)
+	})
+
+	it.each([
+		['a core-only library', buildBlueprint({ src: ['core'] })],
+		['a server application', buildBlueprint({ src: [], app: ['core', 'server'] })],
+		['a browser setup runtime alone', buildBlueprint({ src: ['core'], setup: ['browser'] })],
+	])('omits the browser package from %s', (_label, blueprint) => {
+		expect(blueprintToDevDependencies(blueprint)).not.toHaveProperty('@orkestrel/browser')
+	})
+
+	it('omits the browser package from the workspace that publishes it', () => {
+		const planned = blueprintToDevDependencies(
+			buildBlueprint({ name: 'browser', src: ['core', 'browser'] }),
+		)
+
+		expect(planned).not.toHaveProperty('@orkestrel/browser')
 	})
 })
 

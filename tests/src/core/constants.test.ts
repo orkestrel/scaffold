@@ -8,6 +8,7 @@ import {
 	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
+	BROWSE_DEV_DEPENDENCIES,
 	DECLARATION_DEV_DEPENDENCIES,
 	extractRangeMajor,
 	FRAMEWORK_MATRIX,
@@ -38,6 +39,7 @@ const TOOLCHAIN_RANGE_PATTERN = /^\^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d
 const TABLES = [
 	['base', BASE_DEV_DEPENDENCIES],
 	['declaration', DECLARATION_DEV_DEPENDENCIES],
+	['browse', BROWSE_DEV_DEPENDENCIES],
 	['source browser', SOURCE_BROWSER_DEV_DEPENDENCIES],
 	['app', APP_DEV_DEPENDENCIES],
 	['app browser', APP_BROWSER_DEV_DEPENDENCIES],

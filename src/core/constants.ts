@@ -653,6 +653,18 @@ export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> =
 	playwright: manifest.devDependencies.playwright,
 })
 
+/**
+ * Names the development dependency a browser or styles surface adds.
+ *
+ * @remarks
+ * The package ships the `browse` binary, an MCP server that drives a rendered page and records
+ * journeys, and `.claude/rules/quality.md` § Instruments names its registration.
+ * `blueprintToDevDependencies` names the blueprints that receive it.
+ */
+export const BROWSE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@orkestrel/browser': manifest.devDependencies['@orkestrel/browser'],
+})
+
 /** Names the development dependency every private `app` environment adds. */
 export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/contract': manifest.dependencies['@orkestrel/contract'],

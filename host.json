@@ -316,7 +316,7 @@
 			"storage": "agents/skills/orkestrel-journey/references/recorded.md",
 			"destination": ".agents/skills/orkestrel-journey/references/recorded.md",
 			"executable": false,
-			"digest": "ff78dcc9d71cef0d157d51c0a878c14870f2978278f1c007eb54eec64962cc77"
+			"digest": "bfd1eae3872aee64aea8e49a09ea411bb0f3f9cf8c381d5c25b918c060845dbc"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/references/statechart.md",
@@ -574,7 +574,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "0522d349f9ece13777469fe9b94c9773cb668725d27f1d5224d0f82bf1d8d0c9"
+			"digest": "56aedcd62bd77b1f8816fb9c0bf09f4ea47f72300e526ba0af2e4af067a46083"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "14f001ab02da1ad86011d5d1eb48b0d370ddc340198ef920d870160d1c797556"
+			"digest": "3efb9156ef936c7c827a6e2f0727f5a0baca32527bba4e66031f7f051c737e43"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "5928f3540f9b5d55d6eaefe3e1b416693df211a28b3d22e936e53ed99a9bd30d"
+	"digest": "782ee44d34001f9f7a5fb0a661beea75056c81f26d39b1cd1e408a06935621e0"
 }

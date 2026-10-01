@@ -34,6 +34,7 @@ import {
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
 	BIN_ENTRY_PATH,
+	BROWSE_DEV_DEPENDENCIES,
 	CATALOG_AGENT_PATH,
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
@@ -278,6 +279,12 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * the peer's floor states what consumers may supply rather than what this workspace
  * develops against.
  *
+ * A workspace that renders a surface receives {@link BROWSE_DEV_DEPENDENCIES}: a browser
+ * environment on either axis, a sheet, or themes. A framework face counts without a clause of
+ * its own, because a face is selected only on an axis that carries a browser environment.
+ * A browser setup runtime alone receives nothing, because it renders no surface for `browse`
+ * to drive.
+ *
  * A peer is declared here as well as under `peerDependencies`, because a peer is
  * not installed by the workspace that declares it and developing against one
  * requires it present. A runtime dependency is the opposite case and is removed:
@@ -300,8 +307,10 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  */
 export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Record<string, string>> {
 	const sheets = blueprintToSheets(blueprint).length > 0 || blueprint.themes
+	const rendered = blueprint.src.includes('browser') || blueprint.app.includes('browser') || sheets
 	const merged: Record<string, string> = {
 		...BASE_DEV_DEPENDENCIES,
+		...(rendered ? BROWSE_DEV_DEPENDENCIES : {}),
 		...(sheets ? STYLES_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.length > 0 || blueprint.bin ? DECLARATION_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser') || sheets

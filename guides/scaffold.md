@@ -124,6 +124,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `BASE_DEV_DEPENDENCIES`           | const | Holds the tooling versions scaffold and every generated workspace share.                               |
 | `BIN_CONFIGS`                     | const | Lists the configuration files a workspace that ships its own executable adds, frozen.                  |
 | `BIN_ENTRY_PATH`                  | const | Names the executable entry whose presence makes a workspace `bin`.                                     |
+| `BROWSE_DEV_DEPENDENCIES`         | const | Names the development dependency a browser or styles surface adds.                                     |
 | `CANON_PATHS`                     | const | Lists the instruction-canon paths staged for reading rather than for a target, frozen.                 |
 | `CATALOG_AGENT_PATH`              | const | Names the agent file whose marker-bounded package table the catalog verb alone owns.                   |
 | `CATALOG_CLOSING_MARKER`          | const | Names the marker closing the package table inside `CATALOG_AGENT_PATH`.                                |
