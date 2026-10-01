@@ -1237,6 +1237,25 @@ describe('blueprintToDevDependencies browse server', () => {
 
 		expect(planned).not.toHaveProperty('@orkestrel/browser')
 	})
+
+	it.each([
+		[
+			'a direct runtime dependency',
+			buildBlueprint({ name: 'mcp', src: ['core', 'browser', 'server'] }),
+		],
+		[
+			'a transitive runtime dependency',
+			buildBlueprint({ name: 'abort', src: ['core', 'browser'] }),
+		],
+	])('omits the browser package from %s of the browser package', (_label, blueprint) => {
+		expect(blueprintToDevDependencies(blueprint)).not.toHaveProperty('@orkestrel/browser')
+	})
+
+	it('adds the browser package to a fleet browser workspace outside its runtime closure', () => {
+		const blueprint = buildBlueprint({ name: 'indexeddb', src: ['core', 'browser'] })
+
+		expect(blueprintToDevDependencies(blueprint)['@orkestrel/browser']).toBe(range)
+	})
 })
 
 describe('blueprintToDevDependencies compile tooling', () => {

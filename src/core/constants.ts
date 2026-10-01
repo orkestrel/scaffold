@@ -659,11 +659,38 @@ export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> =
  * @remarks
  * The package ships the `browse` binary, an MCP server that drives a rendered page and records
  * journeys, and `.claude/rules/quality.md` § Instruments names its registration.
- * `blueprintToDevDependencies` names the blueprints that receive it.
+ * `blueprintToDevDependencies` names the blueprints that receive it, and it withholds the
+ * dependency from the workspaces {@link BROWSE_UPSTREAM} lists.
  */
 export const BROWSE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/browser': manifest.devDependencies['@orkestrel/browser'],
 })
+
+/**
+ * Lists the packages `@orkestrel/browser` depends on at runtime, directly or transitively, frozen.
+ *
+ * @remarks
+ * A workspace this list names cannot declare `@orkestrel/browser`, because the declaration closes
+ * a dependency cycle through the browser package's runtime dependencies. The list is the closure
+ * of `dependencies` and `peerDependencies` over the installed manifests, sorted by name, and moves
+ * with the `@orkestrel/browser` pin.
+ */
+export const BROWSE_UPSTREAM: readonly string[] = Object.freeze([
+	'@orkestrel/abort',
+	'@orkestrel/codec',
+	'@orkestrel/contract',
+	'@orkestrel/emitter',
+	'@orkestrel/html',
+	'@orkestrel/markdown',
+	'@orkestrel/mcp',
+	'@orkestrel/process',
+	'@orkestrel/router',
+	'@orkestrel/server',
+	'@orkestrel/sse',
+	'@orkestrel/timeout',
+	'@orkestrel/tool',
+	'@orkestrel/websocket',
+])
 
 /** Names the development dependency every private `app` environment adds. */
 export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({

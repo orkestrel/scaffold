@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isRecord, isString } from '@orkestrel/contract'
@@ -9,6 +9,7 @@ import {
 	BASE_DEV_DEPENDENCIES,
 	blueprintToDevDependencies,
 	BROWSE_DEV_DEPENDENCIES,
+	BROWSE_UPSTREAM,
 	DECLARATION_DEV_DEPENDENCIES,
 	extractRangeMajor,
 	FRAMEWORK_MATRIX,
@@ -92,6 +93,56 @@ function selectSeededNames(): readonly string[] {
 	}
 	return [...seeded].sort()
 }
+
+// Node's lookup: the nearest `node_modules` holding the package, climbing from the
+// directory of the package that depends on it, so a nested install wins over a hoisted one.
+function locatePackage(from: string, name: string): string {
+	let directory = from
+	for (;;) {
+		const candidate = resolve(directory, 'node_modules', name)
+		if (existsSync(resolve(candidate, 'package.json'))) return candidate
+		const parent = dirname(directory)
+		if (parent === directory) throw new Error(`No installed package resolves ${name} from ${from}`)
+		directory = parent
+	}
+}
+
+function readInstalledRecord(directory: string): Readonly<Record<string, unknown>> {
+	const parsed: unknown = JSON.parse(readFileSync(resolve(directory, 'package.json'), 'utf8'))
+	if (!isRecord(parsed)) throw new Error(`The manifest in ${directory} is not a record`)
+	return parsed
+}
+
+// The fleet names `name` reaches through installed runtime and peer edges, walked
+// through the installed manifests rather than through the constant under test.
+function collectRuntimeClosure(name: string): readonly string[] {
+	const names = new Set<string>()
+	const visited = new Set<string>()
+	const pending = [locatePackage(root, name)]
+	for (let directory = pending.pop(); directory !== undefined; directory = pending.pop()) {
+		if (visited.has(directory)) continue
+		visited.add(directory)
+		const manifest = readInstalledRecord(directory)
+		for (const section of [manifest.dependencies, manifest.peerDependencies]) {
+			if (!isRecord(section)) continue
+			for (const dependency of Object.keys(section)) {
+				if (!dependency.startsWith('@orkestrel/')) continue
+				names.add(dependency)
+				pending.push(locatePackage(directory, dependency))
+			}
+		}
+	}
+	return [...names].sort()
+}
+
+describe('browse upstream', () => {
+	// A re-pin of the browser package can move its closure, and the omission it
+	// drives is only as current as this list.
+	it('equals the installed runtime closure of the browser package', () => {
+		expect(BROWSE_UPSTREAM).toStrictEqual(collectRuntimeClosure('@orkestrel/browser'))
+		expect(Object.isFrozen(BROWSE_UPSTREAM)).toBe(true)
+	})
+})
 
 describe('seed guide paths', () => {
 	it('names the initial guide mirrors and freezes their membership', () => {
