@@ -14,7 +14,8 @@ description: Prove a browser application the way a person uses it — real keyst
 3. [styles.md](references/styles.md) before asserting anything the browser resolved.
 4. [statechart.md](references/statechart.md) before declaring a transition or mounting the harness.
 5. [decide.md](references/decide.md) before routing a question to an instrument.
-6. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
+6. [recorded.md](references/recorded.md) before judging a browser recording's run as evidence.
+7. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
    route entry, and store contract.
 
 Treat a retained readiness verdict as evidence to re-verify against the current tip, never as a plan

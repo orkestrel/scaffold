@@ -3,12 +3,13 @@
 Route a question by what judges the claim, before spending a round on it. Report a question no
 instrument here answers as open, and never answer it with the nearest instrument instead.
 
-| The claim is judged by                 | Route it to                                  |
-| -------------------------------------- | -------------------------------------------- |
-| A compiler, a linter, or a Node runner | The `prove` tool, with its negative control  |
-| A person's eye                         | The run's written artifact, named by variant |
-| A person watching a widget move        | The harness run's frames and its artifact    |
-| The browser's own resolved value       | The matrix family ([styles.md](styles.md))   |
+| The claim is judged by                           | Route it to                                                                                                                               |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| A compiler, a linter, or a Node runner           | The `prove` tool, with its negative control                                                                                               |
+| A person's eye                                   | The run's written artifact, named by variant                                                                                              |
+| A person watching a widget move                  | The harness run's frames and its artifact                                                                                                 |
+| The browser's own resolved value                 | The matrix family ([styles.md](styles.md))                                                                                                |
+| A flow a model drove through the browser toolset | A recorded journey replayed through `@orkestrel/browser`, judged by the run's steps ([recorded.md](recorded.md)), never by the transcript |
 
 Never ask `prove` about pixels, and never ask a screenshot about types.
 

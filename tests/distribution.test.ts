@@ -450,6 +450,7 @@ describe('installed package consumer', () => {
 			'.agents/skills/orkestrel-journey/references/captures.md',
 			'.agents/skills/orkestrel-journey/references/decide.md',
 			'.agents/skills/orkestrel-journey/references/layer.md',
+			'.agents/skills/orkestrel-journey/references/recorded.md',
 			'.agents/skills/orkestrel-journey/references/statechart.md',
 			'.agents/skills/orkestrel-journey/references/styles.md',
 			'.agents/skills/orkestrel-polish/SKILL.md',

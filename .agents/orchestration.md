@@ -105,6 +105,7 @@ Every working file lives under the checkout's gitignored `tmp/`, in the director
 | `tmp/probes/`                              | runtime probes the `probe` Vitest project collects and the `probe` MCP server arms                 |
 | `tmp/type/`                                | the type stage's workspace mirror, owned by `@orkestrel/probe`                                     |
 | `tmp/captures/`                            | screenshots, resolved-style snapshots, and other capture portfolios                                |
+| `tmp/browsers/`                            | the journeys a `browse` server saves, their runs and captures, and its profiles under `.profiles/` |
 | `tmp/worktrees/`                           | worktrees the Orchestrator creates for a parallel writer                                           |
 
 ## .orkestrel layout
