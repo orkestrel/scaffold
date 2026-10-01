@@ -62,6 +62,9 @@ import {
 	readConfigScript,
 	collectFaceWrappers,
 	inspectSheetConfiguration,
+	readSheetPrelude,
+	SHEET_POLICY_BARREL_PATTERN,
+	SHEET_POLICY_ORDER_PATTERN,
 	readImportDiagnostics,
 	createPolicyScratch,
 	inspectPolicyConfiguration,
@@ -229,13 +232,10 @@ describe('selected faces', () => {
 		if (loaded === null) throw new Error('Unloaded themes wrapper')
 		expect(loaded.config.build?.outDir).toBe('dist/src/styles/themes')
 		const barrel = readFileSync(resolve(root, 'src/styles/themes/index.scss'), 'utf8')
-		expect(barrel).toMatch(/^@use ['"]\.\.\/tokens['"];\s*@use ['"]default['"];/u)
-		expect(readFileSync(resolve(root, 'src/styles/_tokens.scss'), 'utf8')).toMatch(
-			/^@layer theme, reset, base, elements, components, utilities;/u,
-		)
-		expect(() => expect("@use 'default';\n").toMatch(/^@use ['"]\.\.\/tokens['"];/u)).toThrow(
-			'expected',
-		)
+		expect(readSheetPrelude(barrel)).toMatch(SHEET_POLICY_BARREL_PATTERN)
+		expect(
+			readSheetPrelude(readFileSync(resolve(root, 'src/styles/_tokens.scss'), 'utf8')),
+		).toMatch(SHEET_POLICY_ORDER_PATTERN)
 		const target = sheets.includes('styles') ? 'styles' : 'themes'
 		const command = sheets.includes('styles')
 			? 'vite build --config configs/src/vite.styles.config.ts && vite build --config configs/src/vite.themes.config.ts'
@@ -572,9 +572,17 @@ describe('root configuration', () => {
 			'integration',
 		]) {
 			if (!existsSync(resolve(root, `tests/${label}.test.ts`))) continue
+			const setup = ['./tests/setup.ts']
+			if (label === 'conformance') setup.push('./tests/setupServer.ts')
+			if (
+				label === 'integration' &&
+				(collectSheets(root).length > 0 ||
+					existsSync(resolve(root, 'src/styles/themes/index.scss')))
+			)
+				setup.push('./tests/setupBrowser.ts', './tests/setupStyles.ts')
 			expected.set(label, {
 				include: `tests/${label}.test.ts`,
-				setup: ['./tests/setup.ts'],
+				setup,
 			})
 		}
 		const browserProofs = ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']

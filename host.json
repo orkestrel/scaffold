@@ -1162,7 +1162,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "775a4c3467ef95ecd0e50eaf0cb4b3798ed4dda97eb283c825820c5e1dd03c61"
+			"digest": "6550d3edb31603777ce713985b6648063e105c1ce2bee82c66570382faed7c67"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1174,7 +1174,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "532d5d20a0e7584943d9065a933abd8430780c9c582717beab598d40c4e90a3a"
+			"digest": "a6155fc5a2653d847014c4e7ec3fcf936bcbd7ab02e05827e6cf1f71beedcced"
 		}
 	],
 	"roots": [
@@ -2138,5 +2138,5 @@
 			]
 		}
 	],
-	"digest": "90adf309d63748c64ddea0d712d377a9d60199f2baf2e2be274a0b3bbc3cf40f"
+	"digest": "94af2c9bfd13d19c26f9482eee80e7f831c859b0291c6d9403a28f66f28028af"
 }

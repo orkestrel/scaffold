@@ -21,6 +21,9 @@ import {
 	readConfigScript,
 	collectFaceWrappers,
 	inspectSheetConfiguration,
+	readSheetPrelude,
+	SHEET_POLICY_BARREL_PATTERN,
+	SHEET_POLICY_ORDER_PATTERN,
 	readImportDiagnostics,
 	collectPolicyDeclarations,
 	createPolicyScratch,
@@ -53,7 +56,8 @@ describe('configuration infrastructure', () => {
 	it.each(SHEET_POLICY_SELECTIONS)(
 		'executes the vendored alias and sheet proofs for src=$src styles=$styles themes=$themes',
 		async (selection) => {
-			const blueprint = createBlueprint('paper', selection)
+			const { files, control, ...options } = selection
+			const blueprint = createBlueprint('paper', options)
 			const scratch = createScratch({ prefix: 'scaffold-sheet-proof-' })
 			try {
 				for (const artifact of [
@@ -64,6 +68,7 @@ describe('configuration infrastructure', () => {
 					if (artifact.origin !== 'host') scratch.write(artifact.path, artifact.content)
 				}
 				scratch.write('package.json', blueprintToManifest(blueprint))
+				for (const file of files ?? []) scratch.write(file.path, file.content)
 				for (const path of [
 					'configs/helpers.ts',
 					'configs/policy.ts',
@@ -96,20 +101,68 @@ describe('configuration infrastructure', () => {
 							'config',
 							'tests/config.test.ts',
 							'-t',
-							'resolves every declared alias|loads each selected sheet and framework',
+							'resolves every declared alias|loads each selected sheet and framework|registers every workspace project',
 						],
 					},
 					{ workspace: scratch.path, timeout: 90_000, strict: false },
 				)
 				if (result.failed) throw new Error(result.stdout + result.stderr)
 				expect(result.code).toBe(0)
-				expect(result.stdout).toMatch(/2 passed/u)
+				expect(result.stdout).toMatch(/3 passed/u)
+				for (const mutation of control === undefined ? [] : [control]) {
+					const config = requireValue(scratch.read('vite.config.ts'))
+					expect(config).toContain(mutation.before)
+					scratch.write('vite.config.ts', config.replace(mutation.before, mutation.after))
+					const refused = await execute(
+						{
+							file: process.execPath,
+							arguments: [
+								resolve('node_modules/vitest/vitest.mjs'),
+								'run',
+								'--config',
+								'vite.config.ts',
+								'--project',
+								'config',
+								'tests/config.test.ts',
+								'-t',
+								'registers every workspace project',
+							],
+						},
+						{ workspace: scratch.path, timeout: 90_000, strict: false },
+					)
+					expect(refused.code).toBe(1)
+					expect(refused.stdout).toMatch(/1 failed/u)
+					expect(refused.stderr).toContain(mutation.failure)
+				}
 			} finally {
 				scratch.destroy()
 			}
 		},
 		120_000,
 	)
+	it('reads authored sheet preludes and refuses reversed directives and a non-order opening rule', () => {
+		for (const prefix of [
+			'',
+			'\n// Authored sheet.\n\n',
+			'/* Authored\r\n * sheet. */\r\n// Order.\r\n',
+		]) {
+			for (const quote of ["'", '"']) {
+				const barrel = `@use ${quote}../tokens${quote};\n@use ${quote}default${quote};\n`
+				expect(readSheetPrelude(prefix + barrel)).toMatch(SHEET_POLICY_BARREL_PATTERN)
+			}
+			expect(readSheetPrelude(prefix + '@layer reset, base;')).toMatch(SHEET_POLICY_ORDER_PATTERN)
+			expect(readSheetPrelude(prefix + "@use 'default';\n@use '../tokens';")).not.toMatch(
+				SHEET_POLICY_BARREL_PATTERN,
+			)
+			expect(readSheetPrelude(prefix + ':root { --value: 1; }\n@layer reset, base;')).not.toMatch(
+				SHEET_POLICY_ORDER_PATTERN,
+			)
+			expect(readSheetPrelude(prefix + '@layer reset;')).not.toMatch(SHEET_POLICY_ORDER_PATTERN)
+			expect(readSheetPrelude(prefix + '@layer reset, base {}')).not.toMatch(
+				SHEET_POLICY_ORDER_PATTERN,
+			)
+		}
+	})
 	it('allocates a scratch directory in its requested parent and removes only that directory', () => {
 		const parent = createPolicyScratch({ prefix: 'scaffold-parent-' })
 		try {

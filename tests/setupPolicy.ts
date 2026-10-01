@@ -2811,12 +2811,97 @@ export const SETUP_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 ])
 
 /** Lists standalone sheet selections and their core-bearing control for the vendored proof. */
-export const SHEET_POLICY_SELECTIONS: ReadonlyArray<Pick<Blueprint, 'src' | 'styles' | 'themes'>> =
-	Object.freeze([
-		{ src: [], styles: true, themes: true },
-		{ src: [], styles: false, themes: true },
-		{ src: ['core'], styles: true, themes: true },
-	])
+export const SHEET_POLICY_SELECTIONS: ReadonlyArray<
+	Pick<Blueprint, 'src' | 'styles' | 'themes'> & {
+		readonly conformance?: boolean
+		readonly integration?: boolean
+		readonly files?: readonly PolicySource[]
+		readonly control?: {
+			readonly before: string
+			readonly after: string
+			readonly failure: string
+		}
+	}
+> = Object.freeze([
+	{ src: [], styles: true, themes: true },
+	{ src: [], styles: false, themes: true },
+	{ src: [], styles: false, themes: true, integration: true },
+	{ src: ['core'], styles: true, themes: true },
+	{
+		src: ['core', 'browser'],
+		styles: true,
+		themes: true,
+		conformance: true,
+		integration: true,
+		files: [
+			{
+				path: 'src/styles/_tokens.scss',
+				content:
+					'// Every published sheet opens with the same full statement so load order cannot change layer order.\n@layer reset, base, bootstrap, theme, elements, components, surfaces, composables, modifiers, utilities;\n',
+			},
+			{
+				path: 'src/styles/themes/index.scss',
+				content:
+					"// Tokens declares only the shared layer order, so this sheet carries no styles defaults.\n@use '../tokens';\n@use 'default';\n",
+			},
+			{ path: 'tests/conformance.test.ts', content: 'export {}\n' },
+			{ path: 'tests/integration.test.ts', content: 'export {}\n' },
+			{ path: 'tests/setupServer.ts', content: 'export {}\n' },
+		],
+	},
+	{
+		src: ['core'],
+		styles: false,
+		themes: false,
+		conformance: true,
+		files: [{ path: 'tests/conformance.test.ts', content: 'export {}\n' }],
+		control: {
+			before: "setupFiles: ['./tests/setup.ts', './tests/setupServer.ts']",
+			after: "setupFiles: ['./tests/setup.ts']",
+			failure: './tests/setupServer.ts',
+		},
+	},
+	{
+		src: ['core'],
+		styles: true,
+		themes: false,
+		integration: true,
+		control: {
+			before:
+				"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts']",
+			after: "setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts']",
+			failure: './tests/setupStyles.ts',
+		},
+	},
+	{
+		src: ['core', 'browser'],
+		styles: false,
+		themes: false,
+		integration: true,
+		control: {
+			before: "include: ['tests/integration.test.ts'],\n\t\t\tsetupFiles: ['./tests/setup.ts']",
+			after:
+				"include: ['tests/integration.test.ts'],\n\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts']",
+			failure: './tests/setupBrowser.ts',
+		},
+	},
+])
+
+/** Matches the required opening themes directives without fixing quote style. */
+export const SHEET_POLICY_BARREL_PATTERN =
+	/^@use\s+(['"])\.\.\/tokens\1;\s*@use\s+(['"])default\2;/u
+
+/** Matches a sheet's opening layer order with at least two authored names. */
+export const SHEET_POLICY_ORDER_PATTERN = /^@layer\s+[-\w.]+(?:\s*,\s*[-\w.]+)+\s*;/u
+
+/**
+ * Reads a stylesheet after its leading comments and whitespace.
+ * @param text - The authored stylesheet.
+ * @returns The stylesheet beginning at its first directive or rule.
+ */
+export function readSheetPrelude(text: string): string {
+	return text.replace(/^(?:\s|\/\/[^\r\n]*(?:\r\n|\n|$)|\/\*[\s\S]*?\*\/)+/u, '')
+}
 
 /** Lists the physical in-family controls for every skill-family assertion class. */
 export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
