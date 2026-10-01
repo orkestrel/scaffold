@@ -16,7 +16,7 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 | File                | Sole responsibility                                                                                                                                                                               |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters                                                                                                                                              |
+| `_mixins.scss`      | `@function` values, `@mixin` declaration emitters, and the `!default` switch an emitter reads, which `_tokens.scss` configures through `@use … with`                                              |
 | `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order                                                                                                                                     |
 | `_theme.scss`       | Token overrides under theme selectors                                                                                                                                                             |
 | `_reset.scss`       | The face's reset declarations, when that face owns a reset                                                                                                                                        |
