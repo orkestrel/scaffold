@@ -44,4 +44,4 @@ Not broken and kept: the 2025 population; `container` with sites in two non-API 
 
 ## Fix unit
 
-`registry-fix` on Astra (`veneer/tmp/units/registry-fix-brief.md`), adopting the prescriptions above verbatim; closes with a mutation probe by the Orchestrator, then `verifier` gates and acceptance. No successor round unless the fix departs from a prescription.
+`registry-fix` on Astra (`veneer/tmp/units/registry-fix-brief.md`), adopting the prescriptions above with one amendment the first run forced: the segment rule of item B applies to engine-written names only (an unrestricted rule moved 33 utilities carrying `table` or `row`). Landed at veneer `22f5f36` with every control red in isolation; the Orchestrator's mutation probe (the engine-write condition removed) reddened the derivation case on the 33 names and was restored; the wording gap the unit reported was closed by the Orchestrator in the TSDoc, the guide, and the roadmap. Final counts: components 608, utilities 1265, modifiers 144, composables 8. The seam closes with the `verifier` gates at the chunk's acceptance; no successor round.
