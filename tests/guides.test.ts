@@ -216,7 +216,10 @@ await new GuideCommand({
 
 		it('reports a retained setup seed when the planned release seed differs', async () => {
 			const markdown = requireValue(files['guides/scaffold.md'])
-			expect(markdown).toContain('raises the question on every target materialized before it')
+			expect(markdown).toContain(
+				'raises the question on an exporting module retained from that release',
+			)
+			expect(markdown).toContain('or augmentation-only module with no such line raises no question')
 			const workspace = createScratch({ prefix: 'scaffold-guide-release-skew-' })
 			try {
 				const host = createStagedHost(workspace)
@@ -229,7 +232,11 @@ await new GuideCommand({
 }
 `
 				const readings: Array<readonly Question[]> = []
-				for (const content of [ARTIFACT_TEMPLATES.tests.global.module, retained]) {
+				for (const content of [
+					ARTIFACT_TEMPLATES.tests.global.module,
+					retained,
+					"declare module 'vitest' { interface ProvidedContext { readonly capture: boolean } }\n",
+				]) {
 					workspace.write('target/tests/setupGlobal.ts', content)
 					const sink = createSink()
 					await new CLI(sink.options).execute([
@@ -256,6 +263,7 @@ await new GuideCommand({
 
 				const planned = requireValue(readings[0])
 				const skewed = requireValue(readings[1])
+				expect(requireValue(readings[2]).filter(({ field }) => field === 'setup')).toStrictEqual([])
 				expect(planned.filter(({ field }) => field === 'setup')).toStrictEqual([])
 				expect(skewed.filter(({ field }) => field === 'setup')).toStrictEqual([
 					{
@@ -1104,7 +1112,7 @@ await new GuideCommand({
 			expect(markdown).toContain(
 				'Scaffold plans each setup seed that declares an export beside its sibling proof',
 			)
-			expect(markdown).toContain("so a journey workspace's `tests/setupBrowser.ts` meets it")
+			expect(markdown).toContain('so an exporting seeded module whose proof was deleted meets it')
 			const blueprint = createBlueprint('desk', {
 				src: ['core'],
 				app: ['browser'],

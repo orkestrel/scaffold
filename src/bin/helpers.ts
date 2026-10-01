@@ -61,6 +61,7 @@ import {
 	resolveContainedPath,
 } from '@src/server'
 import { readdirSync } from 'node:fs'
+import { normalize } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
 	COMMAND_OPTIONS,
@@ -829,6 +830,7 @@ export function releasesToPins(
  * Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names.
  *
  * @param script - The manifest script text to read.
+ * @param wrappers - Planned wrapper paths mapped to the face projects they run.
  * @returns The named projects, configurations, and scripts, or `undefined` when the command
  * cannot be read literally.
  *
@@ -847,7 +849,10 @@ export function releasesToPins(
  * // { projects: ['src:core'], configs: [], scripts: [] }
  * ```
  */
-export function scriptToInvocations(script: string): ScriptInvocations | undefined {
+export function scriptToInvocations(
+	script: string,
+	wrappers: ReadonlyMap<string, string> = new Map(),
+): ScriptInvocations | undefined {
 	const tokens: Array<{ value: string; resolved: boolean }> = []
 	let value = ''
 	let resolved = true
@@ -915,9 +920,14 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 	const projects: string[] = []
 	const configs: string[] = []
 	const scripts: string[] = []
+	const configurations = new Map([...wrappers].map(([path, project]) => [normalize(path), project]))
+	let testing = false
 	for (let index = 0; index < tokens.length; index += 1) {
 		const token = tokens[index]
 		if (token === undefined) return undefined
+		if (index === 0 || ['&&', '||', ';', '|', '&', '('].includes(tokens[index - 1]?.value ?? '')) {
+			testing = token.resolved && token.value === 'vitest' && tokens[index + 1]?.value === 'run'
+		}
 		if (token.value === 'npm' && tokens[index + 1]?.value === 'run') {
 			const name = tokens[index + 2]
 			if (
@@ -942,6 +952,9 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 				return undefined
 			const names = token.value === '--project' ? projects : configs
 			names.push(project.value)
+			const face =
+				testing && names === configs ? configurations.get(normalize(project.value)) : undefined
+			if (face !== undefined) projects.push(face)
 			index += 1
 			continue
 		}
@@ -950,6 +963,8 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 			if (!token.resolved || project.length === 0) return undefined
 			const names = token.value.startsWith('--project=') ? projects : configs
 			names.push(project)
+			const face = testing && names === configs ? configurations.get(normalize(project)) : undefined
+			if (face !== undefined) projects.push(face)
 			continue
 		}
 		if (!token.resolved && /--project|--config/.test(token.value)) return undefined

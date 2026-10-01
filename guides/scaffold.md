@@ -739,6 +739,9 @@ manifest and planned `vite.config.ts` conflict, and the option to exclude `confi
 A selection that excludes `configs` proceeds. An advisory alone does not make an aligned target
 drift.
 
+A gate chain also reaches a sheet or framework face through `vitest run --config <wrapper>` when
+the wrapper path belongs to that face in the planned configuration; a build invocation does not.
+
 Scaffold writes one part of the manifest rather than advising on it: the writable script region.
 `repair` and `overwrite` write every direct `test:<project>` script the blueprint computes,
 `test:probe`, and `test:bench`. A publishing workspace also receives `test:distribution`, `prepack`,
@@ -799,10 +802,12 @@ birth-owned, and the range and script regions are the only parts of it a verb re
 
 `audit` reports a further non-blocking question, on the `setup` field.
 
-The `setup` question fires when the target carries a filled root `tests/setup*.ts` module that is
+The `setup` question fires when the target carries a filled, exporting root `tests/setup*.ts` module that is
 neither a proof itself nor one of the vendored modules every target receives, while no proof of the
 same stem covers it. A module counts as filled when its text differs from the seed this blueprint
 plans at that same path.
+The export check matches a line beginning with `export `, as the policy sweep does; a hook-only
+or augmentation-only module with no such line raises no question.
 
 The comparison reads the module and the seed trimmed, so surrounding whitespace decides nothing: a
 trailing newline is not authorship, and a module holding whitespace alone reads as empty rather than
@@ -815,13 +820,13 @@ maintainer wrote rather than what scaffold seeded.
 
 That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair` reports
 it aligned and never rewrites it. A target keeps the seed of the release that materialized it. When
-a release moves a planned seed, scaffold raises the question on every target materialized before it,
+a release moves a planned seed, scaffold raises the question on an exporting module retained from that release,
 against a module scaffold wrote and no maintainer touched. `audit` compares each setup module only
-with the seed the installed release plans, and it retains no earlier seed bytes. The limit reaches a
-module seeded with more than the empty string that no proof covers. Scaffold seeds
+with the seed the installed release plans, and it retains no earlier seed bytes. The limit reaches an
+exporting module seeded with more than the empty string that no proof covers. Scaffold seeds
 `tests/setupGlobal.test.ts` beside `tests/setupGlobal.ts` and `tests/setupStyles.test.ts` beside
-`tests/setupStyles.ts`, so a journey workspace's `tests/setupBrowser.ts` meets it, and so does a
-seeded module whose proof was deleted. A maintainer meeting that question closes it by writing the
+`tests/setupStyles.ts`, so an exporting seeded module whose proof was deleted meets it.
+A maintainer meeting that question closes it by writing the
 proof it asks for, or by taking the seed the installed release plans.
 
 Coverage is read per module: `tests/<name>.ts` is covered by `tests/<name>.test.ts` and by nothing
@@ -831,7 +836,7 @@ proof that module wants. The question belongs to the `tests` group, so a scoped 
 `tests` omits it. Scaffold does not write the proof it asks for, and the question never refuses a
 write: a writing verb reports it in the terminal audit it prints, because refusing `repair` over a
 gap no write can close would block every write. Run across a fleet, the question is the list of
-packages carrying a filled setup module that no proof covers.
+packages carrying a filled, exporting setup module that no proof covers.
 
 `audit` reads the instruction canon as findings rather than as a question. Each `CANON_PATHS` member
 the target holds enters the comparison, by file where the member is a directory, and a path the plan
@@ -2404,8 +2409,8 @@ structural facts are set, and registers `distribution` whenever the workspace pu
 `src` environment or sheet face. In a publishing workspace, `distribution` and `service` run from `prepublishOnly`
 and `conformance` stays in `test`. In a `private: true` workspace, `distribution` is absent,
 `service` runs from `test`, and there is no `prepublishOnly` at all. The `policy` project reports an exporting root setup module that lacks its sibling proof or an import from `tests/setup.test.ts`.
-Separately, `audit` reports a filled `tests/setup*.ts` module that no `tests/setup*.test.ts`
-proof covers raises the non-blocking `setup` question, which names the modules and the proof to add.
+Separately, a filled, exporting `tests/setup*.ts` module that no `tests/setup*.test.ts`
+proof covers raises the non-blocking `setup` question in `audit`, which names the modules and the proof to add.
 For setup modules the workspace authors, the workspace supplies the behavior proof; the setup modules scaffold seeds arrive with their sibling proofs.
 
 The generated proof partitions the installed `exports` map rather than sampling it. Every published

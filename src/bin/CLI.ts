@@ -48,8 +48,10 @@ import {
 	BIN_ENTRY_PATH,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
+	blueprintToFaces,
 	blueprintToProjects,
 	blueprintToScripts,
+	blueprintToSheets,
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CONFORMANCE_TEST_PATH,
@@ -1119,6 +1121,19 @@ export class CLI implements CLIInterface {
 			}
 		}
 
+		const faces = new Set([
+			...blueprintToSheets(blueprint).map((name) => `src:${name}`),
+			...blueprintToFaces(blueprint).flatMap(({ name, axes }) =>
+				axes.map((axis) => `${axis}:${name}`),
+			),
+		])
+		const wrappers = new Map<string, string>()
+		for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+			const match = /^configs\/(src|app)\/vite\.([^.]+)\.config\.ts$/u.exec(artifact.path)
+			if (match === null) continue
+			const project = `${match[1]}:${match[2]}`
+			if (faces.has(project)) wrappers.set(artifact.path, project)
+		}
 		const reachable = new Set<string>()
 		const chains = new Map<string, Set<string>>()
 		for (const gate of gates) {
@@ -1131,7 +1146,7 @@ export class CLI implements CLIInterface {
 				visited.add(name)
 				const script = scripts[name]
 				if (!isString(script)) continue
-				const invoked = scriptToInvocations(script)
+				const invoked = scriptToInvocations(script, wrappers)
 				if (invoked === undefined) {
 					unresolved = true
 					continue
@@ -1324,7 +1339,7 @@ export class CLI implements CLIInterface {
 				if (proofs.has(`${path.slice(0, -'.ts'.length)}.test.ts`)) return false
 				if (resolveContainedPath(tests, path) === undefined) return false
 				const content = (readFileText(tests, path) ?? '').trim()
-				return content !== '' && content !== (seeds.get(`tests/${path}`) ?? '')
+				return /^export /m.test(content) && content !== (seeds.get(`tests/${path}`) ?? '')
 			})
 			.sort()
 		if (modules.length === 0) return undefined
@@ -1333,11 +1348,6 @@ export class CLI implements CLIInterface {
 		const remedies = modules
 			.map((path) => `tests/${path.slice(0, -'.ts'.length)}.test.ts`)
 			.join(', ')
-		// The remedy asks for coverage, which is the fact the preceding filter decides.
-		// It does not say what the proof asserts: the reading is text against a
-		// seed, so a module that exports nothing and only registers a hook reaches
-		// here, and a remedy demanding a proof of exported behavior leaves that
-		// maintainer a permanent advisory or a proof that measures nothing.
 		const remedy = single
 			? `Add ${remedies} to cover it.`
 			: `Add ${remedies}, each covering the module of the same name.`

@@ -909,6 +909,49 @@ describe('releasesToPins', () => {
 })
 
 describe('scriptToInvocations', () => {
+	it('reaches a planned wrapper only through its Vitest run command', () => {
+		const wrappers = new Map([['configs/src/vite.print.config.ts', 'src:print']])
+		expect(
+			scriptToInvocations(
+				'npm run build && vitest run --config "./configs/src/vite.print.config.ts"',
+				wrappers,
+			),
+		).toStrictEqual({
+			projects: ['src:print'],
+			configs: ['./configs/src/vite.print.config.ts'],
+			scripts: ['build'],
+		})
+		expect(
+			scriptToInvocations('vitest run --config=configs/src/vite.print.config.ts', wrappers)
+				?.projects,
+		).toStrictEqual(['src:print'])
+		expect(
+			scriptToInvocations('vitest run -c configs/src/vite.print.config.ts', wrappers)?.projects,
+		).toStrictEqual(['src:print'])
+		expect(
+			scriptToInvocations('vite build --config configs/src/vite.print.config.ts', wrappers)
+				?.projects,
+		).toStrictEqual([])
+		expect(
+			scriptToInvocations(
+				'vitest run --config vite.config.ts && vite build --config configs/src/vite.print.config.ts',
+				wrappers,
+			)?.projects,
+		).toStrictEqual([])
+		expect(
+			scriptToInvocations('echo vitest run --config configs/src/vite.print.config.ts', wrappers)
+				?.projects,
+		).toStrictEqual([])
+		expect(
+			scriptToInvocations('vitest bench --config configs/src/vite.print.config.ts', wrappers)
+				?.projects,
+		).toStrictEqual([])
+		expect(
+			scriptToInvocations('vitest run --config configs/src/vite.unknown.config.ts', wrappers)
+				?.projects,
+		).toStrictEqual([])
+	})
+
 	it('reads a project named as a separate token and as one token', () => {
 		expect(scriptToInvocations('vitest run --project src:core')).toStrictEqual({
 			projects: ['src:core'],

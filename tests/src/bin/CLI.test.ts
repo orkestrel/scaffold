@@ -274,10 +274,7 @@ describe('surface creation and migration', () => {
 // A setup module a maintainer wrote into. What separates it from what scaffold
 // seeds at that path is that its text is not the seed's.
 const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
-// The other half of that population: a setup module a maintainer wrote into that
-// exports nothing and only registers a hook. The question reads text, so this
-// module reaches it exactly as the exporting one does, and the fleet ships this
-// shape. Its remedy must be one this maintainer can carry out.
+// A hook-only module has no exported behavior for a sibling proof to cover.
 const HOOK_SETUP_TEXT = [
 	"import { afterEach } from 'vitest'",
 	'',
@@ -2574,6 +2571,121 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('adopts planned face wrappers and refuses an authored chain that omits them', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('target')
+			const cli = new CLI(createSink().options)
+			expect(
+				await cli.execute([
+					'new',
+					'sample',
+					'--target',
+					target,
+					'--from',
+					host,
+					'--src',
+					'core,browser',
+					'--app',
+					'core,browser',
+					'--styles',
+					'--extend',
+					'browser:vue,styles:print',
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
+			if (!isRecord(manifest) || !isRecord(manifest.scripts)) throw new Error('Missing scripts')
+			const scripts = {
+				...manifest.scripts,
+				'test:src':
+					'vitest run --config vite.config.ts --project src:core --project src:browser && npm run test:src:styles && npm run test:src:print && npm run test:src:vue',
+				'test:app':
+					'vitest run --config vite.config.ts --project app:core --project app:browser && npm run test:app:vue',
+				'test:src:styles':
+					'npm run build:src:styles && vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot',
+				'test:src:print':
+					'npm run build:src:print && vitest run --config configs/src/vite.print.config.ts --no-cache --reporter=dot',
+				'test:src:vue':
+					'npm run build:src:browser && npm run build:src:vue && vitest run --config configs/src/vite.vue.config.ts --no-cache --reporter=dot',
+				'test:app:vue':
+					'vitest run --config configs/app/vite.vue.config.ts --no-cache --reporter=dot',
+			}
+			workspace.write(
+				'target/package.json',
+				JSON.stringify({ ...manifest, scripts }, undefined, '\t') + '\n',
+			)
+			workspace.write('target/configs/src/vite.styles.config.ts', '// stale wrapper\n')
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute([
+					'repair',
+					'--target',
+					target,
+					'--from',
+					host,
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: RepairResult = JSON.parse(requireValue(repaired.output[0]))
+			expect(result.written).toContain('configs/src/vite.styles.config.ts')
+			const audited = createSink()
+			expect(
+				await new CLI(audited.options).execute([
+					'audit',
+					'--target',
+					target,
+					'--from',
+					host,
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: AuditResult = JSON.parse(requireValue(audited.output[0]))
+			expect(audit.findings.every(({ drift }) => drift === 'aligned')).toBe(true)
+			expect(audit.questions.some(({ field }) => field === 'projects')).toBe(false)
+			expect(workspace.read('target/package.json')).toContain(scripts['test:src:styles'])
+			workspace.write(
+				'target/package.json',
+				JSON.stringify(
+					{
+						...manifest,
+						scripts: {
+							...scripts,
+							test: 'npm run custom && npm run test:app',
+							custom: 'echo retained',
+						},
+					},
+					undefined,
+					'\t',
+				) + '\n',
+			)
+			workspace.write('target/configs/src/vite.styles.config.ts', '// retained on refusal\n')
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute([
+					'repair',
+					'--target',
+					target,
+					'--from',
+					host,
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(refused.output.join('\n')).toContain('does not reach Vitest projects')
+			expect(refused.output.join('\n')).toContain('src:print, src:styles, src:vue')
+			expect(workspace.read('target/configs/src/vite.styles.config.ts')).toBe(
+				'// retained on refusal\n',
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('accepts every planned project when each is reachable from a gate', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -3021,12 +3133,54 @@ describe('CLI audit', () => {
 		}
 	})
 
-	// The question reads text, so it reaches a filled module that exports
-	// nothing. Its remedy has to stay inside what that reading knows: asking this
-	// maintainer for a proof of exported behavior leaves them a permanent advisory
-	// or a proof asserting nothing, and the message is what has to be actionable
-	// for the whole population the predicate admits rather than for part of it.
-	it('asks a hook-only setup module for coverage rather than for a proof of its exports', async () => {
+	it('skips an augmentation-only setup module and reports an exporting control', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/package.json', buildTargetManifest())
+			const augmentation =
+				"import type { JourneyVariant } from '@orkestrel/test'\n\ndeclare module 'vitest' {\n\tinterface ProvidedContext {\n\t\treadonly variant: string\n\t\treadonly variants: readonly JourneyVariant[]\n\t\treadonly capture: boolean\n\t}\n}\n"
+			workspace.write('target/tests/setupBrowser.ts', augmentation)
+			const skipped = createSink()
+			await new CLI(skipped.options).execute([
+				'audit',
+				'--target',
+				fleet.target,
+				'--from',
+				fleet.host,
+				'--offline',
+				'--groups',
+				'tests',
+				'--json',
+			])
+			const audit: AuditResult = JSON.parse(requireValue(skipped.output[0]))
+			expect(audit.questions.filter(({ field }) => field === 'setup')).toStrictEqual([])
+			workspace.write(
+				'target/tests/setupBrowser.ts',
+				augmentation + "export const SAMPLE_FIXTURE = 'sample'\n",
+			)
+			const exporting = createSink()
+			await new CLI(exporting.options).execute([
+				'audit',
+				'--target',
+				fleet.target,
+				'--from',
+				fleet.host,
+				'--offline',
+				'--groups',
+				'tests',
+				'--json',
+			])
+			const control: AuditResult = JSON.parse(requireValue(exporting.output[0]))
+			expect(control.questions.filter(({ field }) => field === 'setup')).toStrictEqual([
+				buildSetupQuestion(fleet.target, 'tests/setupBrowser.ts'),
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('skips a hook-only setup module with no export', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -3044,12 +3198,7 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			expect(audit.questions).toStrictEqual([buildSetupQuestion(fleet.target, 'tests/setup.ts')])
-			// Stated as the property as well as the literal, because a wording change
-			// moves the literal and this assertion together only if it is deliberate.
-			// Scanning scaffold's own message is not the source-language scan the
-			// predicate refuses: the subject here is the sentence, not a module.
-			expect(requireValue(audit.questions[0]).message).not.toContain('export')
+			expect(audit.questions).toStrictEqual([])
 		} finally {
 			workspace.destroy()
 		}
