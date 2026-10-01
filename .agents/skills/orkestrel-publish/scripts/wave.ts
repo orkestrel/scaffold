@@ -6,8 +6,9 @@
 // re-pin every @orkestrel range to the registry caret and install), commit (`git commit --only` of
 // the manifest and lockfile as the preparation commit), overwrite (`scaffold overwrite --json`, then
 // `scaffold audit` exiting 0; offline, an exit of 1 whose note names the catalog refusal is
-// accepted), verify (every declared range matches the registry), install, pins (the self-pin sweep
-// with --prior or the manifest version and every range the visit moved; hits are reported, not
+// accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
+// is staged from that checkout), verify (every declared range matches the registry), install,
+// pins (the self-pin sweep with --prior or the manifest version and every range the visit moved; hits are reported, not
 // fatal), format, gates (format:check, lint:check, check, build, test), and compare (the rebuilt
 // dist against the published tarball, and the final runtime dependency set against the published
 // manifest `npm view NAME --json` serves; both readings are reported, not fatal). The summary
@@ -46,6 +47,9 @@ const RUNTIME_FIELDS: readonly string[] = ['dependencies', 'peerDependencies']
 const RANGE_FIELDS: readonly string[] = [...RUNTIME_FIELDS, 'devDependencies']
 const CATALOG = '.claude/agents/orkestrel.md'
 const OFFLINE_REFUSAL = "'catalog' does not take --offline"
+// The vendored host is staged from this package's checkout, so overwriting it from the host deletes
+// and replaces its own canon.
+const SCAFFOLD = '@orkestrel/scaffold'
 const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u
 // The checkout runs the `.ts` sources and a built twin under `dist/agents` runs `.js` siblings.
 const EXTENSION = extname(fileURLToPath(import.meta.url))
@@ -490,7 +494,14 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 	if (selected.has('pin')) runPin(runner, scaffoldFile, scaffoldPrefix, offline)
 	if (selected.has('commit') && !failed(runner)) runCommit(runner)
 	if (selected.has('overwrite') && !failed(runner)) {
-		runOverwrite(runner, scaffoldFile, scaffoldPrefix, offline)
+		if (name === SCAFFOLD) {
+			recordStep(
+				runner,
+				'overwrite',
+				describeCommand(scaffoldFile, [...scaffoldPrefix, 'overwrite', '--json', ...offline]),
+				`skipped with its audit: ${SCAFFOLD} is the package whose checkout the vendored host is staged from`,
+			)
+		} else runOverwrite(runner, scaffoldFile, scaffoldPrefix, offline)
 	}
 	if (selected.has('verify') && !failed(runner)) {
 		runVerify(runner, scaffoldFile, scaffoldPrefix, offline)

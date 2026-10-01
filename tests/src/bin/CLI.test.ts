@@ -5137,6 +5137,70 @@ describe('CLI overwrite', () => {
 		}
 	})
 
+	// The scaffold checkout is the source the vendored host is staged from, so a
+	// write from that host into it would replace the canon with the floor copy.
+	it('refuses repair and overwrite on the scaffold package before either writes or deletes, while audit still reads it', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const manifest = TARGET_MANIFEST_TEXT.replace(
+				'"name": "@orkestrel/sample"',
+				'"name": "@orkestrel/scaffold"',
+			)
+			expect(manifest).toContain('"name": "@orkestrel/scaffold"')
+			workspace.write('target/package.json', manifest)
+			workspace.write('target/.agents/skills/orkestrel-dispatch/SKILL.md', '# Dispatch\n')
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			const before = workspace.names('target').toSorted()
+			const readings: Array<readonly [number, unknown, unknown]> = []
+			for (const verb of ['overwrite', 'repair']) {
+				const sink = createSink()
+				const code = await new CLI(sink.options).execute([
+					verb,
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				])
+				const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+				const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
+				readings.push([code, error.code, error.message])
+			}
+			const message = `The target at ${fleet.target} is the @orkestrel/scaffold package, whose canon the vendored host is staged from. Run repair and overwrite against a workspace that consumes it.`
+			expect(readings).toStrictEqual([
+				[EXIT_DRIFT, 'TARGET', message],
+				[EXIT_DRIFT, 'TARGET', message],
+			])
+			expect(workspace.read('target/.agents/skills/orkestrel-dispatch/SKILL.md')).toBe(
+				'# Dispatch\n',
+			)
+			expect(workspace.names('target').toSorted()).toStrictEqual(before)
+			const audited = createSink()
+			expect(
+				await new CLI(audited.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: unknown = JSON.parse(audited.output[0] ?? '')
+			expect(isRecord(audit) && Array.isArray(audit.findings) && audit.findings.length > 0).toBe(
+				true,
+			)
+			expect(audit).not.toHaveProperty('error')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	// A root browser setup proof plans `setup:browser`, its direct script, and a
 	// chain step. A manifest whose `test` chain holds generated steps only is the
 	// chain an earlier birth left, so overwrite lands the script and the step itself

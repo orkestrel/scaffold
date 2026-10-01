@@ -1,5 +1,6 @@
 import type { ParseArgsOptionsConfig } from 'node:util'
 import type { Verb } from './types.js'
+import manifest from '../../package.json' with { type: 'json' }
 
 /**
  * Names the command the executable installs as.
@@ -10,6 +11,16 @@ import type { Verb } from './types.js'
  * a reader can paste back.
  */
 export const EXECUTABLE_NAME = 'scaffold'
+
+/**
+ * Names the package this executable ships in, as its manifest declares it.
+ *
+ * @remarks
+ * A target declaring this name is the checkout the vendored host is staged
+ * from, so `repair` and `overwrite` refuse it: a write from the host would
+ * replace that checkout's canon with the copy staged from it.
+ */
+export const PACKAGE_NAME = manifest.name
 
 /**
  * Lists the {@link Verb} values in usage order, frozen.

@@ -57,6 +57,9 @@ online audit reports the floor-restored files as stale until the release. The `-
 skips the catalog step and exits `1` with a note naming that refusal, so run the full
 `scaffold overwrite` after the release.
 
+When the target is `@orkestrel/scaffold`, the runner records the overwrite step as skipped and runs
+every other step; never run `scaffold repair` or `scaffold overwrite` against that checkout.
+
 Run visits in parallel slices of disjoint repositories, each slice strictly serial inside itself,
 reporting per target. Refuse a failed target, name it, repair it, and re-run it alone.
 

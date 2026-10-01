@@ -124,6 +124,55 @@ describe('wave.ts', () => {
 		}
 	})
 
+	it('skips the overwrite and its audit on the scaffold package and runs every other step, and runs both on any other target', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-self-' })
+		try {
+			// The recorder stands in for the scaffold executable: it logs each command
+			// line and answers an audit with an empty releases envelope.
+			scratch.write(
+				'dist/bin/main.js',
+				[
+					"const { appendFileSync } = require('node:fs')",
+					"const args = process.argv.slice(2).join(' ')",
+					"appendFileSync('calls.txt', `${args}\\n`)",
+					"if (args.startsWith('audit --json')) process.stdout.write('{\"releases\":[]}')",
+					'',
+				].join('\n'),
+			)
+			scratch.write('package.json', '{"name":"@orkestrel/scaffold","version":"1.0.0"}')
+			const planned = runSkillScript(SCRIPT, ['--visit', '--dry-run', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(planned.status).toBe(0)
+			const steps = planned.json?.steps
+			if (!isArray(steps)) throw new Error('The visit carries no steps')
+			expect([...new Set(steps.map((step) => (isRecord(step) ? step.step : '')))]).toEqual(STEPS)
+			const skipped = steps.filter((step) => isRecord(step) && step.step === 'overwrite')
+			expect(skipped).toEqual([
+				{
+					step: 'overwrite',
+					command: expect.stringContaining('overwrite --json'),
+					durationMs: 0,
+					note: 'skipped with its audit: @orkestrel/scaffold is the package whose checkout the vendored host is staged from',
+				},
+			])
+			const own = runSkillScript(SCRIPT, ['--visit', '--from', 'overwrite', '--to', 'verify'], {
+				cwd: scratch.path,
+			})
+			expect(own.status).toBe(0)
+			expect(scratch.read('calls.txt')).toBe('audit --json\n')
+			scratch.remove('calls.txt')
+			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const other = runSkillScript(SCRIPT, ['--visit', '--from', 'overwrite', '--to', 'verify'], {
+				cwd: scratch.path,
+			})
+			expect(other.status).toBe(0)
+			expect(scratch.read('calls.txt')).toBe('overwrite --json\naudit\naudit --json\n')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('refuses an unknown or inverted step range, a flag with no value, a malformed prior version, no mode, two modes, and reports an unreadable target as 2', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-usage-' })
 		try {

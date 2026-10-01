@@ -87,7 +87,7 @@ import {
 	readSnapshot,
 	resolveContainedPath,
 } from '@src/server'
-import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE } from './constants.js'
+import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE, PACKAGE_NAME } from './constants.js'
 import { isUsageError, UsageError } from './errors.js'
 import {
 	argvToCommand,
@@ -1423,7 +1423,17 @@ export class CLI implements CLIInterface {
 	// Writing verbs refuse the project and dependency advisories because their
 	// next step would replace planned configuration. The audit-only scripts
 	// advisory does not enter this boundary; the manifest region writer owns it.
+	// They refuse this package's own checkout before anything else, because the
+	// vendored host is staged from it and a write from that host replaces its
+	// canon with the staged copy.
 	#assertTarget(target: string, blueprint: Blueprint, groups: readonly Group[] | undefined): void {
+		if (manifestToName(this.#manifest(target)) === PACKAGE_NAME) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The target at ${target} is the ${PACKAGE_NAME} package, whose canon the vendored host is staged from. Run repair and overwrite against a workspace that consumes it.`,
+				{ target },
+			)
+		}
 		const questions = this.#targetQuestions(target, blueprint, groups, true)
 		if (questions.length === 0) return
 		throw new ScaffoldError('TARGET', questions.map((question) => question.message).join(' '), {
