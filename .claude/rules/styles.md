@@ -14,14 +14,15 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 ## Centralized files
 
-| File                | Sole responsibility                                           |
-| ------------------- | ------------------------------------------------------------- |
-| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters          |
-| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order |
-| `_theme.scss`       | Token overrides under theme selectors                         |
-| `_reset.scss`       | The face's reset declarations, when that face owns a reset    |
-| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet      |
-| `index.scss`        | Sole compilation barrel                                       |
+| File                | Sole responsibility                                                                                                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters                                                                                                                                              |
+| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order                                                                                                                                     |
+| `_theme.scss`       | Token overrides under theme selectors                                                                                                                                                             |
+| `_reset.scss`       | The face's reset declarations, when that face owns a reset                                                                                                                                        |
+| `_utilities.scss`   | The utility map and its emission schedule, on a face that generates its utilities from data; that face has no `utilities/` folder, and the one emitter the schedule calls lives in `_mixins.scss` |
+| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet                                                                                                                                          |
+| `index.scss`        | Sole compilation barrel                                                                                                                                                                           |
 
 - Apply this table and the folder barrels in § Folders to every sheet face: `src/styles` and each
   `src/<name>` styles extension. `.claude/rules/workspace.md` § Environments fixes the `sheet.ts`
@@ -69,7 +70,7 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 ## Folders
 
 - Give each folder an `_index.scss` barrel that loads its partials with `@use`; keep the barrel when the folder is empty.
-- Put a rule that styles one element in `elements/`, a class skin that applies with no script running in `components/`, and a class that sets one property in `utilities/`.
+- Put a rule that styles one element in `elements/`, a class skin that applies with no script running in `components/`, and a class that sets one property in `utilities/`. A face that generates its utilities from a map keeps that map and its emission schedule in `_utilities.scss` instead of a `utilities/` folder; never keep both, because `@use 'utilities'` resolves to either.
 - Add another folder only for a job `elements/`, `components/`, and `utilities/` do not hold, and give it its own barrel and its own layer.
 
 ## Proofs
