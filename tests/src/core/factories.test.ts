@@ -20,6 +20,7 @@ describe('createBlueprint defaults', () => {
 		expect(blueprint.keywords).toStrictEqual([])
 		expect(blueprint.src).toStrictEqual([])
 		expect(blueprint.app).toStrictEqual([])
+		expect(blueprint.extensions).toStrictEqual([])
 		expect(blueprint.setup).toStrictEqual([])
 		expect(blueprint.dependencies).toStrictEqual([])
 		expect(blueprint.peers).toStrictEqual([])
@@ -31,6 +32,8 @@ describe('createBlueprint defaults', () => {
 	it('clears every flag the caller omitted', () => {
 		const blueprint = createBlueprint('router')
 		expect(blueprint.bin).toBe(false)
+		expect(blueprint.styles).toBe(false)
+		expect(blueprint.themes).toBe(false)
 		expect(blueprint.guides).toBe(false)
 		expect(blueprint.integration).toBe(false)
 		expect(blueprint.conformance).toBe(false)

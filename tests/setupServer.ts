@@ -11,15 +11,15 @@ import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
 import type { ResolveHookSync } from 'node:module'
-import type { ExecuteResult } from '@orkestrel/process'
+import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
-import { chmodSync, globSync, readFileSync } from 'node:fs'
+import { chmodSync, globSync, readFileSync, realpathSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
-import { delimiter, join, relative as relativePath } from 'node:path'
+import { delimiter, dirname, join, relative as relativePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
@@ -644,6 +644,37 @@ export function readNpmVersion(environment: NodeJS.ProcessEnv = process.env): st
 }
 
 /**
+ * Spawns npm through Node with bounded output and a case-folded child environment.
+ *
+ * @param args - The arguments passed literally to npm's JavaScript entry.
+ * @param options - The workspace, environment additions, cancellation, and capture bounds.
+ * @returns The process outcome, including nonzero exits and output truncation.
+ * @throws When this host supplies no npm JavaScript entry.
+ * @remarks Defaults to a 300000 ms timeout and 8388608 bytes per output stream. The inherited
+ * npm entry selects the npm running the proof; standalone runs resolve the entry beside Node
+ * or the real file behind the npm executable. No shell interprets the arguments.
+ */
+export function spawnNpm(
+	args: readonly string[],
+	options?: ExecuteOptions,
+): Promise<ExecuteResult> {
+	const environment = mergeEnvironment(false, options?.environment)
+	const executable = resolveExecutable('npm', { environment })
+	const entry = [
+		readVariable(environment, 'npm_execpath'),
+		join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+		executable === undefined ? undefined : realpathSync(executable),
+	].find(
+		(candidate) => candidate !== undefined && candidate.endsWith('npm-cli.js') && isFile(candidate),
+	)
+	if (entry === undefined) throw new Error('The host supplies no npm-cli.js entry')
+	return execute(
+		{ file: process.execPath, arguments: [entry, ...args] },
+		{ timeout: 300_000, limit: 8 * 1024 * 1024, strict: false, ...options, environment },
+	)
+}
+
+/**
  * Provisions an npm at or above a declared floor, and the environment that launches it.
  *
  * @param options - The floor, the directory a provisioned copy may land in, and the
@@ -1012,7 +1043,7 @@ export function buildReleaseScenarios(
 
 /** Defines the real Vue component and browser setup proof a generated consumer renders. */
 export const GENERATED_VUE_SETUP_FILES: Readonly<Record<string, string>> = Object.freeze({
-	'app/browser/SetupComponent.vue': [
+	'app/vue/SetupComponent.vue': [
 		'<script setup lang="ts">',
 		"const message = 'Generated Vue setup renders'",
 		'</script>',
@@ -1022,7 +1053,7 @@ export const GENERATED_VUE_SETUP_FILES: Readonly<Record<string, string>> = Objec
 	'tests/setupBrowser.ts': [
 		"import type { App } from 'vue'",
 		"import { createApp } from 'vue'",
-		"import SetupComponent from '../app/browser/SetupComponent.vue'",
+		"import SetupComponent from '../app/vue/SetupComponent.vue'",
 		'',
 		'export function renderSetupComponent(container: HTMLElement): App<Element> {',
 		'\tconst app = createApp(SetupComponent)',

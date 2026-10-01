@@ -15,15 +15,17 @@ import {
 	replaceManifestRanges,
 } from '@src/core'
 import { listFiles, Materializer, pathToStorage } from '@src/server'
-import { requireValue } from '@orkestrel/test'
+import { createTeardown, requireValue } from '@orkestrel/test'
 import { isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import { execute, executeSync, readVariable } from '@orkestrel/process/server'
 import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
+import { computeStamp } from '../configs/helpers.js'
 import {
 	buildReleaseScenarios,
 	buildSkillRun,
+	buildEnvironment,
 	createUpstreamServer,
 	installGeneratedWorkspace,
 	GENERATED_VUE_SETUP_FILES,
@@ -34,6 +36,7 @@ import {
 	readNpmFloor,
 	readNpmVersion,
 	parseVitestReport,
+	spawnNpm,
 } from './setupServer.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -175,6 +178,221 @@ const DRIVER = [
 ].join('\n')
 
 describe('installed package consumer', () => {
+	it('runs the complete selection through a packed CLI adopter and repairs its wrapper', async () => {
+		const started = performance.now()
+		const teardown = createTeardown()
+		const workspace = createScratch({ prefix: 'propagation-adopter-' })
+		teardown.add(() => workspace.destroy())
+		console.info(`adopter: scratch ${workspace.path}`)
+		const environment = buildEnvironment({
+			npm_config_prefer_offline: 'true',
+			npm_config_legacy_peer_deps: 'false',
+			npm_config_strict_peer_deps: 'false',
+		})
+		const signal = AbortSignal.timeout(590_000)
+		try {
+			const archive = installPackedScaffold(workspace, environment)
+			console.info('adopter: pack and consumer install: exit 0')
+			const target = join(workspace.path, 'generated')
+			const entry = join(
+				workspace.path,
+				'consumer/node_modules/@orkestrel/scaffold/dist/bin/main.js',
+			)
+			const generated = await execute(
+				{
+					file: process.execPath,
+					arguments: [
+						entry,
+						'new',
+						'paper',
+						'--target',
+						target,
+						'--src',
+						'core,browser',
+						'--app',
+						'core,browser',
+						'--styles',
+						'--themes',
+						'--showcase',
+						'--extend',
+						'browser:vue,styles:print',
+						'--offline',
+						'--json',
+					],
+				},
+				{ workspace: workspace.path, environment, signal, timeout: 60_000, strict: false },
+			)
+			console.info(
+				`adopter: generate: exit ${String(generated.code)}\n${generated.stdout}${generated.stderr}`,
+			)
+			expect(generated.failed).toBe(false)
+			expect(generated.code).toBe(0)
+			const manifest = parseJSON(requireValue(workspace.read('generated/package.json')))
+			if (!isRecord(manifest) || !isRecord(manifest.devDependencies)) {
+				throw new Error('The adopter declares no development dependencies')
+			}
+			// Install the release being proved instead of the registry version the emitted range names.
+			const emitted = manifest.devDependencies['@orkestrel/scaffold']
+			expect(emitted).toBe(
+				`^${readManifestVersion(readFileSync(join(root, 'package.json'), 'utf8'))}`,
+			)
+			const specifier = `file:${relative(target, archive).replaceAll('\\', '/')}`
+			workspace.write(
+				'generated/package.json',
+				`${JSON.stringify({ ...manifest, devDependencies: { ...manifest.devDependencies, '@orkestrel/scaffold': specifier } }, undefined, '\t')}\n`,
+			)
+			const admitted = provisionNpm({
+				floor: readNpmFloor(manifest),
+				prefix: workspace.ensure('npm'),
+				environment,
+			})
+			const installed = await spawnNpm(
+				['install', '--ignore-scripts', '--prefer-offline', '--no-audit', '--no-fund'],
+				{ workspace: target, environment: admitted.environment, signal },
+			)
+			console.info(
+				`adopter: install: exit ${String(installed.code)}\n${installed.stdout}${installed.stderr}`,
+			)
+			expect(installed.truncated).toBe(false)
+			expect(installed.failed).toBe(false)
+			expect(installed.code).toBe(0)
+			expect(parseJSON(requireValue(workspace.read('generated/package-lock.json')))).toMatchObject({
+				packages: { 'node_modules/@orkestrel/scaffold': { resolved: specifier } },
+			})
+			const refused = await execute(
+				{
+					file: process.execPath,
+					arguments: [entry, 'repair', '--target', target, '--offline', '--json'],
+				},
+				{ workspace: target, signal, strict: false, timeout: 60_000 },
+			)
+			console.info(
+				`adopter: file range control: exit ${String(refused.code)}\n${refused.stdout}${refused.stderr}`,
+			)
+			expect(refused.code).toBe(1)
+			expect(parseJSON(refused.stdout)).toMatchObject({
+				error: { code: 'FETCH', message: 'A declared dependency names no concrete floor.' },
+			})
+			// Offline repair reads the declared floor; the tarball override belongs only to installation.
+			workspace.write('generated/package.json', `${JSON.stringify(manifest, undefined, '\t')}\n`)
+			expect(parseJSON(requireValue(workspace.read('generated/package.json')))).toMatchObject({
+				devDependencies: { '@orkestrel/scaffold': emitted },
+			})
+			if (!isRecord(manifest.scripts)) {
+				throw new Error('The adopter declares no scripts')
+			}
+			expect(Object.hasOwn(manifest.scripts, 'test:setup:browser')).toBe(true)
+			expect(Object.hasOwn(manifest.scripts, 'test:setup')).toBe(false)
+			for (const script of [
+				'lint:check',
+				'check',
+				'build',
+				'test:src',
+				'test:app',
+				...Object.keys(manifest.scripts).filter((name) => name === 'test:setup:browser'),
+				'test:config',
+				'test:policy',
+				'test:journey',
+				'test:journey:vue',
+				'build:showcase',
+				'build:showcase:vue',
+			]) {
+				const step = performance.now()
+				const run = await spawnNpm(['run', script], {
+					workspace: target,
+					environment: admitted.environment,
+					signal,
+				})
+				console.info(
+					`adopter: ${script}: exit ${String(run.code)}, ${String(Math.round(performance.now() - step))} ms\n${run.stdout}${run.stderr}`,
+				)
+				expect(run.truncated).toBe(false)
+				expect(run.failed, `${script}\n${run.stdout}${run.stderr}`).toBe(false)
+				expect(run.code).toBe(0)
+			}
+			for (const mode of ['browser', 'vue']) {
+				const page = requireValue(workspace.read(`generated/showcase/${mode}.html`))
+				const stamps = [
+					...page.matchAll(/^[\t ]*<meta name="build-id" content="([a-f0-9]{64})" \/>\r?\n/gmu),
+				]
+				expect(stamps).toHaveLength(1)
+				const stamp = requireValue(stamps[0])
+				expect(stamp[1]).toBe(computeStamp(page))
+				console.info(`adopter: showcase/${mode}.html: stamp ${String(stamp[1])}`)
+			}
+			workspace.write(
+				'generated/tmp/consume.ts',
+				[
+					"import { build } from 'vite'",
+					"import { fileURLToPath } from 'node:url'",
+					"const built = await build({ configFile: false, logLevel: 'silent', build: { write: false, cssMinify: false, lib: { entry: fileURLToPath(new URL('./sheets.ts', import.meta.url)), formats: ['es'] } } })",
+					'const bundles = Array.isArray(built) ? built : [built]',
+					"const sheets = bundles.flatMap((bundle) => 'output' in bundle ? bundle.output.filter((item) => item.type === 'asset' && item.fileName.endsWith('.css')).map((item) => item.source) : [])",
+					'console.log(JSON.stringify(sheets))',
+				].join('\n'),
+			)
+			workspace.write(
+				'generated/tmp/sheets.ts',
+				"import '@orkestrel/paper/styles'\nimport '@orkestrel/paper/print'\nimport '@orkestrel/paper/styles/themes'\n",
+			)
+			const consumed = await execute(
+				{ file: process.execPath, arguments: ['tmp/consume.ts'] },
+				{ workspace: target, signal, strict: false, timeout: 60_000 },
+			)
+			console.info(
+				`adopter: CSS consumer: exit ${String(consumed.code)}\n${consumed.stdout}${consumed.stderr}`,
+			)
+			expect(consumed.failed).toBe(false)
+			expect(consumed.code).toBe(0)
+			expect(parseJSON(consumed.stdout)).toEqual([
+				expect.stringContaining('@layer theme, reset, base, elements, components, utilities;'),
+			])
+			const wrapper = 'configs/src/vite.print.config.ts'
+			const original = readFileSync(join(target, wrapper))
+			workspace.remove(`generated/${wrapper}`)
+			expect(workspace.has(`generated/${wrapper}`)).toBe(false)
+			const repaired = await execute(
+				{
+					file: process.execPath,
+					arguments: [entry, 'repair', '--target', target, '--offline', '--json'],
+				},
+				{ workspace: target, signal, strict: false, timeout: 60_000 },
+			)
+			console.info(
+				`adopter: repair: exit ${String(repaired.code)}\n${repaired.stdout}${repaired.stderr}`,
+			)
+			expect(repaired.failed).toBe(false)
+			expect(repaired.code).toBe(0)
+			expect(readFileSync(join(target, wrapper))).toEqual(original)
+			workspace.write(
+				`generated/${wrapper}`,
+				`${original.toString('utf8')}\n// Adopter drift control.\n`,
+			)
+			const audited = await execute(
+				{
+					file: process.execPath,
+					arguments: [entry, 'audit', '--target', target, '--offline', '--json'],
+				},
+				{ workspace: target, signal, strict: false, timeout: 60_000 },
+			)
+			console.info(
+				`adopter: stale audit: exit ${String(audited.code)}\n${audited.stdout}${audited.stderr}`,
+			)
+			expect(audited.expired).toBe(false)
+			expect(audited.code).toBe(1)
+			expect(parseJSON(audited.stdout)).toMatchObject({
+				findings: expect.arrayContaining([
+					expect.objectContaining({ path: wrapper, drift: 'stale' }),
+				]),
+			})
+		} finally {
+			await teardown.destroy()
+			console.info(
+				`adopter: wall time ${String(Math.round(performance.now() - started))} ms; scratch removed: ${String(!existsSync(workspace.path))}`,
+			)
+		}
+	}, 600_000)
+
 	it('stages exactly the declared vendored host inventory', () => {
 		// Directory members are expanded into exact declared membership. A vendored inventory
 		// change must move this declaration; a file present only because work happened in the checkout
@@ -618,6 +836,8 @@ describe('installed package consumer', () => {
 				"dist/src/core/index.d.ts: extractRangeMajor('^6') // the declared major",
 				"dist/src/core/index.d.ts: isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record",
 				'dist/src/core/index.d.ts: parseCompilerOptions({ on: { compile: () => {} } }) // the same record',
+				"dist/src/core/index.d.ts: parseExtension('browser:vue') // { surface: 'browser', name: 'vue', axes: [] }",
+				"dist/src/core/index.d.ts: parseExtension('styles:print') // { surface: 'styles', name: 'print' }",
 				'dist/src/core/index.d.ts: planToSummary(plan).computed // the number of computed artifacts',
 				'dist/src/core/index.d.ts: replacePlanRanges(plan, pins) // the plan carrying the resolved writable ranges',
 				'dist/src/core/index.d.ts: selectGroups() // every group, in plan order',
@@ -1162,7 +1382,7 @@ describe('installed package consumer', () => {
 				const generated = installGeneratedWorkspace(
 					workspace,
 					archive,
-					"createBlueprint('proof', { app: ['browser'], setup: ['browser'] })",
+					"createBlueprint('proof', { app: ['browser'], setup: ['browser'], extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }] })",
 					environment,
 				)
 				for (const [path, content] of Object.entries(GENERATED_VUE_SETUP_FILES)) {

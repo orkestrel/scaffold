@@ -4,11 +4,13 @@ import type {
 	Artifact,
 	Audit,
 	Blueprint,
+	BrowserExtension,
 	CatalogEntry,
 	CompilerEventMap,
 	CompilerOptions,
 	Dependency,
 	Environment,
+	Extension,
 	Finding,
 	Group,
 	ManifestScript,
@@ -17,6 +19,8 @@ import type {
 	Plan,
 	Question,
 	Snapshot,
+	StylesExtension,
+	Surface,
 } from './types.js'
 import {
 	andOf,
@@ -34,9 +38,11 @@ import {
 	unionOf,
 } from '@orkestrel/contract'
 import {
+	AXES,
 	CONTROL_CHARACTER_PATTERN,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
+	FRAMEWORKS,
 	GROUPS,
 	HEX_PATTERN,
 	INVALID_PATH_CHARACTER_PATTERN,
@@ -50,6 +56,9 @@ import {
 	MAX_PATH_LENGTH,
 	MAX_RANGE_LENGTH,
 	MAX_SCRIPT_LENGTH,
+	NAME_PATTERN,
+	RESERVED_SHEET_NAMES,
+	SURFACES,
 } from './constants.js'
 
 /**
@@ -157,6 +166,93 @@ export function isCollection(value: unknown): value is readonly unknown[] {
  * ```
  */
 export const isEnvironment: Guard<Environment> = literalOf(ENVIRONMENTS)
+
+/**
+ * Narrows a value to a surface an extension can extend.
+ * @param value - The candidate surface.
+ * @returns True if the value is a supported surface; false otherwise.
+ * @example
+ * ```ts
+ * import { isSurface } from '@orkestrel/scaffold'
+ *
+ * isSurface('styles') // true
+ * isSurface('themes') // false
+ * ```
+ */
+export const isSurface: Guard<Surface> = literalOf(SURFACES)
+
+/**
+ * Narrows a value to a non-reserved sheet face name.
+ * @param value - The candidate name.
+ * @returns True if the name matches the workspace pattern and is not reserved; false otherwise.
+ * @example
+ * ```ts
+ * import { isSheetName } from '@orkestrel/scaffold'
+ *
+ * isSheetName('print') // true
+ * isSheetName('styles') // false
+ * ```
+ */
+export function isSheetName(value: unknown): value is string {
+	return (
+		isString(value) &&
+		value.length <= MAX_NAME_LENGTH &&
+		NAME_PATTERN.test(value) &&
+		!RESERVED_SHEET_NAMES.includes(value)
+	)
+}
+
+/**
+ * Narrows a value to a supported browser framework with distinct occupied axes.
+ * @param value - The candidate extension.
+ * @returns True if the value is an admitted extension; false otherwise.
+ * @example
+ * ```ts
+ * import { isBrowserExtension } from '@orkestrel/scaffold'
+ *
+ * isBrowserExtension({ surface: 'browser', name: 'vue', axes: ['app'] }) // true
+ * isBrowserExtension(undefined) // false
+ * ```
+ */
+export const isBrowserExtension: Guard<BrowserExtension> = andOf(
+	recordOf({
+		surface: literalOf('browser'),
+		name: literalOf(FRAMEWORKS),
+		axes: andOf(isCollection, arrayOf(literalOf(AXES))),
+	}),
+	(extension: BrowserExtension) => new Set(extension.axes).size === extension.axes.length,
+)
+
+/**
+ * Narrows a value to a named non-reserved stylesheet face.
+ * @param value - The candidate extension.
+ * @returns True if the value is an admitted extension; false otherwise.
+ * @example
+ * ```ts
+ * import { isStylesExtension } from '@orkestrel/scaffold'
+ *
+ * isStylesExtension({ surface: 'styles', name: 'print' }) // true
+ * isStylesExtension(undefined) // false
+ * ```
+ */
+export const isStylesExtension: Guard<StylesExtension> = recordOf({
+	surface: literalOf('styles'),
+	name: isSheetName,
+})
+
+/**
+ * Narrows a value to an extension of a supported surface.
+ * @param value - The candidate extension.
+ * @returns True if the value is an admitted extension; false otherwise.
+ * @example
+ * ```ts
+ * import { isExtension } from '@orkestrel/scaffold'
+ *
+ * isExtension({ surface: 'styles', name: 'print' }) // true
+ * isExtension(undefined) // false
+ * ```
+ */
+export const isExtension: Guard<Extension> = unionOf(isBrowserExtension, isStylesExtension)
 
 /**
  * Narrows a value to one {@link Group} a plan selects over.
@@ -284,6 +380,9 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		keywords: andOf(isCollection, arrayOf(isString)),
 		src: andOf(isCollection, arrayOf(isEnvironment)),
 		app: andOf(isCollection, arrayOf(isEnvironment)),
+		extensions: andOf(isCollection, arrayOf(isExtension)),
+		styles: isBoolean,
+		themes: isBoolean,
 		dependencies: andOf(isCollection, arrayOf(isDependency)),
 		peers: andOf(isCollection, arrayOf(isDependency)),
 		extras: andOf(isCollection, arrayOf(isDependency)),

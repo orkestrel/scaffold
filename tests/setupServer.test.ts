@@ -4,7 +4,7 @@ import { createServer } from 'node:http'
 import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
-import { requireValue } from '@orkestrel/test'
+import { createTeardown, requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import {
 	DISTRIBUTION_TEST_PATH,
@@ -31,6 +31,7 @@ import {
 	buildOptionArgv,
 	runSkillScript,
 	spawnSkillScript,
+	spawnNpm,
 	buildEnvironment,
 	buildOrganization,
 	buildPackument,
@@ -1294,6 +1295,51 @@ describe('the manifest version reading', () => {
 })
 
 describe('the admitted npm', () => {
+	it('spawns npm in the scratch workspace with environment overrides and reports a refused script', async () => {
+		const teardown = createTeardown()
+		const workspace = createScratch({ prefix: 'scaffold-npm-spawn-' })
+		teardown.add(() => workspace.destroy())
+		process.env.ORKESTREL_NPM_PROBE = 'inherited'
+		try {
+			workspace.write(
+				'package.json',
+				JSON.stringify({ private: true, scripts: { probe: 'node probe.ts' } }),
+			)
+			workspace.write(
+				'probe.ts',
+				'console.log(JSON.stringify({ path: process.cwd(), value: process.env.orkestrel_npm_probe }))\n',
+			)
+			const run = await spawnNpm(['run', '--silent', 'probe'], {
+				workspace: workspace.path,
+				environment: { orkestrel_npm_probe: 'overridden' },
+			})
+			expect(run.failed, `${run.stderr}`).toBe(false)
+			expect(run.code).toBe(0)
+			expect(JSON.parse(run.stdout)).toEqual({ path: workspace.path, value: 'overridden' })
+			expect(run.truncated).toBe(false)
+			const refused = await spawnNpm(['run', 'absent-script'], { workspace: workspace.path })
+			expect(refused.code).toBe(1)
+			expect(refused.failed).toBe(true)
+			expect(refused.stderr).toContain('absent-script')
+		} finally {
+			delete process.env.ORKESTREL_NPM_PROBE
+			await teardown.destroy()
+		}
+		expect(existsSync(workspace.path)).toBe(false)
+	})
+
+	it('reports output truncation when the npm version exceeds the supplied byte bound', async () => {
+		const complete = await spawnNpm(['--version'])
+		const bounded = await spawnNpm(['--version'], { limit: 1 })
+		expect(complete.code).toBe(0)
+		expect(complete.truncated).toBe(false)
+		expect(extractVersion(complete.stdout.trim())).not.toBeUndefined()
+		expect(bounded.code).toBe(0)
+		expect(bounded.truncated).toBe(true)
+		expect(Buffer.byteLength(bounded.stdout)).toBe(1)
+		expect(bounded.stdout).toBe(complete.stdout.slice(0, 1))
+	})
+
 	it('reads the floor out of the manifest a real compiler emitted', () => {
 		const artifact = requireValue(
 			buildCompiledPlan().artifacts.find((candidate) => candidate.path === 'package.json'),

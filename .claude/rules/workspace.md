@@ -4,7 +4,7 @@ paths:
   - 'app/**/*'
   - 'tests/**/*'
   - 'configs/**/*'
-  - 'demo/**/*'
+  - 'showcase/**/*'
   - 'package.json'
   - 'tsconfig.json'
   - 'vite.config.ts'
@@ -16,23 +16,27 @@ Use only the environments a project needs, and keep the root dependency model in
 
 ## Environments
 
-| Path           | Purpose                                                       |
-| -------------- | ------------------------------------------------------------- |
-| `src/core/`    | Published host-independent library                            |
-| `src/browser/` | Published browser-only library                                |
-| `src/server/`  | Published Node-only library                                   |
-| `src/styles/`  | Optional SCSS bundle producing `index.css`                    |
-| `src/bin/`     | Optional executable; `main.ts` entry, never a public barrel   |
-| `app/core/`    | Shared application logic with an `index.ts` barrel            |
-| `app/browser/` | Browser app; `main.ts` entry, not a barrel                    |
-| `app/server/`  | Node server app; `main.ts` entry                              |
-| `tests/`       | Mirrors src/app environments; root holds cross-cutting proofs |
-| `configs/`     | Thin target wrappers around root configs                      |
+| Path           | Purpose                                                            |
+| -------------- | ------------------------------------------------------------------ |
+| `src/core/`    | Published host-independent library                                 |
+| `src/browser/` | Published browser-only library                                     |
+| `src/server/`  | Published Node-only library                                        |
+| `src/styles/`  | Optional styles surface: the base sheet face producing `index.css` |
+| `src/<name>/`  | Styles extension: a named sheet face beside `src/styles/`          |
+| `src/vue/`     | Browser extension: the published `vue` face over `src/browser/`    |
+| `src/bin/`     | Optional executable; `main.ts` entry, never a public barrel        |
+| `app/core/`    | Shared application logic with an `index.ts` barrel                 |
+| `app/browser/` | Browser app; `main.ts` entry, not a barrel                         |
+| `app/vue/`     | Browser extension: the Vue app beside `app/browser/`; `main.ts`    |
+| `app/server/`  | Node server app; `main.ts` entry                                   |
+| `tests/`       | Mirrors src/app environments; root holds cross-cutting proofs      |
+| `configs/`     | Thin target wrappers around root configs                           |
 
 - Dependency direction is the root project model in `AGENTS.md` and is not restated here; this file governs where the environments live and how they are configured.
 - Typical browser-app domains: `components/`, `pages/`, `composables/`, `controllers/`, `services/`, `stores/`.
 - Typical server-app domains: `handlers.ts`, `middlewares.ts`, `routes.ts`.
-- `src/styles/index.ts` is a side-effect entry importing `./index.scss`.
+- A sheet face (`src/styles/` and each `src/<name>/` styles extension) builds from `sheet.ts`, which imports `./index.scss` alone; its `index.ts` star-exports `./sheet.js`. The themes target builds from `src/styles/themes/sheet.ts` the same way.
+- Name a styles extension with a name the `NAME_PATTERN` constant admits, and never `core`, `browser`, `server`, `bin`, `styles`, `themes`, or `vue`.
 - `src/bin/main.ts` is the executable entry, built to `dist/bin/main.js`. The name is fixed, as it
   is for `app/browser/main.ts` and `app/server/main.ts`, so every runtime entry in a workspace is
   found at the same name.
@@ -47,11 +51,14 @@ Use only the environments a project needs, and keep the root dependency model in
 | `@src/browser` | `src/browser/index.ts` |
 | `@src/server`  | `src/server/index.ts`  |
 | `@src/styles`  | `src/styles/index.ts`  |
+| `@src/<name>`  | `src/<name>/index.ts`  |
+| `@src/vue`     | `src/vue/index.ts`     |
 | `@app/core`    | `app/core/index.ts`    |
 | `@app/browser` | `app/browser/index.ts` |
+| `@app/vue`     | `app/vue/index.ts`     |
 | `@app/server`  | `app/server/index.ts`  |
 
-Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compilerOptions.paths`; keep both aligned.
+Give every selected environment and every face an alias: `src/styles`, each `src/<name>` styles extension, and each axis the `vue` extension occupies. Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compilerOptions.paths`; keep both aligned.
 
 ## Configuration authority
 
@@ -65,8 +72,8 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
   under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf, so no
   `configs/types.ts` exists for one to import: each keeps its own types, data, and functions in its
   one file, and the centralized-kind placement in `.claude/rules/architecture.md` does not reach a
-  leaf. Each `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build
-  logic stays in one place.
+  leaf. Each `configs/src/*.config.ts` wrapper imports the root config and may import the permitted
+  leaves; keep shared build and project composition in the root config.
 - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
   vendored byte-identical to every workspace, so an import there must resolve in all of them.
   `configs/browsers.ts` exists for that reason: it imports `playwright` and
@@ -92,39 +99,55 @@ Environment rules:
 
 ## Build outputs
 
-| Output             | Content                        | Format          |
-| ------------------ | ------------------------------ | --------------- |
-| `dist/src/core`    | Core library + declarations    | ES and CJS      |
-| `dist/src/browser` | Browser library + declarations | ES              |
-| `dist/src/server`  | Server library + declarations  | ES and CJS      |
-| `dist/src/styles`  | Compiled `index.css`           | ES wrapper      |
-| `dist/bin`         | Optional executable `main.js`  | ES with shebang |
-| `dist/app/browser` | Browser application            | target-defined  |
-| `dist/app/server`  | Server application             | CJS             |
-| `dist/showcase`    | Single-file `index.html` demo  | self-contained  |
+| Output                        | Content                          | Format                    |
+| ----------------------------- | -------------------------------- | ------------------------- |
+| `dist/src/core`               | Core library + declarations      | ES and CJS                |
+| `dist/src/browser`            | Browser library + declarations   | ES                        |
+| `dist/src/server`             | Server library + declarations    | ES and CJS                |
+| `dist/src/vue`                | Vue face + declarations          | ES                        |
+| `dist/src/styles`             | Compiled `index.css`             | CSS                       |
+| `dist/src/styles/themes`      | Compiled themes `index.css`      | CSS                       |
+| `dist/src/<name>`             | Compiled `index.css`             | CSS                       |
+| `dist/bin`                    | Optional executable `main.js`    | ES with shebang           |
+| `dist/app/browser`            | Browser application              | target-defined            |
+| `dist/app/vue`                | Vue application                  | target-defined            |
+| `dist/app/server`             | Server application               | CJS                       |
+| `showcase/<application>.html` | Single-file page per application | self-contained, committed |
 
-- Library declarations are emitted by `tsc` through `configs/src/tsconfig.{core,browser,server}.json`, chained after each Vite build.
-- Styles ship CSS, not declarations.
-- Optional `appShowcase` uses `configs/app/vite.showcase.config.ts` and `vite-plugin-singlefile` to create a minified file-URL-safe `dist/showcase/index.html`.
-- The showcase is outside the default build.
+- Roll up each published TypeScript face's declarations in its Vite wrapper. A face that imports `@src/core` or `@src/browser` rewrites those specifiers to the published subpaths in its emitted declarations.
+- A sheet face ships CSS, not declarations, and its JavaScript build stub stays out of `files`.
+- Build each sheet face with `cssMinify: false`, bounded to its own output directory.
+- Build `dist/src/styles/themes` after `dist/src/styles`; the themes build empties only its own directory.
+- Build each selected showcase through `appShowcase(mode)`, `configs/app/vite.showcase.config.ts`, and `vite-plugin-singlefile` into root `showcase/<application>.html`; preserve sibling pages. Use `app/browser/index.html` and `browser.html` for the base modes, and `app/vue/index.html` and `vue.html` for `--mode vue`.
+- Stamp each page after inlining with a `build-id` meta line whose value is the SHA-256 digest of the final page without that line.
+- The showcase is outside the default build, and no test reads its pages.
 - Use Oxc for showcase JS minification and Lightning CSS for CSS.
-- Inject a `build-id` meta stamp so rebuilt `file://` demos cache-bust.
 
 ## Test project matrix
 
 `vite.config.ts` defines Vitest projects on an environment axis and a workspace-proof axis. The
-environment axis is one project per src/app axis × environment:
+environment axis is one project per src/app axis × environment, plus one per extension face:
 
-| Project       | Files                  | Environment         | Setup                                           |
-| ------------- | ---------------------- | ------------------- | ----------------------------------------------- |
-| `src:core`    | `tests/src/core/**`    | Node                | `setup.ts`                                      |
-| `src:browser` | `tests/src/browser/**` | Playwright Chromium | `setup.ts`, `setupBrowser.ts`                   |
-| `src:server`  | `tests/src/server/**`  | Node                | `setup.ts`, `setupServer.ts`                    |
-| `src:styles`  | `tests/src/styles/**`  | Playwright Chromium | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` |
-| `src:bin`     | `tests/src/bin/**`     | Node                | `setup.ts`, `setupServer.ts`                    |
-| `app:core`    | `tests/app/core/**`    | Node                | `setup.ts`                                      |
-| `app:browser` | `tests/app/browser/**` | Playwright Chromium | `setup.ts`, `setupBrowser.ts`                   |
-| `app:server`  | `tests/app/server/**`  | Node                | `setup.ts`, `setupServer.ts`                    |
+| Project       | Files                  | Environment                           | Setup                                           |
+| ------------- | ---------------------- | ------------------------------------- | ----------------------------------------------- |
+| `src:core`    | `tests/src/core/**`    | Node                                  | `setup.ts`                                      |
+| `src:browser` | `tests/src/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
+| `src:vue`     | `tests/src/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
+| `src:server`  | `tests/src/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                    |
+| `src:styles`  | `tests/src/styles/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` |
+| `src:<name>`  | `tests/src/<name>/**`  | Playwright Chromium, `isolate: false` | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` |
+| `src:bin`     | `tests/src/bin/**`     | Node                                  | `setup.ts`, `setupServer.ts`                    |
+| `app:core`    | `tests/app/core/**`    | Node                                  | `setup.ts`                                      |
+| `app:browser` | `tests/app/browser/**` | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
+| `app:vue`     | `tests/app/vue/**`     | Playwright Chromium                   | `setup.ts`, `setupBrowser.ts`                   |
+| `app:server`  | `tests/app/server/**`  | Node                                  | `setup.ts`, `setupServer.ts`                    |
+
+- Compose every sheet-face project (`src:styles` and each `src:<name>`) in its own wrapper through
+  the one root `sheetProject` factory, and run it through its `test:src:<face>` script, which builds
+  that face first.
+- Give every browser project `optimizeDeps.include` of `@orkestrel/test`, `@orkestrel/test/browser`,
+  `@orkestrel/contract` where the manifest declares it, and `vue` where the project renders Vue.
+  Give a Node project no `optimizeDeps` setting.
 
 The workspace-proof axis is cross-cutting. Each proof covers the whole workspace rather than
 one environment, so each is its own project:
@@ -133,9 +156,9 @@ one environment, so each is its own project:
 | ------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `policy`            | `tests/policy.test.ts`                                         | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                                                | `test`                                |
 | `config`            | `tests/config.test.ts`                                         | Root configuration resolves its aliases, projects, and outputs                                                                                                                                                              | `test`                                |
-| `setup`             | `tests/setup*.test.ts`, excluding `tests/setupBrowser.test.ts` | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                          | `test`                                |
-| `setup:browser`     | `tests/setupBrowser.test.ts`                                   | Prove browser setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                                  | `test`                                |
-| `journey:<variant>` | `tests/app/browser/integration.test.ts`                        | Drive the browser application at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                | `test` through `test:journey`         |
+| `setup`             | `tests/setup*.test.ts` other than either `setup:browser` proof | Prove root setup behavior in Node with `setup.ts`.                                                                                                                                                                          | `test`                                |
+| `setup:browser`     | `tests/setupBrowser.test.ts`, `tests/setupStyles.test.ts`      | Prove browser and style setup behavior in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                                                        | `test`                                |
+| `journey:<variant>` | `tests/app/<application>/integration.test.ts`                  | Drive the application the Vite mode selects at the declared variant viewport in Playwright Chromium with `setup.ts` and `setupBrowser.ts`.                                                                                  | `test` through the journey scripts    |
 | `guides`            | `tests/guides.test.ts`                                         | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns                                | `test`                                |
 | `conformance`       | `tests/conformance.test.ts`                                    | Where this package drifts from the official tooling it tracks                                                                                                                                                               | `test`                                |
 | `skills`            | `tests/agents/**/*.test.ts`                                    | Each skill script under `.agents/skills/*/scripts/` does what its `SKILL.md` states, driven as a child process against a scratch fixture from its mirrored proof; `configs/agents/tsconfig.skills.json` selects the project | `test`                                |
@@ -143,19 +166,22 @@ one environment, so each is its own project:
 | `integration`       | `tests/integration.test.ts`                                    | The package's features work together end to end across environments                                                                                                                                                         | `test`                                |
 | `service`           | `tests/service/**/*.test.ts`                                   | The live external services this package drives, driven for real                                                                                                                                                             | `prepublishOnly`; `test` when private |
 
-- Define the Node `setup` project only when a root file matches `tests/setup*.test.ts`,
-  exact-case, other than `tests/setupBrowser.test.ts`. Include those matching files and exclude
-  `tests/setupBrowser.test.ts`. Define `setup:browser` only when that exact-case browser proof
-  exists, and collect that path alone. For each registered project, emit its `test:setup` or
-  `test:setup:browser` script and run it from `test`; otherwise emit neither its project nor its
-  script.
+- Define the Node `setup` project when `global` selects its seeded proof or a root file matches
+  `tests/setup*.test.ts`, exact-case, other than `tests/setupBrowser.test.ts` and
+  `tests/setupStyles.test.ts`. Include those matching files and exclude both browser proofs.
+  Define `setup:browser` when a sheet face or the themes target selects its seeded proof, or either
+  exact-case browser proof exists; collect those browser proof paths alone. For each registered project, emit
+  its `test:setup` or `test:setup:browser` script and run it from `test`; otherwise emit neither its
+  project nor its script.
 - When `tests/setupGlobal.ts` exists, give `src:browser`, `setup:browser`, and `integration` that
   module as their `globalSetup` option, and give no other project a global setup.
 - When a browser application selects the journey axis, register `journey:<variant>` projects
   through the birth-owned `configs/app/vite.journey.config.ts` wrapper. Keep the adopter's variant
-  list there and compose each project through the root `appJourney` factory. Exclude
-  `tests/app/browser/integration.test.ts` from `app:browser`, collect it in each variant project,
-  and run the wrapper through `test:journey` after the application projects in `test`.
+  list there and compose each project through the root `appJourney(variant, variants, mode?)`
+  factory, which resolves the Vite mode to `browser` or an app-side browser extension and collects
+  `tests/app/<application>/integration.test.ts` for that application. Exclude each collected suite
+  from its application project, and run `test:journey` and one `test:journey:<framework>` per
+  app-side browser extension after the application projects in `test`.
 
 `conformance`, `integration`, `distribution`, and `service` are separate subjects, not names for
 one.
@@ -189,14 +215,13 @@ ignored by git; and `.claude/rules/tests.md` governs what may live there.
 
 Setup assets:
 
-- `tests/setup.css` declares cascade-layer order before `@import 'tailwindcss'` and its `@source`.
-- Browser setup wires `setup.css`.
-- Styles setup loads `setup.css` and the compiled cascade.
+- Load only the setup assets and compiled sheets the selected proofs require.
+- Import `tailwindcss` from a setup asset only where an authored proof declares it.
 
-Scope with `test:src`, `test:src:core`, `test:app`, `test:app:server`, and equivalent scripts. Each
-cross-cutting project has its own script too: `test:policy`, `test:config`, `test:setup`,
-`test:setup:browser`, `test:journey`, `test:guides`,
-`test:conformance`, `test:distribution`, `test:integration`, `test:service`.
+Scope with `test:src`, `test:src:core`, `test:src:<face>`, `test:app`, `test:app:server`, and
+equivalent scripts. Each cross-cutting project has its own script too: `test:policy`,
+`test:config`, `test:setup`, `test:setup:browser`, `test:journey`, `test:journey:<framework>`,
+`test:guides`, `test:conformance`, `test:distribution`, `test:integration`, `test:service`.
 
 ## Typechecking and environment isolation
 
@@ -214,12 +239,14 @@ then runs the configured scoped checks that prove environment isolation.
 - Lint is a separate complementary gate; neither lint nor root checking replaces
   environment-isolation checks.
 
-| Scope                        | `lib`                             | `types`           | Permitted host globals                                                                                                                   |
-| ---------------------------- | --------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `src:core`, `app:core`       | `["ESNext","WebWorker"]`          | `[]`              | WHATWG web interop: fetch family, streams, URL, Abort, encoders, crypto, timers, console, DOMException, structuredClone; no DOM, no Node |
-| `src:browser`, `app:browser` | `["ESNext","DOM","DOM.Iterable"]` | default           | DOM; no Node                                                                                                                             |
-| `src:server`, `app:server`   | `["ESNext"]`                      | `["node"]`        | Node; no DOM                                                                                                                             |
-| `src:styles`                 | `["ESNext"]`                      | `["vite/client"]` | Vite SCSS module declaration only                                                                                                        |
+| Scope                        | `lib`                             | `types`                 | Permitted host globals                                                                                                                   |
+| ---------------------------- | --------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `src:core`, `app:core`       | `["ESNext","WebWorker"]`          | `[]`                    | WHATWG web interop: fetch family, streams, URL, Abort, encoders, crypto, timers, console, DOMException, structuredClone; no DOM, no Node |
+| `src:browser`, `app:browser` | `["ESNext","DOM","DOM.Iterable"]` | default                 | DOM; no Node                                                                                                                             |
+| `src:server`, `app:server`   | `["ESNext"]`                      | `["node"]`              | Node; no DOM                                                                                                                             |
+| `src:styles`, `src:<name>`   | `["ESNext"]`                      | `["vite/client"]`       | Vite SCSS module declaration only                                                                                                        |
+| `src:vue`                    | `["ESNext","DOM","DOM.Iterable"]` | `["vite/client"]`       | DOM; no Node                                                                                                                             |
+| `app:vue`                    | `["ESNext","DOM","DOM.Iterable"]` | `["vite/client","vue"]` | DOM and Vue; no Node                                                                                                                     |
 
 Strict core is load-bearing:
 
@@ -228,35 +255,39 @@ Strict core is load-bearing:
 
 Build/check config alignment:
 
-- `configs/src/tsconfig.{core,browser,server}.json` serves emit and scoped checking.
-- `configs/src/tsconfig.styles.json` is check-only.
+- `configs/src/tsconfig.{core,browser,vue,server}.json` serves emit and scoped checking.
+- `configs/src/tsconfig.styles.json` and each `configs/src/tsconfig.<name>.json` of a styles
+  extension are check-only.
 - `configs/app/tsconfig.core.json` is check-only.
-- `configs/app/tsconfig.{browser,server}.json` is check-only.
+- `configs/app/tsconfig.{browser,vue,server}.json` is check-only.
 - Root `tsconfig.json` keeps all libs/types for IDE and comprehensive checking; scoped configs tighten each environment.
 
 ## Script intent
 
-| Script                  | Contract                                                                   |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `dev`                   | Browser development entry                                                  |
-| `build`                 | Build configured library/application targets                               |
-| `serve` / `serve:build` | Run built server / build then run                                          |
-| `showcase`              | Showcase dev server                                                        |
-| `build:showcase`        | Build `dist/showcase`                                                      |
-| `show`                  | Build and copy showcase to `demo/showcase.html`                            |
-| `lint`                  | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck          |
-| `lint:check`            | Non-mutating whole-tree lint gate                                          |
-| `check`                 | Comprehensive root typecheck plus configured isolation scopes              |
-| `check:<scope>`         | On-demand environment-isolation pass                                       |
-| `format`                | Format all files                                                           |
-| `format:check`          | Non-mutating whole-tree format gate                                        |
-| `test`                  | Environment projects plus non-isolated cross-cutting proofs                |
-| `clean`                 | Remove `dist/`                                                             |
-| `copy <from> <to>`      | Copy while creating parent directories                                     |
-| `prepublishOnly`        | Publishing workspaces only: the gate chain, then isolated proofs           |
-| `prepack`               | Publishing workspaces only: rebuild `dist/` so a pack ships current output |
+| Script                       | Contract                                                                   |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| `dev`                        | Browser development entry                                                  |
+| `build`                      | Build configured library/application targets                               |
+| `serve` / `serve:build`      | Run built server / build then run                                          |
+| `showcase`                   | Showcase dev server of the base mode                                       |
+| `showcase:<framework>`       | Showcase dev server of that framework's mode                               |
+| `build:showcase`             | Build `showcase/browser.html`                                              |
+| `build:showcase:<framework>` | Build `showcase/<framework>.html`                                          |
+| `lint`                       | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck          |
+| `lint:check`                 | Non-mutating whole-tree lint gate                                          |
+| `check`                      | Comprehensive root typecheck plus configured isolation scopes              |
+| `check:<scope>`              | On-demand environment-isolation pass                                       |
+| `format`                     | Format all files                                                           |
+| `format:check`               | Non-mutating whole-tree format gate                                        |
+| `test`                       | Environment projects plus non-isolated cross-cutting proofs                |
+| `clean`                      | Remove `dist/`                                                             |
+| `copy <from> <to>`           | Copy while creating parent directories                                     |
+| `prepublishOnly`             | Publishing workspaces only: the gate chain, then isolated proofs           |
+| `prepack`                    | Publishing workspaces only: rebuild `dist/` so a pack ships current output |
 
-Run `show` only **after** formatting. The committed `demo/showcase.html` is generated/minified; formatting after generation would expand its inlined bundle.
+- In a publishing workspace, `prepublishOnly` runs `build:showcase` and every
+  `build:showcase:<framework>` script after `npm run build`.
+- List `showcase/` in `.prettierignore`, so formatting never rewrites a committed page.
 
 ## Tooling
 
@@ -266,7 +297,7 @@ Run `show` only **after** formatting. The committed `demo/showcase.html` is gene
 - Bundler: Vite.
 - Tests: Vitest; `@vitest/browser-playwright` for browser projects.
 - Node build targets derive from the package's declared supported runtime. Keep `engines`, bundler targets, scoped configs, tests, and documentation aligned; never hard-code one Node version line-wide.
-- Browser framework: Vue 3 when present.
+- Browser framework: the `vue` extension where selected.
 
 Policy instruments:
 
@@ -278,9 +309,8 @@ Policy instruments:
   thing it polices. A file-level `oxlint-disable` silently defeats every lint rule in its file,
   plugin rules included, and nothing inside a file can suppress the sweep.
 - Write each visitor in the plugin's visitor table as a one-line context-binding arrow delegating to
-  a named module-scope `report{Noun}` function. Never write rule logic inline in the table. That
-  arrow is the sanctioned exception to the in-body function-expression limits in
-  `.claude/rules/architecture.md` for exactly that table.
+  a named module-scope `report{Noun}` function. Never write rule logic inline in the table. Treat the
+  visitor table as a returned object literal whose members are callbacks.
 - Name an individual rule id here only where the rule reads its evidence from outside the workspace
   its instrument runs in. This section fixes the instruments and how work is assigned between them;
   each rule's substance stays with the law it enforces.

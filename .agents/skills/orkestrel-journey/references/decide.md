@@ -53,8 +53,8 @@ so a decision cites the exact file and reads it in one call.
 
 Compose each file from what the run already holds:
 
-- `describeTree` of the mounted surface, for the roles, names, and states a person meets.
-- `describeFocus` of the mounted surface, for the focus order the keyboard walk took.
+- `describeTree` of the mounted screen, for the roles, names, and states a person meets.
+- `describeFocus` of the mounted screen, for the focus order the keyboard walk took.
 - The resolved-style rows the matrix family read for that variant — the property, the element, and
   the value the browser returned.
 - The journal's `steps` and `output`, for what the run did and what the page said while it did it.
@@ -66,7 +66,7 @@ Rules the artifact obeys:
   combination nobody can reproduce.
 - Write one file per variant, never one file per journey. A decision is taken per variant, and a
   reader opening one file per journey pays a round trip per journey.
-- Regenerate the whole set after any surface change. Never judge a round against a set that is part
+- Regenerate the whole set after any screen change. Never judge a round against a set that is part
   old and part new.
 - Keep it out of version control.
 

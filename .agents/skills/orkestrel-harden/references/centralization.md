@@ -28,8 +28,8 @@ execution and must explain why sibling imports cannot work.
 | Defining recursive or compositional spine  | Class method, after extracting its pure leaves       |
 | Trivial and genuinely one-use              | Inline it into the caller                            |
 
-Never move logic into a nested function to evade centralization. An anonymous callback
-passed directly to another operation stays a callback, not a hidden helper declaration.
+Apply `.claude/rules/architecture.md` § Functions and orchestration to nested functions and
+callback positions.
 
 ## Hunt the wrapper
 

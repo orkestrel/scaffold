@@ -23,7 +23,8 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
 - `AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.
 - `guides/README.md` is the map: maintain both a concept index and a directory index. The concept index runs `spec ↔ source ↔ tests ↔ showcase` minus every column whose subject this workspace lacks, so an app-only workspace that publishes no library and builds no showcase still owes a full index over the columns it has.
 - Where the repository keeps one, `ROADMAP.md` is the sequenced plan of record. Each chunk reaches green before the next.
-- A showcase is executable proof of public API. A missing demonstration is a missing feature, detectable by parity.
+- Demonstrate public API in application source, prove its journeys there, and rebuild the selected showcase pages for publication.
+- Name each `showcase/<application>.html` page that demonstrates the row in the concept index's showcase column; name `browser.html` for the base modes.
 - An integration surface's guide documents the validated hookup for each supported client: the exact commands run, the authentication and approval model that client needs, and the honest limit wherever a client cannot reach part of the surface.
 
 ## Parity

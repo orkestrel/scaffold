@@ -18,9 +18,11 @@ paths:
   not add `tests/configs/`.
 - Resolve a mirrored module through `.ts`, `.tsx`, `.mts`, `.cts`, `.vue`, `.scss`, or `.css`.
 - Resolve a Sass or CSS partial through the module's leading underscore.
-- Resolve each root `tests/setup*.test.ts` proof against its sibling `tests/setup*.ts` module. A
-  root `tests/setup.test.ts` file can prove several setup modules when their helpers serve
-  several projects.
+- Mirror root setup modules and proofs in both directions. A root `tests/setup<Name>.test.ts`
+  resolves to `tests/setup<Name>.ts`. A root `tests/setup<Name>.ts` that declares an export has
+  `tests/setup<Name>.test.ts` or is imported by `tests/setup.test.ts`, which can prove several
+  setup modules when their helpers serve several projects. A vendored module is outside this
+  population. The policy sweep (`tests/setupPolicy.ts`) enforces both directions.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
 - Tests are deterministic: identical inputs produce identical results.
 - Keep default suites fast: timers normally use 10–50 ms and tests make no network calls.
@@ -60,11 +62,11 @@ its own:
 | `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
 | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              |
 
-- Put `tests/setupBrowser.test.ts` in the browser-enabled `setup:browser` project. Put every
-  other root `tests/setup*.test.ts` proof in the Node `setup` project, and exclude the browser
-  proof from that project. Keep each proof's assertions on exported test-infrastructure behavior:
-  do not duplicate production behavior there, and do not move setup-helper assertions into another
-  cross-cutting proof.
+- Put `tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts` in the browser-enabled
+  `setup:browser` project. Put every other root `tests/setup*.test.ts` proof in the Node `setup`
+  project, and exclude both browser proofs from that project. Keep each proof's assertions on
+  exported test-infrastructure behavior: do not duplicate production behavior there, and do not
+  move setup-helper assertions into another cross-cutting proof.
 - `.claude/rules/workspace.md` names the Vitest project each location belongs to.
 - The `guides` project runs in Node with the browser disabled. Its subject is what the guide
   claims: that every documented name resolves, and that every fence asserting a value returns
@@ -90,7 +92,9 @@ its own:
 - A nested `tests/{src,app}/<environment>/**/integration.test.ts` runs in that environment's project,
   whose existing glob collects it exactly once. Give it a separate exact-path project entry only when
   the proof needs different setup or a different runtime, and exclude that exact path from the
-  environment project when you do.
+  environment project when you do. A `tests/app/<application>/integration.test.ts` journey suite is
+  such a proof: `.claude/rules/workspace.md` § Test project matrix collects it in the journey
+  projects of its mode.
 
 ## Probes
 
@@ -196,7 +200,8 @@ Place helpers by environment:
 - `tests/setup.ts`: host-independent; no `node:*`, DOM, `window`, or Vue.
 - `tests/setupServer.ts`: Node-only helpers and `node:fs` loaders anchored to `WORKSPACE_ROOT`.
 - `tests/setupBrowser.ts`: DOM/Vue/browser helpers and setup CSS.
-- `tests/setupStyles.ts`: CSS/style helpers and compiled cascade.
+- `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; every
+  sheet-face project loads it after `tests/setupBrowser.ts`.
 
 ### Recorder
 

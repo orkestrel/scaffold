@@ -1,10 +1,12 @@
 import type {
 	Audit,
+	Axis,
 	Blueprint,
 	CatalogEntry,
 	Dependency,
 	DependencyPinSet,
 	Environment,
+	Extension,
 	Group,
 	ManifestScript,
 	Mirror,
@@ -25,6 +27,7 @@ import { attempt, isArray, isError, isRecord, isString, parseJSON } from '@orkes
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import { createSession } from '@orkestrel/process/server'
 import {
+	AXES,
 	blueprintToDevDependencies,
 	blueprintToScripts,
 	blueprintToWritableScripts,
@@ -32,20 +35,32 @@ import {
 	compareVersions,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
+	FRAMEWORKS,
 	extractRangeMajor,
 	extractVersion,
 	GROUPS,
 	isScaffoldError,
+	isSheetName,
 	manifestToDependencies,
 	MAX_PATH_LENGTH,
+	parseExtension,
+	RESERVED_SHEET_NAMES,
 	ScaffoldError,
+	SHEET_ENTRY_NAME,
+	SHOWCASE_CONFIG_PATH,
+	SHOWCASE_PAGES_PATH,
+	STYLES_ENTRY_PATH,
+	THEMES_BARREL_PATH,
+	THEMES_ENTRY_PATH,
 } from '@src/core'
 import {
+	isExactCaseFile,
 	isPhysicalDirectory,
 	MAX_INVENTORY_PATHS,
 	readFileText,
 	resolveContainedPath,
 } from '@src/server'
+import { readdirSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 import {
 	COMMAND_OPTIONS,
@@ -230,6 +245,10 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 	const target = isString(values.target) ? values.target : undefined
 	const json = values.json === true
 	const [from] = paths
+	const extensions = isArray(values.extend) ? values.extend.filter(isString) : []
+	if (extensions.length > 1)
+		throw new UsageError("'new' takes --extend once; combine entries in one list.")
+	const [extension] = extensions
 	const location = target === undefined ? {} : { target }
 	const source = from === undefined ? {} : { from }
 	const selection = isString(values.groups) ? { groups: values.groups } : {}
@@ -247,6 +266,10 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 				...(src === undefined ? {} : { src }),
 				...(app === undefined ? {} : { app }),
 				...(bin ? { bin } : {}),
+				...(values.styles === true ? { styles: true } : {}),
+				...(values.themes === true ? { themes: true } : {}),
+				...(values.showcase === true ? { showcase: true } : {}),
+				...(extension === undefined ? {} : { extensions: extension }),
 				...(offline ? { offline } : {}),
 				...(dependencies === undefined ? {} : { dependencies }),
 			}
@@ -957,6 +980,111 @@ export function targetToEnvironments(target: string, axis: string): readonly Env
 		const full = resolveContainedPath(target, `${axis}/${environment}`)
 		return full !== undefined && isPhysicalDirectory(full)
 	})
+}
+
+/**
+ * Reads the styles, themes, and showcase markers a target physically holds.
+ * @param target - The target directory.
+ * @returns The independent structural facts, false when their markers are absent.
+ */
+export function targetToFacts(target: string): Pick<Blueprint, 'styles' | 'themes' | 'showcase'> {
+	const styles = resolveContainedPath(target, STYLES_ENTRY_PATH)
+	const themes = resolveContainedPath(target, THEMES_ENTRY_PATH)
+	const barrel = resolveContainedPath(target, THEMES_BARREL_PATH)
+	const wrapper = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
+	const pages = resolveContainedPath(target, SHOWCASE_PAGES_PATH)
+	return {
+		styles: styles !== undefined && isExactCaseFile(styles),
+		themes:
+			themes !== undefined &&
+			isExactCaseFile(themes) &&
+			barrel !== undefined &&
+			isExactCaseFile(barrel),
+		showcase:
+			(wrapper !== undefined && isExactCaseFile(wrapper)) ||
+			(pages !== undefined && isPhysicalDirectory(pages)),
+	}
+}
+
+/**
+ * Reads browser faces and named sheet marker pairs from a target.
+ * @param target - The target directory.
+ * @returns Browser extensions in framework order followed by sheets in code-unit order.
+ * @throws `ScaffoldError` when sheet markers name an invalid or case-colliding face, or the directory cannot be read.
+ */
+export function targetToExtensions(target: string): readonly Extension[] {
+	const extensions: Extension[] = []
+	for (const name of FRAMEWORKS) {
+		const axes = AXES.filter((axis) => {
+			const path = resolveContainedPath(target, `${axis}/${name}`)
+			return path !== undefined && isPhysicalDirectory(path)
+		})
+		if (axes.length > 0) extensions.push({ surface: 'browser', name, axes })
+	}
+	const source = resolveContainedPath(target, 'src')
+	if (source === undefined || !isPhysicalDirectory(source)) return extensions
+	const entries = readdirSync(source, { withFileTypes: true })
+	if (entries.length > MAX_INVENTORY_PATHS)
+		throw new ScaffoldError('TARGET', 'The source directory exceeds the inventory limit.')
+	const names: string[] = []
+	const seen = new Set<string>()
+	for (const entry of entries) {
+		if (!entry.isDirectory() || RESERVED_SHEET_NAMES.includes(entry.name)) continue
+		const sheet = resolveContainedPath(target, `src/${entry.name}/index.scss`)
+		const marker = resolveContainedPath(target, `src/${entry.name}/${SHEET_ENTRY_NAME}`)
+		if (
+			sheet === undefined ||
+			marker === undefined ||
+			!isExactCaseFile(sheet) ||
+			!isExactCaseFile(marker)
+		)
+			continue
+		const folded = entry.name.toLowerCase()
+		if (seen.has(folded))
+			throw new ScaffoldError('TARGET', `Case-colliding sheet face '${entry.name}'.`)
+		seen.add(folded)
+		names.push(entry.name)
+	}
+	for (const name of names.sort()) {
+		if (!isSheetName(name)) throw new ScaffoldError('TARGET', `Invalid sheet face '${name}'.`)
+		extensions.push({ surface: 'styles', name })
+	}
+	return extensions
+}
+
+/**
+ * Reads a creation extension list and assigns its selected browser axes.
+ * @param selection - The comma-separated `surface:name` entries, or no selection.
+ * @param axes - The axes selecting a browser environment.
+ * @param styles - If `true`, admits stylesheet extensions; if `false`, refuses them.
+ * @returns The validated extensions in selection order.
+ * @throws `UsageError` when an entry is malformed, repeated, unsupported, or lacks its surface.
+ */
+export function selectionToExtensions(
+	selection: string | undefined,
+	axes: readonly Axis[],
+	styles: boolean,
+): readonly Extension[] {
+	if (selection === undefined) return []
+	const extensions: Extension[] = []
+	const seen = new Set<string>()
+	for (const entry of selection.split(',')) {
+		const extension = parseExtension(entry)
+		if (extension === undefined || seen.has(entry))
+			throw new UsageError(
+				`'--extend' refuses '${entry}': use distinct supported surface:name entries.`,
+			)
+		seen.add(entry)
+		if (extension.surface === 'browser') {
+			if (axes.length === 0)
+				throw new UsageError('A browser extension requires browser in --src or --app.')
+			extensions.push({ ...extension, axes })
+		} else {
+			if (!styles) throw new UsageError('A styles extension requires --styles.')
+			extensions.push(extension)
+		}
+	}
+	return extensions
 }
 
 /**

@@ -9,6 +9,12 @@ import {
 	isCompilerHooks,
 	isCompilerOptions,
 	isCatalogEntry,
+	isBlueprint,
+	isBrowserExtension,
+	isStylesExtension,
+	isSurface,
+	isExtension,
+	isSheetName,
 	isGroups,
 	isHex,
 	isMirror,
@@ -28,6 +34,54 @@ import {
 	readKeyCount,
 	selectHostileCase,
 } from '../../setup.js'
+
+describe('extension guards', () => {
+	it('reads the supported surfaces and refuses targets and environments', () => {
+		expect(isSurface('browser')).toBe(true)
+		expect(isSurface('styles')).toBe(true)
+		expect(isSurface('themes')).toBe(false)
+		expect(isSurface('server')).toBe(false)
+		expect(isSurface(undefined)).toBe(false)
+	})
+	it('admits supported surfaces and refuses unsupported names and repeated axes', () => {
+		expect(isBrowserExtension({ surface: 'browser', name: 'vue', axes: ['src', 'app'] })).toBe(true)
+		expect(isBrowserExtension({ surface: 'browser', name: 'react', axes: ['app'] })).toBe(false)
+		expect(isBrowserExtension({ surface: 'browser', name: 'vue', axes: ['app', 'app'] })).toBe(
+			false,
+		)
+		expect(isBrowserExtension({ surface: 'browser', name: 'vue', axes: ['styles'] })).toBe(false)
+		expect(isStylesExtension({ surface: 'styles', name: 'print' })).toBe(true)
+		expect(isStylesExtension({ surface: 'styles', name: 'vue' })).toBe(false)
+		expect(isStylesExtension({ surface: 'styles', name: 'core' })).toBe(false)
+		expect(isSheetName('print-sheet')).toBe(true)
+		expect(isSheetName('../print')).toBe(false)
+		expect(isExtension({ surface: 'server', name: 'print' })).toBe(false)
+	})
+
+	it('answers hostile values without throwing', () => {
+		for (const hostile of buildHostileCases()) {
+			expect(isExtension(hostile.value)).toBe(false)
+			expect(isSurface(hostile.value)).toBe(false)
+			expect(isBrowserExtension(hostile.value)).toBe(false)
+			expect(isStylesExtension(hostile.value)).toBe(false)
+			expect(isSheetName(hostile.value)).toBe(false)
+		}
+	})
+
+	it('requires the structural fields and validates their values', () => {
+		const blueprint = createBlueprint('sheets', {
+			styles: true,
+			themes: true,
+			extensions: [{ surface: 'styles', name: 'print' }],
+		})
+		expect(isBlueprint(blueprint)).toBe(true)
+		expect(isBlueprint({ ...blueprint, styles: 'true' })).toBe(false)
+		expect(isBlueprint({ ...blueprint, themes: undefined })).toBe(false)
+		expect(
+			isBlueprint({ ...blueprint, extensions: [{ surface: 'browser', name: 'react', axes: [] }] }),
+		).toBe(false)
+	})
+})
 
 describe('guard totality', () => {
 	it('reports a real failure when the probe under it is not total', () => {

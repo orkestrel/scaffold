@@ -58,9 +58,12 @@ import {
 	sanitizeLine,
 	scriptToInvocations,
 	selectionToEnvironments,
+	selectionToExtensions,
 	selectionToGroups,
 	selectionToPackages,
 	targetToEnvironments,
+	targetToExtensions,
+	targetToFacts,
 	verbToSyntax,
 	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
@@ -73,6 +76,122 @@ import {
 	USAGE_CASES,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
+
+describe('extension selections', () => {
+	it('maps creation options to the command contract', () => {
+		expect(
+			argvToCommand([
+				'new',
+				'sample',
+				'--styles',
+				'--themes',
+				'--showcase',
+				'--extend',
+				'browser:vue,styles:print',
+			]),
+		).toMatchObject({
+			verb: 'new',
+			styles: true,
+			themes: true,
+			showcase: true,
+			extensions: 'browser:vue,styles:print',
+		})
+	})
+	it('assigns every selected browser axis and preserves sheet names', () => {
+		expect(selectionToExtensions('browser:vue,styles:print', ['src', 'app'], true)).toStrictEqual([
+			{ surface: 'browser', name: 'vue', axes: ['src', 'app'] },
+			{ surface: 'styles', name: 'print' },
+		])
+		expect(selectionToExtensions(undefined, [], false)).toStrictEqual([])
+		expect(selectionToExtensions('browser:vue', ['app'], false)).toStrictEqual([
+			{ surface: 'browser', name: 'vue', axes: ['app'] },
+		])
+	})
+
+	it('refuses repeated entries, absent surfaces, reserved names, and unsupported frameworks', () => {
+		expect(() => selectionToExtensions('browser:react', ['app'], false)).toThrow(UsageError)
+		expect(() => selectionToExtensions('styles:core', [], true)).toThrow(UsageError)
+		expect(() => selectionToExtensions('styles:', [], true)).toThrow(UsageError)
+		expect(() => selectionToExtensions('styles:print,styles:print', [], true)).toThrow(UsageError)
+		expect(() => selectionToExtensions('browser:vue', [], false)).toThrow(UsageError)
+		expect(() => selectionToExtensions('styles:print', [], false)).toThrow(UsageError)
+	})
+})
+
+describe('target extension markers', () => {
+	it('reads physical browser axes and sorted complete sheet pairs only', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			scratch.ensure('src/vue')
+			scratch.ensure('app/vue')
+			scratch.write('src/print/index.scss', '')
+			scratch.write('src/print/sheet.ts', '')
+			scratch.write('src/alpha/index.scss', '')
+			scratch.write('src/alpha/sheet.ts', '')
+			scratch.write('src/incomplete/index.scss', '')
+			scratch.write('src/core/index.scss', '')
+			scratch.write('src/core/sheet.ts', '')
+			expect(targetToExtensions(scratch.path)).toStrictEqual([
+				{ surface: 'browser', name: 'vue', axes: ['src', 'app'] },
+				{ surface: 'styles', name: 'alpha' },
+				{ surface: 'styles', name: 'print' },
+			])
+			scratch.remove('src/vue')
+			expect(targetToExtensions(scratch.path)[0]).toStrictEqual({
+				surface: 'browser',
+				name: 'vue',
+				axes: ['app'],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses case-colliding sheet names or the uppercase spelling on a folding filesystem', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			scratch.write('src/Print/index.scss', '')
+			scratch.write('src/Print/sheet.ts', '')
+			scratch.write('src/print/index.scss', '')
+			scratch.write('src/print/sheet.ts', '')
+			const distinct = scratch.names('src').includes('print')
+			expect(() => targetToExtensions(scratch.path)).toThrow(
+				distinct ? /Case-colliding/u : /Invalid sheet/u,
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('derives independent surface facts from exact-case files and physical showcase directories', () => {
+		const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(targetToFacts(scratch.path)).toStrictEqual({
+				styles: false,
+				themes: false,
+				showcase: false,
+			})
+			scratch.write('src/styles/Index.scss', '')
+			scratch.write('src/styles/themes/index.scss', '')
+			expect(targetToFacts(scratch.path).styles).toBe(false)
+			expect(targetToFacts(scratch.path).themes).toBe(false)
+			scratch.remove('src/styles/Index.scss')
+			scratch.write('src/styles/index.scss', '')
+			scratch.write('src/styles/themes/sheet.ts', '')
+			scratch.ensure('showcase')
+			expect(targetToFacts(scratch.path)).toStrictEqual({
+				styles: true,
+				themes: true,
+				showcase: true,
+			})
+			scratch.remove('showcase')
+			scratch.write('configs/app/vite.showcase.config.ts', '')
+			expect(targetToFacts(scratch.path).showcase).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
 
 // Every option token some verb documents, once, in verb order.
 const DOCUMENTED: readonly string[] = [...new Set(VERBS.flatMap((verb) => VERB_OPTIONS[verb]))]

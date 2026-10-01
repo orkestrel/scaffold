@@ -62,6 +62,9 @@ export interface CommandBase {
  * `name` is the workspace name, and is the only positional argument any verb
  * takes. `src`, `app`, and `dependencies` are the comma-separated selections
  * behind `--src`, `--app`, and `--deps`. `bin` adds the executable environment.
+ * `styles` adds the styles surface. `themes` adds its themes target and requires
+ * `styles`. `showcase` adds the showcase and requires a browser application.
+ * `extensions` is the comma-separated `surface:name` selection behind `--extend`.
  * `from` reads the data root from a local path instead of the bundled one.
  */
 export interface NewCommand extends CommandBase {
@@ -70,6 +73,10 @@ export interface NewCommand extends CommandBase {
 	readonly src?: string
 	readonly app?: string
 	readonly bin?: boolean
+	readonly styles?: boolean
+	readonly themes?: boolean
+	readonly showcase?: boolean
+	readonly extensions?: string
 	readonly dependencies?: string
 	readonly offline?: boolean
 	readonly from?: string

@@ -2,7 +2,9 @@
 paths:
   - '**/*.{scss,css}'
   - 'src/styles/**/*'
+  - 'src/*/sheet.ts'
   - 'tests/setupStyles.ts'
+  - 'tests/setupStyles.test.ts'
   - 'tests/setupBrowser.ts'
 ---
 
@@ -12,15 +14,18 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 ## Centralized files
 
-| File                | Sole responsibility                                              |
-| ------------------- | ---------------------------------------------------------------- |
-| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters             |
-| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order    |
-| `_theme.scss`       | Token overrides under theme selectors                            |
-| `_reset.scss`       | The surface's reset declarations, when that surface owns a reset |
-| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet         |
-| `index.scss`        | Sole compilation barrel                                          |
+| File                | Sole responsibility                                           |
+| ------------------- | ------------------------------------------------------------- |
+| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters          |
+| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order |
+| `_theme.scss`       | Token overrides under theme selectors                         |
+| `_reset.scss`       | The face's reset declarations, when that face owns a reset    |
+| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet      |
+| `index.scss`        | Sole compilation barrel                                       |
 
+- Apply this table and the folder barrels in § Folders to every sheet face: `src/styles` and each
+  `src/<name>` styles extension. `.claude/rules/workspace.md` § Environments fixes the `sheet.ts`
+  entry.
 - `_mixins.scss` emits no top-level CSS.
 - Consumers load it with `@use '../mixins' as *`.
 - Never load `mixins` from `index.scss`.
@@ -43,9 +48,9 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 - Never bury tokens in unrelated partials.
 - Never use literal colors outside a pinned recreation. Use `var(--token)` or `color-mix()` over
   tokens. The one file a literal color may appear in is `_tokens.scss`, where the token itself is
-  declared. A surface whose contract is the exact recreation of a pinned external artifact keeps
+  declared. A face whose contract is the exact recreation of a pinned external artifact keeps
   the literals, declarations, and order the pin declares, and records tokenization and
-  accessibility additions in its separate authored surface.
+  accessibility additions in its separate authored face.
 - Never repeat per-color/per-variant blocks; drive shared structure with one `@each` over a shared list.
 - If a pattern appears in at least two partials, move it to `_mixins.scss`.
 - Treat a declaration block two partials share because each records an external value as a
@@ -59,6 +64,17 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
   that recreates an external framework instead writes every normal declaration into one layer named
   for that framework and every `!important` declaration outside every layer.
 - Declare cascade-layer order once in the consumer entry before `@import 'tailwindcss'`, so utilities win predictably. When a package publishes several sheets, open every published sheet with the same full order statement, so the order holds whichever sheet loads first.
+- Open `themes/index.scss` with `@use '../tokens'`, whose first emitted rule is the order statement, then `@use 'default'`; Sass refuses a `@use` after another rule, so never write the statement there literally.
+
+## Folders
+
+- Give each folder an `_index.scss` barrel that loads its partials with `@use`; keep the barrel when the folder is empty.
+- Put a rule that styles one element in `elements/`, a class skin that applies with no script running in `components/`, and a class that sets one property in `utilities/`.
+- Add another folder only for a job `elements/`, `components/`, and `utilities/` do not hold, and give it its own barrel and its own layer.
+
+## Proofs
+
+- Declare every CSSOM instrument a sheet proof reads in `tests/setupStyles.ts`, never in a test file. `tests/setupStyles.test.ts` proves each instrument under the root setup mirror in `.claude/rules/tests.md`.
 
 ## Naming
 

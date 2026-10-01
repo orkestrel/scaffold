@@ -49,9 +49,7 @@ export const CONFIG_TEMPLATES = Object.freeze({
 		"forceConsistentCasingInFileNames": true,
 		"skipLibCheck": true,
 		"noEmit": true,
-		"paths": {
 {{paths}}
-		}
 	},
 	"exclude": ["node_modules", "dist", "tmp"]
 }
@@ -172,6 +170,27 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 `,
 	}),
 	factories: Object.freeze({
+		sheet: `export function sheetProject(name: string, override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		optimizeDeps,
+		publicDir: false,
+		test: {
+			name: { label: name, color: 'magenta' },
+			root: resolveWorkspacePath('.'),
+			isolate: false,
+			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts'],
+			browser: {
+				enabled: true,
+				provider: playwright(browserOptions),
+				instances: [{ browser: 'chromium', headless: true }],
+			},
+			fileParallelism: false,
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
 		src: Object.freeze({
 			core: `export function srcCore(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
@@ -194,9 +213,51 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	return mergeOverride(project, override)
 }
 `,
-			browser: `export function srcBrowser(override?: UserConfig): UserConfig {
+			vue: `function resolveVueFilename(): string {
+	return 'index.js'
+}
+
+export function srcVue(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
+		optimizeDeps: { include: [...optimizeDeps.include, 'vue'] },
+		publicDir: false,
+		plugins: [outputBoundary('dist/src/vue'), environmentBoundary('src/vue'), vue()],
+		build: {
+			emptyOutDir: true,
+			sourcemap: true,
+			minify: false,
+			lib: {
+				entry: resolveWorkspacePath('src/vue/index.ts'),
+				formats: ['es'],
+				fileName: resolveVueFilename,
+			},
+			outDir: 'dist/src/vue',
+			rolldownOptions: { onLog: enforceBuildLog },
+		},
+		test: {
+			name: { label: 'src:vue', color: 'green' },
+			include: ['tests/src/vue/**/*.test.ts'],
+			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+			browser: {
+				enabled: true,
+				provider: playwright(browserOptions),
+				instances: [{ browser: 'chromium', headless: true }],
+			},
+			fileParallelism: false,
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
+			browser: `function resolveBrowserFilename(): string {
+	return 'index.js'
+}
+
+export function srcBrowser(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		optimizeDeps,
 		publicDir: false,
 		plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
 		build: {
@@ -206,7 +267,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			lib: {
 				entry: resolveWorkspacePath('src/browser/index.ts'),
 				formats: ['es'],
-				fileName: () => 'index.js',
+				fileName: resolveBrowserFilename,
 			},
 			outDir: 'dist/src/browser',
 			rolldownOptions: {
@@ -231,7 +292,11 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	return mergeOverride(project, override)
 }
 `,
-			server: `export function srcServer(override?: UserConfig): UserConfig {
+			server: `function resolveServerFilename(format: string): string {
+	return format === 'es' ? 'index.js' : 'index.cjs'
+}
+
+export function srcServer(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
 		publicDir: false,
@@ -243,7 +308,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			lib: {
 				entry: resolveWorkspacePath('src/server/index.ts'),
 				formats: ['es', 'cjs'],
-				fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
+				fileName: resolveServerFilename,
 			},
 			outDir: 'dist/src/server',
 			target: 'node22',
@@ -265,7 +330,15 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	return mergeOverride(project, override)
 }
 `,
-			bin: `export function srcBin(override?: UserConfig): UserConfig {
+			bin: `function resolveBinFilename(): string {
+	return 'main.js'
+}
+
+function resolveBinExternal(id: string): boolean {
+	return id.startsWith('@src/') || resolveExternal(id, { peers, refused: [], siblings: [] })
+}
+
+export function srcBin(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
 		publicDir: false,
@@ -277,17 +350,13 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			lib: {
 				entry: resolveWorkspacePath('${BIN_ENTRY_PATH}'),
 				formats: ['es'],
-				fileName: () => 'main.js',
+				fileName: resolveBinFilename,
 			},
 			outDir: 'dist/bin',
 			target: 'node22',
 			rolldownOptions: {
 				onLog: enforceBuildLog,
-				external: (id: string) =>
-					id.startsWith('node:') ||
-					id.startsWith('@orkestrel/') ||
-					id.startsWith('@src/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+				external: resolveBinExternal,
 			},
 		},
 		test: {
@@ -327,7 +396,8 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	const output = 'dist/app/browser'
 	const project: UserConfig = {
 		resolve,
-		plugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],
+		optimizeDeps,
+		plugins: [outputBoundary(output), environmentBoundary('app/browser')],
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		build: {
@@ -356,20 +426,47 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	return mergeOverride(project, override)
 }
 {{showcaseFactory}}{{journeyFactory}}`,
+			vue: `export function appVue(override?: UserConfig): UserConfig {
+	const output = 'dist/app/vue'
+	const browser = appBrowser()
+	const project: UserConfig = {
+		...browser,
+		optimizeDeps: { include: [...optimizeDeps.include, 'vue'] },
+		plugins: [outputBoundary(output), environmentBoundary('app/vue'), vue()],
+		root: resolveWorkspacePath('app/vue'),
+		build: {
+			...browser.build,
+			outDir: resolveWorkspacePath(output),
+			rolldownOptions: {
+				...browser.build?.rolldownOptions,
+				input: resolveWorkspacePath('app/vue/index.html'),
+			},
+		},
+		test: {
+			...browser.test,
+			name: { label: 'app:vue', color: 'magenta' },
+			include: ['tests/app/vue/**/*.test.ts'],
+{{journeyExclude}}		},
+	}
+	return mergeOverride(project, override)
+}
+`,
 			journey: `
 // Replace the journey fields directly: merging would concatenate the ordinary include
 // and retain the exclusion of the journey suite.
 export function appJourney(
 	variant: JourneyVariant,
 	variants: readonly JourneyVariant[],
+	mode?: string,
 ): UserConfig {
-	const browser = appBrowser()
+	const application = resolveApplication(mode, applications)
+	const browser = applications[application]()
 	return {
 		...browser,
 		test: {
 			...browser.test,
 			name: { label: \`journey:\${variant.name}\`, color: 'green' },
-			include: ['tests/app/browser/integration.test.ts'],
+			include: [\`tests/app/\${application}/integration.test.ts\`],
 			exclude: [],
 			provide: { variant: variant.name, variants, capture },
 			browser: {
@@ -386,8 +483,39 @@ export function appJourney(
 			// the plugin name the browser boundary carries, so the merge replaces that
 			// boundary rather than adding a second one.
 			showcase: `
-export function appShowcase(override?: UserConfig): UserConfig {
-	const output = 'dist/showcase'
+const showcaseStamp: PluginOption = {
+	name: 'orkestrel-showcase-html',
+	enforce: 'post',
+	generateBundle(_, bundle) {
+		for (const file of Object.values(bundle)) {
+			if (
+				file.type === 'asset' &&
+				typeof file.source === 'string' &&
+				file.fileName.endsWith('.html')
+			) {
+				file.source = stampPage(file.source)
+			}
+		}
+	},
+}
+
+function createShowcaseNaming(application: string): PluginOption {
+	return {
+		name: 'orkestrel-showcase-name',
+		enforce: 'post',
+		writeBundle(options) {
+			if (options.dir === undefined) throw new Error('The showcase output is absent.')
+			renameSync(
+				resolvePath(options.dir, 'index.html'),
+				resolvePath(options.dir, application + '.html'),
+			)
+		},
+	}
+}
+
+export function appShowcase(mode: string, override?: UserConfig): UserConfig {
+	const application = resolveApplication(mode, applications)
+	const output = 'showcase'
 	const showcase: UserConfig = {
 		plugins: [
 			outputBoundary(output),
@@ -395,19 +523,8 @@ export function appShowcase(override?: UserConfig): UserConfig {
 				removeViteModuleLoader: true,
 				useRecommendedBuildConfig: true,
 			}),
-			{
-				name: 'orkestrel-showcase-html',
-				transformIndexHtml: {
-					order: 'post',
-					handler(html) {
-						const stamp = new Date().toISOString()
-						return html.replace(
-							'</head>',
-							'\t\t<meta name="build-id" content="' + stamp + '" />\\n\t</head>',
-						)
-					},
-				},
-			},
+			showcaseStamp,
+			createShowcaseNaming(application),
 		],
 		build: {
 			// The \`appBrowser\` factory sets \`assetsInlineLimit\` to 0, so every asset becomes
@@ -416,6 +533,7 @@ export function appShowcase(override?: UserConfig): UserConfig {
 			// true, so this line takes effect only in a workspace that turns that option off.
 			assetsInlineLimit: 4096,
 			cssMinify: 'lightningcss',
+			emptyOutDir: false,
 			minify: 'oxc',
 			modulePreload: false,
 			outDir: resolveWorkspacePath(output),
@@ -424,10 +542,18 @@ export function appShowcase(override?: UserConfig): UserConfig {
 			target: 'esnext',
 		},
 	}
-	return appBrowser(mergeOverride(showcase, override))
+	return applications[application](mergeOverride(showcase, override))
 }
 `,
-			server: `export function appServer(override?: UserConfig): UserConfig {
+			server: `function resolveAppFilename(): string {
+	return 'main.cjs'
+}
+
+function resolveAppExternal(id: string): boolean {
+	return id.startsWith('node:')
+}
+
+export function appServer(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
 		publicDir: false,
@@ -437,13 +563,13 @@ export function appShowcase(override?: UserConfig): UserConfig {
 			lib: {
 				entry: resolveWorkspacePath('app/server/main.ts'),
 				formats: ['cjs'],
-				fileName: () => 'main.cjs',
+				fileName: resolveAppFilename,
 			},
 			outDir: resolveWorkspacePath('dist/app/server'),
 			target: 'node22',
 			rolldownOptions: {
 				onLog: enforceBuildLog,
-				external: (id: string) => id.startsWith('node:'),
+				external: resolveAppExternal,
 			},
 		},
 		test: {
@@ -496,8 +622,10 @@ export function appShowcase(override?: UserConfig): UserConfig {
 		test: {
 			name: { label: 'setup', color: 'white' },
 			include: ['tests/setup*.test.ts'],
-			exclude: ['tests/setupBrowser.test.ts'],
+			exclude: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts'],
 			setupFiles: ['./tests/setup.ts'],
+			pool: 'threads',
+			isolate: false,
 			environment: 'node',
 			browser: { enabled: false },
 		},
@@ -508,9 +636,10 @@ export function appShowcase(override?: UserConfig): UserConfig {
 		browser: `export function setupBrowser(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
+		{{optimization}},
 {{plugins}}		test: {
 			name: { label: 'setup:browser', color: 'blue' },
-			include: ['tests/setupBrowser.test.ts'],
+			include: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts'],
 			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 {{global}}			browser: {
 				enabled: true,
@@ -564,7 +693,9 @@ export function conformance(override?: UserConfig): UserConfig {
 		test: {
 			name: { label: 'conformance', color: 'magenta' },
 			include: ['${CONFORMANCE_TEST_PATH}'],
-			setupFiles: ['./tests/setup.ts'],
+			setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+			pool: 'threads',
+			isolate: false,
 			environment: 'node',
 			browser: { enabled: false },
 		},
@@ -630,7 +761,17 @@ export function probe(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 `,
-		integration: `export function integration(override?: UserConfig): UserConfig {
+		integration: Object.freeze({
+			sheet: `export function integration(override?: UserConfig): UserConfig {
+	const project = sheetProject('integration', {
+		test: {
+			include: ['tests/integration.test.ts'],
+{{global}}		},
+	})
+	return mergeOverride(project, override)
+}
+`,
+			module: `export function integration(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
 		test: {
@@ -643,8 +784,51 @@ export function probe(override?: UserConfig): UserConfig {
 	return mergeOverride(project, override)
 }
 `,
+		}),
 	}),
 	tsconfigs: Object.freeze({
+		vue: Object.freeze({
+			src: `{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["vite/client"],
+		"noEmit": false,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"rootDir": "../../src",
+		"outDir": "../../dist/src"
+	},
+	"include": [
+		"../../src/vue/**/*.cts",
+		"../../src/vue/**/*.mts",
+		"../../src/vue/**/*.ts",
+		"../../src/vue/**/*.tsx"
+	]
+}
+`,
+			app: `{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["vite/client", "vue"]
+	},
+	"include": [
+{{include}}
+	]
+}
+`,
+		}),
+		sheet: `{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext"],
+		"types": ["vite/client"],
+		"noEmit": true
+	},
+	"include": ["../../src/{{name}}/**/*.ts"]
+}
+`,
 		src: Object.freeze({
 			core: `{
 	"extends": "../../tsconfig.json",
@@ -728,7 +912,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "vue"]
+		"types": ["vite/client"]
 	},
 	"include": [
 {{include}}
@@ -778,9 +962,38 @@ export function probe(override?: UserConfig): UserConfig {
 `,
 	}),
 	vites: Object.freeze({
+		sheet: `import { defineConfig } from 'vitest/config'
+import { outputBoundary } from '../helpers.js'
+import { resolveWorkspacePath, sheetProject } from '../../vite.config.ts'
+
+export default defineConfig((invocation) => {
+	const project = sheetProject('src:{{label}}', {
+		plugins: [outputBoundary('dist/src/{{name}}')],
+		build: {
+			outDir: 'dist/src/{{name}}',
+			emptyOutDir: true,
+			// Preserve the authored layer-order statement in the published sheet.
+			cssMinify: false,
+			lib: {
+				entry: resolveWorkspacePath('src/{{name}}/sheet.ts'),
+				formats: ['es'],
+				fileName: 'index',
+				cssFileName: 'index',
+			},
+		},
+		test: { include: ['tests/src/{{name}}/**/*.test.ts'] },
+	})
+	return { ...project, mode: invocation.mode }
+})
+`,
 		src: Object.freeze({
 			core: `import { defineConfig } from 'vite'
-import { declarationRollup, environmentBoundary, outputBoundary } from '../helpers.js'
+import {
+	declarationRollup,
+	environmentBoundary,
+	outputBoundary,
+	resolveExternal,
+} from '../helpers.js'
 import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
 
 export default defineConfig(
@@ -802,10 +1015,42 @@ export default defineConfig(
 			},
 			outDir: 'dist/src/core',
 			rolldownOptions: {
+				external: (id: string) => resolveExternal(id, { peers, refused: [], siblings: [] }),
+			},
+		},
+	}),
+)
+`,
+			vue: `import { defineConfig } from 'vite'
+import {
+	declarationRollup,
+	resolveExternal,
+	rewriteBrowserSpecifier,
+	rewriteCoreSpecifier,
+} from '../helpers.js'
+import { peers, srcVue, resolveWorkspacePath } from '../../vite.config.ts'
+
+const siblings = {
+{{siblings}}
+}
+
+export default defineConfig(
+	srcVue({
+		plugins: [
+			declarationRollup({
+				project: resolveWorkspacePath('configs/src/tsconfig.vue.json'),
+				rewrite: (content) => rewriteBrowserSpecifier(rewriteCoreSpecifier(content)),
+			}),
+		],
+		build: {
+			rolldownOptions: {
 				external: (id: string) =>
-					id.startsWith('node:') ||
-					id.startsWith('@orkestrel/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+					resolveExternal(id, {
+						peers,
+						refused: {{refused}},
+						siblings: Object.keys(siblings),
+					}),
+				output: { paths: siblings },
 			},
 		},
 	}),
@@ -847,7 +1092,8 @@ export default defineConfig(
 `,
 		}),
 		bin: `import { defineConfig } from 'vite'
-import { srcBin } from '../../vite.config.ts'
+import { resolveExternal } from '../helpers.js'
+import { peers, srcBin } from '../../vite.config.ts'
 
 // The \`scaffold\` executable build — a single ESM lib file, no declarations (an
 // executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted through
@@ -858,6 +1104,8 @@ export default defineConfig(
 	srcBin({
 		build: {
 			rolldownOptions: {
+				external: (id: string) =>
+					id.startsWith('@src/') || resolveExternal(id, { peers, refused: [], siblings: [] }),
 				output: {
 					banner: '#!/usr/bin/env node',
 {{paths}}
@@ -868,6 +1116,11 @@ export default defineConfig(
 )
 `,
 		app: Object.freeze({
+			vue: `import { defineConfig } from 'vite'
+import { appVue } from '../../vite.config.ts'
+
+export default defineConfig(appVue())
+`,
 			browser: `import { defineConfig } from 'vite'
 import { appBrowser } from '../../vite.config.ts'
 
@@ -881,7 +1134,7 @@ export default defineConfig(appServer())
 			showcase: `import { defineConfig } from 'vite'
 import { appShowcase } from '../../vite.config.ts'
 
-export default defineConfig(appShowcase())
+export default defineConfig(({ mode }) => appShowcase(mode))
 `,
 			journey: `import type { JourneyVariant } from '@orkestrel/test'
 import { defineConfig } from 'vitest/config'
@@ -893,11 +1146,11 @@ const VARIANTS: readonly JourneyVariant[] = Object.freeze([
 	{ name: 'compact', width: 390, height: 844 },
 ])
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
 	test: {
-		projects: VARIANTS.map((variant) => () => appJourney(variant, VARIANTS)),
+		projects: VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode)),
 	},
-})
+}))
 `,
 		}),
 	}),
@@ -1241,7 +1494,38 @@ export function resolveBrowser(
  */
 export const ARTIFACT_TEMPLATES = Object.freeze({
 	source: Object.freeze({
+		sheet: Object.freeze({
+			'index.scss': "@use 'tokens';\n@use 'elements';\n@use 'components';\n@use 'utilities';\n",
+			'_tokens.scss': '@layer theme, reset, base, elements, components, utilities;\n',
+			'_mixins.scss': '',
+			'elements/_index.scss': '',
+			'components/_index.scss': '',
+			'utilities/_index.scss': '',
+			'sheet.ts': "import './index.scss'\n",
+			'index.ts': "export * from './sheet.js'\n",
+		}),
+		themes: Object.freeze({
+			'index.scss': "@use '../tokens';\n@use 'default';\n",
+			'_default.scss': '',
+			'sheet.ts': "import './index.scss'\n",
+		}),
 		empty: '',
+		barrel: '// TODO: [Feature] Export the browser extension API.\n',
+		main: `document.body
+	.appendChild(document.createElement('main'))
+	.appendChild(document.createElement('h1')).textContent ={{heading}}
+`,
+		vue: Object.freeze({
+			'main.ts': `import { createApp } from 'vue'
+import App from './App.vue'
+
+createApp(App).mount(document.body.appendChild(document.createElement('main')))
+`,
+			'App.vue': `<template>
+	<h1>{{heading}}</h1>
+</template>
+`,
+		}),
 		browser: `<!doctype html>
 <html lang="en">
 	<head>
@@ -1256,9 +1540,263 @@ export const ARTIFACT_TEMPLATES = Object.freeze({
 `,
 	}),
 	tests: Object.freeze({
-		setup: '',
-		global: `export function setup(): void {}
+		journey: `import {
+	ACCESSIBLE_ROLES,
+	createPortfolio,
+	expandCaptures,
+	isRendered,
+	readRefusal,
+	readStyle,
+} from '@orkestrel/test/browser'
+{{imports}}import { page } from 'vitest/browser'
+import { describe, expect, inject, it } from 'vitest'
+
+const VARIANT = inject('variant')
+const VARIANTS = inject('variants')
+const CAPTURE = inject('capture')
+
+describe('{{application}} arrival journey', () => {
+	it('proves the declared arrival families', async () => {
+		const families = new Set(['Journey', 'Refusal', 'Matrix', ...(CAPTURE ? ['Capture'] : [])])
+		const proven = new Set<string>()
+		const states = ['{{application}}-arrival']
+		const placed = new Set<string>()
+		const portfolio = createPortfolio({
+			states,
+			variants: VARIANTS,
+			variant: VARIANT,
+			directory: '../../../tmp/captures/states',
+			enabled: CAPTURE,
+		})
+{{mount}}		try {
+{{arrival}}			const heading = page
+				.getByRole('heading', {
+					name: {{heading}},
+					exact: true,
+					level: 1,
+				})
+				.element()
+			expect(isRendered(heading)).toBe(true)
+			proven.add('Journey')
+			await portfolio.place('{{application}}-arrival')
+			placed.add('{{application}}-arrival')
+
+			for (const role of ACCESSIBLE_ROLES) expect(page.getByRole(role).elements()).toEqual([])
+			expect(readRefusal('Continue')).toBe(
+				'No interactive element has the accessible name "Continue"',
+			)
+			proven.add('Refusal')
+
+			const measured = new Set<string>()
+			for (const variant of VARIANTS) {
+				await page.viewport(variant.width, variant.height)
+				expect(readStyle(heading, 'display')).toBe('block')
+				expect(window.innerWidth).toBe(variant.width)
+				measured.add(variant.name)
+			}
+			expect(measured).toEqual(new Set(VARIANTS.map(({ name }) => name)))
+			proven.add('Matrix')
+
+			const files = expandCaptures(states, VARIANTS)
+			expect(portfolio.files).toEqual(files)
+			expect(new Set(files).size).toBe(states.length * VARIANTS.length)
+			expect(placed).toEqual(new Set(states))
+			const expected = CAPTURE
+				? expandCaptures(
+						states,
+						VARIANTS.filter(({ name }) => name === VARIANT),
+					)
+				: []
+			expect(portfolio.paths.map((path) => path.replaceAll('\\\\', '/').split('/').at(-1))).toEqual(
+				expected,
+			)
+			if (CAPTURE) proven.add('Capture')
+			expect(proven).toEqual(families)
+		} finally {
+{{cleanup}}			const variant = VARIANTS.find(({ name }) => name === VARIANT)
+			if (variant !== undefined) await page.viewport(variant.width, variant.height)
+		}
+	})
+})
 `,
+		browser: `import type { JourneyVariant } from '@orkestrel/test'
+
+declare module 'vitest' {
+	export interface ProvidedContext {
+		readonly variant: string
+		readonly variants: readonly JourneyVariant[]
+		readonly capture: boolean
+	}
+}
+`,
+		sheet: `import sheet from '/dist/src/{{name}}/index.css?raw'
+import { describe, expect, it } from 'vitest'
+import { adoptSheet, readLayerNames } from '{{setup}}'
+
+describe('{{name}} entry', () => {
+	it('opens with the declared cascade order', () => {
+		const adopted = adoptSheet(sheet)
+		try {
+			expect(adopted.sheet.cssRules[0]?.cssText).toBe(
+				'@layer theme, reset, base, elements, components, utilities;',
+			)
+			expect(readLayerNames(adopted.sheet).slice(0, 6)).toEqual([
+				'theme',
+				'reset',
+				'base',
+				'elements',
+				'components',
+				'utilities',
+			])
+		} finally {
+			adopted.release()
+		}
+	})
+})
+`,
+		styles: Object.freeze({
+			module: `/** Carries a CSSOM rule and its enclosing layer. */
+export interface SheetEntry {
+	readonly rule: CSSRule
+	readonly layer: string | undefined
+}
+
+/** Describes an adopted stylesheet and its idempotent release operation. */
+export interface SheetAdoption {
+	readonly sheet: CSSStyleSheet
+	release(): void
+}
+
+/**
+ * Adopts CSS text into the document with an idempotent release operation.
+ * @param text - The compiled sheet text.
+ * @returns The adopted sheet and its release operation.
+ * @example
+ * \`\`\`ts
+ * const adopted = adoptSheet('.sample { color: red }')
+ * adopted.release()
+ * \`\`\`
+ */
+export function adoptSheet(text: string): SheetAdoption {
+	const sheet = new CSSStyleSheet()
+	sheet.replaceSync(text)
+	document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
+	return {
+		sheet,
+		release: () => {
+			document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
+				(candidate) => candidate !== sheet,
+			)
+		},
+	}
+}
+
+/**
+ * Reads layer statements and blocks in declaration order, including repeated names.
+ * @param sheet - The parsed sheet.
+ * @returns Qualified layer names, with an empty name for an anonymous layer.
+ * @example
+ * \`\`\`ts
+ * readLayerNames(new CSSStyleSheet()) // []
+ * \`\`\`
+ */
+export function readLayerNames(sheet: CSSStyleSheet): readonly string[] {
+	const pending: SheetEntry[] = Array.from(sheet.cssRules, (rule) => ({
+		rule,
+		layer: undefined,
+	})).reverse()
+	const names: string[] = []
+	while (pending.length > 0) {
+		const entry = pending.pop()
+		if (entry === undefined) break
+		const { rule, layer } = entry
+		const declared =
+			rule instanceof CSSLayerStatementRule
+				? rule.nameList
+				: rule instanceof CSSLayerBlockRule
+					? [rule.name]
+					: []
+		for (const name of declared) names.push(layer === undefined ? name : layer + '.' + name)
+		if (!(rule instanceof CSSGroupingRule)) continue
+		const parent =
+			rule instanceof CSSLayerBlockRule
+				? layer === undefined
+					? rule.name
+					: layer + '.' + rule.name
+				: layer
+		for (const child of Array.from(rule.cssRules).reverse()) {
+			pending.push({ rule: child, layer: parent })
+		}
+	}
+	return names
+}
+`,
+			proof: `import type { SheetAdoption } from './setupStyles.js'
+import { describe, expect, it } from 'vitest'
+import { adoptSheet, readLayerNames } from './setupStyles.js'
+
+describe('CSSOM instruments', () => {
+	it('adopts and releases only its own sheet, including repeated release', () => {
+		const previous = [...document.adoptedStyleSheets]
+		const first: SheetAdoption = adoptSheet('.sample { color: red }')
+		try {
+			const second = adoptSheet('.other { display: block }')
+			try {
+				expect(document.adoptedStyleSheets).toEqual([...previous, first.sheet, second.sheet])
+				expect(first.sheet.cssRules.length).toBe(1)
+				first.release()
+				first.release()
+				expect(document.adoptedStyleSheets).toEqual([...previous, second.sheet])
+			} finally {
+				second.release()
+			}
+		} finally {
+			first.release()
+		}
+		expect(document.adoptedStyleSheets).toEqual(previous)
+	})
+
+	it('reads statements, blocks, nested conditions, and anonymous layers in order', () => {
+		const adopted = adoptSheet(
+			'@layer first, second; @layer first { @media all { @layer nested {} } } @layer {}',
+		)
+		try {
+			expect(readLayerNames(adopted.sheet)).toEqual([
+				'first',
+				'second',
+				'first',
+				'first.nested',
+				'',
+			])
+		} finally {
+			adopted.release()
+		}
+	})
+
+	it('returns no layer names for an empty sheet or an unlayered rule', () => {
+		const sheet = new CSSStyleSheet()
+		expect(readLayerNames(sheet)).toEqual([])
+		sheet.replaceSync('.sample { color: red }')
+		expect(readLayerNames(sheet)).toEqual([])
+	})
+})
+`,
+		}),
+		setup: '',
+		global: Object.freeze({
+			module: `export function setup(): void {}
+`,
+			proof: `import { describe, expect, it } from 'vitest'
+import { setup } from './setupGlobal.js'
+
+describe('global setup', () => {
+	it('runs without producing a teardown', () => {
+		expect(setup()).toBeUndefined()
+		expect(setup()).toBeUndefined()
+	})
+})
+`,
+		}),
 		entry: `import * as entry from {{specifier}}
 import { describe, expect, it } from 'vitest'
 

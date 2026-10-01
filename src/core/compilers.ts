@@ -2,6 +2,7 @@ import type {
 	Artifact,
 	BuildFormat,
 	Blueprint,
+	BrowserExtension,
 	ContentArtifact,
 	Dependency,
 	DependencyPinSet,
@@ -29,6 +30,7 @@ import {
 	APP_DEV_DEPENDENCIES,
 	APP_MATRIX,
 	APP_SERVER_DEV_DEPENDENCIES,
+	AXES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
 	BIN_ENTRY_PATH,
@@ -40,6 +42,8 @@ import {
 	EXTRA_RANGE_PATTERN,
 	FLOOR_RANGE_PATTERN,
 	FOREIGN_NAME_PATTERN,
+	FRAMEWORK_MATRIX,
+	FRAMEWORKS,
 	GLOBAL_SETUP_PATH,
 	GUIDES_TEST_PATH,
 	HOST_PATHS,
@@ -59,6 +63,7 @@ import {
 	SKILLS_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SRC_MATRIX,
+	STYLES_DEV_DEPENDENCIES,
 	TARGET_SKILL_NAMES,
 	VERSION_PATTERN,
 	WORKSPACE_DEV_ENGINES,
@@ -75,6 +80,81 @@ import {
 	srcToRoot,
 } from './helpers.js'
 import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
+import { isSheetName } from './validators.js'
+
+/**
+ * Projects a blueprint into browser extensions restricted to occupied browser axes.
+ * @param blueprint - The workspace specification.
+ * @returns Browser extensions with their occupied axes, omitting unplaced extensions.
+ * @example
+ * ```ts
+ * import { blueprintToFaces, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * blueprintToFaces(createBlueprint('desk', { app: ['core'] })).length // 0
+ * ```
+ */
+export function blueprintToFaces(blueprint: Blueprint): readonly BrowserExtension[] {
+	return blueprint.extensions.flatMap((extension) => {
+		if (extension.surface !== 'browser') return []
+		const axes = extension.axes.filter((axis) => blueprint[axis].includes('browser'))
+		return axes.length === 0 ? [] : [{ ...extension, axes }]
+	})
+}
+
+/**
+ * Projects a blueprint into its validated sheet-face names in stable order.
+ * @param blueprint - The workspace specification.
+ * @returns The base face followed by named styles extensions; themes remain a separate target.
+ * @example
+ * ```ts
+ * import { blueprintToSheets, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * blueprintToSheets(createBlueprint('paper', { styles: true })) // ['styles']
+ * ```
+ */
+export function blueprintToSheets(blueprint: Blueprint): readonly string[] {
+	return [
+		...(blueprint.styles ? ['styles'] : []),
+		...sortValues(
+			blueprint.extensions.flatMap((extension) =>
+				extension.surface === 'styles' && isSheetName(extension.name) ? [extension.name] : [],
+			),
+		),
+	]
+}
+
+/**
+ * Projects published environments and sheets into the manifest export map.
+ * @param blueprint - The workspace specification.
+ * @returns JavaScript conditions and CSS and SCSS subpaths, without an invented JavaScript root.
+ * @example
+ * ```ts
+ * import { blueprintToExports, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * blueprintToExports(createBlueprint('paper', { styles: true }))['./styles']
+ * // './dist/src/styles/index.css'
+ * ```
+ */
+export function blueprintToExports(blueprint: Blueprint): Readonly<Record<string, unknown>> {
+	const exports: Record<string, unknown> = { ...srcToExports(blueprint.src) }
+	for (const extension of blueprintToFaces(blueprint)) {
+		if (extension.surface !== 'browser' || !extension.axes.includes('src')) continue
+		exports[`./${extension.name}`] = pathToCondition(`./dist/src/${extension.name}/index`, ['es'])
+		// Declaration rewrites name the browser subpath even when browser owns the root export.
+		if (blueprint.src.includes('browser')) {
+			exports['./browser'] = pathToCondition('./dist/src/browser/index', ['es'])
+		}
+	}
+	for (const name of [
+		...blueprintToSheets(blueprint),
+		...(blueprint.themes ? ['styles/themes'] : []),
+	]) {
+		exports[`./${name}`] = `./dist/src/${name}/index.css`
+		exports[`./${name}/scss`] = `./src/${name}/index.scss`
+	}
+	if (Object.keys(exports).length > 0) exports['./package.json'] = './package.json'
+	return exports
+}
 
 /**
  * Builds one `exports` condition block for a built environment.
@@ -219,10 +299,12 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * ```
  */
 export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Record<string, string>> {
+	const sheets = blueprintToSheets(blueprint).length > 0 || blueprint.themes
 	const merged: Record<string, string> = {
 		...BASE_DEV_DEPENDENCIES,
+		...(sheets ? STYLES_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.length > 0 || blueprint.bin ? DECLARATION_DEV_DEPENDENCIES : {}),
-		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser')
+		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser') || sheets
 			? SOURCE_BROWSER_DEV_DEPENDENCIES
 			: {}),
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
@@ -230,11 +312,14 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 	}
+	for (const framework of blueprintToMachinery(blueprint).frameworks) {
+		Object.assign(merged, FRAMEWORK_MATRIX[framework].dependencies)
+	}
 	for (const extra of blueprint.extras) merged[extra.name] = extra.range
 	for (const peer of blueprint.peers) {
 		if (!Object.hasOwn(merged, peer.name)) merged[peer.name] = peer.range
 	}
-	const own = blueprint.src.length > 0 ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const own = blueprint.src.length > 0 || sheets ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const runtime = new Set(blueprint.dependencies.map((dependency) => dependency.name))
 	return Object.fromEntries(
 		Object.entries(merged)
@@ -280,11 +365,23 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  * ```
  */
 export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string, string>> {
-	const publishes = blueprint.src.length > 0
+	const source = blueprintToFaces(blueprint).flatMap((extension) =>
+		extension.surface === 'browser' && extension.axes.includes('src') ? [extension.name] : [],
+	)
+	const application = blueprintToFaces(blueprint).flatMap((extension) =>
+		extension.surface === 'browser' && extension.axes.includes('app') ? [extension.name] : [],
+	)
+	const sheets = blueprintToSheets(blueprint)
+	const targets = [...sheets, ...(blueprint.themes && !blueprint.styles ? ['themes'] : [])]
+	const checker = application.includes('vue') ? FRAMEWORK_MATRIX.vue.checker : 'tsc'
+	const publishes = blueprint.src.length > 0 || targets.length > 0
 	const integrates = blueprint.integration
 	const compiles = publishes || blueprint.bin
 	const runtime = blueprint.app.filter((environment) => environment !== 'core')
 	const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'
+	const checks = [...blueprint.src, ...source, ...sheets, ...(blueprint.bin ? ['bin'] : [])].map(
+		(name) => `npm run check:src:${name}`,
+	)
 	const scripts: Record<string, string> = {
 		clean: "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
 		copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
@@ -293,43 +390,49 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		lint: 'oxlint --config .oxlintrc.json --fix .',
 		'lint:check': 'oxlint --config .oxlintrc.json --deny-warnings .',
 		check: [
-			'tsc --noEmit --project tsconfig.json',
-			...(compiles ? ['npm run check:src'] : []),
+			`${checker} --noEmit --project tsconfig.json`,
+			...(checks.length > 0 ? ['npm run check:src'] : []),
 			...(blueprint.app.length > 0 ? ['npm run check:app'] : []),
 			...(blueprint.skills ? ['npm run check:skills'] : []),
 		].join(' && '),
 	}
-	if (compiles) {
-		scripts['check:src'] = [
-			...blueprint.src.map((environment) => `npm run check:src:${environment}`),
-			...(blueprint.bin ? ['npm run check:src:bin'] : []),
-		].join(' && ')
+	if (checks.length > 0) {
+		scripts['check:src'] = checks.join(' && ')
 		for (const environment of blueprint.src) {
 			scripts[`check:src:${environment}`] =
 				`tsc --noEmit -p configs/src/tsconfig.${environment}.json`
 		}
 		if (blueprint.bin) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
+		for (const name of [...sheets, ...source]) {
+			scripts[`check:src:${name}`] = `tsc --noEmit -p configs/src/tsconfig.${name}.json`
+		}
 	}
 	if (blueprint.app.length > 0) {
-		scripts['check:app'] = blueprint.app
+		scripts['check:app'] = [...blueprint.app, ...application]
 			.map((environment) => `npm run check:app:${environment}`)
 			.join(' && ')
 		for (const environment of blueprint.app) {
 			scripts[`check:app:${environment}`] =
-				environment === 'browser'
-					? 'vue-tsc --noEmit -p configs/app/tsconfig.browser.json'
-					: `tsc --noEmit -p configs/app/tsconfig.${environment}.json`
+				`tsc --noEmit -p configs/app/tsconfig.${environment}.json`
+		}
+		for (const name of application) {
+			scripts[`check:app:${name}`] =
+				`${FRAMEWORK_MATRIX[name].checker} --noEmit -p configs/app/tsconfig.${name}.json`
 		}
 	}
 	if (blueprint.skills) scripts['check:skills'] = `tsc --noEmit -p ${SKILLS_CONFIG_PATH}`
 	scripts.test = [
 		...(compiles ? ['npm run test:src'] : []),
 		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
-		...(blueprint.journey && blueprint.app.includes('browser') ? ['npm run test:journey'] : []),
+		...(blueprint.journey && blueprint.app.includes('browser')
+			? ['npm run test:journey', ...application.map((name) => `npm run test:journey:${name}`)]
+			: []),
 		'npm run test:policy',
 		'npm run test:config',
-		...(blueprint.setup.includes('node') ? ['npm run test:setup'] : []),
-		...(blueprint.setup.includes('browser') ? ['npm run test:setup:browser'] : []),
+		...(blueprint.setup.includes('node') || blueprint.global ? ['npm run test:setup'] : []),
+		...(blueprint.setup.includes('browser') || targets.length > 0
+			? ['npm run test:setup:browser']
+			: []),
 		...(blueprint.skills ? ['npm run test:skills'] : []),
 		...(blueprint.guides ? ['npm run test:guides'] : []),
 		...(blueprint.conformance ? ['npm run test:conformance'] : []),
@@ -340,29 +443,44 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts['test:src'] = [
 			vitest,
 			...blueprint.src.map((environment) => `--project ${SRC_MATRIX[environment].project}`),
+			...source.map((name) => `--project src:${name}`),
 			...(blueprint.bin ? ['--project src:bin'] : []),
 		].join(' ')
 		for (const environment of blueprint.src) {
 			scripts[`test:src:${environment}`] = `${vitest} --project ${SRC_MATRIX[environment].project}`
 		}
 		if (blueprint.bin) scripts['test:src:bin'] = `${vitest} --project src:bin`
+		for (const name of source) scripts[`test:src:${name}`] = `${vitest} --project src:${name}`
+		const javascript = blueprint.src.length > 0 || blueprint.bin ? [scripts['test:src']] : []
+		scripts['test:src'] = [
+			...javascript,
+			...targets.map((name) => `npm run test:src:${name}`),
+		].join(' && ')
+		for (const name of targets) {
+			scripts[`test:src:${name}`] = `npm run build:src:${name} && ${vitest} --project src:${name}`
+		}
 	}
 	if (blueprint.app.length > 0) {
 		scripts['test:app'] = [
 			vitest,
 			...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
+			...application.map((name) => `--project app:${name}`),
 		].join(' ')
 		for (const environment of blueprint.app) {
 			scripts[`test:app:${environment}`] = `${vitest} --project ${APP_MATRIX[environment].project}`
 		}
+		for (const name of application) scripts[`test:app:${name}`] = `${vitest} --project app:${name}`
 	}
 	scripts['test:policy'] = `${vitest} --project policy`
 	scripts['test:config'] = `${vitest} --project config`
-	if (blueprint.setup.includes('node')) scripts['test:setup'] = `${vitest} --project setup`
-	if (blueprint.setup.includes('browser'))
+	if (blueprint.setup.includes('node') || blueprint.global)
+		scripts['test:setup'] = `${vitest} --project setup`
+	if (blueprint.setup.includes('browser') || targets.length > 0)
 		scripts['test:setup:browser'] = `${vitest} --project setup:browser`
 	if (blueprint.journey && blueprint.app.includes('browser')) {
 		scripts['test:journey'] = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
+		for (const name of application)
+			scripts[`test:journey:${name}`] = `${scripts['test:journey']} --mode ${name}`
 	}
 	if (blueprint.skills) scripts['test:skills'] = `${vitest} --project skills`
 	if (blueprint.guides) {
@@ -383,6 +501,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	if (compiles) {
 		scripts['build:src'] = [
 			...blueprint.src.map((environment) => `npm run build:src:${environment}`),
+			...source.map((name) => `npm run build:src:${name}`),
+			...targets.map((name) => `npm run build:src:${name}`),
 			...(blueprint.bin ? ['npm run build:src:bin'] : []),
 		].join(' && ')
 		for (const environment of blueprint.src) {
@@ -394,24 +514,41 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		if (blueprint.bin) {
 			scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
 		}
+		for (const name of source) {
+			scripts[`build:src:${name}`] = `vite build --config configs/src/vite.${name}.config.ts`
+		}
+		for (const name of targets) {
+			scripts[`build:src:${name}`] = [
+				`vite build --config configs/src/vite.${name}.config.ts`,
+				...(name === 'styles' && blueprint.themes
+					? ['vite build --config configs/src/vite.themes.config.ts']
+					: []),
+			].join(' && ')
+		}
 	}
 	if (blueprint.app.length > 0) {
 		scripts['build:app'] =
 			runtime.length > 0
-				? runtime.map((environment) => `npm run build:app:${environment}`).join(' && ')
+				? [...runtime, ...application]
+						.map((environment) => `npm run build:app:${environment}`)
+						.join(' && ')
 				: 'npm run check:app:core'
-		for (const environment of runtime) {
+		for (const environment of [...runtime, ...application]) {
 			scripts[`build:app:${environment}`] =
 				`vite build --config configs/app/vite.${environment}.config.ts`
 		}
 	}
 	if (blueprint.app.includes('browser')) {
 		scripts.dev = 'vite --config configs/app/vite.browser.config.ts'
+		for (const name of application)
+			scripts[`dev:${name}`] = `vite --config configs/app/vite.${name}.config.ts`
 		if (blueprint.showcase) {
 			scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
 			scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
-			scripts.show =
-				'npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
+			for (const name of application) {
+				scripts[`showcase:${name}`] = `${scripts.showcase} --mode ${name}`
+				scripts[`build:showcase:${name}`] = `${scripts['build:showcase']} --mode ${name}`
+			}
 		}
 	}
 	if (blueprint.app.includes('server')) {
@@ -421,7 +558,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	if (publishes) {
 		scripts.prepack = 'npm run build'
 		scripts.prepublishOnly = [
-			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
+			'npm run format:check && npm run lint:check && npm run check && npm run build',
+			...(blueprint.showcase && blueprint.app.includes('browser')
+				? ['npm run build:showcase', ...application.map((name) => `npm run build:showcase:${name}`)]
+				: []),
+			'npm test',
 			RELEASE_PROOF_COMMAND,
 			...(blueprint.service ? ['npm run test:service'] : []),
 		].join(' && ')
@@ -440,6 +581,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
  * whose package-owned entry runs the guides project and handles explicit parity
  * rewrites, and one carrying skills adds `test:skills`. Publishing adds the pack and publication lifecycle scripts.
+ * Sheet and framework faces add their check and build scripts, application frameworks add dev scripts,
+ * and selected showcases and journeys add their mode scripts.
  * Aggregate test scripts and
  * maintainer-owned gate chains stay outside the region.
  *
@@ -463,17 +606,43 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  */
 export function blueprintToWritableScripts(blueprint: Blueprint): readonly ManifestScript[] {
 	const scripts = blueprintToScripts(blueprint)
+	const sheets = [
+		...blueprintToSheets(blueprint),
+		...(blueprint.themes && !blueprint.styles ? ['themes'] : []),
+	]
 	const writable: ManifestScript[] = []
 	for (const [name, command] of Object.entries(scripts)) {
 		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
-		if (!direct) continue
+		const sheet = sheets.some(
+			(face) => name === `build:src:${face}` || name === `check:src:${face}`,
+		)
+		const framework = blueprintToFaces(blueprint).some(
+			(extension) =>
+				extension.surface === 'browser' &&
+				extension.axes.some(
+					(axis) =>
+						name === `check:${axis}:${extension.name}` ||
+						name === `build:${axis}:${extension.name}` ||
+						(axis === 'app' && name === `dev:${extension.name}`),
+				),
+		)
+		const showcase =
+			name === 'showcase' ||
+			name.startsWith('showcase:') ||
+			name === 'build:showcase' ||
+			name.startsWith('build:showcase:')
+		if (!direct && !sheet && !framework && !showcase) continue
 		writable.push({
 			name,
 			command,
 			accepted:
 				name === 'test:guides'
 					? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
-					: [],
+					: name === 'build:src:styles' && blueprint.themes
+						? ['vite build --config configs/src/vite.styles.config.ts']
+						: sheets.some((face) => name === `test:src:${face}`)
+							? [command.slice(command.indexOf(' && ') + 4)]
+							: [],
 		})
 	}
 	const prepack = scripts.prepack
@@ -532,7 +701,9 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
  * ```
  */
 export function blueprintToManifest(blueprint: Blueprint): string {
-	const publishes = blueprint.src.length > 0
+	const sheets = blueprintToSheets(blueprint)
+	const targets = [...sheets, ...(blueprint.themes ? ['styles/themes'] : [])]
+	const publishes = blueprint.src.length > 0 || targets.length > 0
 	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const dependencies: Record<string, string> = {}
 	for (const dependency of [...blueprint.dependencies].sort((left, right) =>
@@ -573,19 +744,26 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 				}
 			: {}),
 		...(blueprint.bin ? { bin: { [blueprint.name]: './dist/bin/main.js' } } : {}),
-		files: blueprint.bin
-			? ['dist/src', 'dist/bin', 'README.md']
-			: publishes
-				? ['dist/src', 'README.md']
-				: ['dist/app', 'README.md'],
+		files: [
+			blueprint.bin || publishes ? 'dist/src' : 'dist/app',
+			...(blueprint.bin ? ['dist/bin'] : []),
+			...targets.map((face) => `!dist/src/${face}/index.js`),
+			...sheets.map((face) => `src/${face}/**/*.scss`),
+			...(blueprint.themes && !blueprint.styles ? ['src/styles/themes/**/*.scss'] : []),
+			'README.md',
+		],
 		type: 'module',
 		...(publishes
 			? {
-					sideEffects: blueprint.bin ? [`./${BIN_ENTRY_PATH}`, './dist/bin/main.js'] : false,
-					main: entry.main,
-					module: entry.module,
-					...(entry.types === undefined ? {} : { types: entry.types }),
-					exports: srcToExports(blueprint.src),
+					sideEffects:
+						targets.length > 0 || blueprint.bin
+							? [
+									...(targets.length > 0 ? ['**/*.css', '**/*.scss'] : []),
+									...(blueprint.bin ? [`./${BIN_ENTRY_PATH}`, './dist/bin/main.js'] : []),
+								]
+							: false,
+					...(blueprint.src.length > 0 ? entry : {}),
+					exports: blueprintToExports(blueprint),
 					publishConfig: { access: 'public' },
 				}
 			: {}),
@@ -624,18 +802,34 @@ export function blueprintToManifest(blueprint: Blueprint): string {
  *
  * const blueprint = createBlueprint('router', { app: ['browser'] })
  *
- * blueprintToMachinery(blueprint).vue // true
+ * blueprintToMachinery(blueprint).frameworks // []
  * ```
  */
 export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
 	const hosted = blueprint.app.some((environment) => environment !== 'core')
+	const frameworks = FRAMEWORKS.filter((framework) =>
+		blueprintToFaces(blueprint).some(
+			(extension) =>
+				extension.surface === 'browser' &&
+				extension.name === framework &&
+				extension.axes.some((axis) => blueprint[axis].includes('browser')),
+		),
+	)
 	return {
 		browser:
 			blueprint.src.includes('browser') ||
 			blueprint.app.includes('browser') ||
-			blueprint.setup.includes('browser'),
-		vue: blueprint.app.includes('browser'),
-		output: blueprint.src.length > 0 || blueprint.bin || hosted,
+			blueprint.setup.includes('browser') ||
+			blueprintToSheets(blueprint).length > 0 ||
+			blueprint.themes ||
+			frameworks.length > 0,
+		frameworks,
+		output:
+			blueprint.src.length > 0 ||
+			blueprint.bin ||
+			hosted ||
+			blueprintToSheets(blueprint).length > 0 ||
+			blueprint.themes,
 		showcase: blueprint.showcase && blueprint.app.includes('browser'),
 	}
 }
@@ -672,6 +866,19 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
  */
 export function blueprintToRootTsconfig(blueprint: Blueprint): string {
 	const aliases: Array<[string, string]> = []
+	for (const extension of blueprintToFaces(blueprint)) {
+		if (extension.surface !== 'browser') continue
+		for (const axis of extension.axes)
+			aliases.push([`@${axis}/${extension.name}`, `./${axis}/${extension.name}/index.ts`])
+		if (extension.axes.includes('src'))
+			aliases.push([
+				`@orkestrel/${blueprint.name}/${extension.name}`,
+				`./src/${extension.name}/index.ts`,
+			])
+	}
+	for (const name of blueprintToSheets(blueprint)) {
+		aliases.push([`@src/${name}`, `./src/${name}/index.ts`])
+	}
 	for (const environment of ENVIRONMENTS) {
 		if (blueprint.src.includes(environment)) {
 			aliases.push([`@src/${environment}`, `./src/${environment}/index.ts`])
@@ -705,7 +912,53 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
 			return `\t\t\t"${specifier}": [\n\t\t\t\t"${target}"\n\t\t\t]${separator}`
 		})
 		.join('\n')
-	return fillTemplate(CONFIG_TEMPLATES.root.tsconfig, { paths })
+	return fillTemplate(CONFIG_TEMPLATES.root.tsconfig, {
+		paths: aliases.length === 0 ? '\t\t"paths": {}' : `\t\t"paths": {\n${paths}\n\t\t}`,
+	})
+}
+
+/**
+ * Projects a blueprint into the project labels its root Vitest configuration registers.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns Project labels in registration order, including wrapper-registered sheet faces.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToProjects, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * blueprintToProjects(createBlueprint('desk')).includes('policy') // true
+ * ```
+ */
+export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
+	const sheets = blueprintToSheets(blueprint)
+	const styled = sheets.length > 0 || blueprint.themes
+	const faces = blueprintToFaces(blueprint)
+	const projects = sheets.map((name) => `src:${name}`)
+	if (blueprint.themes && !blueprint.styles) projects.push('src:themes')
+	for (const axis of AXES) {
+		for (const environment of ENVIRONMENTS) {
+			if (axis === 'app' && environment === 'server') continue
+			if (blueprint[axis].includes(environment)) projects.push(`${axis}:${environment}`)
+		}
+		for (const face of faces) {
+			if (face.surface === 'browser' && face.axes.includes(axis))
+				projects.push(`${axis}:${face.name}`)
+		}
+		if (axis === 'src' && blueprint.bin) projects.push('src:bin')
+		if (axis === 'app' && blueprint.app.includes('server')) projects.push('app:server')
+	}
+	projects.push('policy', 'config')
+	if (blueprint.setup.includes('node') || blueprint.global) projects.push('setup')
+	if (blueprint.setup.includes('browser') || styled) projects.push('setup:browser')
+	if (blueprint.guides) projects.push('guides')
+	if (blueprint.skills) projects.push('skills')
+	if (blueprint.conformance) projects.push('conformance')
+	if (blueprint.service) projects.push('service')
+	if (blueprint.src.length > 0 || styled) projects.push('distribution')
+	if (blueprint.integration) projects.push('integration')
+	projects.push('probe')
+	return projects
 }
 
 /**
@@ -730,34 +983,59 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
  */
 export function blueprintToRootVite(blueprint: Blueprint): string {
 	const machinery = blueprintToMachinery(blueprint)
-	const publishes = blueprint.src.length > 0
+	const planned = new Set(blueprintToProjects(blueprint))
+	const sheets = blueprintToSheets(blueprint)
+	const styled = sheets.length > 0 || blueprint.themes
 	// A browser test runs in the browser, so it cannot start a Node fixture for
 	// itself. That is the case a global setup exists for, and it is why
 	// `src:browser`, `setup:browser`, and `integration` take the same span.
 	const global = blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : ''
 	const imports: string[] = []
 	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
-	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
+	if (machinery.frameworks.includes('vue')) imports.push("import vue from '@vitejs/plugin-vue'")
 	if (machinery.showcase) imports.push("import { viteSingleFile } from 'vite-plugin-singlefile'")
+	if (machinery.showcase) {
+		imports.push("import { renameSync } from 'node:fs'")
+		imports.push("import { resolve as resolvePath } from 'node:path'")
+	}
 
 	const factories: string[] = []
 	const projects: string[] = []
-	if (blueprint.src.includes('core')) {
+	const external = 'external: resolveSourceExternal,'
+	if (blueprint.src.includes('browser') || blueprint.src.includes('server')) {
+		factories.push(
+			blueprint.src.includes('core')
+				? `function resolveSourceExternal(id: string): boolean {
+	return (
+		id === '@src/core' ||
+		resolveExternal(id, {
+			peers,
+			refused: [],
+			siblings: [resolveWorkspacePath('src/core/index.ts')],
+		})
+	)
+}
+`
+				: `function resolveSourceExternal(id: string): boolean {
+	return resolveExternal(id, { peers, refused: [], siblings: [] })
+}
+`,
+		)
+	}
+	if (styled) {
+		factories.push(CONFIG_TEMPLATES.factories.sheet)
+		for (const name of sheets) projects.push(`'./configs/src/vite.${name}.config.ts'`)
+		if (planned.has('src:themes')) projects.push("'./configs/src/vite.themes.config.ts'")
+	}
+	if (planned.has('src:core')) {
 		factories.push(CONFIG_TEMPLATES.factories.src.core)
 		projects.push('srcCore')
 	}
-	if (blueprint.src.includes('browser')) {
+	if (planned.has('src:browser')) {
 		const core = blueprint.src.includes('core')
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
-				external: core
-					? `external: (id: string) =>
-					id === '@src/core' ||
-					id.startsWith('@orkestrel/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
-					: `external: (id: string) =>
-					id.startsWith('@orkestrel/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+				external,
 				output: core
 					? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
 					: '\t\t\t\toutput: {},',
@@ -767,20 +1045,11 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		)
 		projects.push('srcBrowser')
 	}
-	if (blueprint.src.includes('server')) {
+	if (planned.has('src:server')) {
 		const core = blueprint.src.includes('core')
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
-				external: core
-					? `external: (id: string) =>
-					id === '@src/core' ||
-					id.startsWith('node:') ||
-					id.startsWith('@orkestrel/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
-					: `external: (id: string) =>
-					id.startsWith('node:') ||
-					id.startsWith('@orkestrel/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+				external,
 				output: core
 					? `\t\t\t\toutput: [
 					{
@@ -800,15 +1069,19 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		)
 		projects.push('srcServer')
 	}
-	if (blueprint.bin) {
+	if (planned.has('src:vue')) {
+		factories.push(CONFIG_TEMPLATES.factories.src.vue)
+		projects.push('srcVue')
+	}
+	if (planned.has('src:bin')) {
 		factories.push(CONFIG_TEMPLATES.factories.src.bin)
 		projects.push('srcBin')
 	}
-	if (blueprint.app.includes('core')) {
+	if (planned.has('app:core')) {
 		factories.push(CONFIG_TEMPLATES.factories.app.core)
 		projects.push('appCore')
 	}
-	if (blueprint.app.includes('browser')) {
+	if (planned.has('app:browser')) {
 		const showcaseFactory = machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : ''
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
@@ -825,7 +1098,17 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		// publish gate into a skip.
 		projects.push('appBrowser')
 	}
-	if (blueprint.app.includes('server')) {
+	if (planned.has('app:vue')) {
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.app.vue, {
+				journeyExclude: blueprint.journey
+					? "\t\t\texclude: ['tests/app/vue/integration.test.ts'],\n"
+					: '\t\t\texclude: [],\n',
+			}),
+		)
+		projects.push('appVue')
+	}
+	if (planned.has('app:server')) {
 		factories.push(CONFIG_TEMPLATES.factories.app.server)
 		projects.push('appServer')
 	}
@@ -833,41 +1116,51 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	projects.push('policy')
 	factories.push(CONFIG_TEMPLATES.factories.config)
 	projects.push('config')
-	if (blueprint.setup.includes('node')) {
+	if (planned.has('setup')) {
 		factories.push(CONFIG_TEMPLATES.factories.setup)
 		projects.push('setup')
 	}
-	if (blueprint.setup.includes('browser')) {
+	if (planned.has('setup:browser')) {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.browser, {
-				plugins: machinery.vue ? '\t\tplugins: [vue()],\n' : '',
+				optimization: machinery.frameworks.includes('vue')
+					? "optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }"
+					: 'optimizeDeps',
+				plugins: machinery.frameworks.includes('vue') ? '\t\tplugins: [vue()],\n' : '',
 				global,
 			}),
 		)
 		projects.push('setupBrowser')
 	}
-	if (blueprint.guides) {
+	if (planned.has('guides')) {
 		factories.push(CONFIG_TEMPLATES.factories.guides)
 		projects.push('guides')
 	}
-	if (blueprint.skills) {
+	if (planned.has('skills')) {
 		factories.push(CONFIG_TEMPLATES.factories.skills)
 		projects.push('skills')
 	}
-	if (blueprint.conformance) {
+	if (planned.has('conformance')) {
 		factories.push(CONFIG_TEMPLATES.factories.conformance)
 		projects.push('conformance')
 	}
-	if (blueprint.service) {
+	if (planned.has('service')) {
 		factories.push(CONFIG_TEMPLATES.factories.service)
 		projects.push('service')
 	}
-	if (publishes) {
+	if (planned.has('distribution')) {
 		factories.push(CONFIG_TEMPLATES.factories.distribution)
 		projects.push('distribution')
 	}
-	if (blueprint.integration) {
-		factories.push(fillTemplate(CONFIG_TEMPLATES.factories.integration, { global }))
+	if (planned.has('integration')) {
+		factories.push(
+			fillTemplate(
+				styled
+					? CONFIG_TEMPLATES.factories.integration.sheet
+					: CONFIG_TEMPLATES.factories.integration.module,
+				{ global },
+			),
+		)
 		projects.push('integration')
 	}
 	factories.push(CONFIG_TEMPLATES.factories.probe)
@@ -883,17 +1176,27 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	// emitted rather than restated as a second selection rule, so the generated
 	// config imports what it uses and passes its own lint gate.
 	const body = `${factories.join('\n')}\n`
-	const helpers = ['enforceBuildLog', 'environmentBoundary', 'outputBoundary'].filter((helper) =>
-		body.includes(helper),
-	)
+	const helpers = [
+		'enforceBuildLog',
+		'environmentBoundary',
+		'outputBoundary',
+		'resolveApplication',
+		'resolveExternal',
+		'stampPage',
+	].filter((helper) => body.includes(helper))
+	const helperImport = `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
 		journey:
-			blueprint.journey && machinery.vue
+			blueprint.journey && blueprint.app.includes('browser')
 				? "import type { JourneyVariant } from '@orkestrel/test'\n"
 				: '',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
 		helpers:
-			helpers.length === 0 ? '' : `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`,
+			helpers.length === 0
+				? ''
+				: matchesPrintWidth(helperImport.trimEnd())
+					? helperImport
+					: `import {\n${helpers.map((helper) => `\t${helper},`).join('\n')}\n} from './configs/helpers.js'\n`,
 		// The provider options are resolved once for the whole configuration, and
 		// only a selection that emits `configs/browsers.ts` can name them.
 		browsers: machinery.browser
@@ -901,9 +1204,35 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 			: '',
 		options:
 			(machinery.browser
-				? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n'
+				? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n' +
+					`const optimizeDeps = {\n\tinclude: ${JSON.stringify([
+						'@orkestrel/test',
+						'@orkestrel/test/browser',
+						...(Object.hasOwn(blueprintToDevDependencies(blueprint), '@orkestrel/contract') ||
+						blueprint.dependencies.some(
+							(dependency) => dependency.name === '@orkestrel/contract',
+						) ||
+						blueprint.peers.some((peer) => peer.name === '@orkestrel/contract')
+							? ['@orkestrel/contract']
+							: []),
+					])
+						.replaceAll('"', "'")
+						.replaceAll(',', ', ')},\n}\n\n`
 				: '') +
-			(blueprint.journey && machinery.vue ? "const capture = process.env.CAPTURE === '1'\n\n" : ''),
+			(blueprint.journey && blueprint.app.includes('browser')
+				? "const capture = process.env.CAPTURE === '1'\n\n"
+				: '') +
+			((blueprint.journey || blueprint.showcase) && blueprint.app.includes('browser')
+				? `const applications = {\n\tbrowser: appBrowser,\n${blueprintToFaces(blueprint)
+						.filter(
+							(extension) => extension.surface === 'browser' && extension.axes.includes('app'),
+						)
+						.map(
+							(extension) =>
+								`\t${extension.name}: app${extension.name[0]?.toUpperCase()}${extension.name.slice(1)},\n`,
+						)
+						.join('')}}\n\n`
+				: ''),
 		factories: body,
 		projects: projectRows,
 	})
@@ -952,6 +1281,27 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 			origin: 'template',
 			content: CONFIG_TEMPLATES.browsers,
 		})
+	}
+	for (const name of [
+		...blueprintToSheets(blueprint),
+		...(blueprint.themes ? ['styles/themes'] : []),
+	]) {
+		const label = name === 'styles/themes' ? 'themes' : name
+		artifacts.push({
+			path: `configs/src/vite.${label}.config.ts`,
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			content: fillTemplate(CONFIG_TEMPLATES.vites.sheet, { name, label }),
+		})
+		if (name !== 'styles/themes')
+			artifacts.push({
+				path: `configs/src/tsconfig.${name}.json`,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				content: fillTemplate(CONFIG_TEMPLATES.tsconfigs.sheet, { name }),
+			})
 	}
 	for (const environment of blueprint.src) {
 		for (const path of SRC_MATRIX[environment].configs) {
@@ -1010,7 +1360,6 @@ ${paths.join('\n')}
 					'../../app/browser/**/*.mts',
 					'../../app/browser/**/*.ts',
 					'../../app/browser/**/*.tsx',
-					'../../app/browser/**/*.vue',
 				]
 				if (blueprint.app.includes('core')) {
 					include.push(
@@ -1025,7 +1374,6 @@ ${paths.join('\n')}
 					'../../tests/app/browser/**/*.mts',
 					'../../tests/app/browser/**/*.ts',
 					'../../tests/app/browser/**/*.tsx',
-					'../../tests/app/browser/**/*.vue',
 					'../../tests/setup.ts',
 					'../../tests/setupBrowser.ts',
 				)
@@ -1081,6 +1429,68 @@ ${paths.join('\n')}
 			})
 		}
 	}
+	for (const extension of blueprintToFaces(blueprint)) {
+		if (extension.surface !== 'browser') continue
+		for (const axis of extension.axes) {
+			const include = [
+				...['cts', 'mts', 'ts', 'tsx', ...FRAMEWORK_MATRIX[extension.name].suffixes].map(
+					(suffix) => `../../app/${extension.name}/**/*.${suffix}`,
+				),
+				...(blueprint.app.includes('core')
+					? ['cts', 'mts', 'ts', 'tsx'].map((suffix) => `../../app/core/**/*.${suffix}`)
+					: []),
+				...['cts', 'mts', 'ts', 'tsx', ...FRAMEWORK_MATRIX[extension.name].suffixes].map(
+					(suffix) => `../../tests/app/${extension.name}/**/*.${suffix}`,
+				),
+				'../../tests/setup.ts',
+				'../../tests/setupBrowser.ts',
+			]
+			const siblings = blueprint.src
+				.filter((environment) => environment === 'core' || environment === 'browser')
+				.flatMap((environment) =>
+					['ts', 'js'].map((suffix) => {
+						const key = `\t[resolveWorkspacePath('src/${environment}/index.${suffix}').replaceAll('\\\\', '/')]:`
+						const value = `'@orkestrel/${blueprint.name}${environment === 'browser' ? '/browser' : ''}',`
+						return matchesPrintWidth(`${key} ${value}`) ? `${key} ${value}` : `${key}\n\t\t${value}`
+					}),
+				)
+				.join('\n')
+			artifacts.push(
+				{
+					path: `configs/${axis}/vite.${extension.name}.config.ts`,
+					group: 'configs',
+					ownership: 'content',
+					origin: 'template',
+					environment: 'browser',
+					content:
+						axis === 'src'
+							? fillTemplate(CONFIG_TEMPLATES.vites.src.vue, {
+									siblings,
+									refused: `[${FRAMEWORK_MATRIX[extension.name].refused.map((name) => serializeTypeScriptString(name)).join(', ')}]`,
+								})
+							: CONFIG_TEMPLATES.vites.app.vue,
+				},
+				{
+					path: `configs/${axis}/tsconfig.${extension.name}.json`,
+					group: 'configs',
+					ownership: 'content',
+					origin: 'template',
+					environment: 'browser',
+					content:
+						axis === 'src'
+							? CONFIG_TEMPLATES.tsconfigs.vue.src
+							: fillTemplate(CONFIG_TEMPLATES.tsconfigs.vue.app, {
+									include: include
+										.map(
+											(entry, index) =>
+												`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
+										)
+										.join('\n'),
+								}),
+				},
+			)
+		}
+	}
 	if (blueprint.showcase && blueprint.app.includes('browser')) {
 		artifacts.push({
 			path: SHOWCASE_CONFIG_PATH,
@@ -1117,15 +1527,11 @@ ${paths.join('\n')}
  * Compiles every artifact in the `source` group.
  *
  * @param blueprint - The workspace specification.
- * @returns Empty published barrels, selected application entries, and the optional bin entry.
+ * @returns Published barrels, sheet seeds, selected application entries, and the optional bin entry.
  *
  * @remarks
- * The barrels and every runtime entry intentionally hold nothing. A generated
- * sample entity would read as package implementation, so the
- * scaffold establishes only the selected environment boundaries. An application
- * entry is empty for the same reason the bin entry is, and because the vendored
- * lint config refuses an unassigned import outside a stylesheet, so the entry
- * cannot start by importing its barrel for effect either.
+ * Barrels, server entries, and bin entries hold no starter implementation. Browser entries
+ * render the workspace name as a level-one heading; the Vue face mounts its arrival component.
  *
  * @example
  * ```ts
@@ -1138,6 +1544,31 @@ ${paths.join('\n')}
  */
 export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
 	const artifacts: ContentArtifact[] = []
+	if (blueprint.themes && !blueprint.styles) {
+		artifacts.push({
+			path: 'src/styles/_tokens.scss',
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.source.sheet['_tokens.scss'],
+		})
+	}
+	for (const name of [
+		...blueprintToSheets(blueprint),
+		...(blueprint.themes ? ['styles/themes'] : []),
+	]) {
+		for (const [path, content] of Object.entries(
+			name === 'styles/themes' ? ARTIFACT_TEMPLATES.source.themes : ARTIFACT_TEMPLATES.source.sheet,
+		)) {
+			artifacts.push({
+				path: `src/${name}/${path}`,
+				group: 'source',
+				ownership: 'birth',
+				origin: 'template',
+				content,
+			})
+		}
+	}
 	for (const environment of blueprint.src) {
 		artifacts.push({
 			path: `src/${environment}/index.ts`,
@@ -1165,7 +1596,9 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 					ownership: 'birth',
 					origin: 'template',
 					environment,
-					content: ARTIFACT_TEMPLATES.source.empty,
+					content: fillTemplate(ARTIFACT_TEMPLATES.source.main, {
+						heading: `${matchesPrintWidth(`\t.appendChild(document.createElement('h1')).textContent = ${serializeTypeScriptString(blueprint.name)}`) ? ' ' : '\n\t'}${serializeTypeScriptString(blueprint.name)}`,
+					}),
 				},
 				{
 					path: 'app/browser/index.html',
@@ -1187,6 +1620,43 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 			})
 		}
 	}
+	for (const extension of blueprintToFaces(blueprint)) {
+		if (extension.surface !== 'browser') continue
+		for (const axis of extension.axes) {
+			artifacts.push({
+				path: `${axis}/${extension.name}/index.ts`,
+				group: 'source',
+				ownership: 'birth',
+				origin: 'template',
+				environment: 'browser',
+				content:
+					axis === 'app' ? ARTIFACT_TEMPLATES.source.empty : ARTIFACT_TEMPLATES.source.barrel,
+			})
+			if (axis !== 'app') continue
+			artifacts.push({
+				path: `app/${extension.name}/index.html`,
+				group: 'source',
+				ownership: 'birth',
+				origin: 'template',
+				environment: 'browser',
+				content: ARTIFACT_TEMPLATES.source.browser,
+			})
+			for (const [path, content] of Object.entries(ARTIFACT_TEMPLATES.source.vue)) {
+				artifacts.push({
+					path: `app/${extension.name}/${path}`,
+					group: 'source',
+					ownership: 'birth',
+					origin: 'template',
+					environment: 'browser',
+					content: fillTemplate(content, {
+						heading: matchesPrintWidth(`\t<h1>${blueprint.name}</h1>`)
+							? blueprint.name
+							: `\n\t\t${blueprint.name}\n\t`,
+					}),
+				})
+			}
+		}
+	}
 	if (blueprint.bin) {
 		artifacts.push({
 			path: BIN_ENTRY_PATH,
@@ -1203,7 +1673,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * Compiles every artifact in the `tests` group that is not vendored from the host.
  *
  * @param blueprint - The workspace specification.
- * @returns Shared setup modules, axis tests, and the optional integration seed.
+ * @returns Shared setup modules and proofs, axis and sheet tests, journey suites, and the optional integration seed.
  *
  * @remarks
  * `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts` are
@@ -1244,6 +1714,53 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			content: ARTIFACT_TEMPLATES.tests.setup,
 		},
 	]
+	const sheets = [...blueprintToSheets(blueprint), ...(blueprint.themes ? ['styles/themes'] : [])]
+	for (const extension of blueprintToFaces(blueprint)) {
+		if (extension.surface !== 'browser') continue
+		for (const axis of extension.axes) {
+			artifacts.push({
+				path: `tests/${axis}/${extension.name}/index.test.ts`,
+				group: 'tests',
+				ownership: 'birth',
+				origin: 'template',
+				environment: 'browser',
+				content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+					specifier: serializeTypeScriptString(`@${axis}/${extension.name}`),
+					label: serializeTypeScriptString(`${axis} ${extension.name} entry`),
+				}),
+			})
+		}
+	}
+	if (sheets.length > 0) {
+		artifacts.push(
+			{
+				path: 'tests/setupStyles.ts',
+				group: 'tests',
+				ownership: 'birth',
+				origin: 'template',
+				content: ARTIFACT_TEMPLATES.tests.styles.module,
+			},
+			{
+				path: 'tests/setupStyles.test.ts',
+				group: 'tests',
+				ownership: 'birth',
+				origin: 'template',
+				content: ARTIFACT_TEMPLATES.tests.styles.proof,
+			},
+		)
+	}
+	for (const name of sheets) {
+		artifacts.push({
+			path: `tests/src/${name}/index.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.sheet, {
+				name,
+				setup: name === 'styles/themes' ? '../../../setupStyles.js' : '../../setupStyles.js',
+			}),
+		})
+	}
 	if (blueprintToMachinery(blueprint).browser) {
 		artifacts.push({
 			path: 'tests/setupBrowser.ts',
@@ -1251,10 +1768,17 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			ownership: 'birth',
 			origin: 'template',
 			environment: 'browser',
-			content: ARTIFACT_TEMPLATES.tests.setup,
+			content: blueprint.journey
+				? ARTIFACT_TEMPLATES.tests.browser
+				: ARTIFACT_TEMPLATES.tests.setup,
 		})
 	}
-	if (blueprint.src.includes('server') || blueprint.app.includes('server') || blueprint.bin) {
+	if (
+		blueprint.src.includes('server') ||
+		blueprint.app.includes('server') ||
+		blueprint.bin ||
+		blueprint.conformance
+	) {
 		artifacts.push({
 			path: 'tests/setupServer.ts',
 			group: 'tests',
@@ -1283,8 +1807,52 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			group: 'tests',
 			ownership: 'birth',
 			origin: 'template',
-			content: ARTIFACT_TEMPLATES.tests.global,
+			content: ARTIFACT_TEMPLATES.tests.global.module,
 		})
+		artifacts.push({
+			path: 'tests/setupGlobal.test.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.global.proof,
+		})
+	}
+	if (blueprint.journey && blueprint.app.includes('browser')) {
+		const applications = [
+			'browser',
+			...blueprintToFaces(blueprint).flatMap((extension) =>
+				extension.surface === 'browser' && extension.axes.includes('app') ? [extension.name] : [],
+			),
+		]
+		for (const application of applications) {
+			artifacts.push({
+				path: `tests/app/${application}/integration.test.ts`,
+				group: 'tests',
+				ownership: 'birth',
+				origin: 'template',
+				environment: 'browser',
+				content: fillTemplate(ARTIFACT_TEMPLATES.tests.journey, {
+					application,
+					heading: serializeTypeScriptString(blueprint.name),
+					imports:
+						application === 'vue'
+							? "import { createApp } from 'vue'\nimport App from '../../../app/vue/App.vue'\n"
+							: '',
+					mount:
+						application === 'vue'
+							? "\t\tconst container = document.body.appendChild(document.createElement('main'))\n\t\tconst app = createApp(App)\n"
+							: '',
+					arrival:
+						application === 'vue'
+							? '\t\t\tapp.mount(container)\n'
+							: "\t\t\tawait import('../../../app/browser/main.js')\n",
+					cleanup:
+						application === 'vue'
+							? '\t\t\tapp.unmount()\n\t\t\tcontainer.remove()\n'
+							: "\t\t\tfor (const main of page.getByRole('main').elements()) main.remove()\n",
+				}),
+			})
+		}
 	}
 	for (const environment of blueprint.src) {
 		artifacts.push({
@@ -1344,7 +1912,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// a workspace publishing a browser face later keeps a proof with no branch for it.
 	// The core-only variant therefore carries the guard that reddens on such an entry
 	// rather than skipping it.
-	if (blueprint.src.length > 0) {
+	if (blueprint.src.length > 0 || blueprintToSheets(blueprint).length > 0 || blueprint.themes) {
 		const browser = blueprint.src.includes('browser')
 		const distribution = ARTIFACT_TEMPLATES.tests.distribution
 		artifacts.push({
@@ -1421,7 +1989,14 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
 	const tests: string[] = []
 	const directories: string[] = []
 	const guide = `guides/${blueprint.name}.md`
-	for (const environment of blueprint.src) {
+	for (const environment of [
+		...blueprint.src,
+		...blueprintToFaces(blueprint)
+			.filter((extension) => extension.axes.includes('src'))
+			.map((extension) => extension.name),
+		...blueprintToSheets(blueprint),
+		...(blueprint.themes ? ['styles/themes'] : []),
+	]) {
 		source.push(`    - [\`src/${environment}\`](../src/${environment})`)
 		tests.push(`    - [\`tests/src/${environment}\`](../tests/src/${environment})`)
 		directories.push(
@@ -1435,7 +2010,12 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
 			`- [\`src/bin\`](../src/bin)\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/bin\`](../tests/src/bin)`,
 		)
 	}
-	for (const environment of blueprint.app) {
+	for (const environment of [
+		...blueprint.app,
+		...blueprintToFaces(blueprint)
+			.filter((extension) => extension.axes.includes('app'))
+			.map((extension) => extension.name),
+	]) {
 		source.push(`    - [\`app/${environment}\`](../app/${environment})`)
 		tests.push(`    - [\`tests/app/${environment}\`](../tests/app/${environment})`)
 		directories.push(
@@ -1450,7 +2030,22 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
 			origin: 'template',
 			content: fillTemplate(ARTIFACT_TEMPLATES.guides.readme, {
 				source: source.join('\n'),
-				tests: tests.join('\n'),
+				tests:
+					tests.join('\n') +
+					(blueprint.showcase && blueprint.app.includes('browser')
+						? '\n  - Showcase:\n' +
+							[
+								'browser',
+								...blueprintToFaces(blueprint)
+									.filter((extension) => extension.axes.includes('app'))
+									.map((extension) => extension.name),
+							]
+								.map(
+									(application) =>
+										`    - [\`showcase/${application}.html\`](../showcase/${application}.html)`,
+								)
+								.join('\n')
+						: ''),
 				directories: directories.join('\n'),
 				guide: blueprint.name,
 			}),
@@ -1491,7 +2086,8 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
  * ```
  */
 export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
-	const publishes = blueprint.src.length > 0
+	const publishes =
+		blueprint.src.length > 0 || blueprintToSheets(blueprint).length > 0 || blueprint.themes
 	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const description =
 		blueprint.description ?? (publishes ? `The ${name} package.` : `The ${name} application.`)
@@ -2312,7 +2908,8 @@ export function dependenciesToQuestions(
  * These do not, because each describes a workspace it can describe honestly but
  * will not create: a published axis of several environments without core,
  * whose manifest names a core build the workspace never runs; a showcase flag
- * whose required browser axis is absent, which emits nothing; and an
+ * or journey flag whose required browser axis is absent, which emits nothing; an unplaced browser
+ * extension or a styles extension without the styles surface; and an
  * integration flag over fewer than two environments, whose seed does emit and
  * has nothing to compose across. Blocking any of them closed the gate for every
  * verb. The verbs that read an existing workspace need the plan the gate
@@ -2359,7 +2956,12 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			blocking: true,
 		})
 	}
-	if (blueprint.src.length === 0 && blueprint.app.length === 0) {
+	if (
+		blueprint.src.length === 0 &&
+		blueprint.app.length === 0 &&
+		blueprintToSheets(blueprint).length === 0 &&
+		!blueprint.themes
+	) {
 		questions.push({
 			field: 'src',
 			message: 'A workspace declares at least one environment on src or app.',
@@ -2391,6 +2993,42 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 				message: `app declares ${environment} more than once.`,
 				blocking: true,
 				candidates: ENVIRONMENTS,
+			})
+		}
+	}
+	const extensions = new Set<string>()
+	for (const extension of blueprint.extensions) {
+		const selection = `${extension.surface}:${extension.name}`
+		if (extensions.has(selection)) {
+			questions.push({
+				field: 'extensions',
+				message: `${selection} is declared more than once on extensions.`,
+				blocking: true,
+			})
+		}
+		extensions.add(selection)
+		if (extension.surface === 'browser') {
+			if (extension.axes.length === 0) {
+				questions.push({
+					field: 'extensions',
+					message: `${selection} occupies no axis.`,
+					blocking: false,
+				})
+			}
+			for (const axis of extension.axes) {
+				if (!blueprint[axis].includes('browser')) {
+					questions.push({
+						field: 'extensions',
+						message: `${selection} occupies ${axis}, whose selection lacks browser.`,
+						blocking: false,
+					})
+				}
+			}
+		} else if (!blueprint.styles) {
+			questions.push({
+				field: 'extensions',
+				message: `${selection} extends a styles surface this workspace does not declare.`,
+				blocking: false,
 			})
 		}
 	}

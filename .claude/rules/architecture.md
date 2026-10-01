@@ -49,7 +49,7 @@ Use only the centralized files an environment needs.
 - Extract local declarations by kind. “Only used here” and “not exported” are not exemptions.
 - Every declaration in a centralized file is exported. Fold away a trivial single-use declaration or export/test it; never leave it hidden.
 - The only permitted non-exported module-scope declarations are in a runtime entrypoint that must be self-contained and cannot import siblings, such as raw source loaded in a worker. Explain that necessity in a comment.
-- A runtime entry—`src/bin/main.ts`, `app/browser/main.ts`, `app/server/main.ts`—is a fixed name, not a centralized kind file. Both the data rule and the function rule reach it, so it declares no module-scope constant and no module-scope function: it imports what it needs and runs. The preceding self-contained exception covers only an entrypoint that cannot import siblings.
+- Treat `src/bin/main.ts`, `app/browser/main.ts`, `app/vue/main.ts`, and `app/server/main.ts` as fixed runtime entries. Declare no module-scope constant or function in them; import what they need and run. Apply the preceding self-contained exception only to an entrypoint that cannot import siblings.
 - Perform a cleanup pass after implementation: no stray implementation-file declarations, non-exported/wrong-kind centralized declarations, prohibited nested declarations, duplicate implementations, compatibility aliases, superfluous wrappers, stale imports/barrel rows, or untested extracted functions.
 
 ## Kind purity
@@ -166,7 +166,7 @@ A wrapper survives only when it adds a real boundary, invariant, composition, tr
 
 - Never declare or assign a function inside another function or method.
 - This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count.
-- The only in-body function expressions allowed are an anonymous callback passed directly as an argument and an anonymous function returned directly as the result (the factory/combinator pattern).
+- Admit a named or anonymous function expression passed as a call or constructor argument, returned as a result, or used as an arrow body, through parentheses, non-computed object-literal property values, and array elements. Admit methods, getters, and setters of such an object literal. Refuse a climb out of a method or accessor body, or through a spread, computed key, class field, assignment, or local binding.
 - Instance-bound work that reaches state or sibling methods is a method, not a free function.
 
 Separate these roles:
