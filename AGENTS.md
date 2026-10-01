@@ -16,14 +16,16 @@
 ## Project model
 
 ```text
-src/      published library: core, browser, server, optional styles
-app/      application: core, browser, server
+src/      published library: core, browser, server, optional styles, extension faces
+app/      application: core, browser, server, extension faces
 tests/    mirrors source; setup*.ts owns shared test infrastructure
 configs/  thin target wrappers around root Vite/TypeScript configuration
 ```
 
 - `core` is host-independent. Browser and server may import core; core imports neither; browser and server never import each other.
 - `app/core` is host-independent. `app/server` may import `app/core`, `src/core`, and `src/server`, never browser code. `app/browser` may import `app/core`, `src/core`, and `src/browser`, and reaches server behavior through shared contracts and transports only.
+- The browser surface is `src/browser`, `app/browser`, the journey, and the showcase; the styles surface is `src/styles` and its themes. An extension adds a face to a surface: the `vue` browser extension adds `src/vue` and `app/vue`, and a named styles extension adds `src/<name>`.
+- `src/vue` and each `src/<name>` may import `src/core` and `src/browser`. `app/vue` may import what `app/browser` may import, plus `app/browser` and `src/vue`. No extension face imports server code or another extension's face.
 - Published source never imports private app code.
 - Enforce boundaries with the toolchain (Oxlint import restrictions, scoped TypeScript projects, Vite graphs). Add no second parser for TypeScript, Oxlint, Vue, HTML, CSS, or Vite.
 - `tsconfig.json`, `vite.config.ts`, and each `*/types.ts` are their sources of truth. Keep structural files even when empty.
@@ -57,7 +59,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **Named discriminants.** Name the axis (`relationship`, `command`, `category`), never `kind` or `type`.
 - **Centralize by kind.** Types, constants, helpers, validators, parsers, factories, and errors live in their kind file. An implementation file holds one class plus imports.
 - **Export and test reusable logic.** Fold a trivial one-use helper into its caller or export it from its kind file and test it.
-- **No nested functions**, except an anonymous callback passed as an argument or returned as the result.
+- **No nested functions**, except a callback passed as an argument or returned as the result; `.claude/rules/architecture.md` § Functions and orchestration bounds the literal positions it climbs.
 - **Functional core, imperative shell.** Pure exported leaves; stateful orchestration as class methods. A method never forwards 1:1 to a helper.
 - **No superfluous wrappers.** A wrapper adds a boundary, invariant, composition, translation, lifecycle, or materially narrower contract, or it goes.
 - **Minimal public API.** Create or substantively expand a capability with its first real consumer; this gate applies at creation, never later. Expose an existing reusable capability through its environment barrel regardless of consumer count. Remove a symbol only when the capability itself must not exist. Prefer one minimal interface and one shared engine, with a native backend override only for a faster path.

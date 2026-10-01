@@ -16,14 +16,18 @@ guide mirrors, and the `WriteTransaction` those writes stage through. The `scaff
 ([`src/bin`](../src/bin)) publishes no barrel, so it is documented in prose and sits outside the
 surface bijection.
 
-The [Blueprint reference](scaffold.md#blueprint) describes the journey axis and its adopter-edited
-`configs/app/vite.journey.config.ts` wrapper, the `SetupRuntime` list, and the `setup:browser`
-project. The generated workspace runs journey variants and browser setup proofs through its
-`test` chain.
-
 That bijection is the row's contract, and [`tests/guides.test.ts`](../tests/guides.test.ts)
 enforces it: every symbol the guide documents exists in the core barrel or the server barrel, and
 every symbol either barrel exports is documented.
+
+The [Blueprint reference](scaffold.md#blueprint) describes the structural facts, the
+`SetupRuntime` list, and the `setup:browser` project. The
+[surfaces and extensions reference](scaffold.md#surfaces-and-extensions) describes the browser
+surface with its journey and showcase modes, the styles surface with its themes target, the `vue`
+faces and named-sheet extensions, the creation options, their refusals, and the advisories on a
+declared selection, the marker each fact is read from, the ownership of every path a sheet face
+emits, the page stamp, the external resolution of each published face, the vendored proofs, the
+root setup mirror, and the migration guard. Both sections belong to the `scaffold.md` row.
 
 ## By directory
 

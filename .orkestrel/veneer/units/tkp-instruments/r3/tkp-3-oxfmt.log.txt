@@ -1,5 +1,0 @@
-Finished in 25219ms on 2 files using 4 threads.
-exit=0
-tests/src/styles/tokens.test.ts: OK
-guides/veneer.md: OK
-unchanged-exit=0

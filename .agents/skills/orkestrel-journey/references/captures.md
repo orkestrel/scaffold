@@ -51,12 +51,12 @@ The package already refuses these, so assert none of them again:
 
 Declare the state names once in the journey file, and build the portfolio from that declaration.
 
-- Name a state for its surface and its condition — `answer-partial`, `start-storage-failure`,
+- Name a state for its screen and its condition — `answer-partial`, `start-storage-failure`,
   `case-delete-confirmation`.
 - Register the states the design work actually needs, and place every registered one. Never leave a
   registered state unplaced.
 - Place a capture state from inside the journey that reaches it, immediately after the assertion
-  that proves the surface is in the condition that state names.
+  that proves the screen is in the condition that state names.
 - Record each placed name in the suite's own set in the same step that calls `place`. That set, not
   `placements`, is what the always-on placement proof reads.
 
@@ -117,7 +117,7 @@ after the click returns.
 - Take each frame after the paint settles. Reach for `waitForAnimations` on the element whose
   transition was running ([layer.md](layer.md) → The waits); a frame shot mid-transition pictures a
   state the interface never rests in.
-- Regenerate the whole matrix from the journeys after any surface change. Never judge a round
+- Regenerate the whole matrix from the journeys after any screen change. Never judge a round
   against a portfolio that is part old and part new.
 - Route review of the portfolio to the `orkestrel-polish` campaign, which owns preflight,
   verdicts, and reconciliation. This reference owns only how the journeys generate it.

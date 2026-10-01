@@ -1,6 +1,6 @@
 ---
 name: orkestrel-journey
-description: Prove a browser application the way a person uses it — real keystrokes, clicks, and Tab/Enter against only what is visible and reachable — through the journey layer @orkestrel/test/browser publishes, and generate the capture portfolio, the resolved-style matrix, and the statechart outcome from those same journeys. Use when accepting a UI build, proving an application end to end, deciding whether a surface is reachable by keyboard alone, proving what a screen refuses as well as what it does, proving the styles a browser actually resolved under each theme and viewport, driving a transition table through the interface and watching it run, auditing whether the interface speaks the user's vocabulary rather than the engine's, producing the screenshots a design review judges, routing a rendered question to an artifact a model can read, or whenever the only evidence a screen works is a test that drove it through JavaScript instead of through the interface.
+description: Prove a browser application the way a person uses it — real keystrokes, clicks, and Tab/Enter against only what is visible and reachable — through the journey layer @orkestrel/test/browser publishes, and generate the capture portfolio, the resolved-style matrix, and the statechart outcome from those same journeys. Use when accepting a UI build, proving an application end to end, deciding whether a screen is reachable by keyboard alone, proving what a screen refuses as well as what it does, proving the styles a browser actually resolved under each theme and viewport, driving a transition table through the interface and watching it run, auditing whether the interface speaks the user's vocabulary rather than the engine's, producing the screenshots a design review judges, routing a rendered question to an artifact a model can read, or whenever the only evidence a screen works is a test that drove it through JavaScript instead of through the interface.
 ---
 
 # Prove an application through human journeys
@@ -23,25 +23,27 @@ each ruling was taken at.
 
 ## Declare the families
 
-Declare in the browser environment's `integration.test.ts` which families that surface carries, and
+Declare in the browser environment's `integration.test.ts` which families that screen carries, and
 assert in the always-on proofs that every declared family is present. A declaration names which
-families a surface owes. It never switches what a declared family proves.
+families a screen owes. It never switches what a declared family proves.
 
 | Family     | Declared                                                                                     | Proves                                                                 |
 | ---------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Journey    | Always                                                                                       | Each user intent reaches its outcome through the interface             |
-| Refusal    | Always                                                                                       | Each control the surface withholds, through one exact failure voice    |
-| Matrix     | Where the surface ships more than one variant                                                | The values the browser resolved under each declared variant            |
+| Refusal    | Always                                                                                       | Each control the screen withholds, through one exact failure voice     |
+| Matrix     | Where the journey wrapper declares more than one variant                                     | The values the browser resolved under each declared variant            |
 | Statechart | Where a journey drives a transition of an entity carrying its own state and event vocabulary | Each declared transition, driven through the interface where it can be |
-| Transport  | Where the surface persists or restarts                                                       | Persistence, restart, and storage failure through real implementations |
+| Transport  | Where the screen persists or restarts                                                        | Persistence, restart, and storage failure through real implementations |
 | Capture    | Under the capture flag                                                                       | The registry times the variants, each registered file written to disk  |
 
-- Refuse a declaration that omits a family whose trigger the surface meets. Report the omission as a
+- Prove Matrix in the arrival journey `scaffold new` seeds while its wrapper declares more than one
+  variant: read one resolved value under each declared variant.
+- Refuse a declaration that omits a family whose trigger the screen meets. Report the omission as a
   scope finding and stop; never prove the remaining families around it.
 - Assert the declaration itself: a family listed with no proof, and a proof belonging to no listed
   family, each fail the run.
 - Bind the journey laws to every declared family, not to the journey family alone. A matrix reading
-  and a transport assertion reach their surface through the same verbs a journey reaches it through.
+  and a transport assertion reach their screen through the same verbs a journey reaches it through.
 - Change route and theme through the interface in the matrix family and the transport family. A
   family that navigates by calling the application's own router proves the router, and says nothing
   about the screen it reads afterwards.
@@ -92,9 +94,10 @@ start, and let it choose the capture destination, the matrix row, and the statec
 - Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Set
   `CAPTURE` to `1` in your own shell and run `npm run test:journey` again to write the frames; the
   root configuration reads that variable and provides it as `capture`.
-- Keep the journeys in `tests/app/browser/integration.test.ts`. Each variant project collects that
-  file alone, and the ordinary `app:browser` project excludes it while the axis is on, so a journey
-  written anywhere else runs in no variant.
+- Keep the journeys in `tests/app/browser/integration.test.ts`, and the journeys of the `vue`
+  extension's application in `tests/app/vue/integration.test.ts`, which `npm run test:journey:vue`
+  runs. Each variant project of a mode collects that file alone, and the application's ordinary
+  project excludes it while the axis is on, so a journey written anywhere else runs in no variant.
 - Loop every declared variant inside one run for the matrix family
   ([styles.md](references/styles.md) → Run per variant).
 - Render exactly one variant per run for the capture family
@@ -120,7 +123,7 @@ whose text names `vitest`, so a script naming another runner's configuration rai
   to `createPortfolio` when capture needs no additional synchronous document change. Never attach
   an asynchronous action to `CaptureVariant.apply` or re-resolve a covered theme control at capture
   time.
-- Where the surface has no theme control, prepare the theme through the attribute the surface
+- Where the screen has no theme control, prepare the theme through the attribute the screen
   reads. Use the optional `CaptureVariant.apply` hook only for a synchronous document change,
   such as setting that attribute. Treat its `() => void` contract as synchronous: `createPortfolio`
   invokes the hook without awaiting a returned promise.
@@ -194,15 +197,15 @@ await PORTFOLIO.place('home')
 5. **Generate the portfolio from the acceptance journeys.** Place each registered state inside the
    journey that reaches it, and never register a state no journey reaches.
 6. **Commit a value through an act a person performs:** `pressKeys('{Enter}')` on the focused
-   control, a Tab away, or a named button. Report a surface that commits on a timer, on an
-   unpredictable event, or only after work the person cannot observe as a surface finding, and never
+   control, a Tab away, or a named button. Report a screen that commits on a timer, on an
+   unpredictable event, or only after work the person cannot observe as a screen finding, and never
    work around it in the layer.
 7. **Type only what a person would.** Journeys carry trusted input; adversarial payloads belong to
    the transport family and the parser suites.
 8. **Perform every interaction step unconditionally.** Never gate a step on whether the control it
    is about to drive exists or is reachable, and never branch a journey on `readRefusal`. Let the
    resolver's failure voice name what the interface withheld. A guarded step passes whether or not
-   the control was there, so the run goes green on a surface that removed the control.
+   the control was there, so the run goes green on a screen that removed the control.
 
 ## Import the journey layer
 
@@ -231,7 +234,7 @@ placement and scope `.claude/rules/tests.md` fixes.
 
 - Enter through the real entry: mount the shipped root component with a real store and the route a
   person lands on, and let the application load itself.
-- Reach each surface's own controls through forward Tab traversal in at least one journey.
+- Reach each screen's own controls through forward Tab traversal in at least one journey.
 - Type keystroke by keystroke where the keystrokes are the subject; fill in one operation where the
   text is only a payload the person pastes.
 - Poll every fact the application produces asynchronously until it converges. Never assert one from
@@ -243,38 +246,38 @@ placement and scope `.claude/rules/tests.md` fixes.
   sentence and carry the replaced one in `absent`, so the reading that resolves carries one and not
   the other ([layer.md](references/layer.md) → The waits).
 - Assert the state a control announces beside every drive that sets it, and on an unselected
-  sibling. A control announcing state owes this assertion whether or not the surface carries the
+  sibling. A control announcing state owes this assertion whether or not the screen carries the
   statechart family.
 - After a confirmed destructive action, assert through trusted input that focus landed on a visible,
   announced location.
 - Assert the whole page's perception never matches the vocabulary the product does not speak —
   engine, schema, and implementation words the interface is supposed to translate.
-- Report a bare accessible name that answers for more than one reachable element on one screen as a surface
-  finding, and target through role or region until the surface is fixed.
+- Report a bare accessible name that answers for more than one reachable element on one screen as a screen
+  finding, and target through role or region until the screen is fixed.
 
-### The intents every surface owes
+### The intents every screen owes
 
-Write a journey for each of the following wherever the surface has that state. Take the expected
+Write a journey for each of the following wherever the screen has that state. Take the expected
 outcome from the product guide; this skill supplies the mechanism and invents no copy, no redirect,
 and no title scheme.
 
-| Intent            | The journey proves                                                              |
-| ----------------- | ------------------------------------------------------------------------------- |
-| Arrival           | The entry route renders its own screen, read through a named region             |
-| An unknown route  | What the application does with a route it does not carry, and what it says      |
-| An empty result   | What a query matching nothing renders, in the product's own words               |
-| The document name | The title each screen publishes, asserted per screen                            |
-| A render failure  | What a person reads when a component throws, rather than an unexplained surface |
+| Intent            | The journey proves                                                             |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Arrival           | The entry route renders its own screen, read through a named region            |
+| An unknown route  | What the application does with a route it does not carry, and what it says     |
+| An empty result   | What a query matching nothing renders, in the product's own words              |
+| The document name | The title each screen publishes, asserted per screen                           |
+| A render failure  | What a person reads when a component throws, rather than an unexplained screen |
 
 - Report a missing outcome as a product finding, with its evidence site, rather than inventing the
-  copy the surface owes.
+  copy the screen owes.
 - Assert the title from `document.title` per screen, against the title the product guide names for
   that screen. Report a screen the guide gives no title as a product finding.
 
 ## Prove the refusals
 
-- Give every surface a refusal family: the controls a person must not reach in the state the
-  journey has put the surface in.
+- Give every screen a refusal family: the controls a person must not reach in the state the
+  journey has put the screen in.
 - Assert the exact failure voice the case means. Never write an assertion that accepts more than
   one voice ([layer.md](references/layer.md) → The failure voices).
 - Cover the restrictions the interface imposes on itself: a collapsed panel's field, a verb
@@ -296,11 +299,11 @@ and no title scheme.
   `QuotaExceededError`.
 - Prove the visible half in a journey: the failure sentence a person reads, and the retry control
   that clears it. A storage failure whose visible half is a control that silently does nothing is a
-  surface finding.
+  screen finding.
 - Assert restart by starting a second session over the same store and polling the restored value.
 - Take a stalled read to the application's own asynchronous store contract, never to `Storage`.
   `Storage` is synchronous, so a hanging read is not expressible against it and a fixture that fakes
-  one is proving a surface the application does not have.
+  one is proving a store contract the application does not have.
 
 ## Prove the styles
 
@@ -350,16 +353,16 @@ Completion requires all of:
 
 - every in-scope user intent reaching its outcome through the interface, with no step that reaches
   past it;
-- the intents every surface owes present wherever the surface has the state, each outcome taken from
+- the intents every screen owes present wherever the screen has the state, each outcome taken from
   the product guide and every missing one reported as a product finding;
-- keyboard-only reachability proven on every surface the journeys cover;
-- a refusal family per surface, each asserting one exact failure voice;
+- keyboard-only reachability proven on every screen the journeys cover;
+- a refusal family per screen, each asserting one exact failure voice;
 - the transport family declared separately, driven through real implementations, and convergent;
 - the declared families each proven, and the declaration itself asserted;
 - the matrix family read once per declared variant, each style reading carrying its published
   control from [styles.md](references/styles.md) → The published controls in the same run, and the
   contrast reading's control straddling its declared bar;
-- the authored-class census and the `extractStyles` reading taken on the mounted surface, each
+- the authored-class census and the `extractStyles` reading taken on the mounted screen, each
   reporting the population it walked;
 - the statechart table driven to a terminal status with no failed row, and the harness tally read
   from the object and from its markup;
@@ -378,5 +381,5 @@ block is the home of that limit and of the condition that reopens it. Cite that 
 neither into a verdict.
 
 Report each journey by the intent it proves, the refusals it establishes, the states it placed, the
-variants it read, the statechart outcome it reached, and every surface finding the layer's refusals
+variants it read, the statechart outcome it reached, and every screen finding the layer's refusals
 exposed.

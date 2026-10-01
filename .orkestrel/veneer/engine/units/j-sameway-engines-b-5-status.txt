@@ -1,2 +1,0 @@
- M tests/src/browser/Popover.test.ts
- M tests/src/browser/Tooltip.test.ts

@@ -3,6 +3,45 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
 /** Names one environment a generated workspace selects on its `src` or `app` axis. */
 export type Environment = 'core' | 'browser' | 'server'
 
+/** Names the surface an extension extends. */
+export type Surface = 'browser' | 'styles'
+
+/** Names the workspace axis an extension occupies. */
+export type Axis = 'src' | 'app'
+
+/** Names a supported browser framework. */
+export type Framework = 'vue'
+
+/** Represents a browser framework and its physically occupied axes. */
+export interface BrowserExtension {
+	readonly surface: 'browser'
+	readonly name: Framework
+	readonly axes: readonly Axis[]
+}
+
+/** Represents a named sheet face under `src/<name>`. */
+export interface StylesExtension {
+	readonly surface: 'styles'
+	readonly name: string
+}
+
+/** Represents an extension discriminated by its surface. */
+export type Extension = BrowserExtension | StylesExtension
+
+/** Describes the tooling and package boundaries a browser framework contributes. */
+export interface FrameworkDefinition {
+	/** Names the Vite plugin package. */
+	readonly plugin: string
+	/** Names the application typechecker executable. */
+	readonly checker: string
+	/** Lists source file suffixes without their leading dot. */
+	readonly suffixes: readonly string[]
+	/** Lists refused package names and implementation scope prefixes. */
+	readonly refused: readonly string[]
+	/** Maps development package names to their version ranges. */
+	readonly dependencies: Readonly<Record<string, string>>
+}
+
 /** Names one module format a published library environment builds. */
 export type BuildFormat = 'es' | 'cjs'
 
@@ -95,14 +134,14 @@ export interface AppDefinition {
  * Boundary guarantees never vary by blueprint, so they are not selected here:
  * every generated configuration emits the environment-boundary plugin, its
  * module-graph audit, and stylesheet rejection. `browser` selects the shared
- * root CSS analysis and real-browser test machinery. `vue` selects the
- * single-file-component, HTML, and development-server machinery an application
- * browser environment needs. `output` selects build-output containment.
+ * root CSS analysis and real-browser test machinery. `frameworks` selects the
+ * browser extension tooling.
+ * `output` selects build-output containment.
  * `showcase` selects the optional single-file application-browser projection.
  */
 export interface ViteMachinery {
 	readonly browser: boolean
-	readonly vue: boolean
+	readonly frameworks: readonly Framework[]
 	readonly output: boolean
 	readonly showcase: boolean
 }
@@ -189,12 +228,12 @@ export interface Override {
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
- * `vendors`, `global`, `showcase`, `journey`, and `skills` are structural facts: each is
+ * `vendors`, `global`, `showcase`, `journey`, `styles`, `themes`, and `skills` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
  * `setup` lists the runtimes required by root setup proofs: `node` for generic
- * and server proofs, and `browser` for `tests/setupBrowser.test.ts`.
+ * and server proofs, and `browser` for `tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts`.
  * `journey` selects the birth-owned variant wrapper for a browser application.
  * `skills` registers the `skills` Vitest project over the mirrored proofs of the skill
  * scripts a workspace ships under each `.agents/skills/<skill>/scripts/` directory, and adds their
@@ -216,6 +255,12 @@ export interface Blueprint {
 	readonly keywords: readonly string[]
 	readonly src: readonly Environment[]
 	readonly app: readonly Environment[]
+	/** Lists browser faces by their physical axes and sheets by their marker pair. */
+	readonly extensions: readonly Extension[]
+	/** Selects the exact-case `src/styles/index.scss` marker. */
+	readonly styles: boolean
+	/** Selects `src/styles/themes/index.scss` beside `src/styles/themes/sheet.ts`. */
+	readonly themes: boolean
 	readonly dependencies: readonly Dependency[]
 	readonly peers: readonly Dependency[]
 	readonly extras: readonly Dependency[]

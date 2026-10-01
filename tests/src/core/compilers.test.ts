@@ -1,4 +1,4 @@
-import type { ManifestScript } from '@src/core'
+import type { Axis, ManifestScript } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import type { PluginOption, UserConfig } from 'vite'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
@@ -8,22 +8,29 @@ import { dirname, join, resolve } from 'node:path'
 import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
+	blueprintToExports,
+	blueprintToFaces,
 	blueprintToDocumentArtifacts,
 	blueprintToGuideArtifacts,
 	blueprintToHostArtifacts,
 	blueprintToManifest,
+	blueprintToMachinery,
 	blueprintToOrchestrationArtifacts,
+	blueprintToProjects,
 	blueprintToQuestions,
 	blueprintToRootTsconfig,
 	blueprintToRootVite,
 	blueprintToScripts,
+	blueprintToSheets,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CONFIG_TEMPLATES,
+	Compiler,
 	createBlueprint,
 	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
+	FRAMEWORK_MATRIX,
 	isCanonPath,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
@@ -36,7 +43,736 @@ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import { buildBlueprint } from '../../setup.js'
 import { readStatements } from '../../setupServer.js'
+
+describe('blueprintToProjects', () => {
+	it('lists only the root projects for a workspace without faces or setup proofs', () => {
+		expect(blueprintToProjects(createBlueprint('desk'))).toStrictEqual([
+			'policy',
+			'config',
+			'probe',
+		])
+		expect(blueprintToProjects(createBlueprint('desk', { src: ['core'] }))).toStrictEqual([
+			'src:core',
+			'policy',
+			'config',
+			'distribution',
+			'probe',
+		])
+	})
+
+	it('includes sheet wrappers, occupied Vue faces, and selected proof projects', () => {
+		const blueprint = createBlueprint('desk', {
+			src: ['core', 'browser', 'server'],
+			app: ['core', 'browser', 'server'],
+			styles: true,
+			themes: true,
+			bin: true,
+			setup: ['node', 'browser'],
+			guides: true,
+			skills: true,
+			conformance: true,
+			service: true,
+			integration: true,
+			showcase: true,
+			journey: true,
+			extensions: [
+				{ surface: 'browser', name: 'vue', axes: ['src', 'app'] },
+				{ surface: 'styles', name: 'print' },
+			],
+		})
+		expect(blueprintToProjects(blueprint)).toStrictEqual([
+			'src:styles',
+			'src:print',
+			'src:core',
+			'src:browser',
+			'src:server',
+			'src:vue',
+			'src:bin',
+			'app:core',
+			'app:browser',
+			'app:vue',
+			'app:server',
+			'policy',
+			'config',
+			'setup',
+			'setup:browser',
+			'guides',
+			'skills',
+			'conformance',
+			'service',
+			'distribution',
+			'integration',
+			'probe',
+		])
+		const root = blueprintToRootVite(blueprint)
+		expect(root).toContain("'./configs/src/vite.styles.config.ts'")
+		expect(root).toContain("'./configs/src/vite.print.config.ts'")
+		expect(root).not.toContain("name: { label: 'src:styles',")
+		expect(root).not.toContain("name: { label: 'src:print',")
+	})
+
+	it('selects themes and browser setup without a base styles face', () => {
+		expect(blueprintToProjects(createBlueprint('desk', { themes: true }))).toStrictEqual([
+			'src:themes',
+			'policy',
+			'config',
+			'setup:browser',
+			'distribution',
+			'probe',
+		])
+		expect(blueprintToProjects(createBlueprint('desk', { setup: ['browser'] }))).toStrictEqual([
+			'policy',
+			'config',
+			'setup:browser',
+			'probe',
+		])
+		expect(blueprintToProjects(createBlueprint('desk', { global: true }))).toStrictEqual([
+			'policy',
+			'config',
+			'setup',
+			'probe',
+		])
+		expect(blueprintToProjects(createBlueprint('desk', { setup: ['node'] }))).toStrictEqual([
+			'policy',
+			'config',
+			'setup',
+			'probe',
+		])
+	})
+
+	it('keeps application modes out of the root project set and excludes unoccupied faces', () => {
+		const blueprint = createBlueprint('desk', {
+			src: ['core'],
+			app: ['browser'],
+			showcase: true,
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+		})
+		expect(blueprintToProjects(blueprint)).toStrictEqual([
+			'src:core',
+			'app:browser',
+			'app:vue',
+			'policy',
+			'config',
+			'distribution',
+			'probe',
+		])
+		expect(blueprintToProjects({ ...blueprint, showcase: false, journey: false })).toStrictEqual(
+			blueprintToProjects(blueprint),
+		)
+	})
+})
+
+describe('application modes', () => {
+	it('emits scripts, mode wrappers, and arrival proofs for each occupied application', () => {
+		const blueprint = createBlueprint('arrival', {
+			src: ['core', 'browser'],
+			app: ['core', 'browser'],
+			showcase: true,
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+		})
+		const scripts = blueprintToScripts(blueprint)
+		expect(scripts['build:showcase:vue']).toBe(
+			'vite build --config configs/app/vite.showcase.config.ts --mode vue',
+		)
+		expect(scripts['showcase:vue']).toBe(
+			'vite --config configs/app/vite.showcase.config.ts --mode vue',
+		)
+		expect(scripts['test:journey:vue']).toBe(
+			'vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --mode vue',
+		)
+		expect(scripts.test).toContain(
+			'npm run test:app && npm run test:journey && npm run test:journey:vue',
+		)
+		expect(scripts.prepublishOnly).toContain(
+			'npm run build && npm run build:showcase && npm run build:showcase:vue && npm test',
+		)
+		expect(Object.keys(scripts)).not.toContain('show')
+		const root = blueprintToRootVite(blueprint)
+		expect(root).toContain('const applications = {\n\tbrowser: appBrowser,\n\tvue: appVue,\n}')
+		expect(root).toContain('resolveApplication(mode, applications)')
+		expect(root).toContain('file.source = stampPage(file.source)')
+		expect(root).toContain("const output = 'showcase'")
+		expect(root).toContain('emptyOutDir: false')
+		expect(root.indexOf('viteSingleFile({')).toBeLessThan(root.indexOf('\n\t\t\tshowcaseStamp,'))
+		const config = blueprintToConfigArtifacts(blueprint)
+		expect(config.find(({ path }) => path.endsWith('vite.showcase.config.ts'))).toMatchObject({
+			ownership: 'content',
+			content: expect.stringContaining('defineConfig(({ mode }) => appShowcase(mode))'),
+		})
+		expect(config.find(({ path }) => path.endsWith('vite.journey.config.ts'))).toMatchObject({
+			ownership: 'birth',
+			content: expect.stringContaining('appJourney(variant, VARIANTS, mode)'),
+		})
+		const proofs = blueprintToTestArtifacts(blueprint)
+		for (const application of ['browser', 'vue']) {
+			const proof = proofs.find(
+				({ path }) => path === `tests/app/${application}/integration.test.ts`,
+			)
+			expect(proof).toMatchObject({ ownership: 'birth', environment: 'browser' })
+			for (const family of ['Journey', 'Refusal', 'Matrix', 'Capture']) {
+				expect(proof?.content).toContain(`proven.add('${family}')`)
+			}
+			expect(proof?.content).toContain('createPortfolio({')
+			expect(proof?.content).toContain('expandCaptures(states, VARIANTS)')
+			expect(proof?.content).toContain('for (const variant of VARIANTS)')
+		}
+		expect(
+			proofs.find(({ path }) => path === 'tests/app/vue/integration.test.ts')?.content,
+		).toContain('const app = createApp(App)')
+		expect(readFileSync('.prettierignore', 'utf8').split(/\r\n|\n/u)).toContain('showcase/')
+	})
+
+	it('keeps source-only extensions out of the application modes', () => {
+		const blueprint = createBlueprint('arrival', {
+			src: ['browser'],
+			app: ['browser'],
+			showcase: true,
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+		})
+		expect(blueprintToScripts(blueprint)).not.toHaveProperty('test:journey:vue')
+		expect(blueprintToScripts(blueprint)).not.toHaveProperty('build:showcase:vue')
+		expect(blueprintToRootVite(blueprint)).toContain(
+			'const applications = {\n\tbrowser: appBrowser,\n}',
+		)
+		expect(blueprintToTestArtifacts(blueprint).map(({ path }) => path)).not.toContain(
+			'tests/app/vue/integration.test.ts',
+		)
+	})
+
+	it('seeds and registers the global setup proof even without a selected setup runtime', () => {
+		const blueprint = createBlueprint('arrival', { src: ['core'], global: true, setup: [] })
+		expect(
+			blueprintToTestArtifacts(blueprint).find(({ path }) => path === 'tests/setupGlobal.test.ts'),
+		).toMatchObject({
+			ownership: 'birth',
+			content: expect.stringContaining('expect(setup()).toBeUndefined()'),
+		})
+		expect(blueprintToScripts(blueprint).test).toContain('npm run test:setup')
+		expect(blueprintToRootVite(blueprint)).toContain('export function setup(')
+		expect(
+			blueprintToTestArtifacts(createBlueprint('arrival', { src: ['core'] })).map(
+				({ path }) => path,
+			),
+		).not.toContain('tests/setupGlobal.test.ts')
+	})
+})
 import { describe, expect, it } from 'vitest'
+
+describe('Vue face planning', () => {
+	it('projects only occupied browser axes across every compiler', () => {
+		for (const axes of [[], ['src'], ['app'], ['src', 'app']]) {
+			const blueprint = createBlueprint('desk', {
+				src: axes.includes('src') ? ['core', 'browser'] : ['core'],
+				app: axes.includes('app') ? ['core', 'browser'] : ['core'],
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			})
+			expect(blueprintToFaces(blueprint)).toEqual(
+				axes.length === 0 ? [] : [{ surface: 'browser', name: 'vue', axes }],
+			)
+			expect(blueprintToMachinery(blueprint).frameworks).toEqual(axes.length === 0 ? [] : ['vue'])
+			expect(Object.hasOwn(blueprintToDevDependencies(blueprint), 'vue-tsc')).toBe(axes.length > 0)
+			const scripts = blueprintToScripts(blueprint)
+			expect(scripts.check?.startsWith('vue-tsc')).toBe(axes.includes('app'))
+			expect(Object.hasOwn(blueprintToExports(blueprint), './vue')).toBe(axes.includes('src'))
+			for (const axis of ['src', 'app']) {
+				const occupied = axes.includes(axis)
+				expect(blueprintToRootVite(blueprint).includes(`${axis}Vue`)).toBe(occupied)
+				expect(blueprintToRootTsconfig(blueprint).includes(`@${axis}/vue`)).toBe(occupied)
+				expect(Object.hasOwn(scripts, `check:${axis}:vue`)).toBe(occupied)
+				expect(
+					blueprintToWritableScripts(blueprint).some(({ name }) => name === `check:${axis}:vue`),
+				).toBe(occupied)
+				expect(
+					blueprintToConfigArtifacts(blueprint).some(
+						({ path }) => path === `configs/${axis}/vite.vue.config.ts`,
+					),
+				).toBe(occupied)
+				expect(
+					blueprintToSourceArtifacts(blueprint).some(({ path }) => path === `${axis}/vue/index.ts`),
+				).toBe(occupied)
+				expect(
+					blueprintToTestArtifacts(blueprint).some(
+						({ path }) => path === `tests/${axis}/vue/index.test.ts`,
+					),
+				).toBe(occupied)
+			}
+		}
+	})
+
+	it('names the framework suffixes and refused packages in its recipe', () => {
+		expect(FRAMEWORK_MATRIX.vue).toMatchObject({
+			plugin: '@vitejs/plugin-vue',
+			checker: 'vue-tsc',
+			suffixes: ['vue'],
+			refused: ['vue', '@vue/'],
+		})
+		expect(FRAMEWORK_MATRIX.vue).not.toHaveProperty('sources')
+		expect(FRAMEWORK_MATRIX.vue).not.toHaveProperty('packages')
+	})
+	it('seeds an empty application extension barrel and keeps the published barrel', () => {
+		const sources = blueprintToSourceArtifacts(
+			createBlueprint('faces', {
+				src: ['browser'],
+				app: ['browser'],
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			}),
+		)
+		expect(sources.find(({ path }) => path === 'app/vue/index.ts')?.content).toBe('')
+		expect(sources.find(({ path }) => path === 'src/vue/index.ts')?.content).toBe(
+			'// TODO: [Feature] Export the browser extension API.\n',
+		)
+	})
+	it('blocks repeated extensions on the same surface', () => {
+		const questions = blueprintToQuestions(
+			createBlueprint('faces', {
+				src: ['browser'],
+				styles: true,
+				extensions: [
+					{ surface: 'browser', name: 'vue', axes: ['src'] },
+					{ surface: 'browser', name: 'vue', axes: ['src'] },
+					{ surface: 'styles', name: 'print' },
+					{ surface: 'styles', name: 'print' },
+				],
+			}),
+		)
+		expect(questions).toEqual([
+			{
+				field: 'extensions',
+				message: 'browser:vue is declared more than once on extensions.',
+				blocking: true,
+			},
+			{
+				field: 'extensions',
+				message: 'styles:print is declared more than once on extensions.',
+				blocking: true,
+			},
+		])
+	})
+
+	it('reports empty browser axes and emits no unused framework machinery', () => {
+		const blueprint = createBlueprint('faces', {
+			app: ['browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: [] }],
+		})
+		expect(blueprintToQuestions(blueprint)).toEqual([
+			{ field: 'extensions', message: 'browser:vue occupies no axis.', blocking: false },
+		])
+		expect(blueprintToDevDependencies(blueprint)).not.toHaveProperty('vue')
+		expect(blueprintToMachinery(blueprint).frameworks).toEqual([])
+		expect(blueprintToRootVite(blueprint)).not.toContain("import vue from '@vitejs/plugin-vue'")
+	})
+
+	it.each(['src', 'app'] as const)('reports a browser extension without browser on %s', (axis) => {
+		const blueprint = createBlueprint('faces', {
+			src: ['core'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: [axis] }],
+		})
+		expect(blueprintToQuestions(blueprint)).toEqual([
+			{
+				field: 'extensions',
+				message: `browser:vue occupies ${axis}, whose selection lacks browser.`,
+				blocking: false,
+			},
+		])
+		expect(blueprintToDevDependencies(blueprint)).not.toHaveProperty('vue')
+		expect(blueprintToMachinery(blueprint).frameworks).toEqual([])
+	})
+
+	it('reports a styles extension without the styles surface', () => {
+		expect(
+			blueprintToQuestions(
+				createBlueprint('faces', {
+					src: ['core'],
+					extensions: [{ surface: 'styles', name: 'print' }],
+				}),
+			),
+		).toEqual([
+			{
+				field: 'extensions',
+				message: 'styles:print extends a styles surface this workspace does not declare.',
+				blocking: false,
+			},
+		])
+	})
+
+	it('uses an occupied browser axis even when another declared axis is absent', () => {
+		const blueprint = createBlueprint('faces', {
+			app: ['browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+		})
+		expect(blueprintToDevDependencies(blueprint)).toHaveProperty('vue', '^3.5.40')
+		expect(blueprintToMachinery(blueprint).frameworks).toEqual(['vue'])
+	})
+	it('optimizes Vue in browser setup only with its extension', () => {
+		const blueprint = createBlueprint('faces', { src: ['browser'], setup: ['browser'] })
+		const extended = createBlueprint('faces', {
+			...blueprint,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+		})
+		const setup = blueprintToRootVite(extended)
+			.split('export function setupBrowser(')[1]
+			?.split('\nexport function ')[0]
+		expect(setup).toContain("optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }")
+		const plain = blueprintToRootVite(blueprint)
+			.split('export function setupBrowser(')[1]
+			?.split('\nexport function ')[0]
+		expect(plain).toContain('\t\toptimizeDeps,')
+		expect(plain).not.toContain("'vue'")
+	})
+
+	it('omits a themes alias because themes is a build target', () => {
+		expect(
+			blueprintToRootTsconfig(createBlueprint('sheets', { styles: true, themes: true })),
+		).not.toContain('@src/styles/themes')
+	})
+	it.each(['both', 'src', 'app', 'none'])('plans the %s axes independently', (selection) => {
+		const axes: readonly Axis[] =
+			selection === 'both'
+				? ['src', 'app']
+				: selection === 'src'
+					? ['src']
+					: selection === 'app'
+						? ['app']
+						: []
+		const blueprint = createBlueprint('faces', {
+			src: ['core', 'browser'],
+			app: ['core', 'browser'],
+			extensions: axes.length === 0 ? [] : [{ surface: 'browser', name: 'vue', axes }],
+		})
+		const configs = blueprintToConfigArtifacts(blueprint)
+		const sources = blueprintToSourceArtifacts(blueprint)
+		const tests = blueprintToTestArtifacts(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+		const vite = blueprintToRootVite(blueprint)
+		const types = blueprintToRootTsconfig(blueprint)
+		const expected = axes.flatMap((axis) => [
+			`${axis}/vue/index.ts`,
+			...(axis === 'app' ? ['app/vue/main.ts', 'app/vue/App.vue', 'app/vue/index.html'] : []),
+		])
+		expect(
+			sources
+				.filter(({ path }) => path.includes('/vue/'))
+				.map(({ path }) => path)
+				.sort(),
+		).toEqual(expected.sort())
+		expect(tests.filter(({ path }) => path.includes('/vue/')).map(({ path }) => path)).toEqual(
+			axes.map((axis) => `tests/${axis}/vue/index.test.ts`),
+		)
+		expect(configs.filter(({ path }) => path.includes('.vue.')).map(({ path }) => path)).toEqual(
+			axes.flatMap((axis) => [
+				`configs/${axis}/vite.vue.config.ts`,
+				`configs/${axis}/tsconfig.vue.json`,
+			]),
+		)
+		expect(scripts.check?.startsWith('vue-tsc ')).toBe(axes.includes('app'))
+		expect(scripts['check:app:browser']).toBe('tsc --noEmit -p configs/app/tsconfig.browser.json')
+		expect(vite.includes("import vue from '@vitejs/plugin-vue'")).toBe(axes.length > 0)
+		expect(Object.hasOwn(blueprintToExports(blueprint), './vue')).toBe(axes.includes('src'))
+		expect(Object.hasOwn(JSON.parse(blueprintToManifest(blueprint)), 'peerDependencies')).toBe(
+			false,
+		)
+		for (const axis of axes) {
+			const wrapper = configs.find(({ path }) => path === `configs/${axis}/tsconfig.vue.json`)
+			if (wrapper?.content === undefined) throw new Error(`Missing ${axis} Vue configuration`)
+			expect(JSON.parse(wrapper.content)).toMatchObject({
+				compilerOptions: {
+					lib: ['ESNext', 'DOM', 'DOM.Iterable'],
+					types: axis === 'app' ? ['vite/client', 'vue'] : ['vite/client'],
+				},
+			})
+			expect(types).toContain(`"@${axis}/vue": ["./${axis}/vue/index.ts"]`)
+			expect(vite).toContain(`export function ${axis === 'src' ? 'srcVue' : 'appVue'}`)
+			expect(vite).toContain("optimizeDeps: { include: [...optimizeDeps.include, 'vue'] }")
+			expect(scripts[`check:${axis}:vue`]).toBe(
+				`${axis === 'src' ? 'tsc' : 'vue-tsc'} --noEmit -p configs/${axis}/tsconfig.vue.json`,
+			)
+			expect(scripts[`build:${axis}:vue`]).toBe(
+				`vite build --config configs/${axis}/vite.vue.config.ts`,
+			)
+			expect(scripts[`test:${axis}:vue`]).toContain(`--project ${axis}:vue`)
+			expect(scripts[`check:${axis}`]).toContain(`npm run check:${axis}:vue`)
+			expect(scripts[`build:${axis}`]).toContain(`npm run build:${axis}:vue`)
+			expect(scripts[`test:${axis}`]).toContain(`--project ${axis}:vue`)
+			expect(blueprintToWritableScripts(blueprint)).toContainEqual(
+				expect.objectContaining({ name: `build:${axis}:vue` }),
+			)
+		}
+		expect(
+			sources
+				.filter(({ path }) => path.startsWith('app/browser/') || path.startsWith('src/browser/'))
+				.some(({ path, content }) => path.endsWith('.vue') || content.includes("from 'vue'")),
+		).toBe(false)
+		expect(sources.find(({ path }) => path === 'app/browser/main.ts')?.content).toContain(
+			"document.createElement('h1')",
+		)
+		expect(
+			configs.find(({ path }) => path === 'configs/app/tsconfig.browser.json')?.content,
+		).not.toContain('.vue')
+		expect(vite).toContain("plugins: [outputBoundary(output), environmentBoundary('app/browser')]")
+	})
+
+	it('rolls up declarations and externalizes published siblings without declaring a Vue peer', () => {
+		const blueprint = createBlueprint('faces', {
+			src: ['browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+		})
+		const wrapper = blueprintToConfigArtifacts(blueprint).find(
+			({ path }) => path === 'configs/src/vite.vue.config.ts',
+		)?.content
+		expect(wrapper).toContain('rewriteBrowserSpecifier(rewriteCoreSpecifier(content))')
+		expect(wrapper).toContain("refused: ['vue', '@vue/']")
+		expect(wrapper).toContain(
+			"[resolveWorkspacePath('src/browser/index.ts').replaceAll('\\\\', '/')]:",
+		)
+		expect(wrapper).toContain("'@orkestrel/faces/browser'")
+		expect(blueprintToExports(blueprint)['./browser']).toEqual({
+			import: { types: './dist/src/browser/index.d.ts', default: './dist/src/browser/index.js' },
+		})
+		expect(blueprintToExports(blueprint)['./vue']).toEqual({
+			import: { types: './dist/src/vue/index.d.ts', default: './dist/src/vue/index.js' },
+		})
+		expect(blueprintToRootTsconfig(blueprint)).toContain(
+			'"@orkestrel/faces/vue": ["./src/vue/index.ts"]',
+		)
+		expect(blueprintToScripts(blueprint)['build:src']).toBe(
+			'npm run build:src:browser && npm run build:src:vue',
+		)
+	})
+})
+
+describe('sheet planning', () => {
+	it('loads the default theme through use', () => {
+		const source = blueprintToSourceArtifacts(
+			createBlueprint('sheets', { styles: true, themes: true }),
+		)
+		expect(source.find(({ path }) => path === 'src/styles/themes/index.scss')?.content).toBe(
+			"@use '../tokens';\n@use 'default';\n",
+		)
+	})
+
+	it('emits check:src only when a scoped source check exists', () => {
+		const themes = blueprintToScripts(createBlueprint('sheets', { themes: true }))
+		expect(themes.check).toBe('tsc --noEmit --project tsconfig.json')
+		expect(themes).not.toHaveProperty('check:src')
+		const styles = blueprintToScripts(createBlueprint('sheets', { styles: true, themes: true }))
+		expect(styles.check).toBe('tsc --noEmit --project tsconfig.json && npm run check:src')
+		expect(styles['check:src']).toBe('npm run check:src:styles')
+	})
+	it.each(['base', 'themes', 'extension', 'styles-only', 'themes-only', 'none'])(
+		'plans the %s blueprint with owned seeds, packaging, projects, and scripts',
+		(shape) => {
+			const blueprint = createBlueprint('paper', {
+				src: shape === 'styles-only' || shape === 'themes-only' ? [] : ['core'],
+				styles: shape !== 'none' && shape !== 'themes-only',
+				themes: shape === 'themes' || shape === 'themes-only',
+				extensions: shape === 'extension' ? [{ surface: 'styles', name: 'print' }] : [],
+			})
+			const faces =
+				shape === 'none' || shape === 'themes-only'
+					? []
+					: shape === 'extension'
+						? ['styles', 'print']
+						: ['styles']
+			const targets = [...faces, ...(blueprint.themes ? ['styles/themes'] : [])]
+			expect(blueprintToSheets(blueprint)).toEqual(faces)
+			const source = blueprintToSourceArtifacts(blueprint)
+			const tests = blueprintToTestArtifacts(blueprint)
+			const configs = blueprintToConfigArtifacts(blueprint)
+			const exports = blueprintToExports(blueprint)
+			const scripts = blueprintToScripts(blueprint)
+			const manifest: unknown = JSON.parse(blueprintToManifest(blueprint))
+			const root = blueprintToRootVite(blueprint)
+			const types = blueprintToRootTsconfig(blueprint)
+			const guide = blueprintToGuideArtifacts(blueprint)[0]?.content
+			const expected: string[] = []
+			if (blueprint.themes && !blueprint.styles) expected.push('src/styles/_tokens.scss')
+			for (const face of faces) {
+				for (const file of [
+					'index.scss',
+					'_tokens.scss',
+					'_mixins.scss',
+					'elements/_index.scss',
+					'components/_index.scss',
+					'utilities/_index.scss',
+					'sheet.ts',
+					'index.ts',
+				]) {
+					expected.push(`src/${face}/${file}`)
+				}
+				expect(configs).toContainEqual(
+					expect.objectContaining({
+						path: `configs/src/tsconfig.${face}.json`,
+						ownership: 'content',
+						content: expect.stringContaining('"types": ["vite/client"]'),
+					}),
+				)
+				expect(types).toContain(`"@src/${face}": ["./src/${face}/index.ts"]`)
+				expect(scripts[`check:src:${face}`]).toBe(
+					`tsc --noEmit -p configs/src/tsconfig.${face}.json`,
+				)
+				expect(scripts['check:src']).toContain(`npm run check:src:${face}`)
+			}
+			if (blueprint.themes) {
+				expected.push(
+					'src/styles/themes/index.scss',
+					'src/styles/themes/_default.scss',
+					'src/styles/themes/sheet.ts',
+				)
+			}
+			expect(source.find(({ path }) => path === 'src/styles/themes/index.scss')?.content).toBe(
+				blueprint.themes ? "@use '../tokens';\n@use 'default';\n" : undefined,
+			)
+			expect(
+				source
+					.filter((artifact) => artifact.path !== 'src/core/index.ts')
+					.map((artifact) => artifact.path),
+			).toEqual(expected)
+			for (const artifact of source) expect(artifact.ownership).toBe('birth')
+			for (const name of targets) {
+				const label = name === 'styles/themes' ? 'themes' : name
+				expect(guide).toContain('[`src/' + name + '`](../src/' + name + ')')
+				expect(guide).toContain('[`tests/src/' + name + '`](../tests/src/' + name + ')')
+				expect(exports[`./${name}`]).toBe(`./dist/src/${name}/index.css`)
+				expect(exports[`./${name}/scss`]).toBe(`./src/${name}/index.scss`)
+				expect(configs).toContainEqual(
+					expect.objectContaining({
+						path: `configs/src/vite.${label}.config.ts`,
+						ownership: 'content',
+						content: expect.stringContaining(`sheetProject('src:${label}'`),
+					}),
+				)
+				expect(tests).toContainEqual(
+					expect.objectContaining({
+						path: `tests/src/${name}/index.test.ts`,
+						ownership: 'birth',
+						content: expect.stringContaining(`/dist/src/${name}/index.css?raw`),
+					}),
+				)
+				expect(manifest).toHaveProperty(
+					'files',
+					expect.arrayContaining([`!dist/src/${name}/index.js`]),
+				)
+			}
+			const styled = shape !== 'none'
+			expect(manifest).toHaveProperty('name', '@orkestrel/paper')
+			expect(manifest).not.toHaveProperty('private')
+			expect(manifest).toHaveProperty('sideEffects', styled ? ['**/*.css', '**/*.scss'] : false)
+			expect(manifest).toHaveProperty('files', [
+				'dist/src',
+				...targets.map((face) => `!dist/src/${face}/index.js`),
+				...faces.map((face) => `src/${face}/**/*.scss`),
+				...(shape === 'themes-only' ? ['src/styles/themes/**/*.scss'] : []),
+				'README.md',
+			])
+			const dependencies = blueprintToDevDependencies(blueprint)
+			expect(dependencies.sass).toBe(styled ? '^1.105.1' : undefined)
+			expect(typeof dependencies.playwright).toBe(styled ? 'string' : 'undefined')
+			expect(typeof dependencies['@vitest/browser-playwright']).toBe(
+				styled ? 'string' : 'undefined',
+			)
+			for (const text of [
+				'export function sheetProject(name: string, override?: UserConfig): UserConfig',
+				"setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts']",
+				"include: ['@orkestrel/test', '@orkestrel/test/browser']",
+				"include: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']",
+				"label: 'setup:browser'",
+			])
+				expect(root.includes(text)).toBe(styled)
+			expect(root.includes('isolate: false')).toBe(styled)
+			expect(scripts.test?.includes('npm run test:setup:browser')).toBe(styled)
+			expect(scripts.build).toContain('npm run build:src')
+			for (const name of [...faces, ...(shape === 'themes-only' ? ['themes'] : [])]) {
+				expect(scripts['build:src']).toContain(`npm run build:src:${name}`)
+				expect(scripts['test:src']).toContain(`npm run test:src:${name}`)
+				expect(scripts[`test:src:${name}`]).toContain(`npm run build:src:${name} && vitest run`)
+				expect(root).toContain(`'./configs/src/vite.${name}.config.ts'`)
+			}
+			for (const path of ['tests/setupStyles.ts', 'tests/setupStyles.test.ts']) {
+				expect(tests.find((artifact) => artifact.path === path)?.ownership).toBe(
+					styled ? 'birth' : undefined,
+				)
+			}
+			expect(scripts['build:src:styles']).toBe(
+				shape === 'themes'
+					? 'vite build --config configs/src/vite.styles.config.ts && vite build --config configs/src/vite.themes.config.ts'
+					: blueprint.styles
+						? 'vite build --config configs/src/vite.styles.config.ts'
+						: undefined,
+			)
+			expect(scripts['build:src:themes']).toBe(
+				shape === 'themes-only'
+					? 'vite build --config configs/src/vite.themes.config.ts'
+					: undefined,
+			)
+			expect(
+				configs.some((artifact) => artifact.path === 'configs/src/vite.styles.config.ts'),
+			).toBe(blueprint.styles)
+			expect(Object.hasOwn(exports, '.')).toBe(blueprint.src.length > 0)
+			const compiler = new Compiler()
+			try {
+				expect(compiler.compile(blueprint).plan).toBeDefined()
+			} finally {
+				compiler.destroy()
+			}
+		},
+	)
+
+	it.each(['styles', 'themes'])('omits JavaScript entry fields from a %s-only manifest', (face) => {
+		const blueprint = createBlueprint('paper', {
+			src: [],
+			styles: face === 'styles',
+			themes: face === 'themes',
+		})
+		const manifest: unknown = JSON.parse(blueprintToManifest(blueprint))
+		for (const field of ['main', 'module', 'types']) expect(manifest).not.toHaveProperty(field)
+		expect(Object.hasOwn(blueprintToExports(blueprint), '.')).toBe(false)
+	})
+
+	it('plans no sheet artifacts for a reserved extension name', () => {
+		const blueprint = buildBlueprint({ extensions: [{ surface: 'styles', name: 'core' }] })
+		expect(blueprintToSheets(blueprint)).toEqual([])
+		expect(blueprintToSourceArtifacts(blueprint).map((artifact) => artifact.path)).toEqual([
+			'src/core/index.ts',
+		])
+		expect(blueprintToExports(blueprint)).not.toHaveProperty('./core/scss')
+	})
+
+	it('sorts named faces, retains bin side effects, and selects declared optimization imports', () => {
+		const blueprint = buildBlueprint({
+			styles: true,
+			bin: true,
+			integration: true,
+			setup: ['node'],
+			dependencies: [{ name: '@orkestrel/contract', range: '^0.0.18' }],
+			extensions: [
+				{ surface: 'styles', name: 'print' },
+				{ surface: 'styles', name: 'paper' },
+			],
+		})
+		expect(blueprintToSheets(blueprint)).toEqual(['styles', 'paper', 'print'])
+		expect(JSON.parse(blueprintToManifest(blueprint))).toHaveProperty('sideEffects', [
+			'**/*.css',
+			'**/*.scss',
+			'./src/bin/main.ts',
+			'./dist/bin/main.js',
+		])
+		expect(blueprintToRootVite(blueprint)).toContain(
+			"include: ['@orkestrel/test', '@orkestrel/test/browser', '@orkestrel/contract']",
+		)
+		expect(blueprintToRootVite(blueprint)).toContain("sheetProject('integration'")
+		expect(blueprintToRootVite(blueprint)).toContain(
+			"exclude: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']",
+		)
+		expect(blueprintToWritableScripts(blueprint)).toContainEqual({
+			name: 'check:src:styles',
+			command: 'tsc --noEmit -p configs/src/tsconfig.styles.json',
+			accepted: [],
+		})
+	})
+})
 
 describe('FLOOR_RANGE_PATTERN', () => {
 	it('accepts a canonical major.minor.patch floor', () => {
@@ -152,6 +888,42 @@ const SCRIPT_REGION: readonly ManifestScript[] = [
 ]
 
 describe('blueprintToWritableScripts', () => {
+	it('owns selected showcase and framework journey scripts while retaining authored commands', () => {
+		const blueprint = createBlueprint('desk', {
+			app: ['browser'],
+			showcase: true,
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const region = blueprintToWritableScripts(blueprint)
+		for (const name of [
+			'showcase',
+			'showcase:vue',
+			'build:showcase',
+			'build:showcase:vue',
+			'test:journey:vue',
+		]) {
+			const entry = region.find((script) => script.name === name)
+			expect(entry?.command).toBe(blueprintToScripts(blueprint)[name])
+			const authored = JSON.stringify({ scripts: { [name]: 'node authored.js' } })
+			const written = replaceManifestScripts(authored, region)
+			expect(written).toContain('node authored.js')
+		}
+		const predecessor = JSON.stringify({
+			scripts: {
+				showcase: 'vite --config configs/app/vite.showcase.config.ts',
+				'build:showcase': 'vite build --config configs/app/vite.showcase.config.ts',
+				'test:journey':
+					'vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot',
+			},
+		})
+		expect(replaceManifestScripts(predecessor, region)).toContain('test:journey:vue')
+		expect(
+			blueprintToWritableScripts(createBlueprint('desk', { app: ['core'] })).map(
+				({ name }) => name,
+			),
+		).not.toContain('showcase')
+	})
 	it('names direct project scripts and lifecycle scripts without taking gate chains', () => {
 		const blueprint = buildBlueprint({ src: ['core'] })
 		const region = blueprintToWritableScripts(blueprint)
@@ -431,9 +1203,14 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		expect(planned['@microsoft/api-extractor']).toBe('^7.59.3')
 	})
 
-	it('keeps the browser application toolchain in an app-only workspace', async () => {
+	it('keeps the Vue extension toolchain in an app-only workspace', async () => {
 		const planned = blueprintToDevDependencies(
-			buildBlueprint({ src: [], app: ['core', 'browser'], bin: false }),
+			buildBlueprint({
+				src: [],
+				app: ['core', 'browser'],
+				bin: false,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+			}),
 		)
 
 		// The claim is membership: an app-only workspace keeps the browser toolchain
@@ -464,6 +1241,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({
 				app: ['browser'],
 				peers: [{ name: 'vue', range: '>=3.5.0' }],
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
 			}),
 		)
 
@@ -945,7 +1723,7 @@ describe('blueprintToScripts config projects', () => {
 		)
 		expect(wrapper?.ownership).toBe('birth')
 		expect(wrapper?.content).toContain(
-			'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS))',
+			'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode))',
 		)
 		expect(blueprintToRootVite(enabled)).toContain('export function appJourney(')
 		expect(blueprintToRootVite(enabled)).toContain(
@@ -984,8 +1762,8 @@ describe('blueprintToScripts config projects', () => {
 		const blueprint = buildBlueprint({ app: ['browser'], setup: ['node', 'browser'] })
 		const root = blueprintToRootVite(blueprint)
 		expect(root).toContain("label: 'setup:browser'")
-		expect(root).toContain("include: ['tests/setupBrowser.test.ts']")
-		expect(root).toContain("exclude: ['tests/setupBrowser.test.ts']")
+		expect(root).toContain("include: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']")
+		expect(root).toContain("exclude: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']")
 		expect(root).toMatch(
 			/function setupBrowser[\s\S]*?setupFiles: \['\.\/tests\/setup.ts', '\.\/tests\/setupBrowser.ts'\][\s\S]*?enabled: true/u,
 		)
@@ -1012,9 +1790,10 @@ describe('blueprintToScripts config projects', () => {
 			'export function setupBrowser(override?: UserConfig): UserConfig {',
 			'\tconst project: UserConfig = {',
 			'\t\tresolve,',
+			'\t\toptimizeDeps,',
 			'\t\ttest: {',
 			"\t\t\tname: { label: 'setup:browser', color: 'blue' },",
-			"\t\t\tinclude: ['tests/setupBrowser.test.ts'],",
+			"\t\t\tinclude: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts'],",
 			"\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 			'\t\t\tbrowser: {',
 			'\t\t\t\tenabled: true,',
@@ -1059,12 +1838,20 @@ describe('blueprintToScripts config projects', () => {
 		)
 	})
 
-	it('selects Vue for browser setup only when the browser application selects it', () => {
+	it('keeps a browser application without extensions free of Vue tooling', () => {
 		const application = buildBlueprint({ app: ['browser'], setup: ['browser'] })
 		const applicationRoot = blueprintToRootVite(application)
-		expect(applicationRoot).toMatch(/function setupBrowser[\s\S]*?plugins: \[vue\(\)\]/u)
-		expect(applicationRoot).toContain("import vue from '@vitejs/plugin-vue'")
-		expect(blueprintToDevDependencies(application)).toHaveProperty('@vitejs/plugin-vue')
+		expect(applicationRoot).not.toContain('vue()')
+		expect(applicationRoot).not.toContain("import vue from '@vitejs/plugin-vue'")
+		expect(blueprintToDevDependencies(application)).not.toHaveProperty('@vitejs/plugin-vue')
+		expect(blueprintToDevDependencies(application)).not.toHaveProperty('vue')
+		expect(blueprintToDevDependencies(application)).not.toHaveProperty('vue-tsc')
+		expect(blueprintToMachinery(application).frameworks).toEqual([])
+		expect(blueprintToMachinery(application)).not.toHaveProperty('vue')
+		expect(blueprintToScripts(application)['check:app:browser']).toBe(
+			'tsc --noEmit -p configs/app/tsconfig.browser.json',
+		)
+		expect(blueprintToScripts(application).check).toMatch(/^tsc --/u)
 
 		const library = buildBlueprint({ src: ['browser'], app: [], setup: ['browser'] })
 		const libraryRoot = blueprintToRootVite(library)
@@ -1083,6 +1870,35 @@ describe('blueprintToScripts config projects', () => {
 		const node = buildBlueprint({ src: ['core'], app: [], setup: ['node'] })
 		expect(blueprintToRootVite(node)).not.toContain('export function setupBrowser(')
 		expect(blueprintToRootVite(node)).not.toContain('@vitejs/plugin-vue')
+	})
+
+	it('selects the Vue plugin, dependencies, and checkers from the extension', () => {
+		const application = buildBlueprint({
+			app: ['browser'],
+			setup: ['browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const root = blueprintToRootVite(application)
+		expect(root).toContain("import vue from '@vitejs/plugin-vue'")
+		expect(root).toMatch(/function setupBrowser[\s\S]*?plugins: \[vue\(\)\]/u)
+		expect(root).toContain("environmentBoundary('app/vue'), vue()")
+		expect(blueprintToDevDependencies(application)).toMatchObject({
+			'@vitejs/plugin-vue': '^6.0.8',
+			vue: '^3.5.40',
+			'vue-tsc': '^3.3.7',
+		})
+		expect(blueprintToMachinery(application).frameworks).toEqual(['vue'])
+		expect(blueprintToMachinery(application)).not.toHaveProperty('vue')
+		expect(blueprintToScripts(application)['check:app:browser']).toBe(
+			'tsc --noEmit -p configs/app/tsconfig.browser.json',
+		)
+		expect(blueprintToScripts(application).check).toMatch(/^vue-tsc --/u)
+		const config = blueprintToConfigArtifacts(application).find(
+			({ path }) => path === 'configs/app/tsconfig.vue.json',
+		)
+		expect(config?.origin !== 'host' ? config?.content : undefined).toContain(
+			'"types": ["vite/client", "vue"]',
+		)
 	})
 
 	it('registers an app-core-only integration seed in the default test gate', () => {
@@ -1323,8 +2139,10 @@ describe('blueprint gate laws', () => {
 			expect(sealed).toContain('export function appBrowser(override?: UserConfig): UserConfig {')
 		}).toThrow(/to contain/u)
 		expect(config).toContain('return mergeOverride(project, override)')
-		expect(config).toContain('export function appShowcase(override?: UserConfig): UserConfig {')
-		expect(config).toContain('return appBrowser(mergeOverride(showcase, override))')
+		expect(config).toContain(
+			'export function appShowcase(mode: string, override?: UserConfig): UserConfig {',
+		)
+		expect(config).toContain('return applications[application](mergeOverride(showcase, override))')
 		expect(config).not.toContain('applicationBrowser')
 		expect(config).not.toContain('never[]')
 		expect(config).not.toContain('overrides are not permitted')
@@ -1387,7 +2205,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('keeps only packing and live-service proofs on expensive-project budgets', () => {
-		const integration = CONFIG_TEMPLATES.factories.integration
+		const integration = CONFIG_TEMPLATES.factories.integration.module
 		const distribution = CONFIG_TEMPLATES.factories.distribution
 		const service = CONFIG_TEMPLATES.factories.service
 
@@ -1481,7 +2299,8 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(configuration).toBe(blueprintToRootVite(absent))
 		expect(configuration).toContain("import manifest from './package.json' with { type: 'json' }")
 		expect(configuration).toContain("throw new Error('package peerDependencies must be an object')")
-		expect(contents.split(clause)).toHaveLength(5)
+		expect(contents).not.toContain(clause)
+		expect(contents).toContain('resolveExternal(id, { peers, refused: [], siblings: [] })')
 		expect(configuration).not.toContain(peer.range)
 	})
 
@@ -1535,13 +2354,13 @@ describe('blueprintToRootVite fixed proofs', () => {
 			"import { enforceBuildLog } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: true }))).toContain(
-			"import { enforceBuildLog, outputBoundary } from './configs/helpers.js'\n",
+			"import { enforceBuildLog, outputBoundary, resolveExternal } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: [], app: ['core'] }))).toContain(
 			"import { environmentBoundary } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
-			"import { enforceBuildLog, environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
+			"import {\n\tenforceBuildLog,\n\tenvironmentBoundary,\n\toutputBoundary,\n\tresolveExternal,\n} from './configs/helpers.js'\n",
 		)
 		// The removed runtime filesystem classifier leaves the URL import directly
 		// after the imports every root configuration makes. `mergeOverride` is emitted
@@ -1566,7 +2385,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 
 		expect(configuration.split('onLog: enforceBuildLog')).toHaveLength(7)
 		expect(configuration).toContain(
-			'export function appShowcase(override?: UserConfig): UserConfig {',
+			'export function appShowcase(mode: string, override?: UserConfig): UserConfig {',
 		)
 		expect(appCoreStart).toBeGreaterThan(-1)
 		expect(appCoreEnd).toBeGreaterThan(appCoreStart)
@@ -1625,22 +2444,14 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('writes each selection-dependent span the way the formatter leaves it', () => {
-		// The peer matcher holds every published predicate open — the browser
-		// face and the server face, each with the core alias present only when the
-		// selected source graph reaches it. Both faces carry the clause on both
-		// sides of their own branch, so neither side can lose it unseen.
-		expect(blueprintToRootVite(buildBlueprint({ src: ['browser'] }))).toContain(
-			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
-		)
-		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'browser'] }))).toContain(
-			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
-		)
-		expect(blueprintToRootVite(buildBlueprint({ src: ['server'] }))).toContain(
-			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
-		)
-		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
-			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
-		)
+		for (const environment of ['browser', 'server'] as const) {
+			expect(blueprintToRootVite(buildBlueprint({ src: [environment] }))).toContain(
+				'return resolveExternal(id, { peers, refused: [], siblings: [] })',
+			)
+			const withCore = blueprintToRootVite(buildBlueprint({ src: ['core', environment] }))
+			expect(withCore).toContain("id === '@src/core' ||")
+			expect(withCore).toContain("siblings: [resolveWorkspacePath('src/core/index.ts')]")
+		}
 		// The browser plugin array fits the vendored width, so the formatter emits its
 		// entries joined, and the showcase adds none of them: a showcase declares its
 		// own plugins and composes on the browser configuration.
@@ -1648,15 +2459,17 @@ describe('blueprintToRootVite fixed proofs', () => {
 		const showcase = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
 		for (const content of [browser, showcase]) {
 			expect(content).toContain(
-				"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n",
+				"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser')],\n",
 			)
 		}
 		// The showcase plugin array carries a call the width cannot hold and an inline
 		// plugin object, so the formatter breaks it across lines.
 		expect(showcase).toContain(
-			"\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tviteSingleFile({\n\t\t\t\tremoveViteModuleLoader: true,\n\t\t\t\tuseRecommendedBuildConfig: true,\n\t\t\t}),\n\t\t\t{\n\t\t\t\tname: 'orkestrel-showcase-html',\n",
+			'\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tviteSingleFile({\n\t\t\t\tremoveViteModuleLoader: true,\n\t\t\t\tuseRecommendedBuildConfig: true,\n\t\t\t}),\n\t\t\tshowcaseStamp,\n',
 		)
-		expect(showcase).toContain('\t}\n\treturn appBrowser(mergeOverride(showcase, override))\n}\n')
+		expect(showcase).toContain(
+			'\t}\n\treturn applications[application](mergeOverride(showcase, override))\n}\n',
+		)
 		expect(browser).not.toContain('viteSingleFile')
 	})
 
@@ -1669,7 +2482,12 @@ describe('blueprintToRootVite fixed proofs', () => {
 		const showcased = buildBlueprint({ src: ['core'], app: ['core', 'browser'], showcase: true })
 		const plain = buildBlueprint({ src: ['core'], app: ['core', 'browser'] })
 		const wrapperCore = `import { defineConfig } from 'vite'
-import { declarationRollup, environmentBoundary, outputBoundary } from '../helpers.js'
+import {
+	declarationRollup,
+	environmentBoundary,
+	outputBoundary,
+	resolveExternal,
+} from '../helpers.js'
 import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
 
 export default defineConfig(
@@ -1691,10 +2509,7 @@ export default defineConfig(
 			},
 			outDir: 'dist/src/core',
 			rolldownOptions: {
-				external: (id: string) =>
-					id.startsWith('node:') ||
-					id.startsWith('@orkestrel/') ||
-					peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+				external: (id: string) => resolveExternal(id, { peers, refused: [], siblings: [] }),
 			},
 		},
 	}),
@@ -1708,7 +2523,7 @@ export default defineConfig(appBrowser())
 		const wrapperShowcase = `import { defineConfig } from 'vite'
 import { appShowcase } from '../../vite.config.ts'
 
-export default defineConfig(appShowcase())
+export default defineConfig(({ mode }) => appShowcase(mode))
 `
 		const showcaseWrappers: Record<string, string> = {}
 		for (const artifact of blueprintToConfigArtifacts(showcased)) {
@@ -1790,7 +2605,8 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	const output = 'dist/app/browser'
 	const project: UserConfig = {
 		resolve,
-		plugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],
+		optimizeDeps,
+		plugins: [outputBoundary(output), environmentBoundary('app/browser')],
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		build: {
@@ -1819,8 +2635,39 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	return mergeOverride(project, override)
 }
 `
-		const factoryShowcase = `export function appShowcase(override?: UserConfig): UserConfig {
-	const output = 'dist/showcase'
+		const factoryShowcase = `const showcaseStamp: PluginOption = {
+	name: 'orkestrel-showcase-html',
+	enforce: 'post',
+	generateBundle(_, bundle) {
+		for (const file of Object.values(bundle)) {
+			if (
+				file.type === 'asset' &&
+				typeof file.source === 'string' &&
+				file.fileName.endsWith('.html')
+			) {
+				file.source = stampPage(file.source)
+			}
+		}
+	},
+}
+
+function createShowcaseNaming(application: string): PluginOption {
+	return {
+		name: 'orkestrel-showcase-name',
+		enforce: 'post',
+		writeBundle(options) {
+			if (options.dir === undefined) throw new Error('The showcase output is absent.')
+			renameSync(
+				resolvePath(options.dir, 'index.html'),
+				resolvePath(options.dir, application + '.html'),
+			)
+		},
+	}
+}
+
+export function appShowcase(mode: string, override?: UserConfig): UserConfig {
+	const application = resolveApplication(mode, applications)
+	const output = 'showcase'
 	const showcase: UserConfig = {
 		plugins: [
 			outputBoundary(output),
@@ -1828,19 +2675,8 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 				removeViteModuleLoader: true,
 				useRecommendedBuildConfig: true,
 			}),
-			{
-				name: 'orkestrel-showcase-html',
-				transformIndexHtml: {
-					order: 'post',
-					handler(html) {
-						const stamp = new Date().toISOString()
-						return html.replace(
-							'</head>',
-							'		<meta name="build-id" content="' + stamp + '" />\\n	</head>',
-						)
-					},
-				},
-			},
+			showcaseStamp,
+			createShowcaseNaming(application),
 		],
 		build: {
 			// The \`appBrowser\` factory sets \`assetsInlineLimit\` to 0, so every asset becomes
@@ -1849,6 +2685,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			// true, so this line takes effect only in a workspace that turns that option off.
 			assetsInlineLimit: 4096,
 			cssMinify: 'lightningcss',
+			emptyOutDir: false,
 			minify: 'oxc',
 			modulePreload: false,
 			outDir: resolveWorkspacePath(output),
@@ -1857,7 +2694,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			target: 'esnext',
 		},
 	}
-	return appBrowser(mergeOverride(showcase, override))
+	return applications[application](mergeOverride(showcase, override))
 }
 `
 		const showcaseConfig = blueprintToRootVite(showcased)
@@ -2024,14 +2861,13 @@ describe('blueprintToConfigArtifacts app check scopes', () => {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "vue"]
+		"types": ["vite/client"]
 	},
 	"include": [
 		"../../app/browser/**/*.cts",
 		"../../app/browser/**/*.mts",
 		"../../app/browser/**/*.ts",
 		"../../app/browser/**/*.tsx",
-		"../../app/browser/**/*.vue",
 		"../../app/core/**/*.cts",
 		"../../app/core/**/*.mts",
 		"../../app/core/**/*.ts",
@@ -2040,7 +2876,6 @@ describe('blueprintToConfigArtifacts app check scopes', () => {
 		"../../tests/app/browser/**/*.mts",
 		"../../tests/app/browser/**/*.ts",
 		"../../tests/app/browser/**/*.tsx",
-		"../../tests/app/browser/**/*.vue",
 		"../../tests/setup.ts",
 		"../../tests/setupBrowser.ts"
 	]
@@ -2123,7 +2958,10 @@ describe('content artifact compilers', () => {
 			['src/server/index.ts', ''],
 			['app/core/index.ts', ''],
 			['app/browser/index.ts', ''],
-			['app/browser/main.ts', ''],
+			[
+				'app/browser/main.ts',
+				"document.body\n\t.appendChild(document.createElement('main'))\n\t.appendChild(document.createElement('h1')).textContent = 'widget'\n",
+			],
 			['app/server/index.ts', ''],
 			['app/server/main.ts', ''],
 			['src/bin/main.ts', ''],
@@ -2149,6 +2987,7 @@ describe('content artifact compilers', () => {
 			'tests/setupBrowser.ts',
 			'tests/setupServer.ts',
 			'tests/setupGlobal.ts',
+			'tests/setupGlobal.test.ts',
 			'tests/src/core/index.test.ts',
 			'tests/src/browser/index.test.ts',
 			'tests/src/server/index.test.ts',
@@ -2160,8 +2999,12 @@ describe('content artifact compilers', () => {
 			'tests/integration.test.ts',
 		])
 		const tests = artifacts.filter(({ path }) => path.endsWith('.test.ts'))
-		expect(tests).toHaveLength(9)
-		const seeded = ['tests/distribution.test.ts', 'tests/integration.test.ts']
+		expect(tests).toHaveLength(10)
+		const seeded = [
+			'tests/distribution.test.ts',
+			'tests/integration.test.ts',
+			'tests/setupGlobal.test.ts',
+		]
 		for (const artifact of tests.filter(({ path }) => !seeded.includes(path))) {
 			expect(artifact.content).toContain('Object.keys(entry)')
 			expect(artifact.content).toContain('toStrictEqual([])')
@@ -2188,6 +3031,30 @@ describe('content artifact compilers', () => {
 		expect(guide?.content).toContain('## By directory')
 		expect(guide?.content).toContain('[`src/server`](../src/server)')
 		expect(guide?.content).toContain('[`app/core`](../app/core)')
+	})
+	it('indexes occupied framework faces and selected showcase pages', () => {
+		const blueprint = createBlueprint('desk', {
+			src: ['browser'],
+			app: ['browser'],
+			showcase: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+		})
+		const text = blueprintToGuideArtifacts(blueprint)[0]?.content
+		for (const path of [
+			'src/vue',
+			'app/vue',
+			'tests/src/vue',
+			'tests/app/vue',
+			'showcase/browser.html',
+			'showcase/vue.html',
+		])
+			expect(text).toContain(`../${path}`)
+		const ordinary = blueprintToGuideArtifacts({ ...blueprint, showcase: false })[0]?.content
+		expect(ordinary).not.toContain('showcase/')
+		const unplaced = blueprintToGuideArtifacts({ ...blueprint, src: ['core'], app: ['core'] })[0]
+			?.content
+		expect(unplaced).not.toContain('/vue')
+		expect(unplaced).not.toContain('showcase/')
 	})
 
 	// The front page is the workspace's own prose, written once. The pointer is
@@ -3316,7 +4183,7 @@ describe('the generated configuration under its own hazards', () => {
 	it('replaces a named base plugin in its position', () => {
 		const declared = outputBoundary('dist/src/server')
 		const environment = environmentBoundary('src/server')
-		const replacement = outputBoundary('dist/showcase')
+		const replacement = outputBoundary('showcase')
 
 		// An override naming a plugin the base declares replaces it where the base put
 		// it, which is what lets a showcase's output boundary take the browser
@@ -3354,7 +4221,7 @@ describe('the generated configuration under its own hazards', () => {
 		const first = outputBoundary('dist/src/server')
 		const environment = environmentBoundary('src/server')
 		const second = outputBoundary('dist/app/server')
-		const replacement = outputBoundary('dist/showcase')
+		const replacement = outputBoundary('showcase')
 
 		// A base can declare two entries under one name, and an override naming it carries
 		// one entry. That entry takes the first matching position, and the second base

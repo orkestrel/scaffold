@@ -36,7 +36,7 @@ import {
   `assert`. Each phase receives the context and the part of the transition it owns.
 - Put the scenarios and the table in the workspace's browser test setup module, and import them from
   there.
-- Declare a transition for every event the surface accepts in every state it accepts it, including
+- Declare a transition for every event the screen accepts in every state it accepts it, including
   the event that leaves the state unchanged. A table that lists only the moves the happy path takes
   proves the happy path.
 - Write the phases as module functions the whole table shares. Each phase reads its subject from its
@@ -184,7 +184,7 @@ it('walks the disclosure statechart', async () => {
 - Drive `act` through the journey verbs — `clickAccessible`, `clickDisclosure`, `typeAccessible`,
   `traverseAccessible`, `pressKeys` — for every transition a person can cause.
 - Drive `act` through the entity's own API only where the transition is the entity's rather than the
-  person's: a lifecycle event, a transport reply, a timer the surface owns.
+  person's: a lifecycle event, a transport reply, a timer the screen owns.
 - Say which door each row used, in the row's `name`. A table that mixes the doors silently reads as
   a set of user transitions and proves something else.
 
@@ -286,7 +286,7 @@ import it.
 
 - Name only the attribute contract such a page must honour: the names in `STATECHART_ATTRIBUTES`,
   the readings in `STATECHART_STATUSES`, and the tally on one root node.
-- Report the page itself as the repository owner's decision — which transitions a surface owes,
+- Report the page itself as the repository owner's decision — which transitions a screen owes,
   where the page is linked, and whether it ships at all.
 - Route a person who must watch the widget move to the harness run's own frames and its written
   artifact ([decide.md](decide.md) → The harness run), and name a deep link only where the workspace

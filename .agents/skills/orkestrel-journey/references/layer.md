@@ -185,13 +185,13 @@ the capture voices in [captures.md](captures.md).
 
 - Report an absent control and a present-but-unreachable one as different findings: absence names
   a missing control, and unreachability names the interface gating one that exists.
-- Report ambiguity as a finding about the surface. Quote the match count from the message, and
+- Report ambiguity as a finding about the screen. Quote the match count from the message, and
   re-target the journey by role or region.
 - Assert a `DOMException` on its `name` as well as its message. A withheld storage operation raises
   `SecurityError` and a write past the quota raises `QuotaExceededError`, which is the pair a denied
   or full origin raises.
 - Never assert a `could not be resolved` sentence. Each one is narrowing the resolver needs under
-  `noUncheckedIndexedAccess`, and no surface reaches it.
+  `noUncheckedIndexedAccess`, and no screen reaches it.
 - Read a refused bound as a test defect rather than a finding. The wait family validates its budget
   and its interval and names the argument the caller passed, under the subject `Wait` or
   `Animation`.
@@ -211,7 +211,7 @@ the capture voices in [captures.md](captures.md).
   `fillAccessible` where the text is only a payload the person pastes.
 - Bring focus about first — through `traverseAccessible`, `clickAccessible`, or `typeAccessible` —
   and then press. The refusal is what `pressKeys` adds over the provider's own keyboard call: a key
-  sent to the body reaches no control, and every assertion after it reads a surface the key never
+  sent to the body reaches no control, and every assertion after it reads a screen the key never
   touched.
 - Escape the sequence yourself where the sequence is the subject. Reach for `typeAccessible` where
   the text is the subject and the key syntax is in the way.
@@ -245,7 +245,7 @@ the capture voices in [captures.md](captures.md).
 - Pass `absent: true` to `waitForState` where the claim is that the state went away, and read the
   returned states rather than taking a second reading afterwards.
 - Take `waitForState` as the published replacement for a settle keyed to a framework's own class
-  names. Where the control announces nothing, the finding is the surface's: give it `aria-expanded`,
+  names. Where the control announces nothing, the finding is the screen's: give it `aria-expanded`,
   `aria-pressed`, or `aria-busy` rather than reading the classes a stylesheet happens to use.
 - Take every style, contrast, and capture reading after `waitForAnimations` on the element whose
   paint was moving. A reading taken mid-transition reports an interpolated frame no state of the
@@ -274,7 +274,7 @@ the capture voices in [captures.md](captures.md).
   locators do not, because the platform exposes a native disclosure rather than a role.
 - Drive an ARIA disclosure as what it is: a button. Click it with `clickAccessible`, then settle it
   with `waitForState` on the state it announces.
-- Report a control that opens a panel and announces no state as a surface finding. Author
+- Report a control that opens a panel and announces no state as a screen finding. Author
   `aria-expanded` on it rather than settling on the classes its framework toggles.
 - Read a native summary's expansion with `readStates`, which reads the parent `details` element's
   own `open` where the summary declares no `aria-expanded`.

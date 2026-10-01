@@ -44,11 +44,14 @@ import type {
 import { renderTable } from '@orkestrel/console'
 import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
+	AXES,
 	BIN_ENTRY_PATH,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
-	blueprintToRootVite,
+	blueprintToFaces,
+	blueprintToProjects,
 	blueprintToScripts,
+	blueprintToSheets,
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CONFORMANCE_TEST_PATH,
@@ -69,7 +72,6 @@ import {
 	replacePlanRanges,
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
-	SHOWCASE_CONFIG_PATH,
 	SKILLS_CONFIG_PATH,
 } from '@src/core'
 import {
@@ -86,7 +88,7 @@ import {
 	resolveContainedPath,
 } from '@src/server'
 import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE } from './constants.js'
-import { isUsageError } from './errors.js'
+import { isUsageError, UsageError } from './errors.js'
 import {
 	argvToCommand,
 	auditToExit,
@@ -109,9 +111,12 @@ import {
 	sanitizeLine,
 	scriptToInvocations,
 	selectionToEnvironments,
+	selectionToExtensions,
 	selectionToGroups,
 	selectionToPackages,
 	targetToEnvironments,
+	targetToExtensions,
+	targetToFacts,
 	versionsToRefusal,
 	writeDiagnostic,
 	writeOutput,
@@ -233,9 +238,19 @@ export class CLI implements CLIInterface {
 	async #create(command: NewCommand): Promise<number> {
 		const target = command.target ?? command.name
 		const app = selectionToEnvironments(command.app, 'app')
+		const src = selectionToEnvironments(command.src, 'src')
+		if (command.themes === true && command.styles !== true)
+			throw new UsageError('--themes requires --styles.')
+		if (command.showcase === true && !app.includes('browser'))
+			throw new UsageError('--showcase requires --app browser.')
+		const axes = AXES.filter((axis) => (axis === 'src' ? src : app).includes('browser'))
 		const blueprint = createBlueprint(command.name, {
-			src: selectionToEnvironments(command.src, 'src'),
+			src,
 			app,
+			extensions: selectionToExtensions(command.extensions, axes, command.styles === true),
+			styles: command.styles === true,
+			themes: command.themes === true,
+			showcase: command.showcase === true,
 			journey: app.includes('browser'),
 			bin: command.bin === true,
 			setup: [],
@@ -967,7 +982,6 @@ export class CLI implements CLIInterface {
 		const conformance = resolveContainedPath(target, CONFORMANCE_TEST_PATH)
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
-		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
 		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
 		const skills = resolveContainedPath(target, SKILLS_CONFIG_PATH)
 		const setup = new Set<SetupRuntime>()
@@ -976,11 +990,15 @@ export class CLI implements CLIInterface {
 				if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.test.ts')) continue
 				const proof = resolveContainedPath(tests, path)
 				if (proof !== undefined && isExactCaseFile(proof)) {
-					setup.add(path === 'setupBrowser.test.ts' ? 'browser' : 'node')
+					setup.add(
+						path === 'setupBrowser.test.ts' || path === 'setupStyles.test.ts' ? 'browser' : 'node',
+					)
 				}
 			}
 		}
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
+			...targetToFacts(target),
+			extensions: targetToExtensions(target),
 			src: targetToEnvironments(target, 'src'),
 			app: targetToEnvironments(target, 'app'),
 			dependencies: manifestToDependencies(manifest).runtime,
@@ -991,7 +1009,6 @@ export class CLI implements CLIInterface {
 			conformance: conformance !== undefined && isExactCaseFile(conformance),
 			service: service !== undefined && isExactCaseFile(service),
 			global: global !== undefined && isExactCaseFile(global),
-			showcase: showcase !== undefined && isExactCaseFile(showcase),
 			journey: journey !== undefined && isExactCaseFile(journey),
 			skills: skills !== undefined && isExactCaseFile(skills),
 		})
@@ -1024,7 +1041,7 @@ export class CLI implements CLIInterface {
 			? manifestToWritableScripts(text, blueprint)
 			: blueprintToWritableScripts(blueprint)
 		const manifest = replaceManifestScripts(text, writable) ?? text
-		const planned = blueprintToRootVite(blueprint)
+		const planned = new Set(blueprintToProjects(blueprint))
 		const parsed = parseJSON(manifest)
 		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
 		const publishes = !isRecord(parsed) || parsed.private !== true
@@ -1040,7 +1057,7 @@ export class CLI implements CLIInterface {
 				continue
 			}
 			for (const project of invoked.projects) {
-				if (!planned.includes(`name: { label: '${project}',`)) absent.add(project)
+				if (!planned.has(project)) absent.add(project)
 			}
 		}
 		const projects = [...absent].sort()
@@ -1104,6 +1121,19 @@ export class CLI implements CLIInterface {
 			}
 		}
 
+		const faces = new Set([
+			...blueprintToSheets(blueprint).map((name) => `src:${name}`),
+			...blueprintToFaces(blueprint).flatMap(({ name, axes }) =>
+				axes.map((axis) => `${axis}:${name}`),
+			),
+		])
+		const wrappers = new Map<string, string>()
+		for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+			const match = /^configs\/(src|app)\/vite\.([^.]+)\.config\.ts$/u.exec(artifact.path)
+			if (match === null) continue
+			const project = `${match[1]}:${match[2]}`
+			if (faces.has(project)) wrappers.set(artifact.path, project)
+		}
 		const reachable = new Set<string>()
 		const chains = new Map<string, Set<string>>()
 		for (const gate of gates) {
@@ -1116,7 +1146,7 @@ export class CLI implements CLIInterface {
 				visited.add(name)
 				const script = scripts[name]
 				if (!isString(script)) continue
-				const invoked = scriptToInvocations(script)
+				const invoked = scriptToInvocations(script, wrappers)
 				if (invoked === undefined) {
 					unresolved = true
 					continue
@@ -1309,7 +1339,7 @@ export class CLI implements CLIInterface {
 				if (proofs.has(`${path.slice(0, -'.ts'.length)}.test.ts`)) return false
 				if (resolveContainedPath(tests, path) === undefined) return false
 				const content = (readFileText(tests, path) ?? '').trim()
-				return content !== '' && content !== (seeds.get(`tests/${path}`) ?? '')
+				return /^export /m.test(content) && content !== (seeds.get(`tests/${path}`) ?? '')
 			})
 			.sort()
 		if (modules.length === 0) return undefined
@@ -1318,11 +1348,6 @@ export class CLI implements CLIInterface {
 		const remedies = modules
 			.map((path) => `tests/${path.slice(0, -'.ts'.length)}.test.ts`)
 			.join(', ')
-		// The remedy asks for coverage, which is the fact the preceding filter decides.
-		// It does not say what the proof asserts: the reading is text against a
-		// seed, so a module that exports nothing and only registers a hook reaches
-		// here, and a remedy demanding a proof of exported behavior leaves that
-		// maintainer a permanent advisory or a proof that measures nothing.
 		const remedy = single
 			? `Add ${remedies} to cover it.`
 			: `Add ${remedies}, each covering the module of the same name.`
@@ -1343,6 +1368,16 @@ export class CLI implements CLIInterface {
 		writing = false,
 	): readonly Question[] {
 		const questions: TargetQuestion[] = []
+		const browser = resolveContainedPath(target, 'app/browser')
+		if (browser !== undefined && listFiles(browser).some((path) => path.endsWith('.vue'))) {
+			questions.push({
+				field: 'extensions',
+				message:
+					'Move Vue components from app/browser to app/vue before regenerating this workspace.',
+				blocking: writing,
+				groups: [],
+			})
+		}
 		if (!writing) {
 			const script = this.#scriptQuestion(target, blueprint)
 			if (script !== undefined) questions.push(script)
@@ -1358,7 +1393,9 @@ export class CLI implements CLIInterface {
 		return questions
 			.filter(
 				(question) =>
-					groups === undefined || question.groups.some((group) => groups.includes(group)),
+					question.blocking ||
+					groups === undefined ||
+					question.groups.some((group) => groups.includes(group)),
 			)
 			.map(({ field, message, blocking, candidates }): Question => ({
 				field,

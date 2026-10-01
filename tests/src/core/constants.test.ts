@@ -10,6 +10,7 @@ import {
 	blueprintToDevDependencies,
 	DECLARATION_DEV_DEPENDENCIES,
 	extractRangeMajor,
+	FRAMEWORK_MATRIX,
 	MAX_REGISTRY_BYTES,
 	MAX_TOTAL_REGISTRY_BYTES,
 	matchesRange,
@@ -17,6 +18,7 @@ import {
 	SEED_GUIDE_PATHS,
 	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
+	STYLES_DEV_DEPENDENCIES,
 } from '@src/core'
 import { buildBlueprint } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
@@ -39,8 +41,10 @@ const TABLES = [
 	['source browser', SOURCE_BROWSER_DEV_DEPENDENCIES],
 	['app', APP_DEV_DEPENDENCIES],
 	['app browser', APP_BROWSER_DEV_DEPENDENCIES],
+	['vue', FRAMEWORK_MATRIX.vue.dependencies],
 	['app server', APP_SERVER_DEV_DEPENDENCIES],
 	['showcase', SHOWCASE_DEV_DEPENDENCIES],
+	['styles', STYLES_DEV_DEPENDENCIES],
 ] as const
 
 // The manifest is read from disk as text here. The tables derive from the same
@@ -106,6 +110,7 @@ describe('shared dependency tables', () => {
 			'@orkestrel/router',
 			'@orkestrel/server',
 			'@vitejs/plugin-vue',
+			'sass',
 			'vite-plugin-singlefile',
 			'vue',
 			'vue-tsc',

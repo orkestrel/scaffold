@@ -1,6 +1,6 @@
 import type { Blueprint, Environment } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -95,6 +95,7 @@ const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'tests/setup.ts': 126,
 	'tests/setupBrowser.ts': 96,
 	'tests/setupGlobal.ts': 63,
+	'tests/setupGlobal.test.ts': 63,
 	'tests/setupServer.ts': 111,
 	'tests/src/bin/main.test.ts': 63,
 	'tests/src/browser/index.test.ts': 64,
@@ -506,7 +507,9 @@ function findRefusals(content: string): readonly string[] {
 			const required =
 				declaration.name === 'mergeOverride'
 					? 'base: UserConfig, override?: UserConfig'
-					: 'override?: UserConfig'
+					: declaration.name === 'appShowcase'
+						? 'mode: string, override?: UserConfig'
+						: 'override?: UserConfig'
 			if (parameters === required) continue
 			refused.push(`${declaration.name}(${parameters})`)
 		}
@@ -585,7 +588,7 @@ describe('pointer documents', () => {
 describe('configuration templates', () => {
 	it('seeds each planned setup module with the exact transcribed bytes', () => {
 		expect(ARTIFACT_TEMPLATES.tests.setup).toBe(PLANNED_SETUP_SEED)
-		expect(ARTIFACT_TEMPLATES.tests.global).toBe(PLANNED_GLOBAL_SEED)
+		expect(ARTIFACT_TEMPLATES.tests.global.module).toBe(PLANNED_GLOBAL_SEED)
 
 		// The control on each comparison: the same assertion, driven against a copy
 		// of the real seed carrying one changed byte, must report the difference. An
@@ -593,7 +596,7 @@ describe('configuration templates', () => {
 		// a transcription that had drifted from its seed would leave both of these
 		// passing for the wrong reason.
 		expect(mutateSeed(ARTIFACT_TEMPLATES.tests.setup)).not.toBe(PLANNED_SETUP_SEED)
-		expect(mutateSeed(ARTIFACT_TEMPLATES.tests.global)).not.toBe(PLANNED_GLOBAL_SEED)
+		expect(mutateSeed(ARTIFACT_TEMPLATES.tests.global.module)).not.toBe(PLANNED_GLOBAL_SEED)
 	})
 
 	it('uses the dependency fill boundary with missing placeholders closed', () => {
@@ -640,8 +643,22 @@ describe('configuration templates', () => {
 		expect(rootVite?.content).toContain('\t\t\tprobe,')
 		expect(coreConfig?.content).toContain('"lib": ["ESNext", "WebWorker"]')
 		expect(coreConfig?.content).toContain('"types": []')
-		expect(browserConfig?.content).toContain('"types": ["vite/client", "vue"]')
+		expect(browserConfig?.content).toContain('"types": ["vite/client"]')
 		expect(blueprintToDevDependencies(blueprint)['vite-plugin-singlefile']).toBe('^2.3.3')
+	})
+
+	it('fills browser types for the selected Vue extension', () => {
+		const blueprint = createBlueprint('widget', {
+			app: ['browser'],
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const artifacts = blueprintToConfigArtifacts(blueprint)
+		const browserConfig = artifacts.find(({ path }) => path === 'configs/app/tsconfig.vue.json')
+		if (browserConfig?.origin === 'host') {
+			throw new Error('Expected configuration template content')
+		}
+		expect(browserConfig?.content).toContain('"types": ["vite/client", "vue"]')
+		expect(browserConfig?.content).not.toMatch(/{{[^{}]+}}/)
 	})
 
 	it('is an oxfmt fixed point across the emitted content corpus', () => {
@@ -667,6 +684,42 @@ describe('configuration templates', () => {
 			// rewrite fits in. A corpus of one shape per axis reads as complete and
 			// measures only the branch that shape happens to take.
 			const blueprints = [
+				createBlueprint('v'.repeat(MAX_NAME_LENGTH), {
+					src: ['core', 'browser'],
+					app: ['browser'],
+					journey: true,
+					showcase: true,
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+				}),
+				createBlueprint('vue-faces', {
+					src: ['core', 'browser'],
+					app: ['core', 'browser'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+				}),
+				createBlueprint('vue-source', {
+					src: ['browser'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['src'] }],
+				}),
+				createBlueprint('vue-application', {
+					src: [],
+					app: ['browser'],
+					extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+				}),
+				createBlueprint('sheets', {
+					styles: true,
+					themes: true,
+					extensions: [{ surface: 'styles', name: 'print' }],
+				}),
+				createBlueprint('themes', { themes: true }),
+				createBlueprint('sheet-integration', {
+					src: ['core', 'browser'],
+					styles: true,
+					themes: true,
+					integration: true,
+					conformance: true,
+					setup: ['node'],
+					global: true,
+				}),
 				createBlueprint('core-only', { src: ['core'] }),
 				createBlueprint('published', {
 					src: ['core', 'browser', 'server'],
@@ -754,6 +807,36 @@ describe('configuration templates', () => {
 // control drawn from outside the emitted population as well, because an
 // instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
+	it('runs the seeded global proof against setup and rejects a teardown-returning control', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-global-proof-' })
+		try {
+			workspace.write('setupGlobal.ts', ARTIFACT_TEMPLATES.tests.global.module)
+			workspace.write('setupGlobal.test.ts', ARTIFACT_TEMPLATES.tests.global.proof)
+			workspace.write(
+				'vite.config.ts',
+				"export default { test: { include: ['setupGlobal.test.ts'] } }\n",
+			)
+			const command = [
+				resolve('node_modules/vitest/vitest.mjs'),
+				'run',
+				'--root',
+				workspace.path,
+				'--config',
+				join(workspace.path, 'vite.config.ts'),
+			]
+			const passing = spawnSync(process.execPath, command, { encoding: 'utf8', windowsHide: true })
+			if (passing.status !== 0) throw new Error(passing.stdout + passing.stderr)
+			expect(passing.status).toBe(0)
+			expect(passing.stdout).toContain('1 passed')
+			workspace.write('setupGlobal.ts', "export function setup(): string { return 'teardown' }\n")
+			const failing = spawnSync(process.execPath, command, { encoding: 'utf8', windowsHide: true })
+			expect(failing.status).toBe(1)
+			expect(failing.stdout).toContain('1 failed')
+			expect(failing.stderr).toContain('runs without producing a teardown')
+		} finally {
+			workspace.destroy()
+		}
+	}, 30_000)
 	it('refuses a non-object peer dependency declaration at config load', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-peers-' })
 		const root = workspace.ensure('malformed')
@@ -827,6 +910,50 @@ describe('emitted workspaces under their own gates', () => {
 	// declares one. The control is a second installed package the manifest does not
 	// declare: the same build inlines it, so the peer's survival is the predicate's
 	// doing rather than a build that resolved nothing.
+	it.each(PUBLISHED_FACES)(
+		'routes %s through sibling externalization with bundled alias controls',
+		async (factory) => {
+			const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-siblings-' })
+			try {
+				const root = workspace.ensure('siblings')
+				stageRootConfig(
+					createBlueprint('sample', { src: ['core', 'browser', 'server'] }),
+					workspace,
+					'siblings',
+				)
+				workspace.write(
+					'siblings/face.config.ts',
+					`import { ${factory} } from './vite.config.js'\nexport default ${factory}()\n`,
+				)
+				const loaded = requireValue(
+					await loadConfigFromFile(
+						{ command: 'build', mode: 'test' },
+						join(root, 'face.config.ts'),
+						root,
+					),
+				)
+				const external = loaded.config.build?.rolldownOptions?.external
+				if (typeof external !== 'function') throw new Error('Expected an external predicate')
+				expect(await external(join(root, 'src/core/index.ts'), undefined, true)).toBe(true)
+				expect(await external('@src/core', undefined, false)).toBe(true)
+				expect(await external('@src/browser', undefined, false)).toBe(false)
+				expect(await external('@app/core', undefined, false)).toBe(false)
+				expect(await external(join(root, 'src/browser/index.ts'), undefined, true)).toBe(false)
+				const outputs = loaded.config.build?.rolldownOptions?.output
+				for (const output of Array.isArray(outputs) ? outputs : [outputs]) {
+					expect(output?.paths).toHaveProperty(
+						'@src/core',
+						factory === 'srcServer' && output?.format === 'cjs'
+							? '../core/index.cjs'
+							: '../core/index.js',
+					)
+				}
+			} finally {
+				workspace.destroy()
+			}
+		},
+	)
+
 	it('leaves a declared peer external in a real build of each published face', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-external-' })
 		const root = workspace.ensure('external')
@@ -1023,7 +1150,7 @@ describe('emitted workspaces under their own gates', () => {
 		const application = buildModules(
 			createBlueprint('sample', { app: ['core', 'browser', 'server'] }),
 		)
-		expect(application.get('app/browser/main.ts')).toBe('')
+		expect(application.get('app/browser/main.ts')).toContain("document.createElement('h1')")
 		expect(application.get('app/server/main.ts')).toBe('')
 	})
 
@@ -1085,7 +1212,7 @@ describe('emitted workspaces under their own gates', () => {
 			expect(control).not.toBe(showcase)
 			workspace.write('showcase/vite.config.ts', control)
 			const diagnostics = checkTypes(showcaseRoot)
-			expect(diagnostics).toContain("Parameter 'html' implicitly has an 'any' type")
+			expect(diagnostics).toContain("The types of 'build.cssMinify' are incompatible")
 		} finally {
 			workspace.destroy()
 		}
@@ -1093,6 +1220,35 @@ describe('emitted workspaces under their own gates', () => {
 		// budget carries slack over that because the cost is contention, not work:
 		// the previous ten-second budget passed alone and reported a timeout under a
 		// full suite run, which is a red gate carrying no diagnostic.
+	}, 30_000)
+
+	it('typechecks the Vue factories and their wrappers on each axis', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-vue-types-' })
+		try {
+			const blueprint = createBlueprint('faces', {
+				src: ['core', 'browser'],
+				app: ['core', 'browser'],
+				journey: true,
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			})
+			stageRootConfig(blueprint, workspace, 'faces')
+			for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+				if (artifact.origin !== 'host' && artifact.path.includes('vite.vue.'))
+					workspace.write(`faces/${artifact.path}`, artifact.content)
+			}
+			expect(checkTypes(workspace.ensure('faces'))).toBe('')
+			const root = requireValue(workspace.read('faces/vite.config.ts'))
+			expect(root).toContain("include: ['tests/src/vue/**/*.test.ts']")
+			expect(root).toContain("include: ['tests/app/vue/**/*.test.ts']")
+			expect(root).toContain("exclude: ['tests/app/vue/integration.test.ts']")
+			workspace.write(
+				'faces/vite.config.ts',
+				root.replace("environmentBoundary('src/vue')", "environmentBoundary('src/unknown')"),
+			)
+			expect(checkTypes(workspace.ensure('faces'))).toContain('"src/unknown"')
+		} finally {
+			workspace.destroy()
+		}
 	}, 30_000)
 
 	it('typechecks journey variants and leaves an ordinary browser selection unchanged', () => {
@@ -1106,13 +1262,15 @@ describe('emitted workspaces under their own gates', () => {
 			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), workspace, 'ordinary')
 			const root = requireValue(workspace.read('journey/vite.config.ts'))
 			const journey = requireValue(root.match(/export function appJourney\([^]*?\n\}/u)?.[0])
-			expect(journey).toContain("include: ['tests/app/browser/integration.test.ts']")
+			expect(journey).toContain('include: [`tests/app/${application}/integration.test.ts`]')
 			expect(journey).toContain('enabled: true')
 			const wrapper = requireValue(workspace.read('journey/configs/app/vite.journey.config.ts'))
 			expect(wrapper).toContain("import type { JourneyVariant } from '@orkestrel/test'")
 			expect(wrapper).toContain("{ name: 'desktop', width: 1280, height: 800 }")
 			expect(wrapper).toContain("{ name: 'compact', width: 390, height: 844 }")
-			expect(wrapper).toContain('VARIANTS.map((variant) => () => appJourney(variant, VARIANTS))')
+			expect(wrapper).toContain(
+				'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS, mode))',
+			)
 			expect(root).toContain('`journey:${variant.name}`')
 			expect(root).toContain('provide: { variant: variant.name, variants, capture }')
 			expect(root).toContain("const capture = process.env.CAPTURE === '1'")

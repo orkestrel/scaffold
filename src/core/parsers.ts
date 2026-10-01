@@ -1,5 +1,35 @@
-import type { Blueprint, CompilerOptions, Group, Snapshot } from './types.js'
-import { isBlueprint, isCompilerOptions, isGroups, isSnapshot } from './validators.js'
+import type { Blueprint, CompilerOptions, Extension, Group, Snapshot } from './types.js'
+import { isString } from '@orkestrel/contract'
+import {
+	isBlueprint,
+	isCompilerOptions,
+	isExtension,
+	isGroups,
+	isSnapshot,
+	isSurface,
+} from './validators.js'
+
+/**
+ * Coerces an extension value or a `surface:name` selection into an extension.
+ * @param value - An extension record or its selection text.
+ * @returns The extension, or `undefined` for a malformed or unsupported selection.
+ * @remarks Browser text has empty axes; the creating command supplies its selected browser axes.
+ * @example
+ * ```ts
+ * import { parseExtension } from '@orkestrel/scaffold'
+ *
+ * parseExtension('browser:vue') // { surface: 'browser', name: 'vue', axes: [] }
+ * parseExtension('styles:print') // { surface: 'styles', name: 'print' }
+ * ```
+ */
+export function parseExtension(value: unknown): Extension | undefined {
+	if (isExtension(value)) return value
+	if (!isString(value)) return undefined
+	const [surface, name, excess] = value.split(':')
+	if (excess !== undefined || !isSurface(surface)) return undefined
+	const candidate = surface === 'browser' ? { surface, name, axes: [] } : { surface, name }
+	return isExtension(candidate) ? candidate : undefined
+}
 
 /**
  * Coerces an untrusted value to a {@link Blueprint}.

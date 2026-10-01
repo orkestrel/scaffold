@@ -1,6 +1,6 @@
 # Proving what the browser resolved
 
-Prove a style from what the browser resolved on the mounted surface. The `enterprise-bootstrap`
+Prove a style from what the browser resolved on the mounted screen. The `enterprise-bootstrap`
 skill's [instruments reference](../../enterprise-bootstrap/references/inspection.md) names each
 instrument's property, its population, and its coverage. Take those from there, the reading from
 here, and the control from the builder this layer publishes for it.
@@ -75,12 +75,12 @@ readings follow.
   reads the whole matrix, where the capture family renders one variant per run.
 - Compose each variant's `apply` in the test, and apply it with the variant's `width` and `height`
   before the readings. Take every reading for that variant before moving to the next.
-- Name the attribute the surface actually reads in `apply`; a Bootstrap surface switches on
+- Name the attribute the screen actually reads in `apply`; a Bootstrap screen switches on
   `data-bs-theme`. An `apply` that sets another attribute leaves the run in the default theme, where
   every reading passes.
-- Reach for the application's own theme control where the surface ships one, and assert the state it
+- Reach for the application's own theme control where the screen ships one, and assert the state it
   announces. Setting the attribute directly proves the stylesheet; driving the control proves the
-  surface.
+  screen.
 - Assert that the run read every declared variant. A matrix that silently walked one variant reports
   a pass for the theme nobody exercised.
 - Report which variants a result covers beside it. A pairing that appears only in a state the run
@@ -102,7 +102,7 @@ provided.
   `pressKeys`, or a real click. Pass `worn` where the chrome is painted onto a second element such
   as a label. It reports `undefined` for a control not matching `:focus-visible`, for the browser's
   own automatic ring, and for a focus style that only repaints the fill — treat each as a finding
-  about the surface rather than as a pass.
+  about the screen rather than as a pass.
 - Reach for `measureContrast`, `measureLuminance`, `blendColor`, `readLayers`, and `readBackdrop`
   only where the composite itself is the subject. Never re-derive `readContrast` from them.
 
@@ -117,7 +117,7 @@ Take each reading's control from the builder this layer publishes for it.
 | `extractStyles` | `buildEscapes(permitted)` | An inline declaration, an embedded `<style>` element, and the sheet the id exempts     |
 | `readCensus`    | `buildCensus()`           | An HTML token and an SVG token, neither declared by any loaded stylesheet              |
 
-- Append each control's `root` to the same surface root the reading walks, take the reading, and
+- Append each control's `root` to the same screen root the reading walks, take the reading, and
   remove it afterwards. Every builder returns detached nodes and mounts nothing, so where the
   control is read is the caller's decision.
 - Assert on the fields the builder returns rather than on a token or a selector written down in the
@@ -134,12 +134,12 @@ Take each reading's control from the builder this layer publishes for it.
 Take the property, the population, and the coverage from the instruments reference → Authored class
 in the shipped cascade. This is the reading.
 
-- Read the census with `readCensus(root)`, which walks the mounted surface, reports `elements` as
+- Read the census with `readCensus(root)`, which walks the mounted screen, reports `elements` as
   the population it read, lists every `tokens` value the markup carries, and lists as `undeclared`
   the tokens no loaded stylesheet declares. It refuses a walk that read no element.
 - Assert on `elements` as well as on `undeclared`. An empty walk reports no undeclared token, and so
   does markup whose every class the cascade declares.
-- Take `root` from the mounted surface, so the census covers what rendered rather than what a
+- Take `root` from the mounted screen, so the census covers what rendered rather than what a
   template file spells.
 - Read `readClasses` and `readCascade` directly only where one side of the difference is the
   subject. `readCensus` is the reading, and re-deriving it drops the population it reports.
@@ -152,7 +152,7 @@ Take the property, the population, the named exemptions, and the coverage from t
 reference → Style escapes. This is the reading.
 
 - Read escapes with `extractStyles(root)`, which returns the markup of every hit it found.
-- Take the reading before any journey drives the surface, because the population is the undriven
+- Take the reading before any journey drives the screen, because the population is the undriven
   tree.
 - Append `buildEscapes(permitted).root` to that same `root`, so the control reaches the reading
   through `extractStyles`.

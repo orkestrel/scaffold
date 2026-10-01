@@ -1,6 +1,37 @@
 import { describe, expect, it } from 'vitest'
-import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from '@src/core'
+import {
+	isExtension,
+	parseExtension,
+	parseBlueprint,
+	parseCompilerOptions,
+	parseGroups,
+	parseSnapshot,
+} from '@src/core'
 import { buildBlueprint, buildHostileCases, buildParserCases, buildSnapshot } from '../../setup.js'
+
+describe('parseExtension', () => {
+	it('parses surface selections and preserves guard-valid records', () => {
+		const browser = parseExtension('browser:vue')
+		const sheet = parseExtension('styles:print')
+		expect(browser).toStrictEqual({ surface: 'browser', name: 'vue', axes: [] })
+		expect(sheet).toStrictEqual({ surface: 'styles', name: 'print' })
+		expect(isExtension(browser)).toBe(true)
+		expect(isExtension(sheet)).toBe(true)
+		expect(parseExtension(browser)).toBe(browser)
+		expect(parseExtension(sheet)).toBe(sheet)
+	})
+
+	it('refuses malformed, reserved, and unsupported selections', () => {
+		expect(parseExtension('themes:print')).toBeUndefined()
+		expect(parseExtension('server:vue')).toBeUndefined()
+		expect(parseExtension('browser:react')).toBeUndefined()
+		expect(parseExtension('styles:core')).toBeUndefined()
+		expect(parseExtension('styles:')).toBeUndefined()
+		expect(parseExtension('styles:print:extra')).toBeUndefined()
+		expect(parseExtension('styles:print,styles:print')).toBeUndefined()
+		for (const hostile of buildHostileCases()) expect(parseExtension(hostile.value)).toBeUndefined()
+	})
+})
 
 describe('parser soundness', () => {
 	for (const parserCase of buildParserCases()) {

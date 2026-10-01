@@ -1,4 +1,14 @@
-import type { AppDefinition, BuildFormat, Environment, Group, SrcDefinition } from './types.js'
+import type {
+	AppDefinition,
+	Axis,
+	BuildFormat,
+	Environment,
+	Framework,
+	FrameworkDefinition,
+	Group,
+	SrcDefinition,
+	Surface,
+} from './types.js'
 import manifest from '../../package.json' with { type: 'json' }
 
 /**
@@ -11,6 +21,59 @@ import manifest from '../../package.json' with { type: 'json' }
  * are read in.
  */
 export const ENVIRONMENTS: readonly Environment[] = Object.freeze(['core', 'browser', 'server'])
+
+/** Lists the surfaces an extension may extend, frozen. */
+export const SURFACES: readonly Surface[] = Object.freeze(['browser', 'styles'])
+
+/** Lists the axes a browser extension may occupy, frozen. */
+export const AXES: readonly Axis[] = Object.freeze(['src', 'app'])
+
+/** Lists the supported browser frameworks, frozen. */
+export const FRAMEWORKS: readonly Framework[] = Object.freeze(['vue'])
+
+/** Describes the tooling and package boundaries of each browser framework, frozen. */
+export const FRAMEWORK_MATRIX: Readonly<Record<Framework, FrameworkDefinition>> = Object.freeze({
+	vue: Object.freeze({
+		plugin: '@vitejs/plugin-vue',
+		checker: 'vue-tsc',
+		suffixes: Object.freeze(['vue']),
+		refused: Object.freeze(['vue', '@vue/']),
+		dependencies: Object.freeze({
+			'@vitejs/plugin-vue': '^6.0.8',
+			vue: '^3.5.40',
+			'vue-tsc': '^3.3.7',
+		}),
+	}),
+})
+
+/** Names the base stylesheet marker. */
+export const STYLES_ENTRY_PATH = 'src/styles/index.scss'
+
+/** Names the themes build entry marker. */
+export const THEMES_ENTRY_PATH = 'src/styles/themes/sheet.ts'
+
+/** Names the themes stylesheet marker. */
+export const THEMES_BARREL_PATH = 'src/styles/themes/index.scss'
+
+/** Names the build entry beside each stylesheet marker. */
+export const SHEET_ENTRY_NAME = 'sheet.ts'
+
+/** Names the physical showcase output directory. */
+export const SHOWCASE_PAGES_PATH = 'showcase'
+
+/** Lists the development dependencies the styles surface adds, frozen. */
+export const STYLES_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	sass: '^1.105.1',
+})
+
+/** Lists the names a styles extension cannot occupy, frozen. */
+export const RESERVED_SHEET_NAMES: readonly string[] = Object.freeze([
+	...ENVIRONMENTS,
+	'bin',
+	'styles',
+	'themes',
+	...FRAMEWORKS,
+])
 
 /**
  * Lists the `Group` values in plan order, frozen.
@@ -595,13 +658,10 @@ export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fre
 	'@orkestrel/contract': manifest.dependencies['@orkestrel/contract'],
 })
 
-/** Lists the development dependencies a private Vue browser application adds. */
+/** Lists the development dependencies a private browser application adds. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
 	'@orkestrel/html': manifest.devDependencies['@orkestrel/html'],
-	'@vitejs/plugin-vue': '^6.0.8',
-	vue: '^3.5.40',
-	'vue-tsc': '^3.3.7',
 })
 
 /**
