@@ -1,8 +1,8 @@
 {
 	"@orkestrel/browser": "^0.0.19",
-	"@orkestrel/contract": "^0.0.18",
-	"@orkestrel/guide": "^0.0.21",
-	"@orkestrel/html": "^0.0.11",
+	"@orkestrel/contract": "^0.0.19",
+	"@orkestrel/guide": "^0.0.22",
+	"@orkestrel/html": "^0.0.12",
 	"@orkestrel/probe": "^0.0.19",
 	"@orkestrel/scaffold": "^0.0.82",
 	"@orkestrel/test": "^0.0.24",
@@ -13,7 +13,7 @@
 	"oxlint": "^1.86.0",
 	"playwright": "^1.63.0",
 	"typescript": "^6.0.3",
-	"vite": "^8.3.1",
+	"vite": "^8.3.2",
 	"vitest": "^4.1.11",
 	"vue": "^3.5.40",
 	"vue-tsc": "^3.3.7"

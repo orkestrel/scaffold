@@ -666,9 +666,9 @@ any of those facts by itself. `tests/distribution.test.ts` selects nothing: the 
 axis and the sheet faces the target ships already decide the `distribution` project, and the file is
 planned from that.
 
-A target whose `package.json` names `@orkestrel/scaffold` is this package's own checkout, the source
-the vendored host is staged from. `repair` and `overwrite` refuse it under `TARGET` before either
-writes, and `audit` reads it like any other target.
+A target whose `package.json` file names the `@orkestrel/scaffold` package is this package's own
+checkout, the source the vendored host is staged from. The `repair` and `overwrite` verbs refuse it
+with the `TARGET` code before either writes, and the `audit` verb reads it like any other target.
 
 `vendors` is not reconstructed. Its artifact, `scripts/service.sh`, is a birth-owned inventory
 skeleton rather than a working installer, so edited script text is not a trustworthy declaration of
