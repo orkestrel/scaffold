@@ -58,7 +58,7 @@ skips the catalog step and exits `1` with a note naming that refusal, so run the
 `scaffold overwrite` after the release.
 
 When the target is the `@orkestrel/scaffold` package, expect the runner to record the overwrite step
-as skipped and run every other step; never run the `scaffold repair` or `scaffold overwrite` command
+as skipped and to read the verify audit's foreign-path findings as expected; never run the `scaffold repair` or `scaffold overwrite` command
 against that checkout.
 
 Run visits in parallel slices of disjoint repositories, each slice strictly serial inside itself,

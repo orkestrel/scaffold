@@ -124,18 +124,22 @@ describe('wave.ts', () => {
 		}
 	})
 
-	it('skips the overwrite and its audit on the scaffold package and runs every other step, and runs both on any other target', () => {
+	it('skips the overwrite on the scaffold package and reads exit 1 of the verify audit as expected, and fails verify on that exit for any other target', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-self-' })
 		try {
 			// The recorder stands in for the scaffold executable: it logs each command
-			// line and answers an audit with an empty releases envelope.
+			// line and answers a JSON audit with an empty releases envelope and exit 1, the
+			// drift exit scaffold's own checkout always reports.
 			scratch.write(
 				'dist/bin/main.js',
 				[
 					"const { appendFileSync } = require('node:fs')",
 					"const args = process.argv.slice(2).join(' ')",
 					"appendFileSync('calls.txt', `${args}\\n`)",
-					"if (args.startsWith('audit --json')) process.stdout.write('{\"releases\":[]}')",
+					"if (args.startsWith('audit --json')) {",
+					'	process.stdout.write(\'{"releases":[]}\')',
+					'	process.exitCode = 1',
+					'}',
 					'',
 				].join('\n'),
 			)
@@ -166,7 +170,7 @@ describe('wave.ts', () => {
 			const other = runSkillScript(SCRIPT, ['--visit', '--from', 'overwrite', '--to', 'verify'], {
 				cwd: scratch.path,
 			})
-			expect(other.status).toBe(0)
+			expect(other.status).toBe(1)
 			expect(scratch.read('calls.txt')).toBe('overwrite --json\naudit\naudit --json\n')
 		} finally {
 			scratch.destroy()

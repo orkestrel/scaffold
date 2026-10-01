@@ -7,7 +7,9 @@
 // the manifest and lockfile as the preparation commit), overwrite (`scaffold overwrite --json`, then
 // `scaffold audit` exiting 0; offline, an exit of 1 whose note names the catalog refusal is
 // accepted; on @orkestrel/scaffold itself both are skipped with a note, because the vendored host
-// is staged from that checkout), verify (every declared range matches the registry), install,
+// is staged from that checkout), verify (`scaffold audit --json` prints the releases envelope and
+// every declared range matches the registry; on @orkestrel/scaffold itself an audit exit of 1 is
+// read as the expected foreign-path findings of its own canonical sources), install,
 // pins (the self-pin sweep with --prior or the manifest version and every range the visit moved; hits are reported, not
 // fatal), format, gates (format:check, lint:check, check, build, test), and compare (the rebuilt
 // dist against the published tarball, and the final runtime dependency set against the published
@@ -362,6 +364,7 @@ function runVerify(
 	scaffoldFile: string,
 	scaffoldPrefix: readonly string[],
 	offline: readonly string[],
+	own: boolean,
 ): void {
 	const audit = runStep(
 		runner,
@@ -371,6 +374,10 @@ function runVerify(
 		runner.target,
 	)
 	if (audit === undefined) return
+	// The audit reads the canonical sources of scaffold's own checkout as foreign paths and exits 1.
+	if (own && audit.status === 1) {
+		replaceLastStep(runner, 0, 'foreign-path findings are expected on the scaffold checkout')
+	}
 	const releases = readReleases(audit.stdout)
 	if (releases === undefined) {
 		replaceLastStep(
@@ -504,7 +511,7 @@ function runVisit(argv: readonly string[]): Visit | undefined {
 		} else runOverwrite(runner, scaffoldFile, scaffoldPrefix, offline)
 	}
 	if (selected.has('verify') && !failed(runner)) {
-		runVerify(runner, scaffoldFile, scaffoldPrefix, offline)
+		runVerify(runner, scaffoldFile, scaffoldPrefix, offline, name === SCAFFOLD)
 	}
 	if (selected.has('install') && !failed(runner)) runNpmStep(runner, 'install', ['install'])
 	if (selected.has('pins') && !failed(runner)) {
