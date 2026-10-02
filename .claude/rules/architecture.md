@@ -65,7 +65,7 @@ Use only the centralized files an environment needs.
 - `factories.ts`, `compilers.ts`, and `parsers.ts` are centralized files, not hiding places. Factory glue extracts to `helpers.ts`; pure compiler/parser recursion remains exported in its own kind file.
 - Every exported function in `parsers.ts` is named `parse*`. Every exported function in
   `factories.ts` is named `create*`. Every exported function in `plugins.ts` is named
-  `create*Plugin`, or `create*Plugins` when it returns a collection.
+  `create{Entity}Plugin`, or `create{Name}Plugins` when it returns a collection.
 - Those name forms are one-directional. A name does not place a function: `createWriteDirectory`
   creates a directory rather than an entity and `isVacant` is a predicate rather than a `Guard<T>`,
   so both stay in `helpers.ts`. Placement follows what the function is; the name form follows
@@ -128,7 +128,7 @@ neither reads meaning.
   freeze obligation in the earlier kind-purity rules binds regardless; only the bare literal is
   mechanical.
 - The plugin does not tell one function kind from another. Every centralized file that permits
-  functions reads the same to it apart from the `parse*`, `create*`, and `create*Plugin` name
+  functions reads the same to it apart from the `parse*`, `create*`, `create*Plugin`, and `create*Plugins` name
   forms: `cloners.ts`, `combinators.ts`, `compilers.ts`, `errors.ts`, `factories.ts`, `handlers.ts`,
   `helpers.ts`, `inferers.ts`, `middlewares.ts`, `parsers.ts`, `plugins.ts`, `relations.ts`,
   `schemas.ts`, `seeders.ts`, `shapers.ts`, and `validators.ts`. That list is exhaustive, a new function kind joins it, and no

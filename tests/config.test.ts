@@ -1615,6 +1615,12 @@ createSomething({
 				code: 'const COUNT = 1',
 				errors: [{ messageId: 'hidden' }],
 			},
+			{
+				name: 'rejects a hidden plugin factory [membership: declarations in a centralized file without an export]',
+				filename: 'src/worker/plugins.ts',
+				code: 'function createModalPlugin(): void {}',
+				errors: [{ messageId: 'hidden' }],
+			},
 		],
 	})
 
@@ -1721,6 +1727,11 @@ createSomething({
 				name: 'accepts a function in a function-kind file',
 				filename: 'src/worker/helpers.ts',
 				code: 'export function buildValue(): void {}',
+			},
+			{
+				name: 'accepts a plugin factory in plugins.ts',
+				filename: 'src/worker/plugins.ts',
+				code: 'export function createModalPlugin(): void {}',
 			},
 			{
 				name: 'accepts a module in a registered function domain',
@@ -1872,6 +1883,12 @@ createSomething({
 				code: 'export const coerceValue = () => undefined',
 				errors: [{ messageId: 'parser' }],
 			},
+			{
+				name: 'rejects an unprefixed export alias [membership: parsers.ts functions whose name does not start with parse]',
+				filename: 'app/edge/parsers.ts',
+				code: 'function parseValue(): void {}\nexport { parseValue as coerceValue }',
+				errors: [{ messageId: 'parser' }],
+			},
 		],
 	})
 
@@ -1901,6 +1918,12 @@ createSomething({
 				code: 'export const buildValue = () => undefined',
 				errors: [{ messageId: 'factory' }],
 			},
+			{
+				name: 'rejects an unprefixed export alias [membership: factories.ts functions whose name does not start with create]',
+				filename: 'app/edge/factories.ts',
+				code: 'function createValue(): void {}\nexport { createValue as buildValue }',
+				errors: [{ messageId: 'factory' }],
+			},
 		],
 	})
 
@@ -1921,8 +1944,72 @@ createSomething({
 				filename: 'src/edge/helpers.ts',
 				code: 'export function registerPlugin(): void {}',
 			},
+			{
+				name: 'reads no binding nested inside a plugin factory',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createModalPlugin(): void {\n\tfunction build(): void {}\n\tbuild()\n}',
+			},
+			{
+				name: 'accepts an export specifier in the plugin form',
+				filename: 'src/edge/plugins.ts',
+				code: 'function createModalPlugin(): void {}\nexport { createModalPlugin as createDialogPlugin }',
+			},
 		],
 		invalid: [
+			{
+				name: 'rejects a plugin-suffixed name without the create prefix [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function registerModalPlugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a lowercase segment before the plugin suffix [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createmodalPlugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a name that runs past the plugin suffix [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createModalPluginHost(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a plugin factory with no entity segment [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createPlugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a misnamed declared signature [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export declare function registerModal(): void',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects an anonymous default function [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export default function (): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects an export alias outside the plugin form [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'function createModalPlugin(): void {}\nexport { createModalPlugin as registerModal }',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a re-export outside the plugin form [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: "export { registerModal } from './modal.js'",
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a star re-export whose names the form cannot read [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: "export * from './modal.js'",
+				errors: [{ messageId: 'plugin' }],
+			},
 			{
 				name: 'rejects a register-prefixed plugin factory [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
 				filename: 'src/edge/plugins.ts',
@@ -2430,6 +2517,12 @@ createSomething({
 		expect(FUNCTION_SOURCE_FILES).not.toContain('routes.ts')
 		expect(DATA_SOURCE_FILES).toContain('routes.ts')
 		expect(CENTRAL_SOURCE_FILES).toContain('handlers.ts')
+	})
+
+	it('registers plugins as a central function kind', () => {
+		expect(FUNCTION_SOURCE_FILES).toContain('plugins.ts')
+		expect(CENTRAL_SOURCE_FILES).toContain('plugins.ts')
+		expect(DATA_SOURCE_FILES).not.toContain('plugins.ts')
 	})
 
 	it('matches every isolated import pattern with refused and admitted fixtures', () => {
