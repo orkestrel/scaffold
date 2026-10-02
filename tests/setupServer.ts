@@ -1235,6 +1235,14 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 					},
 					scripts: [{ name: 'test', command: 'vitest run', accepted: [] }],
 				},
+				{
+					pins: { runtime: [], development: [] },
+					scripts: [],
+					additions: {
+						runtime: [],
+						development: [{ name: 'typescript', range: '^6.0.3' }],
+					},
+				},
 			],
 			admits: [],
 		},
@@ -3019,6 +3027,11 @@ export async function createUpstreamServer(
 			if (!response.destroyed) writeUpstreamReply(response, reply)
 		}, reply.delay).unref()
 	})
+	// The server and the fetch client share one event loop. After a long synchronous
+	// stretch both idle timers are overdue and the server's can fire first, so the
+	// client reuses a socket the server is closing and the read fails as a transport
+	// fault. The client's own idle timeout retires a pooled socket instead.
+	server.keepAliveTimeout = 0
 	const loopback = await createLoopback(server)
 	return {
 		base: loopback.url,
