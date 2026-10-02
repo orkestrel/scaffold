@@ -27,6 +27,8 @@ Ship `@orkestrel/veneer` as a production-ready package on the foundation: the fi
 
 Scaffold propagation runs beside the chunks in the order `ROADMAP.md` § Scaffold propagation lists, each item a scaffold unit with a scratch-adopter proof, and veneer adopts the release that carries it.
 
+The showcase (`app/browser`, its journeys, and the Bootstrap and Tailwind surfaces) belongs to the parallel cloud session on the branch `ccr-d15a48b1-yyyll6` until the user rules the handoff. `showcase/status.md` beside this file holds its state, its ownership boundary, and its remaining units; it is informational until that ruling, so start none of its units before it.
+
 ## Evidence base
 
 The distillates under `distillates/` beside this file are the extracted knowledge of the old `mikesaintsg/veneer` repository (clone at commit `86491c2`, read on 2026-09-30) and of the prior campaign's records; `old-guide-headings.txt` and `old-setup-exports.txt` are the maps the lanes read from. Each row names what a chunk reads it for.
