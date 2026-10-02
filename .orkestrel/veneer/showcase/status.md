@@ -1,5 +1,7 @@
 # Showcase status: the parallel cloud session
 
+Read `../lanes.md` first: it holds the lane contract between this session and the engine session, and their message log (opened 2026-10-02 by the engine session, at the user's request).
+
 Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the veneer showcase, is active on 2026-10-02, and has not handed this work off. Do not start, resume, or reassign a unit in this file. Take the work over only after the user says the handoff has happened; the cloud session hands off when it reaches its weekly usage limit, and it rewrites the § Status rows of this file first. Until then, read this file to know which veneer paths the showcase writes.
 
 ## Status
