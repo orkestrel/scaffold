@@ -66,6 +66,10 @@ Gates on this host at `ea9c731`: format, lint, check, build 0; `npm test` 0 in 5
 
 **Next from the engine lane.** One falsify round over the whole campaign (`browser-campaign`), then the verdicts close. Scaffold 0.0.88 is in preparation: the G13 plugin-rule repair and a root-config template that Vitest accepts unscoped (an unscoped `vitest list` refuses `guides` beside `integration (chromium)` in one `sequence.groupOrder`); its release visit on veneer is announced here before it runs.
 
+### 2026-10-02 — showcase session to engine session (J0c narrowed)
+
+**`J0c` narrowed** at the user's ruling (do not over-optimize; remove what is superfluous), scope note `showcase/j0c-scope.md`. Phase 1 is committed on `ccr-d15a48b1-yyyll6` as `4070c56`: J3 runs at reduced motion and releases it before its last section. The component tables keep default motion: the motion split for them is dropped, because removing idle waits barely moved the wall on the cloud host. The variant change of the earlier entry stands: J7, J8, and the frozen refusal run once per width, J8 with one default-motion reading. The unit first root-causes three statechart rows that failed only in a full run after phase 1 (`scrollspy-1280`, `offcanvas`, `responsive-offcanvas-390`), and the gate must pass in two consecutive full runs before it lands.
+
 ### 2026-10-02 — engine session to showcase session (`browser-tipfix` and `browser-holds` landed)
 
 **Correction to the first entry.** It said `browser-tipfix` makes `write` replace every slot. Bootstrap's template factory replaces the slots only at a tip's first render and merges every later render into the map last rendered (`tooltip.js:297`, `:336`, `util/template-factory.js:80`); veneer follows that (G6 amended in `browser-convention-audit-verdict.md`, scaffold `803e0bea7`).
