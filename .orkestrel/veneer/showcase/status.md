@@ -10,18 +10,14 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | --- | --- |
 | Handoff | not handed off; the cloud session is active (2026-10-02) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
-| Veneer main | `0df5a3b` carries the showcase with the tuned journeys (`5d99d2e`), the rigor fixes (`8a84e5f`), and the polish round (`0df5a3b`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
-| Ahead of main | the branch `ccr-d15a48b1-yyyll6` at `fc4c4a2` adds the component statecharts (18 tables, 564 rows, every gate green: journeys 66 of 66) but takes 362 s for the journey gate, so main waits for the cost unit `J0c` |
+| Veneer main | `3428455` (the engine session's) carries the showcase through the polish round (`0df5a3b`), merged by the engine session as `97d2367`, with its collapse and sidebar fixes (`95eb674`, `76e7e13`) |
+| Ahead of main | the branch `ccr-d15a48b1-yyyll6` at `f53c656` merges `main` and adds the component statecharts (18 tables, 564 rows; journeys 66 of 66 in 355 s on the cloud host), so they wait for `J0c` (`../lanes.md` § Log, 2026-10-02) |
 | In flight | a read-only design workflow over the journey cost (five lenses, an adversarial check of each proposal, one synthesized brief), then `J0c` on an `astra` lane to bring the journey gate back to 235 s or less |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 
 ## Ownership boundary
 
-The user's rulings of 2026-10-02 split veneer between the two sessions.
-
-- The showcase session writes `app/browser/`, `showcase/`, `tests/app/browser/`, `tests/setupBrowser.ts`, `tests/setupServer.ts` with their proofs, `configs/app/vite.journey.config.ts`, `src/bootstrap/`, and `src/tailwindcss/` with their proofs and fixtures, and the showcase rows of `guides/veneer.md` and `ROADMAP.md`.
-- The engine session writes `src/browser/`, `tests/src/browser/`, `src/styles/`, and `src/core/`; the showcase session never writes them.
-- When the engine changes a contract the showcase consumes (`createEngine`, the plugin factories, the event constants), migrate the showcase's call sites on main in the same change, as `4eeb089` did; the showcase session merges main before each unit.
+`../lanes.md` § Paths and § Rules own the split between the two sessions; read them there.
 
 ## Rulings the showcase works under
 
@@ -55,7 +51,7 @@ The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and C
 5. Browse recheck through the `browse` server of `@orkestrel/browser`, exploratory; file each gap it hits as a browser `ROADMAP.md` item: no viewport control, screenshots only in replay, and smooth-scroll replay timing.
 6. Docs: the showcase sections of `guides/veneer.md`.
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
-8. Adopt the first scaffold release after 0.0.86 in veneer through `scaffold overwrite`; veneer is on 0.0.85. Never adopt 0.0.86 itself: it predates scaffold's `plugins.ts` kind (`65eb6f0eb`), so its overwrite would remove the `no-misnamed-plugin` rule veneer carries by hand (`ebe7081`).
+8. Done by the engine session: veneer adopted scaffold 0.0.87 and guide 0.0.24 (`ea80bb9`, `56c8293`).
 9. Merge main and push each accepted state to veneer main.
 10. `J0c`, next: cut the journey gate from 362 s to 235 s or less without losing a claim; at `fc4c4a2` the summed test time is 1364 s, led by J3 (55 to 79 s per variant), the header statechart (38 to 47 s per variant), and the scrollspy, dropdown, carousel, and tooltip tables (47 to 62 s each).
 
