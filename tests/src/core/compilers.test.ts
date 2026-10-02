@@ -2862,6 +2862,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
