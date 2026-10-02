@@ -1,11 +1,49 @@
 import { describe, expect, it } from 'vitest'
 import { isArray, isRecord } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
+import { join } from 'node:path'
 import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 
 const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('prints the Vitest worker-group diagnostic and keeps exit 2 when listing fails', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-refusal-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write('package.json', '{"type":"module","scripts":{}}')
+			scratch.write(
+				'vite.config.ts',
+				`export default {
+	test: { projects: [
+		{ test: { name: 'parallel', include: ['tests/sample.test.ts'], maxWorkers: 2 } },
+		{ test: { name: 'serial', include: ['tests/sample.test.ts'], maxWorkers: 1, isolate: false } },
+	] },
+}\n`,
+			)
+			scratch.write(
+				'tests/sample.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(2)
+			expect(run.stderr).toContain("have different 'maxWorkers' but same 'sequence.groupOrder'")
+			expect(run.stderr).toContain("Provide unique 'sequence.groupOrder' for them.")
+			expect(run.stderr.split(/\r\n|\n/u).filter((line) => line !== '').length).toBeLessThanOrEqual(
+				13,
+			)
+			scratch.write(
+				'vite.config.ts',
+				"throw new Error('Fixture configuration refused')\nexport default {}\n",
+			)
+			const refused = runSkillScript(SCRIPT, [], { cwd: scratch.path })
+			expect(refused.status).toBe(2)
+			expect(refused.stderr).toContain('Fixture configuration refused')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('reads this checkout: every gated project, its root chain, the workbench, and the skip markers', () => {
 		const run = runSkillScript(SCRIPT, ['--json'], { cwd: WORKSPACE_ROOT })
 		expect(run.status).toBe(0)

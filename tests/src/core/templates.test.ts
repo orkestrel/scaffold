@@ -5,6 +5,7 @@ import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
+import { execute } from '@orkestrel/process/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
@@ -807,6 +808,138 @@ describe('configuration templates', () => {
 // control drawn from outside the emitted population as well, because an
 // instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
+	it('lists and runs browser, sheet, guides, and integration projects unscoped', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-unscoped-' })
+		try {
+			const blueprint = createBlueprint('sample', {
+				src: ['core', 'browser', 'server'],
+				app: ['core', 'browser', 'server'],
+				styles: true,
+				extensions: [{ surface: 'styles', name: 'print' }],
+				guides: true,
+				integration: true,
+				setup: ['node', 'browser'],
+				bin: true,
+				conformance: true,
+				skills: true,
+				service: true,
+			})
+			stageRootConfig(blueprint, workspace, 'selected')
+			for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+				if (artifact.origin !== 'host')
+					workspace.write(`selected/${artifact.path}`, artifact.content)
+			}
+			workspace.ensure('selected/app/browser')
+			for (const name of ['setup', 'setupBrowser', 'setupStyles', 'setupServer', 'setupService']) {
+				workspace.write(`selected/tests/${name}.ts`, 'export {}\n')
+			}
+			const files = [
+				'src/core/index',
+				'src/browser/index',
+				'src/server/index',
+				'src/bin/main',
+				'app/core/index',
+				'app/browser/index',
+				'app/server/index',
+				'src/styles/index',
+				'src/print/index',
+				'guides',
+				'integration',
+				'policy',
+				'config',
+				'setup',
+				'setupBrowser',
+				'conformance',
+				'agents/sample',
+				'distribution',
+				'service/sample',
+			]
+			for (const file of files) {
+				workspace.write(
+					`selected/tests/${file}.test.ts`,
+					"import { it, expect } from 'vitest'\nit('collects and executes', () => { expect(1 + 1).toBe(2) })\n",
+				)
+			}
+			const command = {
+				file: process.execPath,
+				arguments: [
+					resolve('node_modules/vitest/vitest.mjs'),
+					'list',
+					'--config',
+					'vite.config.ts',
+					'--json',
+				],
+			}
+			const options = {
+				workspace: join(workspace.path, 'selected'),
+				strict: false,
+				timeout: 60_000,
+			}
+			const listing = await execute(command, options)
+			if (listing.failed) throw new Error(listing.stdout + listing.stderr)
+			expect(listing.code).toBe(0)
+			expect(listing.stderr).not.toContain('Unhandled Error')
+			const collected: unknown = JSON.parse(listing.stdout.slice(listing.stdout.indexOf('[')))
+			if (!isArray(collected)) throw new Error('Vitest returned no collected tests')
+			expect(collected).toHaveLength(files.length)
+			for (const file of files) {
+				expect(
+					collected.some(
+						(entry) =>
+							isRecord(entry) &&
+							isString(entry.file) &&
+							entry.file.replaceAll('\\', '/').endsWith(`/tests/${file}.test.ts`),
+					),
+				).toBe(true)
+			}
+			for (const name of [
+				'src:browser (chromium)',
+				'src:styles (chromium)',
+				'src:print (chromium)',
+				'guides',
+				'integration (chromium)',
+			]) {
+				expect(collected.some((entry) => isRecord(entry) && entry.projectName === name)).toBe(true)
+			}
+			const run = await execute(
+				{
+					...command,
+					arguments: [
+						resolve('node_modules/vitest/vitest.mjs'),
+						'run',
+						'--config',
+						'vite.config.ts',
+						'--reporter=json',
+					],
+				},
+				options,
+			)
+			if (run.failed) throw new Error(run.stdout + run.stderr)
+			expect(run.code).toBe(0)
+			expect(run.stderr).not.toContain('Unhandled Error')
+			const report: unknown = JSON.parse(run.stdout.slice(run.stdout.indexOf('{')))
+			if (!isRecord(report)) throw new Error('Vitest returned no run report')
+			expect(report.numTotalTests).toBe(files.length)
+			expect(report.numPassedTests).toBe(files.length)
+			expect(report.numFailedTests).toBe(0)
+			expect(report.numPendingTests).toBe(0)
+			const configuration = requireValue(workspace.read('selected/vite.config.ts'))
+			workspace.write(
+				'selected/vite.config.ts',
+				configuration
+					.replaceAll('sequence: { groupOrder: 1 }', 'sequence: { groupOrder: 0 }')
+					.replace(
+						"name: { label: 'guides', color: 'green' },",
+						"name: { label: 'guides', color: 'green' }, maxWorkers: 2,",
+					),
+			)
+			const control = await execute(command, options)
+			expect(control.stderr).toContain("have different 'maxWorkers' but same 'sequence.groupOrder'")
+		} finally {
+			workspace.destroy()
+		}
+	}, 180_000)
+
 	it('runs the seeded global proof against setup and rejects a teardown-returning control', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-global-proof-' })
 		try {

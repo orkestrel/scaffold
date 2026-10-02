@@ -186,6 +186,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
@@ -245,6 +246,7 @@ export function srcVue(override?: UserConfig): UserConfig {
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
@@ -287,6 +289,7 @@ export function srcBrowser(override?: UserConfig): UserConfig {
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
@@ -421,6 +424,7 @@ export function srcBin(override?: UserConfig): UserConfig {
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
@@ -718,6 +722,7 @@ export function service(override?: UserConfig): UserConfig {
 			testTimeout: 120_000,
 			hookTimeout: 120_000,
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
@@ -734,6 +739,7 @@ export function service(override?: UserConfig): UserConfig {
 			testTimeout: 120_000,
 			hookTimeout: 120_000,
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 		},
 	}
 	return mergeOverride(project, override)
@@ -754,6 +760,7 @@ export function probe(override?: UserConfig): UserConfig {
 			environment: 'node',
 			browser: { enabled: false },
 			fileParallelism: false,
+			sequence: { groupOrder: 1 },
 			pool: 'threads',
 			benchmark: { include: ['tmp/probes/**/*.test.ts', 'tests/**/*.test.ts'] },
 		},

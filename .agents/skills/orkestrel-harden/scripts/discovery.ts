@@ -97,9 +97,18 @@ function listCollected(config: string): readonly Collected[] | undefined {
 		maxBuffer: 64 * 1024 * 1024,
 		windowsHide: true,
 	})
-	if (result.status !== 0) return undefined
 	const start = result.stdout.indexOf('[')
-	if (start === -1) return undefined
+	if (result.status !== 0 || start === -1) {
+		const diagnostic = result.stderr || result.error?.message || result.stdout
+		console.error(
+			diagnostic
+				.split(/\r\n|\n/u)
+				.filter((line) => line.trim() !== '')
+				.slice(0, 12)
+				.join('\n'),
+		)
+		return undefined
+	}
 	const parsed: unknown = JSON.parse(result.stdout.slice(start))
 	if (!Array.isArray(parsed)) return undefined
 	const collected: Collected[] = []
@@ -151,7 +160,7 @@ function main(argv: readonly string[]): number {
 	const gates = readGates(readScripts())
 	const collected = listCollected(config)
 	if (collected === undefined) {
-		console.error('discovery: vitest list failed; run it bare to read the diagnostic')
+		console.error('discovery: vitest list failed')
 		return 2
 	}
 	const named = (readOption(argv, '--projects') ?? '').split(',').filter((name) => name !== '')
