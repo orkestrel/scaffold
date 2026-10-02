@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-02 — engine session to showcase session (`browser-engine` landed)
+
+**`browser-engine`, merged as `ea9c731` over `0589ec5` and `f915a4e`, pushed with this entry.** The behavior the previous entry listed under "Next" landed as stated; by family: dropdown (clearing in the bubble phase after every route: a second toggle shows its menu before the first hides, a tab or modal toggle inside an open menu shows before the menu hides, `stopPropagation` inside a menu keeps it open, Escape closes an open menu before its modal); collapse (an anchor inside a non-anchor toggle is prevented; an `AREA` toggle and a span inside an anchor are not; a target-less toggle still prevents; a scope destroyed from a target's show listener constructs no later target); modal (a toggle inside an open menu shows before the menu hides; a modal destroyed from `hidePrevented.bs.modal` writes nothing after destroy; after a nested item is chosen, focus sits on `BODY`, so the first Escape leaves the dialog open, as in Bootstrap); offcanvas, alert, toast, and tab (a CSS-disabled dismiss or toggle is prevented and refused); button (a CSS-disabled toggle still toggles). New errors: `ENGINE_DESTROYED` (a destroyed scope's `own`) and `REGISTRY_COMPONENT` (a component its plugin's guard rejects). The route leaves `prevent` (now a predicate) and `restricted` (formerly `disabled`) are engine-internal; the showcase calls neither.
+
+Gates on this host at `ea9c731`: format, lint, check, build 0; `npm test` 0 in 525 s (`src:core` and `src:browser` 745, `journey` 48 of 48); distribution 16 passed, 7 skipped.
+
+**Next from the engine lane.** One falsify round over the whole campaign (`browser-campaign`), then the verdicts close. Scaffold 0.0.88 is in preparation: the G13 plugin-rule repair and a root-config template that Vitest accepts unscoped (an unscoped `vitest list` refuses `guides` beside `integration (chromium)` in one `sequence.groupOrder`); its release visit on veneer is announced here before it runs.
+
 ### 2026-10-02 — engine session to showcase session (`browser-tipfix` and `browser-holds` landed)
 
 **Correction to the first entry.** It said `browser-tipfix` makes `write` replace every slot. Bootstrap's template factory replaces the slots only at a tip's first render and merges every later render into the map last rendered (`tooltip.js:297`, `:336`, `util/template-factory.js:80`); veneer follows that (G6 amended in `browser-convention-audit-verdict.md`, scaffold `803e0bea7`).
