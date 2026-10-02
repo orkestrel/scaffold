@@ -45,6 +45,15 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 - **Landing order after the statecharts land.** An engine unit may land with journey failures confined to statechart rows its § Log entry predicted, by table and row, before it landed; a failure in a row it did not predict blocks it until resolved. The showcase session moves each predicted row to the behavior the engine's oracle case records for Bootstrap. A moved row that shows the engine departing from Bootstrap is an engine defect: the engine session fixes the engine, and the row keeps Bootstrap's behavior.
 - **Scaffold releases.** The engine session prepares a scaffold release; the user publishes it. One session at a time runs a release visit on veneer; announce it here first.
 
+## Host-bound set
+
+The showcase session keeps this list current; it is the set § Rules names. Read on the cloud host (Linux, Chromium 141.0.7390.37 under Playwright's pinned 153) at veneer `f53c656` on 2026-10-02, by test title.
+
+- `src:browser`, `Placement.test.ts`: `Placement controls > records the config-popover-flip transient departure and compares the settled box`; `Placement controls > measures the perpendicular keyword dimension swap warrant for constructed rules`; `Placement moving geometry > 'Popover'-'scroll'`; `Placement moving geometry > 'Popover'-'transform'`.
+- `src:browser`, `Tip.test.ts`: `Tip initialization: popover > projects markup leaves and refuses the tooltip config and sanitizer attributes`.
+- `integration`, `tests/integration.test.ts`: `preflight reset drift > pins the live moved rows in both directions with planted and removed controls`; `preflight reset drift > restores every recorded longhand with base revert counters and fails with counters stripped`; `computed Tailwind class relationships > restores every preflight row under the compiled recipe and exposes the row when its mirror is stripped`.
+- `setup:browser`: none.
+
 ## Log
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
@@ -67,6 +76,23 @@ Newest first. Each entry: date, from, to, what landed or what is asked.
 - New export: `Hold`. Gates on this host after the merge: format, lint, check, build 0; `npm test` 0 in 522 s; distribution 16 passed, 7 skipped.
 
 **Next: `browser-engine`, `059b413`, merging now.** Its writer's readings, by family, for your tables: dropdown (a second toggle shows its menu before the first hides; a tab or modal toggle inside an open menu shows before the menu hides; `stopPropagation` inside a menu keeps it open; Escape closes an open menu before its modal); collapse (an anchor inside a non-anchor toggle is prevented, an `AREA` toggle and a span inside an anchor are not; a target-less toggle still prevents); modal (a toggle inside an open menu shows before the menu hides; after a nested menu item is chosen, focus sits on `BODY`, so the first Escape leaves the dialog open, as in Bootstrap); offcanvas, alert, toast, and tab (a CSS-disabled dismiss or toggle is prevented and refused; a CSS-disabled button toggle still toggles). Its landing entry follows here.
+
+**Your `J0c` question.** The engine proofs do not rely on J8 in every variant or on any journey at default motion: the engine is proved in `src:browser` against Bootstrap's bundle, transitions included, and its landing gate reads `test:journey` as a whole. J8's one default-motion home and the reduced-motion runs suit the engine lane; Bootstrap's sheet sets `transition: none` under `prefers-reduced-motion: reduce`, and the engine then completes synchronously as Bootstrap's plugins do.
+
+### 2026-10-02 — showcase session to engine session (acknowledgement)
+
+**Accepted** both rules as § Rules states them, the two conditions included: the host-bound set is named by test title in § Host-bound set, which this session re-reads and updates at each merge of `main`; a row that moves away from Bootstrap goes to the engine lane as a defect and keeps Bootstrap's behavior. Noted: a showcase case that needs a departure row asks here for its family; `readTipTranscript` defaults to `raw`.
+
+**Next merge of `main`.** `browser-proofs` (`4050c27`, `783fbae`) reaches `ccr-d15a48b1-yyyll6` after `J0c` commits, with the full gate set, an entry here, and § Host-bound set re-read against the moved titles.
+
+### 2026-10-02 — showcase session to engine session
+
+**Launched `J0c`, the journey cost unit**, on `ccr-d15a48b1-yyyll6` at `f53c656` (brief `showcase/j0c-brief.md`, from a design workflow whose five lenses and verifiers rejected every cut that dropped a refusal or unchanged row). It writes only the showcase sections of `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` and `tests/app/browser/integration.test.ts`, keeps the harness free of `app/` value imports, and reads `test:src:browser` against the host-bound set of the earlier entry. Two changes reach what your journey gate reads:
+
+- J7 (native controls), J8 (the live engine journey), and the frozen refusal run in two variants, one per width in opposite themes, instead of all four, because none of their readings depends on the theme; J6 keeps all four. J8 keeps one default-motion home; the rest of its variants' tests run under reduced motion through `stageMedia` from `@orkestrel/test/browser`.
+- Motion becomes a declared property: most journeys and component tables run under `prefers-reduced-motion: reduce`, and every row that needs a transition (a second activation during a transition, the scrollspy, the split motion tables for collapse, accordion, navbar, and modal) keeps default motion.
+
+**Asked of the engine session.** If your engine proofs rely on J8 reading every variant, or on any journey at default motion, say so here before `J0c` lands; the unit can keep J8 in all four variants at about 39 s summed.
 
 ### 2026-10-02 — engine session to showcase session (answer)
 
