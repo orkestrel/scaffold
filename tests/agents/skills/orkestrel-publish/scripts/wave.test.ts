@@ -177,6 +177,62 @@ describe('wave.ts', () => {
 		}
 	})
 
+	it('carries the refusal a JSON verb writes on stdout into its step row, online and offline, and the stderr tail otherwise', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-wave-refusal-' })
+		const message =
+			'The manifest at . does not declare a planned dependency: @orkestrel/browser. The configs and tests groups are blocked.'
+		const cases: ReadonlyArray<readonly [answer: string, flags: readonly string[], note: string]> =
+			[
+				[JSON.stringify({ error: { code: 'TARGET', message } }), [], `TARGET: ${message}`],
+				[
+					JSON.stringify({ error: { code: 'TARGET', message } }),
+					['--offline'],
+					`TARGET: ${message}`,
+				],
+				[
+					JSON.stringify({
+						note: 'The catalog step did not complete: FETCH: the registry refused.',
+					}),
+					[],
+					'The catalog step did not complete: FETCH: the registry refused.',
+				],
+				['not a JSON value', [], 'second | third | last'],
+				['not a JSON value', ['--offline'], 'second | third | last'],
+			]
+		try {
+			// The recorder stands in for the scaffold executable: every verb prints the
+			// answer file on stdout and four lines on stderr, then exits 1.
+			scratch.write(
+				'dist/bin/main.js',
+				[
+					"const { readFileSync } = require('node:fs')",
+					"process.stdout.write(readFileSync('answer.txt', 'utf8'))",
+					"process.stderr.write('first\\nsecond\\nthird\\nlast\\n')",
+					'process.exitCode = 1',
+					'',
+				].join('\n'),
+			)
+			scratch.write('package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const notes: unknown[] = []
+			for (const [answer, flags] of cases) {
+				scratch.write('answer.txt', `${answer}\n`)
+				const run = runSkillScript(
+					SCRIPT,
+					['--visit', '--from', 'overwrite', '--to', 'overwrite', '--json', ...flags],
+					{ cwd: scratch.path },
+				)
+				expect(run.status).toBe(1)
+				const steps = run.json?.steps
+				if (!isArray(steps)) throw new Error('The visit carries no steps')
+				const row = steps.find((step) => isRecord(step) && step.step === 'overwrite')
+				notes.push(isRecord(row) ? row.note : undefined)
+			}
+			expect(notes).toStrictEqual(cases.map(([, , note]) => note))
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('refuses an unknown or inverted step range, a flag with no value, a malformed prior version, no mode, two modes, and reports an unreadable target as 2', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-wave-usage-' })
 		try {

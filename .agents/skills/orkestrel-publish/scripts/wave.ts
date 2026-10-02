@@ -14,11 +14,12 @@
 // fatal), format, gates (format:check, lint:check, check, build, test), and compare (the rebuilt
 // dist against the published tarball, and the final runtime dependency set against the published
 // manifest `npm view NAME --json` serves; both readings are reported, not fatal). The summary
-// carries each step's exit and duration, the bump ruling, and a Markdown row for
-// `.orkestrel/release.md`. --dry-run prints the commands and runs nothing, so its ruling is
-// unanswered. --plan reads the marker-bounded catalog table in `.claude/agents/orkestrel.md` and
-// prints the packages by layer. Exit 0 when every step passed, 1 when a step failed, 2 when a
-// reading failed, 64 on usage.
+// carries each step's exit and duration, a failed step's refusal (the `code: message` envelope or
+// the `note` a JSON verb prints on stdout, else the last stderr lines), the bump ruling, and a
+// Markdown row for `.orkestrel/release.md`. --dry-run prints the commands and runs nothing, so its
+// ruling is unanswered. --plan reads the marker-bounded catalog table in
+// `.claude/agents/orkestrel.md` and prints the packages by layer. Exit 0 when every step passed, 1
+// when a step failed, 2 when a reading failed, 64 on usage.
 import type { SpawnSyncReturns } from 'node:child_process'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs'
@@ -158,8 +159,20 @@ function describeCommand(file: string, args: readonly string[]): string {
 	return [file === process.execPath ? 'node' : file, ...args].join(' ')
 }
 
+// A JSON verb writes its refusal envelope or its partial-run note on stdout, so the stderr tail
+// alone reads empty for exactly the failures the operator needs named.
 function describeFailure(result: SpawnSyncReturns<string>): string | undefined {
 	if (result.status === 0) return undefined
+	const value = readJsonObject(result.stdout)
+	const error = value?.error
+	if (typeof error === 'object' && error !== null && !Array.isArray(error)) {
+		const envelope = Object.fromEntries(Object.entries(error))
+		const code = readString(envelope, 'code')
+		const message = readString(envelope, 'message')
+		if (code !== undefined && message !== undefined) return `${code}: ${message}`
+	}
+	const note = readString(value, 'note')
+	if (note !== undefined) return note
 	return result.stderr
 		.trim()
 		.split(/\r\n|\n/)
@@ -341,11 +354,11 @@ function runOverwrite(
 		runner.target,
 	)
 	if (runner.offline && written !== undefined && written.status === 1) {
-		const note = readString(readJsonObject(written.stdout) ?? {}, 'note')
+		const note = readString(readJsonObject(written.stdout), 'note')
 		if (note !== undefined && note.includes(OFFLINE_REFUSAL)) {
 			replaceLastStep(runner, 0, 'offline overwrite skipped the catalog step by design')
 		} else {
-			replaceLastStep(runner, 1, note ?? describeFailure(written))
+			replaceLastStep(runner, 1, describeFailure(written))
 		}
 	}
 	if (!failed(runner)) {
