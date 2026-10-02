@@ -174,6 +174,7 @@ Keep canonical case:
 | Class          | PascalCase `{Entity}`                 |
 | Manager class  | PascalCase `{Entity}Manager`          |
 | Factory        | camelCase `create{Entity}`            |
+| Plugin factory | camelCase `create{Entity}Plugin`      |
 | Guard          | camelCase `is{Condition}`             |
 | Helper         | camelCase `{verb}{Noun}`              |
 | Constant       | UPPER_SNAKE_CASE `{QUALIFIER}_{NOUN}` |
@@ -187,6 +188,7 @@ Keep canonical case:
 - `is*`: total `Guard<T>`; never throws; returns false off-shape.
 - `parse*`: coercion producing `T | undefined`; cross-type conversion never belongs in a guard.
 - `create*`: the factory form; `.claude/rules/architecture.md` § Kind purity states what a factory is and where it lives.
+- `create*Plugin` and `create*Plugins`: the plugin-factory form, returning one plugin or a collection a host composes; `.claude/rules/architecture.md` § Plugins states what a plugin is. A plugin factory registers nothing, so never name it `register*` or `install*`.
 - `*Of`: combinator named for its constituents, combining them into a container/guard/value, such as `arrayOf(guard)` or `boundsOf(min, max)`.
 - `{noun}To{Noun}`: projection from a whole to a derived view, such as `definitionToSnapshot`.
 - `*Shape`: `ContractShape` value/JSON-Schema blueprint, not a function or type.

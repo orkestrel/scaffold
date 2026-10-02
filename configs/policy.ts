@@ -145,6 +145,7 @@ export const CENTRAL_SOURCE_FILES: readonly string[] = Object.freeze([
 	'inferers.ts',
 	'middlewares.ts',
 	'parsers.ts',
+	'plugins.ts',
 	'relations.ts',
 	'routes.ts',
 	'schemas.ts',
@@ -167,6 +168,7 @@ export const FUNCTION_SOURCE_FILES: readonly string[] = Object.freeze([
 	'inferers.ts',
 	'middlewares.ts',
 	'parsers.ts',
+	'plugins.ts',
 	'relations.ts',
 	'schemas.ts',
 	'seeders.ts',
@@ -1014,6 +1016,17 @@ export function reportFactory(context: PolicyContext, node: PolicyExpression): v
 	}
 }
 
+/** Reports a plugins.ts function whose name is not a create-prefixed plugin or plugins form. */
+export function reportPlugin(context: PolicyContext, node: PolicyExpression): void {
+	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+	if (pathToPolicyFile(context.filename) !== 'plugins.ts') return
+	for (const binding of statementToPolicyBindings(node)) {
+		if (binding.name === undefined || !/^create[A-Z]\w*Plugins?$/u.test(binding.name)) {
+			context.report({ node: binding.node, messageId: 'plugin' })
+		}
+	}
+}
+
 /** Reports a registered function domain taken as a file, or a malformed module inside one. */
 export function reportDomain(context: PolicyContext, node: PolicyExpression): void {
 	if (isPolicyAmbient(context.filename)) return
@@ -1294,6 +1307,28 @@ export const FACTORY_RULE: PolicyRuleInterface = {
 	},
 }
 
+/** Bans a plugins.ts function whose name is not a create-prefixed plugin or plugins form. */
+export const PLUGIN_RULE: PolicyRuleInterface = {
+	meta: {
+		type: 'problem',
+		docs: {
+			description:
+				'Disallow a plugins.ts function whose name is not create…Plugin or create…Plugins.',
+		},
+		messages: {
+			plugin:
+				'Name this plugins.ts function create…Plugin, or create…Plugins for a collection, or move it to its own kind file.',
+		},
+	},
+	create(context) {
+		return {
+			FunctionDeclaration: (node) => reportPlugin(context, node),
+			TSDeclareFunction: (node) => reportPlugin(context, node),
+			VariableDeclaration: (node) => reportPlugin(context, node),
+		}
+	},
+}
+
 /** Bans a malformed module in a registered function domain, and a file named for one. */
 export const DOMAIN_RULE: PolicyRuleInterface = {
 	meta: {
@@ -1392,6 +1427,7 @@ export default {
 		'no-malformed-constant': CONSTANT_RULE,
 		'no-misnamed-parser': PARSER_RULE,
 		'no-misnamed-factory': FACTORY_RULE,
+		'no-misnamed-plugin': PLUGIN_RULE,
 		'no-malformed-domain': DOMAIN_RULE,
 		'no-host-line-endings': ENDING_RULE,
 		'no-malformed-summary': VOICE_RULE,

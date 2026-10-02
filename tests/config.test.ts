@@ -36,6 +36,7 @@ import policyPlugin, {
 	MOCKING_RULE,
 	NESTED_RULE,
 	PARSER_RULE,
+	PLUGIN_RULE,
 	POLICY_BANNED_TERMS,
 	POLICY_ENDING_GLOBS,
 	POLICY_JUDGED_TERMS,
@@ -1903,6 +1904,52 @@ createSomething({
 		],
 	})
 
+	tester.run('no-misnamed-plugin', PLUGIN_RULE, {
+		valid: [
+			{
+				name: 'accepts a create-prefixed plugin factory',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createModalPlugin(): void {}',
+			},
+			{
+				name: 'accepts a create-prefixed plugin collection factory',
+				filename: 'src/edge/plugins.ts',
+				code: 'export const createBootstrapPlugins = () => undefined',
+			},
+			{
+				name: 'accepts a plugin-suffixed name outside plugins.ts',
+				filename: 'src/edge/helpers.ts',
+				code: 'export function registerPlugin(): void {}',
+			},
+		],
+		invalid: [
+			{
+				name: 'rejects a register-prefixed plugin factory [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function registerModal(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a create-prefixed name without the plugin suffix [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export const createModal = () => undefined',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a bare plugin-suffixed name [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function modalPlugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects a lowercase entity after create [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createplugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+		],
+	})
+
 	tester.run('no-malformed-domain', DOMAIN_RULE, {
 		valid: [
 			{
@@ -2734,6 +2781,7 @@ createSomething({
 			)
 			scratch.write('src/violations/parsers.ts', 'export function coerceValue(): void {}\n')
 			scratch.write('src/violations/factories.ts', 'export function buildValue(): void {}\n')
+			scratch.write('src/violations/plugins.ts', 'export function registerModal(): void {}\n')
 			scratch.write('src/violations/constants.ts', 'export const values = []\n')
 			scratch.write('src/violations/composables.ts', "export const READY = 'yes'\n")
 			scratch.write('app/browser/composables/useTheme.ts', 'export function useMode(): void {}\n')
@@ -2837,6 +2885,7 @@ createSomething({
 				{ code: 'policy(no-hidden-declaration)', filename: 'src/violations/helpers.ts' },
 				{ code: 'policy(no-misnamed-parser)', filename: 'src/violations/parsers.ts' },
 				{ code: 'policy(no-misnamed-factory)', filename: 'src/violations/factories.ts' },
+				{ code: 'policy(no-misnamed-plugin)', filename: 'src/violations/plugins.ts' },
 				{ code: 'policy(no-malformed-constant)', filename: 'src/violations/constants.ts' },
 				{ code: 'policy(no-malformed-domain)', filename: 'src/violations/composables.ts' },
 				{

@@ -28,6 +28,7 @@ paths:
 | Shape/algorithm compilers | `*/compilers.ts`                                             |
 | Entity/value factories    | `*/factories.ts`                                             |
 | Middleware factories      | `*/middlewares.ts`                                           |
+| Plugin factories          | `*/plugins.ts`                                               |
 | Request handlers          | `*/handlers.ts`                                              |
 | Route tables              | `*/routes.ts`                                                |
 | Seeders                   | `*/seeders.ts`                                               |
@@ -63,7 +64,8 @@ Use only the centralized files an environment needs.
   - non-trivial or reusable → extract, export, unit-test, and route every duplicate through it.
 - `factories.ts`, `compilers.ts`, and `parsers.ts` are centralized files, not hiding places. Factory glue extracts to `helpers.ts`; pure compiler/parser recursion remains exported in its own kind file.
 - Every exported function in `parsers.ts` is named `parse*`. Every exported function in
-  `factories.ts` is named `create*`.
+  `factories.ts` is named `create*`. Every exported function in `plugins.ts` is named
+  `create*Plugin`, or `create*Plugins` when it returns a collection.
 - Those name forms are one-directional. A name does not place a function: `createWriteDirectory`
   creates a directory rather than an entity and `isVacant` is a predicate rather than a `Guard<T>`,
   so both stay in `helpers.ts`. Placement follows what the function is; the name form follows
@@ -86,7 +88,7 @@ Use only the centralized files an environment needs.
 - Keep the leaf pair class-free. `helpers.ts` and `validators.ts` sit at the bottom of a module's
   graph: they import types, constants, errors, and each other, and they import no implementation
   class. Every file that constructs or drives a class — `cloners.ts`, `compilers.ts`, `factories.ts`,
-  `shapers.ts` — sits above them, consumes them, and is never consumed by them. One cycle between
+  `plugins.ts`, `shapers.ts` — sits above them, consumes them, and is never consumed by them. One cycle between
   the leaves is the shape this produces and is acceptable; an edge running downward from a
   class-importing file into the leaf pair is not.
 - `templates.ts` and `contracts.ts` hold data only — shipped template definitions and compiled
@@ -126,10 +128,10 @@ neither reads meaning.
   freeze obligation in the earlier kind-purity rules binds regardless; only the bare literal is
   mechanical.
 - The plugin does not tell one function kind from another. Every centralized file that permits
-  functions reads the same to it apart from the `parse*` and `create*` name forms: `cloners.ts`,
-  `combinators.ts`, `compilers.ts`, `errors.ts`, `factories.ts`, `handlers.ts`, `helpers.ts`,
-  `inferers.ts`, `middlewares.ts`, `parsers.ts`, `relations.ts`, `schemas.ts`, `seeders.ts`,
-  `shapers.ts`, and `validators.ts`. That list is exhaustive, a new function kind joins it, and no
+  functions reads the same to it apart from the `parse*`, `create*`, and `create*Plugin` name
+  forms: `cloners.ts`, `combinators.ts`, `compilers.ts`, `errors.ts`, `factories.ts`, `handlers.ts`,
+  `helpers.ts`, `inferers.ts`, `middlewares.ts`, `parsers.ts`, `plugins.ts`, `relations.ts`,
+  `schemas.ts`, `seeders.ts`, `shapers.ts`, and `validators.ts`. That list is exhaustive, a new function kind joins it, and no
   later version of the plugin claims more.
 - The plugin reports no `data` violation in `helpers.ts`. The kind rules place a camelCase
   namespace of functions there, and a namespace of callables is not separable from a data table by
@@ -201,6 +203,13 @@ Store child managers in `#` fields and expose readonly getters typed as their in
 - If consumers must address, share, inspect, or replace that state, extract the state to a pluggable class supplied as an option, with an in-memory default.
 - Extract reusable cross-middleware machinery to helpers/classes.
 - `MiddlewareManager` is the sole manager of the middleware composition chain; do not create one manager per middleware.
+
+## Plugins
+
+- A plugin is a value a host composes at creation: the binding of one entity class to the host's extension seam. The entity class stays unaware of it.
+- Place plugin factories in `plugins.ts` as `create{Entity}Plugin(options?)`, and a factory of a host's collection as `create{Name}Plugins()`; keep them distinct from the entity factories in `factories.ts`.
+- A plugin factory builds and returns the value; it never registers, installs, or boots anything. The host's creation options take the plugin list, and registration happens there.
+- A plugin drives its entity through the entity's public interface. When the host needs behavior the interface lacks, add it to the interface as a real entity capability; never reach a private member from the plugin.
 
 ## Environment/module placement
 

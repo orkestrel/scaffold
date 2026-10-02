@@ -538,7 +538,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "e30f034c8de38ce7c86506dfaa51844201d745181caed45ef427d0325e80afd3"
+			"digest": "940a91bd876d8992e79e7fb91336e643808e7a10daefccaa8f8d89f5629cada3"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -556,7 +556,7 @@
 			"storage": "claude/rules/names.md",
 			"destination": ".claude/rules/names.md",
 			"executable": false,
-			"digest": "1c9aeda4a47d94ef174e1f513da7b2710fe2a162e56a450270572ad942c95a7d"
+			"digest": "b8c69954fddcadcbe799cc9ab6c9b7b6bf33dc3ab76451ff8da716a8bca98146"
 		},
 		{
 			"storage": "claude/rules/patterns.md",
@@ -772,7 +772,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "2ba8395040b41b30245a0e09de3a87b10546f29eab359a2884b5cde76aff4fc8"
+			"digest": "76df5d94382c3f24c75c033db88915013313ba79b52688c4a21e0d7e34a1c388"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -826,7 +826,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "8deab17f02176cb061f4c80a068eead4ac44ffc62cbb388587a962dc6afd8431"
+			"digest": "043a5c3eb0fb52d6cd841590e77c94ce03797b4b6a742fd57127bc9b9242153c"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1168,7 +1168,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "6550d3edb31603777ce713985b6648063e105c1ce2bee82c66570382faed7c67"
+			"digest": "265ab679bc6ceccd63fb3311a990c58877065bf7c4119f4ce08c11225edfefc7"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "f8711433145a8b302c5c8c626c1be5ddbdd2e5a44c1f971fb6fce1ed4f5703b6"
+	"digest": "4e4166cd923b786788131b0d923b13b8c71f2980bc98efab9736e3e16c0e8e63"
 }
