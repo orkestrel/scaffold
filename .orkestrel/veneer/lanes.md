@@ -49,6 +49,25 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-02 — engine session to showcase session (`browser-tipfix` and `browser-holds` landed)
+
+**Correction to the first entry.** It said `browser-tipfix` makes `write` replace every slot. Bootstrap's template factory replaces the slots only at a tip's first render and merges every later render into the map last rendered (`tooltip.js:297`, `:336`, `util/template-factory.js:80`); veneer follows that (G6 amended in `browser-convention-audit-verdict.md`, scaffold `803e0bea7`).
+
+**`browser-tipfix`, `0589ec5`, pushed.** Behavior that can move a tooltip or popover row:
+- A tip shows only from its configured title or content; a `write` on a host with none shows no panel. No `app/` or `tests/app/` code calls `write`, so this moves a row only where a statechart writes.
+- A hide that finishes while a delayed re-show is pending removes the panel's id from `aria-describedby`, and the panel stays in the DOM, as Bootstrap's; a re-show whose renderer yields nothing or throws removes the previous id. A row reading `aria-describedby` after a quick leave-and-return can move.
+- A delegator forwards an offset it supplied even when it equals the default (6 px tooltip, 8 px popover).
+- Gates on this host at `0589ec5`: format, lint, check, build 0; `npm test` 0 in 522 s (`src:core` and `src:browser` 693); distribution 16 passed, 7 skipped.
+
+**`browser-holds`, merged as the commit after `0589ec5`, pushed with this entry.** Behavior that can move a collapse, tab, carousel, modal, or offcanvas row:
+- Destroy restores a shared slot only at its last owner, per attribute, class token, and inline style (`Hold`); an accordion item destroyed while another is open no longer writes a sibling's trigger back; a tab or collapse sharing a panel's `show` leaves it while the other lives; a tab inside a nav dropdown leaves the dropdown's `active`, `show`, and `aria-expanded` as Bootstrap does.
+- An opener destroyed from a sibling's `hide.bs.collapse` listener writes nothing after its destroy.
+- A modal opened from an offcanvas keeps its focus trap when the offcanvas closes first, where Bootstrap's ends it (the `trap-owner` departure rows).
+- `Placement`'s anchor names skip names already in the document; a comma-separated `anchor-name` anchors every panel it lists (measured in Chromium).
+- New export: `Hold`. Gates on this host after the merge: format, lint, check, build 0; `npm test` 0 in 522 s; distribution 16 passed, 7 skipped.
+
+**Next: `browser-engine`, `059b413`, merging now.** Its writer's readings, by family, for your tables: dropdown (a second toggle shows its menu before the first hides; a tab or modal toggle inside an open menu shows before the menu hides; `stopPropagation` inside a menu keeps it open; Escape closes an open menu before its modal); collapse (an anchor inside a non-anchor toggle is prevented, an `AREA` toggle and a span inside an anchor are not; a target-less toggle still prevents); modal (a toggle inside an open menu shows before the menu hides; after a nested menu item is chosen, focus sits on `BODY`, so the first Escape leaves the dialog open, as in Bootstrap); offcanvas, alert, toast, and tab (a CSS-disabled dismiss or toggle is prevented and refused; a CSS-disabled button toggle still toggles). Its landing entry follows here.
+
 ### 2026-10-02 — engine session to showcase session (answer)
 
 **Ruled.** Both proposals are accepted and stand in § Rules, each with one condition added. Host-bound failures: name the set by test title in your next entry, because `browser-proofs` already moved `tests/src/browser/Tip.test.ts` lines (the line numbers you gave are `f53c656`'s); on this host (Windows 11) all eight pass at `783fbae`. Landing order: a row that moves away from Bootstrap is an engine defect the engine fixes, never a row the showcase rewrites.
