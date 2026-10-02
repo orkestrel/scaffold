@@ -97,10 +97,15 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
    - Bootstrap's keydown handler and its menu clearing are module-level data API code that drives the instance (`dropdown.js:364`, `dropdown.js:419`). In the engine they are the dropdown plugin's keydown route and its `clear` entry. They use `show`, `hide`, `visible`, `menu`, and `element`, plus the item-focus and predicate helpers.
    - The dismiss policy (`dismiss.inside`, `dismiss.outside`) is the component's own configuration. The interface gains `dismiss(event: Event): void`, which closes the open menu when the event falls where those options close it, and carries a click as the hide event's `clickEvent`.
    - Every other family's data API already uses public members only.
-10. **The tips.** `Tooltip` and `Popover` only choose a profile, so they go.
-    - `Tip` takes `TipProfile = 'tooltip' | 'popover'`, a real discriminant: defaults, template, slots, wire names.
-    - `createTooltipPlugin` and `createPopoverPlugin` build its two plugins.
-    - `createTooltip` and `createPopover` settle against `Tip` and return `TooltipInterface` and `PopoverInterface`.
+10. **The tips.** `Tooltip` and `Popover` only choose a profile, so they go. The user kept the deletion on 2026-10-02 and ruled that `Tip` is typed per profile, that the plugins and the engine never confuse the two profiles, and that both work together on one page, in one container, and on one host as Bootstrap's do.
+    - Bootstrap's `Popover` subclasses `Tooltip` and changes only data: the defaults (click and right against hover, focus, and top; an 8 px against a 6 px offset), the template's header and body slots against one inner slot, the show condition (a title or a body against a title), and the name behind the event namespace, the auto class, and the id prefix (`node_modules/bootstrap/js/src/popover.js:20-71`, `node_modules/bootstrap/js/src/tooltip.js:67-78`).
+    - `Tip<P extends TipProfile = TipProfile>` implements `TipInterface<P>`. `TipProfile = 'tooltip' | 'popover'` is a real discriminant: defaults, template, slots, wire names.
+    - The constructor is `(element, context: ComponentContext<Tip<NoInfer<P>>>, options: TipProfileMap[NoInfer<P>]['options'], profile: P)`, so the profile argument alone fixes `P`. A tooltip refuses popover options, a tooltip context refuses the popover profile, and a tooltip refuses a body in `write`. A deleted probe measured each refusal at compile time, and the sound uses typechecked with exit 0 (2026-10-02).
+    - `TipInterface<P>` carries `readonly profile: P` and `write(content: TipProfileMap[P]['content'])`. `TooltipInterface` extends `TipInterface<'tooltip'>`, and `PopoverInterface` extends `TipInterface<'popover'>`.
+    - `createTooltipPlugin(): PluginInterface<Tip<'tooltip'>>` and `createPopoverPlugin(): PluginInterface<Tip<'popover'>>` guard with `isInstance(value, Tip)` and the profile, so a lookup under either name returns only its own profile.
+    - `createTooltip` and `createPopover` settle against those plugins and return `TooltipInterface` and `PopoverInterface` with no assertion.
+    - The engine carries no tip branch. The tooltip plugin declares no route, and the popover plugin's click route only creates its own profile.
+    - The family proofs measure coexistence against the oracle: one page with both profiles, one container delegating both, one host carrying both in either creation order, a modal holding both, and the disposal of one while the other lives. Where a transcript differs, the oracle wins.
 11. **The rest of the surface.**
     - `isDisabled` and `isVisible` become predicates on `HTMLElement` in `helpers.ts`, and `isTrigger` folds into the binder.
     - `BROWSER_DEFAULTS` splits into one constant per family, plus `TIP_DEFAULTS` keyed by profile.
@@ -232,6 +237,16 @@ export interface TipRenderOptions {
 
 export type TipProfile = 'tooltip' | 'popover'
 
+export interface TipProfileMap {
+	readonly tooltip: { readonly options: TooltipOptions; readonly content: TooltipContent }
+	readonly popover: { readonly options: PopoverOptions; readonly content: PopoverContent }
+}
+
+// TipInterface becomes TipInterface<P extends TipProfile = TipProfile> and gains:
+// readonly profile: P
+// write(content: TipProfileMap[P]['content']): void
+// TooltipInterface extends TipInterface<'tooltip'>; PopoverInterface extends TipInterface<'popover'>.
+
 // DropdownInterface gains:
 // dismiss(event: Event): void
 
@@ -267,8 +282,10 @@ The functions are these.
 1. **`browser-convention` (GPT-6 Astra).** It runs in the worktree `veneer-wt-browser-convention`, rebased onto veneer `main` at `0738ccf`, carrying the first two runs' work uncommitted. It implements rulings 1 to 13 in one tree: types first, the oracle proofs as the measure, the consumer migration, guide parity, and the roadmap counts.
    - The first run stopped on ruling 6's unmeasured premise, since corrected.
    - The second run was stopped by the Orchestrator when the user moved the plugin wrapping to `plugins.ts`.
-   - Brief: veneer `tmp/codex/browser-convention-3-brief.md`.
-2. **One `orkestrel-falsify` round.**
+   - The third run (brief veneer `tmp/codex/browser-convention-3-brief.md`) stopped on the application's unbound `destroy` callback, which the class rewrite makes false. The Orchestrator ruled the consumer change: the application holds the engine and passes an arrow.
+   - The fourth run (brief veneer `tmp/codex/browser-convention-4-brief.md`) finishes the third, applies ruling 10's typed profile and profile guards, and runs the full ladder.
+2. **`browser-tips` (GPT-6 Astra).** It runs on veneer `main` after the pick of the first unit and proves ruling 10's coexistence against the oracle. Its scenarios come from a map of Bootstrap's tooltip and popover sources that the Orchestrator verifies before the brief prescribes any of them. Brief: veneer `tmp/codex/browser-tips-brief.md`.
+3. **One `orkestrel-falsify` round.**
    - The reviewer runs on Claude Opus 5.5, for the Astra-written mechanism and for scaffold's plugin kind.
    - The analyst runs on GPT-6 Astra, for the contract this verdict wrote.
-3. **The tree-wide gates.** After them, this verdict and the audit verdict close.
+4. **The tree-wide gates.** After them, this verdict and the audit verdict close.
