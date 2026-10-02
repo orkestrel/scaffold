@@ -8,9 +8,9 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | --- | --- |
 | Handoff | not handed off; the cloud session is active (2026-10-02) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
-| Veneer main | `8a84e5f` carries the showcase with the tuned journeys (`5d99d2e`) and the rigor fixes (`8a84e5f`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
+| Veneer main | `0df5a3b` carries the showcase with the tuned journeys (`5d99d2e`), the rigor fixes (`8a84e5f`), and the polish round (`0df5a3b`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
 | Ahead of main | nothing pushed |
-| In flight | `S1`, the component statecharts, in a worktree on the local branch `sc/statecharts` (brief `s1-brief.md`, evidence `g2-statechart-distillate.md`); `P1`, the polish round, in the cloud host's veneer checkout (brief `p1-brief.md`); both `astra` lanes |
+| In flight | `S1b`, the component statecharts, on an `astra` lane in a worktree on the local branch `sc/statecharts` (briefs `s1-brief.md` and `s1b-brief.md`, evidence `g2-statechart-distillate.md`); five groups committed there (`301fb50` to `ba41d97`: button, alert, collapse, accordion, tabs, dropdowns, tooltip, popover), not yet merged |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 
 ## Ownership boundary
@@ -48,8 +48,8 @@ The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and C
    - replace the `.mt-3` and `.gap-4` rows of `TAILWIND_READINGS`, which read the same with or without the exclusion, with rows that depart when the exclusion is removed;
    - assert the face and theme pair states in the statechart, for example `tailwindcss` with `dark`;
    - bind every number a `tailwindcss.html` caption states to a reading, or drop the number.
-3. `S1`, in flight: component statecharts, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
-4. `P1`, in flight: a review of the `CAPTURE=1` portfolio against a checklist, then class and markup fixes in `app/browser/`.
+3. `S1b`, in flight: component statecharts, tuned to at most 45 s per variant project and 235 s for the whole journey gate, with the toast dismiss buttons named per toast, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
+4. `P1`, landed as `0df5a3b`: 16 rendered findings closed in `app/browser/` (matrix widths at 390, contrasting surfaces for fixed light and dark variants, paired figures with equal-height cards, shorter captions). A later round can rule the toggle-button figure's light surface in dark mode.
 5. Browse recheck through the `browse` server of `@orkestrel/browser`, exploratory; file each gap it hits as a browser `ROADMAP.md` item: no viewport control, screenshots only in replay, and smooth-scroll replay timing.
 6. Docs: the showcase sections of `guides/veneer.md`.
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
