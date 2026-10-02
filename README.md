@@ -27,8 +27,8 @@ options, its defaults, and the exit codes.
   and script regions.
 - `catalog` rewrites the package table in the target's catalog agent file, and refetches the guide
   mirrors.
-- `overwrite` does everything `repair` and `catalog` do, then deletes what the plan does not own and
-  re-declares the dependency ranges.
+- `overwrite` does everything `repair` and `catalog` do, then deletes what the plan does not own,
+  re-declares the dependency ranges, and declares each planned dependency the manifest lacks.
 
 ## Library
 

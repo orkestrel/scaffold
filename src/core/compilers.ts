@@ -2464,6 +2464,204 @@ export function replaceManifestRanges(
 }
 
 /**
+ * Inserts dependencies a package manifest does not declare into the section each one names.
+ *
+ * @param manifest - The manifest text to compile.
+ * @param additions - The runtime and development names and ranges to declare.
+ * @returns The manifest declaring every addition, or `undefined` when the text is not a
+ * manifest, an addition's section is not an object or holds a value that is not a range, a name
+ * is repeated, or `dependencies` or `devDependencies` already declares a name.
+ *
+ * @remarks
+ * Runtime additions enter `dependencies` and development additions enter `devDependencies`. The
+ * compiler inserts text instead of serializing the manifest, so every declared byte survives.
+ * Each addition lands before the first declared key that sorts after it, or after the last
+ * declared key when none does, so a section kept in key order stays in key order. An addition
+ * copies the indentation of the section's first entry; an empty section takes its entries one
+ * level inside the indentation of its opening line. An absent section is created as one
+ * top-level key holding its additions: `devDependencies` after `dependencies`, `dependencies`
+ * before `devDependencies`, and either one last in the manifest object when its sibling is
+ * absent. The created key copies the indentation of the manifest's first key, and its entries sit
+ * one level further in. A name either writable section already declares is the caller's mistake
+ * rather than an addition, so the compiler refuses it instead of declaring a package twice.
+ *
+ * @example
+ * ```ts
+ * import { insertManifestDependencies } from '@orkestrel/scaffold'
+ *
+ * insertManifestDependencies('{\n\t"devDependencies": {\n\t\t"vite": "^8.3.2"\n\t}\n}\n', {
+ *   runtime: [],
+ *   development: [{ name: 'typescript', range: '^6.0.3' }],
+ * })
+ * // '{\n\t"devDependencies": {\n\t\t"typescript": "^6.0.3",\n\t\t"vite": "^8.3.2"\n\t}\n}\n'
+ * ```
+ */
+export function insertManifestDependencies(
+	manifest: string,
+	additions: DependencyPinSet,
+): string | undefined {
+	const requested = [...additions.runtime, ...additions.development]
+	if (requested.length === 0) return manifest
+	const parsed = parseJSON(manifest)
+	if (!isRecord(parsed)) return undefined
+	const declared = new Set<string>()
+	for (const section of ['dependencies', 'devDependencies']) {
+		const entries = parsed[section]
+		if (isRecord(entries)) for (const name of Object.keys(entries)) declared.add(name)
+	}
+	const names = new Set(requested.map(({ name }) => name))
+	if (names.size !== requested.length || [...names].some((name) => declared.has(name))) {
+		return undefined
+	}
+	let compiled = manifest
+	const sections = [
+		{ name: 'dependencies', dependencies: additions.runtime },
+		{ name: 'devDependencies', dependencies: additions.development },
+	]
+	for (const section of sections) {
+		if (section.dependencies.length === 0) continue
+		const entries = parsed[section.name]
+		if (entries !== undefined && (!isRecord(entries) || !Object.values(entries).every(isString))) {
+			return undefined
+		}
+		const ordered = [...section.dependencies].sort((left, right) =>
+			compareValues(left.name, right.name),
+		)
+		const lines = ordered.map(
+			({ name, range }) => `${JSON.stringify(name)}: ${JSON.stringify(range)}`,
+		)
+		// Locate the braces of the section and of its sibling, the first top-level key,
+		// and the manifest object's closing brace. Depth counts objects alone, exactly
+		// as the range writer counts them, so a key nested inside another value never
+		// reads as a top-level one.
+		const sibling = section.name === 'dependencies' ? 'devDependencies' : 'dependencies'
+		const located = new Map<string, { start: number; open: number; close: number }>()
+		let current: { name: string; start: number; open: number } | undefined
+		let head = -1
+		let root = -1
+		let depth = 0
+		let cursor = 0
+		while (cursor < compiled.length && root < 0) {
+			const character = compiled.charAt(cursor)
+			if (character === '"') {
+				const start = cursor
+				let quote = cursor + 1
+				while (quote < compiled.length && compiled.charAt(quote) !== '"') {
+					quote += compiled.charAt(quote) === '\\' ? 2 : 1
+				}
+				if (quote >= compiled.length) return undefined
+				let colon = quote + 1
+				while (/\s/u.test(compiled.charAt(colon))) colon += 1
+				cursor = quote + 1
+				if (depth !== 1 || compiled.charAt(colon) !== ':') continue
+				if (head < 0) head = start
+				const name: unknown = parseJSON(compiled.slice(start, quote + 1))
+				if (!isString(name) || (name !== section.name && name !== sibling)) continue
+				if (located.has(name)) continue
+				let brace = colon + 1
+				while (/\s/u.test(compiled.charAt(brace))) brace += 1
+				if (compiled.charAt(brace) !== '{') {
+					if (name === section.name) return undefined
+					continue
+				}
+				current = { name, start, open: brace }
+				depth += 1
+				cursor = brace + 1
+				continue
+			}
+			if (character === '{') depth += 1
+			else if (character === '}') {
+				depth -= 1
+				if (depth === 1 && current !== undefined) {
+					located.set(current.name, { ...current, close: cursor })
+					current = undefined
+				}
+				if (depth === 0) root = cursor
+			}
+			cursor += 1
+		}
+		const bounds = located.get(section.name)
+		if (bounds === undefined) {
+			if (entries !== undefined || root < 0) return undefined
+			// An absent section becomes one top-level key: `devDependencies` after
+			// `dependencies` and `dependencies` before `devDependencies`, otherwise last.
+			// It copies the indentation of the manifest's first key, and lands on the
+			// same line when that key shares a line with the opening brace.
+			const breaking = head < 0 ? -1 : compiled.lastIndexOf('\n', head)
+			const margin = breaking < 0 ? '' : compiled.slice(breaking + 1, head)
+			const gap = breaking < 0 || /\S/u.test(margin) ? '' : `\n${margin}`
+			const block = `${JSON.stringify(section.name)}: {${lines.map((line) => `${gap === '' ? '' : `${gap}${margin}`}${line}`).join(',')}${gap}}`
+			const neighbor = located.get(sibling)
+			let tail = root - 1
+			while (tail > 0 && /\s/u.test(compiled.charAt(tail))) tail -= 1
+			const [position, insertion] =
+				neighbor === undefined
+					? [tail + 1, compiled.charAt(tail) === '{' ? block : `,${gap}${block}`]
+					: section.name === 'devDependencies'
+						? [neighbor.close + 1, `,${gap}${block}`]
+						: [neighbor.start, `${block},${gap}`]
+			compiled = compiled.slice(0, position) + insertion + compiled.slice(position)
+			continue
+		}
+		const { open, close } = bounds
+		// Every value is a string, so the section's strings alternate key and value and
+		// each entry runs from its key's opening quote to its value's closing quote.
+		const declarations: Array<{ name: string; start: number; end: number }> = []
+		let key: { name: string; start: number } | undefined
+		let scan = open + 1
+		while (scan < close) {
+			if (compiled.charAt(scan) !== '"') {
+				scan += 1
+				continue
+			}
+			let quote = scan + 1
+			while (quote < close && compiled.charAt(quote) !== '"') {
+				quote += compiled.charAt(quote) === '\\' ? 2 : 1
+			}
+			if (quote >= close) return undefined
+			if (key === undefined) {
+				const name: unknown = parseJSON(compiled.slice(scan, quote + 1))
+				if (!isString(name)) return undefined
+				key = { name, start: scan }
+			} else {
+				declarations.push({ ...key, end: quote + 1 })
+				key = undefined
+			}
+			scan = quote + 1
+		}
+		const first = declarations[0]
+		const last = declarations.at(-1)
+		const edits = new Map<number, string>()
+		if (first === undefined || last === undefined) {
+			const opening = compiled.lastIndexOf('\n', open)
+			let column = opening + 1
+			while (column < open && /\s/u.test(compiled.charAt(column))) column += 1
+			const level = opening < 0 ? '' : compiled.slice(opening + 1, column)
+			const separator = opening < 0 ? '' : `\n${level}${level}`
+			const ending = opening < 0 ? '' : `\n${level}`
+			compiled = `${compiled.slice(0, open + 1)}${lines.map((line) => `${separator}${line}`).join(',')}${ending}${compiled.slice(close)}`
+			continue
+		}
+		const newline = compiled.lastIndexOf('\n', first.start)
+		const indent = newline < 0 ? '' : compiled.slice(newline + 1, first.start)
+		const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
+		for (const [index, dependency] of ordered.entries()) {
+			const line = lines[index] ?? ''
+			const anchor = declarations.find(
+				(declaration) => compareValues(declaration.name, dependency.name) > 0,
+			)
+			const position = anchor?.start ?? last.end
+			const text = anchor === undefined ? `,${separator}${line}` : `${line},${separator}`
+			edits.set(position, `${edits.get(position) ?? ''}${text}`)
+		}
+		for (const [position, text] of [...edits].sort(([left], [right]) => right - left)) {
+			compiled = compiled.slice(0, position) + text + compiled.slice(position)
+		}
+	}
+	return compiled
+}
+
+/**
  * Replaces named script values in package manifest text.
  *
  * @param manifest - The manifest text to compile.

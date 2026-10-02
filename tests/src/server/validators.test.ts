@@ -10,6 +10,7 @@ import {
 	isFilesystemPath,
 	isHost,
 	isInventory,
+	isManifestRegionSet,
 	isMirrors,
 	isWorktree,
 	MAX_INVENTORY_PATHS,
@@ -58,6 +59,27 @@ describe('guard totality', () => {
 			for (const accepted of guardCase.accepted) expect(guardCase.guard(accepted)).toBe(true)
 		})
 	}
+})
+
+describe('isManifestRegionSet', () => {
+	it('admits an omitted additions region and refuses a malformed one or a region the writer does not carry', () => {
+		const regions = { pins: { runtime: [], development: [] }, scripts: [] }
+		expect(isManifestRegionSet(regions)).toBe(true)
+		expect(
+			isManifestRegionSet({
+				...regions,
+				additions: { runtime: [], development: [{ name: '@orkestrel/browser', range: '^0.0.20' }] },
+			}),
+		).toBe(true)
+		expect(isManifestRegionSet({ ...regions, additions: { runtime: [] } })).toBe(false)
+		expect(
+			isManifestRegionSet({
+				...regions,
+				additions: { runtime: [], development: [{ name: '@orkestrel/browser' }] },
+			}),
+		).toBe(false)
+		expect(isManifestRegionSet({ ...regions, peers: { runtime: [], development: [] } })).toBe(false)
+	})
 })
 
 describe('isFilesystemPath', () => {

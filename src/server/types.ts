@@ -274,7 +274,7 @@ export interface MaterializerInterface {
 	/**
 	 * Rewrites the manifest regions the caller names in the target's manifest.
 	 *
-	 * @param regions - The dependency ranges and script values the manifest must declare.
+	 * @param regions - The dependency ranges, script values, and additions the manifest must declare.
 	 * @param target - The directory to write into.
 	 * @returns The manifest path, written when a named region moved and skipped otherwise.
 	 *
@@ -282,7 +282,9 @@ export interface MaterializerInterface {
 	 * No other part of the manifest is read back out or rewritten. The method
 	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`. A
 	 * script region naming a value the manifest does not accept is skipped
-	 * without a byte moving, and the range region is written regardless.
+	 * without a byte moving, and the range region is written regardless. An
+	 * addition is inserted into the section its list names, which is created when
+	 * the manifest lacks it, and one the manifest already declares is refused.
 	 */
 	declare(regions: ManifestRegionSet, target: string): MaterializeResult
 	/**

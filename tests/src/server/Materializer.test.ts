@@ -8,6 +8,7 @@ import {
 	Compiler,
 	contentToHex,
 	createBlueprint,
+	insertManifestDependencies,
 	isFinding,
 	RELEASE_PROOF_COMMAND,
 	renderSkillPointer,
@@ -1494,6 +1495,61 @@ describe('Materializer declare', () => {
 					),
 				).toBe('INVALID')
 				expect(workspace.read('project/package.json')).toBe(TARGET_MANIFEST_TEXT)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('declares each addition beside the ranges it rewrites and refuses an addition the manifest already declares', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			workspace.write('project/package.json', TARGET_MANIFEST_TEXT)
+			const materializer = new Materializer({ host })
+			try {
+				const additions = {
+					runtime: [],
+					development: [{ name: '@orkestrel/router', range: '^0.0.8' }],
+				}
+				expect(
+					captureScaffoldCode(() =>
+						materializer.declare(
+							{
+								pins: { runtime: [], development: [] },
+								scripts: [],
+								additions: {
+									runtime: [],
+									development: [{ name: '@orkestrel/guide', range: '^0.0.9' }],
+								},
+							},
+							target,
+						),
+					),
+				).toBe('INVALID')
+				expect(workspace.read('project/package.json')).toBe(TARGET_MANIFEST_TEXT)
+				const result = materializer.declare(
+					{
+						pins: { runtime: [{ name: '@orkestrel/emitter', range: '^0.0.9' }], development: [] },
+						scripts: [],
+						additions,
+					},
+					target,
+				)
+				expect(result.written).toEqual(['package.json'])
+				const text = workspace.read('project/package.json') ?? ''
+				expect(text).toBe(
+					insertManifestDependencies(TARGET_MANIFEST_TEXT, additions)?.replace(
+						'"@orkestrel/emitter": "^0.0.5"',
+						'"@orkestrel/emitter": "^0.0.9"',
+					),
+				)
+				const parsed: unknown = JSON.parse(text)
+				expect(parsed).toHaveProperty(['devDependencies', '@orkestrel/router'], '^0.0.8')
+				expect(parsed).not.toHaveProperty(['dependencies', '@orkestrel/router'])
 			} finally {
 				materializer.destroy()
 			}

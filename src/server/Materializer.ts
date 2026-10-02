@@ -40,6 +40,7 @@ import {
 	computeBytes,
 	contentToHex,
 	inferGroup,
+	insertManifestDependencies,
 	isAudit,
 	isPlan,
 	isRetainedPath,
@@ -426,11 +427,13 @@ export class Materializer implements MaterializerInterface {
 	/**
 	 * Rewrites the manifest regions the caller names in the target's manifest.
 	 *
-	 * @param regions - The dependency ranges and script values the manifest must declare.
+	 * @param regions - The dependency ranges, script values, and additions the manifest must declare.
 	 * @param target - The directory to write into.
 	 * @returns The manifest path, written when a named region moved and skipped otherwise.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
-	 * exact shape or names a package the manifest does not declare, `TARGET` when
+	 * exact shape, names a range the manifest does not declare, or names an
+	 * addition the manifest already declares or whose section is not an object
+	 * of version strings, `TARGET` when
 	 * the manifest is unreadable, `WRITE` when the write cannot be staged or
 	 * committed, and `DESTROYED` after teardown.
 	 *
@@ -438,7 +441,10 @@ export class Materializer implements MaterializerInterface {
 	 * No other part of the manifest is read back out or rewritten. The method
 	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`. Only a
 	 * range already declared in its named writable section is rewritten, so an
-	 * undeclared name is refused instead of inserted.
+	 * undeclared pin is refused instead of inserted. An undeclared package enters
+	 * the manifest only through `additions`, which inserts it into the section its
+	 * list names in key order, creating that section when the manifest lacks it,
+	 * before the ranges are rewritten.
 	 *
 	 * The regions refuse differently because their targets differ. A range
 	 * the manifest does not declare is the caller's mistake and throws. A script
@@ -1269,10 +1275,21 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Every named region replaced in place. The manifest's text is edited rather
-	// than re-serialized, so nothing but the named ranges and script values moves.
+	// than re-serialized, so nothing but the inserted declarations, the named
+	// ranges, and the script values moves.
 	#redeclare(regions: ManifestRegionSet): (text: string) => string {
 		return (text: string) => {
-			const manifest = replaceManifestRanges(text, regions.pins)
+			const additions = regions.additions ?? { runtime: [], development: [] }
+			const declared = insertManifestDependencies(text, additions)
+			if (declared === undefined) {
+				const names = [...additions.runtime, ...additions.development].map(({ name }) => name)
+				throw this.#error(
+					'INVALID',
+					`The manifest cannot declare ${names.join(', ')}: it already declares one of them, or the section that receives them is not an object of version strings.`,
+					{ names: names.length },
+				)
+			}
+			const manifest = replaceManifestRanges(declared, regions.pins)
 			if (manifest === undefined) {
 				const dependencies = [...regions.pins.runtime, ...regions.pins.development]
 				const missing = dependencies.find(

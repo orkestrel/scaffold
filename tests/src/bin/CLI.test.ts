@@ -1246,6 +1246,125 @@ describe('CLI upstream baselines', () => {
 })
 
 describe('CLI audit', () => {
+	// A sheet test is birth-owned, so a target born before the relative import keeps
+	// its root-relative one while the content-owned lint configuration refuses it.
+	it('asks for the relative specifier a birth-owned sheet test imports by a root-relative one, and raises nothing over the relative import', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('sheets')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sheets',
+					'--src',
+					'core',
+					'--styles',
+					'--themes',
+					'--offline',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const styles = 'tests/src/styles/index.test.ts'
+			const themes = 'tests/src/styles/themes/index.test.ts'
+			const stylesSpecifier = '../../../dist/src/styles/index.css?raw'
+			const themesSpecifier = '../../../../dist/src/styles/themes/index.css?raw'
+			const born = [workspace.read(`sheets/${styles}`), workspace.read(`sheets/${themes}`)]
+			expect(born[0]).toContain(`import sheet from '${stylesSpecifier}'`)
+			expect(born[1]).toContain(`import sheet from '${themesSpecifier}'`)
+
+			const relative = createSink()
+			expect(
+				await new CLI(relative.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const control: AuditResult = JSON.parse(relative.output[0] ?? '')
+			expect(control.questions.filter(({ field }) => field === 'tests')).toStrictEqual([])
+
+			workspace.write(
+				`sheets/${styles}`,
+				(born[0] ?? '').replace(stylesSpecifier, '/dist/src/styles/index.css?raw'),
+			)
+			workspace.write(
+				`sheets/${themes}`,
+				(born[1] ?? '').replace(
+					`import sheet from '${themesSpecifier}'`,
+					'import sheet from \'/dist/src/styles/themes/index.css?raw\'\nimport styles from "/dist/src/styles/index.css?raw"',
+				),
+			)
+			const rooted = createSink()
+			expect(
+				await new CLI(rooted.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const advised: AuditResult = JSON.parse(rooted.output[0] ?? '')
+			expect(advised.findings.every(({ drift }) => drift === 'aligned')).toBe(true)
+			expect(advised.questions.filter(({ field }) => field === 'tests')).toStrictEqual([
+				{
+					field: 'tests',
+					message: `The birth-owned sheet test ${styles} imports by a root-relative specifier, which oxlint's import/no-absolute-path rule refuses under --deny-warnings. Replace '/dist/src/styles/index.css?raw' with '${stylesSpecifier}'. Scaffold does not rewrite a birth-owned file.`,
+					blocking: false,
+				},
+				{
+					field: 'tests',
+					message: `The birth-owned sheet test ${themes} imports by root-relative specifiers, which oxlint's import/no-absolute-path rule refuses under --deny-warnings. Replace '/dist/src/styles/themes/index.css?raw' with '${themesSpecifier}' and '/dist/src/styles/index.css?raw' with '../../../../dist/src/styles/index.css?raw'. Scaffold does not rewrite a birth-owned file.`,
+					blocking: false,
+				},
+			])
+			const rootedStyles = workspace.read(`sheets/${styles}`)
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const repair: RepairResult = JSON.parse(repaired.output[0] ?? '')
+			expect(repair.audit.questions.filter(({ field }) => field === 'tests')).toStrictEqual(
+				advised.questions.filter(({ field }) => field === 'tests'),
+			)
+			expect(workspace.read(`sheets/${styles}`)).toBe(rootedStyles)
+			const scoped = createSink()
+			await new CLI(scoped.options).execute([
+				'audit',
+				'--offline',
+				'--groups',
+				'docs',
+				'--from',
+				host,
+				'--target',
+				target,
+				'--json',
+			])
+			const excluded: AuditResult = JSON.parse(scoped.output[0] ?? '')
+			expect(excluded.questions.filter(({ field }) => field === 'tests')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('keeps guide difference questions non-blocking and excludes the target guide during audit', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -5082,6 +5201,264 @@ describe('CLI repair', () => {
 })
 
 describe('CLI overwrite', () => {
+	// Overwrite already re-declares the dependency ranges, so it declares a planned
+	// dependency the manifest lacks beside them. Repair never edits a dependency
+	// map, so it keeps the refusal the same manifest earns.
+	it('declares a planned development dependency the manifest lacks and reports it, while repair still refuses', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const range = requireValue(TARGET_DEV_DEPENDENCIES.typescript)
+			const manifest = buildTargetManifest(
+				undefined,
+				undefined,
+				omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+			)
+			workspace.write('target/package.json', manifest)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(refused.output[0] ?? '')).toStrictEqual({
+				error: {
+					code: 'TARGET',
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. The configs and tests groups are blocked. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "${range}", Add the dependency before selecting configs or tests, or exclude those groups from --groups.`,
+				},
+			})
+			expect(workspace.read('target/package.json')).toBe(manifest)
+
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.additions).toStrictEqual({
+				runtime: [],
+				development: [{ name: 'typescript', range }],
+			})
+			// The declaration and the range rewrite both answer for the manifest, which is one path.
+			expect(result.written.filter((path) => path === 'package.json')).toStrictEqual([
+				'package.json',
+			])
+			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.audit.questions.filter(({ field }) => field === 'dependencies')).toStrictEqual(
+				[],
+			)
+			const text = workspace.read('target/package.json') ?? ''
+			expect(text).toContain(`\n\t\t"typescript": "${range}",\n`)
+			const declared: unknown = JSON.parse(text)
+			const development =
+				isRecord(declared) && isRecord(declared.devDependencies) ? declared.devDependencies : {}
+			// The declaration lands in the map the plan assigns it, at its key-order position.
+			expect(Object.keys(development)).toStrictEqual(Object.keys(TARGET_DEV_DEPENDENCIES))
+			expect(development.typescript).toBe(range)
+
+			workspace.write('target/package.json', manifest)
+			const human = createSink()
+			await new CLI(human.options).execute([
+				'overwrite',
+				'--offline',
+				'--dirty',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			expect(human.output).toContain(
+				`Declared "typescript": "${range}" in devDependencies. Run npm install to install it.`,
+			)
+			expect(workspace.read('target/package.json')).toContain(`"typescript": "${range}"`)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// A manifest with no devDependencies map gets one from overwrite rather than
+	// the hand-edit refusal, while repair keeps refusing the same manifest.
+	it('creates the devDependencies map a manifest lacks after dependencies and declares the planned dependencies in it, while repair still refuses', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const dependencies = { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.2' }
+			const manifest = `${JSON.stringify(
+				{
+					name: '@orkestrel/sample',
+					description: 'A sample workspace.',
+					scripts: blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+					dependencies,
+				},
+				undefined,
+				'\t',
+			)}\n`
+			const planned = omitDependencies(TARGET_DEV_DEPENDENCIES, Object.keys(dependencies))
+			expect(Object.keys(planned)).toContain('typescript')
+			workspace.write('target/package.json', manifest)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(refused.output[0] ?? '')
+			const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
+			expect(error.code).toBe('TARGET')
+			expect(error.message).toContain(
+				`The manifest at ${fleet.target} does not declare planned dependencies: `,
+			)
+			expect(error.message).toContain(
+				`Add these exact dependency lines to dependencies or devDependencies in package.json: `,
+			)
+			expect(workspace.read('target/package.json')).toBe(manifest)
+
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.additions.runtime).toStrictEqual([])
+			expect(
+				Object.fromEntries(result.additions.development.map(({ name, range }) => [name, range])),
+			).toStrictEqual(planned)
+			expect(result.written).toContain('package.json')
+			expect(result.audit.questions.filter(({ field }) => field === 'dependencies')).toStrictEqual(
+				[],
+			)
+			const text = workspace.read('target/package.json') ?? ''
+			// The bytes through the dependencies map survive, and the created map follows it.
+			const prefix = manifest.slice(0, manifest.lastIndexOf('\n}'))
+			expect(text.startsWith(`${prefix},\n\t"devDependencies": {\n\t\t"`)).toBe(true)
+			const declared: unknown = JSON.parse(text)
+			expect(isRecord(declared) ? Object.keys(declared) : []).toStrictEqual([
+				'name',
+				'description',
+				'scripts',
+				'dependencies',
+				'devDependencies',
+			])
+			const development =
+				isRecord(declared) && isRecord(declared.devDependencies) ? declared.devDependencies : {}
+			expect(development).toStrictEqual(planned)
+			expect(Object.keys(development)).toStrictEqual(Object.keys(planned).toSorted())
+
+			workspace.write('target/package.json', manifest)
+			const human = createSink()
+			await new CLI(human.options).execute([
+				'overwrite',
+				'--offline',
+				'--dirty',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			for (const [name, range] of Object.entries(planned)) {
+				expect(human.output).toContain(
+					`Declared ${JSON.stringify(name)}: ${JSON.stringify(range)} in devDependencies. Run npm install to install it.`,
+				)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The declaration runs whatever --groups selects, so a devDependencies map
+	// overwrite cannot declare into refuses every selection before any write.
+	it('refuses a devDependencies map holding a value that is not a version string before writing, under every group selection', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const malformed = buildTargetManifest(undefined, undefined, {
+				...omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+				'legacy-plugin': { version: '1.0.0' },
+			})
+			const section = buildTargetManifest(undefined, undefined, 'none')
+			workspace.write('target/package.json', malformed)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			const names = workspace.names('target').toSorted()
+			const sources = workspace.names('target/src/core').toSorted()
+			const readings: Array<readonly [number, unknown, unknown]> = []
+			for (const [manifest, groups] of [
+				[malformed, []],
+				[malformed, ['--groups', 'docs']],
+				[section, ['--groups', 'docs']],
+			] as const) {
+				workspace.write('target/package.json', manifest)
+				const sink = createSink()
+				const code = await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--dirty',
+					...groups,
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				])
+				const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+				const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
+				readings.push([code, error.code, error.message])
+				expect(workspace.read('target/package.json')).toBe(manifest)
+				expect(workspace.names('target').toSorted()).toStrictEqual(names)
+				expect(workspace.names('target/src/core').toSorted()).toStrictEqual(sources)
+			}
+			const entry = `The manifest at ${fleet.target} declares the devDependencies entry "legacy-plugin" as a value that is not a version string, so overwrite cannot declare the planned dependency typescript beside it. Replace it with a version range in package.json before running overwrite.`
+			expect(readings).toStrictEqual([
+				[EXIT_DRIFT, 'TARGET', entry],
+				[EXIT_DRIFT, 'TARGET', entry],
+				[
+					EXIT_DRIFT,
+					'TARGET',
+					expect.stringContaining(
+						`The manifest at ${fleet.target} declares devDependencies as a value that is not an object, so overwrite cannot declare the planned dependencies `,
+					),
+				],
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('writes every skill pointer file into a fresh target and sweeps the skill files the plan leaves out', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
