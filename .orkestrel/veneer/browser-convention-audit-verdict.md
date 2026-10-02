@@ -88,7 +88,7 @@ Each item names its bound; the fix brief carries both.
 
 ## Design
 
-Five shapes are open and go to one design pass before code: the counted-hold engine's contract (G9), the dead-scope refusal and its error (G2), whether `own` checks the plugin guard (G3), the collapse prevent rule's shape (G4), and the route leaf's name (G5).
+Five shapes went to one blind design pass before code: the counted-hold engine's contract (G9), the dead-scope refusal and its error (G2), whether `own` checks the plugin guard (G3), the collapse prevent rule's shape (G4), and the route leaf's name (G5). Ruling 17 of `browser-convention-verdict.md` rules each.
 
 ## Dropped on the record
 
