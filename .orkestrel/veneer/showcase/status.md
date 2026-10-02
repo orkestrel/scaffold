@@ -8,9 +8,9 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | --- | --- |
 | Handoff | not handed off; the cloud session is active (2026-10-02) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
-| Veneer main | `0738ccf` carries the interactive showcase through `9793ce1` |
-| Ahead of main | `42685f7`, one concept per matrix with every specimen visible; it lands on main with `J0b` |
-| In flight | `J0b`, the journey tuning unit, on an `astra` lane in the cloud host's veneer checkout |
+| Veneer main | `a443edf` carries the showcase with the tuned journeys (`5d99d2e`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
+| Ahead of main | nothing pushed |
+| In flight | `R1`, the rigor fixes, in the cloud host's veneer checkout; `S1`, the component statecharts, in a worktree on the local branch `sc/statecharts`; both `astra` lanes, briefs `r1-brief.md` and `s1-brief.md` beside this file, evidence `g1-rigor-distillate.md` and `g2-statechart-distillate.md` |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 
 ## Ownership boundary
@@ -36,31 +36,34 @@ The user's rulings of 2026-10-02 split veneer between the two sessions.
 The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and Chromium 141 under Playwright's pinned 153 (2026-10-02).
 
 - `npm run test:journey` at `42685f7` took 464.65 s: 40 passed, 1 failed, 7 incomplete, and the kernel killed Chromium for out-of-memory. The four variant projects ran concurrently and each ran the full four-variant matrix (about 132 s per project); J3 took 50 to 75 s and J2 34 to 40 s; the statechart timed out at 120 s in `light-390` and passed alone in 23.1 s of test time.
+- After `J0b` (`5d99d2e`), each variant project reads its own variant once and J2 reads each Tab stop from the focused element: 188.79 s, 48 passed, a sampled peak of 9 963 581 440 bytes with four concurrent projects (two concurrent projects took 302.53 s); per variant the matrix fell from about 132 s to 30 to 33 s and J2 from 34 to 40 s to 6 to 8 s. J3 (50 to 74 s) is the largest remaining cost. On `a443edf` the gate read 182 s, 48 passed.
 - Three `tests/integration.test.ts` cases (near lines 324, 339, and 595, the row-rule color) and six `tests/src/browser` cases (Placement, Tip, Tooltip) fail on Chromium 141 and pass on 153; neither session owes a fix for them.
 
 ## Remaining units, in order
 
-1. `J0b`, in flight: each variant project proves its own variant only, every test applies its project's theme and viewport, J2 resolves each Tab stop from the focused element, and browser concurrency stays under the memory limit.
-2. Rigor fixes from the round-1 critic, open at `42685f7`:
+1. `J0b`, landed as `5d99d2e` (§ Readings).
+2. `R1`, in flight: the rigor fixes from the round-1 critic, open at `42685f7`:
    - pin the face-invariance population so the block ids equal every non-Tailwind section id;
    - derive the pseudo list of `collectPseudos` from `collectPreflightPseudos` (`tests/setupStyles.ts`), so `::-webkit-search-decoration` is read;
    - replace the `.mt-3` and `.gap-4` rows of `TAILWIND_READINGS`, which read the same with or without the exclusion, with rows that depart when the exclusion is removed;
    - assert the face and theme pair states in the statechart, for example `tailwindcss` with `dark`;
    - bind every number a `tailwindcss.html` caption states to a reading, or drop the number.
-3. Component statecharts: one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrites the same three files, so read the patch as a design reference.
+3. `S1`, in flight: component statecharts, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
 4. Polish rounds: a subjective review of the `CAPTURE=1` portfolio, then class-only fixes.
 5. Browse recheck through the `browse` server of `@orkestrel/browser`, exploratory; file each gap it hits as a browser `ROADMAP.md` item: no viewport control, screenshots only in replay, and smooth-scroll replay timing.
 6. Docs: the showcase sections of `guides/veneer.md`.
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
 8. Adopt scaffold 0.0.86 in veneer through `scaffold overwrite`, which declares missing planned dependencies; veneer is on 0.0.85.
 9. Merge main and push each accepted state to veneer main.
+10. Tune J3 after `S1` lands, because the statecharts change each project's time.
 
 ## Resume after the handoff
 
 - Merge veneer `origin/main` into `ccr-d15a48b1-yyyll6` before the first unit.
 - Read `proposal.json` beside this file as the design of record: the accepted proposal with its scores and corrected claims. § Remaining units carries the open findings of the round-1 build reports, which lived on the cloud host.
 - Run `npm run build` before the journeys, because the page reads `dist/src/bootstrap/index.css`.
-- Iterate on one variant with `./node_modules/.bin/vitest run --config configs/app/vite.journey.config.ts --project journey:VARIANT -t PATTERN`, where `VARIANT` is `light-1280`, `dark-1280`, `light-390`, or `dark-390` and `PATTERN` filters test names.
+- Iterate on one variant with `./node_modules/.bin/vitest run --config configs/app/vite.journey.config.ts --project 'journey:VARIANT*' -t PATTERN`, where `VARIANT` is `light-1280`, `dark-1280`, `light-390`, or `dark-390` and `PATTERN` filters test names; one J2 run took 19.73 s and one statechart run 29.03 s, and a whole variant 137.18 s.
+- When the handoff happens mid-unit, the cloud session pushes `sc/statecharts` and any uncommitted lane state to veneer first and names them in § Status.
 - Read these gates bare: `format:check`, `lint:check`, `check`, `test:app:browser`, `test:setup:browser`, `test:journey`, `CAPTURE=1 npm run test:journey`, and `test:policy`.
 - On a POSIX host, the `workspace-write` sandbox of `codex exec` denies the journeys' grandchild processes, loopback server, and `.git` writes, so the showcase's `astra` lanes run at `danger-full-access`; record that deviation in the ledger for each such lane.
 - Treat the cloud host's `/home/user/.wave/` as lost when its container is reclaimed; this folder holds the durable copies.
