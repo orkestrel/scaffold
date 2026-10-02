@@ -14,6 +14,7 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | Ahead of main | the branch `ccr-d15a48b1-yyyll6` at `f53c656` merges `main` and adds the component statecharts (18 tables, 564 rows; journeys 66 of 66 in 355 s on the cloud host), so they wait for `J0c` (`../lanes.md` § Log, 2026-10-02) |
 | In flight | `J0c`, the journey cost unit, on an `astra` lane in the cloud host's veneer checkout at `f53c656` (brief `j0c-brief.md`, designed by a five-lens workflow with adversarial verifiers; modeled at about 225 s) |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
+| Browse | `browse.md` beside this file holds the browse lane: the browser branch, the release and re-pins it owes, the open roadmap items, and `BR1` in flight |
 
 ## Ownership boundary
 
@@ -48,7 +49,7 @@ The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and C
    - bind every number a `tailwindcss.html` caption states to a reading, or drop the number.
 3. `S1b`, merged on the branch as `fc4c4a2` (report `s1b-report.md`; it missed its 45 s and 235 s budgets): component statecharts, with the toast dismiss buttons named per toast, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
 4. `P1`, landed as `0df5a3b`: 16 rendered findings closed in `app/browser/` (matrix widths at 390, contrasting surfaces for fixed light and dark variants, paired figures with equal-height cards, shorter captions). A later round can rule the toggle-button figure's light surface in dark mode.
-5. Browse recheck through the `browse` server of `@orkestrel/browser`, exploratory; file each gap it hits as a browser `ROADMAP.md` item: no viewport control, screenshots only in replay, and smooth-scroll replay timing.
+5. Browse recheck, done as `B2` on 2026-10-02; the browse lane's units continue in `browse.md`.
 6. Docs: the showcase sections of `guides/veneer.md`.
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
 8. Done by the engine session: veneer adopted scaffold 0.0.87 and guide 0.0.24 (`ea80bb9`, `56c8293`).
