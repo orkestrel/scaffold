@@ -1294,6 +1294,38 @@ export class CLI implements CLIInterface {
 	): TargetQuestion | undefined {
 		const parsed = parseJSON(this.#manifest(target))
 		if (!isRecord(parsed)) return undefined
+		const dependencies = isRecord(parsed.dependencies) ? parsed.dependencies : {}
+		const development = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+		const missing = Object.entries(blueprintToDevDependencies(blueprint))
+			.filter(([name]) => !Object.hasOwn(dependencies, name) && !Object.hasOwn(development, name))
+			.sort(([left], [right]) => left.localeCompare(right))
+		const names = missing.map(([name]) => name)
+		// Overwrite declares each missing package into devDependencies whatever
+		// --groups selects, so a map it cannot declare into refuses every selection
+		// before the first write rather than after the configuration naming it lands.
+		if (declaring && missing.length > 0) {
+			const planned = `${names.length === 1 ? 'the planned dependency' : 'the planned dependencies'} ${names.join(', ')}`
+			if (parsed.devDependencies !== undefined && !isRecord(parsed.devDependencies)) {
+				return {
+					field: 'dependencies',
+					message: `The manifest at ${target} declares devDependencies as a value that is not an object, so overwrite cannot declare ${planned} in it. Replace it with an object in package.json before running overwrite.`,
+					blocking: true,
+					groups: ['configs', 'tests'],
+				}
+			}
+			const entries = Object.entries(development)
+				.filter(([, value]) => !isString(value))
+				.map(([name]) => JSON.stringify(name))
+			if (entries.length > 0) {
+				const single = entries.length === 1
+				return {
+					field: 'dependencies',
+					message: `The manifest at ${target} declares the devDependencies ${single ? 'entry' : 'entries'} ${entries.join(', ')} as ${single ? 'a value that is not a version string' : 'values that are not version strings'}, so overwrite cannot declare ${planned} beside ${single ? 'it' : 'them'}. Replace ${single ? 'it with a version range' : 'them with version ranges'} in package.json before running overwrite.`,
+					blocking: true,
+					groups: ['configs', 'tests'],
+				}
+			}
+		}
 		const malformed = ['dependencies', 'devDependencies'].filter(
 			(section) => parsed[section] !== undefined && !isRecord(parsed[section]),
 		)
@@ -1305,16 +1337,9 @@ export class CLI implements CLIInterface {
 				groups: ['configs', 'tests'],
 			}
 		}
-		const dependencies = isRecord(parsed.dependencies) ? parsed.dependencies : {}
-		const development = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
-		const missing = Object.entries(blueprintToDevDependencies(blueprint))
-			.filter(([name]) => !Object.hasOwn(dependencies, name) && !Object.hasOwn(development, name))
-			.sort(([left], [right]) => left.localeCompare(right))
-		if (missing.length === 0) return undefined
-		// Overwrite declares each missing package in the devDependencies map the plan
-		// assigns it, so only a manifest carrying no such map still refuses that verb.
-		if (declaring && isRecord(parsed.devDependencies)) return undefined
-		const names = missing.map(([name]) => name)
+		// Overwrite declares each missing package in devDependencies, creating that map
+		// when the manifest lacks it; repair never edits a dependency map.
+		if (missing.length === 0 || declaring) return undefined
 		const lines = missing.map(
 			([name, range]) => `${JSON.stringify(name)}: ${JSON.stringify(range)},`,
 		)

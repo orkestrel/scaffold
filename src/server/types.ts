@@ -283,8 +283,8 @@ export interface MaterializerInterface {
 	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`. A
 	 * script region naming a value the manifest does not accept is skipped
 	 * without a byte moving, and the range region is written regardless. An
-	 * addition is inserted into the section its list names, and one the manifest
-	 * already declares is refused.
+	 * addition is inserted into the section its list names, which is created when
+	 * the manifest lacks it, and one the manifest already declares is refused.
 	 */
 	declare(regions: ManifestRegionSet, target: string): MaterializeResult
 	/**

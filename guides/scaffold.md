@@ -806,13 +806,17 @@ reports it only when its selection includes either group, without changing its e
 `repair` refuses before writing a selected `configs` or `tests` group, and a selection that
 excludes those groups proceeds: `package.json` is birth-owned, and `repair` rewrites only its range
 and script regions. `overwrite` declares each missing package instead, in the `devDependencies` map
-the plan assigns it, at its planned range, before the first declared key that sorts after it. The
-declaration lands with the repair, before the catalog step, so a partial run keeps it. The JSON
-result names each declaration in `additions`, and the human report prints one
-`Declared "<name>": "<range>" in devDependencies. Run npm install to install it.` line per
-declaration, because the lockfile does not carry the package until the next install. A manifest
-whose `devDependencies` is absent leaves `overwrite` no map to declare in, so it refuses as `repair`
-does, and a malformed section refuses both verbs.
+the plan assigns it, at its planned range, before the first declared key that sorts after it. A
+manifest with no `devDependencies` map gets one: `overwrite` creates it as one top-level key after
+`dependencies`, or last in the manifest object when `dependencies` is absent too, in the indentation
+of the manifest's first key. The declaration lands with the repair, before the catalog step, so a
+partial run keeps it. The JSON result names each declaration in `additions`, and the human report
+prints one `Declared "<name>": "<range>" in devDependencies. Run npm install to install it.` line
+per declaration, because the lockfile does not carry the package until the next install. A
+`devDependencies` value that is not an object, or an entry in that map whose value is not a version
+string, leaves `overwrite` no map to declare in. `overwrite` refuses that manifest before any write,
+whatever `--groups` selects, and names the section or each malformed entry. A malformed section
+refuses `repair` as well.
 
 `audit` reports a further non-blocking question, on the `setup` field.
 

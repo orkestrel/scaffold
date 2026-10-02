@@ -923,13 +923,53 @@ describe('insertManifestDependencies', () => {
 		).toBe('{\n\t"devDependencies": {\n\t\t"typescript": "^6.0.3",\n\t\t"vite": "^8.3.2"\n\t}\n}\n')
 	})
 
+	// The present-map case earlier is the control: the same additions land inside an
+	// existing map, and only an absent map is created.
+	it("creates an absent section as one top-level key in the manifest's own indentation", () => {
+		const typescript = { name: 'typescript', range: '^6.0.3' }
+		const vite = { name: 'vite', range: '^8.3.2' }
+		expect(
+			insertManifestDependencies(
+				'{\n  "name": "@orkestrel/sample",\n  "dependencies": {\n    "@orkestrel/emitter": "^0.0.5"\n  },\n  "peerDependencies": {\n    "@orkestrel/browser": ">=0.0.1"\n  }\n}\n',
+				{ runtime: [], development: [vite, typescript] },
+			),
+		).toBe(
+			'{\n  "name": "@orkestrel/sample",\n  "dependencies": {\n    "@orkestrel/emitter": "^0.0.5"\n  },\n  "devDependencies": {\n    "typescript": "^6.0.3",\n    "vite": "^8.3.2"\n  },\n  "peerDependencies": {\n    "@orkestrel/browser": ">=0.0.1"\n  }\n}\n',
+		)
+		expect(
+			insertManifestDependencies('{\n\t"name": "@orkestrel/sample"\n}\n', {
+				runtime: [{ name: '@orkestrel/router', range: '^0.0.10' }],
+				development: [typescript],
+			}),
+		).toBe(
+			'{\n\t"name": "@orkestrel/sample",\n\t"dependencies": {\n\t\t"@orkestrel/router": "^0.0.10"\n\t},\n\t"devDependencies": {\n\t\t"typescript": "^6.0.3"\n\t}\n}\n',
+		)
+		expect(
+			insertManifestDependencies(
+				'{\n\t"name": "@orkestrel/sample",\n\t"devDependencies": {\n\t\t"vite": "^8.3.2"\n\t}\n}\n',
+				{ runtime: [{ name: '@orkestrel/router', range: '^0.0.10' }], development: [] },
+			),
+		).toBe(
+			'{\n\t"name": "@orkestrel/sample",\n\t"dependencies": {\n\t\t"@orkestrel/router": "^0.0.10"\n\t},\n\t"devDependencies": {\n\t\t"vite": "^8.3.2"\n\t}\n}\n',
+		)
+		expect(
+			insertManifestDependencies('{"name": "@orkestrel/sample"}', {
+				runtime: [],
+				development: [typescript],
+			}),
+		).toBe('{"name": "@orkestrel/sample","devDependencies": {"typescript": "^6.0.3"}}')
+		expect(insertManifestDependencies('{}', { runtime: [], development: [typescript] })).toBe(
+			'{"devDependencies": {"typescript": "^6.0.3"}}',
+		)
+	})
+
 	it('returns the manifest unchanged for no additions', () => {
 		expect(insertManifestDependencies(INSERTION_MANIFEST, { runtime: [], development: [] })).toBe(
 			INSERTION_MANIFEST,
 		)
 	})
 
-	it('refuses a name either writable section declares, a repeated name, an absent section, and a section that is not a map of ranges', () => {
+	it('refuses a name either writable section declares, a repeated name, and a section that is not a map of ranges', () => {
 		const browser = { name: '@orkestrel/browser', range: '^0.0.20' }
 		expect(
 			insertManifestDependencies(INSERTION_MANIFEST, {
@@ -944,7 +984,7 @@ describe('insertManifestDependencies', () => {
 			}),
 		).toBeUndefined()
 		expect(
-			insertManifestDependencies('{\n\t"name": "@orkestrel/sample"\n}\n', {
+			insertManifestDependencies('{"devDependencies": "none"}', {
 				runtime: [],
 				development: [browser],
 			}),

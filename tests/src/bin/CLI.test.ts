@@ -5293,6 +5293,172 @@ describe('CLI overwrite', () => {
 		}
 	})
 
+	// A manifest with no devDependencies map gets one from overwrite rather than
+	// the hand-edit refusal, while repair keeps refusing the same manifest.
+	it('creates the devDependencies map a manifest lacks after dependencies and declares the planned dependencies in it, while repair still refuses', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const dependencies = { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.2' }
+			const manifest = `${JSON.stringify(
+				{
+					name: '@orkestrel/sample',
+					description: 'A sample workspace.',
+					scripts: blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+					dependencies,
+				},
+				undefined,
+				'\t',
+			)}\n`
+			const planned = omitDependencies(TARGET_DEV_DEPENDENCIES, Object.keys(dependencies))
+			expect(Object.keys(planned)).toContain('typescript')
+			workspace.write('target/package.json', manifest)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(refused.output[0] ?? '')
+			const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
+			expect(error.code).toBe('TARGET')
+			expect(error.message).toContain(
+				`The manifest at ${fleet.target} does not declare planned dependencies: `,
+			)
+			expect(error.message).toContain(
+				`Add these exact dependency lines to dependencies or devDependencies in package.json: `,
+			)
+			expect(workspace.read('target/package.json')).toBe(manifest)
+
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.additions.runtime).toStrictEqual([])
+			expect(
+				Object.fromEntries(result.additions.development.map(({ name, range }) => [name, range])),
+			).toStrictEqual(planned)
+			expect(result.written).toContain('package.json')
+			expect(result.audit.questions.filter(({ field }) => field === 'dependencies')).toStrictEqual(
+				[],
+			)
+			const text = workspace.read('target/package.json') ?? ''
+			// The bytes through the dependencies map survive, and the created map follows it.
+			const prefix = manifest.slice(0, manifest.lastIndexOf('\n}'))
+			expect(text.startsWith(`${prefix},\n\t"devDependencies": {\n\t\t"`)).toBe(true)
+			const declared: unknown = JSON.parse(text)
+			expect(isRecord(declared) ? Object.keys(declared) : []).toStrictEqual([
+				'name',
+				'description',
+				'scripts',
+				'dependencies',
+				'devDependencies',
+			])
+			const development =
+				isRecord(declared) && isRecord(declared.devDependencies) ? declared.devDependencies : {}
+			expect(development).toStrictEqual(planned)
+			expect(Object.keys(development)).toStrictEqual(Object.keys(planned).toSorted())
+
+			workspace.write('target/package.json', manifest)
+			const human = createSink()
+			await new CLI(human.options).execute([
+				'overwrite',
+				'--offline',
+				'--dirty',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			for (const [name, range] of Object.entries(planned)) {
+				expect(human.output).toContain(
+					`Declared ${JSON.stringify(name)}: ${JSON.stringify(range)} in devDependencies. Run npm install to install it.`,
+				)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The declaration runs whatever --groups selects, so a devDependencies map
+	// overwrite cannot declare into refuses every selection before any write.
+	it('refuses a devDependencies map holding a value that is not a version string before writing, under every group selection', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const malformed = buildTargetManifest(undefined, undefined, {
+				...omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+				'legacy-plugin': { version: '1.0.0' },
+			})
+			const section = buildTargetManifest(undefined, undefined, 'none')
+			workspace.write('target/package.json', malformed)
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			const names = workspace.names('target').toSorted()
+			const sources = workspace.names('target/src/core').toSorted()
+			const readings: Array<readonly [number, unknown, unknown]> = []
+			for (const [manifest, groups] of [
+				[malformed, []],
+				[malformed, ['--groups', 'docs']],
+				[section, ['--groups', 'docs']],
+			] as const) {
+				workspace.write('target/package.json', manifest)
+				const sink = createSink()
+				const code = await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--dirty',
+					...groups,
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				])
+				const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+				const error = isRecord(refusal) && isRecord(refusal.error) ? refusal.error : {}
+				readings.push([code, error.code, error.message])
+				expect(workspace.read('target/package.json')).toBe(manifest)
+				expect(workspace.names('target').toSorted()).toStrictEqual(names)
+				expect(workspace.names('target/src/core').toSorted()).toStrictEqual(sources)
+			}
+			const entry = `The manifest at ${fleet.target} declares the devDependencies entry "legacy-plugin" as a value that is not a version string, so overwrite cannot declare the planned dependency typescript beside it. Replace it with a version range in package.json before running overwrite.`
+			expect(readings).toStrictEqual([
+				[EXIT_DRIFT, 'TARGET', entry],
+				[EXIT_DRIFT, 'TARGET', entry],
+				[
+					EXIT_DRIFT,
+					'TARGET',
+					expect.stringContaining(
+						`The manifest at ${fleet.target} declares devDependencies as a value that is not an object, so overwrite cannot declare the planned dependencies `,
+					),
+				],
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('writes every skill pointer file into a fresh target and sweeps the skill files the plan leaves out', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})

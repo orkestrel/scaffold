@@ -432,7 +432,8 @@ export class Materializer implements MaterializerInterface {
 	 * @returns The manifest path, written when a named region moved and skipped otherwise.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape, names a range the manifest does not declare, or names an
-	 * addition the manifest already declares or has no section for, `TARGET` when
+	 * addition the manifest already declares or whose section is not an object
+	 * of version strings, `TARGET` when
 	 * the manifest is unreadable, `WRITE` when the write cannot be staged or
 	 * committed, and `DESTROYED` after teardown.
 	 *
@@ -442,7 +443,8 @@ export class Materializer implements MaterializerInterface {
 	 * range already declared in its named writable section is rewritten, so an
 	 * undeclared pin is refused instead of inserted. An undeclared package enters
 	 * the manifest only through `additions`, which inserts it into the section its
-	 * list names in key order, before the ranges are rewritten.
+	 * list names in key order, creating that section when the manifest lacks it,
+	 * before the ranges are rewritten.
 	 *
 	 * The regions refuse differently because their targets differ. A range
 	 * the manifest does not declare is the caller's mistake and throws. A script
@@ -1283,7 +1285,7 @@ export class Materializer implements MaterializerInterface {
 				const names = [...additions.runtime, ...additions.development].map(({ name }) => name)
 				throw this.#error(
 					'INVALID',
-					`The manifest cannot declare ${names.join(', ')}: it already declares one of them or carries no dependency map to declare it in.`,
+					`The manifest cannot declare ${names.join(', ')}: it already declares one of them, or the section that receives them is not an object of version strings.`,
 					{ names: names.length },
 				)
 			}
