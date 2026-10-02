@@ -14,14 +14,15 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 ## Centralized files
 
-| File                | Sole responsibility                                           |
-| ------------------- | ------------------------------------------------------------- |
-| `_mixins.scss`      | `@function` values and `@mixin` declaration emitters          |
-| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order |
-| `_theme.scss`       | Token overrides under theme selectors                         |
-| `_reset.scss`       | The face's reset declarations, when that face owns a reset    |
-| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet      |
-| `index.scss`        | Sole compilation barrel                                       |
+| File                | Sole responsibility                                                                                                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_mixins.scss`      | `@function` values, `@mixin` declaration emitters, and the `!default` switch an emitter reads, which `_tokens.scss` configures through `@use … with`                                              |
+| `_tokens.scss`      | `:root` public custom-property tokens and cascade-layer order                                                                                                                                     |
+| `_theme.scss`       | Token overrides under theme selectors                                                                                                                                                             |
+| `_reset.scss`       | The face's reset declarations, when that face owns a reset                                                                                                                                        |
+| `_utilities.scss`   | The utility map and its emission schedule, on a face that generates its utilities from data; that face has no `utilities/` folder, and the one emitter the schedule calls lives in `_mixins.scss` |
+| `themes/index.scss` | Barrel of named theme packs, compiled into its own sheet                                                                                                                                          |
+| `index.scss`        | Sole compilation barrel                                                                                                                                                                           |
 
 - Apply this table and the folder barrels in § Folders to every sheet face: `src/styles` and each
   `src/<name>` styles extension. `.claude/rules/workspace.md` § Environments fixes the `sheet.ts`
@@ -51,6 +52,14 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
   declared. A face whose contract is the exact recreation of a pinned external artifact keeps
   the literals, declarations, and order the pin declares, and records tokenization and
   accessibility additions in its separate authored face.
+- Format a pinned recreation face like every other file: never a `prettier-ignore` directive and
+  never a `.prettierignore` entry for a source file. Sass re-emits every value and selector it
+  parses in its own form, so the formatter's canonicalisation of those vanishes at compile; a
+  custom-property value is the one text Sass emits verbatim, so write every custom-property
+  declaration in a literal partial as a Sass string interpolation (`--name: #{'VALUE'};`), which the
+  formatter reads as a string and Sass emits byte for byte. Keep a pinned expected output in a JSON
+  fixture, never in a CSS file the formatter would canonicalise. The face's byte proofs (link 1, the
+  per-module region cases, the sample cases) hold under `npm run format`.
 - Never repeat per-color/per-variant blocks; drive shared structure with one `@each` over a shared list.
 - If a pattern appears in at least two partials, move it to `_mixins.scss`.
 - Treat a declaration block two partials share because each records an external value as a
@@ -69,7 +78,7 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 ## Folders
 
 - Give each folder an `_index.scss` barrel that loads its partials with `@use`; keep the barrel when the folder is empty.
-- Put a rule that styles one element in `elements/`, a class skin that applies with no script running in `components/`, and a class that sets one property in `utilities/`.
+- Put a rule that styles one element in `elements/`, a class skin that applies with no script running in `components/`, and a class that sets one property in `utilities/`. A face that generates its utilities from a map keeps that map and its emission schedule in `_utilities.scss` instead of a `utilities/` folder; never keep both, because `@use 'utilities'` resolves to either.
 - Add another folder only for a job `elements/`, `components/`, and `utilities/` do not hold, and give it its own barrel and its own layer.
 
 ## Proofs

@@ -108,8 +108,8 @@ neither reads meaning.
   data-kind file, that every centralized declaration is exported, that a class sits in its matching
   implementation or errors file, and that `constants.ts` declares only UPPER_SNAKE_CASE consts with
   no bare collection literal.
-- The sweep proves that no source, test, config, or script file carries an `eslint-disable` or
-  `oxlint-disable` directive.
+- The sweep proves that no source, test, config, script, or sheet file carries an `eslint-disable`,
+  `oxlint-disable`, or `prettier-ignore` directive.
 - The sweep proves that every `.claude/rules/*.md` file has a rule-map row in `AGENTS.md` and that
   every row resolves to a file.
 - The sweep proves the host portability rules that are path- or text-shaped over the population

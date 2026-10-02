@@ -287,7 +287,7 @@ Build/check config alignment:
 
 - In a publishing workspace, `prepublishOnly` runs `build:showcase` and every
   `build:showcase:<framework>` script after `npm run build`.
-- List `showcase/` in `.prettierignore`, so formatting never rewrites a committed page.
+- List `showcase/` and `*.min.*` in `.prettierignore`, so formatting never rewrites a committed page or a minified generated record. Give the `.min` suffix only to a record an instrument writes from an installed package in compact form (a JSON inventory over 1 MB, for example), never to authored source, and read such a record through a guarded reader. Never list a source file there; `.claude/rules/styles.md` § Prohibitions states how a pinned recreation stays formatter-stable.
 
 ## Tooling
 
