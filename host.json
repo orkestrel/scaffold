@@ -496,7 +496,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "02c8bfcfa26ee23e91cef48771e5a3038bdb8d4018f0510bef5cd17db82f5893"
+			"digest": "afc84ccefa09c0066fe84c93d483316bc5799f41f130c27d8c741c79acfc757a"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -862,7 +862,7 @@
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "2bd000da61376666df785bb4f51f3e7988ac821f29d9b3174abc8b716d503086"
+			"digest": "4dd8f7377b165d840dd3060f0af955458fff193612f833aadd04d37c34734afe"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -886,7 +886,7 @@
 			"storage": "guides/contract.md",
 			"destination": "guides/contract.md",
 			"executable": false,
-			"digest": "2aa2ebffe3cb466e0c6845a8bbd1cc81f16e526f952f938430e3cfcb700cdee5"
+			"digest": "5339c1ba3a1ffe9ffe5415d70bd4868a73f9ef2661c4ce97e22dc8a30054569c"
 		},
 		{
 			"storage": "guides/csv.md",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "5a3ddb42738181c2bb70e49f83fcb786b1488b1b080e833fe6a504d541560cef"
+	"digest": "773d10344c15ceecae742256623042579bab7355e5953e798d6743e1e749a016"
 }
