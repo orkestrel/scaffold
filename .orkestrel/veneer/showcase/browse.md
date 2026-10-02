@@ -16,7 +16,6 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 
 - The agent-facing recheck `B2` (2026-10-02, report `browse/b2-report.md`, brief `browse/b2-brief.md`) drove veneer's showcase at `fc4c4a2` through the `browse` tools only. Every family's door was reached, a 10-step dialog and panel journey replayed 10 of 10, and no page defect or engine departure was established. Items 6 and 7 were confirmed; item 8 did not reproduce.
 - A 42-step replay took 83.17 s. Each click and press spent 1.5 to 2.6 s inside its action timer and each `wait` about 7 ms. The read-only lane `G3` (`browse/g3-replay-cost-distillate.md`) traced the cost to the receipt outline: `renderBrowserOutline` scans the whole node array for each text node's parent (`src/core/helpers.ts:175-177`), every `click`, `press`, and `look` renders it (about 62 KB on the showcase, cut to 4,000 characters), and a replayed step renders one that no reader consumes.
-
 - After `BR1`, a replay runs at action speed: the saved `b2-disclosures` journey stopped at its step 10, where it pressed Enter twice on one accordion toggle with no wait between, and Bootstrap ignores a toggle during its 0.35 s transition. A journey whose step depends on a transition records a wait for it; item 12 lets that wait assert a disappearance. The remaining live cost is the accessibility tree fetch, about 0.5 to 0.6 s per action, which this lane leaves as it is.
 
 ## Open roadmap items
