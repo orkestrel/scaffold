@@ -8,9 +8,9 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | --- | --- |
 | Handoff | not handed off; the cloud session is active (2026-10-02) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
-| Veneer main | `a443edf` carries the showcase with the tuned journeys (`5d99d2e`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
+| Veneer main | `8a84e5f` carries the showcase with the tuned journeys (`5d99d2e`) and the rigor fixes (`8a84e5f`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
 | Ahead of main | nothing pushed |
-| In flight | `R1`, the rigor fixes, in the cloud host's veneer checkout; `S1`, the component statecharts, in a worktree on the local branch `sc/statecharts`; both `astra` lanes, briefs `r1-brief.md` and `s1-brief.md` beside this file, evidence `g1-rigor-distillate.md` and `g2-statechart-distillate.md` |
+| In flight | `S1`, the component statecharts, in a worktree on the local branch `sc/statecharts` (brief `s1-brief.md`, evidence `g2-statechart-distillate.md`); `P1`, the polish round, in the cloud host's veneer checkout (brief `p1-brief.md`); both `astra` lanes |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 
 ## Ownership boundary
@@ -42,18 +42,18 @@ The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and C
 ## Remaining units, in order
 
 1. `J0b`, landed as `5d99d2e` (§ Readings).
-2. `R1`, in flight: the rigor fixes from the round-1 critic, open at `42685f7`:
+2. `R1`, landed as `8a84e5f`: the rigor fixes from the round-1 critic (brief `r1-brief.md`, evidence `g1-rigor-distillate.md`):
    - pin the face-invariance population so the block ids equal every non-Tailwind section id;
    - derive the pseudo list of `collectPseudos` from `collectPreflightPseudos` (`tests/setupStyles.ts`), so `::-webkit-search-decoration` is read;
    - replace the `.mt-3` and `.gap-4` rows of `TAILWIND_READINGS`, which read the same with or without the exclusion, with rows that depart when the exclusion is removed;
    - assert the face and theme pair states in the statechart, for example `tailwindcss` with `dark`;
    - bind every number a `tailwindcss.html` caption states to a reading, or drop the number.
 3. `S1`, in flight: component statecharts, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
-4. Polish rounds: a subjective review of the `CAPTURE=1` portfolio, then class-only fixes.
+4. `P1`, in flight: a review of the `CAPTURE=1` portfolio against a checklist, then class and markup fixes in `app/browser/`.
 5. Browse recheck through the `browse` server of `@orkestrel/browser`, exploratory; file each gap it hits as a browser `ROADMAP.md` item: no viewport control, screenshots only in replay, and smooth-scroll replay timing.
 6. Docs: the showcase sections of `guides/veneer.md`.
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
-8. Adopt scaffold 0.0.86 in veneer through `scaffold overwrite`, which declares missing planned dependencies; veneer is on 0.0.85.
+8. Adopt the first scaffold release after 0.0.86 in veneer through `scaffold overwrite`; veneer is on 0.0.85. Never adopt 0.0.86 itself: it predates scaffold's `plugins.ts` kind (`65eb6f0eb`), so its overwrite would remove the `no-misnamed-plugin` rule veneer carries by hand (`ebe7081`).
 9. Merge main and push each accepted state to veneer main.
 10. Tune J3 after `S1` lands, because the statecharts change each project's time.
 
