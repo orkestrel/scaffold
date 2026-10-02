@@ -12,7 +12,7 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
 | Veneer main | `3428455` (the engine session's) carries the showcase through the polish round (`0df5a3b`), merged by the engine session as `97d2367`, with its collapse and sidebar fixes (`95eb674`, `76e7e13`) |
 | Ahead of main | the branch `ccr-d15a48b1-yyyll6` at `f53c656` merges `main` and adds the component statecharts (18 tables, 564 rows; journeys 66 of 66 in 355 s on the cloud host), so they wait for `J0c` (`../lanes.md` § Log, 2026-10-02) |
-| In flight | `J0c`, the journey cost unit, on an `astra` lane in the cloud host's veneer checkout at `f53c656` (brief `j0c-brief.md`, designed by a five-lens workflow with adversarial verifiers; modeled at about 225 s) |
+| In flight | `J0c` third run on an `astra` lane in the cloud host's veneer checkout (scope `j0c-scope.md` over `j0c-brief.md`). Phase 1 is committed on the branch as `4070c56`; the second run could not reproduce three load-only statechart failures (report `j0c2-report.md`), and the third run applies the ruled fix (one statechart wait budget, failure causes in the report) before the kept cuts; uncommitted placement edits for items 6 and 9 sit in that checkout |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 | Browse | `browse.md` beside this file holds the browse lane: the browser branch, the release and re-pins it owes, the open roadmap items, and `BR1` in flight |
 

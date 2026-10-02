@@ -6,9 +6,14 @@ This note overrides `/home/user/.wave/codex/j0c-brief.md` wherever they differ. 
 
 Phase 1 of the brief is committed on `ccr-d15a48b1-yyyll6` as `4070c56` (the sections journey at reduced motion, the declared `motion` parameter, and the name lookup). Start from that commit. A stopped run may have left uncommitted edits: read `git status` and `git diff`, keep only edits that belong to an item this note keeps, and restore the rest with `git restore`.
 
-## First: root-cause the phase-1 failures
+## First: the ruled fix for the phase-1 failures
 
-The phase-1 checkpoint (`tmp/codex/j0c-phase1.json`) failed three statechart rows that every full gate at `f53c656` passed (66 of 66, three runs) and that passed again in a scoped rerun: `scrollspy-1280` (`Scrollspy Overlays through {Home}`), `offcanvas`, and `responsive-offcanvas-390` (`md drawer through 0:click`). Find the cause before any other item. Check first whether J3's reduced-motion stage outlives J3 in its project (a missing or unguarded `releaseMedia`, or a test that starts while `MEDIA_STAGE` is present), then whether a condition wait in those rows is bounded too tightly for four concurrent projects. Fix the cause in the owned files; never retry a row, raise a timeout without a measured reason, or add a fixed delay. Prove the fix with a full gate.
+The second run (report `/home/user/.wave/codex/j0c2-last.md`) could not reproduce the three failures in two full gates (66 of 66 each), found no reduced-motion stage outliving J3, and measured the slowest scroll-settle condition at 774.5 ms against its bound. Every condition wait in the component statechart helpers uses `waitForCondition`'s default budget of 1,000 ms (`node_modules/@orkestrel/test/dist/src/core/index.d.ts:770-781`). The failing checkpoint was the most loaded run (`responsive-offcanvas-390` took 25.7 s against 19.5 s), so the rows failed when four concurrent projects pushed a settle past that default. The Orchestrator rules:
+
+- Declare one wait budget for the component statechart waits in the showcase section of `tests/setupBrowser.ts`, as a `WaitOptions` constant passed to each of those `waitForCondition` calls, with a one-line comment giving the reason: the slowest settle measured 774.5 ms of the 1,000 ms default in a passing four-project run. Take the bound from the test layer's own retry default when it exports one, otherwise 5,000 ms. A condition wait returns at the first read that holds, so a passing row pays nothing for the wider bound.
+- Make a failing statechart row report its cause: the harness assertion names each failing row together with the error the row raised, read from what the harness records, so a full-run failure is diagnosable from the JSON report alone. Prove it with a deliberately broken row whose report carries the row name and its error message.
+
+The uncommitted placement edits in `tests/app/browser/integration.test.ts` and `tests/setupBrowser.ts` belong to items 6 and 9: validate them as part of those items, or restore and redo them.
 
 ## Items to execute, in this order
 
