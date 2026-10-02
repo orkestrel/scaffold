@@ -268,7 +268,8 @@ export const isDependencies: Guard<readonly Dependency[]> = andOf(
  * @remarks
  * The whole closed record a manifest-writing method accepts, so a caller
  * naming a region the writer does not carry is refused before any byte moves.
- * Each region is bounded by the same collection law its own list guard applies.
+ * Each region is bounded by the same collection law its own list guard applies,
+ * and `additions` is the one region a caller may omit.
  *
  * @example
  * ```ts
@@ -276,12 +277,21 @@ export const isDependencies: Guard<readonly Dependency[]> = andOf(
  *
  * isManifestRegionSet({ pins: { runtime: [], development: [] }, scripts: [] }) // true
  * isManifestRegionSet({ pins: { runtime: [], development: [] } }) // false
+ * isManifestRegionSet({
+ *   pins: { runtime: [], development: [] },
+ *   scripts: [],
+ *   additions: { runtime: [], development: [{ name: 'typescript', range: '^6.0.3' }] },
+ * }) // true
  * ```
  */
-export const isManifestRegionSet: Guard<ManifestRegionSet> = recordOf({
-	pins: recordOf({ runtime: isDependencies, development: isDependencies }),
-	scripts: andOf(isCollection, arrayOf(isManifestScript)),
-})
+export const isManifestRegionSet: Guard<ManifestRegionSet> = recordOf(
+	{
+		pins: recordOf({ runtime: isDependencies, development: isDependencies }),
+		scripts: andOf(isCollection, arrayOf(isManifestScript)),
+		additions: recordOf({ runtime: isDependencies, development: isDependencies }),
+	},
+	['additions'],
+)
 
 /** Narrows a value to a bounded list of fetched guide mirrors. */
 export const isMirrors: Guard<readonly Mirror[]> = andOf(isCollection, arrayOf(isMirror))

@@ -35,8 +35,9 @@ by hand only to repair it, then resume with `--from <step>`.
      again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
 4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
    published.
-5. Run the full install. The overwrite re-declares the toolchain ranges, so the lockfile the first
-   install regenerated no longer matches the manifest.
+5. Run the full install. The overwrite re-declares the toolchain ranges and declares each planned
+   dependency the manifest lacks, so the lockfile the first install regenerated no longer matches the
+   manifest.
 6. Sweep the self-pins, per § Sweep the self-pins: the re-pin moves the snapshot class.
 7. Run the mutating `format` script to converge generated writes.
 8. Run the quality gates.

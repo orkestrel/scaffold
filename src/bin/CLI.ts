@@ -99,6 +99,7 @@ import {
 	entriesToReleases,
 	errorToEnvelope,
 	fetchToRefusal,
+	manifestToAdditions,
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
 	mergeResults,
@@ -114,6 +115,7 @@ import {
 	selectionToExtensions,
 	selectionToGroups,
 	selectionToPackages,
+	sheetTestToQuestion,
 	targetToEnvironments,
 	targetToExtensions,
 	targetToFacts,
@@ -504,7 +506,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = selectionToGroups(command.groups)
 		const blueprint = this.#derive(target)
-		this.#assertTarget(target, blueprint, groups)
+		this.#assertTarget(target, blueprint, groups, true)
 		const worktree = await this.#worktree(target)
 		if (worktree.dirty.length > 0 && command.dirty !== true) {
 			throw new ScaffoldError(
@@ -531,7 +533,20 @@ export class CLI implements CLIInterface {
 				pins: manifestToWritableDependencies(this.#manifest(target), blueprint),
 				scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
 			}
+			const additions = manifestToAdditions(this.#manifest(target), blueprint)
 			const repaired = host.materializer.repair(plan, audit, target)
+			// The declarations land in the offline half, beside the configuration that
+			// names them, so a catalog step that cannot complete never leaves a written
+			// configuration importing a package the manifest does not declare. They keep
+			// their planned ranges because the version read that follows measures what the
+			// manifest declared before this run.
+			const added =
+				additions.runtime.length === 0 && additions.development.length === 0
+					? undefined
+					: host.materializer.declare(
+							{ pins: { runtime: [], development: [] }, scripts: [], additions },
+							target,
+						)
 			// The candidate set is re-derived from the plan and target, then held to
 			// the audit's foreign findings: the strays beneath the vendored directories
 			// this plan expands, and the superseded instruction copies the target holds
@@ -547,8 +562,11 @@ export class CLI implements CLIInterface {
 				command.dirty === true ? { tracked: worktree.tracked, dirty: [] } : worktree,
 				target,
 			)
-			const local = mergeResults(repaired, removed)
-			const remainder: Omit<OverwriteResult, 'audit'> =
+			const local = mergeResults(
+				added === undefined ? repaired : mergeResults(repaired, added),
+				removed,
+			)
+			const remainder: Omit<OverwriteResult, 'audit' | 'additions'> =
 				command.offline === true
 					? await this.#declare(host.materializer, target, declared, host.baseline)
 					: await this.#reconcile(host.materializer, target, declared, host.baseline, host.forced)
@@ -558,12 +576,23 @@ export class CLI implements CLIInterface {
 				...remainder,
 				...mergeResults(local, remainder),
 				audit: terminal,
+				additions,
 			}
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(terminal)
 				this.#reportReplacements(audit, terminal)
 				this.#recount(outcome)
+				for (const { section, dependencies } of [
+					{ section: 'dependencies', dependencies: additions.runtime },
+					{ section: 'devDependencies', dependencies: additions.development },
+				]) {
+					for (const { name, range } of dependencies) {
+						this.#say(
+							`Declared ${JSON.stringify(name)}: ${JSON.stringify(range)} in ${section}. Run npm install to install it.`,
+						)
+					}
+				}
 				if (remainder.note !== undefined) this.#warn(remainder.note)
 			}
 			if (remainder.note !== undefined) return EXIT_DRIFT
@@ -582,7 +611,7 @@ export class CLI implements CLIInterface {
 		target: string,
 		declared: ManifestRegionSet,
 		host: Baseline | undefined,
-	): Promise<Omit<OverwriteResult, 'audit'>> {
+	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
 		const versions = await this.#versions(declared.pins, true)
 		const refusal = versionsToRefusal(versions)
 		if (refusal !== undefined) throw refusal
@@ -610,7 +639,7 @@ export class CLI implements CLIInterface {
 		declared: ManifestRegionSet,
 		host: Baseline | undefined,
 		hostForced: boolean,
-	): Promise<Omit<OverwriteResult, 'audit'>> {
+	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
 		const previous = catalogToNames(target)
 		let releases: readonly Release[] = []
 		let provenance: Provenance = { ...(host === undefined ? {} : { host }) }
@@ -1261,6 +1290,7 @@ export class CLI implements CLIInterface {
 		target: string,
 		blueprint: Blueprint,
 		writing = false,
+		declaring = false,
 	): TargetQuestion | undefined {
 		const parsed = parseJSON(this.#manifest(target))
 		if (!isRecord(parsed)) return undefined
@@ -1281,6 +1311,9 @@ export class CLI implements CLIInterface {
 			.filter(([name]) => !Object.hasOwn(dependencies, name) && !Object.hasOwn(development, name))
 			.sort(([left], [right]) => left.localeCompare(right))
 		if (missing.length === 0) return undefined
+		// Overwrite declares each missing package in the devDependencies map the plan
+		// assigns it, so only a manifest carrying no such map still refuses that verb.
+		if (declaring && isRecord(parsed.devDependencies)) return undefined
 		const names = missing.map(([name]) => name)
 		const lines = missing.map(
 			([name, range]) => `${JSON.stringify(name)}: ${JSON.stringify(range)},`,
@@ -1359,6 +1392,19 @@ export class CLI implements CLIInterface {
 		}
 	}
 
+	// Report each planned birth-owned sheet test the target holds with a
+	// root-relative import. Audit alone raises this, and the writing verbs report
+	// it in their terminal audit: birth ownership never rewrites a present file, so
+	// no write closes it and refusing one over it would block every write.
+	#sheetQuestions(target: string, blueprint: Blueprint): readonly TargetQuestion[] {
+		return blueprintToTestArtifacts(blueprint).flatMap((artifact) => {
+			const path = resolveContainedPath(target, artifact.path)
+			if (path === undefined || !isExactCaseFile(path)) return []
+			const question = sheetTestToQuestion(artifact, readFileText(target, artifact.path) ?? '')
+			return question === undefined ? [] : [question]
+		})
+	}
+
 	// Collect the target questions in a fixed order so audit reports every
 	// independent advisory and writing verbs refuse the ones a write would act on.
 	#targetQuestions(
@@ -1366,6 +1412,7 @@ export class CLI implements CLIInterface {
 		blueprint: Blueprint,
 		groups: readonly Group[] | undefined,
 		writing = false,
+		declaring = false,
 	): readonly Question[] {
 		const questions: TargetQuestion[] = []
 		const browser = resolveContainedPath(target, 'app/browser')
@@ -1384,11 +1431,12 @@ export class CLI implements CLIInterface {
 		}
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)
-		const dependency = this.#dependencyQuestion(target, blueprint, writing)
+		const dependency = this.#dependencyQuestion(target, blueprint, writing, declaring)
 		if (dependency !== undefined) questions.push(dependency)
 		if (!writing) {
 			const setup = this.#setupQuestion(target, blueprint)
 			if (setup !== undefined) questions.push(setup)
+			questions.push(...this.#sheetQuestions(target, blueprint))
 		}
 		return questions
 			.filter(
@@ -1423,10 +1471,17 @@ export class CLI implements CLIInterface {
 	// Writing verbs refuse the project and dependency advisories because their
 	// next step would replace planned configuration. The audit-only scripts
 	// advisory does not enter this boundary; the manifest region writer owns it.
+	// Overwrite passes `declaring`, because it declares a missing planned
+	// dependency itself; repair never edits a dependency map, so it keeps refusing.
 	// They refuse this package's own checkout before anything else, because the
 	// vendored host is staged from it and a write from that host replaces its
 	// canon with the staged copy.
-	#assertTarget(target: string, blueprint: Blueprint, groups: readonly Group[] | undefined): void {
+	#assertTarget(
+		target: string,
+		blueprint: Blueprint,
+		groups: readonly Group[] | undefined,
+		declaring = false,
+	): void {
 		if (manifestToName(this.#manifest(target)) === PACKAGE_NAME) {
 			throw new ScaffoldError(
 				'TARGET',
@@ -1434,7 +1489,7 @@ export class CLI implements CLIInterface {
 				{ target },
 			)
 		}
-		const questions = this.#targetQuestions(target, blueprint, groups, true)
+		const questions = this.#targetQuestions(target, blueprint, groups, true, declaring)
 		if (questions.length === 0) return
 		throw new ScaffoldError('TARGET', questions.map((question) => question.message).join(' '), {
 			target,

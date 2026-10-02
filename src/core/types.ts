@@ -196,10 +196,14 @@ export interface ManifestScript {
  * Each region is written in place, so every byte outside the named ranges
  * survives. `pins` names the declared ranges and `scripts` the declared script
  * values; a region given nothing to write leaves its section untouched.
+ * `additions` names dependencies the manifest does not declare, each inserted
+ * into the section its list names: `runtime` into `dependencies` and
+ * `development` into `devDependencies`. Absent, nothing is inserted.
  */
 export interface ManifestRegionSet {
 	readonly pins: DependencyPinSet
 	readonly scripts: readonly ManifestScript[]
+	readonly additions?: DependencyPinSet
 }
 
 /**

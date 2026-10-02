@@ -1,4 +1,5 @@
 import type {
+	Artifact,
 	Audit,
 	Axis,
 	Blueprint,
@@ -17,6 +18,7 @@ import type {
 	CLICommand,
 	ErrorEnvelope,
 	ScriptInvocations,
+	TargetQuestion,
 	Verb,
 	VersionResolution,
 } from './types.js'
@@ -73,6 +75,8 @@ import {
 	FAILED_MESSAGE,
 	NAME_ARGUMENT,
 	OPTION_SUMMARY,
+	ROOT_IMPORT_PATTERN,
+	SHEET_IMPORT_PATTERN,
 	VERB_OPTIONS,
 	VERB_SUMMARY,
 	VERBS,
@@ -356,6 +360,96 @@ export function manifestToWritableDependencies(
 		if (isString(developmentRange)) development.push({ name, range: developmentRange })
 	}
 	return { runtime, development }
+}
+
+/**
+ * Reads the planned dependencies a target manifest declares in neither writable section.
+ *
+ * @param manifest - The target manifest text.
+ * @param blueprint - The workspace shape that supplies the planned dependencies.
+ * @returns The undeclared planned dependencies at their planned ranges, in name order, each in
+ * the list naming the section the plan assigns it.
+ *
+ * @remarks
+ * The plan declares its tooling under `devDependencies`, so every row lands in `development` and
+ * `runtime` stays empty: the blueprint's runtime packages are read from the manifest's own
+ * `dependencies`, so none of them is ever missing. A planned package either section declares is
+ * present, whatever its range. A manifest that is not an object, or whose sections are not
+ * objects, yields what its readable sections leave undeclared, and the caller's refusal of that
+ * malformed shape decides whether a write may follow.
+ *
+ * @example
+ * ```ts
+ * import { createBlueprint } from '@src/core'
+ * import { manifestToAdditions } from './helpers.js'
+ *
+ * const blueprint = createBlueprint('sample', { src: ['core'] })
+ * manifestToAdditions('{"devDependencies": {}}', blueprint).development.some(
+ *   ({ name }) => name === 'typescript',
+ * ) // true
+ * ```
+ */
+export function manifestToAdditions(manifest: string, blueprint: Blueprint): DependencyPinSet {
+	const parsed = parseJSON(manifest)
+	const runtime = isRecord(parsed) && isRecord(parsed.dependencies) ? parsed.dependencies : {}
+	const development =
+		isRecord(parsed) && isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+	return {
+		runtime: [],
+		development: Object.entries(blueprintToDevDependencies(blueprint))
+			.filter(([name]) => !Object.hasOwn(runtime, name) && !Object.hasOwn(development, name))
+			.map(([name, range]) => ({ name, range })),
+	}
+}
+
+/**
+ * Reads the root-relative imports a target keeps in a planned birth-owned sheet test.
+ *
+ * @param artifact - The planned artifact at the path the target holds.
+ * @param present - The text the target holds at that path.
+ * @returns A non-blocking `tests` question naming the file and each root-relative specifier beside
+ * the relative specifier to write, or `undefined` when the artifact is not a birth-owned sheet
+ * test or the text imports nothing by a root-relative specifier.
+ *
+ * @remarks
+ * Birth ownership never rewrites a present file, so a target born before the sheet test imported
+ * the built sheet by a relative path keeps the root-relative import, and the content-owned lint
+ * configuration refuses it. The relative specifier climbs one `../` per directory of the
+ * artifact's path to the workspace root, which is the specifier the planned test itself imports.
+ *
+ * @example
+ * ```ts
+ * import { sheetTestToQuestion } from './helpers.js'
+ *
+ * const artifact = {
+ *   path: 'tests/src/styles/index.test.ts',
+ *   group: 'tests',
+ *   ownership: 'birth',
+ *   origin: 'template',
+ *   content: "import sheet from '../../../dist/src/styles/index.css?raw'\n",
+ * } as const
+ * sheetTestToQuestion(artifact, "import sheet from '/dist/src/styles/index.css?raw'\n")?.field // 'tests'
+ * sheetTestToQuestion(artifact, artifact.content) // undefined
+ * ```
+ */
+export function sheetTestToQuestion(
+	artifact: Artifact,
+	present: string,
+): TargetQuestion | undefined {
+	if (artifact.origin === 'host' || artifact.ownership !== 'birth') return undefined
+	if (!SHEET_IMPORT_PATTERN.test(artifact.content)) return undefined
+	const root = '../'.repeat(artifact.path.split('/').length - 1)
+	const replacements = [...present.matchAll(ROOT_IMPORT_PATTERN)].map(
+		(match) => `'${match[2] ?? ''}' with '${root}${(match[2] ?? '').slice(1)}'`,
+	)
+	if (replacements.length === 0) return undefined
+	const single = replacements.length === 1
+	return {
+		field: 'tests',
+		message: `The birth-owned sheet test ${artifact.path} imports by ${single ? 'a root-relative specifier' : 'root-relative specifiers'}, which oxlint's import/no-absolute-path rule refuses under --deny-warnings. Replace ${replacements.join(' and ')}. Scaffold does not rewrite a birth-owned file.`,
+		blocking: false,
+		groups: ['tests'],
+	}
 }
 
 /**
@@ -1386,11 +1480,14 @@ export function selectionToPackages(selection: string | undefined): readonly str
  *
  * @param first - The earlier result, which fixes the reported target.
  * @param second - The later result.
- * @returns One result carrying both path lists, first's paths ahead of second's.
+ * @returns One result carrying both path lists, first's paths ahead of second's, each list
+ * naming a path once.
  *
  * @remarks
- * Written and skipped never overlap across the calls a verb makes, because each
- * call answers for its own paths.
+ * Two calls can answer for one path: `overwrite` declares a missing dependency
+ * and later rewrites the ranges in the same manifest, so each list keeps a path's
+ * first entry. A path one call skipped and another wrote stays in both lists, as
+ * the manifest a repair skips by birth and its range write rewrites does.
  *
  * @example
  * ```ts
@@ -1408,9 +1505,9 @@ export function mergeResults(
 ): MaterializeResult {
 	return {
 		target: first.target,
-		written: [...first.written, ...second.written],
-		skipped: [...first.skipped, ...second.skipped],
-		removed: [...first.removed, ...second.removed],
+		written: [...new Set([...first.written, ...second.written])],
+		skipped: [...new Set([...first.skipped, ...second.skipped])],
+		removed: [...new Set([...first.removed, ...second.removed])],
 	}
 }
 

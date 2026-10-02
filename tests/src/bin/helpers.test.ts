@@ -4,7 +4,9 @@ import { width } from '@orkestrel/console'
 import { executeSync } from '@orkestrel/process/server'
 import { resolve } from 'node:path'
 import {
+	blueprintToDevDependencies,
 	blueprintToScripts,
+	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	createBlueprint,
@@ -44,6 +46,7 @@ import {
 	environmentToUpstream,
 	errorToEnvelope,
 	fetchToRefusal,
+	manifestToAdditions,
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
 	mergeResults,
@@ -61,6 +64,7 @@ import {
 	selectionToExtensions,
 	selectionToGroups,
 	selectionToPackages,
+	sheetTestToQuestion,
 	targetToEnvironments,
 	targetToExtensions,
 	targetToFacts,
@@ -546,6 +550,93 @@ describe('release evidence', () => {
 			{ name: '@orkestrel/router', range: '^0.0.10' },
 			{ name: '@orkestrel/emitter', range: '^0.0.5' },
 		])
+	})
+})
+
+describe('manifestToAdditions', () => {
+	const blueprint = createBlueprint('sample', { src: ['core'] })
+	const planned = blueprintToDevDependencies(blueprint)
+
+	it('lists each planned dependency neither writable section declares, at its planned range, under development', () => {
+		const declared = Object.fromEntries(
+			Object.entries(planned).filter(([name]) => name !== 'typescript' && name !== 'vitest'),
+		)
+		expect(
+			manifestToAdditions(
+				JSON.stringify({ dependencies: { vitest: '^4.0.0' }, devDependencies: declared }),
+				blueprint,
+			),
+		).toStrictEqual({
+			runtime: [],
+			development: [{ name: 'typescript', range: requireValue(planned.typescript) }],
+		})
+		expect(
+			manifestToAdditions(JSON.stringify({ devDependencies: planned }), blueprint),
+		).toStrictEqual({ runtime: [], development: [] })
+	})
+
+	it('reads an absent, malformed, or unparsable manifest as declaring nothing', () => {
+		const everything = Object.entries(planned).map(([name, range]) => ({ name, range }))
+		for (const manifest of ['{}', '{"devDependencies": "invalid"}', '{ not json', '[]']) {
+			expect(manifestToAdditions(manifest, blueprint)).toStrictEqual({
+				runtime: [],
+				development: everything,
+			})
+		}
+	})
+})
+
+describe('sheetTestToQuestion', () => {
+	const blueprint = createBlueprint('sample', { src: ['core'], styles: true, themes: true })
+	const artifacts = blueprintToTestArtifacts(blueprint)
+	const styles = requireValue(
+		artifacts.find(({ path }) => path === 'tests/src/styles/index.test.ts'),
+	)
+	const themes = requireValue(
+		artifacts.find(({ path }) => path === 'tests/src/styles/themes/index.test.ts'),
+	)
+
+	it('names the file and the relative specifier the planned test imports for a root-relative sheet import', () => {
+		expect(styles.content).toContain("from '../../../dist/src/styles/index.css?raw'")
+		expect(
+			sheetTestToQuestion(styles, styles.content.replace('../../../dist/', '/dist/')),
+		).toStrictEqual({
+			field: 'tests',
+			message:
+				"The birth-owned sheet test tests/src/styles/index.test.ts imports by a root-relative specifier, which oxlint's import/no-absolute-path rule refuses under --deny-warnings. Replace '/dist/src/styles/index.css?raw' with '../../../dist/src/styles/index.css?raw'. Scaffold does not rewrite a birth-owned file.",
+			blocking: false,
+			groups: ['tests'],
+		})
+		expect(
+			sheetTestToQuestion(
+				themes,
+				'import sheet from "/dist/src/styles/themes/index.css?raw"\nimport {\n\tadoptSheet,\n} from \'/tests/setupStyles.js\'\n',
+			)?.message,
+		).toContain(
+			"Replace '/dist/src/styles/themes/index.css?raw' with '../../../../dist/src/styles/themes/index.css?raw' and '/tests/setupStyles.js' with '../../../../tests/setupStyles.js'.",
+		)
+	})
+
+	it('raises nothing for a relative import, a protocol-relative specifier, an entry test, or an artifact another owner writes', () => {
+		expect(sheetTestToQuestion(styles, styles.content)).toBeUndefined()
+		expect(
+			sheetTestToQuestion(styles, "import sheet from '//cdn.example/sheet.css'\n"),
+		).toBeUndefined()
+		expect(
+			sheetTestToQuestion(styles, 'const note = \'import from "/dist/src/styles/index.css"\'\n'),
+		).toBeUndefined()
+		expect(
+			sheetTestToQuestion(
+				{ ...styles, content: "import { describe } from 'vitest'\n" },
+				"import sheet from '/dist/src/styles/index.css?raw'\n",
+			),
+		).toBeUndefined()
+		expect(
+			sheetTestToQuestion(
+				{ ...styles, ownership: 'content' },
+				"import sheet from '/dist/src/styles/index.css?raw'\n",
+			),
+		).toBeUndefined()
 	})
 })
 
@@ -1087,6 +1178,31 @@ describe('mergeResults', () => {
 			written: ['a', 'c'],
 			skipped: ['b'],
 			removed: ['d'],
+		})
+	})
+
+	it('names a path both mutations reported in one list once, and keeps a path one wrote and the other skipped in both', () => {
+		expect(
+			mergeResults(
+				{ target: './t', written: ['package.json', 'a'], skipped: ['b'], removed: ['c'] },
+				{ target: './t', written: ['package.json'], skipped: ['b'], removed: ['c'] },
+			),
+		).toStrictEqual({
+			target: './t',
+			written: ['package.json', 'a'],
+			skipped: ['b'],
+			removed: ['c'],
+		})
+		expect(
+			mergeResults(
+				{ target: './t', written: [], skipped: ['package.json'], removed: [] },
+				{ target: './t', written: ['package.json'], skipped: [], removed: [] },
+			),
+		).toStrictEqual({
+			target: './t',
+			written: ['package.json'],
+			skipped: ['package.json'],
+			removed: [],
 		})
 	})
 })

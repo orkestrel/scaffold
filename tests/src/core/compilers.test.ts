@@ -33,7 +33,9 @@ import {
 	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
 	FRAMEWORK_MATRIX,
+	insertManifestDependencies,
 	isCanonPath,
+	manifestToDependencies,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestRanges,
@@ -855,6 +857,120 @@ describe('replaceManifestRanges', () => {
 		expect(replaced).toContain('"optional": true')
 		expect(replaced).toContain('"overrides": {\n\t\t"typescript": "6.0.3"')
 		expect(replaced).toContain('"resolutions": {\n\t\t"typescript": "6.0.2"')
+	})
+})
+
+const INSERTION_MANIFEST = `{
+	"name": "@orkestrel/sample",
+	"dependencies": {
+		"@orkestrel/emitter": "^0.0.5"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "^7.59.3",
+		"@orkestrel/contract": "^0.0.18",
+		"typescript": "^6.0.3"
+	},
+	"peerDependencies": {
+		"@orkestrel/browser": ">=0.0.1"
+	}
+}
+`
+
+describe('insertManifestDependencies', () => {
+	it('declares each addition in its named section at its key-order position, copying the indentation', () => {
+		const inserted = insertManifestDependencies(INSERTION_MANIFEST, {
+			runtime: [{ name: '@orkestrel/router', range: '^0.0.10' }],
+			development: [
+				{ name: 'vitest', range: '^4.1.11' },
+				{ name: '@orkestrel/browser', range: '^0.0.20' },
+				{ name: '@orkestrel/test', range: '^0.0.24' },
+			],
+		})
+		expect(inserted).toBe(`{
+	"name": "@orkestrel/sample",
+	"dependencies": {
+		"@orkestrel/emitter": "^0.0.5",
+		"@orkestrel/router": "^0.0.10"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "^7.59.3",
+		"@orkestrel/browser": "^0.0.20",
+		"@orkestrel/contract": "^0.0.18",
+		"@orkestrel/test": "^0.0.24",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.11"
+	},
+	"peerDependencies": {
+		"@orkestrel/browser": ">=0.0.1"
+	}
+}
+`)
+		// The section's own entries are what the declaration reads back.
+		expect(
+			manifestToDependencies(inserted ?? '').development.map(({ name }) => name),
+		).toStrictEqual(['@orkestrel/browser', '@orkestrel/contract', '@orkestrel/test'])
+	})
+
+	it('fills an empty section from the indentation of its opening line', () => {
+		expect(
+			insertManifestDependencies('{\n\t"devDependencies": {}\n}\n', {
+				runtime: [],
+				development: [
+					{ name: 'vite', range: '^8.3.2' },
+					{ name: 'typescript', range: '^6.0.3' },
+				],
+			}),
+		).toBe('{\n\t"devDependencies": {\n\t\t"typescript": "^6.0.3",\n\t\t"vite": "^8.3.2"\n\t}\n}\n')
+	})
+
+	it('returns the manifest unchanged for no additions', () => {
+		expect(insertManifestDependencies(INSERTION_MANIFEST, { runtime: [], development: [] })).toBe(
+			INSERTION_MANIFEST,
+		)
+	})
+
+	it('refuses a name either writable section declares, a repeated name, an absent section, and a section that is not a map of ranges', () => {
+		const browser = { name: '@orkestrel/browser', range: '^0.0.20' }
+		expect(
+			insertManifestDependencies(INSERTION_MANIFEST, {
+				runtime: [{ name: 'typescript', range: '^6.0.3' }],
+				development: [],
+			}),
+		).toBeUndefined()
+		expect(
+			insertManifestDependencies(INSERTION_MANIFEST, {
+				runtime: [],
+				development: [browser, browser],
+			}),
+		).toBeUndefined()
+		expect(
+			insertManifestDependencies('{\n\t"name": "@orkestrel/sample"\n}\n', {
+				runtime: [],
+				development: [browser],
+			}),
+		).toBeUndefined()
+		expect(
+			insertManifestDependencies('{"devDependencies": {"vite": {"version": "8"}}}', {
+				runtime: [],
+				development: [browser],
+			}),
+		).toBeUndefined()
+		expect(
+			insertManifestDependencies('{ not json', { runtime: [], development: [browser] }),
+		).toBeUndefined()
+	})
+
+	it('reads a key-shaped string inside another top-level value as data', () => {
+		const manifest =
+			'{"description": "devDependencies: {}", "keywords": ["devDependencies"], "devDependencies": {"vite": "^8.3.2"}}'
+		expect(
+			insertManifestDependencies(manifest, {
+				runtime: [],
+				development: [{ name: 'typescript', range: '^6.0.3' }],
+			}),
+		).toBe(
+			'{"description": "devDependencies: {}", "keywords": ["devDependencies"], "devDependencies": {"typescript": "^6.0.3","vite": "^8.3.2"}}',
+		)
 	})
 })
 

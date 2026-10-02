@@ -209,5 +209,24 @@ export const VERB_SUMMARY: Readonly<Record<Verb, string>> = Object.freeze({
 	repair: 'write each planned path the target is missing or has let drift',
 	catalog: 'regenerate the package table and refresh the guide mirrors',
 	overwrite:
-		'do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges',
+		'do everything repair and catalog do, then delete what the plan does not own, re-declare the dependency ranges, and declare each planned dependency the manifest lacks',
 })
+
+/**
+ * Matches a module specifier that names a built sheet's CSS as raw text.
+ *
+ * @remarks
+ * The planned sheet test is the one birth-owned test whose text imports a built
+ * sheet, so this is what tells it apart from a face's entry test at the same
+ * `tests/src/<face>/index.test.ts` shape.
+ */
+export const SHEET_IMPORT_PATTERN = /from\s+(['"])[^'"]*dist\/src\/[^'"]+\.css\?raw\1/u
+
+/**
+ * Matches each import declaration whose module specifier is root-relative, capturing the specifier.
+ *
+ * @remarks
+ * A root-relative specifier opens with one `/`. Oxlint's `import/no-absolute-path` rule
+ * refuses it, while a protocol-relative `//` specifier is outside this pattern.
+ */
+export const ROOT_IMPORT_PATTERN = /^\s*import\s[^'"]*?(['"])(\/(?!\/)[^'"]*)\1/gmu

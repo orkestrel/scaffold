@@ -329,14 +329,17 @@ export interface CatalogResolution {
  * `releases` holds the separate version read for fleet packages and foreign
  * tools before this run rewrote their ranges. `membership.releases` holds
  * the fleet range evidence from the catalog read. `removed` names the files
- * it deleted. `note` is present only on a partial run: the offline half is the
- * destructive one, so a run that cannot reach upstream still persists its file
- * work and then reports, through `note` and a non-zero exit, the step it could
- * not complete.
+ * it deleted. `additions` names each planned dependency the manifest lacked
+ * and this run declared, at its planned range, in the section its list names;
+ * the lockfile does not carry it until the next install. `note` is present only
+ * on a partial run: the offline half is the destructive one, so a run that
+ * cannot reach upstream still persists its file work and then reports, through
+ * `note` and a non-zero exit, the step it could not complete.
  */
 export interface OverwriteResult extends CatalogResult {
 	readonly audit: Audit
 	readonly releases: readonly Release[]
+	readonly additions: DependencyPinSet
 	readonly note?: string
 }
 
