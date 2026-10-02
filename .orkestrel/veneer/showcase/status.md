@@ -9,8 +9,8 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | Handoff | not handed off; the cloud session is active (2026-10-02) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
 | Veneer main | `0df5a3b` carries the showcase with the tuned journeys (`5d99d2e`), the rigor fixes (`8a84e5f`), and the polish round (`0df5a3b`) beside the engine's `plugins.ts` convention (`99ab620`), every gate green on the cloud host |
-| Ahead of main | nothing pushed |
-| In flight | `S1b`, the component statecharts, on an `astra` lane in a worktree on the local branch `sc/statecharts` (briefs `s1-brief.md` and `s1b-brief.md`, evidence `g2-statechart-distillate.md`); five groups committed there (`301fb50` to `ba41d97`: button, alert, collapse, accordion, tabs, dropdowns, tooltip, popover), not yet merged |
+| Ahead of main | the branch `ccr-d15a48b1-yyyll6` at `fc4c4a2` adds the component statecharts (18 tables, 564 rows, every gate green: journeys 66 of 66) but takes 362 s for the journey gate, so main waits for the cost unit `J0c` |
+| In flight | a read-only design workflow over the journey cost (five lenses, an adversarial check of each proposal, one synthesized brief), then `J0c` on an `astra` lane to bring the journey gate back to 235 s or less |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 
 ## Ownership boundary
@@ -48,14 +48,14 @@ The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and C
    - replace the `.mt-3` and `.gap-4` rows of `TAILWIND_READINGS`, which read the same with or without the exclusion, with rows that depart when the exclusion is removed;
    - assert the face and theme pair states in the statechart, for example `tailwindcss` with `dark`;
    - bind every number a `tailwindcss.html` caption states to a reading, or drop the number.
-3. `S1b`, in flight: component statecharts, tuned to at most 45 s per variant project and 235 s for the whole journey gate, with the toast dismiss buttons named per toast, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
+3. `S1b`, merged on the branch as `fc4c4a2` (report `s1b-report.md`; it missed its 45 s and 235 s budgets): component statecharts, with the toast dismiss buttons named per toast, one state table per live component family, driven through its controls. `statecharts-partial.patch` beside this file is unverified scaffolding against `42685f7`; `J0b` rewrote the same three files, so read the patch as a design reference through `g2-statechart-distillate.md` § 4.
 4. `P1`, landed as `0df5a3b`: 16 rendered findings closed in `app/browser/` (matrix widths at 390, contrasting surfaces for fixed light and dark variants, paired figures with equal-height cards, shorter captions). A later round can rule the toggle-button figure's light surface in dark mode.
 5. Browse recheck through the `browse` server of `@orkestrel/browser`, exploratory; file each gap it hits as a browser `ROADMAP.md` item: no viewport control, screenshots only in replay, and smooth-scroll replay timing.
 6. Docs: the showcase sections of `guides/veneer.md`.
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
 8. Adopt the first scaffold release after 0.0.86 in veneer through `scaffold overwrite`; veneer is on 0.0.85. Never adopt 0.0.86 itself: it predates scaffold's `plugins.ts` kind (`65eb6f0eb`), so its overwrite would remove the `no-misnamed-plugin` rule veneer carries by hand (`ebe7081`).
 9. Merge main and push each accepted state to veneer main.
-10. Tune J3 after `S1` lands, because the statecharts change each project's time.
+10. `J0c`, next: cut the journey gate from 362 s to 235 s or less without losing a claim; at `fc4c4a2` the summed test time is 1364 s, led by J3 (55 to 79 s per variant), the header statechart (38 to 47 s per variant), and the scrollspy, dropdown, carousel, and tooltip tables (47 to 62 s each).
 
 ## Resume after the handoff
 
