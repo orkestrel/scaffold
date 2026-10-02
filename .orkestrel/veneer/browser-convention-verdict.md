@@ -27,13 +27,13 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
   - `NoInfer<T>` holds on a typed registry method.
   - The nested-function lint admits arrows in a call's arguments outside any function (`configs/policy.ts:596-609`).
   - Lint requires `ReadonlyArray<X<T>>` for a non-simple element type.
-- **Bootstrap's own registry use.** Bootstrap's base component stores itself in its `Data` registry, so the instance registry is component infrastructure. Its data API wiring sits apart, at the bottom of each module. Three components consult their own kind's registry from inside: the collapse accordion's siblings (`collapse.js:122`), the tab's keyboard target (`tab.js:175`), and a tooltip's delegated children (`tooltip.js:362`). Only collapse's data API constructs with a config, `{ toggle: false }` (`collapse.js:287`). Every other `getOrCreateInstance(this, config)` call is the jQuery entry.
+- **Bootstrap's own registry use.** Bootstrap's base component stores itself in its `Data` registry, so the instance registry is component infrastructure. Its data API wiring sits apart, at the bottom of each module. Three components consult their own kind's registry from inside: the collapse accordion's siblings (`node_modules/bootstrap/js/src/collapse.js:122`), the tab's keyboard target (`node_modules/bootstrap/js/src/tab.js:175`), and a tooltip's delegated children (`node_modules/bootstrap/js/src/tooltip.js:362`). Only collapse's data API constructs with a config, `{ toggle: false }` (`node_modules/bootstrap/js/src/collapse.js:287`). Every other `getOrCreateInstance(this, config)` call is the jQuery entry.
 - **Fleet names.** Every published name is free in the hosted guides except router's `RouteInput`, `RouteHandler`, `RouteContext`, and `RouteRecord`. Routes are router's subject, so the engine's route types take the `Plugin` qualifier.
 
 ## Rulings
 
 1. **The plugin.** A Bootstrap family is one value that carries its own name: `PluginInterface<T>`.
-   - The name is an open `string`: the registry key and the `.bs.<name>` namespace.
+   - The name is an open `string` and the registry key. Each class names its own wire events, and a built-in plugin's name equals its class's event namespace.
    - The closed `BrowserPlugin` union, `EngineAdapter`, `EngineRoute`, `ENGINE_ROUTES`, and `Engine.install` go.
    - A plugin is authored as `PluginInput<T>` and built by `buildPlugin(input)`, a class-free helper in `helpers.ts` ("factory glue extracts to `helpers.ts`").
    - The binder turns each typed route handler into a stored route that does this, in order: resolves the hosts; applies the gate; prevents the default on a click where the route says so or the trigger is an `A` or `AREA`; skips a disabled trigger where the route says so; gets or creates the component through the registry, narrowed by the plugin's `is` guard; runs the handler with a `PluginInteraction<T>` that carries the plugin's typed `ComponentContext<T>`.
@@ -94,7 +94,7 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
    - `WIRE_EVENTS` splits into one constant per family, typed `Readonly<Record<keyof XEventMap, string>>`: `ALERT_EVENTS`, `BUTTON_EVENTS`, `CAROUSEL_EVENTS`, `COLLAPSE_EVENTS`, `DROPDOWN_EVENTS`, `MODAL_EVENTS`, `OFFCANVAS_EVENTS`, `SCROLLSPY_EVENTS`, `TAB_EVENTS`, `TOAST_EVENTS`, and `TIP_EVENTS`, keyed by `TipProfile`.
    - `bindEventMap<TMap>` is typed by the map.
 9. **The dropdown's data API moves to its plugin; the component gains `dismiss`.**
-   - Bootstrap's keydown handler and its menu clearing are module-level data API code that drives the instance (`dropdown.js:364`, `dropdown.js:419`). In the engine they are the dropdown plugin's keydown route and its `clear` entry. They use `show`, `hide`, `visible`, `menu`, and `element`, plus the item-focus and predicate helpers.
+   - Bootstrap's keydown handler and its menu clearing are module-level data API code that drives the instance (`node_modules/bootstrap/js/src/dropdown.js:364`, `node_modules/bootstrap/js/src/dropdown.js:419`). In the engine they are the dropdown plugin's keydown route and its `clear` entry. They use `show`, `hide`, `visible`, `menu`, and `element`, plus the item-focus and predicate helpers.
    - The dismiss policy (`dismiss.inside`, `dismiss.outside`) is the component's own configuration. The interface gains `dismiss(event: Event): void`, which closes the open menu when the event falls where those options close it, and carries a click as the hide event's `clickEvent`.
    - Every other family's data API already uses public members only.
 10. **The tips.** `Tooltip` and `Popover` only choose a profile, so they go. The user kept the deletion on 2026-10-02 and ruled that `Tip` is typed per profile, that the plugins and the engine never confuse the two profiles, and that both work together on one page, in one container, and on one host as Bootstrap's do.
@@ -105,7 +105,7 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
     - `createTooltipPlugin(): PluginInterface<Tip<'tooltip'>>` and `createPopoverPlugin(): PluginInterface<Tip<'popover'>>` guard with `isInstance(value, Tip)` and the profile, so a lookup under either name returns only its own profile.
     - `createTooltip` and `createPopover` settle against those plugins and return `TooltipInterface` and `PopoverInterface` with no assertion.
     - The engine carries no tip branch. The tooltip plugin declares no route, and the popover plugin's click route only creates its own profile.
-    - The family proofs measure coexistence against the oracle: one page with both profiles, one container delegating both, one host carrying both in either creation order, a modal holding both, and the disposal of one while the other lives. Where a transcript differs, the oracle wins.
+    - The family proofs measure coexistence against the oracle: one page with both profiles, one container delegating both, one host carrying both in either creation order, a modal holding both, and the disposal of one while the other lives. Where a transcript differs on separate hosts, the oracle wins. Ruling 15 governs a shared host, where Bootstrap has no working behavior to match.
 11. **The rest of the surface.**
     - `isDisabled` and `isVisible` become predicates on `HTMLElement` in `helpers.ts`, and `isTrigger` folds into the binder.
     - `BROWSER_DEFAULTS` splits into one constant per family, plus `TIP_DEFAULTS` keyed by profile.
@@ -129,6 +129,23 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
     - Stage B is a later chunk, built as same-named plugin replacements in a caller's list.
     - Tip auto-start stays: it is the `boot` entry of the tooltip and popover plugins, which the default collection carries, with the `tip-boot` departure row. A caller turns it off by composing a list without those plugins, or with replacements that declare no `boot`. The engine carries no branch for it.
     - The name `Engine` stays.
+15. **Tip coexistence, ruled on the verified map (2026-10-02).** The `tip-coexistence-map` workflow (three Opus lenses, a synthesis that re-read every citation, a completeness critic; record at veneer `tmp/units/tip-coexistence-map.output.txt`) returned 29 scenarios and 7 critic additions. The Orchestrator verified the deciding Bootstrap lines itself.
+    - **Bootstrap refuses a shared host.** `Data.set` logs "Bootstrap doesn't allow more than one instance per element" and leaves a second component of any family unregistered (`node_modules/bootstrap/js/src/dom/data.js:22-28`). Every tip trigger resolves its instance through `getOrCreateInstance` on the host (`node_modules/bootstrap/js/src/tooltip.js:361-362`), so the refused profile builds a fresh instance on every event and its panels accumulate.
+    - **Veneer keeps both profiles working on a shared host.** The registry holds one component per plugin per host (the `registry-plugins` row). One oracle case reads Bootstrap's refusal for a tip departure row under that row. Veneer's behavior on a shared host is a contract that veneer-only proofs pin:
+      - each profile toggles only its own panel, and its events stay in its own namespace;
+      - `aria-describedby` is a token list: a tip adds its panel id on show and removes only that id on hide or destroy, so an author's tokens and the other tip's id survive;
+      - `anchor-name` is a token list: each `Placement` adds and removes only its own name, which also serves a dropdown and a tooltip on one toggle;
+      - the native `title` comes back only when the host's last live tip is destroyed.
+    - **Separate hosts equal Bootstrap.** One page, one modal, and one container whose selectors match disjoint children reach Bootstrap's transcript.
+    - **The popover click route goes.** Both tip plugins boot and declare no route, so the two profiles are symmetric additions under the `tip-boot` row. A tip host inserted after boot, or one whose component was destroyed, stays inert until a factory call, as every tip host is in Bootstrap, which has no tip data API (`node_modules/bootstrap/js/src/tooltip.js:627-633`, `node_modules/bootstrap/js/src/popover.js:91-97`). This removes the click-time re-creation, the anchor default prevention, and the inner-trigger asymmetry the map found.
+    - **A delegated child takes only the parent's non-default leaves.** As `_getDelegateConfig` does (`node_modules/bootstrap/js/src/tooltip.js:579-595`), the child receives the parent's leaves that differ from its profile's defaults, with the selector cleared, its triggers off, and no hooks. Its own markup wins everywhere else, and a parent hook runs once per child event.
+    - **Boot and delegation.** A page that delegates tips from a container, as Bootstrap's documentation shows for dynamic content, composes the engine without the tooltip and popover plugins, because boot builds each child from its own markup first. The guide states it, and a proof shows the delegation equal to Bootstrap under that list.
+    - **Register first.** Every constructor calls `context.own(this)` before it binds a listener or writes the DOM, so a `REGISTRY_CONFLICT` leaves no listener or attribute behind. This binds all twelve classes.
+    - **Profile data, not profile branches.** Every profile-specific choice in `Tip` reads a profile-keyed constant: the template, the slots, the auto class, the arrow, the defaults, and the events. A tip shows when any of its profile's slots has content, which equals Bootstrap's `_isWithContent` for both profiles. Every function that takes a profile takes it as a required parameter.
+    - **Types.** `TooltipInterface` and `PopoverInterface` are not assignable to each other, pinned with `expectTypeOf`.
+    - **Harness.** The oracle constructs both profiles in one frame and drives them through the handles it keeps, never through `getOrCreateInstance`. It records the frame's console errors, tells two panels on one host apart in its relationship token, and declares placement rows per panel path.
+    - **Direction.** Bootstrap fixes left and right once, when the tooltip and dropdown modules evaluate (`node_modules/bootstrap/js/src/tooltip.js:53-55`, `node_modules/bootstrap/js/src/dropdown.js:62-67`). `Placement` reads the direction on every update. A departure row with its proof records the difference for the floating families.
+    - **Recorded, not changed.** Under ownership by creator, a scope's teardown on a shared host destroys only the profile that scope created, and a delegated child belongs to its delegator's creator. The guide states both.
 
 ## Declarations
 
@@ -284,7 +301,7 @@ The functions are these.
    - The second run was stopped by the Orchestrator when the user moved the plugin wrapping to `plugins.ts`.
    - The third run (brief veneer `tmp/codex/browser-convention-3-brief.md`) stopped on the application's unbound `destroy` callback, which the class rewrite makes false. The Orchestrator ruled the consumer change: the application holds the engine and passes an arrow.
    - The fourth run (brief veneer `tmp/codex/browser-convention-4-brief.md`) finishes the third, applies ruling 10's typed profile and profile guards, and runs the full ladder.
-2. **`browser-tips` (GPT-6 Astra).** It runs on veneer `main` after the pick of the first unit and proves ruling 10's coexistence against the oracle. Its scenarios come from a map of Bootstrap's tooltip and popover sources that the Orchestrator verifies before the brief prescribes any of them. Brief: veneer `tmp/codex/browser-tips-brief.md`.
+2. **`browser-tips` (GPT-6 Astra).** It runs on veneer `main` after the pick of the first unit. It implements ruling 15, proves ruling 10's coexistence against the oracle, and pins the shared-host contract. Its scenarios come from the verified map. Brief: veneer `tmp/codex/browser-tips-brief.md`.
 3. **One `orkestrel-falsify` round.**
    - The reviewer runs on Claude Opus 5.5, for the Astra-written mechanism and for scaffold's plugin kind.
    - The analyst runs on GPT-6 Astra, for the contract this verdict wrote.
