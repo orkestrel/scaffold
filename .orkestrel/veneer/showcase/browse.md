@@ -6,17 +6,17 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 
 | Row | Value |
 | --- | --- |
-| Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6`; browser `main` fast-forwarded to `bff1abe` on 2026-10-02 at the owner's ruling, so the `Release 0.0.20` commit (`1b1b3aa`) is on `main`; the branch carries `BR1` (`360e27e`) and the plan update beyond it |
+| Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6` and browser `main` both at `97fd5f7` (fast-forwarded on 2026-10-02 at the owner's ruling); every published release's `gitHead` sits on `main` |
 | Registry | 0.0.20 |
 | Dependents to re-pin after a release | scaffold (`package.json` and its catalog row), ollama, and veneer, each at `^0.0.20` |
-| In flight | `BR1`, committed as `360e27e` (brief `browse/br1-brief.md`, report `browse/br1-report.md`), in an adversarial review before it reaches `main`: the outline render fell from about 1,332 ms to about 10 ms per action on the showcase (25,043 accessibility nodes), a live click from 1,512 ms to 738 ms, and a replayed step from about 2 s to 13 to 85 ms |
-| Next | release 0.0.21 after `BR1` lands; it needs the user's authenticator code |
+| In flight | nothing; `BR1` landed on `main` as `360e27e` with the correction `97fd5f7` (brief `browse/br1-brief.md`, report `browse/br1-report.md`) |
+| Next | release 0.0.21, which carries `BR1`; it needs the user's authenticator code |
 
 ## Readings
 
 - The agent-facing recheck `B2` (2026-10-02, report `browse/b2-report.md`, brief `browse/b2-brief.md`) drove veneer's showcase at `fc4c4a2` through the `browse` tools only. Every family's door was reached, a 10-step dialog and panel journey replayed 10 of 10, and no page defect or engine departure was established. Items 6 and 7 were confirmed; item 8 did not reproduce.
 - A 42-step replay took 83.17 s. Each click and press spent 1.5 to 2.6 s inside its action timer and each `wait` about 7 ms. The read-only lane `G3` (`browse/g3-replay-cost-distillate.md`) traced the cost to the receipt outline: `renderBrowserOutline` scans the whole node array for each text node's parent (`src/core/helpers.ts:175-177`), every `click`, `press`, and `look` renders it (about 62 KB on the showcase, cut to 4,000 characters), and a replayed step renders one that no reader consumes.
-- After `BR1`, a replay runs at action speed: the saved `b2-disclosures` journey stopped at its step 10, where it pressed Enter twice on one accordion toggle with no wait between, and Bootstrap ignores a toggle during its 0.35 s transition. A journey whose step depends on a transition records a wait for it; item 12 lets that wait assert a disappearance. The remaining live cost is the accessibility tree fetch, about 0.5 to 0.6 s per action, which this lane leaves as it is.
+- `BR1` indexes the outline's parents once (`src/core/helpers.ts`), which took the outline render from about 1,332 ms to about 10 ms per action. Its first commit also skipped the receipt capture for a replayed step; an adversarial review refuted that (the capture is also the step's dialog window and its pace, so a recorded click and dialog replayed to a refusal and a journey recorded at the live pace ran back to back), and `97fd5f7` restored it. On the showcase the 42-step replay completes 42 of 42 in 29.99 s against 65.49 s, each step 542 ms on average; a live `look`, `click`, and `press` take about 600 ms against about 1,500 ms. The remaining cost is the accessibility tree fetch, which this lane leaves as it is.
 
 ## Open roadmap items
 
