@@ -370,7 +370,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "d86fc6b60f12eb09a54442cc6c6e6c3e9b901b310af0bdb19b7d3084b010b059"
+			"digest": "e519a148a47dbf3271bf3f8a57428a4182afedf9230b56774a97ba5449208325"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "eccfad85393a78178a45b6084b8f47fd946f6824288a0edc97e1e8e6e94c9fcd"
+	"digest": "9be3d58c36d6180c2af99f9f55e3325c5a8f3f146ac86bc70487cefdaed7e92f"
 }

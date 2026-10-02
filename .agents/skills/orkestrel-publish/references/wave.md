@@ -107,6 +107,10 @@ Prepare a published package's layer in this order, after the visit has ruled the
    bumped manifest.
 3. **Sweep the self-pins**, per the following section: the bump moves the version class.
 4. **Run each package's own `prepublishOnly` script to green.**
+   When the host npm is below the `MINIMUM_NPM_VERSION` floor a generated workspace declares in
+   `devEngines`, prepend a local npm 11 install's `node_modules/.bin` to `PATH` for the visit and
+   this script; a distribution proof that installs a generated workspace under an older npm fails
+   `EBADDEVENGINES`.
 5. **Write the release commit and push before the window opens.** The preparation commit inside
    the visit is a different commit at a different moment.
 
@@ -152,3 +156,10 @@ Refresh the registry evidence between layers and derive each round's pins from i
 name a version the registry already serves, so a dependency shipping in the same window keeps the
 resolvable previous pin and takes its development-only re-pin after the window closes. That re-pin
 takes the self-pin sweep too, because the snapshot class moves with no bump.
+
+- After a window confirms a release, poll its tarball URL, read with
+  `npm view NAME@VERSION dist.tarball`, until it answers `200` before an install names that
+  version. The registry lists a version in the packument minutes before it serves the tarball, and
+  an install in that gap fails `E404`.
+- Run every visit and install that follows a publish with `npm_config_prefer_online=true`. A
+  cached packument answers `notarget` for a version the registry already serves.
