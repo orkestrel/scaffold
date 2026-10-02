@@ -538,7 +538,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "6d8936e85dd3c01e915a91a5b7bb9aaafa9b09a899b0cf8ff6bb8f9e8ff8e629"
+			"digest": "5fb146c532f74910f5afa88070a7da03fd782c2f420f07d9581d2635d768807b"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -772,7 +772,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "de238996682d2eb35a40941214dc5c1d6427c57159afc3055f243bf93a5e8f83"
+			"digest": "bf4ba1f29a04040f9bf953ad4641af08a2b0662e2dd6d6f8f3d7ae8282587158"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -1168,7 +1168,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "395ac8782ae05c678c13e460de654e32140125f159fcb882053340ab193bb5f3"
+			"digest": "5cb647597fb27442d2be85a75b446805dd33d05b9ca93808595497ab7587387f"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "5c7e45000c69dd7340b13478851fcfaeaa972f3f25311e230def9b740dc82e15"
+	"digest": "c5e6e215c3ac6de3069b022932a201ce9d1a91ae84dcc82d5f133a7bf24b7d2a"
 }

@@ -1889,6 +1889,12 @@ createSomething({
 				code: 'function parseValue(): void {}\nexport { parseValue as coerceValue }',
 				errors: [{ messageId: 'parser' }],
 			},
+			{
+				name: 'rejects an unprefixed exported import alias [membership: parsers.ts functions whose name does not start with parse]',
+				filename: 'app/edge/parsers.ts',
+				code: 'export import coerceValue = Values.parseValue',
+				errors: [{ messageId: 'parser' }],
+			},
 		],
 	})
 
@@ -1924,6 +1930,12 @@ createSomething({
 				code: 'function createValue(): void {}\nexport { createValue as buildValue }',
 				errors: [{ messageId: 'factory' }],
 			},
+			{
+				name: 'rejects an unprefixed exported import alias [membership: factories.ts functions whose name does not start with create]',
+				filename: 'app/edge/factories.ts',
+				code: 'export import buildValue = Values.createValue',
+				errors: [{ messageId: 'factory' }],
+			},
 		],
 	})
 
@@ -1953,6 +1965,16 @@ createSomething({
 				name: 'accepts an export specifier in the plugin form',
 				filename: 'src/edge/plugins.ts',
 				code: 'function createModalPlugin(): void {}\nexport { createModalPlugin as createDialogPlugin }',
+			},
+			{
+				name: 'accepts an exported import alias in the plugin form',
+				filename: 'src/edge/plugins.ts',
+				code: 'export import createDialogPlugin = Factories.createModalPlugin',
+			},
+			{
+				name: 'accepts an exported import alias outside plugins.ts',
+				filename: 'src/edge/helpers.ts',
+				code: 'export import registerModal = Factories.createModalPlugin',
 			},
 		],
 		invalid: [
@@ -2032,6 +2054,18 @@ createSomething({
 				name: 'rejects a lowercase entity after create [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
 				filename: 'src/edge/plugins.ts',
 				code: 'export function createplugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects an underscore in the entity segment [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export function createModal_Plugin(): void {}',
+				errors: [{ messageId: 'plugin' }],
+			},
+			{
+				name: 'rejects an exported import alias outside the plugin form [membership: plugins.ts functions whose name is not create…Plugin or create…Plugins]',
+				filename: 'src/edge/plugins.ts',
+				code: 'export import registerModal = Factories.createModalPlugin',
 				errors: [{ messageId: 'plugin' }],
 			},
 		],

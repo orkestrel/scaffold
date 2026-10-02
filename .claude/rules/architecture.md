@@ -133,6 +133,10 @@ neither reads meaning.
   `helpers.ts`, `inferers.ts`, `middlewares.ts`, `parsers.ts`, `plugins.ts`, `relations.ts`,
   `schemas.ts`, `seeders.ts`, `shapers.ts`, and `validators.ts`. That list is exhaustive, a new function kind joins it, and no
   later version of the plugin claims more.
+- The name forms read names only: a function, an export specifier, an exported import alias, and a
+  star re-export in the kind file. They never read a return type, so a `create{Name}Plugins` that
+  returns one plugin passes; review owns arity. A value binding in a kind file is the data rule's
+  finding, not the name form's.
 - The plugin reports no `data` violation in `helpers.ts`. The kind rules place a camelCase
   namespace of functions there, and a namespace of callables is not separable from a data table by
   declaration syntax, so `DATA_EXEMPT_FILES` in `configs/policy.ts` excludes the file. Ordinary

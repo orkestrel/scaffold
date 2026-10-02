@@ -287,7 +287,10 @@ export const POLICY_URL_PATTERN = /https?:\/\/\S+/gu
 export const POLICY_NAME_FORMS: Readonly<Record<string, PolicyNameForm>> = Object.freeze({
 	'parsers.ts': Object.freeze({ pattern: /^parse/u, messageId: 'parser' }),
 	'factories.ts': Object.freeze({ pattern: /^create/u, messageId: 'factory' }),
-	'plugins.ts': Object.freeze({ pattern: /^create[A-Z]\w*Plugins?$/u, messageId: 'plugin' }),
+	'plugins.ts': Object.freeze({
+		pattern: /^create[A-Z][A-Za-z0-9]*Plugins?$/u,
+		messageId: 'plugin',
+	}),
 })
 
 /**
@@ -1010,8 +1013,8 @@ export function reportConstant(context: PolicyContext, node: PolicyExpression): 
 
 /**
  * Reports a function in the named kind file whose name breaks that file's form, an export specifier
- * there that publishes a name outside it, and a star re-export there, whose names the form cannot
- * read.
+ * or exported import alias there that publishes a name outside it, and a star re-export there, whose
+ * names the form cannot read.
  */
 export function reportName(context: PolicyContext, node: PolicyExpression, file: string): void {
 	const form = POLICY_NAME_FORMS[file]
@@ -1021,6 +1024,13 @@ export function reportName(context: PolicyContext, node: PolicyExpression, file:
 		return
 	}
 	if (node.type === 'ExportNamedDeclaration') {
+		const alias = node.declaration
+		if (alias?.type === 'TSImportEqualsDeclaration') {
+			const name = identifierToPolicyName(alias.id)
+			if (name === undefined || !form.pattern.test(name)) {
+				context.report({ node: alias, messageId: form.messageId })
+			}
+		}
 		for (const specifier of node.specifiers ?? []) {
 			const exported = specifier.exported
 			const name =
