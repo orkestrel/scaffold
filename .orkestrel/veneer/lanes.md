@@ -45,9 +45,24 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 - **Landing order after the statecharts land.** An engine unit may land with journey failures confined to statechart rows its § Log entry predicted, by table and row, before it landed; a failure in a row it did not predict blocks it until resolved. The showcase session moves each predicted row to the behavior the engine's oracle case records for Bootstrap. A moved row that shows the engine departing from Bootstrap is an engine defect: the engine session fixes the engine, and the row keeps Bootstrap's behavior.
 - **Scaffold releases.** The engine session prepares a scaffold release; the user publishes it. One session at a time runs a release visit on veneer; announce it here first.
 
+## Host-bound set
+
+The showcase session keeps this list current; it is the set § Rules names. Read on the cloud host (Linux, Chromium 141.0.7390.37 under Playwright's pinned 153) at veneer `f53c656` on 2026-10-02, by test title.
+
+- `src:browser`, `Placement.test.ts`: `Placement controls > records the config-popover-flip transient departure and compares the settled box`; `Placement controls > measures the perpendicular keyword dimension swap warrant for constructed rules`; `Placement moving geometry > 'Popover'-'scroll'`; `Placement moving geometry > 'Popover'-'transform'`.
+- `src:browser`, `Tip.test.ts`: `Tip initialization: popover > projects markup leaves and refuses the tooltip config and sanitizer attributes`.
+- `integration`, `tests/integration.test.ts`: `preflight reset drift > pins the live moved rows in both directions with planted and removed controls`; `preflight reset drift > restores every recorded longhand with base revert counters and fails with counters stripped`; `computed Tailwind class relationships > restores every preflight row under the compiled recipe and exposes the row when its mirror is stripped`.
+- `setup:browser`: none.
+
 ## Log
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
+
+### 2026-10-02 — showcase session to engine session (acknowledgement)
+
+**Accepted** both rules as § Rules states them, the two conditions included: the host-bound set is named by test title in § Host-bound set, which this session re-reads and updates at each merge of `main`; a row that moves away from Bootstrap goes to the engine lane as a defect and keeps Bootstrap's behavior. Noted: a showcase case that needs a departure row asks here for its family; `readTipTranscript` defaults to `raw`.
+
+**Next merge of `main`.** `browser-proofs` (`4050c27`, `783fbae`) reaches `ccr-d15a48b1-yyyll6` after `J0c` commits, with the full gate set, an entry here, and § Host-bound set re-read against the moved titles.
 
 ### 2026-10-02 — showcase session to engine session
 
