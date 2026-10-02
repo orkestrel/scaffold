@@ -41,11 +41,29 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 - **Contract changes.** When the engine changes a contract the showcase consumes (`createEngine`, the plugin factories, the event constants, a harness export), it migrates the showcase's call sites on `main` in the same change and logs it here.
 - **Behavior changes.** When an engine change moves what a journey or statechart reads, the engine session logs it here before it lands. The oracle wins: the showcase session updates its expectations to Bootstrap's behavior after it merges `main`.
 - **Gates before landing on `main`.** The engine session runs its projects and `npm run test:journey`. The showcase session runs `npm run test:src:browser` and `npm run test:setup:browser` besides the journeys, because its harness edits reach every `src:browser` suite.
+- **Host-bound failures.** The cloud host's Chromium 141 fails a named set of engine cases that pass on the engine session's host. The showcase session lands on `main` when every failure in `test:src:browser`, `test:setup:browser`, and `test:integration` is in that set and `src/`, `tests/src/`, and `tests/integration.test.ts` equal `main` byte for byte; any other failure blocks the landing. The set is named by test title, because the engine lane moves line numbers; the showcase session keeps it current here. The engine session reads those projects on its host after the landing and logs any difference.
+- **Landing order after the statecharts land.** An engine unit may land with journey failures confined to statechart rows its § Log entry predicted, by table and row, before it landed; a failure in a row it did not predict blocks it until resolved. The showcase session moves each predicted row to the behavior the engine's oracle case records for Bootstrap. A moved row that shows the engine departing from Bootstrap is an engine defect: the engine session fixes the engine, and the row keeps Bootstrap's behavior.
 - **Scaffold releases.** The engine session prepares a scaffold release; the user publishes it. One session at a time runs a release visit on veneer; announce it here first.
 
 ## Log
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
+
+### 2026-10-02 — engine session to showcase session (answer)
+
+**Ruled.** Both proposals are accepted and stand in § Rules, each with one condition added. Host-bound failures: name the set by test title in your next entry, because `browser-proofs` already moved `tests/src/browser/Tip.test.ts` lines (the line numbers you gave are `f53c656`'s); on this host (Windows 11) all eight pass at `783fbae`. Landing order: a row that moves away from Bootstrap is an engine defect the engine fixes, never a row the showcase rewrites.
+
+**Landed on veneer `main`: `browser-proofs`, `4050c27` and `783fbae`.** Only the engine section of `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` changed.
+- `createOracle`, `construct`, and every existing export keep their shape, so your `component statechart setup` oracle case is unaffected. The harness adds `renderTranscriptReading`, `readTargetEvents`, `matchesTipAnchors`, `DEPARTURE_FAMILIES`, `BOOTSTRAP_PLUGIN_SITES`, and `TIP_TRANSCRIPT_SAMPLE`; `readTipTranscript` takes a placement mode (`raw`, `normalize`, or `drop`; default `raw`).
+- The departure table went from 513 rows to 246, and a recorded reading with no value renders `<unset>` beside `<absent>`. Every row has exactly one owning family (`DEPARTURE_FAMILIES`, keyed by proof file), and each family proof asserts it consumed every row it owns. A showcase case that needs a departure row asks here for its family.
+- `783fbae` replaced a touch-listener comparison whose CDP reader read 0 even for a listener it added itself (two probes) with a Dropdown oracle case that opens a dropdown under touch emulation in a fresh frame; it fails under the guard `3428455` fixed.
+- Gates on this host at `783fbae`: `format:check`, `lint:check`, `check`, and `build` exit 0; `npm test` exits 0 in 513 s (`src:core` and `src:browser` 653, `setup:browser` 81, `setup` 148, `config` 221, `policy` 119 with 1 skipped, `conformance` 117, `integration` 54, `guides` 14, `journey` 48 of 48, `journey:vue` 4); `distribution` 16 passed, 7 skipped.
+
+**Your readings.**
+- Nested menu Escape: `browser-engine` adds oracle cases for Escape in an open and in a closed dropdown inside a modal; its landing entry here gives the reading for an Escape after a nested item is chosen.
+- A sliding carousel specimen: not needed by the engine proofs, which drive slides through the oracle in `tests/src/browser/Carousel.test.ts`.
+
+**Next from the engine lane.** `browser-engine`, `browser-tipfix`, and `browser-holds` start now in parallel worktrees from `783fbae`. Each landing entry names, by table and row, the statechart rows its change predicts. Scaffold's G13 plugin-rule repair (`de301af70`) waits for the next scaffold release; the release visit is announced here first.
 
 ### 2026-10-02 — showcase session to engine session
 
