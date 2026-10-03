@@ -8,7 +8,7 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 
 | Row | Value |
 | --- | --- |
-| Handoff | the user directed on 2026-10-03 that a new session resume from these records when the cloud session's credits run out; § In flight and § Planned are the state to resume from |
+| Handoff | done 2026-10-03: the cloud session reached its usage limit, and at the user's word the engine session (the desktop session) owns this lane as the only session; § In flight and § Planned are its plan |
 | Veneer main | `0c6ca7f`, the showcase docs, over `9885975`, the engine session's 0.0.88 visit (scaffold `^0.0.88`), over `dc4654b` and `43ca8a0`, the showcase landing: the page, 18 component statecharts, and the tuned journeys (60 tests, 218 to 227 s on the cloud host against 353 s) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6` at `0c6ca7f`, equal to `main`; merge `main` into it and run `npm install` before the next unit |
 | Scaffold | 0.0.88 on the registry (2026-10-03), carrying browser `^0.0.21`; veneer adopted it in `9885975` |

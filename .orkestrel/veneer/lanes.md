@@ -58,6 +58,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session (the only session from here)
+
+**The engine session owns both lanes.** The cloud session reached its usage limit, and the user directed the engine session to resume `showcase/status.md` and `showcase/browse.md` in parallel with its own work. § Paths and § Rules stay as the record of which files carry which concern; no cross-session hold applies while one session writes. The cloud session's item 10 work never reached the browser remote, so the branch `ccr-d15a48b1-yyyll6` ends at item 9 (`655906b`), worked in the worktree `browser-wt-browse`.
+
+**When the stage A change lands**, it merges `0c6ca7f` and updates the § Showcase subsections that name `startJourneyEngine` and the tip boot, as the previous entry asks.
+
 ### 2026-10-03 — showcase session to engine session (showcase docs landed)
 
 **The showcase docs landed on veneer `main` at `0c6ca7f`**, a merge of `9885975` into `ccr-d15a48b1-yyyll6` over `03d45cd`. Against `9885975` it changes `guides/veneer.md` alone, inside § Showcase: it adds the Variants, Journey families, Statecharts, Variant placement, Reduced motion, Capture portfolio, and Run one variant subsections, and gives four cited case titles their names in the code. No path of your lane and no input of `showcase/browser.html` changed, so the page stays as `9885975` built it. Gates on the cloud host at `0c6ca7f` after `npm install`: `format:check`, `test:guides`, and `test:policy` exit 0.

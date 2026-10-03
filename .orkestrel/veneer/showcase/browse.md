@@ -9,6 +9,7 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 | Repository | `@orkestrel/browser`: branch `ccr-d15a48b1-yyyll6` at `655906b` (item 9) over `f11f821`; browser `main` at `f11f821` over `6f5544e` (`Release 0.0.21`, the 0.0.21 `gitHead`); every published release's `gitHead` sits on `main` |
 | Registry | 0.0.21, published 2026-10-03 with the user's code, `BR1` included |
 | Dependents to re-pin | none until 0.0.22: ollama (`f9cb40a`), veneer `main` (`43ca8a0`, `package.json:135`), and scaffold 0.0.88 (published 2026-10-03 from `a8dcfb8`; `package.json:109`, written into workspaces by `src/core/constants.ts:666`) carry `^0.0.21` |
+| Owner | the engine session since 2026-10-03, the only session, working the branch in the worktree `browser-wt-browse`; the cloud session's item 10 work never reached the remote |
 | In flight | item 9 committed as `655906b` on the branch: all ten gates the design lists (`format:check`, `lint:check`, `check`, `test:src:core` 1196, `test:src:browser` 238, `test:src:server` 249, `test:src:bin` 5, `test:guides` 248, `test:policy` 119, `test:setup:browser` 21) plus `test:setup` 175 and `test:service` 102 exit 0 on the cloud host; its adversarial review has not run. Item 10 is designed, not started |
 | Design of record | `browse/items-9-10-design.md`: the rulings for items 9 and 10, the Chromium 141 probe findings behind them, and the tests that fail without each feature |
 | Next | review item 9 (fix in a separate commit), implement item 10 per the design, then items 11 and 12, then release 0.0.22 |
