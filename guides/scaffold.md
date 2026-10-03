@@ -2067,6 +2067,12 @@ read or write that file.
 
 ## Generated workspace
 
+The generated factories name unnamed browser instances after merging the caller's override, using
+the merged project label and browser. An override setting the label to `widgets` produces
+`widgets (chromium)`, including for an instance added by the override. Explicit instance names stay
+unchanged. Vue and journey factories discard inherited instance names before applying their own
+labels. Vitest reports the same names when a wrapper runs alone and when the root registers it.
+
 A workspace's file set is a function of its axes, its structural facts, and its extensions.
 Nothing is fixed except the manifest.
 
@@ -2611,7 +2617,9 @@ The generated guide index lists each occupied Vue face with its source, tests, a
 - [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — ownership of a snapshot
   taken from a hostile value.
 - [`tests/src/core/templates.test.ts`](../tests/src/core/templates.test.ts) — the frozen template
-  definitions.
+  definitions and generated configurations under live Vitest. The isolated `templates` project runs
+  through `test:templates` in `prepublishOnly`; its compiler and Chromium processes run apart from
+  the `src:core` project.
 - [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) — the seeded rows named
   as a set, the floor form every shared table and this manifest carry, and the emitted TypeScript
   bound.

@@ -81,6 +81,7 @@
 		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
 		"test:guides": "node --experimental-strip-types tests/guides.test.ts",
 		"test:skills": "vitest run --config vite.config.ts --no-cache --reporter=dot --project skills",
+		"test:templates": "vitest run --config vite.config.ts --no-cache --reporter=dot --project templates",
 		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
@@ -94,7 +95,7 @@
 		"build:inventory": "node -e \"import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})\"",
 		"build:skills": "tsc -p configs/agents/tsconfig.skills.json --noEmit false --allowImportingTsExtensions false --rewriteRelativeImportExtensions --declaration false --sourceMap false --rootDir .agents/skills --outDir dist/agents/skills && npm run copy .agents/templates/brief.md dist/agents/templates/brief.md",
 		"prepack": "npm run build",
-		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:templates && npm run test:distribution -- --mode release"
 	},
 	"dependencies": {
 		"@orkestrel/console": "^0.0.15",

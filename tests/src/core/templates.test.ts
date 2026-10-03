@@ -25,8 +25,13 @@ import {
 	TAB_WIDTH,
 } from '@src/core'
 import { BROWSER_RESOLVER_EXPORTS } from '../../setup.js'
-import { driveClassifier, readStatements } from '../../setupServer.js'
-import { describe, expect, it } from 'vitest'
+import {
+	driveClassifier,
+	readStatements,
+	GENERATED_INSTANCE_CASES,
+	spawnNpm,
+} from '../../setupServer.js'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 // The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
 // `TAB_WIDTH` columns and a line is printed to fit `PRINT_WIDTH` of them. The
@@ -798,6 +803,114 @@ describe('configuration templates', () => {
 	})
 })
 
+describe('live browser factory names', () => {
+	let workspace: ScratchInterface | undefined
+
+	beforeAll(async () => {
+		workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-factories-' })
+		const blueprint = createBlueprint('sample', {
+			src: ['core', 'browser'],
+			app: ['browser'],
+			styles: true,
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			setup: ['browser'],
+			integration: true,
+		})
+		stageRootConfig(blueprint, workspace, 'selected')
+		const dependencies = blueprintToDevDependencies(blueprint)
+		workspace.write(
+			'selected/package.json',
+			JSON.stringify({
+				type: 'module',
+				private: true,
+				devDependencies: {
+					'@vitejs/plugin-vue': dependencies['@vitejs/plugin-vue'],
+					vue: dependencies.vue,
+					vite: dependencies.vite,
+				},
+			}),
+		)
+		for (const name of ['setup', 'setupBrowser', 'setupStyles'])
+			workspace.write(`selected/tests/${name}.ts`, 'export {}\n')
+		for (const name of [
+			'src/browser/index',
+			'src/vue/index',
+			'app/browser/index',
+			'app/vue/index',
+			'app/browser/integration',
+			'src/styles/index',
+			'setupBrowser',
+			'integration',
+		]) {
+			workspace.write(
+				`selected/tests/${name}.test.ts`,
+				"import { expect, it } from 'vitest'\nit('collects', () => { expect(document.createElement('div').tagName).toBe('DIV') })\n",
+			)
+		}
+		workspace.ensure('selected/app/browser')
+		workspace.ensure('selected/app/vue')
+		const installed = await spawnNpm(
+			['install', '--ignore-scripts', '--prefer-offline', '--no-audit', '--no-fund'],
+			{
+				workspace: join(workspace.path, 'selected'),
+				timeout: 60_000,
+			},
+		)
+		if (installed.failed) throw new Error(installed.stdout + installed.stderr)
+	}, 120_000)
+
+	afterAll(() => workspace?.destroy())
+
+	it.each(GENERATED_INSTANCE_CASES)(
+		'reports $label in root and wrapper listings',
+		async ({ label, expression, prefix }) => {
+			const scratch = requireValue(workspace)
+			const imports =
+				"import { srcBrowser, srcVue, appBrowser, appVue, appJourney, sheetProject, setupBrowser, integration, mergeOverride } from './vite.config.ts'\n"
+			scratch.write(
+				'selected/wrapper.config.ts',
+				`${imports}${prefix}export default ${expression}\n`,
+			)
+			scratch.write(
+				'selected/root.config.ts',
+				`${imports}${prefix}export default { test: { projects: [${expression}] } }\n`,
+			)
+			for (const config of ['wrapper.config.ts', 'root.config.ts']) {
+				const listed = join(scratch.path, 'listed.json')
+				const listing = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'list',
+							'--config',
+							config,
+							`--json=${listed}`,
+						],
+					},
+					{ workspace: join(scratch.path, 'selected'), strict: false, timeout: 60_000 },
+				)
+				if (listing.failed) throw new Error(listing.stdout + listing.stderr)
+				const collected: unknown = JSON.parse(readFileSync(listed, 'utf8'))
+				const expected =
+					label === 'added' ? ['retained', `${label} (chromium)`] : [`${label} (chromium)`]
+				expect.soft(collected, config).toHaveLength(label === 'added' ? 2 : 1)
+				expect
+					.soft(collected, config)
+					.toEqual(
+						expect.arrayContaining(
+							expected.map((projectName) =>
+								expect.objectContaining({ projectName, name: 'collects' }),
+							),
+						),
+					)
+			}
+		},
+		180_000,
+	)
+})
+
 // A generated workspace vendors `format:check` and `lint:check` and runs both on
 // the bytes `new` wrote, so the emitted text is measured against the vendored
 // rules directly here. Each instrument's population is every (blueprint, module)
@@ -808,6 +921,77 @@ describe('configuration templates', () => {
 // control drawn from outside the emitted population as well, because an
 // instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
+	it('gives a generated browser instance the same name in root and wrapper listings', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-instance-' })
+		try {
+			const blueprint = createBlueprint('sample', { src: ['browser'] })
+			stageRootConfig(blueprint, workspace, 'selected')
+			for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+				if (artifact.origin !== 'host')
+					workspace.write(`selected/${artifact.path}`, artifact.content)
+			}
+			workspace.link('selected/node_modules', resolve('node_modules'))
+			workspace.write(
+				'selected/package.json',
+				'{"type":"module","scripts":{"test":"vitest run --config configs/src/vite.browser.config.ts"}}',
+			)
+			workspace.write('selected/tests/setup.ts', 'export {}\n')
+			workspace.write('selected/tests/setupBrowser.ts', 'export {}\n')
+			workspace.write(
+				'selected/tests/src/browser/index.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const options = {
+				workspace: join(workspace.path, 'selected'),
+				strict: false,
+				timeout: 60_000,
+			}
+			for (const config of ['vite.config.ts', 'configs/src/vite.browser.config.ts']) {
+				const listed = join(workspace.path, 'listed.json')
+				const listing = await execute(
+					{
+						file: process.execPath,
+						arguments: [
+							resolve('node_modules/vitest/vitest.mjs'),
+							'list',
+							'--config',
+							config,
+							`--json=${listed}`,
+						],
+					},
+					options,
+				)
+				if (listing.failed) throw new Error(listing.stdout + listing.stderr)
+				const collected: unknown = JSON.parse(readFileSync(listed, 'utf8'))
+				expect(collected).toEqual([
+					expect.objectContaining({ projectName: 'src:browser (chromium)', name: 'collects' }),
+				])
+			}
+			const census = await execute(
+				{
+					file: process.execPath,
+					arguments: [resolve('.agents/skills/orkestrel-harden/scripts/discovery.ts'), '--json'],
+				},
+				options,
+			)
+			if (census.failed) throw new Error(census.stdout + census.stderr)
+			const report: unknown = JSON.parse(census.stdout)
+			if (!isRecord(report)) throw new Error('Discovery returned no census')
+			expect(report.ungated).toEqual([])
+			expect(report.projects).toEqual([
+				{
+					name: 'src:browser (chromium)',
+					gate: 'test',
+					files: 1,
+					tests: 1,
+					units: [{ config: 'vite.config.ts' }, { config: 'configs/src/vite.browser.config.ts' }],
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	}, 180_000)
+
 	it('lists and runs browser, sheet, guides, and integration projects unscoped', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-unscoped-' })
 		try {

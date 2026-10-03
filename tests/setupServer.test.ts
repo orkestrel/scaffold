@@ -55,6 +55,7 @@ import {
 	CORE_GENERATED_COUNT,
 	createCatalogFleet,
 	createCheckout,
+	createDistributionScratch,
 	createFleet,
 	createHostRoot,
 	createOllamaServer,
@@ -108,6 +109,46 @@ import {
 	VENDORED_FILES,
 	WORKSPACE_ROOT,
 } from './setupServer.js'
+
+describe('createDistributionScratch', () => {
+	it('isolates consumer imports from packages installed only in the checkout', async () => {
+		const workspace = createDistributionScratch('distribution-boundary-')
+		const control = createScratch({
+			parent: join(WORKSPACE_ROOT, 'tmp'),
+			prefix: 'distribution-control-',
+		})
+		try {
+			workspace.write('consumer/check.ts', "import '@orkestrel/contract'\n")
+			control.write('consumer/check.ts', "import '@orkestrel/contract'\n")
+			const isolated = await execute(
+				{ file: process.execPath, arguments: ['consumer/check.ts'] },
+				{ workspace: workspace.path, strict: false },
+			)
+			const leaked = await execute(
+				{ file: process.execPath, arguments: ['consumer/check.ts'] },
+				{ workspace: control.path, strict: false },
+			)
+			expect(leaked).toMatchObject({ code: 0 })
+			expect(isolated).toMatchObject({ code: 1 })
+			expect(isolated.stderr).toContain('ERR_MODULE_NOT_FOUND')
+			workspace.write('sample.ts', 'export {}\n')
+			control.write('sample.ts', 'export {}\n')
+			const selected = await execute(
+				{ file: 'git', arguments: ['check-ignore', 'sample.ts'] },
+				{ workspace: workspace.path, strict: false },
+			)
+			const ignored = await execute(
+				{ file: 'git', arguments: ['check-ignore', 'sample.ts'] },
+				{ workspace: control.path, strict: false },
+			)
+			expect(selected.code).toBe(1)
+			expect(ignored.code).toBe(0)
+		} finally {
+			workspace.destroy()
+			control.destroy()
+		}
+	})
+})
 
 // The subject is the Node-only test infrastructure `tests/setupServer.ts` exports.
 // Every resource a case opens is released in the same case, and the mirrored suites

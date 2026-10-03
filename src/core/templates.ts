@@ -115,15 +115,29 @@ const resolve = {
 // merges it, so an override's arrays elsewhere concatenate with the base's rather than
 // replacing them.
 export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
-	if (override === undefined) return base
-	if ('command' in override && 'mode' in override) {
+	if (override !== undefined && 'command' in override && 'mode' in override) {
 		if (typeof override.mode !== 'string') {
 			throw new Error('The project invocation carries no string mode')
 		}
-		return { ...base, mode: override.mode }
+		override = { mode: override.mode }
 	}
-	const merged: UserConfig = mergeConfig(base, override)
-	if (merged.plugins === undefined) return merged
+	const merged: UserConfig = override === undefined ? { ...base } : mergeConfig(base, override)
+	const name = merged.test?.name
+	const label = typeof name === 'string' ? name : name?.label
+	const browser = merged.test?.browser
+	if (label !== undefined && browser?.instances !== undefined) {
+		merged.test = {
+			...merged.test,
+			browser: {
+				...browser,
+				instances: browser.instances.map((instance) => ({
+					...instance,
+					name: instance.name ?? \`\${label} (\${instance.browser})\`,
+				})),
+			},
+		}
+	}
+	if (merged.plugins === undefined || override === undefined) return merged
 	const candidates = override.plugins ?? []
 	const taken = new Set<number>()
 	const selected: PluginOption[] = []
@@ -449,6 +463,12 @@ export function srcBin(override?: UserConfig): UserConfig {
 		test: {
 			...browser.test,
 			name: { label: 'app:vue', color: 'magenta' },
+			browser: {
+				...browser.test?.browser,
+				instances: (browser.test?.browser?.instances ?? []).map(
+					({ name: _name, ...instance }) => instance,
+				),
+			},
 			include: ['tests/app/vue/**/*.test.ts'],
 {{journeyExclude}}		},
 	}
@@ -465,7 +485,7 @@ export function appJourney(
 ): UserConfig {
 	const application = resolveApplication(mode, applications)
 	const browser = applications[application]()
-	return {
+	const project: UserConfig = {
 		...browser,
 		test: {
 			...browser.test,
@@ -477,9 +497,13 @@ export function appJourney(
 				...browser.test?.browser,
 				enabled: true,
 				viewport: { width: variant.width, height: variant.height },
+				instances: (browser.test?.browser?.instances ?? []).map(
+					({ name: _name, ...instance }) => instance,
+				),
 			},
 		},
 	}
+	return mergeOverride(project)
 }
 `,
 			// A showcase is the browser application written to its own output, so it composes
@@ -770,12 +794,12 @@ export function probe(override?: UserConfig): UserConfig {
 `,
 		integration: Object.freeze({
 			sheet: `export function integration(override?: UserConfig): UserConfig {
-	const project = sheetProject('integration', {
+	const project: UserConfig = {
 		test: {
 			include: ['tests/integration.test.ts'],
 {{global}}		},
-	})
-	return mergeOverride(project, override)
+	}
+	return sheetProject('integration', mergeOverride(project, override))
 }
 `,
 			module: `export function integration(override?: UserConfig): UserConfig {
