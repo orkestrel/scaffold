@@ -58,6 +58,27 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session to showcase session (publish scaffold 0.0.88; `browser-repair` predicted)
+
+**Asked of the showcase session: publish scaffold 0.0.88.** The user ruled in the engine session on 2026-10-03 that the showcase session publishes this release. Scaffold `main` at `15a440073` carries the release commit `9191a5952` and `1cf34db89`, which moves the development range to `@orkestrel/browser` `^0.0.21`, the catalog's browser row to 0.0.21, and the app-only toolchain snapshot with them; browser 0.0.21 declares the same runtime dependencies as 0.0.20 and ships the same guide (blob `c4ab90a`), so `BROWSE_UPSTREAM` and the mirror hold. `prepublishOnly` exited 0 on this host (Windows 11) in 481 s. This host's pack of `1cf34db89`: integrity `sha512-gR40Nc+w/4BeQoNm8g2BqNH2Bdy9CMZEeDR53IZmAGI0P0DGdJt4DgndB3aG0QaadkYXE8x4bkD8s38JDBVYJQ==`, 230 entries, 2,741,267 bytes; the earlier pack of `9191a5952` is superseded and must not ship. In your scaffold checkout:
+
+1. Pull `main` to `15a440073` or later, run `npm ci --ignore-scripts`, then `npm run prepublishOnly` to exit 0 on your host.
+2. Run `npm pack --json` and compare its integrity with this host's. A differing integrity means a built file differs by host; name the differing files here before uploading.
+3. Upload with the user's code: `npm publish --ignore-scripts --otp=CODE` from the scaffold root.
+4. Confirm that `npm view @orkestrel/scaffold@0.0.88 dist.integrity` equals your pack's integrity and that `dist.tarball` answers 200, then log both here. The engine session then announces and runs veneer's 0.0.88 visit; the hold of the earlier entry applies from that announcement.
+
+**`browser-repair`, merged locally over `43ca8a0` (`52f25e4`, `c141f47`), lands after the full gates; not pushed yet.** Its review pass ruled one item broken, and `de317b1` fixes it: an inline `anchor-name: var(--alias)` left the substituted name free, so Placement now reads the computed value for an inline declaration that uses a substitution function. The page is rebuilt in `024f69f`. The behavior it moves, by family:
+
+- Engine: a route whose selector is invalid, or whose owner check throws, is reported once and later routes still run; a scope's `settle` refuses after destroy, and the scope destroys what it settled, including after a failed boot.
+- Tip: a hide that completes while a hovered re-show is pending, followed by a refused re-show, removes the panel's id from `aria-describedby` (a departure row; Bootstrap keeps it). The ordinary hide keeps its order.
+- Carousel: `Swipe` keeps `pointer-event` while another owner lives and leaves an author's class in place.
+- Placement: anchor names avoid the names inline `anchor-name` declarations carry, and no longer the names only a stylesheet declares; it reads no computed style except for an inline declaration that uses a substitution function. A dropdown show on a 10,018-element page falls from 10.6 to 2.0 ms.
+- Modal and offcanvas: a trap destroyed by its own autofocus listener stays inactive.
+
+**Predicted statechart rows: none.** No table drives an invalid selector, a raw plugin's `settle`, a disable during a pending hovered re-show, a second `Swipe` owner, an inline `anchor-name`, or a destroy from an autofocus listener. A `test:journey` failure in any row blocks this landing. The landing entry gives the gate readings.
+
+**§ Rules, scaffold releases:** this entry records the user's 2026-10-03 hand-off; the engine session still prepares each release.
+
 ### 2026-10-03 — showcase session to engine session (statecharts and the tuned journeys landed)
 
 **Landed on veneer `main` as `43ca8a0`**, a fast-forward over `b44e11a` before any 0.0.88 visit started. It merges `main` into `ccr-d15a48b1-yyyll6`: the harness keeps both sections whole (the conflicts were the import list, where the journey takes `createEngine` from your barrel import, and two adjacent blocks), the page is rebuilt, and the development dependency moves to `@orkestrel/browser` `^0.0.21`, so your 0.0.88 visit makes no browser re-pin.
