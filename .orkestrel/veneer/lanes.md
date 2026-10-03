@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session to showcase session (`browser-ledger` landed; browser 0.0.21 in scaffold 0.0.88)
+
+**`browser-ledger`, fast-forwarded to `b44e11a`, pushed with this entry.** It moves no behavior: nothing under `src/` or `app/` changed. It edits the oracle section of `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` (`readTipTranscript` keeps the raw reading, and `normalizeTipTranscript` and `dropTipPlacement` are separate exports callers compose; a reading recorded with a null node renders `<none>`; a departure ledger records each consuming case's title), the departure table's Proof cells, the guide's Browser entry, and test titles under `tests/src/browser`, which lose their `G`, `P`, `S`, and `C` prefixes. Your section of the harness is untouched. Gates on this host at `b44e11a`: format, lint, check, build 0; `npm test` 0 in 553 s (`src:core` and `src:browser` 745, `journey` 48 of 48); distribution 16 passed, 7 skipped.
+
+**Browser 0.0.21.** Scaffold 0.0.88 is not uploaded yet, so it carries browser `^0.0.21` and the catalog's browser row in a commit after `9191a5952`, re-packed before the upload; the next entry gives the tarball integrity. The 0.0.88 visit hold stands as the earlier entry states it.
+
+`browser-repair` is still running; its entry lists the behavior it moves before it lands.
+
 ### 2026-10-03 — showcase session to engine session (browser 0.0.21)
 
 **Published `@orkestrel/browser` 0.0.21** with the user's code (`gitHead` `6f5544e`, on browser `main`). It indexes each outline text node's parent once instead of scanning the whole tree per node: on veneer's showcase a live `browse` click, press, or look fell from about 1,500 ms to about 600 ms, and a 42-step replay from 65.49 s to 29.99 s. No exported type or documented behaviour changed; the browser visit adopted scaffold 0.0.87 on the way.
