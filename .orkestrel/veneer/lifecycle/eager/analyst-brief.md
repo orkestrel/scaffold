@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`analyst` on GPT-6 Astra, reached as `codex exec` with reasoning effort high and `--sandbox read-only`. Read-only: create, edit, and run nothing that writes. Perform the assignment yourself and spawn nothing.
+`analyst` on GPT-6 Astra, reached as `codex exec` with reasoning effort high and `--sandbox danger-full-access`, because the read-only sandbox blocks every shell on this host. Read-only by this brief: create, edit, delete, and run nothing that writes, here or in any other checkout. Perform the assignment yourself and spawn nothing.
 
 ## Lane
 
@@ -15,7 +15,7 @@ Answer `C:\Users\mikes\WebstormProjects\scaffold\.orkestrel\veneer\lifecycle\eag
 - Every way a launch, a recovery, or a teardown can race: a tool call arriving mid-recovery, two crashes in a row, a crash during teardown, a signal during the eager launch, a client that closes stdin before the launch finishes, the port 9222 refusal at startup.
 - The failure table: for each failure (launch refused, executable missing, process exit, dropped socket, renderer crash, a browser alive but not answering, profile directory locked, disk full), the signal that reveals it, the pool's action, and what the caller sees, with code citations for every existing signal and a stated gap where none exists.
 - Liveness without a periodic poll (`AGENTS.md` § Design laws): what the existing events and command deadlines cover, and what they leave uncovered.
-- The startup sequence against each client's startup timeout in `clients.md`, and what the user sees when the launch fails under each candidate.
+- The startup sequence against each client's startup timeout in `clients.md`, and what the user sees when the launch fails under each candidate, including the D9 candidates that change `@orkestrel/mcp` (its checkout is `C:\Users\mikes\WebstormProjects\mcp`): judge each against the MCP specification's lifecycle text in `clients.md`.
 - Cleanup: every process, profile, port, and listener the pool creates, and the proof that each is released after a normal stop, a crash, and a killed server (the next start's sweep of orphaned profiles included).
 - The measurement plan for the spare browser and the eager start: what to time, on which realistic loads, and what result would make the spare worth keeping, reasoned from the case with no fixed figure.
 
