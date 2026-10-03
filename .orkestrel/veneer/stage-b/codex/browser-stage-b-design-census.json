@@ -1,0 +1,2654 @@
+{
+  "pattern": "\\b(?:createEngine|EngineInterface|EngineOptions|EngineInteraction|Engine|ENGINE_ROOT|ENGINE_DESTROYED|ENGINE_DESTROY)\\b",
+  "files": 40,
+  "occurrences": 333,
+  "results": [
+    {
+      "file": "ROADMAP.md",
+      "occurrences": 3,
+      "lines": [
+        {
+          "line": 144,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 145,
+          "count": 2,
+          "names": [
+            "createEngine",
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "app/browser/constants.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 82,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 519,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "app/browser/factories.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 453,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 467,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "app/browser/main.ts",
+      "occurrences": 3,
+      "lines": [
+        {
+          "line": 1,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 5,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 6,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        5,
+        6
+      ]
+    },
+    {
+      "file": "guides/veneer.md",
+      "occurrences": 37,
+      "lines": [
+        {
+          "line": 86,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 92,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 195,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 247,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        },
+        {
+          "line": 259,
+          "count": 1,
+          "names": [
+            "EngineOptions"
+          ]
+        },
+        {
+          "line": 320,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 324,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 539,
+          "count": 3,
+          "names": [
+            "ENGINE_DESTROY",
+            "ENGINE_DESTROYED",
+            "ENGINE_ROOT"
+          ]
+        },
+        {
+          "line": 578,
+          "count": 4,
+          "names": [
+            "createEngine",
+            "EngineInterface",
+            "createEngine",
+            "Engine"
+          ]
+        },
+        {
+          "line": 580,
+          "count": 5,
+          "names": [
+            "Engine",
+            "Engine",
+            "ENGINE_ROOT",
+            "ENGINE_DESTROYED",
+            "Engine"
+          ]
+        },
+        {
+          "line": 582,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 636,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 641,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 659,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 665,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 667,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 669,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 688,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 689,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 690,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 691,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 692,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 939,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 1723,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 1823,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 1826,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1846,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 1862,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        578,
+        641,
+        659
+      ]
+    },
+    {
+      "file": "showcase/browser.html",
+      "occurrences": 8,
+      "lines": [
+        {
+          "line": 9,
+          "count": 5,
+          "names": [
+            "ENGINE_ROOT",
+            "ENGINE_DESTROYED",
+            "ENGINE_DESTROY",
+            "ENGINE_DESTROYED",
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 22510,
+          "count": 2,
+          "names": [
+            "Engine",
+            "Engine"
+          ]
+        },
+        {
+          "line": 22545,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "src/browser/Engine.ts",
+      "occurrences": 25,
+      "lines": [
+        {
+          "line": 4,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 17,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 20,
+          "count": 2,
+          "names": [
+            "Engine",
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 21,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 34,
+          "count": 1,
+          "names": [
+            "ENGINE_ROOT"
+          ]
+        },
+        {
+          "line": 37,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 39,
+          "count": 1,
+          "names": [
+            "ENGINE_ROOT"
+          ]
+        },
+        {
+          "line": 49,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 65,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 104,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 105,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 106,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 111,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 124,
+          "count": 2,
+          "names": [
+            "Engine",
+            "Engine"
+          ]
+        },
+        {
+          "line": 126,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 138,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 142,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 154,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 157,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 160,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 164,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 169,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 172,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "src/browser/factories.ts",
+      "occurrences": 9,
+      "lines": [
+        {
+          "line": 12,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 13,
+          "count": 1,
+          "names": [
+            "EngineOptions"
+          ]
+        },
+        {
+          "line": 33,
+          "count": 2,
+          "names": [
+            "Engine",
+            "Engine"
+          ]
+        },
+        {
+          "line": 167,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 170,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 172,
+          "count": 1,
+          "names": [
+            "EngineOptions"
+          ]
+        },
+        {
+          "line": 173,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 174,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        167,
+        170
+      ]
+    },
+    {
+      "file": "src/browser/helpers.ts",
+      "occurrences": 3,
+      "lines": [
+        {
+          "line": 3,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        },
+        {
+          "line": 87,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        },
+        {
+          "line": 122,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "src/browser/index.ts",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 8,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "src/browser/types.ts",
+      "occurrences": 9,
+      "lines": [
+        {
+          "line": 464,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 468,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 473,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 478,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 1968,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        },
+        {
+          "line": 1992,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 2090,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        },
+        {
+          "line": 2098,
+          "count": 1,
+          "names": [
+            "EngineInteraction"
+          ]
+        },
+        {
+          "line": 2156,
+          "count": 1,
+          "names": [
+            "EngineOptions"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "src/core/types.ts",
+      "occurrences": 3,
+      "lines": [
+        {
+          "line": 56,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 57,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 58,
+          "count": 1,
+          "names": [
+            "ENGINE_ROOT"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/app/browser/Showcase.test.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 9,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 315,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        315
+      ]
+    },
+    {
+      "file": "tests/app/browser/constants.test.ts",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 198,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/app/browser/factories.test.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 446,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 584,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/app/browser/main.test.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 8,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 116,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        116
+      ]
+    },
+    {
+      "file": "tests/distribution.test.ts",
+      "occurrences": 4,
+      "lines": [
+        {
+          "line": 998,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1001,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1039,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1052,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/setup.test.ts",
+      "occurrences": 6,
+      "lines": [
+        {
+          "line": 26,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 28,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 694,
+          "count": 2,
+          "names": [
+            "Engine",
+            "Engine"
+          ]
+        },
+        {
+          "line": 698,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 709,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/setup.ts",
+      "occurrences": 5,
+      "lines": [
+        {
+          "line": 419,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 473,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 511,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 512,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 531,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/setupBrowser.test.ts",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 986,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/setupBrowser.ts",
+      "occurrences": 12,
+      "lines": [
+        {
+          "line": 11,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 91,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 319,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 325,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 330,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 335,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 1273,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 1280,
+          "count": 1,
+          "names": [
+            "EngineInterface"
+          ]
+        },
+        {
+          "line": 1282,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 4668,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 4856,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 4891,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        1282,
+        4668
+      ]
+    },
+    {
+      "file": "tests/src/browser/Alert.test.ts",
+      "occurrences": 4,
+      "lines": [
+        {
+          "line": 2,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 38,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 319,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 340,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        38,
+        319
+      ]
+    },
+    {
+      "file": "tests/src/browser/Button.test.ts",
+      "occurrences": 8,
+      "lines": [
+        {
+          "line": 3,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 18,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 49,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 100,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 112,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 199,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 207,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 228,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        18,
+        49,
+        100,
+        112,
+        199,
+        207
+      ]
+    },
+    {
+      "file": "tests/src/browser/Carousel.test.ts",
+      "occurrences": 8,
+      "lines": [
+        {
+          "line": 2,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 50,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 108,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 137,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 144,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 463,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 608,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 628,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        50,
+        137,
+        144,
+        463,
+        608
+      ]
+    },
+    {
+      "file": "tests/src/browser/Collapse.test.ts",
+      "occurrences": 9,
+      "lines": [
+        {
+          "line": 2,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 31,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 138,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 339,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 373,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 402,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 454,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 586,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 607,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        31,
+        138,
+        339,
+        373,
+        402,
+        454,
+        586
+      ]
+    },
+    {
+      "file": "tests/src/browser/Dropdown.test.ts",
+      "occurrences": 17,
+      "lines": [
+        {
+          "line": 6,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 317,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 354,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 369,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 370,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 395,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 439,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 586,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 613,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 723,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 770,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 808,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 838,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 871,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 919,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 999,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1020,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        317,
+        354,
+        369,
+        370,
+        395,
+        439,
+        586,
+        613,
+        723,
+        770,
+        808,
+        838,
+        871,
+        919,
+        999
+      ]
+    },
+    {
+      "file": "tests/src/browser/Engine.test.ts",
+      "occurrences": 51,
+      "lines": [
+        {
+          "line": 12,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 17,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 73,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 118,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 122,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 125,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 148,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 171,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 203,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 206,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 244,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 267,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 294,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 299,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 318,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 332,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 347,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 376,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 382,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROYED"
+          ]
+        },
+        {
+          "line": 434,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 497,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 545,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 563,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 565,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 566,
+          "count": 2,
+          "names": [
+            "Engine",
+            "ENGINE_ROOT"
+          ]
+        },
+        {
+          "line": 596,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 632,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 633,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 668,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 669,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 690,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 691,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 710,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 729,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 748,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 768,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 790,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 823,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 832,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 855,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 897,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 898,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 930,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 931,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 955,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1005,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1006,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1080,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1119,
+          "count": 2,
+          "names": [
+            "Engine",
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        73,
+        118,
+        125,
+        148,
+        299,
+        318,
+        332,
+        347,
+        376,
+        434,
+        497,
+        563,
+        565,
+        710,
+        729,
+        748,
+        768,
+        855,
+        897,
+        898,
+        930,
+        931,
+        955,
+        1005,
+        1006,
+        1080
+      ]
+    },
+    {
+      "file": "tests/src/browser/Lock.test.ts",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 300,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/src/browser/Modal.test.ts",
+      "occurrences": 10,
+      "lines": [
+        {
+          "line": 2,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 26,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 109,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 226,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 441,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 455,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 459,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 534,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 562,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 583,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        26,
+        109,
+        226,
+        441,
+        534,
+        562
+      ]
+    },
+    {
+      "file": "tests/src/browser/Offcanvas.test.ts",
+      "occurrences": 9,
+      "lines": [
+        {
+          "line": 5,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 96,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 259,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 268,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 347,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 369,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 419,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 451,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 472,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        96,
+        259,
+        268,
+        347,
+        369,
+        419,
+        451
+      ]
+    },
+    {
+      "file": "tests/src/browser/Placement.test.ts",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 963,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/src/browser/Scrollspy.test.ts",
+      "occurrences": 8,
+      "lines": [
+        {
+          "line": 3,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 19,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 160,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 289,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 299,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 302,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 640,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 660,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        19,
+        160,
+        289,
+        299,
+        302,
+        640
+      ]
+    },
+    {
+      "file": "tests/src/browser/Tab.test.ts",
+      "occurrences": 12,
+      "lines": [
+        {
+          "line": 3,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 93,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 101,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 196,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 223,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 251,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 291,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 323,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 342,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 424,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 449,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 469,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        93,
+        101,
+        196,
+        223,
+        251,
+        291,
+        323,
+        342,
+        424,
+        449
+      ]
+    },
+    {
+      "file": "tests/src/browser/Tip.test.ts",
+      "occurrences": 26,
+      "lines": [
+        {
+          "line": 13,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 215,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 295,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 296,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 592,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 645,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 712,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 773,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 900,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1075,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1305,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1354,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1399,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1421,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1618,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 1786,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2174,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2188,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2247,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2259,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2476,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2486,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2522,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2581,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2593,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 2613,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        215,
+        295,
+        296,
+        592,
+        645,
+        712,
+        773,
+        900,
+        1075,
+        1305,
+        1354,
+        1399,
+        1421,
+        1618,
+        1786,
+        2174,
+        2188,
+        2247,
+        2259,
+        2476,
+        2486,
+        2522,
+        2581,
+        2593
+      ]
+    },
+    {
+      "file": "tests/src/browser/Toast.test.ts",
+      "occurrences": 4,
+      "lines": [
+        {
+          "line": 3,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 59,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 399,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 420,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        59,
+        399
+      ]
+    },
+    {
+      "file": "tests/src/browser/factories.test.ts",
+      "occurrences": 12,
+      "lines": [
+        {
+          "line": 5,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 9,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 22,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 40,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 98,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 105,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 128,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 151,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 201,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 202,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 204,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 212,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        22,
+        40,
+        98,
+        105,
+        151,
+        201,
+        202,
+        204,
+        212
+      ]
+    },
+    {
+      "file": "tests/src/browser/helpers.test.ts",
+      "occurrences": 1,
+      "lines": [
+        {
+          "line": 1381,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/src/browser/index.test.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 27,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 82,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    },
+    {
+      "file": "tests/src/browser/integration.test.ts",
+      "occurrences": 8,
+      "lines": [
+        {
+          "line": 9,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 72,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 143,
+          "count": 1,
+          "names": [
+            "Engine"
+          ]
+        },
+        {
+          "line": 181,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 270,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 271,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 275,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        },
+        {
+          "line": 276,
+          "count": 1,
+          "names": [
+            "createEngine"
+          ]
+        }
+      ],
+      "callLikeLines": [
+        72,
+        181,
+        270,
+        271,
+        275,
+        276
+      ]
+    },
+    {
+      "file": "tests/src/core/errors.test.ts",
+      "occurrences": 2,
+      "lines": [
+        {
+          "line": 8,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        },
+        {
+          "line": 12,
+          "count": 1,
+          "names": [
+            "ENGINE_DESTROY"
+          ]
+        }
+      ],
+      "callLikeLines": []
+    }
+  ]
+}

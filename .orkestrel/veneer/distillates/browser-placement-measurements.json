@@ -1,0 +1,6359 @@
+{
+  "run": "2026-10-02 02:46 America/New_York",
+  "journal": "tmp/units/browser-placement-final.log",
+  "readings": [
+    {
+      "name": "dropdown-start-800-ltr",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-dropdown-menu-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-2; position: fixed; translate: 0px; position-area: block-end span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-dropdown-menu-lg-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-3; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-dropdown-menu-lg-end-1100-ltr",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-4; position: fixed; translate: 0px; position-area: block-end span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropup-start-800-ltr",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "area": "start span-end",
+      "style": "position-anchor: --vn-placement-5; position: fixed; translate: 0px; position-area: block-start span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-dropdown-menu-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "area": "start span-start",
+      "style": "position-anchor: --vn-placement-6; position: fixed; translate: 0px; position-area: block-start span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-dropdown-menu-lg-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "area": "start span-end",
+      "style": "position-anchor: --vn-placement-7; position: fixed; translate: 0px; position-area: block-start span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-dropdown-menu-lg-end-1100-ltr",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "area": "start span-start",
+      "style": "position-anchor: --vn-placement-8; position: fixed; translate: 0px; position-area: block-start span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropend-start-800-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-9; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropend-dropdown-menu-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-10; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropend-dropdown-menu-lg-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-11; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropend-dropdown-menu-lg-end-1100-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-12; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropstart-start-800-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-13; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropstart-dropdown-menu-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-14; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropstart-dropdown-menu-lg-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-15; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropstart-dropdown-menu-lg-end-1100-ltr",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-16; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-start-800-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-17; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-dropdown-menu-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-18; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-dropdown-menu-lg-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-19; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-dropdown-menu-lg-end-1100-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-20; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-start-800-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-21; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-dropdown-menu-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-22; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-dropdown-menu-lg-end-800-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-23; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-dropdown-menu-lg-end-1100-ltr",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-24; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-start-800-rtl",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-25; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-dropdown-menu-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-26; position: fixed; translate: 0px; position-area: block-end span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-dropdown-menu-lg-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-27; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-dropdown-menu-lg-end-1100-rtl",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-28; position: fixed; translate: 0px; position-area: block-end span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropup-start-800-rtl",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "area": "start span-end",
+      "style": "position-anchor: --vn-placement-29; position: fixed; translate: 0px; position-area: block-start span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-dropdown-menu-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "area": "start span-start",
+      "style": "position-anchor: --vn-placement-30; position: fixed; translate: 0px; position-area: block-start span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-dropdown-menu-lg-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 298
+        },
+        "placement": "top-end"
+      },
+      "area": "start span-end",
+      "style": "position-anchor: --vn-placement-31; position: fixed; translate: 0px; position-area: block-start span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-dropdown-menu-lg-end-1100-rtl",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 298
+        },
+        "placement": "top-start"
+      },
+      "area": "start span-start",
+      "style": "position-anchor: --vn-placement-32; position: fixed; translate: 0px; position-area: block-start span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropend-start-800-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-33; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropend-dropdown-menu-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-34; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropend-dropdown-menu-lg-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-35; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropend-dropdown-menu-lg-end-1100-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-36; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropstart-start-800-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-37; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropstart-dropdown-menu-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-38; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropstart-dropdown-menu-lg-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-39; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropstart-dropdown-menu-lg-end-1100-rtl",
+      "expected": {
+        "box": {
+          "x": 238,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 238.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 398.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-40; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-start-800-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-41; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-dropdown-menu-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-42; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-dropdown-menu-lg-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-43; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropup-center-dropdown-menu-lg-end-1100-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 248,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 298
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-44; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-start-800-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-45; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-dropdown-menu-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-46; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-dropdown-menu-lg-end-800-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-47; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-center-dropdown-menu-lg-end-1100-rtl",
+      "expected": {
+        "box": {
+          "x": 115,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 115.15625,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 275.15625,
+          "bottom": 390
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-48; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "Tooltip-top-center-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 265,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 294
+        },
+        "arrow": {
+          "x": 182,
+          "y": 294,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 300.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 265,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 294
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 294,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 300.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-49; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-49-1, flip-block, --vn-placement-49-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-top-ltr",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 27.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 27.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-50; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-50-1, flip-block, --vn-placement-50-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-right-ltr",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-51; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 821,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 182,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 821,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-52; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-52-1, flip-block, --vn-placement-52-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-left-ltr",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-53; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-center-ltr",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-54; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-54-0, --vn-placement-54-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-top-ltr",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 27.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 27.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-55; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-55-0, --vn-placement-55-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-right-ltr",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-56; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 861,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 890
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 869,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 881.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 860.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 889.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 868.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 881.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-57; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-57-0, --vn-placement-57-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-left-ltr",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-58; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-58-0, --vn-placement-58-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-center-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 344,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 182,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 344,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-59; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-59-1, --vn-placement-59-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-top-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 46,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 182,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 46,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-60; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-60-1, --vn-placement-60-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-right-ltr",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-61; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 821,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 182,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 821,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-62; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-62-1, --vn-placement-62-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-left-ltr",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-63; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-center-ltr",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 144,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-64; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-64-0, flip-inline, --vn-placement-64-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-top-ltr",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 144,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 27.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 27.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-65; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-65-0, flip-inline, --vn-placement-65-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-right-ltr",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-66; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-66-0, flip-inline, --vn-placement-66-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 861,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 890
+        },
+        "arrow": {
+          "x": 144,
+          "y": 869,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 881.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 860.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 889.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 868.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 881.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-67; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-67-0, flip-inline, --vn-placement-67-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-left-ltr",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-68; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-center-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 344,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 182,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 344,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-69; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-69-1, --vn-placement-69-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-top-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 46,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 182,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 46,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-70; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-70-1, --vn-placement-70-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-right-ltr",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-71; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 821,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 182,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 821,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-72; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-72-1, flip-block, --vn-placement-72-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-left-ltr",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-73; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-center-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 265,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 294
+        },
+        "arrow": {
+          "x": 182,
+          "y": 294,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 300.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 265,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 294
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 294,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 300.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-74; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-74-1, flip-block, --vn-placement-74-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-top-rtl",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 27.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 27.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-75; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-75-1, flip-block, --vn-placement-75-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-right-rtl",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-76; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 821,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 182,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 821,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-77; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-77-1, flip-block, --vn-placement-77-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-top-left-rtl",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-78; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-center-rtl",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 144,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-79; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-79-0, flip-inline, --vn-placement-79-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-top-rtl",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 144,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 27.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 27.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-80; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-80-0, flip-inline, --vn-placement-80-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-right-rtl",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-81; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-81-0, flip-inline, --vn-placement-81-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 861,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 890
+        },
+        "arrow": {
+          "x": 144,
+          "y": 869,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 881.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 860.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 889.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 868.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 881.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-82; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-82-0, flip-inline, --vn-placement-82-2; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-right-left-rtl",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-83; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-center-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 344,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 182,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 344,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-84; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-84-1, --vn-placement-84-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-top-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 46,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 182,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 46,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-85; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-85-1, --vn-placement-85-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-right-rtl",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-86; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 821,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 182,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 821,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-87; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-87-1, --vn-placement-87-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-bottom-left-rtl",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-88; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-center-rtl",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-89; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-89-0, --vn-placement-89-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-top-rtl",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 27.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 27.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-90; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-90-0, --vn-placement-90-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-right-rtl",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-91; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 233,
+          "y": 861,
+          "width": 137.984375,
+          "height": 29,
+          "right": 370.984375,
+          "bottom": 890
+        },
+        "arrow": {
+          "x": 226.609375,
+          "y": 869,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 233,
+          "bottom": 881.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 232.765625,
+          "y": 860.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 370.734375,
+          "bottom": 889.5
+        },
+        "arrow": {
+          "x": 226.375,
+          "y": 868.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 232.765625,
+          "bottom": 881.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-92; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-92-0, --vn-placement-92-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-left-left-rtl",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-93; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-93-0, --vn-placement-93-2, flip-inline; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-center-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 344,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 182,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 344,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 344
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-94; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-94-1, --vn-placement-94-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-top-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 46,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 182,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 46,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 75
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 39.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 46
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-95; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-95-1, --vn-placement-95-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-right-rtl",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-96; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 119,
+          "y": 821,
+          "width": 137.984375,
+          "height": 29,
+          "right": 256.984375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 182,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 119.40625,
+          "y": 821,
+          "width": 137.96875,
+          "height": 29,
+          "right": 257.375,
+          "bottom": 850
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 850,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 856.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-97; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-97-1, flip-block, --vn-placement-97-3; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Tooltip-auto-left-rtl",
+      "expected": {
+        "box": {
+          "x": 85,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 222.984375,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 78.609375,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 85,
+          "bottom": 325.796875
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 84.765625,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 222.734375,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 78.375,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 84.765625,
+          "bottom": 325.296875
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-98; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "Popover-top-center-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 200.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 200.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-99; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-99-1, flip-block, --vn-placement-99-3; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-top-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-100; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: none; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-right-ltr",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-101; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-102; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-102-1, flip-block, --vn-placement-102-3; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-left-ltr",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-103; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-center-ltr",
+      "expected": {
+        "box": {
+          "x": 235,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 390.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 227,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 235,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 234.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 390.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 226.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 234.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-104; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-104-0, --vn-placement-104-2, flip-inline; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-top-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-105; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: none; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-right-ltr",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-106; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-107; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-left-ltr",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-108; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-108-0, --vn-placement-108-2, flip-inline; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-center-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 346,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 346,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-109; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-109-1, --vn-placement-109-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-top-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-110; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-110-1, --vn-placement-110-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-right-ltr",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-111; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-112; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-112-1, --vn-placement-112-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-left-ltr",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-113; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-center-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 200.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 200.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-114; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-114-0, flip-inline, --vn-placement-114-2; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-top-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-115; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: none; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-right-ltr",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-116; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-116-0, flip-inline, --vn-placement-116-2; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-117; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-117-0, flip-inline, --vn-placement-117-2; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-left-ltr",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-118; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-center-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 346,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 346,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-119; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-119-1, --vn-placement-119-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-top-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-120; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-120-1, --vn-placement-120-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-right-ltr",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-121; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-bottom-ltr",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-122; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-122-1, flip-block, --vn-placement-122-3; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-left-ltr",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-123; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-center-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 200.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 200.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-124; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-124-1, flip-block, --vn-placement-124-3; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-top-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-125; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: none; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-right-rtl",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-126; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-127; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-127-1, flip-block, --vn-placement-127-3; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-top-left-rtl",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-128; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-center-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 200.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 200.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 292
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 292,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 300
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-129; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-129-0, flip-inline, --vn-placement-129-2; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-top-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-130; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: none; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-right-rtl",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-131; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-131-0, flip-inline, --vn-placement-131-2; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-132; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-132-0, flip-inline, --vn-placement-132-2; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-right-left-rtl",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-133; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-center-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 346,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 346,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-134; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-134-1, --vn-placement-134-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-top-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-135; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-135-1, --vn-placement-135-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-right-rtl",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-136; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-137; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-137-1, --vn-placement-137-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-bottom-left-rtl",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-138; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-center-rtl",
+      "expected": {
+        "box": {
+          "x": 235,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 390.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 227,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 235,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 234.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 390.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 226.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 234.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-139; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-139-0, --vn-placement-139-2, flip-inline; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-top-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-140; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: none; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-right-rtl",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-141; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-142; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-left-left-rtl",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-143; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: --vn-placement-143-0, --vn-placement-143-2, flip-inline; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-center-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 346,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 346,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 437.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 338,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 346
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-144; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-144-1, --vn-placement-144-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-top-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 48,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 48,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 139.1875
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 40,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 48
+        },
+        "placement": "bottom"
+      },
+      "area": "block-end",
+      "style": "position-anchor: --vn-placement-145; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: flip-block, --vn-placement-145-1, --vn-placement-145-3; inset: auto; margin: 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-right-rtl",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-146; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-bottom-rtl",
+      "expected": {
+        "box": {
+          "x": 110,
+          "y": 756.8125,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 265.984375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 110.40625,
+          "y": 756.8125,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 266.375,
+          "bottom": 848
+        },
+        "arrow": {
+          "x": 180.40625,
+          "y": 848,
+          "width": 16,
+          "height": 8,
+          "right": 196.40625,
+          "bottom": 856
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-147; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-147-1, flip-block, --vn-placement-147-3; inset: auto; margin: 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "Popover-auto-left-rtl",
+      "expected": {
+        "box": {
+          "x": 87,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 242.984375,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 79,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 87,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 86.765625,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 242.734375,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 78.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 86.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-148; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 0px 0px 8px; width: 155.984px;"
+    },
+    {
+      "name": "dropdown-reference-parent",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 390
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-149; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-reference-element",
+      "expected": {
+        "box": {
+          "x": 20,
+          "y": 702,
+          "width": 160,
+          "height": 50,
+          "right": 180,
+          "bottom": 752
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 20,
+          "y": 702,
+          "width": 160,
+          "height": 50,
+          "right": 180,
+          "bottom": 752
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-150; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-offset-10-20",
+      "expected": {
+        "box": {
+          "x": 160,
+          "y": 358,
+          "width": 160,
+          "height": 50,
+          "right": 320,
+          "bottom": 408
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 160,
+          "y": 358,
+          "width": 160,
+          "height": 50,
+          "right": 320,
+          "bottom": 408
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-151; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 20px -10px 0px 10px; width: 160px;"
+    },
+    {
+      "name": "dropdown-boundary",
+      "expected": {
+        "box": {
+          "x": 220.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 380.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 220.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 380.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-152; position: fixed; translate: -34px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-edge-top",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 42,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 92
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 42,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 92
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-153; position: fixed; translate: 0px; position-area: block-start span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropdown-edge-bottom",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 804,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 854
+        },
+        "placement": "top-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 804,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 854
+        },
+        "placement": "top-start"
+      },
+      "area": "start span-end",
+      "style": "position-anchor: --vn-placement-154; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "dropdown-edge-right",
+      "expected": {
+        "box": {
+          "x": 162.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 322.3125,
+          "bottom": 350
+        },
+        "placement": "left-start"
+      },
+      "actual": {
+        "box": {
+          "x": 162,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 322,
+          "bottom": 350
+        },
+        "placement": "left-start"
+      },
+      "area": "span-end start",
+      "style": "position-anchor: --vn-placement-155; position: fixed; translate: 0px; position-area: span-block-end inline-end; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 0px 0px 2px; width: 160px;"
+    },
+    {
+      "name": "dropdown-edge-left",
+      "expected": {
+        "box": {
+          "x": 90,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 250,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "actual": {
+        "box": {
+          "x": 90.3125,
+          "y": 300,
+          "width": 160,
+          "height": 50,
+          "right": 250.3125,
+          "bottom": 350
+        },
+        "placement": "right-start"
+      },
+      "area": "span-end end",
+      "style": "position-anchor: --vn-placement-156; position: fixed; translate: 0px; position-area: span-block-end inline-start; position-try-fallbacks: flip-block, flip-inline, flip-inline flip-block; inset: auto; margin: 0px 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "tooltip-custom-fallback",
+      "expected": {
+        "box": {
+          "x": 6.015625,
+          "y": 7,
+          "width": 137.984375,
+          "height": 29,
+          "right": 144,
+          "bottom": 36
+        },
+        "arrow": {
+          "x": 144,
+          "y": 15,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 27.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 6.03125,
+          "y": 6.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 144,
+          "bottom": 35.5
+        },
+        "arrow": {
+          "x": 144,
+          "y": 14.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 150.390625,
+          "bottom": 27.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-157; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-157-0, flip-block, --vn-placement-157-2; inset: auto; margin: 0px 0px 6px; width: 137.984px;"
+    },
+    {
+      "name": "popover-custom-fallback",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-158; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "tooltip-custom-offset",
+      "expected": {
+        "box": {
+          "x": 129,
+          "y": 251,
+          "width": 137.984375,
+          "height": 29,
+          "right": 266.984375,
+          "bottom": 280
+        },
+        "arrow": {
+          "x": 182,
+          "y": 280,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.796875,
+          "bottom": 286.390625
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 129.40625,
+          "y": 251,
+          "width": 137.96875,
+          "height": 29,
+          "right": 267.375,
+          "bottom": 280
+        },
+        "arrow": {
+          "x": 181.40625,
+          "y": 280,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.203125,
+          "bottom": 286.390625
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-159; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-159-1, flip-block, --vn-placement-159-3; inset: auto; margin: 0px -10px 20px 10px; width: 137.984px;"
+    },
+    {
+      "name": "popover-custom-offset",
+      "expected": {
+        "box": {
+          "x": 247,
+          "y": 283,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 402.984375,
+          "bottom": 374.1875
+        },
+        "arrow": {
+          "x": 239,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 247,
+          "bottom": 327
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 246.765625,
+          "y": 283.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 402.734375,
+          "bottom": 374.59375
+        },
+        "arrow": {
+          "x": 238.765625,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 246.765625,
+          "bottom": 327.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-160; position: fixed; translate: 0px; position-area: inline-end; position-try-fallbacks: --vn-placement-160-0, --vn-placement-160-2, flip-inline; inset: auto; margin: 10px 0px -10px 20px; width: 155.984px;"
+    },
+    {
+      "name": "tooltip-boundary",
+      "expected": {
+        "box": {
+          "x": 180.015625,
+          "y": 305,
+          "width": 137.984375,
+          "height": 29,
+          "right": 318,
+          "bottom": 334
+        },
+        "arrow": {
+          "x": 318,
+          "y": 313,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.796875
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 180.03125,
+          "y": 304.5,
+          "width": 137.96875,
+          "height": 29,
+          "right": 318,
+          "bottom": 333.5
+        },
+        "arrow": {
+          "x": 318,
+          "y": 312.5,
+          "width": 6.390625,
+          "height": 12.796875,
+          "right": 324.390625,
+          "bottom": 325.296875
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-161; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "popover-boundary",
+      "expected": {
+        "box": {
+          "x": 160.015625,
+          "y": 273,
+          "width": 155.984375,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.1875
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327
+        },
+        "placement": "left"
+      },
+      "actual": {
+        "box": {
+          "x": 160.03125,
+          "y": 273.40625,
+          "width": 155.96875,
+          "height": 91.1875,
+          "right": 316,
+          "bottom": 364.59375
+        },
+        "arrow": {
+          "x": 316,
+          "y": 311.40625,
+          "width": 8,
+          "height": 16,
+          "right": 324,
+          "bottom": 327.40625
+        },
+        "placement": "left"
+      },
+      "area": "inline-start",
+      "style": "position-anchor: --vn-placement-162; position: fixed; translate: 0px; position-area: inline-start; position-try-fallbacks: none; inset: auto; margin: 0px 8px 0px 0px; width: 155.984px;"
+    },
+    {
+      "name": "config-placement",
+      "expected": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 80.3125,
+          "y": 340,
+          "width": 160,
+          "height": 50,
+          "right": 240.3125,
+          "bottom": 390
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-163; position: fixed; translate: 0px; position-area: block-end span-inline-start; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;"
+    },
+    {
+      "name": "config-disabled-flip",
+      "expected": {
+        "box": {
+          "x": 150,
+          "y": 894,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 944
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 150,
+          "y": 894,
+          "width": 160,
+          "height": 50,
+          "right": 310,
+          "bottom": 944
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-164; position: fixed; translate: 0px 48px; position-area: block-end span-inline-end; position-try-fallbacks: none; inset: auto; margin: 0px; width: 160px;"
+    },
+    {
+      "name": "config-offset",
+      "expected": {
+        "box": {
+          "x": 160,
+          "y": 358,
+          "width": 160,
+          "height": 50,
+          "right": 320,
+          "bottom": 408
+        },
+        "placement": "bottom-start"
+      },
+      "actual": {
+        "box": {
+          "x": 160,
+          "y": 358,
+          "width": 160,
+          "height": 50,
+          "right": 320,
+          "bottom": 408
+        },
+        "placement": "bottom-start"
+      },
+      "area": "end span-end",
+      "style": "position-anchor: --vn-placement-165; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 20px -10px 0px 10px; width: 160px;"
+    },
+    {
+      "name": "config-overflow-boundary",
+      "expected": {
+        "box": {
+          "x": 242.3125,
+          "y": 338,
+          "width": 160,
+          "height": 50,
+          "right": 402.3125,
+          "bottom": 388
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 242.3125,
+          "y": 338,
+          "width": 160,
+          "height": 50,
+          "right": 402.3125,
+          "bottom": 388
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-166; position: fixed; translate: -12px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 0px; width: 160px;"
+    },
+    {
+      "name": "config-tip-placement",
+      "expected": {
+        "box": {
+          "x": 89.015625,
+          "y": 344,
+          "width": 137.984375,
+          "height": 29,
+          "right": 227,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 182.015625,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.8125,
+          "bottom": 344
+        },
+        "placement": "bottom-end"
+      },
+      "actual": {
+        "box": {
+          "x": 88.796875,
+          "y": 344,
+          "width": 137.96875,
+          "height": 29,
+          "right": 226.765625,
+          "bottom": 373
+        },
+        "arrow": {
+          "x": 181.796875,
+          "y": 337.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 194.59375,
+          "bottom": 344
+        },
+        "placement": "bottom-end"
+      },
+      "area": "end span-start",
+      "style": "position-anchor: --vn-placement-167; position: fixed; translate: 0px; position-area: block-end span-inline-start; position-try-fallbacks: --vn-placement-167-0, --vn-placement-167-1, --vn-placement-167-2, --vn-placement-167-3; inset: auto; margin: 6px 0px 0px; width: 137.984px;"
+    },
+    {
+      "name": "config-tip-offset",
+      "expected": {
+        "box": {
+          "x": 129,
+          "y": 244.609375,
+          "width": 137.984375,
+          "height": 35.390625,
+          "right": 266.984375,
+          "bottom": 280
+        },
+        "arrow": {
+          "x": 129,
+          "y": 244.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 141.796875,
+          "bottom": 251
+        },
+        "placement": "top"
+      },
+      "actual": {
+        "box": {
+          "x": 129.40625,
+          "y": 244.609375,
+          "width": 137.96875,
+          "height": 35.390625,
+          "right": 267.375,
+          "bottom": 280
+        },
+        "arrow": {
+          "x": 129.40625,
+          "y": 244.609375,
+          "width": 12.796875,
+          "height": 6.390625,
+          "right": 142.203125,
+          "bottom": 251
+        },
+        "placement": "top"
+      },
+      "area": "block-start",
+      "style": "position-anchor: --vn-placement-168; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: flip-block; inset: auto; margin: 0px -10px 20px 10px; width: 137.984px;"
+    },
+    {
+      "name": "config-popover-flip",
+      "expected": {
+        "box": {
+          "x": 401,
+          "y": 269,
+          "width": 155.984375,
+          "height": 107.1875,
+          "right": 556.984375,
+          "bottom": 376.1875
+        },
+        "arrow": {
+          "x": 402,
+          "y": 270,
+          "width": 8,
+          "height": 16,
+          "right": 410,
+          "bottom": 286
+        },
+        "placement": "right"
+      },
+      "actual": {
+        "box": {
+          "x": 401.03125,
+          "y": 265.40625,
+          "width": 155.96875,
+          "height": 107.1875,
+          "right": 557,
+          "bottom": 372.59375
+        },
+        "arrow": {
+          "x": 402.03125,
+          "y": 266.40625,
+          "width": 8,
+          "height": 16,
+          "right": 410.03125,
+          "bottom": 282.40625
+        },
+        "placement": "right"
+      },
+      "area": "inline-end",
+      "style": "position-anchor: --vn-placement-169; position: fixed; translate: 143px; position-area: inline-end; position-try-fallbacks: none; inset: auto; margin: 0px; width: 155.984px;"
+    }
+  ],
+  "sources": {
+    "tmp/probes/placement.test.ts": "import { expect, it } from 'vitest'\nimport { waitForFrame } from '@orkestrel/test/browser'\n\nit('measures keyword permutations, synchronous readback, and the native shift', async () => {\n\tconst anchor = document.createElement('button')\n\tconst panel = document.createElement('div')\n\tanchor.style.cssText = 'position:fixed;left:180px;top:0;width:40px;height:30px;anchor-name:--probe'\n\tpanel.style.cssText = 'position:fixed;position-anchor:--probe;position-area:block-start;width:120px;height:80px;margin:0;inset:auto'\n\tdocument.body.append(anchor, panel)\n\tconst readings: unknown[] = []\n\ttry {\n\t\tfor (const tactic of ['none', 'flip-block', 'flip-inline', 'flip-start', 'flip-start flip-block', 'flip-start flip-inline', 'flip-block flip-inline', 'flip-block flip-inline flip-start']) {\n\t\t\tpanel.style.setProperty('position-try-fallbacks', tactic)\n\t\t\tconst synchronous = { area: getComputedStyle(panel).getPropertyValue('position-area'), box: panel.getBoundingClientRect().toJSON() }\n\t\t\tawait waitForFrame()\n\t\t\treadings.push({ tactic, synchronous, framed: { area: getComputedStyle(panel).getPropertyValue('position-area'), box: panel.getBoundingClientRect().toJSON() } })\n\t\t}\n\t\tanchor.style.top = '200px'\n\t\tanchor.style.left = '0px'\n\t\tpanel.style.setProperty('position-try-fallbacks', 'none')\n\t\tconst shifted = panel.getBoundingClientRect().toJSON()\n\t\tpanel.style.setProperty('justify-self', 'unsafe center')\n\t\tconst unsafe = panel.getBoundingClientRect().toJSON()\n\t\tconsole.log(JSON.stringify({ readings, shifted, unsafe }))\n\t\texpect(shifted.x).toBe(0)\n\t\texpect(unsafe.x).toBe(-40)\n\t} finally {\n\t\tanchor.remove()\n\t\tpanel.remove()\n\t}\n})\n",
+    "tmp/probes/popover-stale.test.ts": "import { it, expect } from 'vitest'\nimport { waitForFrame } from '@orkestrel/test/browser'\nimport { requireValue } from '@orkestrel/test'\nimport { createPlacementFixture, readPlacementGeometry } from '../../tests/setupBrowser.js'\nimport { Placement } from '../../src/browser/Placement.js'\nimport 'bootstrap/dist/css/bootstrap.css'\n\nit('measures initial and updated Popper geometry after replacing Bootstrap modifiers', async () => {\n\tconst fixture = await createPlacementFixture({ name: 'popover-disabled-flip', plugin: 'Popover', placement: 'right', edge: 'right', attributes: { 'data-bs-popper-config': '{\"modifiers\":[{\"name\":\"flip\",\"enabled\":false}]}' } })\n\tconst placement = new Placement(fixture.options)\n\ttry {\n\t\tawait waitForFrame()\n\t\tconst initial = readPlacementGeometry(fixture.expected, fixture.expectedArrow)\n\t\tconst native = readPlacementGeometry(fixture.panel, fixture.arrow)\n\t\tconst css = fixture.expected.style.cssText\n\t\tconst arrow = fixture.expectedArrow?.style.cssText\n\t\tawait fixture.oracle.call(requireValue(fixture.oracle.document.getElementById('popover')), 'update')\n\t\tawait waitForFrame()\n\t\tconst updated = readPlacementGeometry(fixture.expected, fixture.expectedArrow)\n\t\tconsole.log(JSON.stringify({ initial, native, updated, css, arrow }))\n\t\texpect(Math.abs(initial.box.y - updated.box.y)).toBeGreaterThan(1)\n\t\texpect(Math.abs(native.box.y - updated.box.y)).toBeLessThanOrEqual(1)\n\t} finally {\n\t\tplacement.destroy()\n\t\tfixture.destroy()\n\t}\n})\n",
+    "tmp/probes/vite.placement.config.ts": "import { defineConfig } from 'vite'\nimport { srcBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(srcBrowser({ test: { include: ['tmp/probes/placement.test.ts', 'tmp/probes/popover-stale.test.ts'] } }))\n"
+  },
+  "unknowns": {
+    "synchronous": "All 8 measured keyword tactics reported the same computed area and box synchronously and after one frame.",
+    "keyword": "flip-start changed 120x80 to 80x120; flip-start flip-inline changed block-start to inline-end and also swapped dimensions.",
+    "nativeShift": {
+      "centered": {
+        "x": 0,
+        "y": 120,
+        "width": 120,
+        "height": 80
+      },
+      "unsafeCenter": {
+        "x": 147,
+        "y": 120,
+        "width": 120,
+        "height": 80
+      },
+      "status": "The asserted unsafe-center prediction -40 failed; no tether equivalence measurement completed."
+    },
+    "stale": {
+      "initial": {
+        "x": 401,
+        "y": 269,
+        "width": 155.984375,
+        "height": 107.1875
+      },
+      "native": {
+        "x": 401.03125,
+        "y": 265.40625,
+        "width": 155.96875,
+        "height": 107.1875
+      },
+      "updated": {
+        "x": 401,
+        "y": 265,
+        "width": 155.984375,
+        "height": 107.1875
+      },
+      "placement": "right",
+      "oracleArrowInline": ""
+    }
+  }
+}

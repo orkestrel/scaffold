@@ -1,0 +1,14 @@
+{
+  "guideFiles": 51,
+  "candidates": [
+    "Veneer",
+    "createVeneer",
+    "VeneerInterface",
+    "VeneerOptions",
+    "VeneerInteraction",
+    "TooltipPluginOptions",
+    "PopoverPluginOptions",
+    "LockOptions"
+  ],
+  "findings": []
+}

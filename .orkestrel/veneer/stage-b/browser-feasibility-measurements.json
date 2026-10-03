@@ -1,0 +1,2225 @@
+{
+  "chromium": "153.0.8010.12",
+  "playwright": "1.63.0",
+  "bootstrap": "5.3.8",
+  "host": {
+    "platform": "win32",
+    "date": "2026-10-01",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "recipe": {
+    "config": "import { sheetProject } from '../../vite.config.ts'\nimport { playwright } from '@vitest/browser-playwright'\nimport { resolveBrowser, resolvePinnedBrowser } from '../../configs/browsers.js'\nconst options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\nexport default sheetProject('browser-feasibility', {\n  optimizeDeps: { include: ['bootstrap/js/src/modal.js', 'bootstrap/js/src/dropdown.js', 'bootstrap/js/src/tooltip.js', 'bootstrap/js/src/util/focustrap.js', 'bootstrap/js/src/util/scrollbar.js'] },\n  test: { include: ['tmp/probes/**/*.test.ts'], browser: {\n    provider: playwright({ ...options, launchOptions: { ...options.launchOptions, ignoreDefaultArgs: ['--hide-scrollbars'] } }),\n  } },\n})\n",
+    "sheet": "import 'bootstrap/dist/css/bootstrap.css' in the shared probe helper; Bootstrap 5.3.8 bundled CSS, no Bootstrap engine CSS rewrite.",
+    "command": "npx vitest run --config tmp/probes/vite.chromium.config.ts tmp/probes/<family>.test.ts",
+    "trivial": {
+      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "hidden": "none",
+      "visible": "block"
+    },
+    "sources": {
+      "recipe.test.ts": "import { it, expect } from 'vitest'\nimport 'bootstrap/dist/css/bootstrap.css'\nimport { server } from 'vitest/browser'\nit('runs Chromium with Bootstrap and a failing control', async () => {\n  const element = document.createElement('div')\n  element.className = 'collapse'\n  document.body.append(element)\n  const hidden = getComputedStyle(element).display\n  element.className = ''\n  const visible = getComputedStyle(element).display\n  console.log('RECIPE', JSON.stringify({ua:navigator.userAgent, hidden, visible}))\n  await server.commands.writeFile('tmp/probes/recipe.json', JSON.stringify({ua:navigator.userAgent, hidden, visible}))\n  expect(hidden).toBe('none')\n  expect(visible).not.toBe('none')\n  element.remove()\n})\n",
+      "census.test.ts": "import { it, expect } from 'vitest'\nimport { waitForDelay } from '@orkestrel/test'\nimport { userEvent } from 'vitest/browser'\nimport { makeElement, writeReading } from './helpers.js'\n\nit('censuses native browser features', async () => {\n\tconst declarations = ['anchor-name: --a','position-anchor: --a','position-area: bottom','position-try-fallbacks: flip-block','position-visibility: anchors-visible','interpolate-size: allow-keywords','height: calc-size(auto, size)','transition-behavior: allow-discrete','overlay: auto','scrollbar-gutter: stable']\n\tconst selectors = [':popover-open',':modal','::backdrop','::details-content',':open',':state(x)']\n\tconst popover = makeElement('div')\n\tpopover.popover = 'hint'\n\tconst button = makeElement('button')\n\tlet source: unknown\n\ttry { Reflect.apply(popover.showPopover, popover, [{source:button}]); source = {accepted:true,open:popover.matches(':popover-open')}; popover.hidePopover() } catch(error) { source = String(error) }\n\tconst details = makeElement('details')\n\tdetails.innerHTML='<summary>Details</summary>Content'\n\tconst events: unknown[]=[]\n\tdetails.addEventListener('toggle',event=>events.push({target:'DETAILS',event:'toggle',cancelable:event.cancelable}))\n\tfor (const element of [details,popover]) element.addEventListener('beforetoggle', event => events.push({target:element.tagName,cancelable:event.cancelable}))\n\tdetails.open = true\n\tpopover.showPopover()\n\tawait waitForDelay(50)\n\tpopover.hidePopover();await waitForDelay(30)\n\tconst summary=details.querySelector('summary');if(summary)await userEvent.click(summary)\n\tawait waitForDelay(50)\n\tconst api = {popover:'popover' in HTMLElement.prototype, showPopover:'showPopover' in HTMLElement.prototype,togglePopover:'togglePopover' in HTMLElement.prototype,source,hint:popover.popover,inert:'inert' in HTMLElement.prototype,requestClose:'requestClose' in HTMLDialogElement.prototype,closedBy:'closedBy' in HTMLDialogElement.prototype,CloseWatcher:'CloseWatcher' in window,command:'command' in HTMLButtonElement.prototype,commandForElement:'commandForElement' in HTMLButtonElement.prototype,interestForElement:'interestForElement' in HTMLButtonElement.prototype,detailsName:'name' in HTMLDetailsElement.prototype,getAnimations:'getAnimations' in Element.prototype,startViewTransition:'startViewTransition' in document,beforetoggle:events}\n\tconst dialog = makeElement('dialog'); dialog.setAttribute('closedby','any')\n\tconst control = {property:CSS.supports('imaginary-feasibility: yes'),selector:CSS.supports('selector(:imaginary-feasibility)')}\n\texpect(control.property).toBe(false); expect(control.selector).toBe(false)\n\texpect(CSS.supports(declarations[0] ?? '')).toBe(true)\n\tawait writeReading('feature-census',1,{declarations,selectors},{css:Object.fromEntries(declarations.map(value=>[value,CSS.supports(value)])),selectors:Object.fromEntries(selectors.map(value=>[value,CSS.supports('selector('+value+')')])),api,closedby:Reflect.get(dialog,'closedBy')},{expected:'Made-up property and selector are false; supported real declarations are true.',reading:control},'Read parser support separately from the measured behavior in later probes.')\n\tpopover.remove();details.remove();button.remove();dialog.remove()\n})\n",
+      "dialog.test.ts": "import { it, expect } from 'vitest'\nimport { userEvent } from 'vitest/browser'\nimport { waitForDelay } from '@orkestrel/test'\nimport { makeElement, makeStyle, readBox, readStyles, readStack, readTabs, settleFrame, writeReading } from './helpers.js'\n\nit('measures modal UA differences and neutralization', async () => {\n\tconst trigger=makeElement('button');trigger.id='opener';trigger.textContent='Open'\n\tconst control=makeElement('div','modal fade show','display:block')\n\tcontrol.innerHTML='<div class=\"modal-dialog\"><div class=\"modal-content\"><button>First</button><button>Last</button></div></div>'\n\tconst backdrop=makeElement('div','modal-backdrop fade show')\n\tconst controlChild=control.querySelector('.modal-dialog')\n\tif(!controlChild) throw new Error('Missing control dialog')\n\tconst baseline={style:readStyles(control),box:readBox(control),child:readBox(controlChild)}\n\tcontrol.remove();backdrop.remove()\n\tconst high=makeElement('div','','position:fixed;inset:0;z-index:2147483647;background:red');high.id='high-sibling'\n\tconst dialog=makeElement('dialog','modal fade')\n\tdialog.innerHTML='<div class=\"modal-dialog\"><div class=\"modal-content\"><button id=\"first\">First</button><button id=\"last\">Last</button></div></div>'\n\tconst child=dialog.querySelector('.modal-dialog');const last=dialog.querySelector('#last')\n\tif(!child || !(last instanceof HTMLElement))throw new Error('Missing native dialog')\n\tconst events: unknown[]=[]\n\tdialog.addEventListener('cancel',event=>events.push({event:'cancel',cancelable:event.cancelable}))\n\tdialog.addEventListener('close',()=>events.push({event:'close'}))\n\ttrigger.focus();dialog.showModal();dialog.classList.add('show');await waitForDelay(360)\n\tconst raw={style:readStyles(dialog),box:readBox(dialog),focus:document.activeElement?.id}\n\tdialog.close();makeStyle('dialog.modal[open] { display: block; }');trigger.focus();dialog.showModal();await settleFrame()\n\tconst initial={style:readStyles(dialog),box:readBox(dialog),child:readBox(child),backdrop:readStyles(dialog,'::backdrop'),stack:readStack(innerWidth-10,innerHeight-10),focus:document.activeElement?.id,tabs:await readTabs(last)}\n\tconst declarations='dialog.modal { margin: 0; border: 0; padding: 0; max-width: none; max-height: none; color: inherit; background: transparent; }'\n\tmakeStyle(declarations);await settleFrame()\n\tconst neutralized={style:readStyles(dialog),box:readBox(dialog),child:readBox(child)}\n\tconst differences=Object.keys(baseline.style).filter(key=>baseline.style[key]!==neutralized.style[key])\n\ttrigger.focus();const outsideFocus={attempt:'opener',actual:document.activeElement?.id}\n\tawait userEvent.keyboard('{Escape}');await waitForDelay(80)\n\tconst closed={open:dialog.open,events,focus:document.activeElement?.id}\n\texpect(initial.style['border-width']).not.toBe(baseline.style['border-width'])\n\texpect(neutralized.box).toEqual(baseline.box)\n\texpect(differences).toEqual([])\n\tawait writeReading('dialog-modal',2,{viewport:{width:innerWidth,height:innerHeight},declarations:declarations+' dialog.modal[open] { display: block; }'}, {raw,initial,neutralized,differences,outsideFocus,closed},{expected:'The ordinary div has no dialog UA border or margin; normalization restores its box.',reading:baseline},'A native modal requires UA box normalization and display:block when open; Escape and focus behavior are measured independently.')\n\tdialog.remove();high.remove();trigger.remove()\n})\n\nit('measures top layer insertion versus z-index', async () => {\n\tconst low=makeElement('div','','position:fixed;left:100px;top:100px;width:160px;height:160px;z-index:1;background:red');low.id='low'\n\tconst dialog=makeElement('dialog','modal show','display:block;margin:0;border:0;padding:0;max-width:none;max-height:none')\n\tdialog.id='dialog';dialog.showModal()\n\tconst dropdown=makeElement('div','dropdown-menu show','position:fixed;inset:auto;left:100px;top:100px;width:160px;height:160px;margin:0',dialog);dropdown.id='dropdown';dropdown.popover='manual';dropdown.showPopover()\n\tconst tooltip=makeElement('div','tooltip show','position:fixed;inset:auto;left:100px;top:100px;width:160px;height:160px;margin:0;background:blue',dialog);tooltip.id='tooltip';tooltip.popover='manual';tooltip.showPopover()\n\tconst container=makeElement('div','toast-container position-fixed','left:100px;top:100px',dialog)\n\tconst toast=makeElement('div','toast show','width:160px;height:160px',container);toast.id='toast'\n\tawait settleFrame()\n\tconst first=readStack(120,120)\n\tdropdown.hidePopover();dropdown.showPopover();await settleFrame()\n\tconst reordered=readStack(120,120)\n\ttooltip.hidePopover();dropdown.hidePopover();await settleFrame()\n\tconst underlying=readStack(120,120)\n\tconst zindexes={modal:getComputedStyle(dialog).getPropertyValue('--bs-modal-zindex'),dropdown:getComputedStyle(dropdown).getPropertyValue('--bs-dropdown-zindex'),tooltip:getComputedStyle(tooltip).getPropertyValue('--bs-tooltip-zindex'),toast:getComputedStyle(container).getPropertyValue('--bs-toast-zindex')}\n\tconst backdrop=makeElement('div','modal-backdrop');zindexes['backdrop']=getComputedStyle(backdrop).getPropertyValue('--bs-backdrop-zindex');backdrop.remove()\n\texpect(first[0]).toBe('tooltip');expect(reordered[0]).toBe('dropdown');expect(underlying[0]).toBe('toast')\n\tawait writeReading('top-layer',10,{point:{x:120,y:120},opening:['dialog','dropdown','tooltip']},{first,reordered,underlying,zindexes},{expected:'A document-layer z-index:1 element cannot outrank the modal; shown top-layer popovers can.',reading:{lowInStack:first.indexOf('low'),top:first[0],underlying}},'Top-layer insertion order outranks Bootstrap z-index; reopening dropdown raises it over tooltip and toast.')\n\tdialog.close();dialog.remove();low.remove()\n})\n\nit('measures invoker commands and cancellation', async () => {\n\tconst button=makeElement('button');button.textContent='Invoke'\n\tconst dialog=makeElement('dialog','modal');dialog.id='command-dialog'\n\tmakeStyle('dialog.modal[open] { display:block; }')\n\tconst menu=makeElement('div','dropdown-menu show','left:150px;top:150px');menu.id='command-menu';menu.popover='auto'\n\tconst events:unknown[]=[]\n\tlet cancel=false\n\tfor(const target of [dialog,menu])target.addEventListener('command',event=>{events.push({target:target.id,command:Reflect.get(event,'command'),cancelable:event.cancelable});if(cancel)event.preventDefault()})\n\tbutton.setAttribute('commandfor',dialog.id);button.setAttribute('command','show-modal')\n\tawait userEvent.click(button);const opened=dialog.open;dialog.close();await settleFrame()\n\tcancel=true;await userEvent.click(button);const prevented=dialog.open\n\tcancel=false;button.setAttribute('command','--custom');await userEvent.click(button);const custom=dialog.open\n\tbutton.setAttribute('commandfor',menu.id);button.setAttribute('command','toggle-popover');await userEvent.click(button);const popover=menu.matches(':popover-open');menu.hidePopover();await settleFrame()\n\tcancel=true;await userEvent.click(button);const popoverPrevented=menu.matches(':popover-open')\n\texpect(opened).toBe(true);expect(prevented).toBe(false);expect(custom).toBe(false);expect(popover).toBe(true);expect(popoverPrevented).toBe(false)\n\tawait writeReading('invoker-commands',11,{commands:['show-modal','toggle-popover','--custom']},{opened,prevented,popover,popoverPrevented,events},{expected:'--custom dispatches a command event but does not open the dialog.',reading:{custom,events:events.filter(event=>typeof event==='object'&&event!==null&&Reflect.get(event,'command')==='--custom')}},'Built-in invoker commands perform their action and cancelable command events can prevent it.')\n\tdialog.remove();menu.remove();button.remove()\n})\n",
+      "position.test.ts": "import { it, expect } from 'vitest'\nimport { userEvent } from 'vitest/browser'\nimport { waitForDelay } from '@orkestrel/test'\nimport Tooltip from 'bootstrap/js/src/tooltip.js'\nimport { makeElement, readBox, readStyles, readStack, settleFrame, writeReading } from './helpers.js'\n\nit('measures dropdown positioning, UA styles, and dismissal', async () => {\n\tconst wrapper=makeElement('div','dropdown','position:absolute;left:70px;top:180px')\n\tconst toggle=makeElement('button','dropdown-toggle','anchor-name:--toggle',wrapper);toggle.textContent='Menu';toggle.setAttribute('data-bs-toggle','dropdown')\n\tconst menu=makeElement('ul','dropdown-menu show','',wrapper);menu.innerHTML='<li><button class=\"dropdown-item\">First action</button></li><li><button class=\"dropdown-item\">Second action</button></li>'\n\tmenu.setAttribute('data-bs-popper','static');await settleFrame()\n\tconst a={toggle:readBox(toggle),menu:readBox(menu),style:readStyles(menu)}\n\tmenu.removeAttribute('data-bs-popper');menu.style.cssText='position-anchor:--toggle;position-area:block-end span-inline-end;position-try-fallbacks:flip-block;margin:var(--bs-dropdown-spacer) 0 0';await settleFrame()\n\tconst b={toggle:readBox(toggle),menu:readBox(menu),style:readStyles(menu)}\n\tconst equals=Math.abs(a.menu.x-b.menu.x)<=1&&Math.abs(a.menu.y-b.menu.y)<=1\n\tmenu.style.position='fixed';await settleFrame();const fixed={toggle:readBox(toggle),menu:readBox(menu)}\n\tconst spacer=makeElement('div','','height:2500px');wrapper.style.top='1700px';window.scrollTo({top:1700-(innerHeight-40),behavior:'instant'});await settleFrame()\n\tconst edge={toggle:readBox(toggle),menu:readBox(menu)}\n\twindow.scrollTo({top:0,behavior:'instant'});wrapper.style.top='180px';spacer.remove();menu.style.position='';menu.style.setProperty('position-try-fallbacks','none');await settleFrame();menu.style.setProperty('position-try-fallbacks','flip-block')\n\tmenu.popover='manual';menu.showPopover();await settleFrame()\n\tconst c={style:readStyles(menu),box:readBox(menu)}\n\tconst plain=makeElement('div');plain.textContent='Plain';plain.popover='manual';plain.showPopover();await settleFrame();const ua={style:readStyles(plain),box:readBox(plain)};plain.hidePopover();plain.remove()\n\tconst cover=makeElement('div','','position:fixed;inset:0;z-index:2000;background:red');cover.id='cover'\n\tconst rect=readBox(menu);const overSibling=readStack(rect.x+10,rect.y+10)\n\tconst dialog=makeElement('dialog','','width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0');dialog.id='cover-dialog';dialog.showModal();await settleFrame()\n\tconst earlierThanDialog=readStack(rect.x+10,rect.y+10)\n\tmenu.hidePopover();menu.showPopover();await settleFrame();const reopened=readBox(menu);const outsideAfterDialog=readStack(reopened.x+10,reopened.y+10)\n\tmenu.hidePopover();dialog.append(menu);menu.showPopover();await settleFrame();const inDialog=readBox(menu);const afterDialog=readStack(inDialog.x+10,inDialog.y+10)\n\tmenu.hidePopover();wrapper.append(menu);dialog.close();dialog.remove();cover.remove()\n\tmenu.popover='auto';const events:unknown[]=[]\n\tfor(const name of ['beforetoggle','toggle'])menu.addEventListener(name,event=>events.push({name,cancelable:event.cancelable,oldState:Reflect.get(event,'oldState'),newState:Reflect.get(event,'newState')}))\n\tconst outside=makeElement('button','','position:fixed;left:5px;bottom:5px');outside.textContent='Outside'\n\tmenu.showPopover();await waitForDelay(30);await userEvent.click(outside);await waitForDelay(30);const dismissed=!menu.matches(':popover-open');const afterDismiss={style:readStyles(menu),box:readBox(menu)}\n\tmenu.showPopover();await waitForDelay(30);await userEvent.keyboard('{Escape}');await waitForDelay(30);const escaped=!menu.matches(':popover-open')\n\tconst manual=makeElement('div','','position:fixed;left:250px;top:20px');manual.popover='manual';manual.textContent='Manual control';manual.showPopover();await userEvent.click(outside);const manualOutside=manual.matches(':popover-open');await userEvent.keyboard('{Escape}');const manualEscape=manual.matches(':popover-open');manual.remove()\n\texpect(c.style['border-width']).not.toBe(ua.style['border-width']);expect(dismissed).toBe(true);expect(escaped).toBe(true)\n\texpect(manualOutside).toBe(true);expect(manualEscape).toBe(true)\n\tawait writeReading('dropdown-anchor-popover',3,{anchor:'--toggle',area:'block-end span-inline-end',fallback:'flip-block',adaptation:'position:fixed for viewport-constrained fallback, instant scroll to avoid Bootstrap smooth scrolling',viewport:{width:innerWidth,height:innerHeight}},{a,b,equals,fixed,edge,c,overSibling,earlierThanDialog,outsideAfterDialog,afterDialog,d:{dismissed,escaped,afterDismiss,events}},{expected:'The plain manual popover retains UA box differences and stays open on outside click and Escape, unlike auto.',reading:{...ua,manualOutside,manualEscape}},'Compare anchor placement with static positioning and normalize the surviving popover UA declarations; top-layer order matters.')\n\twrapper.remove();outside.remove()\n})\n\nit('measures native tooltip arrows against Popper',async()=>{\n\tconst button=makeElement('button','','position:absolute;left:180px;top:260px;anchor-name:--tip');button.textContent='Anchor'\n\tconst native=makeElement('div','tooltip bs-tooltip-auto fade show','position:absolute;position-anchor:--tip;position-area:top');native.setAttribute('role','tooltip');native.setAttribute('data-popper-placement','top')\n\tconst arrow=makeElement('div','tooltip-arrow','',native);const inner=makeElement('div','tooltip-inner','',native);inner.textContent='Native tooltip'\n\tawait waitForDelay(180);const top={anchor:readBox(button),tip:readBox(native),arrow:readBox(arrow),style:readStyles(arrow)}\n\tconst tooltip=new Tooltip(button,{title:'Native tooltip',placement:'top',trigger:'manual',animation:false});tooltip.show();await settleFrame()\n\tconst oracle=document.querySelector('.tooltip:not([style*=\"position-anchor\"])')\n\tif(!(oracle instanceof HTMLElement))throw new Error('Missing oracle tooltip')\n\tconst oracleArrow=oracle.querySelector('.tooltip-arrow');if(!(oracleArrow instanceof HTMLElement))throw new Error('Missing oracle arrow')\n\tconst popper={tip:readBox(oracle),arrow:readBox(oracleArrow),inline:oracle.style.cssText,arrowInline:oracleArrow.style.cssText}\n\ttooltip.hide();tooltip.dispose()\n\tarrow.style.cssText='position:absolute;left:calc(50% - var(--bs-tooltip-arrow-width) / 2)';native.style.marginBottom='6px';await settleFrame();const centered={tip:readBox(native),arrow:readBox(arrow),style:readStyles(arrow),inline:arrow.style.cssText,tipInline:native.style.cssText}\n\tnative.style.marginBottom='0';native.style.marginLeft='6px';native.style.setProperty('position-area','right');native.setAttribute('data-popper-placement','right');arrow.style.cssText='position:absolute;top:calc(50% - var(--bs-tooltip-arrow-width) / 2)';await settleFrame()\n\tconst right={tip:readBox(native),arrow:readBox(arrow),style:readStyles(arrow)}\n\tconst rightTooltip=new Tooltip(button,{title:'Native tooltip',placement:'right',trigger:'manual',animation:false});rightTooltip.show();await settleFrame()\n\tconst rightOracle=document.querySelector('.tooltip:not([style*=\"position-anchor\"])');if(!(rightOracle instanceof HTMLElement))throw new Error('Missing right oracle')\n\tconst rightArrow=rightOracle.querySelector('.tooltip-arrow');if(!(rightArrow instanceof HTMLElement))throw new Error('Missing right oracle arrow')\n\tconst popperRight={tip:readBox(rightOracle),arrow:readBox(rightArrow),inline:rightOracle.style.cssText,arrowInline:rightArrow.style.cssText};rightTooltip.dispose()\n\tnative.style.setProperty('position-try-fallbacks','flip-block, flip-inline');button.style.left=(innerWidth-70)+'px';await settleFrame();const edge={anchor:readBox(button),tip:readBox(native),arrow:readBox(arrow),placement:native.getAttribute('data-popper-placement')}\n\tnative.style.removeProperty('position-anchor');await settleFrame();const control={tip:readBox(native),arrow:readBox(arrow),style:readStyles(native)}\n\texpect(Math.abs(top.tip.x-control.tip.x)+Math.abs(top.tip.y-control.tip.y)).toBeGreaterThan(1)\n\tawait writeReading('tooltip-arrows',4,{text:'Native tooltip',areas:['top','right'],fallback:'flip-block, flip-inline'},{top,popper,centered,right,popperRight,edge},{expected:'Without position-anchor the tip loses its attachment; record the actual fallback location rather than assuming origin.',reading:control},'Anchor positioning places the tip but does not center Bootstrap arrows or update data-popper-placement after a flip.')\n\tnative.remove();button.remove()\n})\n",
+      "motion.test.ts": "import { it, expect } from 'vitest'\nimport { cdp } from 'vitest/browser'\nimport { waitForDelay } from '@orkestrel/test'\nimport { makeElement, makeStyle, readBox, readStyles, readTransition, settleFrame, writeReading } from './helpers.js'\n\nit('measures fade reflow and starting-style',async()=>{\n\tconst baseline=makeElement('div','modal fade')\n\tconst reflow=await readTransition(baseline,()=>{baseline.style.display='block';void baseline.offsetHeight;baseline.classList.add('show')},230)\n\tbaseline.remove()\n\tconst declarations='.discrete.modal { transition-behavior: allow-discrete; } .discrete.modal.show { display:block; } @starting-style { .discrete.modal.show { opacity:0; } }'\n\tmakeStyle(declarations)\n\tconst discrete=makeElement('div','modal fade discrete');await settleFrame()\n\tconst starting=await readTransition(discrete,()=>discrete.classList.add('show'),230);discrete.remove()\n\tconst plain=makeElement('div','modal fade','transition:none')\n\tconst control=await readTransition(plain,()=>{plain.style.display='block';void plain.offsetHeight;plain.classList.add('show')},180);plain.remove()\n\tlet reduced:unknown\n\ttry {\n\t\tawait cdp().send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]})\n\t\tconst element=makeElement('div','modal fade discrete');await settleFrame()\n\t\treduced={matches:matchMedia('(prefers-reduced-motion: reduce)').matches,reading:await readTransition(element,()=>element.classList.add('show'),180)};element.remove()\n\t\tawait cdp().send('Emulation.setEmulatedMedia',{features:[]})\n\t}catch(error){reduced={error:String(error)}}\n\texpect(control.animations.length).toBe(0);expect(reflow.animations.length).toBeGreaterThan(0);expect(starting.animations.length).toBeGreaterThan(0)\n\tawait writeReading('fade-discrete',5,{declarations,duration:150},{reflow,starting,reduced},{expected:'transition:none yields no animation or transitionend, unlike both enabled fade paths.',reading:control},'Starting-style provides an entering fade without the Bootstrap forced-reflow idiom; reduced motion is independently measured.')\n})\n\nit('measures intrinsic height and exclusive details',async()=>{\n\tconst measured=makeElement('div','collapse','width:200px');measured.innerHTML='<div style=\"height:120px\">Content</div>'\n\tmeasured.className='collapsing';measured.style.height='0px';void measured.offsetHeight\n\tconst target=measured.scrollHeight\n\tconst baseline=await readTransition(measured,()=>measured.style.height=target+'px',420)\n\tmeasured.className='collapse show';measured.style.height='';const cleared=readBox(measured);measured.remove()\n\tconst intrinsic=makeElement('div','collapsing','width:200px;height:0;interpolate-size:allow-keywords;transition:height .35s ease');intrinsic.innerHTML='<div style=\"height:120px\">Content</div>';await settleFrame()\n\tconst auto=await readTransition(intrinsic,()=>intrinsic.style.height='auto',420);intrinsic.remove()\n\tconst numeric=makeElement('div','collapsing','width:200px;height:0;transition:height .35s ease');numeric.innerHTML='<div style=\"height:120px\">Content</div>';await settleFrame()\n\tconst control=await readTransition(numeric,()=>numeric.style.height='auto',420);numeric.remove()\n\tconst declarations='details.probe { interpolate-size:allow-keywords; } details.probe::details-content { transition:height .35s; height:0; overflow:hidden; } details.probe[open]::details-content { height:auto; }'\n\tmakeStyle(declarations)\n\tconst first=makeElement('details','probe');first.name='exclusive';first.innerHTML='<summary>First</summary><div style=\"height:120px\">Content</div>'\n\tconst second=makeElement('details','probe');second.name='exclusive';second.innerHTML='<summary>Second</summary><div style=\"height:120px\">Content</div>'\n\tconst events:unknown[]=[];first.addEventListener('transitionend',event=>events.push({property:event.propertyName,elapsed:event.elapsedTime,pseudo:event.pseudoElement}))\n\tawait settleFrame();const detailStart=performance.now();first.open=true;await settleFrame();const animations=first.getAnimations({subtree:true}).map(animation=>({playState:animation.playState,timing:animation.effect?.getComputedTiming()}));await waitForDelay(420)\n\tconst details={animations,events,arrival:performance.now()-detailStart,box:readBox(first),pseudo:readStyles(first,'::details-content')}\n\tsecond.open=true;await settleFrame();const exclusive={first:first.open,second:second.open}\n\texpect(control.animations.length).toBe(0);expect(auto.animations.length).toBeGreaterThan(0);expect(exclusive).toEqual({first:false,second:true})\n\tawait writeReading('collapse-intrinsic',6,{duration:350,target,declarations},{baseline,cleared,auto,details,exclusive},{expected:'Without interpolate-size, height:0 to auto snaps without an animation.',reading:control},'Intrinsic height interpolation animates the ordinary collapse; details content animation and exclusive opening are recorded separately.')\n\tfirst.remove();second.remove()\n})\n",
+      "focus-scroll.test.ts": "import { it, expect } from 'vitest'\nimport { cdp, userEvent } from 'vitest/browser'\nimport FocusTrap from 'bootstrap/js/src/util/focustrap.js'\nimport ScrollBarHelper from 'bootstrap/js/src/util/scrollbar.js'\nimport { makeElement, readBox, readTabs, settleFrame, writeReading } from './helpers.js'\n\nit('measures inert against Bootstrap focus trap',async()=>{\n\tconst before=makeElement('button');before.id='outside-before';before.textContent='Outside before'\n\tconst modal=makeElement('div','modal show','display:block');modal.tabIndex=-1\n\tconst first=makeElement('button','','',modal);first.id='inside-first';first.textContent='Inside first'\n\tconst last=makeElement('button','','',modal);last.id='inside-last';last.textContent='Inside last'\n\tconst after=makeElement('button','','position:fixed;bottom:0;z-index:2000');after.id='outside-after';after.textContent='Outside after'\n\tawait userEvent.click(last);const control=await readTabs(last,5)\n\tconst axBefore=await readAccessibility()\n\tconst children=Array.from(document.body.children).filter(element=>element!==modal&&element instanceof HTMLElement)\n\tfor(const element of children)if(element instanceof HTMLElement)element.inert=true\n\tawait userEvent.click(last);const inert=await readTabs(last,5)\n\tconst focusContext={hasFocus:document.hasFocus(),parentActive:window.parent.document.activeElement?.outerHTML.slice(0,400)}\n\tconst visibility={before:before.getClientRects().length,after:after.getClientRects().length,aria:[before.getAttribute('aria-hidden'),after.getAttribute('aria-hidden')]}\n\tconst accessibility=await readAccessibility()\n\tfor(const element of children)if(element instanceof HTMLElement)element.inert=false\n\tconst trap=new FocusTrap({trapElement:modal});trap.activate();await userEvent.click(last);const trapped=await readTabs(last,5);trap.deactivate()\n\texpect(control).toContain('outside-after');expect(inert).not.toContain('outside-after');expect(trapped).not.toContain('outside-after');expect(visibility.after).toBeGreaterThan(0)\n\tawait writeReading('focus-inert',7,{start:'inside-last',tabs:5},{inert,trapped,visibility,accessibility,focusContext},{expected:'Without inert and without FocusTrap, Tab reaches outside-after and the accessibility tree includes outside controls; inert excludes both.',reading:{tabs:control,accessibility:axBefore}},'Inert excludes outside controls without removing their layout boxes or writing aria-hidden; frame-boundary focus is reported as observed.')\n\tbefore.remove();modal.remove();after.remove()\n})\n\nit('measures scroll lock and scrollbar gutter',async()=>{\n\tconst tall=makeElement('div','','height:2600px')\n\tconst navbar=makeElement('div','fixed-top','height:40px');navbar.textContent='Navigation'\n\tawait settleFrame()\n\tconst before={client:document.documentElement.clientWidth,inner:innerWidth,body:readBox(document.body),navbar:readBox(navbar),padding:getComputedStyle(document.body).paddingRight,navPadding:getComputedStyle(navbar).paddingRight}\n\tdocument.body.style.overflow='hidden';await settleFrame()\n\tconst neither={client:document.documentElement.clientWidth,body:readBox(document.body),navbar:readBox(navbar)}\n\tdocument.body.style.overflow='';await settleFrame()\n\tconst helper=new ScrollBarHelper();helper.hide();await settleFrame()\n\tconst bootstrap={client:document.documentElement.clientWidth,body:readBox(document.body),navbar:readBox(navbar),padding:getComputedStyle(document.body).paddingRight,navPadding:getComputedStyle(navbar).paddingRight,inline:document.body.style.cssText,navbarInline:navbar.style.cssText};helper.reset()\n\tdocument.documentElement.style.scrollbarGutter='stable';await settleFrame()\n\tconst stableBefore={client:document.documentElement.clientWidth,body:readBox(document.body),navbar:readBox(navbar)}\n\tdocument.body.style.overflow='hidden';await settleFrame()\n\tconst stableAfter={client:document.documentElement.clientWidth,body:readBox(document.body),navbar:readBox(navbar),padding:getComputedStyle(document.body).paddingRight,navPadding:getComputedStyle(navbar).paddingRight}\n\tlet launch:unknown;try{launch=await cdp().send('Browser.getBrowserCommandLine')}catch(error){launch=JSON.stringify(error)}\n\tconst scrollbar=before.inner-before.client\n\texpect(scrollbar).toBeGreaterThan(0);expect(neither.body.width-before.body.width).toBe(scrollbar);expect(stableAfter.body.width).toBe(stableBefore.body.width);expect(stableAfter.navbar.width).toBe(stableBefore.navbar.width)\n\tawait writeReading('scroll-lock',8,{viewport:{width:innerWidth,height:innerHeight},launch},{before,scrollbar,bootstrap,stableBefore,stableAfter},{expected:'With a classic scrollbar, hiding overflow without compensation widens body by the scrollbar width; stable gutter preserves width. A zero scrollbar width leaves the comparison untested.',reading:neither},scrollbar>0?'Classic scrollbar widths expose whether gutter preserves body and navbar geometry.':'Overlay scrollbars make width compensation moot in this run.')\n\tdocument.body.style.overflow='';document.documentElement.style.scrollbarGutter='';tall.remove();navbar.remove()\n})\n\nasync function readAccessibility(){\n\ttry{\n\t\tconst tree=await cdp().send('Page.getFrameTree')\n\t\tconst frames=[tree.frameTree]\n\t\tconst results=[]\n\t\tfor(const frame of frames){\n\t\t\tframes.push(...frame.childFrames??[])\n\t\t\tconst ax=await cdp().send('Accessibility.getFullAXTree',{frameId:frame.frame.id})\n\t\t\tif(frame.frame.url.includes('iframeId='))results.push({url:frame.frame.url,nodes:ax.nodes.filter(node=>node.role?.value==='button').map(node=>({name:node.name?.value,ignored:node.ignored}))})\n\t\t}\n\t\treturn results\n\t}catch(error){return {error:JSON.stringify(error)}}\n}\n",
+      "oracle.test.ts": "import { it, expect } from 'vitest'\nimport { waitForEvent } from '@orkestrel/test'\nimport Modal from 'bootstrap/js/src/modal.js'\nimport Dropdown from 'bootstrap/js/src/dropdown.js'\nimport { makeElement, settleFrame, writeReading } from './helpers.js'\n\nit('records the real Bootstrap modal oracle',async()=>{\n\tconst modal=makeElement('div','modal fade');modal.id='oracle-modal';modal.tabIndex=-1;modal.setAttribute('aria-hidden','true')\n\tmodal.innerHTML='<div class=\"modal-dialog\"><div class=\"modal-content\"><button>Inside oracle</button></div></div>'\n\tconst start=performance.now();const sequence:unknown[]=[];const transitions:unknown[]=[];const absent:unknown[]=[]\n\tconst observer=new MutationObserver(records=>recordMutations(records,sequence,start))\n\tobserver.observe(document.body,{attributes:true,attributeOldValue:true,childList:true,subtree:true})\n\tfor(const name of ['show.bs.modal','shown.bs.modal','hide.bs.modal','hidden.bs.modal'])modal.addEventListener(name,event=>{recordMutations(observer.takeRecords(),sequence,start);sequence.push({event:name,time:performance.now()-start,cancelable:event.cancelable})})\n\tmodal.addEventListener('opened.bs.modal',event=>absent.push(event.type))\n\tdocument.body.addEventListener('transitionend',event=>{transitions.push({target:describeNode(event.target),property:event instanceof TransitionEvent?event.propertyName:undefined,elapsed:event instanceof TransitionEvent?event.elapsedTime:undefined,time:performance.now()-start,isTrusted:event.isTrusted})},true)\n\tconst instance=new Modal(modal)\n\tconst shown=waitForEvent(listener=>{modal.addEventListener('shown.bs.modal',listener);return()=>modal.removeEventListener('shown.bs.modal',listener)},'Bootstrap modal shown',{budget:1500})\n\tinstance.show();await shown\n\tconst hidden=waitForEvent(listener=>{modal.addEventListener('hidden.bs.modal',listener);return()=>modal.removeEventListener('hidden.bs.modal',listener)},'Bootstrap modal hidden',{budget:1500})\n\tinstance.hide();await hidden;await settleFrame();recordMutations(observer.takeRecords(),sequence,start);observer.disconnect();instance.dispose()\n\tconst wrapper=makeElement('div','dropdown');const button=makeElement('button','dropdown-toggle','',wrapper);button.textContent='Oracle dropdown';button.setAttribute('data-bs-toggle','dropdown');const menu=makeElement('ul','dropdown-menu','',wrapper);menu.innerHTML='<li><button class=\"dropdown-item\">Action</button></li>'\n\tconst dropdown=new Dropdown(button);dropdown.show();await settleFrame();const dropdownShown={shown:menu.classList.contains('show'),placement:menu.getAttribute('data-popper-placement'),inline:menu.style.cssText};dropdown.hide();const dropdownHidden=!menu.classList.contains('show');dropdown.dispose();wrapper.remove();modal.remove()\n\texpect(absent.length).toBe(0);expect(sequence.some(entry=>typeof entry==='object'&&entry!==null&&Reflect.get(entry,'event')==='shown.bs.modal')).toBe(true);expect(dropdownShown.shown).toBe(true)\n\tawait writeReading('bootstrap-oracle',9,{imports:['bootstrap/js/src/modal.js','bootstrap/js/src/dropdown.js'],observe:{attributes:true,attributeOldValue:true,childList:true,subtree:true},reconstruction:'Attribute new values use the next mutation oldValue for the same target/name, or the live value at delivery; pending mutations are drained before lifecycle events.'},{sequence,transitions,dropdownShown,dropdownHidden},{expected:'opened.bs.modal never fires while show/shown/hide/hidden do.',reading:absent},'Bootstrap Modal and Dropdown ESM sources resolve and run; the chronological observer transcript preserves old and reconstructed new attribute values.')\n})\n\nfunction describeNode(node: EventTarget|null):string {\n\treturn node instanceof Element ? node.tagName.toLowerCase()+(node.id?'#'+node.id:'')+(node.className?'.'+String(node.className).replaceAll(' ','.'):'') : String(node)\n}\nfunction recordMutations(records:readonly MutationRecord[],sequence:unknown[],start:number) {\n\tfor(const [index,record]of records.entries()){\n\t\tconst next=records.slice(index+1).find(candidate=>candidate.target===record.target&&candidate.attributeName===record.attributeName&&candidate.type==='attributes')\n\t\tsequence.push({mutation:record.type,target:describeNode(record.target),attribute:record.attributeName,old:record.oldValue,value:record.type==='attributes'?(next?next.oldValue:record.target instanceof Element&&record.attributeName?record.target.getAttribute(record.attributeName):null):undefined,added:Array.from(record.addedNodes).map(describeNode),removed:Array.from(record.removedNodes).map(describeNode),time:performance.now()-start})\n\t}\n}\n",
+      "helpers.ts": "import { server, userEvent } from 'vitest/browser'\nimport { waitForDelay } from '@orkestrel/test'\nimport 'bootstrap/dist/css/bootstrap.css'\n\nexport function makeElement<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', css = '', parent: HTMLElement = document.body) {\n\tconst element = document.createElement(tag)\n\telement.className = className\n\telement.style.cssText = css\n\tparent.append(element)\n\treturn element\n}\nexport function readBox(element: Element) {\n\tconst box = element.getBoundingClientRect()\n\treturn {x:box.x,y:box.y,width:box.width,height:box.height,top:box.top,right:box.right,bottom:box.bottom,left:box.left}\n}\nexport function readStyles(element: Element, pseudo?: string) {\n\tconst style = getComputedStyle(element, pseudo)\n\treturn Object.fromEntries(['position','inset','margin','border-width','border-style','border-color','padding','background-color','color','max-width','max-height','width','height','overflow','display','z-index','opacity','left','top','bottom','transform','transition','interpolate-size'].map(name => [name, style.getPropertyValue(name)]))\n}\nexport async function settleFrame() {\n\tawait new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))\n}\nexport function makeStyle(text: string) {\n\tconst sheet = new CSSStyleSheet()\n\tsheet.replaceSync(text)\n\tdocument.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]\n\treturn sheet\n}\nexport async function writeReading(name: string, question: number, inputs: unknown, readings: unknown, control: unknown, verdict: string) {\n\tawait server.commands.writeFile('tmp/probes/' + name + '.json', JSON.stringify({name,question,chromium:navigator.userAgent,inputs,readings,control,verdict}, null, 2))\n}\nexport function readStack(x: number, y: number) {\n\treturn document.elementsFromPoint(x,y).map(element => element.id || element.tagName + '.' + element.className)\n}\nexport async function readTabs(start: HTMLElement, count = 4) {\n\tstart.focus()\n\tconst readings = []\n\tfor (let index=0; index<count; index++) {\n\t\tawait userEvent.tab()\n\t\treadings.push(document.activeElement?.id || document.activeElement?.tagName)\n\t}\n\treturn readings\n}\nexport async function readTransition(element: HTMLElement, change: () => void, budget: number) {\n\tconst start = performance.now()\n\tconst events: unknown[] = []\n\telement.addEventListener('transitionend', event => events.push({property:event.propertyName,elapsed:event.elapsedTime,arrival:performance.now()-start}), {once:true})\n\tchange()\n\tawait settleFrame()\n\tconst animations = element.getAnimations().map(animation => ({playState:animation.playState,timing:animation.effect?.getComputedTiming(),keyframes:animation.effect instanceof KeyframeEffect ? animation.effect.getKeyframes():[]}))\n\tawait waitForDelay(budget)\n\treturn {animations, events, final:readBox(element),style:readStyles(element)}\n}\n"
+    },
+    "notes": [
+      "The initial sheetProject recipe ran without root or resolve adaptation.",
+      "Bootstrap source imports triggered Vite optimizer reloads before being listed in optimizeDeps.include.",
+      "Removing Playwright --hide-scrollbars exposed the classic 15px scrollbar.",
+      "Geometry and focus were measured in Vitest test iframes at 414x896."
+    ]
+  },
+  "probes": [
+    {
+      "name": "feature-census",
+      "question": 1,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "declarations": [
+          "anchor-name: --a",
+          "position-anchor: --a",
+          "position-area: bottom",
+          "position-try-fallbacks: flip-block",
+          "position-visibility: anchors-visible",
+          "interpolate-size: allow-keywords",
+          "height: calc-size(auto, size)",
+          "transition-behavior: allow-discrete",
+          "overlay: auto",
+          "scrollbar-gutter: stable"
+        ],
+        "selectors": [
+          ":popover-open",
+          ":modal",
+          "::backdrop",
+          "::details-content",
+          ":open",
+          ":state(x)"
+        ]
+      },
+      "readings": {
+        "css": {
+          "anchor-name: --a": true,
+          "position-anchor: --a": true,
+          "position-area: bottom": true,
+          "position-try-fallbacks: flip-block": true,
+          "position-visibility: anchors-visible": true,
+          "interpolate-size: allow-keywords": true,
+          "height: calc-size(auto, size)": true,
+          "transition-behavior: allow-discrete": true,
+          "overlay: auto": true,
+          "scrollbar-gutter: stable": true
+        },
+        "selectors": {
+          ":popover-open": true,
+          ":modal": true,
+          "::backdrop": true,
+          "::details-content": true,
+          ":open": true,
+          ":state(x)": true
+        },
+        "api": {
+          "popover": true,
+          "showPopover": true,
+          "togglePopover": true,
+          "source": {
+            "accepted": true,
+            "open": true
+          },
+          "hint": "hint",
+          "inert": true,
+          "requestClose": true,
+          "closedBy": true,
+          "CloseWatcher": true,
+          "command": true,
+          "commandForElement": true,
+          "interestForElement": true,
+          "detailsName": true,
+          "getAnimations": true,
+          "startViewTransition": true,
+          "beforetoggle": [
+            {
+              "target": "DIV",
+              "cancelable": true
+            },
+            {
+              "target": "DETAILS",
+              "event": "toggle",
+              "cancelable": false
+            },
+            {
+              "target": "DIV",
+              "cancelable": false
+            },
+            {
+              "target": "DETAILS",
+              "event": "toggle",
+              "cancelable": false
+            }
+          ]
+        },
+        "closedby": "any"
+      },
+      "control": {
+        "expected": "Made-up property and selector are false; supported real declarations are true.",
+        "reading": {
+          "property": false,
+          "selector": false
+        }
+      },
+      "verdict": "All requested CSS checks pass; requested APIs are present; popover beforetoggle fires, but details emits toggle without beforetoggle."
+    },
+    {
+      "name": "dialog-modal",
+      "question": 2,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "viewport": {
+          "width": 414,
+          "height": 896
+        },
+        "declarations": "dialog.modal { margin: 0; border: 0; padding: 0; max-width: none; max-height: none; color: inherit; background: transparent; } dialog.modal[open] { display: block; }"
+      },
+      "readings": {
+        "raw": {
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "auto",
+            "border-width": "3px",
+            "border-style": "solid",
+            "border-color": "rgb(0, 0, 0)",
+            "padding": "16px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "max-width": "calc(100% - 38px)",
+            "max-height": "calc(100% - 38px)",
+            "width": "100%",
+            "height": "100%",
+            "overflow": "hidden auto",
+            "display": "none",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear",
+            "interpolate-size": "numeric-only"
+          },
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "focus": ""
+        },
+        "initial": {
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "19px",
+            "border-width": "3px",
+            "border-style": "solid",
+            "border-color": "rgb(0, 0, 0)",
+            "padding": "16px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "max-width": "calc(100% - 38px)",
+            "max-height": "calc(100% - 38px)",
+            "width": "376px",
+            "height": "858px",
+            "overflow": "hidden auto",
+            "display": "block",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear",
+            "interpolate-size": "numeric-only"
+          },
+          "box": {
+            "x": 19,
+            "y": 19,
+            "width": 376,
+            "height": 858,
+            "top": 19,
+            "right": 395,
+            "bottom": 877,
+            "left": 19
+          },
+          "child": {
+            "x": 46,
+            "y": 46,
+            "width": 322,
+            "height": 62,
+            "top": 46,
+            "right": 368,
+            "bottom": 108,
+            "left": 46
+          },
+          "backdrop": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(0, 0, 0)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0.1)",
+            "color": "rgb(0, 0, 0)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "896px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          },
+          "stack": [
+            "DIALOG.modal fade show",
+            "HTML."
+          ],
+          "focus": "first",
+          "tabs": [
+            "BODY",
+            "BODY",
+            "BODY",
+            "BODY"
+          ]
+        },
+        "neutralized": {
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "896px",
+            "overflow": "hidden auto",
+            "display": "block",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear",
+            "interpolate-size": "numeric-only"
+          },
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 896,
+            "top": 0,
+            "right": 414,
+            "bottom": 896,
+            "left": 0
+          },
+          "child": {
+            "x": 8,
+            "y": 8,
+            "width": 398,
+            "height": 62,
+            "top": 8,
+            "right": 406,
+            "bottom": 70,
+            "left": 8
+          }
+        },
+        "differences": [],
+        "outsideFocus": {
+          "attempt": "opener",
+          "actual": ""
+        },
+        "closed": {
+          "open": false,
+          "events": [
+            {
+              "event": "close"
+            },
+            {
+              "event": "cancel",
+              "cancelable": true
+            },
+            {
+              "event": "close"
+            }
+          ],
+          "focus": "opener"
+        }
+      },
+      "control": {
+        "expected": "The ordinary div has no dialog UA border or margin; normalization restores its box.",
+        "reading": {
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "896px",
+            "overflow": "hidden auto",
+            "display": "block",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear",
+            "interpolate-size": "numeric-only"
+          },
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 896,
+            "top": 0,
+            "right": 414,
+            "bottom": 896,
+            "left": 0
+          },
+          "child": {
+            "x": 8,
+            "y": 8,
+            "width": 398,
+            "height": 62,
+            "top": 8,
+            "right": 406,
+            "bottom": 70,
+            "left": 8
+          }
+        }
+      },
+      "verdict": "Bootstrap hides an unadapted modal dialog; explicit open display and UA normalization reproduce the div box and computed styles."
+    },
+    {
+      "name": "dropdown-anchor-popover",
+      "question": 3,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "anchor": "--toggle",
+        "area": "block-end span-inline-end",
+        "fallback": "flip-block",
+        "adaptation": "position:fixed for viewport-constrained fallback, instant scroll to avoid Bootstrap smooth scrolling",
+        "viewport": {
+          "width": 414,
+          "height": 896
+        }
+      },
+      "readings": {
+        "a": {
+          "toggle": {
+            "x": 70,
+            "y": 180,
+            "width": 68.921875,
+            "height": 30,
+            "top": 180,
+            "right": 138.921875,
+            "bottom": 210,
+            "left": 70
+          },
+          "menu": {
+            "x": 70,
+            "y": 212,
+            "width": 160,
+            "height": 82,
+            "top": 212,
+            "right": 230,
+            "bottom": 294,
+            "left": 70
+          },
+          "style": {
+            "position": "absolute",
+            "inset": "30px -91.0781px -84px 0px",
+            "margin": "2px 0px 0px",
+            "border-width": "1px",
+            "border-style": "solid",
+            "border-color": "rgba(0, 0, 0, 0.176)",
+            "padding": "8px 0px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "160px",
+            "height": "82px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "1000",
+            "opacity": "1",
+            "left": "0px",
+            "top": "30px",
+            "bottom": "-84px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "b": {
+          "toggle": {
+            "x": 70,
+            "y": 180,
+            "width": 68.921875,
+            "height": 30,
+            "top": 180,
+            "right": 138.921875,
+            "bottom": 210,
+            "left": 70
+          },
+          "menu": {
+            "x": 70,
+            "y": 182,
+            "width": 160,
+            "height": 82,
+            "top": 182,
+            "right": 230,
+            "bottom": 264,
+            "left": 70
+          },
+          "style": {
+            "position": "absolute",
+            "inset": "0px",
+            "margin": "2px 0px 0px",
+            "border-width": "1px",
+            "border-style": "solid",
+            "border-color": "rgba(0, 0, 0, 0.176)",
+            "padding": "8px 0px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "160px",
+            "height": "82px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "1000",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "equals": false,
+        "fixed": {
+          "toggle": {
+            "x": 70,
+            "y": 180,
+            "width": 68.921875,
+            "height": 30,
+            "top": 180,
+            "right": 138.921875,
+            "bottom": 210,
+            "left": 70
+          },
+          "menu": {
+            "x": 70,
+            "y": 212,
+            "width": 160,
+            "height": 82,
+            "top": 212,
+            "right": 230,
+            "bottom": 294,
+            "left": 70
+          }
+        },
+        "edge": {
+          "toggle": {
+            "x": 70,
+            "y": 856,
+            "width": 68.921875,
+            "height": 30,
+            "top": 856,
+            "right": 138.921875,
+            "bottom": 886,
+            "left": 70
+          },
+          "menu": {
+            "x": 70,
+            "y": 772,
+            "width": 160,
+            "height": 82,
+            "top": 772,
+            "right": 230,
+            "bottom": 854,
+            "left": 70
+          }
+        },
+        "c": {
+          "style": {
+            "position": "absolute",
+            "inset": "0px",
+            "margin": "2px 0px 0px",
+            "border-width": "1px",
+            "border-style": "solid",
+            "border-color": "rgba(0, 0, 0, 0.176)",
+            "padding": "8px 0px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "160px",
+            "height": "82px",
+            "overflow": "auto",
+            "display": "block",
+            "z-index": "1000",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          },
+          "box": {
+            "x": 70,
+            "y": 212,
+            "width": 160,
+            "height": 82,
+            "top": 212,
+            "right": 230,
+            "bottom": 294,
+            "left": 70
+          }
+        },
+        "overSibling": [
+          "BUTTON.dropdown-item",
+          "LI.",
+          "UL.dropdown-menu show",
+          "cover",
+          "BODY.",
+          "HTML."
+        ],
+        "earlierThanDialog": [
+          "cover-dialog",
+          "HTML."
+        ],
+        "outsideAfterDialog": [
+          "cover-dialog",
+          "HTML."
+        ],
+        "afterDialog": [
+          "BUTTON.dropdown-item",
+          "LI.",
+          "UL.dropdown-menu show",
+          "cover-dialog",
+          "HTML."
+        ],
+        "d": {
+          "dismissed": true,
+          "escaped": true,
+          "afterDismiss": {
+            "style": {
+              "position": "absolute",
+              "inset": "0px",
+              "margin": "2px 0px 0px",
+              "border-width": "1px",
+              "border-style": "solid",
+              "border-color": "rgba(0, 0, 0, 0.176)",
+              "padding": "8px 0px",
+              "background-color": "rgb(255, 255, 255)",
+              "color": "rgb(33, 37, 41)",
+              "max-width": "none",
+              "max-height": "none",
+              "width": "160px",
+              "height": "82px",
+              "overflow": "auto",
+              "display": "block",
+              "z-index": "1000",
+              "opacity": "1",
+              "left": "0px",
+              "top": "0px",
+              "bottom": "0px",
+              "transform": "none",
+              "transition": "all",
+              "interpolate-size": "numeric-only"
+            },
+            "box": {
+              "x": 70,
+              "y": 182,
+              "width": 160,
+              "height": 82,
+              "top": 182,
+              "right": 230,
+              "bottom": 264,
+              "left": 70
+            }
+          },
+          "events": [
+            {
+              "name": "beforetoggle",
+              "cancelable": true,
+              "oldState": "closed",
+              "newState": "open"
+            },
+            {
+              "name": "toggle",
+              "cancelable": false,
+              "oldState": "open",
+              "newState": "open"
+            },
+            {
+              "name": "beforetoggle",
+              "cancelable": false,
+              "oldState": "open",
+              "newState": "closed"
+            },
+            {
+              "name": "toggle",
+              "cancelable": false,
+              "oldState": "open",
+              "newState": "closed"
+            },
+            {
+              "name": "beforetoggle",
+              "cancelable": true,
+              "oldState": "closed",
+              "newState": "open"
+            },
+            {
+              "name": "toggle",
+              "cancelable": false,
+              "oldState": "closed",
+              "newState": "open"
+            },
+            {
+              "name": "beforetoggle",
+              "cancelable": false,
+              "oldState": "open",
+              "newState": "closed"
+            },
+            {
+              "name": "toggle",
+              "cancelable": false,
+              "oldState": "open",
+              "newState": "closed"
+            }
+          ]
+        }
+      },
+      "control": {
+        "expected": "The plain manual popover retains UA box differences and stays open on outside click and Escape, unlike auto.",
+        "reading": {
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "429px 183.047px",
+            "border-width": "3px",
+            "border-style": "solid",
+            "border-color": "rgb(0, 0, 0)",
+            "padding": "4px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "47.9062px",
+            "height": "38px",
+            "overflow": "auto",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          },
+          "box": {
+            "x": 183.046875,
+            "y": 429,
+            "width": 47.90625,
+            "height": 38,
+            "top": 429,
+            "right": 230.953125,
+            "bottom": 467,
+            "left": 183.046875
+          },
+          "manualOutside": true,
+          "manualEscape": true
+        }
+      },
+      "verdict": "Fixed anchor positioning and top-layer placement match static dropdown geometry; auto dismissal needs Bootstrap class synchronization."
+    },
+    {
+      "name": "tooltip-arrows",
+      "question": 4,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "text": "Native tooltip",
+        "areas": [
+          "top",
+          "right"
+        ],
+        "fallback": "flip-block, flip-inline"
+      },
+      "readings": {
+        "top": {
+          "anchor": {
+            "x": 180,
+            "y": 260,
+            "width": 66.765625,
+            "height": 30,
+            "top": 260,
+            "right": 246.765625,
+            "bottom": 290,
+            "left": 180
+          },
+          "tip": {
+            "x": 163.140625,
+            "y": 224.609375,
+            "width": 100.5,
+            "height": 35.390625,
+            "top": 224.609375,
+            "right": 263.640625,
+            "bottom": 260,
+            "left": 163.140625
+          },
+          "arrow": {
+            "x": 163.140625,
+            "y": 224.609375,
+            "width": 12.796875,
+            "height": 6.390625,
+            "top": 224.609375,
+            "right": 175.9375,
+            "bottom": 231,
+            "left": 163.140625
+          },
+          "style": {
+            "position": "static",
+            "inset": "auto auto -6.4px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "12.7969px",
+            "height": "6.39062px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "auto",
+            "top": "auto",
+            "bottom": "-6.4px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "popper": {
+          "tip": {
+            "x": 163,
+            "y": 225,
+            "width": 100.5,
+            "height": 29,
+            "top": 225,
+            "right": 263.5,
+            "bottom": 254,
+            "left": 163
+          },
+          "arrow": {
+            "x": 207,
+            "y": 254,
+            "width": 12.796875,
+            "height": 6.390625,
+            "top": 254,
+            "right": 219.796875,
+            "bottom": 260.390625,
+            "left": 207
+          },
+          "inline": "position: absolute; inset: auto auto 0px 0px; margin: 0px; transform: translate(163px, -642px);",
+          "arrowInline": "position: absolute; left: 0px; transform: translate(44px, 0px);"
+        },
+        "centered": {
+          "tip": {
+            "x": 163.140625,
+            "y": 225,
+            "width": 100.5,
+            "height": 29,
+            "top": 225,
+            "right": 263.640625,
+            "bottom": 254,
+            "left": 163.140625
+          },
+          "arrow": {
+            "x": 206.984375,
+            "y": 254,
+            "width": 12.796875,
+            "height": 6.390625,
+            "top": 254,
+            "right": 219.78125,
+            "bottom": 260.390625,
+            "left": 206.984375
+          },
+          "style": {
+            "position": "absolute",
+            "inset": "29px 43.8594px -6.4px 43.8438px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "12.7969px",
+            "height": "6.39062px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "43.8438px",
+            "top": "29px",
+            "bottom": "-6.4px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          },
+          "inline": "position: absolute; left: calc(50% - var(--bs-tooltip-arrow-width) / 2);",
+          "tipInline": "position: absolute; position-anchor: --tip; position-area: top; margin-bottom: 6px;"
+        },
+        "right": {
+          "tip": {
+            "x": 252.765625,
+            "y": 260.5,
+            "width": 100.5,
+            "height": 29,
+            "top": 260.5,
+            "right": 353.265625,
+            "bottom": 289.5,
+            "left": 252.765625
+          },
+          "arrow": {
+            "x": 246.375,
+            "y": 268.59375,
+            "width": 6.390625,
+            "height": 12.796875,
+            "top": 268.59375,
+            "right": 252.765625,
+            "bottom": 281.390625,
+            "left": 246.375
+          },
+          "style": {
+            "position": "absolute",
+            "inset": "8.09375px 100.5px 8.10938px -6.4px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "6.39062px",
+            "height": "12.7969px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "-6.4px",
+            "top": "8.09375px",
+            "bottom": "8.10938px",
+            "transform": "none",
+            "transition": "all",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "popperRight": {
+          "tip": {
+            "x": 253,
+            "y": 261,
+            "width": 100.5,
+            "height": 29,
+            "top": 261,
+            "right": 353.5,
+            "bottom": 290,
+            "left": 253
+          },
+          "arrow": {
+            "x": 246.609375,
+            "y": 269,
+            "width": 6.390625,
+            "height": 12.796875,
+            "top": 269,
+            "right": 253,
+            "bottom": 281.796875,
+            "left": 246.609375
+          },
+          "inline": "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(253px, 261px);",
+          "arrowInline": "position: absolute; top: 0px; transform: translate(0px, 8px);"
+        },
+        "edge": {
+          "anchor": {
+            "x": 344,
+            "y": 260,
+            "width": 66.765625,
+            "height": 30,
+            "top": 260,
+            "right": 410.765625,
+            "bottom": 290,
+            "left": 344
+          },
+          "tip": {
+            "x": 237.5,
+            "y": 260.5,
+            "width": 100.5,
+            "height": 29,
+            "top": 260.5,
+            "right": 338,
+            "bottom": 289.5,
+            "left": 237.5
+          },
+          "arrow": {
+            "x": 231.109375,
+            "y": 268.59375,
+            "width": 6.390625,
+            "height": 12.796875,
+            "top": 268.59375,
+            "right": 237.5,
+            "bottom": 281.390625,
+            "left": 231.109375
+          },
+          "placement": "right"
+        }
+      },
+      "control": {
+        "expected": "Without position-anchor the tip loses its attachment; record the actual fallback location rather than assuming origin.",
+        "reading": {
+          "tip": {
+            "x": 0,
+            "y": 0,
+            "width": 100.5,
+            "height": 29,
+            "top": 0,
+            "right": 100.5,
+            "bottom": 29,
+            "left": 0
+          },
+          "arrow": {
+            "x": -6.390625,
+            "y": 8.09375,
+            "width": 6.390625,
+            "height": 12.796875,
+            "top": 8.09375,
+            "right": 0,
+            "bottom": 20.890625,
+            "left": -6.390625
+          },
+          "style": {
+            "position": "absolute",
+            "inset": "0px 307.5px 867px 0px",
+            "margin": "0px 6px 0px 0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "100.5px",
+            "height": "29px",
+            "overflow": "visible",
+            "display": "block",
+            "z-index": "1080",
+            "opacity": "0.9",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "867px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear",
+            "interpolate-size": "numeric-only"
+          }
+        }
+      },
+      "verdict": "Absolute arrow positioning, axis centering, and a 6px tip gap match Popper within 1px; fallback flips do not update Bootstrap placement attributes."
+    },
+    {
+      "name": "fade-discrete",
+      "question": 5,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "declarations": ".discrete.modal { transition-behavior: allow-discrete; } .discrete.modal.show { display:block; } @starting-style { .discrete.modal.show { opacity:0; } }",
+        "duration": 150
+      },
+      "readings": {
+        "reflow": {
+          "animations": [
+            {
+              "playState": "running",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 150,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "backwards",
+                "iterationStart": 0,
+                "iterations": 1,
+                "activeDuration": 150,
+                "currentIteration": 0,
+                "endTime": 150,
+                "localTime": 16.646999988285838,
+                "progress": 0.11097999992190559
+              },
+              "keyframes": [
+                {
+                  "offset": 0,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "opacity": "0",
+                  "computedOffset": 0
+                },
+                {
+                  "offset": 1,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "opacity": "1",
+                  "computedOffset": 1
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "property": "opacity",
+              "elapsed": 0.15,
+              "arrival": 155.59999999403954
+            }
+          ],
+          "final": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 896,
+            "top": 0,
+            "right": 414,
+            "bottom": 896,
+            "left": 0
+          },
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "896px",
+            "overflow": "hidden auto",
+            "display": "block",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "starting": {
+          "animations": [
+            {
+              "playState": "running",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 150,
+                "easing": "linear",
+                "endDelay": 0,
+                "fill": "backwards",
+                "iterationStart": 0,
+                "iterations": 1,
+                "activeDuration": 150,
+                "currentIteration": 0,
+                "endTime": 150,
+                "localTime": 33.32499998533167,
+                "progress": 0.22216666656887782
+              },
+              "keyframes": [
+                {
+                  "offset": 0,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "opacity": "0",
+                  "computedOffset": 0
+                },
+                {
+                  "offset": 1,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "opacity": "1",
+                  "computedOffset": 1
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "property": "opacity",
+              "elapsed": 0.15,
+              "arrival": 166.80000001192093
+            }
+          ],
+          "final": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 896,
+            "top": 0,
+            "right": 414,
+            "bottom": 896,
+            "left": 0
+          },
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "896px",
+            "overflow": "hidden auto",
+            "display": "block",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "opacity 0.15s linear allow-discrete",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "reduced": {
+          "matches": true,
+          "reading": {
+            "animations": [],
+            "events": [],
+            "final": {
+              "x": 0,
+              "y": 0,
+              "width": 414,
+              "height": 896,
+              "top": 0,
+              "right": 414,
+              "bottom": 896,
+              "left": 0
+            },
+            "style": {
+              "position": "fixed",
+              "inset": "0px",
+              "margin": "0px",
+              "border-width": "0px",
+              "border-style": "none",
+              "border-color": "rgb(33, 37, 41)",
+              "padding": "0px",
+              "background-color": "rgba(0, 0, 0, 0)",
+              "color": "rgb(33, 37, 41)",
+              "max-width": "none",
+              "max-height": "none",
+              "width": "414px",
+              "height": "896px",
+              "overflow": "hidden auto",
+              "display": "block",
+              "z-index": "1055",
+              "opacity": "1",
+              "left": "0px",
+              "top": "0px",
+              "bottom": "0px",
+              "transform": "none",
+              "transition": "none allow-discrete",
+              "interpolate-size": "numeric-only"
+            }
+          }
+        }
+      },
+      "control": {
+        "expected": "transition:none yields no animation or transitionend, unlike both enabled fade paths.",
+        "reading": {
+          "animations": [],
+          "events": [],
+          "final": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 896,
+            "top": 0,
+            "right": 414,
+            "bottom": 896,
+            "left": 0
+          },
+          "style": {
+            "position": "fixed",
+            "inset": "0px",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "896px",
+            "overflow": "hidden auto",
+            "display": "block",
+            "z-index": "1055",
+            "opacity": "1",
+            "left": "0px",
+            "top": "0px",
+            "bottom": "0px",
+            "transform": "none",
+            "transition": "none",
+            "interpolate-size": "numeric-only"
+          }
+        }
+      },
+      "verdict": "Reflow and starting-style both animate opacity; reduced motion and transition:none produce no animation."
+    },
+    {
+      "name": "collapse-intrinsic",
+      "question": 6,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "duration": 350,
+        "target": 120,
+        "declarations": "details.probe { interpolate-size:allow-keywords; } details.probe::details-content { transition:height .35s; height:0; overflow:hidden; } details.probe[open]::details-content { height:auto; }"
+      },
+      "readings": {
+        "baseline": {
+          "animations": [
+            {
+              "playState": "running",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 350,
+                "easing": "ease",
+                "endDelay": 0,
+                "fill": "backwards",
+                "iterationStart": 0,
+                "iterations": 1,
+                "activeDuration": 350,
+                "currentIteration": 0,
+                "endTime": 350,
+                "localTime": 16.499999999999957,
+                "progress": 0.03032514608766704
+              },
+              "keyframes": [
+                {
+                  "offset": 0,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "height": "0px",
+                  "computedOffset": 0
+                },
+                {
+                  "offset": 1,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "height": "120px",
+                  "computedOffset": 1
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "property": "height",
+              "elapsed": 0.35,
+              "arrival": 367.80000001192093
+            }
+          ],
+          "final": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 120,
+            "top": 0,
+            "right": 200,
+            "bottom": 120,
+            "left": 0
+          },
+          "style": {
+            "position": "static",
+            "inset": "auto",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "200px",
+            "height": "120px",
+            "overflow": "hidden",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "auto",
+            "top": "auto",
+            "bottom": "auto",
+            "transform": "none",
+            "transition": "height 0.35s",
+            "interpolate-size": "numeric-only"
+          }
+        },
+        "cleared": {
+          "x": 0,
+          "y": 0,
+          "width": 200,
+          "height": 120,
+          "top": 0,
+          "right": 200,
+          "bottom": 120,
+          "left": 0
+        },
+        "auto": {
+          "animations": [
+            {
+              "playState": "running",
+              "timing": {
+                "delay": 0,
+                "direction": "normal",
+                "duration": 350,
+                "easing": "ease",
+                "endDelay": 0,
+                "fill": "backwards",
+                "iterationStart": 0,
+                "iterations": 1,
+                "activeDuration": 350,
+                "currentIteration": 0,
+                "endTime": 350,
+                "localTime": 33.39999999999988,
+                "progress": 0.08788218900352975
+              },
+              "keyframes": [
+                {
+                  "offset": 0,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "height": "0px",
+                  "computedOffset": 0
+                },
+                {
+                  "offset": 1,
+                  "easing": "linear",
+                  "composite": "auto",
+                  "height": "auto",
+                  "computedOffset": 1
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "property": "height",
+              "elapsed": 0.35,
+              "arrival": 349.40000000596046
+            }
+          ],
+          "final": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 120,
+            "top": 0,
+            "right": 200,
+            "bottom": 120,
+            "left": 0
+          },
+          "style": {
+            "position": "static",
+            "inset": "auto",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "200px",
+            "height": "120px",
+            "overflow": "hidden",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "auto",
+            "top": "auto",
+            "bottom": "auto",
+            "transform": "none",
+            "transition": "height 0.35s",
+            "interpolate-size": "allow-keywords"
+          }
+        },
+        "details": {
+          "animations": [],
+          "events": [],
+          "arrival": 465.59999999403954,
+          "box": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 144,
+            "top": 0,
+            "right": 414,
+            "bottom": 144,
+            "left": 0
+          },
+          "pseudo": {
+            "position": "static",
+            "inset": "auto",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "414px",
+            "height": "120px",
+            "overflow": "hidden",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "auto",
+            "top": "auto",
+            "bottom": "auto",
+            "transform": "none",
+            "transition": "height 0.35s",
+            "interpolate-size": "allow-keywords"
+          }
+        },
+        "exclusive": {
+          "first": false,
+          "second": true
+        }
+      },
+      "control": {
+        "expected": "Without interpolate-size, height:0 to auto snaps without an animation.",
+        "reading": {
+          "animations": [],
+          "events": [],
+          "final": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 120,
+            "top": 0,
+            "right": 200,
+            "bottom": 120,
+            "left": 0
+          },
+          "style": {
+            "position": "static",
+            "inset": "auto",
+            "margin": "0px",
+            "border-width": "0px",
+            "border-style": "none",
+            "border-color": "rgb(33, 37, 41)",
+            "padding": "0px",
+            "background-color": "rgba(0, 0, 0, 0)",
+            "color": "rgb(33, 37, 41)",
+            "max-width": "none",
+            "max-height": "none",
+            "width": "200px",
+            "height": "120px",
+            "overflow": "hidden",
+            "display": "block",
+            "z-index": "auto",
+            "opacity": "1",
+            "left": "auto",
+            "top": "auto",
+            "bottom": "auto",
+            "transform": "none",
+            "transition": "height 0.35s",
+            "interpolate-size": "numeric-only"
+          }
+        }
+      },
+      "verdict": "Interpolate-size animates height:0 to auto; the requested details CSS does not animate, while exclusive name behavior works."
+    },
+    {
+      "name": "focus-inert",
+      "question": 7,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "start": "inside-last",
+        "tabs": 5
+      },
+      "readings": {
+        "inert": [
+          "BODY",
+          "BODY",
+          "BODY",
+          "BODY",
+          "BODY"
+        ],
+        "trapped": [
+          "inside-first",
+          "inside-last",
+          "inside-first",
+          "inside-last",
+          "inside-first"
+        ],
+        "visibility": {
+          "before": 1,
+          "after": 1,
+          "aria": [
+            null,
+            null
+          ]
+        },
+        "accessibility": [
+          {
+            "url": "http://localhost:63315/?sessionId=5b27f71c-ab32-4cb8-b308-8c6566c10866&iframeId=__vitest_all__",
+            "nodes": [
+              {
+                "name": "Inside first",
+                "ignored": false
+              },
+              {
+                "name": "Inside last",
+                "ignored": false
+              }
+            ]
+          }
+        ],
+        "focusContext": {
+          "hasFocus": false,
+          "parentActive": "<button role=\"button\" opacity=\"70\" rounded=\"\" hover=\"bg-active op100\" class=\"w-1.4em h-1.4em flex v-popper--has-tooltip\" data-testid=\"btn-run-all\"><span class=\"i-carbon:play\" ma=\"\" block=\"\"></span></button>"
+        }
+      },
+      "control": {
+        "expected": "Without inert and without FocusTrap, Tab reaches outside-after and the accessibility tree includes outside controls; inert excludes both.",
+        "reading": {
+          "tabs": [
+            "outside-after",
+            "BODY",
+            "BODY",
+            "BODY",
+            "BODY"
+          ],
+          "accessibility": [
+            {
+              "url": "http://localhost:63315/?sessionId=5b27f71c-ab32-4cb8-b308-8c6566c10866&iframeId=__vitest_all__",
+              "nodes": [
+                {
+                  "name": "Outside before",
+                  "ignored": false
+                },
+                {
+                  "name": "Outside after",
+                  "ignored": false
+                },
+                {
+                  "name": "Inside first",
+                  "ignored": false
+                },
+                {
+                  "name": "Inside last",
+                  "ignored": false
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "verdict": "Inert removes outside controls from focus and accessibility without changing layout, but does not reproduce FocusTrap wrapping in the Vitest iframe."
+    },
+    {
+      "name": "scroll-lock",
+      "question": 8,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "viewport": {
+          "width": 414,
+          "height": 896
+        },
+        "launch": "{\"name\":\"Error\",\"message\":\"cdpSession.send: Protocol error (Browser.getBrowserCommandLine): Command line not returned because --enable-automation not set.\",\"stack\":\"cdpSession.send: Protocol error (Browser.getBrowserCommandLine): Command line not returned because --enable-automation not set.\\n    at BrowserServerCDPHandler.send (C:\\\\Users\\\\mikes\\\\WebstormProjects\\\\veneer\\\\node_modules\\\\@vitest\\\\browser\\\\dist\\\\index.js:1413:23)\\n    at Proxy.sendCdpEvent (C:\\\\Users\\\\mikes\\\\WebstormProjects\\\\veneer\\\\node_modules\\\\@vitest\\\\browser\\\\dist\\\\index.js:3303:16)\\n    at WebSocket.onMessage (C:\\\\Users\\\\mikes\\\\WebstormProjects\\\\veneer\\\\node_modules\\\\@vitest\\\\browser\\\\dist\\\\index.js:2951:14)\",\"log\":[]}"
+      },
+      "readings": {
+        "before": {
+          "client": 399,
+          "inner": 414,
+          "body": {
+            "x": 0,
+            "y": 0,
+            "width": 399,
+            "height": 2600,
+            "top": 0,
+            "right": 399,
+            "bottom": 2600,
+            "left": 0
+          },
+          "navbar": {
+            "x": 0,
+            "y": 0,
+            "width": 399,
+            "height": 40,
+            "top": 0,
+            "right": 399,
+            "bottom": 40,
+            "left": 0
+          },
+          "padding": "0px",
+          "navPadding": "0px"
+        },
+        "scrollbar": 15,
+        "bootstrap": {
+          "client": 414,
+          "body": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 2600,
+            "top": 0,
+            "right": 414,
+            "bottom": 2600,
+            "left": 0
+          },
+          "navbar": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 40,
+            "top": 0,
+            "right": 414,
+            "bottom": 40,
+            "left": 0
+          },
+          "padding": "15px",
+          "navPadding": "15px",
+          "inline": "overflow: hidden; padding-right: 15px;",
+          "navbarInline": "height: 40px; padding-right: 15px;"
+        },
+        "stableBefore": {
+          "client": 399,
+          "body": {
+            "x": 0,
+            "y": 0,
+            "width": 399,
+            "height": 2600,
+            "top": 0,
+            "right": 399,
+            "bottom": 2600,
+            "left": 0
+          },
+          "navbar": {
+            "x": 0,
+            "y": 0,
+            "width": 399,
+            "height": 40,
+            "top": 0,
+            "right": 399,
+            "bottom": 40,
+            "left": 0
+          }
+        },
+        "stableAfter": {
+          "client": 414,
+          "body": {
+            "x": 0,
+            "y": 0,
+            "width": 399,
+            "height": 2600,
+            "top": 0,
+            "right": 399,
+            "bottom": 2600,
+            "left": 0
+          },
+          "navbar": {
+            "x": 0,
+            "y": 0,
+            "width": 399,
+            "height": 40,
+            "top": 0,
+            "right": 399,
+            "bottom": 40,
+            "left": 0
+          },
+          "padding": "0px",
+          "navPadding": "0px"
+        }
+      },
+      "control": {
+        "expected": "With a classic scrollbar, hiding overflow without compensation widens body by the scrollbar width; stable gutter preserves width. A zero scrollbar width leaves the comparison untested.",
+        "reading": {
+          "client": 414,
+          "body": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 2600,
+            "top": 0,
+            "right": 414,
+            "bottom": 2600,
+            "left": 0
+          },
+          "navbar": {
+            "x": 0,
+            "y": 0,
+            "width": 414,
+            "height": 40,
+            "top": 0,
+            "right": 414,
+            "bottom": 40,
+            "left": 0
+          }
+        }
+      },
+      "verdict": "With a 15px classic scrollbar, stable gutter preserves body and fixed-navbar width without padding; uncompensated overflow hiding widens both."
+    },
+    {
+      "name": "bootstrap-oracle",
+      "question": 9,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "imports": [
+          "bootstrap/js/src/modal.js",
+          "bootstrap/js/src/dropdown.js"
+        ],
+        "observe": {
+          "attributes": true,
+          "attributeOldValue": true,
+          "childList": true,
+          "subtree": true
+        },
+        "reconstruction": "Attribute new values use the next mutation oldValue for the same target/name, or the live value at delivery; pending mutations are drained before lifecycle events."
+      },
+      "readings": {
+        "sequence": [
+          {
+            "event": "show.bs.modal",
+            "time": 0.9000000059604645,
+            "cancelable": true
+          },
+          {
+            "mutation": "attributes",
+            "target": "body.modal-open",
+            "attribute": "style",
+            "old": null,
+            "value": "overflow: hidden;",
+            "added": [],
+            "removed": [],
+            "time": 1.699999988079071
+          },
+          {
+            "mutation": "attributes",
+            "target": "body.modal-open",
+            "attribute": "style",
+            "old": "overflow: hidden;",
+            "value": "overflow: hidden; padding-right: 0px;",
+            "added": [],
+            "removed": [],
+            "time": 1.800000011920929
+          },
+          {
+            "mutation": "attributes",
+            "target": "body.modal-open",
+            "attribute": "class",
+            "old": null,
+            "value": "modal-open",
+            "added": [],
+            "removed": [],
+            "time": 1.800000011920929
+          },
+          {
+            "mutation": "childList",
+            "target": "body.modal-open",
+            "attribute": null,
+            "old": null,
+            "added": [
+              "div.modal-backdrop.fade.show"
+            ],
+            "removed": [],
+            "time": 1.800000011920929
+          },
+          {
+            "mutation": "attributes",
+            "target": "div.modal-backdrop.fade.show",
+            "attribute": "class",
+            "old": "modal-backdrop fade",
+            "value": "modal-backdrop fade show",
+            "added": [],
+            "removed": [],
+            "time": 1.800000011920929
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade.show",
+            "attribute": "style",
+            "old": "",
+            "value": "display: block;",
+            "added": [],
+            "removed": [],
+            "time": 159.30000001192093
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade.show",
+            "attribute": "aria-hidden",
+            "old": "true",
+            "value": null,
+            "added": [],
+            "removed": [],
+            "time": 159.40000000596046
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade.show",
+            "attribute": "aria-modal",
+            "old": null,
+            "value": "true",
+            "added": [],
+            "removed": [],
+            "time": 159.5
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade.show",
+            "attribute": "role",
+            "old": null,
+            "value": "dialog",
+            "added": [],
+            "removed": [],
+            "time": 159.5
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade.show",
+            "attribute": "class",
+            "old": "modal fade",
+            "value": "modal fade show",
+            "added": [],
+            "removed": [],
+            "time": 159.5
+          },
+          {
+            "event": "shown.bs.modal",
+            "time": 466.80000001192093,
+            "cancelable": true
+          },
+          {
+            "event": "hide.bs.modal",
+            "time": 467.30000001192093,
+            "cancelable": true
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade",
+            "attribute": "class",
+            "old": "modal fade show",
+            "value": "modal fade",
+            "added": [],
+            "removed": [],
+            "time": 468
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade",
+            "attribute": "style",
+            "old": "display: block;",
+            "value": "display: none;",
+            "added": [],
+            "removed": [],
+            "time": 624.8000000119209
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade",
+            "attribute": "aria-hidden",
+            "old": null,
+            "value": "true",
+            "added": [],
+            "removed": [],
+            "time": 624.8000000119209
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade",
+            "attribute": "aria-modal",
+            "old": "true",
+            "value": null,
+            "added": [],
+            "removed": [],
+            "time": 624.8000000119209
+          },
+          {
+            "mutation": "attributes",
+            "target": "div#oracle-modal.modal.fade",
+            "attribute": "role",
+            "old": "dialog",
+            "value": null,
+            "added": [],
+            "removed": [],
+            "time": 624.8000000119209
+          },
+          {
+            "mutation": "attributes",
+            "target": "div.modal-backdrop.fade",
+            "attribute": "class",
+            "old": "modal-backdrop fade show",
+            "value": "modal-backdrop fade",
+            "added": [],
+            "removed": [],
+            "time": 624.9000000059605
+          },
+          {
+            "mutation": "childList",
+            "target": "body",
+            "attribute": null,
+            "old": null,
+            "added": [],
+            "removed": [
+              "div.modal-backdrop.fade"
+            ],
+            "time": 791.5
+          },
+          {
+            "mutation": "attributes",
+            "target": "body",
+            "attribute": "class",
+            "old": "modal-open",
+            "value": "",
+            "added": [],
+            "removed": [],
+            "time": 791.5
+          },
+          {
+            "mutation": "attributes",
+            "target": "body",
+            "attribute": "style",
+            "old": "overflow: hidden; padding-right: 0px;",
+            "value": "padding-right: 0px;",
+            "added": [],
+            "removed": [],
+            "time": 791.5
+          },
+          {
+            "mutation": "attributes",
+            "target": "body",
+            "attribute": "style",
+            "old": "padding-right: 0px;",
+            "value": "",
+            "added": [],
+            "removed": [],
+            "time": 791.5
+          },
+          {
+            "event": "hidden.bs.modal",
+            "time": 791.5,
+            "cancelable": true
+          }
+        ],
+        "transitions": [
+          {
+            "target": "div.modal-backdrop.fade.show",
+            "time": 158.19999998807907,
+            "isTrusted": false
+          },
+          {
+            "target": "div.modal-backdrop.fade.show",
+            "property": "opacity",
+            "elapsed": 0.15,
+            "time": 189.59999999403954,
+            "isTrusted": true
+          },
+          {
+            "target": "div#oracle-modal.modal.fade.show",
+            "property": "opacity",
+            "elapsed": 0.15,
+            "time": 341,
+            "isTrusted": true
+          },
+          {
+            "target": "div.modal-dialog",
+            "time": 465.90000000596046,
+            "isTrusted": false
+          },
+          {
+            "target": "div#oracle-modal.modal.fade",
+            "time": 624.3000000119209,
+            "isTrusted": false
+          },
+          {
+            "target": "div.modal-backdrop.fade",
+            "time": 791,
+            "isTrusted": false
+          }
+        ],
+        "dropdownShown": {
+          "shown": true,
+          "placement": "bottom-start",
+          "inline": "position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 32px);"
+        },
+        "dropdownHidden": true
+      },
+      "control": {
+        "expected": "opened.bs.modal never fires while show/shown/hide/hidden do.",
+        "reading": []
+      },
+      "verdict": "Bootstrap Modal and Dropdown sources run; the recorded modal lifecycle includes real opacity events and Bootstrap fallback transitionend events."
+    },
+    {
+      "name": "top-layer",
+      "question": 10,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "point": {
+          "x": 120,
+          "y": 120
+        },
+        "opening": [
+          "dialog",
+          "dropdown",
+          "tooltip"
+        ]
+      },
+      "readings": {
+        "first": [
+          "tooltip",
+          "dropdown",
+          "toast",
+          "dialog",
+          "HTML."
+        ],
+        "reordered": [
+          "dropdown",
+          "tooltip",
+          "toast",
+          "dialog",
+          "HTML."
+        ],
+        "underlying": [
+          "toast",
+          "tooltip",
+          "dropdown",
+          "dialog",
+          "HTML."
+        ],
+        "zindexes": {
+          "modal": "1055",
+          "dropdown": "1000",
+          "tooltip": "1080",
+          "toast": "1090",
+          "backdrop": "1050"
+        }
+      },
+      "control": {
+        "expected": "A document-layer z-index:1 element cannot outrank the modal; shown top-layer popovers can.",
+        "reading": {
+          "lowInStack": -1,
+          "top": "tooltip",
+          "underlying": [
+            "toast",
+            "tooltip",
+            "dropdown",
+            "dialog",
+            "HTML."
+          ]
+        }
+      },
+      "verdict": "Top-layer insertion order overrides Bootstrap z-index ordering; a reopened dropdown outranks tooltip and toast."
+    },
+    {
+      "name": "invoker-commands",
+      "question": 11,
+      "chromium": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "inputs": {
+        "commands": [
+          "show-modal",
+          "toggle-popover",
+          "--custom"
+        ]
+      },
+      "readings": {
+        "opened": true,
+        "prevented": false,
+        "popover": true,
+        "popoverPrevented": false,
+        "events": [
+          {
+            "target": "command-dialog",
+            "command": "show-modal",
+            "cancelable": true
+          },
+          {
+            "target": "command-dialog",
+            "command": "show-modal",
+            "cancelable": true
+          },
+          {
+            "target": "command-dialog",
+            "command": "--custom",
+            "cancelable": true
+          },
+          {
+            "target": "command-menu",
+            "command": "toggle-popover",
+            "cancelable": true
+          },
+          {
+            "target": "command-menu",
+            "command": "toggle-popover",
+            "cancelable": true
+          }
+        ]
+      },
+      "control": {
+        "expected": "--custom dispatches a command event but does not open the dialog.",
+        "reading": {
+          "custom": false,
+          "events": [
+            {
+              "target": "command-dialog",
+              "command": "--custom",
+              "cancelable": true
+            }
+          ]
+        }
+      },
+      "verdict": "Built-in invoker commands run and can be canceled; --custom fires an event without a built-in action."
+    }
+  ],
+  "validation": {
+    "controls": {
+      "census": true,
+      "dialog": true,
+      "dropdown": true,
+      "tooltip": true,
+      "fade": true,
+      "collapse": true,
+      "focus": true,
+      "scroll": true,
+      "oracle": true,
+      "layers": true,
+      "commands": true
+    },
+    "statusBefore": "",
+    "statusAfter": "",
+    "probesEmpty": true
+  }
+}

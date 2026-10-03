@@ -56,7 +56,7 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
-Newest first. Each entry: date, from, to, what landed or what is asked.
+Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`.
 
 ### 2026-10-03 — engine session (the carousel slides like Bootstrap; the roadmap brought up to date)
 

@@ -1,0 +1,417 @@
+{
+  "checkout": "419245d6fe72cc74eebd228e29f8a5fc5fe89f02",
+  "command": "npx vitest run --config vite.config.ts --project src:browser tests/src/browser/check.probe.test.ts",
+  "result": {
+    "exit": 0,
+    "tests": 9,
+    "files": 1,
+    "seconds": 4.3
+  },
+  "source": {
+    "path": "tests/src/browser/check.probe.test.ts",
+    "sha256": "e046b71ae6e125c1d3d1313834bdd00099fbe06c06c58f9d256b3c0fce7ad947",
+    "text": "/// <reference types=\"@vitest/browser-playwright\" />\nimport { createModal, createTooltip, createDropdown, createCollapse, Lock } from '@src/browser'\nimport { requireValue, waitForCondition, waitForDelay } from '@orkestrel/test'\nimport { cdp, userEvent, commands, page } from 'vitest/browser'\nimport { expect, it } from 'vitest'\nimport { createOracle } from '../../setupBrowser.js'\n\nit('reads native replay, capture installation, and the queued close interval', async () => {\n\tconst oracle = await createOracle({ plugin: 'Modal', markup: '<dialog id=\"target\"><button>Inside</button></dialog><button id=\"invoker\" commandfor=\"target\" command=\"show-modal\">Open</button>' })\n\tconst dialog = requireValue(oracle.root.querySelector('dialog'))\n\tconst controller = new AbortController()\n\tconst readings: unknown[] = []\n\tlet opening = false\n\tlet capture = 0\n\tlet target = 0\n\ttry {\n\t\toracle.document.addEventListener('beforetoggle', (event) => {\n\t\t\tif (event.target !== dialog || capture) return\n\t\t\tcapture++\n\t\t\tdialog.addEventListener('beforetoggle', (toggle) => {\n\t\t\t\ttarget++\n\t\t\t\tif (toggle.newState !== 'open' || opening) return\n\t\t\t\ttoggle.preventDefault()\n\t\t\t\topening = true\n\t\t\t\tdialog.showModal()\n\t\t\t\topening = false\n\t\t\t}, { signal: controller.signal })\n\t\t}, { capture: true, signal: controller.signal })\n\t\tdialog.show()\n\t\treadings.push({ capture, target, open: dialog.open, modal: dialog.matches(':modal') })\n\t\texpect(dialog.matches(':modal')).toBe(true)\n\t\texpect(target).toBe(2)\n\t\tcontroller.abort()\n\t\tdialog.close()\n\t\tawait waitForDelay(25)\n\t\tconst received: string[] = []\n\t\toracle.document.addEventListener('command', () => {\n\t\t\tdialog.addEventListener('command', (event) => { received.push(event.type); event.preventDefault() }, { once: true })\n\t\t}, { capture: true, once: true })\n\t\trequireValue(oracle.root.querySelector<HTMLButtonElement>('#invoker')).click()\n\t\treadings.push({ commands: received, open: dialog.open })\n\t\texpect(received).toEqual(['command'])\n\t\texpect(dialog.open).toBe(false)\n\t\trequireValue(oracle.root.querySelector<HTMLButtonElement>('#invoker')).click()\n\t\texpect(dialog.open).toBe(true)\n\t\tlet closing = true\n\t\tconst sequence: unknown[] = []\n\t\tdialog.addEventListener('close', () => { sequence.push({ event: 'close', open: dialog.open }); closing = false }, { once: true })\n\t\tdialog.addEventListener('beforetoggle', (event) => { sequence.push({ event: event.newState, closing }) })\n\t\tdialog.close()\n\t\tdialog.showModal()\n\t\tawait waitForCondition('queued close delivered', () => !closing)\n\t\treadings.push(sequence)\n\t\tawait commands.writeFile('tmp/codex/check-native.json', JSON.stringify(readings, null, 2))\n\t} finally { controller.abort(); oracle.destroy() }\n})\n\nit('reads refused promotion with the proposed reset and attribute restoration', async () => {\n\tconst oracle = await createOracle({ plugin: 'Tooltip', markup: '<style>@layer reset { .dropdown-menu[popover], .tooltip[popover], .popover[popover] { inset:auto; margin:0; border:0; padding:0; overflow:visible; color:inherit; background:transparent } }</style>' })\n\ttry {\n\t\tconst readings: unknown[] = []\n\t\tfor (const family of ['dropdown-menu', 'tooltip', 'popover']) {\n\t\t\tconst panel = oracle.document.createElement('div')\n\t\t\tpanel.className = `${family} show`\n\t\t\tpanel.textContent = 'Panel content'\n\t\t\toracle.root.append(panel)\n\t\t\tconst ordinary = oracle.window.getComputedStyle(panel).display\n\t\t\tpanel.setAttribute('popover', 'manual')\n\t\t\tpanel.addEventListener('beforetoggle', (event) => { if (event.newState === 'open') event.preventDefault() }, { once: true })\n\t\t\tpanel.showPopover()\n\t\t\tconst refused = oracle.window.getComputedStyle(panel).display\n\t\t\tconst refusedBox = panel.getBoundingClientRect().height\n\t\t\tpanel.removeAttribute('popover')\n\t\t\tconst restored = oracle.window.getComputedStyle(panel).display\n\t\t\treadings.push({ family, ordinary, refused, refusedBox, restored })\n\t\t\texpect(ordinary).not.toBe('none')\n\t\t\texpect(restored).toBe(ordinary)\n\t\t\tpanel.remove()\n\t\t}\n\t\tawait commands.writeFile('tmp/codex/check-fallback.json', JSON.stringify(readings, null, 2))\n\t} finally { oracle.destroy() }\n})\n\nit('reads the live Trap with native modality and ordinary control', async () => {\n\tconst readings: unknown[] = []\n\tfor (const native of [false, true]) {\n\t\tconst oracle = await createOracle({ plugin: 'Modal', markup: '<button id=\"outside\">Outside</button><dialog class=\"modal\" tabindex=\"-1\"><div class=\"modal-dialog\"><button id=\"first\">First</button><button id=\"last\">Last</button></div></dialog><button id=\"after\">After</button><style>@layer reset { dialog.modal { margin:0; border:0; padding:0; max-width:none; max-height:none; color:inherit; background:transparent } dialog.modal::backdrop { background:transparent } }</style>' })\n\t\tconst dialog = requireValue(oracle.root.querySelector('dialog'))\n\t\tconst modal = createModal(dialog)\n\t\ttry {\n\t\t\tmodal.show()\n\t\t\tif (native) { dialog.setAttribute('closedby', 'none'); dialog.showModal() }\n\t\t\trequireValue(oracle.root.querySelector<HTMLButtonElement>('#last')).focus()\n\t\t\tawait userEvent.keyboard('{Tab}')\n\t\t\treadings.push({ native, focus: oracle.document.activeElement?.id || oracle.document.activeElement?.tagName, frameFocused: document.activeElement === oracle.frame })\n\t\t} finally { modal.destroy(); oracle.destroy() }\n\t}\n\tawait commands.writeFile('tmp/codex/check-tab.json', JSON.stringify(readings, null, 2))\n})\n\nit('reads the classic scrollbar CDP gate and stable lock footprint', async () => {\n\tconst session = cdp()\n\tconst readings: unknown[] = []\n\ttry {\n\t\tfor (const hidden of [true, false]) {\n\t\t\tawait session.send('Emulation.setScrollbarsHidden', { hidden })\n\t\t\tconst oracle = await createOracle({ plugin: 'Modal', frame: { width: 800, height: 600 }, markup: '<div style=\"height:2400px\">Overflow</div>' })\n\t\t\tconst lock = new Lock(oracle.document)\n\t\t\ttry {\n\t\t\t\treadings.push({ hidden, width: lock.width })\n\t\t\t\toracle.document.documentElement.style.scrollbarGutter = 'stable'\n\t\t\t\toracle.root.style.paddingRight = '7px'\n\t\t\t\tlock.acquire()\n\t\t\t\treadings.push({ hidden, stable: true, width: lock.width, padding: oracle.root.style.paddingRight, saved: oracle.root.getAttribute('data-bs-padding-right') })\n\t\t\t} finally { lock.destroy(); oracle.destroy() }\n\t\t}\n\t\tawait commands.writeFile('tmp/codex/check-scrollbar.json', JSON.stringify(readings, null, 2))\n\t} finally { await session.send('Emulation.setScrollbarsHidden', { hidden: true }) }\n})\n\nit('reads authored popover restoration and nested dialog command targets', async () => {\n\tconst oracle = await createOracle({ plugin: 'Modal', markup: '<dialog id=\"outer\"><dialog id=\"inner\"></dialog><button commandfor=\"inner\" command=\"show-modal\">Open inner</button></dialog><div id=\"panel\" popover=\"manual\">Panel</div>' })\n\ttry {\n\t\tconst outer = requireValue(oracle.root.querySelector<HTMLDialogElement>('#outer'))\n\t\tconst inner = requireValue(oracle.root.querySelector<HTMLDialogElement>('#inner'))\n\t\tconst panel = requireValue(oracle.root.querySelector<HTMLElement>('#panel'))\n\t\tconst events: unknown[] = []\n\t\touter.addEventListener('command', (event) => { events.push({ target: event.target === inner ? 'inner' : 'outer', bubbles: event.bubbles }) })\n\t\touter.showModal()\n\t\trequireValue(oracle.root.querySelector<HTMLButtonElement>('button')).click()\n\t\tpanel.showPopover()\n\t\tpanel.hidePopover()\n\t\tpanel.showPopover()\n\t\tawait commands.writeFile('tmp/codex/check-author.json', JSON.stringify({ events, inner: inner.open, restoredPopoverReopens: panel.matches(':popover-open') }, null, 2))\n\t\texpect(inner.open).toBe(true)\n\t\texpect(panel.matches(':popover-open')).toBe(true)\n\t\tconst written = oracle.document.createElement('dialog')\n\t\toracle.root.append(written)\n\t\tconst changes: string[] = []\n\t\tfor (const name of ['beforetoggle', 'toggle', 'close']) written.addEventListener(name, () => changes.push(name))\n\t\twritten.open = true\n\t\tawait waitForDelay(25)\n\t\tawait commands.writeFile('tmp/codex/check-open-attribute.json', JSON.stringify({ open: written.open, events: changes }, null, 2))\n\t} finally { oracle.destroy() }\n})\n\nit('reads intrinsic growth against the real measured pixel path', async () => {\n\tconst readings: unknown[] = []\n\tfor (const intrinsic of [false, true]) {\n\t\tconst oracle = await createOracle({ plugin: 'Collapse', markup: '<div class=\"collapse\" style=\"width:200px\"><div style=\"height:120px\"></div></div>' })\n\t\tconst panel = requireValue(oracle.root.querySelector<HTMLElement>('.collapse'))\n\t\tconst child = requireValue(panel.firstElementChild)\n\t\tconst collapse = createCollapse(panel, { toggle: false })\n\t\ttry {\n\t\t\tif (intrinsic) {\n\t\t\t\tpanel.style.setProperty('interpolate-size', 'allow-keywords')\n\t\t\t\tpanel.classList.remove('collapse')\n\t\t\t\tpanel.classList.add('collapsing')\n\t\t\t\tpanel.style.height = '0px'\n\t\t\t\tvoid panel.offsetHeight\n\t\t\t\tpanel.style.height = 'auto'\n\t\t\t} else collapse.show()\n\t\t\tawait waitForCondition('opening has advanced', () => panel.getBoundingClientRect().height > 20)\n\t\t\tchild.setAttribute('style', 'height:240px')\n\t\t\tawait waitForCondition('opening near completion', () => panel.getAnimations().some((animation) => typeof animation.currentTime === 'number' && animation.currentTime > 270))\n\t\t\treadings.push({ intrinsic, height: panel.getBoundingClientRect().height, endpoint: panel.style.height, phase: collapse.phase })\n\t\t\tif (!intrinsic) await waitForCondition('collapse shown', () => collapse.phase === 'shown')\n\t\t} finally { collapse.destroy(); oracle.destroy() }\n\t}\n\tawait commands.writeFile('tmp/codex/check-intrinsic.json', JSON.stringify(readings, null, 2))\n})\n\nit('reads transformed clipping and manual promotion with a visible-anchor control', async () => {\n\tconst readings: unknown[] = []\n\tfor (const transform of [false, true]) {\n\t\tfor (const promoted of [false, true]) {\n\t\t\tconst oracle = await createOracle({ plugin: 'Dropdown', markup: `<style>@layer reset { [popover] { inset:auto; margin:0; border:0; padding:0; overflow:visible; background:transparent } }</style><div style=\"position:absolute;left:50px;top:50px;width:240px;height:50px;overflow:hidden;${transform ? 'transform:translateZ(0)' : ''}\"><button data-bs-toggle=\"dropdown\" style=\"margin:10px\">Toggle</button><div class=\"dropdown-menu\"><button class=\"dropdown-item\">Entry</button><button class=\"dropdown-item\">Next</button></div></div>` })\n\t\t\tconst toggle = requireValue(oracle.root.querySelector<HTMLButtonElement>('button'))\n\t\t\tconst dropdown = createDropdown(toggle)\n\t\t\ttry {\n\t\t\t\tdropdown.show()\n\t\t\t\tconst panel = requireValue(dropdown.menu)\n\t\t\t\tif (promoted) { panel.setAttribute('popover', 'manual'); panel.showPopover({ source: toggle }); dropdown.update() }\n\t\t\t\tawait waitForDelay(40)\n\t\t\t\tconst box = panel.getBoundingClientRect()\n\t\t\t\tconst x = box.x + box.width / 2\n\t\t\t\tconst y = box.bottom - 10\n\t\t\t\treadings.push({ transform, promoted, box: { x: box.x, y: box.y, width: box.width, height: box.height }, hit: oracle.document.elementsFromPoint(x, y).some((element) => element === panel || panel.contains(element)), visibility: oracle.window.getComputedStyle(panel).getPropertyValue('position-visibility') })\n\t\t\t} finally { dropdown.destroy(); oracle.destroy() }\n\t\t}\n\t}\n\tawait commands.writeFile('tmp/codex/check-clip.json', JSON.stringify(readings, null, 2))\n})\n\nit('reads tip pixels over modal content and a known paint-order control', async () => {\n\tconst readings: unknown[] = []\n\tfor (const native of [false, true]) {\n\t\tfor (const promoted of [false, true]) {\n\t\t\tconst oracle = await createOracle({ plugin: 'Modal', markup: '<style>@layer reset { dialog.modal {margin:0;border:0;padding:0;max-width:none;max-height:none;color:inherit;background:transparent} dialog.modal::backdrop{background:transparent} .tooltip[popover]{inset:auto;margin:0;border:0;padding:0;overflow:visible;background:transparent} } .modal-content { height:300px; background:rgb(255,0,0) } .tooltip-inner { background:rgb(0,255,0);color:rgb(0,255,0);border-radius:0 } </style><dialog class=\"modal\" tabindex=\"-1\"><div class=\"modal-dialog\"><div class=\"modal-content\"><button style=\"margin:100px 100px 0\" title=\"Measured tooltip\">Trigger</button></div></div></dialog>' })\n\t\t\tconst dialog = requireValue(oracle.root.querySelector('dialog'))\n\t\t\tconst modal = createModal(dialog)\n\t\t\tconst tip = createTooltip(requireValue(dialog.querySelector('button')), { animation: false })\n\t\t\ttry {\n\t\t\t\tmodal.show()\n\t\t\t\tif (native) { dialog.setAttribute('closedby', 'none'); dialog.showModal() }\n\t\t\t\ttip.show()\n\t\t\t\tconst panel = requireValue(tip.panel)\n\t\t\t\tpanel.style.opacity = '1'\n\t\t\t\tif (promoted) { panel.setAttribute('popover', 'manual'); panel.showPopover(); tip.update() }\n\t\t\t\tawait waitForDelay(40)\n\t\t\t\tconst box = requireValue(panel.querySelector('.tooltip-inner')).getBoundingClientRect()\n\t\t\t\tconst screenshot = await page.screenshot({ element: oracle.frame, save: false })\n\t\t\t\tawait commands.writeFile(`tmp/codex/check-paint-${native}-${promoted}.png`, screenshot, 'base64')\n\t\t\t\tconst bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${screenshot}`)).blob())\n\t\t\t\tconst canvas = document.createElement('canvas')\n\t\t\t\tcanvas.width = bitmap.width\n\t\t\t\tcanvas.height = bitmap.height\n\t\t\t\tconst context = requireValue(canvas.getContext('2d'))\n\t\t\t\tcontext.drawImage(bitmap, 0, 0)\n\t\t\t\tconst left = oracle.frame.clientLeft + box.x + box.width / 2\n\t\t\t\tconst top = oracle.frame.clientTop + box.y + box.height / 2\n\t\t\t\tconst x = Math.floor(left * bitmap.width / oracle.frame.offsetWidth)\n\t\t\t\tconst y = Math.floor(top * bitmap.height / oracle.frame.offsetHeight)\n\t\t\t\tconst pixel = [...context.getImageData(x, y, 1, 1).data]\n\t\t\t\treadings.push({ native, promoted, pixel, point: { x, y }, hit: oracle.document.elementsFromPoint(box.x + box.width / 2, box.y + box.height / 2).some((element) => panel.contains(element)) })\n\t\t\t\tawait commands.writeFile('tmp/codex/check-paint.json', JSON.stringify(readings, null, 2))\n\t\t\t\tif (!native) expect(pixel).toEqual([0, 255, 0, 255])\n\t\t\t\tbitmap.close()\n\t\t\t} finally { tip.destroy(); modal.destroy(); oracle.destroy() }\n\t\t}\n\t}\n\tawait commands.writeFile('tmp/codex/check-paint.json', JSON.stringify(readings, null, 2))\n})\n\nit('reads clipped-anchor visibility against visible and always controls', async () => {\n\tconst readings: unknown[] = []\n\tfor (const family of ['dropdown', 'tooltip']) {\n\t\tfor (const engine of [true, false]) {\n\t\tconst oracle = await createOracle({ plugin: 'Dropdown', markup: '<div id=\"scroller\" style=\"position:absolute;left:80px;top:180px;width:240px;height:70px;overflow:auto\"><button data-bs-toggle=\"dropdown\" title=\"Clipped anchor\">Toggle</button><div class=\"dropdown-menu\"><button class=\"dropdown-item\">Entry</button></div><div style=\"height:400px\"></div></div>' })\n\t\tconst scroller = requireValue(oracle.root.querySelector<HTMLElement>('#scroller'))\n\t\tconst toggle = requireValue(scroller.querySelector('button'))\n\t\tconst dropdown = engine && family === 'dropdown' ? createDropdown(toggle) : undefined\n\t\tconst tip = engine && family === 'tooltip' ? createTooltip(toggle, { animation: false, trigger: { hover: false, focus: false, click: false } }) : undefined\n\t\tconst bootstrap = engine ? undefined : oracle.construct(toggle, family === 'dropdown' ? 'Dropdown' : 'Tooltip', { animation: false, trigger: 'manual' })\n\t\ttry {\n\t\t\tdropdown?.show()\n\t\t\ttip?.show()\n\t\t\tbootstrap?.call('show')\n\t\t\tconst panel = requireValue(dropdown?.menu ?? tip?.panel ?? oracle.root.querySelector<HTMLElement>(family === 'dropdown' ? '.dropdown-menu' : '.tooltip'))\n\t\t\tfor (const scroll of [0, 80]) {\n\t\t\t\tscroller.scrollTop = scroll\n\t\t\t\tdropdown?.update()\n\t\t\t\ttip?.update()\n\t\t\t\tbootstrap?.call('update')\n\t\t\t\tawait waitForDelay(40)\n\t\t\t\tfor (const always of [false, true]) {\n\t\t\t\t\tpanel.style.setProperty('position-visibility', always ? 'always' : 'anchors-visible')\n\t\t\t\t\tawait waitForDelay(25)\n\t\t\t\t\tconst box = panel.getBoundingClientRect()\n\t\t\t\t\treadings.push({ family, engine, scroll, always, x: box.x, y: box.y, shown: panel.classList.contains('show'), visibility: oracle.window.getComputedStyle(panel).getPropertyValue('position-visibility'), hit: oracle.document.elementsFromPoint(box.x + box.width / 2, box.y + box.height / 2).some((element) => panel.contains(element)) })\n\t\t\t\t}\n\t\t\t}\n\t\t} finally { dropdown?.destroy(); tip?.destroy(); bootstrap?.call('dispose'); oracle.destroy() }\n\t\t}\n\t}\n\tawait commands.writeFile('tmp/codex/check-visibility.json', JSON.stringify(readings, null, 2))\n})\n"
+  },
+  "readings": {
+    "native": [
+      {
+        "capture": 1,
+        "target": 2,
+        "open": true,
+        "modal": true
+      },
+      {
+        "commands": [
+          "command"
+        ],
+        "open": false
+      },
+      [
+        {
+          "event": "closed",
+          "closing": true
+        },
+        {
+          "event": "open",
+          "closing": true
+        },
+        {
+          "event": "close",
+          "open": true
+        }
+      ]
+    ],
+    "fallback": [
+      {
+        "family": "dropdown-menu",
+        "ordinary": "block",
+        "refused": "block",
+        "refusedBox": 42,
+        "restored": "block"
+      },
+      {
+        "family": "tooltip",
+        "ordinary": "block",
+        "refused": "block",
+        "refusedBox": 21,
+        "restored": "block"
+      },
+      {
+        "family": "popover",
+        "ordinary": "block",
+        "refused": "block",
+        "refusedBox": 23,
+        "restored": "block"
+      }
+    ],
+    "tab": [
+      {
+        "native": false,
+        "focus": "first",
+        "frameFocused": true
+      },
+      {
+        "native": true,
+        "focus": "BODY",
+        "frameFocused": false
+      }
+    ],
+    "scrollbar": [
+      {
+        "hidden": true,
+        "width": 0
+      },
+      {
+        "hidden": true,
+        "stable": true,
+        "width": 0,
+        "padding": "7px",
+        "saved": "7px"
+      },
+      {
+        "hidden": false,
+        "width": 0
+      },
+      {
+        "hidden": false,
+        "stable": true,
+        "width": 0,
+        "padding": "7px",
+        "saved": "7px"
+      }
+    ],
+    "author": {
+      "events": [],
+      "inner": true,
+      "restoredPopoverReopens": true
+    },
+    "open-attribute": {
+      "open": true,
+      "events": []
+    },
+    "intrinsic": [
+      {
+        "intrinsic": false,
+        "height": 117.34375,
+        "endpoint": "120px",
+        "phase": "showing"
+      },
+      {
+        "intrinsic": true,
+        "height": 234.71875,
+        "endpoint": "auto",
+        "phase": "showing"
+      }
+    ],
+    "clip": [
+      {
+        "transform": false,
+        "promoted": false,
+        "box": {
+          "x": 60,
+          "y": 92,
+          "width": 160,
+          "height": 82
+        },
+        "hit": true,
+        "visibility": "anchors-visible"
+      },
+      {
+        "transform": false,
+        "promoted": true,
+        "box": {
+          "x": 60,
+          "y": 92,
+          "width": 160,
+          "height": 82
+        },
+        "hit": true,
+        "visibility": "anchors-visible"
+      },
+      {
+        "transform": true,
+        "promoted": false,
+        "box": {
+          "x": 60,
+          "y": 92,
+          "width": 160,
+          "height": 82
+        },
+        "hit": false,
+        "visibility": "anchors-visible"
+      },
+      {
+        "transform": true,
+        "promoted": true,
+        "box": {
+          "x": 60,
+          "y": 92,
+          "width": 160,
+          "height": 82
+        },
+        "hit": true,
+        "visibility": "anchors-visible"
+      }
+    ],
+    "paint": [
+      {
+        "native": false,
+        "promoted": false,
+        "pixel": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "point": {
+          "x": 152,
+          "y": 41
+        },
+        "hit": true
+      },
+      {
+        "native": false,
+        "promoted": true,
+        "pixel": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "point": {
+          "x": 152,
+          "y": 41
+        },
+        "hit": true
+      },
+      {
+        "native": true,
+        "promoted": false,
+        "pixel": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "point": {
+          "x": 152,
+          "y": 41
+        },
+        "hit": false
+      },
+      {
+        "native": true,
+        "promoted": true,
+        "pixel": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "point": {
+          "x": 152,
+          "y": 41
+        },
+        "hit": false
+      }
+    ],
+    "visibility": [
+      {
+        "family": "dropdown",
+        "engine": true,
+        "scroll": 0,
+        "always": false,
+        "x": 80,
+        "y": 212,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": true
+      },
+      {
+        "family": "dropdown",
+        "engine": true,
+        "scroll": 0,
+        "always": true,
+        "x": 80,
+        "y": 212,
+        "shown": true,
+        "visibility": "always",
+        "hit": true
+      },
+      {
+        "family": "dropdown",
+        "engine": true,
+        "scroll": 80,
+        "always": false,
+        "x": 80,
+        "y": 132,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": false
+      },
+      {
+        "family": "dropdown",
+        "engine": true,
+        "scroll": 80,
+        "always": true,
+        "x": 80,
+        "y": 132,
+        "shown": true,
+        "visibility": "always",
+        "hit": true
+      },
+      {
+        "family": "dropdown",
+        "engine": false,
+        "scroll": 0,
+        "always": false,
+        "x": 80,
+        "y": 212,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": true
+      },
+      {
+        "family": "dropdown",
+        "engine": false,
+        "scroll": 0,
+        "always": true,
+        "x": 80,
+        "y": 212,
+        "shown": true,
+        "visibility": "always",
+        "hit": true
+      },
+      {
+        "family": "dropdown",
+        "engine": false,
+        "scroll": 80,
+        "always": false,
+        "x": 80,
+        "y": 132,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": false
+      },
+      {
+        "family": "dropdown",
+        "engine": false,
+        "scroll": 80,
+        "always": true,
+        "x": 80,
+        "y": 132,
+        "shown": true,
+        "visibility": "always",
+        "hit": false
+      },
+      {
+        "family": "tooltip",
+        "engine": true,
+        "scroll": 0,
+        "always": false,
+        "x": 56.734375,
+        "y": 145,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": true
+      },
+      {
+        "family": "tooltip",
+        "engine": true,
+        "scroll": 0,
+        "always": true,
+        "x": 56.734375,
+        "y": 145,
+        "shown": true,
+        "visibility": "always",
+        "hit": true
+      },
+      {
+        "family": "tooltip",
+        "engine": true,
+        "scroll": 80,
+        "always": false,
+        "x": 56.734375,
+        "y": 65,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": false
+      },
+      {
+        "family": "tooltip",
+        "engine": true,
+        "scroll": 80,
+        "always": true,
+        "x": 56.734375,
+        "y": 65,
+        "shown": true,
+        "visibility": "always",
+        "hit": false
+      },
+      {
+        "family": "tooltip",
+        "engine": false,
+        "scroll": 0,
+        "always": false,
+        "x": 57,
+        "y": 145,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": true
+      },
+      {
+        "family": "tooltip",
+        "engine": false,
+        "scroll": 0,
+        "always": true,
+        "x": 57,
+        "y": 145,
+        "shown": true,
+        "visibility": "always",
+        "hit": true
+      },
+      {
+        "family": "tooltip",
+        "engine": false,
+        "scroll": 80,
+        "always": false,
+        "x": 57,
+        "y": 65,
+        "shown": true,
+        "visibility": "anchors-visible",
+        "hit": true
+      },
+      {
+        "family": "tooltip",
+        "engine": false,
+        "scroll": 80,
+        "always": true,
+        "x": 57,
+        "y": 65,
+        "shown": true,
+        "visibility": "always",
+        "hit": true
+      }
+    ]
+  }
+}

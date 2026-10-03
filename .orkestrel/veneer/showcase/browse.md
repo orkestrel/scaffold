@@ -12,7 +12,7 @@ The cloud session handed this lane to the engine session on 2026-10-03 (`status.
 | Owner | the engine session since 2026-10-03, the only session, working the branch in the worktree `browser-wt-browse`; the cloud session's item 10 work never reached the remote |
 | Landed | item 9 reviewed (13 findings confirmed, F1 to F12 repaired in `0a80b99`, F13 ruled); item 10 in `73c608f`, on the selection rule amended at `browse/items-9-10-design.md:25` and `:216`; on this Windows host (Edge 154.0.4258.53) every gate exits 0 after `73c608f`: `format:check`, `lint:check`, `check`, `test:src:core` 1,201, `test:src:browser` 289 (1 skipped), `test:src:server` 249 (9 skipped), `test:src:bin` 4 (1 skipped), `test:guides` 248, `test:policy` 119 (1 skipped), `test:setup` 176 (4 skipped), `test:setup:browser` 21, `build`, `test:service` 105 |
 | In flight | item 11's re-design for the floor's text-bearing elements (§ Item 11 probe readings and stop), its second run stopped with partial edits in the worktree; the item 10 and `327a67e` reviews returned FAIL (§ Review findings to fix), repaired in one unit after item 11's commit |
-| Design of record | `browse/items-9-10-design.md` for items 9 and 10; the critiqued designs for items 11 and 12 in the worktree's `tmp/browse-item-11-design.md` and `tmp/browse-item-12-design.md` |
+| Design of record | `browse/items-9-10-design.md` for items 9 and 10; the critiqued designs for items 11 and 12 in `browse/browse-item-11-design.md` and `browse/browse-item-12-design.md` (copies of the worktree's `tmp/` files) |
 | Next | item 11, then the review fixes, then item 12 on the rulings in § Item 12 rulings, then release 0.0.22 |
 
 ## Readings
@@ -73,7 +73,7 @@ The item 12 design referred these to the Orchestrator and the subjective lane; e
 - When the handoff happens mid-unit, the cloud session pushes the browser branch with any lane state first and names it in § Status.
 - Read every gate bare with npm 11.6.0 or later on `PATH`; npm 10 refuses the scripts with `EBADDEVENGINES`. `test:service` needs `npm run build` first.
 - Run npm 11.6.0 or later; the browser tests start Chromium.
-- Treat the cloud host's `/home/user/.wave/` and the `tmp/` folders of its checkouts as lost when its container is reclaimed; `browse/` beside this file holds the durable copies of the briefs and reports.
+- Treat the cloud host's `/home/user/.wave/` and the `tmp/` folders of its checkouts as lost when its container is reclaimed; `browse/` beside this file holds the durable copies of the briefs and reports, the item 11 and 12 designs, and the item 9 review (`browse/item-9-review/`); the 2026-10-03 sweep removed `br1-brief.md` and `g3-brief.md`, which resolve in git history at scaffold `a5f1247a5`.
 
 ## Item 11 probe readings and stop (2026-10-03)
 

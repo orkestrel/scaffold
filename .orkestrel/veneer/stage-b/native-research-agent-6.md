@@ -1,0 +1,61 @@
+Question: In Chromium 153, which native surfaces could carry Bootstrap's alert, button (toggle) and toast subjects? Specifically: Element.ariaNotify() (milestone, default state), how a role=status live region behaves inside a manual popover in the top layer, and whether HTML has a native pressed-toggle button.
+
+## Facts
+
+### Element.ariaNotify() (also on Document)
+- **Spec.** WAI-ARIA 1.3 Editor's Draft (02 Oct 2026), §10.2 "Interface Mixin ARIANotifyMixin", plus Core-AAM 1.2 §4.1.1. Sources: https://w3c.github.io/aria/#ARIANotifyMixin and https://www.w3.org/TR/core-aam-1.2/#arianotifymixin-map-arianotify. The spec text came from w3c/aria PR #2577 "Add ariaNotify", merged 2026-02-11 (https://github.com/w3c/aria/pull/2577). Chromestatus rates maturity as "Specification currently under development in a Working Group".
+- **Chromium milestone.** Chromestatus feature 5745430754230272 lists desktop 141 and android 141, with a stage_type 160 entry desktop_first 141. Its flag field is false and its Finch name is "AriaNotify". Its status text still reads "In development" (updated 2026-07-28), which does not match the milestone fields. Source: https://chromestatus.com/api/v0/features/5745430754230272
+- **Release notes.** Chrome 141 release notes, DOM section: "ARIA Notify API … lets content authors tell a screen reader what to read." https://developer.chrome.com/release-notes/141
+- **Default state.** Chromium `runtime_enabled_features.json5` on main: `name: "AriaNotify", status: {"Android": "stable", "Win": "stable", "Mac": "stable", "Linux": "stable"}`, implied by "AriaNotifyV2" (status "test"). ChromeOS has no entry. Source: https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5. This is main, not the 153 branch.
+- **ChromeOS.** Chromestatus says the platform API "has not yet been implemented in ChromeOS" (same chromestatus URL). The blink-dev Intent to Ship (2025-07-23) first targeted M140 and also says no ChromeOS at first: https://www.mail-archive.com/blink-dev@chromium.org/msg14270.html
+- **Shape and priority.** `ariaNotify(announcement, options)`. The `priority` option takes "normal" (the default) or "high". It returns undefined. Under a blocking `aria-notify` Permissions Policy it fails silently. Source: https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify (secondary; see Unknowns). Edge's implementer blog gives the same values: "high" goes "before all normal priority pending notifications". Language comes from the document, or from the element's nearest `lang` ancestor. https://blogs.windows.com/msedgedev/2025/05/05/creating-a-more-accessible-web-with-aria-notify/
+- **Permissions Policy.** PR #2577 discussion settled the `aria-notify` default allowlist on `"*"` (https://github.com/w3c/aria/pull/2577).
+- **Interop gap.** NVDA issue #20872 (an AT vendor tracker, not a browser source) reports that with NVDA 2026.1.1, both Chrome 149 and Firefox 155 speak announcements in plain arrival order: "high" does not jump ahead of pending "normal" ones. The reporter notes the ARIA and Core-AAM drafts "do not mandate this ordering". https://github.com/nvaccess/nvda/issues/20872
+- **Events, focus, styling.** ariaNotify fires no DOM events, does not move focus, uses no top layer and needs no CSS. Bootstrap's toast markup supplies role and aria-live itself (`toast.js` sets neither). ariaNotify could carry the announcement without depending on a live region's DOM timing.
+
+### role=status / role=alert inside a manual popover (top layer)
+- **No semantics from popover.** The popover attribute gives no implicit role. Authors "should use the appropriate ARIA attributes". https://html.spec.whatwg.org/multipage/popover.html#the-popover-attribute
+- **Manual state.** It "does not close other popovers; does not light dismiss or respond to close requests" (same anchor). Open UI lists toasts as a use case for manual popovers. https://open-ui.org/components/popover.research.explainer/
+- **Hidden means display:none.** UA stylesheet: `[popover]:not(:popover-open):not(dialog[open]) { display:none; }`. `[popover]` also sets position fixed, inset 0, margin auto, border solid, padding 0.25em, overflow auto, Canvas/CanvasText colours. `:popover-open::backdrop` is transparent with `pointer-events: none !important`. https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3. A page has to neutralise all of these to keep Bootstrap's `.toast` look.
+- **Focus.** "show popover" step 23 runs the popover focusing steps for every state, manual included. Those steps focus the popover itself if it has `autofocus`, otherwise its autofocus delegate, otherwise nothing. Step 24 stores the previously focused element. On hide, focus goes back to that element only if focus is currently inside the popover. https://html.spec.whatwg.org/multipage/popover.html#show-popover and #popover-focusing-steps. So a toast without `autofocus` does not take focus.
+- **Events.** beforetoggle on show is cancelable. beforetoggle on hide is not (the hide popover algorithm, step 12.1). toggle is queued as a task afterwards. Same URL.
+- **Live region semantics.** status is a live region of information "not as urgent", with implicit aria-live polite and aria-atomic true. alert carries "important, and usually time-sensitive, information", with implicit aria-live assertive. https://w3c.github.io/aria/ (role definitions)
+- **System alert event.** Core-AAM maps role alert to a system alert event ("SHOULD fire EVENT_SYSTEM_ALERT"; UIA, ATK and AX API likewise). https://www.w3.org/TR/core-aam-1.2/#role-map-alert. Nothing equivalent was found for status.
+- **Open spec question.** w3c/aria issue #2154 (opened 2024-04-03, assigned, no resolution found) asks whether a live region announces when it is "made visible" already filled, or only on later updates. https://github.com/w3c/aria/issues/2154. So announcing on `showPopover()` of a pre-filled status region is unspecified.
+- **Native status element.** html-aria gives `output` an implicit role=status. https://w3c.github.io/html-aria/
+
+### Native pressed-toggle button
+- **None in HTML.** `button` content attributes are command, commandfor, disabled, form*, name, popovertarget, popovertargetaction, type, value. None is a pressed or toggle state. https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element
+- **aria-pressed is allowed on button.** It falls under global aria-* attributes (https://w3c.github.io/html-aria/). Core-AAM maps a button with aria-pressed to a toggle button: IA2_ROLE_TOGGLE_BUTTON, ATK ROLE_TOGGLE_BUTTON, AX API AXCheckBox/AXToggle. https://www.w3.org/TR/core-aam-1.2/#role-map-button-pressed
+- **Checkbox switch.** `<input type=checkbox switch>` (chromestatus 5178587742339072) is "Proposed" in Chrome, desktop null, android null. Spec is whatwg/html PR #9546. Safari "Shipped/Shipping"; Firefox "No signal". https://chromestatus.com/api/v0/features/5178587742339072. It is not in Chromium 153, and it is an input with role switch, not a button with aria-pressed.
+- **Invoker commands.** command/commandfor shipped in Chrome 135, enabled by default (chromestatus 5142517058371584). The command event is fired "with its cancelable attribute initialized to true". Custom `--` commands only dispatch the event and then return. https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element
+- **request-close.** The `request-close` command is behind a flag (chromestatus 5592399713402880, M139, "In developer trial").
+
+### Bootstrap 5.3.8 contracts (installed source)
+- **Alert.** `close()` fires a cancelable `close.bs.alert`, removes `.show`, waits for the transition if `.fade` is present, then calls `element.remove()` and fires `closed.bs.alert`. `C:\Users\mikes\WebstormProjects\veneer\node_modules\bootstrap\js\src\alert.js:37-54`
+- **Dismiss trigger.** A delegated `click.dismiss` listener on `[data-bs-dismiss=name]`. It calls preventDefault only on A/AREA and finds its target via selector or `closest(.name)`. `C:\Users\mikes\WebstormProjects\veneer\node_modules\bootstrap\js\src\util\component-functions.js:12-30`
+- **Button.** `toggle()` runs `setAttribute('aria-pressed', classList.toggle('active'))`. The delegated click calls preventDefault. `C:\Users\mikes\WebstormProjects\veneer\node_modules\bootstrap\js\src\button.js:36-64`
+- **Toast.** Cancelable show and hide events, shown and hidden after the transition, autohide timer paused on mouseover and focusin, and no role or aria-live set by the script. `C:\Users\mikes\WebstormProjects\veneer\node_modules\bootstrap\js\src\toast.js:75-189`. CSS: `.toast:not(.show) { display: none; }`. `C:\Users\mikes\WebstormProjects\veneer\node_modules\bootstrap\scss\_toasts.scss:35-37`
+
+## Matrix
+
+| Subject / candidate | For | Against |
+|---|---|---|
+| **Toast announcement → `ariaNotify()`** | Shipped M141 (chromestatus, 141 release notes); stable by default on Win/Mac/Linux/Android (json5); no DOM, focus or CSS impact | Not on ChromeOS; NVDA reports high/normal ordering not honoured in Chrome 149; silent no-op under Permissions Policy; would duplicate the markup's own role=status/alert announcement unless reconciled |
+| **Toast container → `popover=manual` with role=status/alert** | Manual popovers: no light dismiss, no Escape, no focus taken without autofocus; Open UI names toasts as the use case; show beforetoggle is cancelable (maps to show.bs.toast) | Hide beforetoggle is not cancelable (hide.bs.toast is); UA display:none, position and border must be neutralised; announcing a pre-filled region when it becomes visible is unspecified (aria #2154); top layer moves the toast out of `.toast-container` stacking |
+| **Toast region → `<output>`** | Implicit role=status (html-aria) | Phrasing/form semantics; AT live behaviour in Chromium not confirmed |
+| **Alert close → `command="--x"` custom command** | Command event cancelable (could carry close.bs.alert); shipped M135 | Only dispatches the event; removal, fade wait and closed.bs.alert stay script-side; requires commandfor id wiring instead of `closest('.alert')` |
+| **Alert close → `popover=manual` / `popovertargetaction=hide`** | Native hide | Popovers start hidden and need showPopover; top layer is wrong for inline alerts; hide beforetoggle not cancelable; hides instead of `remove()` |
+| **Alert close → `<dialog open>` + command=close** | Native close | html-aria allows only alertdialog on dialog, conflicting with role=alert; request-close is behind a flag |
+| **Button toggle → native control** | aria-pressed on button maps to a platform toggle button (Core-AAM) | No HTML pressed attribute; checkbox `switch` is Proposed in Chrome, not in 153, and is an input/switch, not a button; `.active` and aria-pressed sync stays script-side |
+
+## Unknowns
+- The exact ARIANotifyMixin WebIDL and method steps: page fetches were truncated or inconsistent, and one summary gave priority values "polite"/"assertive" that contradict MDN and the Edge blog.
+- Whether the spec requires the element to be connected, not hidden, or not inert, and whether an option named "hint" exists: unverified.
+- Whether chromestatus stage_type 160 means "shipped", given the stale "In development" status text: unverified. AriaNotify's status in the 153 branch's json5 (only main was read): unverified.
+- Core-AAM §3.8.2 text (node visibility changes) was not readable. Whether Chromium fires live-region or alert events when a popover containing role=status or role=alert is shown: unverified.
+- Whether top-layer placement changes accessibility-tree order or live-region handling in Chromium: no primary source found.
+- Whether `<output>` behaves as a live region with screen readers in Chromium: unverified.
+- The ARIA role prose on alert focus and alert events on creation, and the full aria-pressed definition: not readable (truncated).
+- MDN (developer.mozilla.org) and the NVDA tracker are not on the task's primary-source list; the points resting on them need confirming.
+- The relayed request also asked for a look at the "elements" repo. That was outside this bounded question and was not examined.
