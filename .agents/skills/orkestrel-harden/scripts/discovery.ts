@@ -3,7 +3,8 @@
 //   node .agents/skills/orkestrel-harden/scripts/discovery.ts [--config vite.config.ts] [--projects a,b] [--json]
 // Follow root npm script chains and forwarded arguments. Collect an unfiltered full listing for
 // each config/mode/root/dir, including the base config. Pass gate arguments verbatim except the
-// reporter, output-file, coverage, color, cache, silent, UI, watch, and run-mode options;
+// reporter, output-file, coverage, color, cache, silent, UI, watch, run-mode, inspector, and
+// standalone options;
 // use filesOnly for file selection and full collection for name, tag, line, and shard selection.
 // Compare file/project/name/line/column identities without renaming projects. With --projects,
 // ask Vitest for the reporting scope. Preserve duplicate names within a listing and merge across units.
@@ -35,7 +36,13 @@ const OMITTED = new Set([
 	'ui',
 	'watch',
 	'run',
+	'inspect',
+	'inspectBrk',
+	'standalone',
 ])
+// Bounds one listing, so an option that waits for input exits 2 naming its gate instead of
+// hanging the census.
+const LISTING_TIMEOUT = 600_000
 
 interface Option {
 	readonly name: string
@@ -356,6 +363,7 @@ function listCollected(
 			{
 				encoding: 'utf8',
 				maxBuffer: 64 * 1024 * 1024,
+				timeout: LISTING_TIMEOUT,
 				windowsHide: true,
 			},
 		)

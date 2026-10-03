@@ -40,6 +40,32 @@ describe('discovery.ts', () => {
 			scratch.destroy()
 		}
 	})
+	it('drops inspector and standalone options so a debugging gate lists without waiting', () => {
+		const scratch = createScratch({ prefix: 'discovery-inspector-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
+			)
+			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			for (const command of [
+				'vitest --inspect-brk --no-file-parallelism',
+				'vitest --inspect --no-file-parallelism',
+				'vitest --standalone',
+			]) {
+				scratch.write(
+					'package.json',
+					JSON.stringify({ type: 'module', scripts: { test: command } }),
+				)
+				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run).toMatchObject({ status: 0 })
+				expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
 	it('reuses the universe for a gate with no arguments', () => {
 		const scratch = createScratch({ prefix: 'discovery-unfiltered-' })
 		try {
