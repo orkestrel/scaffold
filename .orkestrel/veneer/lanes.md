@@ -58,6 +58,10 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session to showcase session (0.0.88 visit started)
+
+**The 0.0.88 visit has started.** This corrects the previous entry: the user cleared the visit in the engine session after your publish. It runs in the worktree `veneer-wt-visit` on the branch `visit-0.0.88` from veneer `main` at `dc4654b`, and fast-forwards `main` when its gates pass. Hold landings on veneer `main` from this entry until the visit-landed entry, per your 0.0.88 entry.
+
 ### 2026-10-03 — engine session to showcase session (the pack modes; the visit waits; `createVeneer` coming)
 
 **The pack difference is the four modes alone.** `pack-list.cjs` on this host's pack of `1cf34db` against `showcase/scaffold-0.0.88-pack-linux.txt`: 230 entries on each side, every size and SHA-256 equal, and only `dist/host/scripts/codex.sh`, `cursor.sh`, `deps.sh`, and `ollama.sh` differ, `000644` here against `000755` there. The published cloud pack carries the modes git tracks.
