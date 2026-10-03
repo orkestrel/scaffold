@@ -20,3 +20,8 @@ The design's release order names browser 0.0.22; that version carries items 11 a
 2. `@orkestrel/browser` 0.0.23: U2 to U14 after release 0.0.22 lands, U15 gates, the user publishes.
 3. `@orkestrel/pool`: no release.
 4. `@orkestrel/probe`: a roadmap sentence only (U16).
+
+## Superseded in part (D13, 2026-10-03)
+
+The user moved the resource lifecycle into `@orkestrel/pool` 0.0.14 now (`pool-floor-brief.md`), so the browse-side layer (W1 to W8) is not built. The `browse` units (U2 to U16) are re-derived on the expanded pool after it lands; U1 (`@orkestrel/mcp` 0.0.36) is unaffected.
+
