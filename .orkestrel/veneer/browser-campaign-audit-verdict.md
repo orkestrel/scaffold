@@ -63,3 +63,14 @@ Bound for both: no change to ruled behavior beyond § Carried; Bootstrap parity 
 
 - Claim 19's type probe: the analyst read every selector operand; no class-name object remains.
 - The reviewer's ancestor `fieldset[disabled]` dropdown note, referred under claim 1: neither lane substantiated a difference.
+
+## Closed
+
+Closed 2026-10-03 at veneer `959ed49`. `browser-ledger` landed L1 to L7 as `b44e11a`; `browser-repair` landed R1 to R12 as `7b61d60`, merged in `52f25e4`.
+
+- **Review pass.** A Claude Opus 5.5 reviewer, objective lane, confirmed R1 to R5 and R7 to R12 and ruled R6 broken: an inline `anchor-name` written through `var()` left its substituted name free. `de317b1` reads the computed value for a matched inline declaration that uses a substitution function; `reserves an inline anchor name supplied through a custom property` failed before it (1 failed, 4 passed, 195 skipped under `-t 'reserves'`) and passes after.
+- **Claim 20, the placement cost.** Settled as matched layout. On 10 018 elements the final source's tooltip show reads 20.2 ms against 17.3 ms for Bootstrap through Popper's first microtask; the computed-width read after the positioning writes takes 16.3 ms of it, and Popper's layout pays the same. A dropdown show fell from 10.6 to 2.0 ms and a direct `Placement` from 9.7 to 1.5 ms. Medians of 5 runs, the writer's diagnostic on this host.
+- **Test isolation.** The hovered tip case moved the real cursor through CDP and left it over the page, so the carousel cases that `src:browser` runs after it paused on hover (`npm run test:src:browser` failed 5 of 770). `959ed49` moves the cursor to (-1, -1) in the case's `finally` block; the same command passes 770 of 770.
+- **Recorded, not carried.** `Hold` treats a document as HTML when its `contentType` is `text/html`, so a plain-text or media document keeps attribute-name case; the `HoldSlotInterface.acquire` TSDoc and the guide state that contract.
+
+Gates on Windows 11 at `959ed49`: format, lint, check, and build exit 0; `npm test` exits 0 in 525 s (`src:core` and `src:browser` 784, `setup:browser` 98, `journey` 60 of 60); distribution passes 16 with 7 skipped.

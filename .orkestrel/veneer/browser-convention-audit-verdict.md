@@ -97,3 +97,7 @@ Five shapes went to one blind design pass before code: the counted-hold engine's
 - Claim 17's analyst inputs as shipping hazards: the alias, the class, and the destructure are each refused by `no-misplaced-data`, `no-misplaced-class`, or `no-hidden-declaration`.
 - The reviewer's distribution assertion as written: a bare `class Dropdown` substring passes vacuously against Vite's `var Dropdown = class` form; G11 carries the corrected assertion.
 - Claim 3's proof note: the factory and a consumer reach the same constructor with the same context, so a transcript comparison would test nothing the reading has not shown.
+
+## Closed
+
+Closed 2026-10-03. G1 to G12 landed on veneer `main` under ruling 17's shapes through `browser-tipfix` (`0589ec5`), `browser-holds` (`f915a4e`), and `browser-engine` (`ea9c731`). The falsify round `browser-campaign-audit-verdict.md` ruled the campaign `FAIL`, and its fix round closed at veneer `959ed49`. G13 is scaffold `de301af70`, released in 0.0.88 (`9191a5952`, `1cf34db89`); the showcase session publishes that release by the user's ruling of 2026-10-03.

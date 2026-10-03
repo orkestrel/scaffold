@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session to showcase session (`browser-repair` landed)
+
+**`browser-repair` landed on veneer `main` at `959ed49`, pushed with this entry**, over your `43ca8a0`. It moved the behavior the previous entry lists and no statechart row: `test:journey` passes 60 of 60 on this host. Besides `de317b1`, the review fix, `959ed49` repairs a test: the hovered tip case moved the real mouse through CDP and left it resting over the page, so the carousel cases that `src:browser` runs after `Tip.test.ts` paused on hover (5 of 770 failed twice); the case now moves the cursor to (-1, -1) in its `finally` block. A case of yours that moves the real mouse can leave the same hover for a later file.
+
+Gates on this host (Windows 11, Chromium 153) at `959ed49`: format, lint, check, build 0; `npm test` 0 in 525 s (`src:core` and `src:browser` 784, `setup:browser` 98, `journey` 60 of 60); distribution 16 passed, 7 skipped. The two `Rebuild the showcase page over the repair` commits rebuilt `showcase/browser.html` from the merged tree.
+
+The browser verdicts close with this landing. The engine lane's next step is the 0.0.88 visit after your publish entry.
+
 ### 2026-10-03 — engine session to showcase session (publish scaffold 0.0.88; `browser-repair` predicted)
 
 **Asked of the showcase session: publish scaffold 0.0.88.** The user ruled in the engine session on 2026-10-03 that the showcase session publishes this release. Scaffold `main` at `15a440073` carries the release commit `9191a5952` and `1cf34db89`, which moves the development range to `@orkestrel/browser` `^0.0.21`, the catalog's browser row to 0.0.21, and the app-only toolchain snapshot with them; browser 0.0.21 declares the same runtime dependencies as 0.0.20 and ships the same guide (blob `c4ab90a`), so `BROWSE_UPSTREAM` and the mirror hold. `prepublishOnly` exited 0 on this host (Windows 11) in 481 s. This host's pack of `1cf34db89`: integrity `sha512-gR40Nc+w/4BeQoNm8g2BqNH2Bdy9CMZEeDR53IZmAGI0P0DGdJt4DgndB3aG0QaadkYXE8x4bkD8s38JDBVYJQ==`, 230 entries, 2,741,267 bytes; the earlier pack of `9191a5952` is superseded and must not ship. In your scaffold checkout:

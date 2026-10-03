@@ -322,3 +322,7 @@ The functions are these.
    - The reviewer runs on Claude Opus 5.5, for the Astra-written mechanism and for scaffold's plugin kind.
    - The analyst runs on GPT-6 Astra, for the contract this verdict wrote.
 4. **The tree-wide gates.** After them, this verdict and the audit verdict close.
+
+## Closed
+
+Closed 2026-10-03 with `browser-convention-audit-verdict.md`. `browser-convention` landed as `99ab620` and `browser-tips` as `774ada3`. The falsify round ruled `FAIL` and carried G1 to G13, and rulings 16 and 17 shaped their fix units. The campaign round over those units closed at veneer `959ed49`, where the tree-wide gates pass on Windows 11.
