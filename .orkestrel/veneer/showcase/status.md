@@ -1,36 +1,28 @@
-# Showcase status: the parallel cloud session
+# Showcase status
 
-Read `../lanes.md` first: it holds the lane contract between this session and the engine session, and their message log.
-
-Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the veneer showcase, the journeys, `browse`, and their run cost, is active on 2026-10-03, and has not handed this work off. Do not start, resume, or reassign a unit in this file. Take the work over only after the user says the handoff has happened; the cloud session hands off when it reaches its weekly usage limit, and it rewrites § Status first. When the handoff happens without that rewrite, § In flight and § Planned are the state to resume from.
+Read `../lanes.md` first: it holds the lane contract and the message log. The engine session owns this lane since the handoff of 2026-10-03.
 
 ## Status
 
 | Row | Value |
 | --- | --- |
 | Handoff | done 2026-10-03: the cloud session reached its usage limit, and at the user's word the engine session (the desktop session) owns this lane as the only session; § In flight and § Planned are its plan |
-| Veneer main | `0c6ca7f`, the showcase docs, over `9885975`, the engine session's 0.0.88 visit (scaffold `^0.0.88`), over `dc4654b` and `43ca8a0`, the showcase landing: the page, 18 component statecharts, and the tuned journeys (60 tests, 218 to 227 s on the cloud host against 353 s) |
-| Integration branch | veneer `ccr-d15a48b1-yyyll6` at `0c6ca7f`, equal to `main`; merge `main` into it and run `npm install` before the next unit |
+| Veneer main | `9401839` (the roadmap brought up to date) over `8f6c998` (the carousel fix: the live carousels carry `slide`, and `pause` keeps a slide in flight), `7593cfe` (the `showcase-page` unit), `419245d` (stage A: `createVeneer`, tip boot opt-in), and `9885975` (scaffold `^0.0.88`) |
+| Integration branch | veneer `ccr-d15a48b1-yyyll6` at `0c6ca7f`, behind `main` and unused since the handoff; work lands on `main` |
 | Scaffold | 0.0.88 on the registry (2026-10-03), carrying browser `^0.0.21`; veneer adopted it in `9885975` |
-| Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
-| Browse | `browse.md` beside this file: item 9 on the browser branch awaiting its review, item 10 designed |
-| Engine contract coming | `createEngine` becomes `createVeneer`, and tooltips and popovers stop starting at boot (`../lanes.md`, 2026-10-03, "the pack modes; the visit waits; `createVeneer` coming"); the engine lane migrates the showcase's call sites and predicts any moved statechart row there |
+| Page | `showcase/browser.html` on veneer main, rebuilt with every change to a page input |
+| Browse | `browse.md` beside this file: items 9 and 10 landed on the browser branch, their review fixes and item 11's re-design in flight |
 
 ## In flight
 
-- **Browse items 9 and 10** (`browse.md` § Remaining units).
-- **The showcase falsify round ran on 2026-10-03 and ruled `FAIL`** (`../showcase-audit-verdict.md`): its fix units `showcase-page` (running in the worktree `veneer-wt-page`), then `showcase-proofs`, then `showcase-guide`. It closed open reading (c), journey memory, on this host, and carries (a), (b), and (d).
+- **The showcase falsify round ran on 2026-10-03 and ruled `FAIL`** (`../showcase-audit-verdict.md`), which settled the open readings this file carried: `showcase-page` landed at `7593cfe`; `showcase-proofs` runs its fourth time in the worktree `veneer-wt-page`, on the ruling that a disabled tab, pill, or list trigger is activated by `HTMLElement.click()` because Bootstrap's CSS and roving `tabindex` block both user routes to it.
+- **Browse:** `browse.md` § Status.
 
 ## Planned, in order
 
-1. **Falsify:** one adversarial round over the showcase claims (an objective lane on the journeys, statecharts, and the guide's showcase sections; a subjective lane on the rendered page from a `CAPTURE=1` portfolio), then a completeness critic; fix units for what it rules. Run it after the engine lane's `createVeneer` change lands when that change is near, because it moves the boot the statecharts read.
-2. **Open readings to rule in that round:**
-   - No live disabled control exists for a statechart refusal row. The engine refuses a CSS-disabled alert dismiss, toast dismiss, tab, offcanvas toggle and dismiss, and modal dismiss, and a disabled dropdown toggle; a CSS-disabled button toggle still toggles, and the modal toggle route has no disabled guard (veneer `src/browser/plugins.ts`, `restricted: true`). Live disabled specimens for the refusing families would let the tables prove those refusals (`s1b-report.md`).
-   - The toggle-button figure (`app/browser/sections/buttons.html:162`, captioned "Toggle buttons, pressed and not pressed") keeps a light surface in dark mode, as capture `buttons--dark-390.png` of a `CAPTURE=1` run at `0df5a3b` shows (`P1`, `p1-report.md`).
-   - The journey gate's sampled peak memory reached 12,288,905,216 bytes of the 14,345,035,776-byte cap with four concurrent projects.
-   - The engine session's warning: a test that moves the real mouse can leave it over the page for a later file; the tooltip table hovers through the journey layer.
-3. **Browse:** `browse.md` § Remaining units.
-4. Land each accepted state on veneer `main` under `../lanes.md` § Rules after merging `main`; rebuild `showcase/browser.html` when the merge touches its inputs, and re-read § Host-bound set by title.
+1. `showcase-guide`, after `showcase-proofs`.
+2. The browser `0.0.22` re-pin after the browser release (`browse.md` § Remaining units).
+3. Land each accepted state on veneer `main` under `../lanes.md` § Rules; rebuild `showcase/browser.html` with every change to its inputs, and re-read § Host-bound set by title.
 
 ## Done
 

@@ -58,6 +58,23 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session (the carousel slides like Bootstrap; the roadmap brought up to date)
+
+**Landed on veneer `main`, pushed with this entry:**
+
+- `8f6c998`, from the user's report that the showcase carousel dropped the outgoing slide before the incoming one slid in:
+  - the four live carousel hosts and their captions carry `slide`; Bootstrap waits for the item transition only on a `slide` host, so without it the swap completed at once;
+  - `Carousel.pause()` only clears the interval; Bootstrap 5.3.8's `pause` never finishes a slide in flight (its synthetic `transitionend` reaches only the host), so every touch swipe and a pointer entering mid-slide had jumped;
+  - `UNDECLARED_CLASS_NAMES` names the classes the engine reads or writes that no sheet rule declares and gains `slide`; the page censuses admit that marker;
+  - proofs red before and green after: oracle checkpoints right after `pause`, after a real swipe, and after a hover mid-slide; the journey's carousel act requires both slides painted in the first frame of every slide.
+
+  `showcase/browser.html` is rebuilt; two fresh builds hash `D635FD3C…` equal to the committed page.
+- `9401839` corrects the stale and false statements a read-only audit found in `ROADMAP.md` and adds `## Next`.
+
+Gates at `8f6c998` on Windows: format, lint, check, build 0; `test:src:browser` 783; `test:app:browser` 226; `test:journey` 60 of 60 in 178 s; `test:guides` and `test:policy` 0.
+
+The `showcase-proofs` unit runs its fourth time on `8f6c998`: a disabled tab, pill, or list trigger is activated by `HTMLElement.click()`, because Bootstrap's CSS sets `pointer-events: none` on it and its roving `tabindex` keeps it out of the keyboard order.
+
 ### 2026-10-03 — engine session (the showcase page's audit fixes landed; the CDP guard)
 
 **Landed on veneer `main`, pushed with this entry:**
