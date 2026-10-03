@@ -93,7 +93,7 @@ registry copy over any staged tip, so every consumer stays red until that tip is
 
 ## Prepare a layer
 
-- Pack release archives on Linux to preserve the executable modes tracked by git; compare archive paths, sizes, and content hashes between hosts, and report executable-mode differences separately.
+- Pack release archives on Linux; compare archive paths, sizes, and content hashes between hosts, and report executable-mode differences separately.
 
 An unpublished package's first version is `0.0.1`. Do not bump it before that first publish. The
 registry has nothing to serve, so there is no version to move away from, and bumping produces a

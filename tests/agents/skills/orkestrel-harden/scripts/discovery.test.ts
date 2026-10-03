@@ -7,6 +7,52 @@ import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('reports a gated project absent from the config as empty', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-absent-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"npm run test:absent","test:absent":"vitest run --project absent"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/sample.test.ts'] } }\n",
+			)
+			scratch.write('tests/sample.test.ts', "throw new Error('Excluded project collected')\n")
+			const run = runSkillScript(SCRIPT, ['--projects', 'absent', '--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.empty).toEqual(['absent'])
+			expect(run.json?.projects).toEqual([
+				{ name: 'absent', gate: 'test > test:absent', files: 0, tests: 0 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('removes its listing without leaving a target tmp directory', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-cleanup-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project core"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/sample.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/sample.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			expect(runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path }).status).toBe(0)
+			expect(scratch.has('tmp')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
 	it('reads a listing despite bracketed optimizer output', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-output-' })
 		try {

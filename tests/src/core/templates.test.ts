@@ -644,9 +644,7 @@ describe('configuration templates', () => {
 		expect(rootVite?.content).toContain('\t\t\tprobe,')
 		expect(coreConfig?.content).toContain('"lib": ["ESNext", "WebWorker"]')
 		expect(coreConfig?.content).toContain('"types": []')
-		expect(browserConfig?.content).toContain(
-			'"types": ["vite/client", "@vitest/browser-playwright"]',
-		)
+		expect(browserConfig?.content).toContain('"types": ["vite/client"]')
 		expect(blueprintToDevDependencies(blueprint)['vite-plugin-singlefile']).toBe('^2.3.3')
 	})
 
@@ -660,9 +658,7 @@ describe('configuration templates', () => {
 		if (browserConfig?.origin === 'host') {
 			throw new Error('Expected configuration template content')
 		}
-		expect(browserConfig?.content).toContain(
-			'"types": ["vite/client", "vue", "@vitest/browser-playwright"]',
-		)
+		expect(browserConfig?.content).toContain('"types": ["vite/client", "vue"]')
 		expect(browserConfig?.content).not.toMatch(/{{[^{}]+}}/)
 	})
 

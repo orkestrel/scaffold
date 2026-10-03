@@ -4,6 +4,8 @@ import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
 	CANON_PATHS,
+	blueprintToConfigArtifacts,
+	blueprintToTestArtifacts,
 	compareVersions,
 	Compiler,
 	createBlueprint,
@@ -940,6 +942,86 @@ describe('installed package consumer', () => {
 		}
 	})
 
+	it('skips generated entry drives when no installed entry matches their filters', async () => {
+		const workspace = createScratch({ prefix: 'scaffold-empty-drives-' })
+		const fixture = await createUpstreamServer({
+			'/-/ping': { status: 200, body: '{}', type: 'application/json' },
+		})
+		try {
+			const blueprint = createBlueprint('proof', { src: ['browser'] })
+			for (const artifact of [
+				...blueprintToConfigArtifacts(blueprint),
+				...blueprintToTestArtifacts(blueprint),
+			]) {
+				if (
+					artifact.origin === 'template' &&
+					(artifact.path === 'tests/distribution.test.ts' ||
+						artifact.path === 'configs/browsers.ts')
+				)
+					workspace.write(artifact.path, artifact.content)
+			}
+			workspace.link('node_modules', resolve('node_modules'))
+			workspace.write(
+				'package.json',
+				'{"name":"empty-drives","version":"1.0.0","type":"module","files":["index.css"],"exports":{".":"./index.css"}}',
+			)
+			workspace.write('index.css', ':root { color: black; }\n')
+			workspace.write(
+				'vite.config.ts',
+				"export default { test: { name: 'distribution', include: ['tests/distribution.test.ts'], hookTimeout: 30000 } }\n",
+			)
+			const run = await execute(
+				{
+					file: process.execPath,
+					arguments: [
+						resolve('node_modules/vitest/vitest.mjs'),
+						'run',
+						'--config',
+						'vite.config.ts',
+						'--project',
+						'distribution',
+						'-t',
+						'publishes what it declares',
+						'--reporter=json',
+						'--reporter=verbose',
+						'--outputFile.json=report.json',
+					],
+				},
+				{
+					workspace: workspace.path,
+					environment: { ...process.env, npm_config_registry: fixture.base + '/' },
+					timeout: 60_000,
+					strict: false,
+				},
+			)
+			expect(run.code).toBe(0)
+			expect(run.stdout).toContain('No installed entry supports Node import')
+			expect(run.stdout).toContain('No installed entry supports Node require')
+			expect(run.stdout).toContain('No installed entry supports a browser')
+			expect(fixture.paths).toContain('/-/ping')
+			const files = requireValue(parseVitestReport(requireValue(workspace.read('report.json'))))
+			expect(
+				files
+					.flatMap((file) => file.cases)
+					.filter(
+						(entry) =>
+							isString(entry.title) && entry.title.startsWith('publishes what it declares'),
+					)
+					.map((entry) => ({ title: entry.title, status: entry.status })),
+			).toStrictEqual([
+				{ title: 'publishes what it declares to a Node import, and no more', status: 'skipped' },
+				{ title: 'publishes what it declares to a Node require, and no more', status: 'skipped' },
+				{
+					title: 'publishes what it declares to a real browser [requires a browser]',
+					status: 'skipped',
+				},
+			])
+		} finally {
+			await fixture.destroy()
+			workspace.destroy()
+		}
+	}, 90_000)
+
 	// The mode channel end to end. Vitest runs a project in the mode it was invoked with only when
 	// the project's factory returns that mode, and nothing else in a generated workspace carries it,
 	// so this drives a generated configuration and its generated distribution proof through the
@@ -1026,9 +1108,8 @@ describe('installed package consumer', () => {
 					})),
 				})
 			}
-			// Release fails at the proof's registry gate before any case is collected. The ordinary
-			// run collects the proof, runs the cases that need no registry, and skips the cases that
-			// need one.
+			// Release fails during suite setup after collection, so Vitest marks its cases skipped.
+			// The ordinary run executes the registry-independent cases and skips the rest.
 			const failed = {
 				expired: false,
 				signal: null,
@@ -1040,7 +1121,7 @@ describe('installed package consumer', () => {
 						status: 'failed',
 						message:
 							'The release gate requires a reachable npm registry, and npm ping did not answer',
-						statuses: [],
+						statuses: ['skipped'],
 					},
 				],
 			}

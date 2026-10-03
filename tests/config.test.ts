@@ -1031,8 +1031,8 @@ describe('root configuration', () => {
 						? []
 						: environment === 'browser' || environment === 'vue'
 							? axis === 'app' && environment === 'vue'
-								? ['vite/client', 'vue', '@vitest/browser-playwright']
-								: ['vite/client', '@vitest/browser-playwright']
+								? ['vite/client', 'vue']
+								: ['vite/client']
 							: ['node']
 				expect(lib).toStrictEqual(expectedLib)
 				expect(types).toStrictEqual(expectedTypes)

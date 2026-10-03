@@ -10,7 +10,8 @@
 // A project with no test file and no gate is outside the census. Exit 0 with no flag, 3 with one, 2 when Vitest cannot list, 64 on
 // usage.
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, relative, resolve } from 'node:path'
 import {
 	listFiles,
@@ -95,8 +96,7 @@ function listCollected(
 	config: string,
 	projects: readonly string[],
 ): readonly Collected[] | undefined {
-	mkdirSync('tmp', { recursive: true })
-	const directory = mkdtempSync(resolve('tmp', 'discovery-'))
+	const directory = mkdtempSync(join(tmpdir(), 'discovery-'))
 	const listing = join(directory, 'listing.json')
 	try {
 		const result = spawnSync(
@@ -115,6 +115,12 @@ function listCollected(
 				windowsHide: true,
 			},
 		)
+		if (
+			projects.length > 0 &&
+			result.status === 1 &&
+			result.stderr.includes('No projects matched the filter "')
+		)
+			return []
 		if (result.status !== 0 || !existsSync(listing)) {
 			const diagnostic = result.stderr || result.error?.message || result.stdout
 			console.error(

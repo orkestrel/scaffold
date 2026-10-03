@@ -85,7 +85,7 @@ describe('window.ts', () => {
 		try {
 			const env = buildNpmEnvironment(scratch.path, registry)
 			scratch.write('primary/package.json', '{"name":"@fixture/primary","version":"1.0.0"}')
-			scratch.ensure('primary/.git/worktrees/linked')
+			scratch.write('primary/.git/worktrees/linked/commondir', '../..\n')
 			scratch.write('linked/package.json', '{"name":"@fixture/linked","version":"1.0.0"}')
 			scratch.write('linked/.git', 'gitdir: ../primary/.git/worktrees/linked\r\n')
 			const result = await spawnSkillScript(
@@ -95,9 +95,79 @@ describe('window.ts', () => {
 			)
 			expect(result.status).toBe(3)
 			expect(result.stderr).toContain('linked worktree')
-			expect(result.stderr).toContain(join(scratch.path, 'primary'))
+			expect(result.stderr.split(/\r\n|\n/u)).toContain(
+				`window: linked is a linked worktree; publish from its primary clone at ${join(scratch.path, 'primary')} so npm records gitHead`,
+			)
 			expect(registry.requests).toEqual([])
 			expect(scratch.has('tmp/units')).toBe(false)
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a package nested inside a linked worktree before contacting npm', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-nested-' })
+		const registry = await startRegistry('fixture')
+		try {
+			scratch.write('primary/.git/worktrees/linked/commondir', '../..\n')
+			scratch.write('linked/.git', 'gitdir: ../primary/.git/worktrees/linked\n')
+			scratch.write(
+				'linked/packages/widget/package.json',
+				'{"name":"@fixture/widget","version":"1.0.0"}',
+			)
+			const result = await spawnSkillScript(
+				SCRIPT,
+				['--publish', 'linked/packages/widget', '--otp', '123456'],
+				{ cwd: scratch.path, env: buildNpmEnvironment(scratch.path, registry) },
+			)
+			expect(result.status).toBe(3)
+			expect(result.stderr.split(/\r\n|\n/u)).toContain(
+				`window: linked/packages/widget is a linked worktree; publish from its primary clone at ${join(scratch.path, 'primary')} so npm records gitHead`,
+			)
+			expect(registry.requests).toEqual([])
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
+	it('names a submodule without claiming the superproject is its primary clone', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-submodule-' })
+		const registry = await startRegistry('fixture')
+		try {
+			scratch.ensure('primary/.git/modules/widget')
+			scratch.write('primary/widget/.git', 'gitdir: ../.git/modules/widget\n')
+			scratch.write('primary/widget/package.json', '{"name":"@fixture/widget","version":"1.0.0"}')
+			const result = await spawnSkillScript(
+				SCRIPT,
+				['--publish', 'primary/widget', '--otp', '123456'],
+				{ cwd: scratch.path, env: buildNpmEnvironment(scratch.path, registry) },
+			)
+			expect(result.status).toBe(3)
+			expect(result.stderr).toContain('is a submodule; publish from a standalone clone')
+			expect(result.stderr).not.toContain('primary clone')
+			expect(registry.requests).toEqual([])
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
+	it('refuses directory publishing on a host that cannot pack Linux release archives', async (context) => {
+		if (process.platform === 'linux')
+			return context.skip('Linux is the release archive packing host')
+		const scratch = createScratch({ prefix: 'orkestrel-window-host-' })
+		const registry = await startRegistry('fixture')
+		try {
+			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
+			const result = await spawnSkillScript(SCRIPT, ['--publish', 'pkg', '--otp', '123456'], {
+				cwd: scratch.path,
+				env: buildNpmEnvironment(scratch.path, registry),
+			})
+			expect(result.status).toBe(3)
+			expect(result.stderr).toContain('publish release directories on Linux')
+			expect(registry.requests).toEqual([])
 		} finally {
 			await stopRegistry(registry)
 			scratch.destroy()
@@ -165,8 +235,14 @@ describe('window.ts', () => {
 				env: darkEnv,
 			})
 			expect(stopped.status).toBe(3)
-			expect(stopped.stderr).toContain('whoami answers nothing')
-			expect(dark.requests.filter((line) => line === 'GET /-/whoami').length).toBeGreaterThan(1)
+			expect(stopped.stderr).toContain(
+				process.platform === 'linux'
+					? 'whoami answers nothing'
+					: 'publish release directories on Linux',
+			)
+			expect(dark.requests).toEqual(
+				process.platform === 'linux' ? ['GET /-/whoami', 'GET /-/whoami'] : ['GET /-/whoami'],
+			)
 			expect(dark.requests.some((line) => line.startsWith('PUT '))).toBe(false)
 			expect(scratch.has('tmp/units')).toBe(false)
 		} finally {
@@ -176,7 +252,9 @@ describe('window.ts', () => {
 		}
 	})
 
-	it('uploads to the registry the session named, journals the refusal it answers, and confirms nothing it did not serve', async () => {
+	it('uploads to the registry the session named, journals the refusal it answers, and confirms nothing it did not serve', async (context) => {
+		if (process.platform !== 'linux')
+			return context.skip('Directory publishing requires Linux release archive packing')
 		const scratch = createScratch({ prefix: 'orkestrel-window-upload-' })
 		const registry = await startRegistry('fixture')
 		try {

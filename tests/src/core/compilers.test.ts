@@ -50,12 +50,12 @@ import { readStatements } from '../../setupServer.js'
 import { buildEnvironment } from '../../setupServer.js'
 
 describe('generated defect regressions', () => {
-	it('provides CDP send types in every scoped browser configuration', () => {
-		const scratch = createScratch({ prefix: 'scaffold-cdp-types-' })
+	it('excludes Node globals from every scoped browser configuration', () => {
+		const scratch = createScratch({ prefix: 'scaffold-browser-isolation-' })
 		try {
 			for (const name of ['vite', 'vitest', '@vitest/browser-playwright'])
 				linkPackage(scratch, name)
-			// This fixture calls no Vue API; its ambient entry is inert while CDP uses installed declarations.
+			// This fixture calls no Vue API; the ambient entry supplies only its configured type name.
 			scratch.write('node_modules/vue/index.d.ts', 'export {}\n')
 			const blueprint = createBlueprint('proof', {
 				src: ['browser'],
@@ -66,40 +66,34 @@ describe('generated defect regressions', () => {
 				if (artifact.origin === 'template') scratch.write(artifact.path, artifact.content)
 			}
 			scratch.write('package.json', '{"type":"module"}')
-			for (const face of ['browser', 'vue']) {
-				scratch.write(
-					`src/${face}/helpers.ts`,
-					"import { cdp } from 'vitest/browser'\nexport async function movePointer(): Promise<void> { await cdp().send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: -1, y: -1 }) }\n",
-				)
-			}
 			scratch.write(
 				'tests/setupBrowser.ts',
-				"import { cdp } from 'vitest/browser'\nexport async function movePointer(): Promise<void> { await cdp().send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: -1, y: -1 }) }\n",
+				"import { cdp } from 'vitest/browser'\nexport const session: unknown = cdp()\n",
 			)
 			for (const axis of ['src', 'app']) {
 				for (const face of ['browser', 'vue']) {
+					const file = axis + '/' + face + '/helpers.ts'
+					scratch.write(file, 'export const probeMode = document.title\n')
+					const path = 'configs/' + axis + '/tsconfig.' + face + '.json'
 					const run = spawnSync(
-						process.execPath,
-						[
-							resolve('node_modules/typescript/bin/tsc'),
-							'--noEmit',
-							'-p',
-							`configs/${axis}/tsconfig.${face}.json`,
-						],
-						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
-					)
-					expect(run.status, `${axis}/${face}: ${run.stdout}${run.stderr}`).toBe(0)
-					const path = `configs/${axis}/tsconfig.${face}.json`
-					const source = requireValue(scratch.read(path))
-					scratch.write(path, source.replace(', "@vitest/browser-playwright"', ''))
-					const control = spawnSync(
 						process.execPath,
 						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
 						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
 					)
-					expect(control.status).not.toBe(0)
-					expect(control.stdout).toContain("Property 'send' does not exist on type 'CDPSession'")
-					scratch.write(path, source)
+					expect({ path, status: run.status, output: run.stdout + run.stderr }).toEqual({
+						path,
+						status: 0,
+						output: '',
+					})
+					scratch.write(file, 'export const probeMode = process.env.MODE\n')
+					const refused = spawnSync(
+						process.execPath,
+						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
+						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+					)
+					expect(refused.status).not.toBe(0)
+					expect(refused.stdout).toContain("Cannot find name 'process'")
+					scratch.write(file, 'export const probeMode = document.title\n')
 				}
 			}
 		} finally {
@@ -624,10 +618,7 @@ describe('Vue face planning', () => {
 			expect(JSON.parse(wrapper.content)).toMatchObject({
 				compilerOptions: {
 					lib: ['ESNext', 'DOM', 'DOM.Iterable'],
-					types:
-						axis === 'app'
-							? ['vite/client', 'vue', '@vitest/browser-playwright']
-							: ['vite/client', '@vitest/browser-playwright'],
+					types: axis === 'app' ? ['vite/client', 'vue'] : ['vite/client'],
 				},
 			})
 			expect(types).toContain(`"@${axis}/vue": ["./${axis}/vue/index.ts"]`)
@@ -1994,8 +1985,8 @@ describe('blueprintToScripts config projects', () => {
 		expect(content).toContain('if (isList(entry)) {')
 	})
 
-	// Each Node drive's `it.runIf` predicate requires `!entry.browser`, so both the Node
-	// import and the Node require retire for a browser entry, and a workspace publishing
+	// Each Node drive filters installed entries by its runtime capability, so entries
+	// resolved only by a browser reach neither Node drive, and a workspace publishing
 	// no browser face carries no branch that drives one. Presence ownership never rewrites the proof, so a face published
 	// later meets whichever variant was written: the guard reddens on it, and the
 	// browser branch drives it. Every selection carries exactly one of them.
@@ -2272,7 +2263,7 @@ describe('blueprintToScripts config projects', () => {
 			({ path }) => path === 'configs/app/tsconfig.vue.json',
 		)
 		expect(config?.origin !== 'host' ? config?.content : undefined).toContain(
-			'"types": ["vite/client", "vue", "@vitest/browser-playwright"]',
+			'"types": ["vite/client", "vue"]',
 		)
 	})
 
@@ -3237,7 +3228,7 @@ describe('blueprintToConfigArtifacts app check scopes', () => {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "@vitest/browser-playwright"]
+		"types": ["vite/client"]
 	},
 	"include": [
 		"../../app/browser/**/*.cts",

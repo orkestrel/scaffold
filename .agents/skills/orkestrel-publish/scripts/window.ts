@@ -6,8 +6,9 @@
 // --whoami reads `npm whoami` once, or polls it every 5 seconds until it answers or the wait ends.
 // --login prints the command the operator runs in a real terminal (npm offers its approval only to a
 // TTY, so no child of this script can hold it), then polls `npm whoami` until it answers or the wait
-// ends. --publish refuses every linked worktree in the batch before contacting npm and names its
-// primary clone, then re-reads `npm whoami` immediately before the first upload and refuses when it
+// ends. --publish refuses linked worktrees and submodules found at a package or its ancestors,
+// names a linked worktree's primary clone, and requires Linux for packing release directories.
+// It then re-reads `npm whoami` immediately before the first upload and refuses when it
 // answers nothing, then runs `npm publish --ignore-scripts --browser=false --otp=CODE` in each
 // directory back to back under captured pipes (npm's non-TTY guard turns a refused code into
 // EOTP with no prompt, so the path needs no TTY), journals each upload to tmp/units/publish-<name>.log, reads the `+ name@version`
@@ -198,7 +199,9 @@ async function main(argv: readonly string[]): Promise<number> {
 			return 64
 		}
 		for (const directory of directories) {
-			const entry = join(directory, '.git')
+			let root = resolve(directory)
+			while (!existsSync(join(root, '.git')) && dirname(root) !== root) root = dirname(root)
+			const entry = join(root, '.git')
 			if (!existsSync(entry) || !statSync(entry).isFile()) continue
 			const line = readFileSync(entry, 'utf8')
 				.split(/\r\n|\n/u)
@@ -210,14 +213,20 @@ async function main(argv: readonly string[]): Promise<number> {
 				)
 				return 3
 			}
-			const gitdir = resolve(directory, target)
+			const gitdir = resolve(root, target)
 			const common = join(gitdir, 'commondir')
-			const root = existsSync(common)
-				? resolve(gitdir, readFileSync(common, 'utf8').trim())
-				: resolve(gitdir, '..', '..')
+			if (!existsSync(common)) {
+				console.error(`window: ${directory} is a submodule; publish from a standalone clone`)
+				return 3
+			}
+			const primary = dirname(resolve(gitdir, readFileSync(common, 'utf8').trim()))
 			console.error(
-				`window: ${directory} is a linked worktree; publish from its primary clone at ${dirname(root)} so npm records gitHead`,
+				`window: ${directory} is a linked worktree; publish from its primary clone at ${primary} so npm records gitHead`,
 			)
+			return 3
+		}
+		if (process.platform !== 'linux') {
+			console.error('window: publish release directories on Linux')
 			return 3
 		}
 		// A stored credential expires mid-session, so the session-start answer does not hold here.

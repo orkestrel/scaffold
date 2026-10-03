@@ -799,7 +799,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "@vitest/browser-playwright"],
+		"types": ["vite/client"],
 		"noEmit": false,
 		"declaration": true,
 		"emitDeclarationOnly": true,
@@ -818,7 +818,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "vue", "@vitest/browser-playwright"]
+		"types": ["vite/client", "vue"]
 	},
 	"include": [
 {{include}}
@@ -860,7 +860,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "@vitest/browser-playwright"],
+		"types": ["vite/client"],
 		"noEmit": false,
 		"declaration": true,
 		"emitDeclarationOnly": true,
@@ -919,7 +919,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "@vitest/browser-playwright"]
+		"types": ["vite/client"]
 	},
 	"include": [
 {{include}}
@@ -2697,7 +2697,9 @@ describe('installed package consumer', () => {
 describe('installed entries', () => {
 	it('publishes what it declares to a Node import, and no more', (context) => {
 		const stage = requireStage(context)
-		for (const entry of stage.entries.filter((entry) => entry.importable)) {
+		const entries = stage.entries.filter((entry) => entry.importable)
+		if (entries.length === 0) return context.skip('No installed entry supports Node import')
+		for (const entry of entries) {
 			if (!entry.declaration.importable) {
 				throw new Error(\`\${entry.subpath} publishes no import declaration\`)
 			}
@@ -2713,7 +2715,9 @@ describe('installed entries', () => {
 
 	it('publishes what it declares to a Node require, and no more', (context) => {
 		const stage = requireStage(context)
-		for (const entry of stage.entries.filter((entry) => entry.requirable)) {
+		const entries = stage.entries.filter((entry) => entry.requirable)
+		if (entries.length === 0) return context.skip('No installed entry supports Node require')
+		for (const entry of entries) {
 			if (!entry.declaration.requirable) {
 				throw new Error(\`\${entry.subpath} publishes no require declaration\`)
 			}
@@ -2837,7 +2841,9 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 			drive: `
 	it('publishes what it declares to a real browser [requires a browser]', async (context) => {
 		const stage = requireStage(context)
-		for (const entry of stage.entries.filter((entry) => entry.browsable)) {
+		const entries = stage.entries.filter((entry) => entry.browsable)
+		if (entries.length === 0) return context.skip('No installed entry supports a browser')
+		for (const entry of entries) {
 			if (!entry.declaration.browsable) {
 				throw new Error(\`\${entry.subpath} publishes no browser declaration\`)
 			}
