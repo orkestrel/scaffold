@@ -8,8 +8,8 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 | --- | --- |
 | Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6` and browser `main` both at `6f5544e` (`Release 0.0.21`); every published release's `gitHead` sits on `main` |
 | Registry | 0.0.21, published 2026-10-03 with the user's code, `BR1` included; the visit adopted scaffold 0.0.87 |
-| Dependents to re-pin | ollama (development dependency, the showcase session re-pins it); veneer (development dependency, in the showcase landing merge, logged in `../lanes.md`); scaffold (`package.json:109`, written into generated workspaces by `src/core/constants.ts:666`, so it moves in the next scaffold release the engine session prepares) |
-| In flight | the ollama re-pin |
+| Dependents to re-pin | ollama: done, `f9cb40a` on its branch and `main`; veneer: the engine session's 0.0.88 adoption visit re-pins it, or the showcase landing does if it lands first (`../lanes.md`, 2026-10-03); scaffold: `package.json:109`, written into generated workspaces by `src/core/constants.ts:666`, moves in the scaffold release after 0.0.88, which the engine session prepares |
+| In flight | nothing |
 | Next | `ROADMAP.md` items 9, 10, 11, and 12, then 6 and 7, then 8 when a run reproduces it |
 
 ## Readings
