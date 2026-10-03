@@ -183,7 +183,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
+				instances: [{ browser: 'chromium', name: \`\${name} (chromium)\`, headless: true }],
 			},
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },
@@ -243,7 +243,7 @@ export function srcVue(override?: UserConfig): UserConfig {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
+				instances: [{ browser: 'chromium', name: 'src:vue (chromium)', headless: true }],
 			},
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },
@@ -286,7 +286,7 @@ export function srcBrowser(override?: UserConfig): UserConfig {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
+				instances: [{ browser: 'chromium', name: 'src:browser (chromium)', headless: true }],
 			},
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },
@@ -421,7 +421,7 @@ export function srcBin(override?: UserConfig): UserConfig {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
+				instances: [{ browser: 'chromium', name: 'app:browser (chromium)', headless: true }],
 			},
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },
@@ -449,6 +449,13 @@ export function srcBin(override?: UserConfig): UserConfig {
 		test: {
 			...browser.test,
 			name: { label: 'app:vue', color: 'magenta' },
+			browser: {
+				...browser.test?.browser,
+				instances: (browser.test?.browser?.instances ?? []).map((instance) => ({
+					...instance,
+					name: \`app:vue (\${instance.browser})\`,
+				})),
+			},
 			include: ['tests/app/vue/**/*.test.ts'],
 {{journeyExclude}}		},
 	}
@@ -477,6 +484,10 @@ export function appJourney(
 				...browser.test?.browser,
 				enabled: true,
 				viewport: { width: variant.width, height: variant.height },
+				instances: (browser.test?.browser?.instances ?? []).map((instance) => ({
+					...instance,
+					name: \`journey:\${variant.name} (\${instance.browser})\`,
+				})),
 			},
 		},
 	}
@@ -648,7 +659,7 @@ export function appServer(override?: UserConfig): UserConfig {
 {{global}}			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
+				instances: [{ browser: 'chromium', name: 'setup:browser (chromium)', headless: true }],
 			},
 		},
 	}

@@ -2164,7 +2164,7 @@ describe('blueprintToScripts config projects', () => {
 			'\t\t\tbrowser: {',
 			'\t\t\t\tenabled: true,',
 			'\t\t\t\tprovider: playwright(browserOptions),',
-			"\t\t\t\tinstances: [{ browser: 'chromium', headless: true }],",
+			"\t\t\t\tinstances: [{ browser: 'chromium', name: 'setup:browser (chromium)', headless: true }],",
 			'\t\t\t},',
 			'\t\t},',
 			'\t}',
@@ -2993,7 +2993,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
+				instances: [{ browser: 'chromium', name: 'app:browser (chromium)', headless: true }],
 			},
 			fileParallelism: false,
 			sequence: { groupOrder: 1 },

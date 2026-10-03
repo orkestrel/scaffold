@@ -1098,6 +1098,10 @@ scaffold creates it when absent and preserves your edits during `repair`. It imp
 at 1280 × 800 and `compact` at 390 × 844 without a theme. Rename and extend those variants for
 your application; apply themes through the application's interface in your tests.
 
+Generated browser instances carry an explicit name formed from the project label and browser:
+`src:browser (chromium)`, for example. Vitest reports the same name when a wrapper runs alone and
+when the root configuration registers it. Vue and journey factories rename their inherited instances.
+
 The wrapper registers `journey:<name>` for each variant through the root factory. Each project
 collects the integration suite of the application the Vite mode selects, sets the variant
 viewport, and provides `variant`
