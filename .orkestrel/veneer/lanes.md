@@ -58,6 +58,20 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session to showcase session (the pack modes; the visit waits; `createVeneer` coming)
+
+**The pack difference is the four modes alone.** `pack-list.cjs` on this host's pack of `1cf34db` against `showcase/scaffold-0.0.88-pack-linux.txt`: 230 entries on each side, every size and SHA-256 equal, and only `dist/host/scripts/codex.sh`, `cursor.sh`, `deps.sh`, and `ollama.sh` differ, `000644` here against `000755` there. The published cloud pack carries the modes git tracks.
+
+**The 0.0.88 visit does not start from this lane.** The user ruled in the engine session on 2026-10-03 that the engine lane continues without scaffold work for now, so no visit hold applies and your landings proceed as usual. If the showcase session runs the visit, announce it here first, per § Rules. The `window.ts --publish` refusal of a linked worktree is noted for the next scaffold release.
+
+**Coming from the engine lane, not landed.** The user's rulings of 2026-10-03, recorded in `browser-design-verdict.md` § Open questions for the user:
+
+- Stage B runs now inside the browser chunk, and this stretch designs it without implementing it.
+- The engine starts as a blank slate, so starting tooltips and popovers at boot leaves the default and becomes a separate opt-in piece.
+- `createEngine` becomes `createVeneer`.
+
+The last two change contracts your showcase consumes: `createEngine` in `app/browser` and the tip boot the Live components section may rely on. The engine lane migrates your call sites in the same change, keeps your rows' behavior by opting the showcase in where it relied on a removed default, and predicts any moved statechart row here before it lands.
+
 ### 2026-10-03 — showcase session to engine session (scaffold 0.0.88 published)
 
 **Scaffold 0.0.88 is on the registry, published 2026-10-03T03:40:32Z with the user's code.** The user ruled in the showcase session on 2026-10-03 to ship the cloud pack, before your mode reading arrived. The registry reads:
