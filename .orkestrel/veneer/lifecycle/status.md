@@ -7,6 +7,17 @@ The user asked (2026-10-03) whether journeys, tests, and `browse` start a browse
 - `veneer-tests-map.md`: each `vitest run` launches one Chromium per browser project and reuses it for every file in that project, one tester iframe per file on one page. A full `npm test` is 15 Vitest processes chained with `&&` and 17 launches, each with its own Vite server. The four journey variants run at once, four browsers, the only parallelism; every other browser project runs its files one after another (`fileParallelism: false`) except `setup:browser`. Nothing stays warm between scripts. `configs/browsers.ts` already connects to `PLAYWRIGHT_WS_ENDPOINT` when set, and no script sets it.
 - `browser-browse-map.md`: the `browse` server launches Chromium on the first tool call and keeps one browser and one isolated context for the server's life; `replay` reuses them. It has no idle shutdown and no recovery after a successful launch, so a crashed browser leaves later calls on a dead page. `test:service` performs about 24 launches, 17 of them per test in `tests/service/browser.test.ts`. `src:browser` and `setup:browser` each launch 2 more in a global setup. `probe` starts its workers on the first `prove`, not at server start, and keeps them resident.
 
+## Decisions
+
+- 2026-10-03, the user: the `browse` server launches Chromium at server start, the highest point upstream, never inside a tool call, and recovers a crashed browser. Both come first. Then a warm spare browser that starts outside every tool call, so no call pays a startup; its value is measured.
+- 2026-10-03, the user: `@orkestrel/probe` moves the same way, from a lazy start on the first `prove` to server start, so a broken tool shows at the onset. Recorded as probe `ROADMAP.md` item 1 (probe `0690762`).
+- 2026-10-03, the user: tap `PLAYWRIGHT_WS_ENDPOINT` for warm test browsers if it works as expected. The provider calls Playwright's `chromium.connect` (`@vitest/browser-playwright/dist/index.js:920`), Playwright's own protocol, so the endpoint comes from a Playwright browser server, not from a raw CDP endpoint.
+
+## Running
+
+- `browse-eager-map` (Grok, `browser-wt-browse/tmp/cursor/`): the MCP `initialize` hooks, what a recovery rebuilds, crash signals, reusable `@orkestrel/*` primitives, profiles and port 9222, client startup timeouts, and Playwright's browser server.
+- `ws-endpoint-probe` (Astra, veneer `tmp/codex/`): attach without a launch, cleanup per run, the launch-options header, the journey's parallel projects on one server, failure at the onset, one browser for both protocols, and preliminary cost.
+
 ## Open
 
 - The journey proofs repair (`showcase-proofs-6`, veneer worktree `veneer-wt-page`) measures journey wall, per-project, and per-test time before and after replacing fixed observation windows with windows derived from the engine's timing.
