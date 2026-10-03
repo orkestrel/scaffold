@@ -19,6 +19,7 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 ## In flight
 
 - **Browse items 9 and 10** (`browse.md` § Remaining units).
+- **The showcase falsify round ran on 2026-10-03 and ruled `FAIL`** (`../showcase-audit-verdict.md`): its fix units `showcase-page` (running in the worktree `veneer-wt-page`), then `showcase-proofs`, then `showcase-guide`. It closed open reading (c), journey memory, on this host, and carries (a), (b), and (d).
 
 ## Planned, in order
 
