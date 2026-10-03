@@ -9,8 +9,8 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | Row | Value |
 | --- | --- |
 | Handoff | the user directed on 2026-10-03 that a new session resume from these records when the cloud session's credits run out; § In flight and § Planned are the state to resume from |
-| Veneer main | `9885975`, the engine session's 0.0.88 visit (scaffold `^0.0.88`), over `dc4654b` and `43ca8a0`, the showcase landing: the page, 18 component statecharts, and the tuned journeys (60 tests, 218 to 227 s on the cloud host against 353 s) |
-| Integration branch | veneer `ccr-d15a48b1-yyyll6` at `03d45cd` (the guide's showcase docs) over `dc4654b`; merge `main` into it and run `npm install` before the next unit, because the visit moved the lockfile |
+| Veneer main | `0c6ca7f`, the showcase docs, over `9885975`, the engine session's 0.0.88 visit (scaffold `^0.0.88`), over `dc4654b` and `43ca8a0`, the showcase landing: the page, 18 component statecharts, and the tuned journeys (60 tests, 218 to 227 s on the cloud host against 353 s) |
+| Integration branch | veneer `ccr-d15a48b1-yyyll6` at `0c6ca7f`, equal to `main`; merge `main` into it and run `npm install` before the next unit |
 | Scaffold | 0.0.88 on the registry (2026-10-03), carrying browser `^0.0.21`; veneer adopted it in `9885975` |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 | Browse | `browse.md` beside this file: item 9 on the browser branch awaiting its review, item 10 designed |
@@ -18,7 +18,6 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 
 ## In flight
 
-- **Docs** (`03d45cd` on the branch): `guides/veneer.md` § Showcase gains Variants, Journey families, Statecharts, Variant placement, Reduced motion, Capture portfolio, and Run one variant. A claims audit, a writing-rules audit, a completeness critic, and a recheck ruled the text; `test:guides`, `test:policy`, and `format:check` pass. The commit changes only `guides/veneer.md`. Land it: merge `main`, run `npm install`, rerun those three gates, fast-forward veneer `main`, and log the landing in `../lanes.md`. `src/`, `tests/`, and the page stay equal to `main`, so the engine gates read as on `main`.
 - **Browse items 9 and 10** (`browse.md` § Remaining units).
 
 ## Planned, in order
@@ -41,6 +40,7 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 - `B2` (`browse/b2-report.md`): the agent-facing browse recheck.
 - `J0c` (scope `j0c-scope.md`, report `j0c-report.md`): the statechart wait budget with failure causes, the header tables and J7, J8, and the frozen refusal placed by variant dependence, reduced motion where no transition is proved, the redundant 1280 rows removed, one rebalance; two consecutive gates of 226.77 s and 217.89 s.
 - Landing `43ca8a0` on veneer `main` with browser `^0.0.21`; the engine session adopted scaffold 0.0.87 and guide 0.0.24 (`ea80bb9`, `56c8293`).
+- Docs (`03d45cd`, landed in `0c6ca7f`): `guides/veneer.md` § Showcase gains Variants, Journey families, Statecharts, Variant placement, Reduced motion, Capture portfolio, and Run one variant, ruled by a claims audit, a writing-rules audit, a completeness critic, and a recheck.
 - Scaffold 0.0.88, published 2026-10-03 with the user's code from the cloud pack at the user's ruling: integrity `sha512-xVC+B08yYQOWX32vMbRSeY5LrpuyQ2V94JFXqqupfaqng+vU/QS//Su53J7KiVEOOPU2cH2gtmpjBrFGnx72Zw==`, 2,741,275 bytes, built from scaffold `a8dcfb8` with the listing fix `scaffold-0.0.88-listing.patch`. The engine session's pack differed only in the tar mode of the four `dist/host/scripts/*.sh` entries, `644` against `755`, as its reading confirmed (`scaffold-0.0.88-pack-linux.txt`, `pack-list.cjs`). The manifest carries no `gitHead`, because npm reads none from a linked worktree (`../lanes.md`, 2026-10-03, "scaffold 0.0.88 published").
 
 ## Rulings the showcase works under

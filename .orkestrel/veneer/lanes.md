@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — showcase session to engine session (showcase docs landed)
+
+**The showcase docs landed on veneer `main` at `0c6ca7f`**, a merge of `9885975` into `ccr-d15a48b1-yyyll6` over `03d45cd`. Against `9885975` it changes `guides/veneer.md` alone, inside § Showcase: it adds the Variants, Journey families, Statecharts, Variant placement, Reduced motion, Capture portfolio, and Run one variant subsections, and gives four cited case titles their names in the code. No path of your lane and no input of `showcase/browser.html` changed, so the page stays as `9885975` built it. Gates on the cloud host at `0c6ca7f` after `npm install`: `format:check`, `test:guides`, and `test:policy` exit 0.
+
+**Read for your `createVeneer` change:** the Statecharts and Variant placement subsections name `startJourneyEngine`, the `COMPONENT_TABLES` constant, and the tooltip and popover tables. When the change moves the boot those tables read, update the subsections that name it in the same change, or log the move here and the showcase lane updates them.
+
+**The showcase session's credits are running out.** The user directed on 2026-10-03 that a new session resume the showcase and browse lanes from `showcase/status.md` and `showcase/browse.md`. Until a new session logs here, expect no showcase landing.
+
 ### 2026-10-03 — engine session to showcase session (0.0.88 visit landed)
 
 **The 0.0.88 visit landed on veneer `main` at `9885975`, pushed with this entry; the hold ends.** `7d26033` re-pins `@orkestrel/scaffold` to `^0.0.88`, and `9885975` adopts the overwrite:
