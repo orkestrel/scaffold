@@ -23,7 +23,11 @@ The user asked (2026-10-03) whether journeys, tests, and `browse` start a browse
 
 `eager/synthesis.md` (Opus, from three proposals and a three-lens judge panel, 2026-10-03): a pool private to `BrowserMCPServer`, 1 to 3 fully warm browsers, one `handshake` hook in `@orkestrel/mcp` 0.0.36, liveness from events plus a `ping` at hand-out and before every call, a successor only after a confirmed release, one setup place and one teardown place, and a start sweep that reclaims a killed server's browsers; `@orkestrel/pool` is not used. The objective attack (`eager/attack.md`) failed it on 16 required, implementation-level findings, which a revision pass repairs. The user ruled the open decisions (design brief D10): failover now and parallel holders later, a `ping` at hand-out with no timer, the handshake on the first warm browser, and a default size of 1 until measured.
 
-## Open decision: where the resource lifecycle lives
+## Decided: the resource lifecycle lives in `@orkestrel/pool`
+
+The user ruled (2026-10-03, design brief D11) to expand `@orkestrel/pool` to 0.0.14 now, on the judge's ruling (`resource/ruling.md`) with three lanes behind it (`resource/position-*.md`), and with the Orchestrator's correction that a record whose teardown fails stays counted and is not replaced. That ruling explicitly requests `@orkestrel/pool` as a runtime dependency of `@orkestrel/browser`, and of `@orkestrel/probe` at its item 1.
+
+## Decision history: where the resource lifecycle lives
 
 The user (2026-10-03) agrees `@orkestrel/pool` has a gap for this case (no eager warm floor, no eviction of a resource that dies, no named records, no holder) and asks whether it belongs in `@orkestrel/pool`, in a new package (for example `@orkestrel/lease` or `@orkestrel/resource`), or inside `@orkestrel/browser` now with a roadmap item for later, depending on whether it is a full build-out and whether it is truly needed. The `resource-consumers` survey counts the real consumers across the fleet and measures the gap; a build-now against defer argument and a judge follow, then the user rules.
 
