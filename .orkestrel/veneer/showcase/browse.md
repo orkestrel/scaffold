@@ -9,7 +9,7 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 | Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6` and browser `main` both at `a9c30ad` (the campaign plan) over `6f5544e` (`Release 0.0.21`, the 0.0.21 `gitHead`); every published release's `gitHead` sits on `main` |
 | Registry | 0.0.21, published 2026-10-03 with the user's code, `BR1` included; the visit adopted scaffold 0.0.87 |
 | Dependents to re-pin | none: ollama (`f9cb40a`), veneer `main` (`43ca8a0`, `package.json:135`), and scaffold 0.0.88 (published 2026-10-03 from `a8dcfb8`; `package.json:109`, written into workspaces by `src/core/constants.ts:666`) carry `^0.0.21` |
-| In flight | nothing |
+| In flight | items 9 and 10 on browser `ccr-d15a48b1-yyyll6`, one commit each, unpushed until each passes its review and the bare gates; items 11 and 12 follow |
 | Next | `ROADMAP.md` items 9, 10, 11, and 12, then 6 and 7, then 8 when a run reproduces it |
 
 ## Readings
