@@ -1,7 +1,8 @@
 // Census of test discovery across each gated config, mode, and project filter. Run from the checkout root:
 //   node .agents/skills/orkestrel-harden/scripts/discovery.ts [--config vite.config.ts] [--projects a,b] [--json]
 // The script follows every root script chain in package.json (a script no other script invokes) to
-// its Vitest scripts' `--config`, `--mode`, and `--project` flags (space or equals forms). A config
+// its Vitest scripts' `--config`, `--mode`, and `--project` flags (space or equals forms), forwarding
+// `npm run X -- args` arguments. Treat explicit `--mode test` as the default mode. A config
 // defaults to this script's --config; no project filter gates everything that config and mode collect.
 // Run `vitest list --json=FILE` once per distinct config and mode, unioning named project filters unless
 // a gate is unfiltered. Census this script's own config without a gate filter to expose ungated projects.
@@ -10,13 +11,15 @@
 // Also read test files root scripts run directly and every collected file for `.skip(`, `.todo(`,
 // `.skipIf(`, `.runIf(`, `retry:`, and `timeout:`. It flags a collected project no root chain reaches, a named project that collects
 // nothing, and a test file under tests/ that no project collects and no root script runs directly.
-// A browser instance's tests, which Vitest names `NAME (BROWSER)`, count under the gated project NAME.
+// Fold `NAME (BROWSER)` into NAME only when that listing's own gates name NAME. Gate a project only
+// through a unit whose own listing names it after folding, or a root script that runs its file directly.
+// Shared files never carry a Vitest gate between projects. Deduplicate after each listing folds names.
 // A project with no test file and no gate is outside the census. Exit 0 with no flag, 3 with one, 2 when Vitest cannot list, 64 on
 // usage.
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, relative, resolve } from 'node:path'
+import { basename, join, relative, resolve } from 'node:path'
 import {
 	listFiles,
 	readMissingFlags,
@@ -151,7 +154,9 @@ function readGates(scripts: Readonly<Record<string, string>>, config: string): G
 			)
 			const gate = root === name ? name : `${root} > ${name}`
 			for (const command of expanded) {
-				const index = command.indexOf('vitest')
+				const index = command.findIndex((token) =>
+					['vitest', 'vitest.mjs', 'vitest.js'].includes(basename(token)),
+				)
 				if (index >= 0) {
 					const flags = command.slice(index + 1).flatMap((argument) => {
 						const equals = argument.indexOf('=')
@@ -159,11 +164,12 @@ function readGates(scripts: Readonly<Record<string, string>>, config: string): G
 							? [argument.slice(0, equals), argument.slice(equals + 1)]
 							: [argument]
 					})
+					const mode = readOption(flags, '--mode')
 					units.push({
 						config: relative(process.cwd(), resolve(readOption(flags, '--config') ?? config))
 							.split('\\')
 							.join('/'),
-						mode: readOption(flags, '--mode'),
+						mode: mode === 'test' ? undefined : mode,
 						projects: readOptions(flags, '--project'),
 						chain: gate,
 					})
@@ -288,15 +294,20 @@ function collectListings(
 					: [...new Set(reached.flatMap((gate) => gate.projects))]
 		const collected = listCollected(unit, projects)
 		if (collected === undefined) return undefined
-		listings.push({ ...unit, collected, gates: reached })
+		const known = new Set(reached.flatMap((gate) => gate.projects))
+		listings.push({
+			...unit,
+			collected: collected.map((entry) => ({
+				...entry,
+				projectName: normalizeProject(entry.projectName, known),
+			})),
+			gates: reached,
+		})
 	}
 	return listings
 }
 
-function mergeCollected(
-	listings: readonly Listing[],
-	known: ReadonlySet<string>,
-): readonly Collected[] {
+function mergeCollected(listings: readonly Listing[]): readonly Collected[] {
 	const collected = new Map<string, Collected>()
 	for (const listing of listings) {
 		const occurrences = new Map<string, number>()
@@ -304,10 +315,7 @@ function mergeCollected(
 			const identity = JSON.stringify([entry.file, entry.projectName, entry.name])
 			const occurrence = (occurrences.get(identity) ?? 0) + 1
 			occurrences.set(identity, occurrence)
-			collected.set(JSON.stringify([identity, occurrence]), {
-				...entry,
-				projectName: normalizeProject(entry.projectName, known),
-			})
+			collected.set(JSON.stringify([identity, occurrence]), entry)
 		}
 	}
 	return [...collected.values()]
@@ -337,18 +345,7 @@ function main(argv: readonly string[]): number {
 		return 2
 	}
 	const known = new Set([...gates.units.flatMap((gate) => gate.projects), ...named])
-	const collected = mergeCollected(listings, known)
-	const reachedFiles = new Map(gates.files)
-	for (const listing of listings) {
-		for (const entry of listing.collected) {
-			const name = normalizeProject(entry.projectName, known)
-			const gate = listing.gates.find(
-				(candidate) => candidate.projects.length === 0 || candidate.projects.includes(name),
-			)
-			if (gate !== undefined && !reachedFiles.has(entry.file))
-				reachedFiles.set(entry.file, gate.chain)
-		}
-	}
+	const collected = mergeCollected(listings)
 	const names = new Set<string>([
 		...(named.length === 0 ? known : named),
 		...collected.map((entry) => entry.projectName),
@@ -358,23 +355,14 @@ function main(argv: readonly string[]): number {
 		const mine = collected.filter((entry) => entry.projectName === name)
 		const units = listings.filter(
 			(listing) =>
-				listing.collected.some((entry) => normalizeProject(entry.projectName, known) === name) ||
-				listing.gates.some((gate) => gate.projects.includes(name)) ||
-				listing.collected.some(
-					(entry) =>
-						mine.some((candidate) => candidate.file === entry.file) &&
-						listing.gates.some(
-							(gate) =>
-								gate.projects.length === 0 ||
-								gate.projects.includes(normalizeProject(entry.projectName, known)),
-						),
-				),
+				listing.collected.some((entry) => entry.projectName === name) ||
+				listing.gates.some((gate) => gate.projects.includes(name)),
 		)
 		const gate = units
 			.flatMap((unit) => unit.gates)
 			.find((entry) => entry.projects.length === 0 || entry.projects.includes(name))?.chain
 		const fileGate = mine
-			.map((entry) => reachedFiles.get(entry.file))
+			.map((entry) => gates.files.get(entry.file))
 			.find((chain) => chain !== undefined)
 		return {
 			name,
