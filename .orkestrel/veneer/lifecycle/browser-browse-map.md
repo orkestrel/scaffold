@@ -1,0 +1,117 @@
+# `@orkestrel/browser` and `browse`: browser lifecycle map
+
+Grok 4.7 mapping lane `browser-lifecycle-browse`, 2026-10-03, over the browse branch at `cfc3ad4` and `probe` `main`. Read-only; no live run.
+
+## 1. Library launch, connection, contexts, pages, frames
+
+`@orkestrel/browser` does not start a browser from the core barrel. A process starts only in `src/server/Browser.ts`, through `createBrowser` (`src/server/factories.ts:41-43`). `connect()` (`src/server/Browser.ts:148-159`) runs one establishment (`src/server/Browser.ts:290-336`):
+
+1. If this instance still owns an endpoint, it reconnects to that endpoint (`src/server/Browser.ts:301-303`).
+2. If `cdp.endpoint` is set, it connects to that WebSocket and does not launch (`src/server/Browser.ts:306-309`, `src/server/Browser.ts:565-594`).
+3. Otherwise, if `cdp.discover` is omitted or true, it fetches `http://{host}:{port}/json/version` (`src/server/Browser.ts:312-318`, `src/server/Browser.ts:513-537`). The host defaults to `127.0.0.1` and the port to `9222` (`src/server/constants.ts:8-14`, `src/server/Browser.ts:112-113`). A `webSocketDebuggerUrl` is attached to; the process is not owned unless `adopt()` is called (`src/server/Browser.ts:161-171`). The interface comment at `src/server/types.ts:188` says this probe uses `localhost`; the implementation uses `#cdpHost`.
+4. If `discover` is false, it probes that same port for up to 200 ms and refuses the launch when `/json/version` answers (`src/server/Browser.ts:320-321`, `src/server/Browser.ts:543-563`, `src/server/constants.ts:57-61`).
+5. Otherwise `#launch` runs (`src/server/Browser.ts:596-676`).
+
+Executable resolution (`src/server/Browser.ts:601-621`, `src/server/helpers.ts:91-136`): `options.executable` if set, classified by `parseBrowserEngine` (`src/server/helpers.ts:145-152`); otherwise the first hit from `PLAYWRIGHT_EXECUTABLE_PATH`, `CHROME_PATH`, well-known install paths, `which`/`where` names, then Playwright browser stores. No match throws and does not spawn (`src/server/Browser.ts:616-620`).
+
+The spawn (`src/server/helpers.ts:350-371`) is `executable` with the caller’s args first, then `--remote-debugging-port=` (`cdp.port`, or `0` when omitted), `--no-first-run`, `--no-default-browser-check` (`src/server/constants.ts:34-37`), `--headless=new` when `headless` is omitted or true (`src/server/constants.ts:42`, `src/server/helpers.ts:365`), and `--user-data-dir=` when a profile path exists. Standard input and output are ignored; standard error is piped. On non-Windows the child is detached so it has its own process group (`src/server/helpers.ts:368-370`). Readiness is the `DevTools listening on ws://…` line on that pipe (`src/server/helpers.ts:389-424`, `src/server/constants.ts:71`, `src/server/Browser.ts:721-765`), not an HTTP poll. The default wait is 30 seconds (`src/server/Browser.ts:509-510`). A Windows launcher that exits 0 before the endpoint is up is kept by reading `SystemInfo.getProcessInfo` for the `browser` pid (`src/server/Browser.ts:691-718`). The connection mode is `launch` without a caller profile and `persistent` with one (`src/server/Browser.ts:651`). A caller path is not deleted by the library; an omitted path gets a temporary directory under the OS temp dir, prefix `orkestrel-browser-` (`src/server/helpers.ts:174-178`, `src/server/constants.ts:47`).
+
+After the socket connects, `Target.getTargets` adopts existing page targets into one default context only when the instance has none yet (`src/server/Browser.ts:798-837`).
+
+What each public entry creates:
+
+- `browser.create()` (`src/server/Browser.ts:246-261`) uses context 0, or constructs a `BrowserContext` with no browser-context id (the browser’s default context), then `context.create()`.
+- `browser.isolate()` (`src/server/Browser.ts:196-243`) sends `Target.createBrowserContext` with `disposeOnDetach: false` and stores that context. It does not start another browser process.
+- `BrowserContext.create()` (`src/core/BrowserContext.ts:132-143`, `src/core/BrowserContext.ts:177-236`) sends `Target.createTarget` at `about:blank`, then `Target.attachToTarget` with `flatten: true` (`src/core/BrowserContext.ts:483-492`), enables `Page` and `Runtime` (`src/core/BrowserContext.ts:494-497`), reads the main frame (`src/core/BrowserContext.ts:499-504`), and constructs one `BrowserPage` (`src/core/BrowserContext.ts:269-300`). The page session is configured with `Target.setAutoAttach` (`autoAttach`, `waitForDebuggerOnStart`, `flatten`), file-chooser intercept, lifecycle events, download behavior, and `page.network.start()` (`src/core/BrowserContext.ts:506-527`). The first page on a client also sends `Target.setDiscoverTargets` (`src/core/BrowserPage.ts:378-384`).
+- A `BrowserFrame` is an object over a frame id and a session resolver (`src/core/BrowserFrame.ts:39-70`). `page.frames()` builds one per node of `Page.getFrameTree` (`src/core/BrowserPage.ts:691-696`). An out-of-process iframe attaches on its own session: the page enables Page, Runtime, lifecycle events, and iframe auto-attach, then `Runtime.runIfWaitingForDebugger` (`src/core/BrowserPage.ts:1289-1305`). `Page.frameAttached` emits a `BrowserFrame` (`src/core/BrowserPage.ts:1681-1700`).
+- A `BrowserWorker` is a dedicated, shared, or service-worker target on a flattened session (`src/core/BrowserWorker.ts:12-35`), created when that target attaches (`src/core/BrowserPage.ts:1347-1362`). It is not a pool of browser processes. `close()` sends `Target.closeTarget`; `detach()` only stops local use (`src/core/BrowserWorker.ts:73-85`).
+- `createBrowserToolset` (`src/core/factories.ts:155-159`) wraps an existing page or DOM view. `start()` (`src/core/BrowserToolset.ts:504-514`, `src/core/BrowserToolset.ts:594-628`) registers tools, starts the page registry when there is a page, and watches that page. It does not launch a browser. Actions on one toolset share one turn queue (`src/core/BrowserToolset.ts:1306-1327`).
+- `createBrowserReplay` (`src/core/factories.ts:187-192`) runs steps on that same toolset (`src/core/BrowserReplay.ts:39-68`). It does not launch a browser.
+- `createDocumentToolset` / `createBrowserDOMView` (`src/browser/factories.ts:29-31`, `src/browser/factories.ts:62-82`) drive a document already in a page. `destroy()` on the document toolset destroys the view (`src/browser/factories.ts:77`). `createSocketCDPTransport` (`src/browser/factories.ts:99-102`) and `createCDPTransport` (`src/server/factories.ts:51-52`) only open a WebSocket to a URL the caller already has. A caller-built `BrowserContext` (`src/core/BrowserContext.ts:73-96`) uses a `CDPClient` the caller connected.
+
+Release:
+
+- `page.destroy()` detaches the session (`src/core/BrowserPage.ts:721-728`, `src/core/BrowserPage.ts:948-958`). `page.close()` sends `Target.closeTarget` (`src/core/BrowserPage.ts:731-744`, `src/core/BrowserPage.ts:961-967`). Both release local subscriptions and `worker.detach()` every worker (`src/core/BrowserPage.ts:978-1008`). `Inspector.targetCrashed` emits `crash` and does not close or replace the page (`src/core/BrowserPage.ts:1904-1906`).
+- `context.destroy()` destroys each page and does not dispose the remote context (`src/core/BrowserContext.ts:352-362`). `context.close()` closes each page and, when the context has an id, sends `Target.disposeBrowserContext` (`src/core/BrowserContext.ts:365-383`).
+- `browser.disconnect()` drops local contexts and the client, keeps the endpoint when the instance owns the process, and emits `idle` (`src/server/Browser.ts:173-184`, `src/server/Browser.ts:338-357`). A later `connect()` on that instance reattaches (`src/server/Browser.ts:301-303`).
+- `browser.destroy()` (`src/server/Browser.ts:264-274`, `src/server/Browser.ts:840-871`), when the instance owns the process, closes contexts, sends `Browser.close` only if there is no child handle, then signals the serving process. `browser.close()` (`src/server/Browser.ts:276-286`, `src/server/Browser.ts:874-905`) closes contexts and always attempts `Browser.close` (`src/server/Browser.ts:921-948`), then waits for the process. Termination is `SIGTERM`, then `SIGKILL` after 3000 ms (`src/server/Browser.ts:1124-1141`, `src/server/constants.ts:51-54`). On POSIX the signal goes to the process group; on Windows it goes to the spawned pid or the handed-off browser pid (`src/server/Browser.ts:1060-1071`). A temporary profile is removed only after that termination (`src/server/helpers.ts:190-199`). An attached browser that this instance does not own is detached locally on `destroy` (`src/server/Browser.ts:848-853`).
+- An owned process that exits on its own clears ownership and the endpoint, emits a coded error, `disconnect`, and `idle` (`src/server/Browser.ts:388-419`). A dropped socket while that process is still alive keeps the endpoint (`src/server/Browser.ts:422-476`). Nothing in the library starts a replacement process until something calls `connect()` again.
+- `toolset.destroy()` destroys the journey toolset, aborts in-flight work, unwatches pages, and calls `options.release` once (`src/core/BrowserToolset.ts:2047-2063`). The MCP server does not pass `release`, so this does not close the page or the browser.
+
+`src/core/BrowserToolset.ts`, `src/core/constants.ts`, `src/core/helpers.ts`, and `src/core/BrowserReading.ts` contain no conflict markers. The launch and toolset lifecycle functions read from those files are complete. `BrowserReading` is the captured-document type, not the process lifecycle.
+
+## 2. The `browse` MCP server
+
+`src/bin/main.ts:22-29` constructs `createBrowserMCPServer` from `BROWSE_ROOT`, `BROWSE_HEADLESS`, `BROWSE_EXECUTABLE`, and `BROWSE_READONLY`, then calls `start()`. `start()` (`src/server/BrowserMCPServer.ts:131-138`) serves stdio and listens for stdin `end`, `SIGINT`, and `SIGTERM`. It does not construct a `Browser` and does not spawn Chromium. The tool list is registered in the constructor (`src/server/BrowserMCPServer.ts:103-113`), so `tools/list` is answerable with no browser (`src/server/BrowserMCPServer.ts:36-39`).
+
+The first call of any tool enters `#open` (`src/server/BrowserMCPServer.ts:185-208`). Concurrent callers share one `#launch` promise. A rejected launch clears that promise so the next call launches again (`src/server/BrowserMCPServer.ts:205-207`). A resolved launch is kept for every later call on that process. There is one `#browser` and one `#session` (`src/server/BrowserMCPServer.ts:84-87`). There is no table of MCP sessions, and no second browser for a second client. The transport is one stdio pair (`src/server/BrowserMCPServer.ts:114-122`).
+
+`#launch` (`src/server/BrowserMCPServer.ts:211-249`) creates `ROOT/.profiles/<uuid>` with a non-recursive `mkdir` so two launches cannot share it, then `createBrowser` with `headless` (default true), that profile, `cdp: { discover: false }`, the server abort signal, an optional executable, and `--no-sandbox` only when `process.platform === 'linux'` and `getuid() === 0` (`src/server/BrowserMCPServer.ts:222-231`). Because `discover` is false and no port is set, `connect()` probes port 9222 and refuses if a CDP endpoint is already there, then launches with `--remote-debugging-port=0` (`src/server/Browser.ts:320-325`, `src/server/helpers.ts:363`). The profile path is caller-owned, so `Browser` will not delete it (`src/server/helpers.ts:174-175`). After `connect()`, the server calls `isolate()` once and `context.create()` once (`src/server/BrowserMCPServer.ts:234-235`), then `createBrowserToolset(page, { context, journeys })` with file journey and run stores under the root (`src/server/BrowserMCPServer.ts:236-249`) and `toolset.start()`.
+
+Tabs are the pages of that one context. `tabs` and `switch` are registered only because `context` was passed (`src/core/BrowserToolset.ts:294-301`). `switch` selects `context.pages()[n]` (`src/core/BrowserToolset.ts:1175-1206`). A popup the page emits is adopted into the same context (`src/core/BrowserContext.ts:570-592`). Nothing in the server calls `isolate()` again or constructs a second `Browser`.
+
+`replay` is a tool on that same toolset (`src/core/BrowserJourneyToolset.ts:393-437`). It loads the named journey from the file store and runs `createBrowserReplay(this.#toolset, …).execute()`. It does not launch a browser or open a new context. A second `replay` is refused while one name is current (`src/core/BrowserJourneyToolset.ts:415-418`). `destroy()` on the journey toolset aborts the active replay and waits for it (`src/core/BrowserJourneyToolset.ts:63` in the class remarks, `src/core/BrowserJourneyToolset.ts:133-135`).
+
+There is no idle timer that closes Chromium. `idle` on `Browser` is the status before connect and after disconnect (`src/server/Browser.ts:79`, `src/server/Browser.ts:115`, `src/server/Browser.ts:357`). The launched process stays until server teardown.
+
+Crash recovery at the server is the failed-launch retry only. The server never subscribes to the browser emitter and never calls `connect()` again after a successful `#launch`. A page `crash` event does not replace the page (`src/core/BrowserPage.ts:1904-1906`). An unexpected process exit clears the `Browser` instance’s endpoint (`src/server/Browser.ts:405-406`) but leaves `#session` resolved, so later tool calls use the dead page. A launch that fails before the promise resolves is forgotten (`src/server/BrowserMCPServer.ts:205-207`, cleanup at `src/server/BrowserMCPServer.ts:251-258`).
+
+On stdin end, `SIGINT`, or `SIGTERM`, `#end` calls `destroy()` (`src/server/BrowserMCPServer.ts:181-183`, `src/server/BrowserMCPServer.ts:146-167`). That stops stdio, removes signal listeners, aborts the launch signal, `toolset.destroy()` (which does not close the browser), `browser.destroy()` (which terminates the owned process), then `rm` of the profile directory with retries. A launch still in `#establish` sees the abort and tears down the partial process (`src/server/Browser.ts:663-674`).
+
+## 3. This package’s tests
+
+`tests/setupService.ts` does not launch a browser. `requireSystemBrowser` (`tests/setupService.ts:58-67`) calls `findSystemBrowser` and throws if none exists. Service proofs call it, then `createBrowser` themselves.
+
+`npm run test:service` (`package.json:98`) is Vitest project `service` (`vite.config.ts:392-405`): `tests/service/**/*.test.ts`, setup `tests/setup.ts` and `tests/setupService.ts`, `browser.enabled: false`, `fileParallelism: false`, timeouts 120 seconds. It is not part of `npm test` (`package.json:79`). `fileParallelism: false` runs those files one after another. The project does not set `sequence.concurrent`.
+
+A full run that executes every `connect()` below starts **24** Chromium processes through `createBrowser`. Each of those passes an executable and a fresh reserved port, so discovery misses and `#launch` runs. Attaches to an already-launched port are not in the 24.
+
+| File | Launches | How long they live |
+| --- | --- | --- |
+| `tests/service/browser.test.ts` | 17 | The first `describe` (`tests/service/browser.test.ts:66-584`) launches inside each test and `afterEach` calls `browser.destroy()` (`tests/service/browser.test.ts:69-74`). Two tests launch a second process after `destroy()` of the first (`tests/service/browser.test.ts:215-225`, `tests/service/browser.test.ts:247-257`). Three `connect()` calls only attach (`tests/service/browser.test.ts:372-373`, `tests/service/browser.test.ts:437-446`, `tests/service/browser.test.ts:526-527`). The fixture `describe` (`tests/service/browser.test.ts:586-629`) launches two processes in one `beforeAll` and keeps both until `afterAll`. Nested hooks open pages on those two; they do not launch again. |
+| `tests/service/document.test.ts` | 1 | One `beforeAll` (`tests/service/document.test.ts:66-85`), destroyed in `afterAll`. `chromium.connectOverCDP` (`tests/service/document.test.ts:193`, `tests/service/document.test.ts:215`) attaches Playwright to that same port. |
+| `tests/service/toolset.test.ts` | 1 | One `beforeAll` (`tests/service/toolset.test.ts:88-106`), destroyed in `afterAll`. Later hooks call `isolate()`, `create()`, and `createCDPClient` on that port. |
+| `tests/service/journey.test.ts` | 4 | One `createBrowser` plus `connect()` in each top-level `describe` `beforeAll` (`tests/service/journey.test.ts:96-105`, `tests/service/journey.test.ts:246-255`, `tests/service/journey.test.ts:475-484`, `tests/service/journey.test.ts:1070-1079`). Extra `CDPClient` and `stage.connect` calls attach to that process. `createBrowserReplay` does not launch. |
+| `tests/service/codegen.test.ts` | 1 | One `beforeAll` (`tests/service/codegen.test.ts:42-51`). |
+
+The only `context.skip` under `tests/service` (`tests/service/browser.test.ts:1165`) skips a test that uses the registry browser already launched in that file’s `beforeAll`. It does not remove a launch. Peak overlap the service sources themselves create is the two browsers held together by `tests/service/browser.test.ts:596-628`. Every other service file holds one process from its `beforeAll` until its `afterAll`.
+
+`tests/setupServer.ts` does not launch Chromium. It builds a fake Node “browser” (`tests/setupServer.ts:724-736`) and an in-process CDP server (`tests/setupServer.ts:353-357`). `src:server` tests (`vite.config.ts:232-239`) use those. `createBrowser()` there connects to the fixture or the fake executable, not to a system Chrome. `src:bin` (`vite.config.ts:273-283`) spawns the browse entry with `BROWSE_EXECUTABLE` pointed at a missing path (`tests/src/bin/main.test.ts:45-47`) and does not call a tool that would launch. `src:core` has `browser.enabled: false` (`vite.config.ts:139-145`).
+
+`src:browser` and `setup:browser` (`vite.config.ts:176-189`, `vite.config.ts:337-353`) set Vitest’s Playwright provider to one headless Chromium instance. Both use `tests/setupGlobal.ts` as `globalSetup`. That setup launches **two** more Chromium processes through `createBrowser` and keeps them until the project teardown (`tests/setupGlobal.ts:271-323`, `tests/setupGlobal.ts:309-312`). `src:browser` also sets `fileParallelism: false`. `setup:browser` does not. `npm test` runs `test:src` (includes `src:browser`) and `test:setup:browser` as separate Vitest invocations (`package.json:79-81`, `package.json:102`), so those global-setup pairs do not overlap with each other. They are not part of `test:service`.
+
+`test:policy`, `test:config`, `test:guides`, `test:conformance`, `test:distribution`, `test:setup`, and `test:probe` do not enable the Vitest browser and do not call `setupGlobal`.
+
+## 4. Comparison with `@orkestrel/probe`
+
+`probe:src/bin/main.ts:4` calls `new ProbeServer().start()`. `start()` (`probe:src/server/ProbeServer.ts:105-126`) binds stdio and `SIGINT`/`SIGTERM`. It does not construct a `Probe` and does not spawn the type, lint, or runtime workers.
+
+The first admitted `prove` call constructs one `Probe` (`probe:src/server/ProbeServer.ts:212-227`, `probe:src/server/ProbeServer.ts:234-245`). A failed constructor is forgotten so the next call retries. A successful `Probe` is reused for every later `prove` on that process. The constructor (`probe:src/server/Probe.ts:125-163`) builds three stages and starts `#arm()`:
+
+- `LintStage` starts one resident process: `node <workspace oxlint> --lsp` (`probe:src/server/stages/LintStage.ts:142-158`). Later lint inspections reuse that client (`probe:src/server/stages/LintStage.ts:118`).
+- `RuntimeStage` starts one resident Vitest in the target workspace with `pool: 'threads'` (`probe:src/server/stages/RuntimeStage.ts:315-366`). Inspections call `createSpecification(..., 'threads')` on that service (`probe:src/server/stages/RuntimeStage.ts:226`). The service is replaced after 64 specifications (`probe:src/server/stages/RuntimeStage.ts:654-667`).
+- `TypeStage` does not keep a compiler process. Warming and each inspection spawn `node <tsc>` and wait for that child to exit (`probe:src/server/stages/TypeStage.ts:239-244`, `probe:src/server/stages/TypeStage.ts:561-607`). What stays warm is the mirror and its `tsBuildInfo` files (`probe:src/server/stages/TypeStage.ts:236-237`, `probe:src/server/stages/TypeStage.ts:431-437`).
+
+Each stage has a queue with `concurrency: 1` (`probe:src/server/Probe.ts:144-158`). One `prove` enqueues type, lint, and runtime together (`probe:src/server/Probe.ts:436-446`), so those three stages can run at the same time, and two claims do not use one stage at the same time. A deadline destroys that stage and constructs a replacement (`probe:src/server/Probe.ts:536-574`). `Probe.destroy()` destroys all three stages (`probe:src/server/Probe.ts:639-651`). `ProbeServer.destroy()` (`probe:src/server/ProbeServer.ts:134-158`) removes the signal listeners, stops stdio, and destroys the `Probe` if one was constructed.
+
+So probe’s MCP process does not pay worker startup at `start()`. It pays it on the first `prove`, then keeps the Oxlint language server and the Vitest service for later calls. browse’s MCP process does not pay Chromium startup at `start()` either. It pays it on the first tool call, then keeps that one browser, one isolated context, and its pages until the server is destroyed. browse has no second warm browser, and a browser that dies after a successful launch is not replaced.
+
+## Launches by entry and by test script
+
+| Entry or script | Chromium process |
+| --- | --- |
+| `Browser.connect()` with `cdp.endpoint`, or with discovery that finds `/json/version` | None. Attaches. |
+| `Browser.connect()` when discovery misses, or when `discover: false` and the probed port is free | One spawn per successful `#launch`. |
+| `createBrowserToolset`, `createBrowserReplay`, `createDocumentToolset`, `createBrowserDOMView`, `BrowserContext` on an existing client | None. |
+| `browse` `start()` / `tools/list` | None. |
+| `browse` first tool call | One Chromium, then reused until `destroy`. A failed launch can spawn again on the next call. |
+| `browse` `replay` | None beyond the browser already launched. |
+| `npm run test:service` | 24 `createBrowser` launches if every scheduled `connect()` runs: 17 in `browser.test.ts`, 1 in `document.test.ts`, 1 in `toolset.test.ts`, 4 in `journey.test.ts`, 1 in `codegen.test.ts`. |
+| `npm test` → `test:src` | 2 from `src:browser` global setup, plus the one Playwright Chromium instance that project configures. `src:core` and `src:server` launch no Chromium. |
+| `npm test` → `test:setup:browser` | 2 from global setup, plus that project’s one Playwright Chromium instance. |
+| `npm test` → `test:src:bin`, `test:policy`, `test:config`, `test:setup`, `test:guides`, `test:conformance` | None. |
+| `test:distribution`, `test:probe` | None in the Vitest config. |
+
+## Unknowns
+
+The 24 count is the number of `createBrowser` `connect()` calls on the launch path in `tests/service`. It was not measured by running the suite. A `beforeAll` that throws stops later tests in that file, so a failing run launches fewer. Chromium’s own renderer, GPU, and utility children are not in the 24. How many OS processes the Vitest Playwright provider starts for its one configured instance is not stated in this repo. `test:src` does not set a project parallelism cap, so whether `src:core`, `src:server`, and `src:browser` overlap inside that one Vitest command is the runner’s default, not a setting here. Unsaved editor buffers in the four files named as mid-edit were not visible on disk.
