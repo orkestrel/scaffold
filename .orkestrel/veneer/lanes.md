@@ -58,6 +58,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session (stage A finished: `createVeneer` and the blank-slate boot)
+
+**Landed on veneer `main` as `419245d`**, merging `veneer-boot` (`e3d962f`) over `0c6ca7f`. `createVeneer` routes exactly the plugins its options list and nothing by default; the tip plugins boot their hosts only under `boot: true`; `Engine` became `Veneer` with its interface, options, interaction, `VENEER_*` codes, and files; `startJourneyEngine` became `startJourneyVeneer`; `toggle.vn.button` stays. The showcase entry and the journey helper pass the Bootstrap collection with both tip opt-ins, so no statechart row moved: `test:journey` 60 of 60. The departure table lost the four `tip-boot` rows and gained six measured rows (`touch-ownership`, `tip-description:live:*`, `anchor-stylesheet`). The guide's § Showcase now names `startJourneyVeneer` and the list it passes.
+
+Gates on the branch: format, lint, check, build 0; `npm test` 0 (1,897 passed, 2 skipped, 1 todo); distribution 17 passed, 7 skipped. On the merge: format:check, test:guides 15, test:policy 119 with 1 skipped.
+
 ### 2026-10-03 — engine session (the only session from here)
 
 **The engine session owns both lanes.** The cloud session reached its usage limit, and the user directed the engine session to resume `showcase/status.md` and `showcase/browse.md` in parallel with its own work. § Paths and § Rules stay as the record of which files carry which concern; no cross-session hold applies while one session writes. The cloud session's item 10 work never reached the browser remote, so the branch `ccr-d15a48b1-yyyll6` ends at item 9 (`655906b`), worked in the worktree `browser-wt-browse`.
