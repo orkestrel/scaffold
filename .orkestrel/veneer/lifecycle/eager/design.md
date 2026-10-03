@@ -1,27 +1,26 @@
 # Eager `browse`: the design of record
 
-The ruled design is `revision-3.md` (its own title reads "revision 4"), the third round of the revise-and-attack loop (2026-10-03) over the user's decisions D1 to D12 in `design-brief.md`. Its attack (`revision-3-attack.md`) held the ceiling under every ordering tried, the hand-out wake-ups, the closing races, the stdio handshake, the forced kill, the contract-copy ruling (no `@orkestrel/pool` release), and the operation-lifecycle semantics, and failed it on three required findings. The Orchestrator rules them into the units instead of a fourth design round:
+The ruled design is `pool-design-3.md`, the third round of the revise-and-attack loop over `@orkestrel/pool` 0.0.14 (2026-10-03), on the user's decisions D1 to D13 in `design-brief.md`. `browse` composes one `Pool<BrowserSlot>` (`min` equal to the size, `restarts` set to `BROWSER_SERVER_RESTARTS`) and supplies only policy: what a slot is and how it is built and torn down, what counts as a loss, the session's one held lease, the operation-lifecycle texts, the handshake gate (`@orkestrel/mcp` 0.0.36), the profile record and the sweep, `BROWSE_POOL`, and logging. The browse-side layer of `revision-3.md` (W1 to W8) is not built.
 
-- **Attack 1 → U1.** The HTTP session middleware decides the mint from the dispatch outcome recorded in `context.state`, never from the response body's framing, because `createMCPPostHandler` frames a 200 answer as an SSE `data:` event when the client accepts `text/event-stream` (`mcp/src/server/handlers.ts:74`, `:209-214`). U1 adds twins of case h with an SSE-accepting client, with and without a hook.
-- **Attack 2 → U8.** The V4 acceptance loses the record through a ping on the `clear()` path (a `silent` spare whose hand-out ping times out) and on the validation path (a lease whose per-call ping a `version` handler rejects after the snapshot), so the watch is still armed when disposal begins, and asserts the three listener counts there.
-- **Attack 3 → U8.** The "unmirror at loss" case cannot fail; drop its "fails without" claim and record `#unmirror` in `#lose` as hygiene no case observes.
-- **Advisories 4 to 12** go to the unit that owns each file: bound a call that loses its lease twice in one `#serve` (refuse with the note instead of looping); derive `#mirrored` from `#lease`; route every `log` write through one catching method and keep a sweep folder whose record read fails with anything but `ENOENT`; give the watch promise a rejection path; build the sweep read-failure fixture as a mode `0o300` directory on POSIX, probed at runtime; emit SIGTERM from a later `end` listener; assert the orphan outlived its parent before the second `start()`; assert `destroy()` resolves in the silent-spare case; probe the host's `mkdir` error code before asserting it.
-- **Referred to the subjective lane:** `formatBrowserServerLoss` becomes `renderBrowserServerLoss` (`names.md` § helper prefixes); the bound keeps the name `restarts` unless the guide finds a clash; the watch's listener map becomes a named type in `src/server/types.ts`, as `BrowserToolsetWatch` sets the precedent.
+Its last attack (`pool-design-3-attack.md`) read the pool at `9e316a1` and held every row of the design's pool table line for line, the ceiling, the launch counts, the V4 cases, a failed per-call ping racing a watch loss, the one-turn close, the handshake, and the pins; it failed one required item. The earlier rounds' P-1 (an acquire parking forever on a blocked floor) is fixed in pool `445a4ba`. The Orchestrator rules the remainder into the units:
 
-## For the user
+- **Required 1 → U7.** "Missing executable after start" runs at size 1 (at size 2 the next call takes the spare), names how the executable goes missing after start on each host, and marks the hosts it cannot reach `NOT-EVIDENCED`.
+- **A2.** `#hold` refuses a slot `browse` already recorded as lost: it calls `token.destroy()`, leaves `#lease` unset, and refuses; add the U7 case that kills the double from inside a `version` handler's continuation, and state in the design the event-order invariant that keeps it from arising today.
+- **A3.** A pending loss note is never overwritten; the note carries every pending loss; add the U7 case.
+- **A4.** `UNAVAILABLE` renders through `describeBrowserServerLoss`, so it names the pid where the error carries one.
+- **A5.** A hook-time `rm` failure stays out of `#faults` while its folder is still recorded; only the shutdown recheck's failure reaches `destroy()`.
+- **A6.** The sweep removes the folder of a parsed record whose pid `probeProcess` reports gone, with a U6 case.
+- **A7.** The V5 case reads the launch count before `release()` and asserts the later refill as T2's effect.
+- **A8.** Log writes use the write callback and add its error to `#faults`; browse never listens on a stream the host supplies; widen the U6 log case to a destroyed stream.
+- **A9.** A failed `browse.json` write or rename fails the warm (the slot tears down and strikes), so no folder ever runs without its record.
+- **A10 / T4.** A spare that fails is reported: each failed warm runs `browse`'s own `create`, which logs it, and the spent floor is reported when the next acquire rejects with `create`. No user ruling is needed.
+- **A11.** The probe roadmap sentence states that probe's `destroy` hook carries the stage deadline (a destroy hook that never settles blocks every replacement).
+- **A12.** `#serve` rethrows the call's own abort reason; cite `MCPLegacy.ts:117-119` and `helpers.ts:1883` for the stdio path.
+- **Referred (subjective):** fold `#race(promise, signal)` into a shared helper with `Browser.#raceAbort` if the leaf test in `architecture.md` § Functions and orchestration admits it.
+- **Pool assumptions the units pin:** the five behaviors the attack lists under Findings (the owed credit spent by any refill, `start()` resolving only with no refill running, a fulfilled late watch ignored by `#lose`'s guards, `#refill` arming a watch after `#ending` and relying on `#recycle`, a failed validation striking only a never-leased record); a pool change to any reruns U6 and U7.
 
-D12 asked that the later move into `@orkestrel/pool` be a move, not a rewrite. The attack found that holds only in part: the warm floor, the watch, the loss, the bound, and the survivor rule map to the five pool members, but the hand-out path (`#promote`, `#spares`, `#change`) and the owner's acquire loop map to none of them, because Pool 0.0.13 hands out only to a caller's `acquire`. When the move happens (`probe` item 1 or a second consumer), that path is replaced by `pool.acquire()` with `validate` as the ping, which is a rewrite of the hand-out. The price of starting in `browse` on an unchanged pool is that rewrite.
+The Windows helper processes the service diagnosis found outliving their browsers (`../../showcase/browse/service-flakes/findings.md`) bear on the sweep: the units measure whether `browse`'s teardown leaves any, and report them.
 
 ## Release order
 
-The design's release order names browser 0.0.22; that version carries items 11 and 12 and the reading change. The eager server ships in `@orkestrel/browser` 0.0.23:
-
-1. `@orkestrel/mcp` 0.0.36 (U1), the user publishes.
-2. `@orkestrel/browser` 0.0.23: U2 to U14 after release 0.0.22 lands, U15 gates, the user publishes.
-3. `@orkestrel/pool`: no release.
-4. `@orkestrel/probe`: a roadmap sentence only (U16).
-
-## Superseded in part (D13, 2026-10-03)
-
-The user moved the resource lifecycle into `@orkestrel/pool` 0.0.14 now (`pool-floor-brief.md`), so the browse-side layer (W1 to W8) is not built. The `browse` units (U2 to U16) are re-derived on the expanded pool after it lands; U1 (`@orkestrel/mcp` 0.0.36) is unaffected.
-
+The user chose (2026-10-03) to hold `@orkestrel/mcp` 0.0.36 and `@orkestrel/pool` 0.0.14 until the eager build consumes them. The build stages both as local tarballs (`npm install --no-save`, per the release contract's rule for an unpublished dependency) on a branch from browser `main` after release 0.0.22. Then `@orkestrel/mcp` 0.0.36 and `@orkestrel/pool` 0.0.14 publish, `@orkestrel/browser` re-pins them and ships 0.0.23, and `@orkestrel/probe` gains its roadmap sentence.
