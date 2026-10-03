@@ -63,3 +63,9 @@ Exit: every plugin's positive, veto, boundary, and disposal oracle cases green; 
 1. Stage B's timing: inside this chunk after stage A, or a later chunk. The measured recipes exist; the departure surface roughly doubles for the modal.
 2. Tooltip and popover auto-start at boot (ruling 9): kept unless you rule otherwise.
 3. The entity name `Engine` for the boot scope (`createEngine`, `EngineInterface`): free in the fleet; `createVeneer` is the fallback if you prefer a product-qualified name.
+
+The user answered on 2026-10-03:
+
+1. Stage B runs now, inside this chunk, before the Veneer styles chunk opens.
+2. Auto-start leaves the default. The boot scope is a blank slate: the package provides every piece, and each default is a convenience kept separate so that nothing is forced. Starting tooltips and popovers at boot becomes a separate opt-in piece. Ruling 9 is withdrawn.
+3. The boot scope is renamed `createVeneer`.

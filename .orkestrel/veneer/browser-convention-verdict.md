@@ -47,7 +47,7 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
    - `createEngine(root?, options?)` routes exactly `options.plugins`, which defaults to `createBootstrapPlugins()`.
    - When one list names a plugin twice, the later replaces the earlier in the earlier's position. `resolvePlugins(plugins)` in `helpers.ts` applies the rule, and `Engine` applies it, so `new Engine(root, plugins)` agrees with `createEngine`.
    - A repeated `createEngine` over a live root returns the live scope and ignores its options. To change a scope's plugins, destroy it and create it again.
-   - A scope's listeners derive from its plugins' route and clear events, all in the capture phase on the document.
+   - A scope's listeners derive from its plugins' route and clear events on the document: routes in the capture phase, clears in the bubble phase (amended 2026-10-02 by G1 of `browser-convention-audit-verdict.md`).
    - No global registration remains, and `createEngine` reaches every built-in it boots, which closes the tree-shaking defect.
    - **The naming, `create*Plugin` and not `register*`.** The user's `register*` offer is refused on the evidence:
      - These functions return a value and register nothing; registration happens when the list reaches `createEngine`. A `register*` name would claim a side effect the function lacks, and it would bring back the global-registration model the bundler measurement condemned.
@@ -60,7 +60,7 @@ The user's instruction of 2026-10-02: `TipRenderer` is not convention; `Engine` 
    - `prevent` replaces the engine's plugin-name check, and `gate` stays.
    - Boot is not an event. A plugin's `boot` entry names the selector the boot pass scans under the root, nearest live scope only, plus an optional handler: offcanvas shows, and the others create.
    - The dropdown's outside-click and Tab-release closing is the plugin's `clear` entry. It runs in every live scope, with a context that resolves a component only where that scope is the element's nearest live scope.
-   - Per event, the engine walks the scope's plugins in order. For each plugin it runs `clear` (when the event is one of its events) and then the plugin's routes for that event. That follows Bootstrap's module registration order.
+   - Per event, the engine runs the scope's plugins' routes for that event in list order in the capture phase, then every plugin's `clear` whose events include it, in list order, in the bubble phase, as Bootstrap's `clearMenus` runs from a bubble-phase document listener. Each route and each clear runs through `attempt`, and a failure is reported through the realm's `reportError` (amended 2026-10-02 by G1 of `browser-convention-audit-verdict.md`).
    - The family proofs measure the order against the oracle. Where a transcript changes, the oracle wins.
 4. **The registry and the component context.**
    - `Registry` implements `RegistryInterface` as a view over per-document storage in its static private map, so `new Registry(document)` from any caller reads the one document registry. Its methods:
