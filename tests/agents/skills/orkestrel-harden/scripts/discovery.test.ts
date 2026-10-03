@@ -7,6 +7,302 @@ import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('keeps an empty workbench outside an unrelated unfiltered listing gate', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-empty-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'npm run test:wrapper',
+						'test:wrapper': 'vitest run --config wrapper.config.ts',
+						'test:probe': 'vitest run --project probe',
+					},
+				}),
+			)
+			for (const config of ['vite.config.ts', 'wrapper.config.ts']) {
+				scratch.write(
+					config,
+					"export default { test: { name: 'core', include: ['tests/shared.test.ts'] } }\n",
+				)
+			}
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.empty).toEqual([])
+			expect(run.json?.workbenches).toEqual(['probe'])
+			expect(run.json?.projects).toContainEqual({
+				name: 'probe',
+				gate: 'test:probe',
+				files: 0,
+				tests: 0,
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('does not gate tests through a listing that only names their project', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-named-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'vitest run --project node && vitest run --config wrapper.config.ts --project wrapped --project browser',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['node', 'browser'].map((name) => ({ test: { name, include: ['tests/shared.test.ts'] } })) } }\n",
+			)
+			scratch.write(
+				'wrapper.config.ts',
+				"export default { test: { name: 'wrapped', include: ['tests/shared.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['browser'])
+			expect(run.json?.projects).toContainEqual({ name: 'browser', files: 1, tests: 1 })
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps a Vitest file argument inside its project gate', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-argument-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project node tests/shared.test.ts"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['node', 'browser'].map((name) => ({ test: { name, include: ['tests/shared.test.ts'] } })) } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['browser'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('flags a row when only some of its test identities have a gate', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-partial-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --config other.config.ts"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'node', include: ['tests/a.test.ts'] } }\n",
+			)
+			scratch.write(
+				'other.config.ts',
+				"export default { test: { name: 'node', include: ['tests/b.test.ts'] } }\n",
+			)
+			for (const name of ['a', 'b'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['node'])
+			expect(run.json?.projects).toEqual([
+				{
+					name: 'node',
+					files: 2,
+					tests: 2,
+					units: [{ config: 'vite.config.ts' }, { config: 'other.config.ts' }],
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps a non-browser parenthetical project name intact', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-parenthetical-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project core"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['core', 'core (legacy)'].map((name) => ({ test: { name, include: ['tests/shared.test.ts'] } })) } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['core (legacy)'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('matches wildcard project filters against the whole name', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-wildcard-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run --project "src:*"' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['src:core', 'src:server', 'app:core'].map((name) => ({ test: { name, include: ['tests/shared.test.ts'] } })) } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['app:core'])
+			expect(run.json?.projects).toEqual([
+				{ name: 'app:core', files: 1, tests: 1 },
+				{ name: 'src:core', gate: 'test', files: 1, tests: 1 },
+				{ name: 'src:server', gate: 'test', files: 1, tests: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('matches negated project filters', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-negated-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project !browser"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['node', 'browser'].map((name) => ({ test: { name, include: ['tests/shared.test.ts'] } })) } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['browser'])
+			expect(run.json?.projects).toEqual([
+				{ name: 'browser', files: 1, tests: 1 },
+				{ name: 'node', gate: 'test', files: 1, tests: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('matches project filters without case sensitivity', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-case-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project Core"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/shared.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a Vitest argument outside command position and a list command as gates', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-position-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/shared.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/shared.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			for (const test of ['npm ls vitest', 'vitest list tests/shared.test.ts']) {
+				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
+				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run.status).toBe(3)
+				expect(run.json?.ungated).toEqual(['core'])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lists a bench gate in benchmark mode by default', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-benchmark-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest bench --project core"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default ({ mode }) => ({ test: { name: 'core', include: ['cases/' + mode + '.test.ts'] } })\n",
+			)
+			for (const name of ['test', 'benchmark'])
+				scratch.write(
+					`cases/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['core'])
+			expect(run.json?.projects).toEqual([
+				{
+					name: 'core',
+					files: 2,
+					tests: 2,
+					units: [{ config: 'vite.config.ts' }, { config: 'vite.config.ts', mode: 'benchmark' }],
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('keeps a shared file from gating another project in the same config', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-overlap-' })
 		try {

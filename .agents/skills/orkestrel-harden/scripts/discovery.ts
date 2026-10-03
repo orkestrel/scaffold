@@ -11,9 +11,11 @@
 // Also read test files root scripts run directly and every collected file for `.skip(`, `.todo(`,
 // `.skipIf(`, `.runIf(`, `retry:`, and `timeout:`. It flags a collected project no root chain reaches, a named project that collects
 // nothing, and a test file under tests/ that no project collects and no root script runs directly.
-// Fold `NAME (BROWSER)` into NAME only when that listing's own gates name NAME. Gate a project only
-// through a unit whose own listing names it after folding, or a root script that runs its file directly.
-// Shared files never carry a Vitest gate between projects. Deduplicate after each listing folds names.
+// Fold only provider browser suffixes when that listing's gates match the base project name.
+// Gate each [file, projectName, name] identity through listings that collected it, or a non-Vitest
+// command that runs its file directly. Flag a row if any test lacks a gate; retain named empty projects.
+// Match Vitest's whole-name, case-insensitive wildcard and negation filters. Ignore `vitest list` gates.
+// Use benchmark mode by default for `vitest bench`. Report only collecting listings in a row's units.
 // A project with no test file and no gate is outside the census. Exit 0 with no flag, 3 with one, 2 when Vitest cannot list, 64 on
 // usage.
 import { spawnSync } from 'node:child_process'
@@ -29,11 +31,15 @@ import {
 
 const VITEST = 'node_modules/vitest/vitest.mjs'
 const MARKERS: readonly string[] = ['.skip(', '.todo(', '.skipIf(', '.runIf(', 'retry:', 'timeout:']
+// Read from @vitest/browser-playwright/dist/index.d.ts, playwrightBrowsers; Vitest's
+// BrowserInstanceOption delegates its browser union to providers through _BrowserNames.
+const BROWSERS: readonly string[] = Object.freeze(['firefox', 'webkit', 'chromium'])
 
 interface Collected {
 	readonly file: string
 	readonly projectName: string
 	readonly name: string
+	readonly gate?: string | undefined
 }
 
 interface Gates {
@@ -77,9 +83,29 @@ interface Census {
 }
 
 // Vitest reports a browser project's tests under `NAME (BROWSER)` while a gate names `NAME`.
-function normalizeProject(name: string, known: ReadonlySet<string>): string {
-	const base = name.replace(/ \([^()]+\)$/u, '')
-	return base !== name && known.has(base) ? base : name
+function normalizeProject(name: string, gates: readonly Gate[]): string {
+	const suffix = BROWSERS.find((browser) => name.endsWith(` (${browser})`))
+	if (suffix === undefined) return name
+	const base = name.slice(0, -(suffix.length + 3))
+	return gates.some((gate) => gate.projects.length > 0 && matchesProject(base, gate.projects))
+		? base
+		: name
+}
+
+// Mirrors Vitest's wildcardPatternToRegExp and matchesProjectFilter: filters form a union.
+function matchesProject(name: string, filters: readonly string[]): boolean {
+	return (
+		filters.length === 0 ||
+		filters.some((filter) => {
+			const negated = filter.startsWith('!')
+			const pattern =
+				(negated ? filter.slice(1) : filter)
+					.split('*')
+					.map((part) => part.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
+					.join('.*') + '$'
+			return new RegExp(`^${negated ? `(?!${pattern})` : pattern}`, 'i').test(name)
+		})
+	)
 }
 
 function readScripts(): Readonly<Record<string, string>> {
@@ -154,17 +180,20 @@ function readGates(scripts: Readonly<Record<string, string>>, config: string): G
 			)
 			const gate = root === name ? name : `${root} > ${name}`
 			for (const command of expanded) {
-				const index = command.findIndex((token) =>
-					['vitest', 'vitest.mjs', 'vitest.js'].includes(basename(token)),
+				const index = ['node', 'npx'].includes(basename(command[0] ?? '')) ? 1 : 0
+				const vitest = ['vitest', 'vitest.mjs', 'vitest.js'].includes(
+					basename(command[index] ?? ''),
 				)
-				if (index >= 0) {
+				if (vitest) {
+					if (command[index + 1] === 'list') continue
 					const flags = command.slice(index + 1).flatMap((argument) => {
 						const equals = argument.indexOf('=')
 						return argument.startsWith('--') && equals > 0
 							? [argument.slice(0, equals), argument.slice(equals + 1)]
 							: [argument]
 					})
-					const mode = readOption(flags, '--mode')
+					const mode =
+						readOption(flags, '--mode') ?? (flags[0] === 'bench' ? 'benchmark' : undefined)
 					units.push({
 						config: relative(process.cwd(), resolve(readOption(flags, '--config') ?? config))
 							.split('\\')
@@ -173,6 +202,7 @@ function readGates(scripts: Readonly<Record<string, string>>, config: string): G
 						projects: readOptions(flags, '--project'),
 						chain: gate,
 					})
+					continue
 				}
 				for (const argument of command) {
 					if (
@@ -294,12 +324,16 @@ function collectListings(
 					: [...new Set(reached.flatMap((gate) => gate.projects))]
 		const collected = listCollected(unit, projects)
 		if (collected === undefined) return undefined
-		const known = new Set(reached.flatMap((gate) => gate.projects))
 		listings.push({
 			...unit,
 			collected: collected.map((entry) => ({
 				...entry,
-				projectName: normalizeProject(entry.projectName, known),
+				projectName: normalizeProject(entry.projectName, reached),
+				gate: reached.find(
+					(gate) =>
+						matchesProject(entry.projectName, gate.projects) ||
+						matchesProject(normalizeProject(entry.projectName, reached), gate.projects),
+				)?.chain,
 			})),
 			gates: reached,
 		})
@@ -315,7 +349,8 @@ function mergeCollected(listings: readonly Listing[]): readonly Collected[] {
 			const identity = JSON.stringify([entry.file, entry.projectName, entry.name])
 			const occurrence = (occurrences.get(identity) ?? 0) + 1
 			occurrences.set(identity, occurrence)
-			collected.set(JSON.stringify([identity, occurrence]), entry)
+			const key = JSON.stringify([identity, occurrence])
+			collected.set(key, { ...entry, gate: entry.gate ?? collected.get(key)?.gate })
 		}
 	}
 	return [...collected.values()]
@@ -344,29 +379,32 @@ function main(argv: readonly string[]): number {
 		console.error('discovery: vitest list failed')
 		return 2
 	}
-	const known = new Set([...gates.units.flatMap((gate) => gate.projects), ...named])
 	const collected = mergeCollected(listings)
+	const known = [...gates.units.flatMap((gate) => gate.projects), ...named].filter(
+		(filter) =>
+			!filter.includes('*') &&
+			!filter.startsWith('!') &&
+			!collected.some((entry) => matchesProject(entry.projectName, [filter])),
+	)
 	const names = new Set<string>([
-		...(named.length === 0 ? known : named),
+		...known.filter((name) => named.length === 0 || matchesProject(name, named)),
 		...collected.map((entry) => entry.projectName),
-		...named,
 	])
 	const projects: Project[] = [...names].sort().map((name) => {
 		const mine = collected.filter((entry) => entry.projectName === name)
-		const units = listings.filter(
-			(listing) =>
-				listing.collected.some((entry) => entry.projectName === name) ||
-				listing.gates.some((gate) => gate.projects.includes(name)),
+		const units = listings.filter((listing) =>
+			listing.collected.some((entry) => entry.projectName === name),
 		)
-		const gate = units
-			.flatMap((unit) => unit.gates)
-			.find((entry) => entry.projects.length === 0 || entry.projects.includes(name))?.chain
-		const fileGate = mine
-			.map((entry) => gates.files.get(entry.file))
-			.find((chain) => chain !== undefined)
+		const chains = mine.map((entry) => entry.gate ?? gates.files.get(entry.file))
+		const gate =
+			mine.length === 0
+				? gates.units.find((unit) => unit.projects.includes(name))?.chain
+				: chains.every((chain) => chain !== undefined)
+					? chains[0]
+					: undefined
 		return {
 			name,
-			gate: gate ?? fileGate,
+			gate,
 			files: new Set(mine.map((entry) => entry.file)).size,
 			tests: mine.length,
 			...(units.some((unit) => unit.config !== canonical || unit.mode !== undefined)
