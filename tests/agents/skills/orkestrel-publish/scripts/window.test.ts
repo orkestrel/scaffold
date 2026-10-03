@@ -154,26 +154,6 @@ describe('window.ts', () => {
 		}
 	})
 
-	it('refuses directory publishing on a host that cannot pack Linux release archives', async (context) => {
-		if (process.platform === 'linux')
-			return context.skip('Linux is the release archive packing host')
-		const scratch = createScratch({ prefix: 'orkestrel-window-host-' })
-		const registry = await startRegistry('fixture')
-		try {
-			scratch.write('pkg/package.json', '{"name":"@fixture/pkg","version":"1.0.0"}')
-			const result = await spawnSkillScript(SCRIPT, ['--publish', 'pkg', '--otp', '123456'], {
-				cwd: scratch.path,
-				env: buildNpmEnvironment(scratch.path, registry),
-			})
-			expect(result.status).toBe(3)
-			expect(result.stderr).toContain('publish release directories on Linux')
-			expect(registry.requests).toEqual([])
-		} finally {
-			await stopRegistry(registry)
-			scratch.destroy()
-		}
-	})
-
 	it('refuses malformed publish, confirm, wait, and mode combinations before reaching npm', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-' })
 		try {
@@ -235,14 +215,8 @@ describe('window.ts', () => {
 				env: darkEnv,
 			})
 			expect(stopped.status).toBe(3)
-			expect(stopped.stderr).toContain(
-				process.platform === 'linux'
-					? 'whoami answers nothing'
-					: 'publish release directories on Linux',
-			)
-			expect(dark.requests).toEqual(
-				process.platform === 'linux' ? ['GET /-/whoami', 'GET /-/whoami'] : ['GET /-/whoami'],
-			)
+			expect(stopped.stderr).toContain('whoami answers nothing')
+			expect(dark.requests).toEqual(['GET /-/whoami', 'GET /-/whoami'])
 			expect(dark.requests.some((line) => line.startsWith('PUT '))).toBe(false)
 			expect(scratch.has('tmp/units')).toBe(false)
 		} finally {
@@ -252,9 +226,7 @@ describe('window.ts', () => {
 		}
 	})
 
-	it('uploads to the registry the session named, journals the refusal it answers, and confirms nothing it did not serve', async (context) => {
-		if (process.platform !== 'linux')
-			return context.skip('Directory publishing requires Linux release archive packing')
+	it('uploads to the registry the session named, journals the refusal it answers, and confirms nothing it did not serve', async () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-upload-' })
 		const registry = await startRegistry('fixture')
 		try {

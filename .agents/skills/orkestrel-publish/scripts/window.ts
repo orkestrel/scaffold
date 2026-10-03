@@ -7,7 +7,7 @@
 // --login prints the command the operator runs in a real terminal (npm offers its approval only to a
 // TTY, so no child of this script can hold it), then polls `npm whoami` until it answers or the wait
 // ends. --publish refuses linked worktrees and submodules found at a package or its ancestors,
-// names a linked worktree's primary clone, and requires Linux for packing release directories.
+// and names a linked worktree's primary clone.
 // It then re-reads `npm whoami` immediately before the first upload and refuses when it
 // answers nothing, then runs `npm publish --ignore-scripts --browser=false --otp=CODE` in each
 // directory back to back under captured pipes (npm's non-TTY guard turns a refused code into
@@ -223,10 +223,6 @@ async function main(argv: readonly string[]): Promise<number> {
 			console.error(
 				`window: ${directory} is a linked worktree; publish from its primary clone at ${primary} so npm records gitHead`,
 			)
-			return 3
-		}
-		if (process.platform !== 'linux') {
-			console.error('window: publish release directories on Linux')
 			return 3
 		}
 		// A stored credential expires mid-session, so the session-start answer does not hold here.

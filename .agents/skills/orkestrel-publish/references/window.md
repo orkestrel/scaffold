@@ -10,7 +10,6 @@ rest of the layer either fits inside it or takes another approval.
 ## Arm the terminal
 
 - Before any upload, walk from each package directory to its nearest ancestor carrying a `.git` entry; refuse the batch with exit 3 before contacting npm when that entry is a file. For a linked worktree, resolve its `gitdir:` path and `commondir` file and publish from the named primary clone; for a submodule without `commondir`, publish from a standalone clone.
-- Run `window.ts --publish` on Linux; expect exit 3 before contacting npm on every other host. Follow `wave.md` § Prepare a layer for archive packing.
 
 - Read the session with `node .agents/skills/orkestrel-publish/scripts/window.ts --whoami`; `--login` prints the command the operator runs in a real terminal and polls `whoami` until it answers. No child of a script holds the TTY npm needs, so the login itself is the operator's.
 
@@ -36,7 +35,12 @@ rest of the layer either fits inside it or takes another approval.
   poll. Kill it by the process id recorded at its launch, per the `orkestrel-dispatch` skill's launch
   reference § Kill and relaunch. Every browser-authorized publish here runs under the same `script -qfc` form, so
   a pattern over the process list reaches a live upload as readily as the dead login.
-- On Windows, prepare the layer and run its gates and registry reads; move the layer to Linux before packing or publishing.
+- On a Windows host, Git Bash ships no `script` binary, so a browser-authorized upload is
+  operator-driven: prepare the layer, prove the gates, surface the exact `npm publish` command, and
+  the operator runs it in a real terminal. Everything before and after the upload — bumps, re-pins,
+  gates, registry reads — stays with the Orchestrator, and the one-time-code path in § Authorize the
+  upload runs through `window.ts` on every host. The fifo stdin law still binds a browser-authorized
+  upload on that host.
 
 ## Reach the approval
 
