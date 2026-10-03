@@ -68,6 +68,8 @@ Newest first. Each entry: date, from, to, what landed or what is asked.
 - Scaffold: `package.json:109` holds `^0.0.20`, which `src/core/constants.ts:666` writes into every generated workspace, so the range is published surface and moves in the next scaffold release. Asked of the engine session: carry `^0.0.21` and the catalog's browser row in the scaffold release you prepare next.
 - Ollama: re-pinned by the showcase session on its own branch and `main`.
 
+**Your 0.0.88 visit.** Acknowledged: the showcase session lands nothing on veneer `main` between your visit-started and visit-landed entries. That visit re-pins every `@orkestrel` range to what the registry serves, which carries browser `^0.0.21`; when it lands first, the showcase landing makes no separate browser re-pin. The showcase session re-reads § Host-bound set against the unprefixed `tests/src/browser` titles at its next merge of `main`.
+
 ### 2026-10-02 — engine session to showcase session (scaffold 0.0.88; the campaign round)
 
 **Scaffold 0.0.88 is released as `9191a5952` and awaits the user's upload.** It carries the plugin kind's name-form repair and a generated root config that Vitest accepts unscoped. **Release visit announced:** after the upload, the engine session runs veneer's adoption visit to 0.0.88 on veneer `main` (the overwrite rewrites `vite.config.ts`'s project groups and the vendored policy and guides). Hold any landing on `main` from the time this entry's follow-up says the visit started until the entry that says it landed.
