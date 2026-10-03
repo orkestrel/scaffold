@@ -10,9 +10,9 @@ Informational. The cloud session on the branch `ccr-d15a48b1-yyyll6` owns the ve
 | --- | --- |
 | Handoff | not handed off; the cloud session is active (2026-10-02) |
 | Integration branch | veneer `ccr-d15a48b1-yyyll6`; veneer main receives it by merge |
-| Veneer main | `3428455` (the engine session's) carries the showcase through the polish round (`0df5a3b`), merged by the engine session as `97d2367`, with its collapse and sidebar fixes (`95eb674`, `76e7e13`) |
-| Ahead of main | the branch `ccr-d15a48b1-yyyll6` at `f53c656` merges `main` and adds the component statecharts (18 tables, 564 rows; journeys 66 of 66 in 355 s on the cloud host), so they wait for `J0c` (`../lanes.md` § Log, 2026-10-02) |
-| In flight | `J0c` third run on an `astra` lane in the cloud host's veneer checkout (scope `j0c-scope.md` over `j0c-brief.md`). Phase 1 is committed on the branch as `4070c56`; the second run could not reproduce three load-only statechart failures (report `j0c2-report.md`), and the third run applies the ruled fix (one statechart wait budget, failure causes in the report) before the kept cuts; uncommitted placement edits for items 6 and 9 sit in that checkout |
+| Veneer main | `43ca8a0` carries the showcase, the 18 component statecharts, and the tuned journeys (60 tests, 218 to 227 s on the cloud host against 353 s) beside the engine session's units through `b44e11a`; landed 2026-10-03 |
+| Ahead of main | nothing; the branch `ccr-d15a48b1-yyyll6` equals `main` at `43ca8a0` |
+| In flight | nothing |
 | Page | `showcase/browser.html` on veneer main, built by `npm run build:showcase` |
 | Browse | `browse.md` beside this file holds the browse lane: the browser branch, the release and re-pins it owes, the open roadmap items, and `BR1` in flight |
 
@@ -54,7 +54,7 @@ The cloud host is Linux with 4 cores, a 14 345 035 776-byte memory cgroup, and C
 7. Falsify: one objective and one subjective lane over the claims, then a completeness critic.
 8. Done by the engine session: veneer adopted scaffold 0.0.87 and guide 0.0.24 (`ea80bb9`, `56c8293`).
 9. Merge main and push each accepted state to veneer main.
-10. `J0c`, next: cut the journey gate from 362 s to 235 s or less without losing a claim; at `fc4c4a2` the summed test time is 1364 s, led by J3 (55 to 79 s per variant), the header statechart (38 to 47 s per variant), and the scrollspy, dropdown, carousel, and tooltip tables (47 to 62 s each).
+10. `J0c`, landed with the statecharts as `43ca8a0` (report `j0c-report.md`): two consecutive full gates of 226.77 s and 217.89 s, 60 of 60, against 352.91 s; peak memory 12.3 GB of the 14.3 GB cap.
 
 ## Resume after the handoff
 

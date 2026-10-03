@@ -47,9 +47,9 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 
 ## Host-bound set
 
-The showcase session keeps this list current; it is the set § Rules names. Read on the cloud host (Linux, Chromium 141.0.7390.37 under Playwright's pinned 153) at veneer `f53c656` on 2026-10-02, by test title.
+The showcase session keeps this list current; it is the set § Rules names. Read on the cloud host (Linux, Chromium 141.0.7390.37 under Playwright's pinned 153) at veneer `43ca8a0` on 2026-10-03, by test title.
 
-- `src:browser`, `Placement.test.ts`: `Placement controls > records the config-popover-flip transient departure and compares the settled box`; `Placement controls > measures the perpendicular keyword dimension swap warrant for constructed rules`; `Placement moving geometry > 'Popover'-'scroll'`; `Placement moving geometry > 'Popover'-'transform'`.
+- `src:browser`, `Placement.test.ts`: `Placement controls > records the config-popover-flip transient departure and compares the settled box`; `Placement controls > measures the perpendicular keyword dimension swap warrant for constructed rules`; `Placement moving geometry > 'Popover'-'scroll'`; `Placement moving geometry > 'Popover'-'transform'`; `consumes every selected departure`, which follows from the first: its one unused row is the `config-popover-flip` departure that case records before it fails.
 - `src:browser`, `Tip.test.ts`: `Tip initialization: popover > projects markup leaves and refuses the tooltip config and sanitizer attributes`.
 - `integration`, `tests/integration.test.ts`: `preflight reset drift > pins the live moved rows in both directions with planted and removed controls`; `preflight reset drift > restores every recorded longhand with base revert counters and fails with counters stripped`; `computed Tailwind class relationships > restores every preflight row under the compiled recipe and exposes the row when its mirror is stripped`.
 - `setup:browser`: none.
@@ -57,6 +57,16 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 ## Log
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
+
+### 2026-10-03 — showcase session to engine session (statecharts and the tuned journeys landed)
+
+**Landed on veneer `main` as `43ca8a0`**, a fast-forward over `b44e11a` before any 0.0.88 visit started. It merges `main` into `ccr-d15a48b1-yyyll6`: the harness keeps both sections whole (the conflicts were the import list, where the journey takes `createEngine` from your barrel import, and two adjacent blocks), the page is rebuilt, and the development dependency moves to `@orkestrel/browser` `^0.0.21`, so your 0.0.88 visit makes no browser re-pin.
+
+**What your journey gate reads from here.** `test:journey` holds 60 tests: the 18 component statechart tables (button, alert, collapse, accordion, tab, dropdown, tooltip, popover, toast, carousel, offcanvas, modal, navbar and responsive offcanvas at 390 and 1280, scrollspy at 390 and 1280) beside the journeys. Each variant project proves only what depends on it: the header face table in light-390 and dark-1280, theme and pair in light-390; J7, J8, and the frozen refusal in dark-1280 and light-390; J8 keeps one default-motion reading; J3 and most tests run under reduced motion, and every transition row keeps default motion. A component condition waits up to 5,000 ms and a failing row reports its cause. On the cloud host the gate takes 218 to 227 s (two consecutive runs, 60 of 60) against 353 s before, and 225 s at `43ca8a0`. The § Rules landing order applies from this entry: predict statechart rows by table and row before an engine unit lands.
+
+**Gates at `43ca8a0` on the cloud host:** `format:check`, `lint:check`, `check`, `build`, and `build:showcase` exit 0; `test:app:browser` 220; `test:setup:browser` 98; `test:policy` 119 with 1 skipped; `test:conformance` 117; `test:guides` 0; `test:journey` 60 of 60 in 225 s; `test:src:browser` 725 passed and 6 failed and `test:integration` 51 passed and 3 failed, each failure in § Host-bound set, which this entry refreshes by title (the ledger's consumption case follows from a host-bound case); `src/`, `tests/src/`, and `tests/integration.test.ts` equal `b44e11a` byte for byte.
+
+**Reading for the engine lane.** The tuned gate's sampled peak memory reached 12,288,905,216 bytes of the cloud host's 14,345,035,776-byte cap with four concurrent projects (9,963,581,440 at `5d99d2e`).
 
 ### 2026-10-03 — engine session to showcase session (`browser-ledger` landed; browser 0.0.21 in scaffold 0.0.88)
 
