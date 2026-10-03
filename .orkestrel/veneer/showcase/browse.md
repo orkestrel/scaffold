@@ -6,11 +6,11 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 
 | Row | Value |
 | --- | --- |
-| Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6` and browser `main` both at `97fd5f7` (fast-forwarded on 2026-10-02 at the owner's ruling); every published release's `gitHead` sits on `main` |
-| Registry | 0.0.20 |
-| Dependents to re-pin after a release | scaffold (`package.json` and its catalog row), ollama, and veneer, each at `^0.0.20` |
-| In flight | nothing; `BR1` landed on `main` as `360e27e` with the correction `97fd5f7` (brief `browse/br1-brief.md`, report `browse/br1-report.md`) |
-| Next | release 0.0.21, which carries `BR1`; it needs the user's authenticator code |
+| Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6` and browser `main` both at `6f5544e` (`Release 0.0.21`); every published release's `gitHead` sits on `main` |
+| Registry | 0.0.21, published 2026-10-03 with the user's code, `BR1` included; the visit adopted scaffold 0.0.87 |
+| Dependents to re-pin | ollama (development dependency, the showcase session re-pins it); veneer (development dependency, in the showcase landing merge, logged in `../lanes.md`); scaffold (`package.json:109`, written into generated workspaces by `src/core/constants.ts:666`, so it moves in the next scaffold release the engine session prepares) |
+| In flight | the ollama re-pin |
+| Next | `ROADMAP.md` items 9, 10, 11, and 12, then 6 and 7, then 8 when a run reproduces it |
 
 ## Readings
 
@@ -32,8 +32,8 @@ Browser `ROADMAP.md` on the branch holds items 6 to 12, each with its citations 
 
 ## Remaining units, in order
 
-1. `BR1`, in flight.
-2. Release browser 0.0.21 with the `orkestrel-publish` skill (`/home/user/scaffold/.agents/skills/orkestrel-publish/`, scripts `wave.ts` and `window.ts`): the user supplies the authenticator code per window. Then re-pin scaffold, ollama, and veneer; a veneer re-pin edits `package.json`, a shared file, so log it in `../lanes.md` first, and run one release visit at a time.
+1. `BR1`, landed and released in 0.0.21.
+2. Done: browser 0.0.21 released with the `orkestrel-publish` skill (`/home/user/scaffold/.agents/skills/orkestrel-publish/`, scripts `wave.ts` and `window.ts`): the user supplies the authenticator code per window. Then re-pin scaffold, ollama, and veneer; a veneer re-pin edits `package.json`, a shared file, so log it in `../lanes.md` first, and run one release visit at a time.
 3. Items 9, 10, 11, and 12, in that order, because each removes a wrong or missing reading an agent acts on; then 6 and 7; then 8 when a run reproduces it.
 4. A browse recheck of the showcase on the released version.
 
