@@ -23,6 +23,8 @@ The user asked (2026-10-03) whether journeys, tests, and `browse` start a browse
 
 The user (2026-10-03) agrees `@orkestrel/pool` has a gap for this case (no eager warm floor, no eviction of a resource that dies, no named records, no holder) and asks whether it belongs in `@orkestrel/pool`, in a new package (for example `@orkestrel/lease` or `@orkestrel/resource`), or inside `@orkestrel/browser` now with a roadmap item for later, depending on whether it is a full build-out and whether it is truly needed. The `resource-consumers` survey counts the real consumers across the fleet and measures the gap; a build-now against defer argument and a judge follow, then the user rules.
 
+The user then shared reliability research from another session (`reliability-assessment.md`): an operation lifecycle contract (an action's identity, acceptance, authoritative outcome, execution owner, and recovery path), with the rule to extract a public capability only where a consumer demonstrates the need. The user (2026-10-03): a resource or lease package fits the ecosystem and answers what is needed; the open question is only whether it is needed now. Two layers meet here and stay distinct: the resource lifecycle (keep a worker alive, know its liveness, replace it, tear it down) and the operation lifecycle (a tool call a crash interrupts has an unresolved outcome, not a failed one, and one owner decides whether to repeat it).
+
 ## Running
 
 - `browse-eager-map` (Grok, `browser-wt-browse/tmp/cursor/`): the MCP `initialize` hooks, what a recovery rebuilds, crash signals, reusable `@orkestrel/*` primitives, profiles and port 9222, client startup timeouts, and Playwright's browser server.
