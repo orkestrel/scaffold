@@ -1098,10 +1098,6 @@ scaffold creates it when absent and preserves your edits during `repair`. It imp
 at 1280 × 800 and `compact` at 390 × 844 without a theme. Rename and extend those variants for
 your application; apply themes through the application's interface in your tests.
 
-Generated browser instances carry an explicit name formed from the project label and browser:
-`src:browser (chromium)`, for example. Vitest reports the same name when a wrapper runs alone and
-when the root configuration registers it. Vue and journey factories rename their inherited instances.
-
 The wrapper registers `journey:<name>` for each variant through the root factory. Each project
 collects the integration suite of the application the Vite mode selects, sets the variant
 viewport, and provides `variant`
@@ -2071,6 +2067,12 @@ read or write that file.
 
 ## Generated workspace
 
+The generated factories name unnamed browser instances after merging the caller's override, using
+the merged project label and browser. An override setting the label to `widgets` produces
+`widgets (chromium)`, including for an instance added by the override. Explicit instance names stay
+unchanged. Vue and journey factories discard inherited instance names before applying their own
+labels. Vitest reports the same names when a wrapper runs alone and when the root registers it.
+
 A workspace's file set is a function of its axes, its structural facts, and its extensions.
 Nothing is fixed except the manifest.
 
@@ -2615,7 +2617,9 @@ The generated guide index lists each occupied Vue face with its source, tests, a
 - [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — ownership of a snapshot
   taken from a hostile value.
 - [`tests/src/core/templates.test.ts`](../tests/src/core/templates.test.ts) — the frozen template
-  definitions.
+  definitions and generated configurations under live Vitest. The isolated `templates` project runs
+  through `test:templates` in `prepublishOnly`; its compiler and Chromium processes run apart from
+  the `src:core` project.
 - [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) — the seeded rows named
   as a set, the floor form every shared table and this manifest carry, and the emitted TypeScript
   bound.

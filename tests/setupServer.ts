@@ -113,6 +113,26 @@ import {
 	buildQuestion,
 } from './setup.js'
 
+/** Defines the package-owned project overlay for generated configuration parity. */
+export const TEMPLATE_PROJECT_CONFIG = `// The template proofs spawn compilers and Chromium, so they run apart from the core pool.
+export function templates(override?: UserConfig): UserConfig {
+	return mergeOverride(
+		{
+			resolve,
+			test: {
+				name: { label: 'templates', color: 'cyan' },
+				include: ['tests/src/core/templates.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		override,
+	)
+}
+
+`
+
 /**
  * Describes one command line beside the exact command it denotes.
  *
@@ -1040,6 +1060,70 @@ export function buildReleaseScenarios(
 		{ label: 'timeout', arguments: release, timeout: 1, files: {} },
 	]
 }
+
+/** Defines the generated factory calls and expected labels for live instance proofs. */
+export const GENERATED_INSTANCE_CASES = Object.freeze([
+	Object.freeze({ label: 'src:browser', expression: 'srcBrowser()', prefix: '' }),
+	Object.freeze({ label: 'src:vue', expression: 'srcVue()', prefix: '' }),
+	Object.freeze({ label: 'app:browser', expression: 'appBrowser()', prefix: '' }),
+	Object.freeze({ label: 'app:vue', expression: 'appVue()', prefix: '' }),
+	Object.freeze({
+		label: 'journey:desktop',
+		expression: "appJourney({ name: 'desktop', width: 1280, height: 800 }, [])",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'src:styles',
+		expression:
+			"sheetProject('src:styles', { test: { include: ['tests/src/styles/index.test.ts'] } })",
+		prefix: '',
+	}),
+	Object.freeze({ label: 'setup:browser', expression: 'setupBrowser()', prefix: '' }),
+	Object.freeze({ label: 'integration', expression: 'integration()', prefix: '' }),
+	Object.freeze({
+		label: 'widgets',
+		expression: "srcBrowser({ test: { name: { label: 'widgets' } } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'view',
+		expression: "srcVue({ test: { name: { label: 'view' } } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'application',
+		expression: "appBrowser({ test: { name: { label: 'application' } } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'component',
+		expression: "appVue({ test: { name: { label: 'component' } } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'sheet',
+		expression:
+			"sheetProject('src:styles', { test: { name: { label: 'sheet' }, include: ['tests/src/styles/index.test.ts'] } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'setup',
+		expression: "setupBrowser({ test: { name: { label: 'setup' } } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'composition',
+		expression: "integration({ test: { name: { label: 'composition' } } })",
+		prefix: '',
+	}),
+	Object.freeze({
+		label: 'added',
+		expression:
+			"mergeOverride(base, { test: { name: { label: 'added' }, browser: { instances: [{ browser: 'chromium', headless: true }] } } })",
+		prefix:
+			"const base = srcBrowser()\nfor (const instance of base.test?.browser?.instances ?? []) instance.name = 'retained'\n",
+	}),
+])
 
 /** Defines the real Vue component and browser setup proof a generated consumer renders. */
 export const GENERATED_VUE_SETUP_FILES: Readonly<Record<string, string>> = Object.freeze({
