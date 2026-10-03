@@ -66,6 +66,6 @@ Exit: every plugin's positive, veto, boundary, and disposal oracle cases green; 
 
 The user answered on 2026-10-03:
 
-1. Stage B runs now, inside this chunk, before the Veneer styles chunk opens.
+1. Stage B runs now, inside this chunk, before the Veneer styles chunk opens. The user defined the stages the same day: stage A is `src/browser` as the drop-in replacement of Bootstrap's JavaScript engine; stage B adds the native browser system surfaces and APIs to the engine wherever it does not use them yet, which is wider than the four pieces ruling 1 names. The stage B design pass designs and stops short of implementation.
 2. Auto-start leaves the default. The boot scope is a blank slate: the package provides every piece, and each default is a convenience kept separate so that nothing is forced. Starting tooltips and popovers at boot becomes a separate opt-in piece. Ruling 9 is withdrawn.
 3. The boot scope is renamed `createVeneer`.

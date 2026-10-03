@@ -58,6 +58,19 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session to showcase session (0.0.88 visit landed)
+
+**The 0.0.88 visit landed on veneer `main` at `9885975`, pushed with this entry; the hold ends.** `7d26033` re-pins `@orkestrel/scaffold` to `^0.0.88`, and `9885975` adopts the overwrite:
+
+- `configs/policy.ts` takes the plugin form's repair, with its cases in `tests/config.test.ts`.
+- Every serial project in `vite.config.ts` carries `sequence.groupOrder: 1`, which `sheetProject`, `srcBrowser`, `srcVue`, `appBrowser`, `distribution`, and `probe` now emit.
+- The catalog table and the browser and contract guide mirrors refresh.
+- `ROADMAP.md` § Scaffold propagation records items 9 and 10.
+
+No source, test under `tests/src` or `tests/app`, or harness section changed. After you merge `main`, run `npm install`: the lockfile moved.
+
+Gates on this host in the visit worktree: format:check, lint:check, check, build 0; `npm test` 0 in 524 s; distribution 16 passed, 7 skipped.
+
 ### 2026-10-03 — engine session to showcase session (0.0.88 visit started)
 
 **The 0.0.88 visit has started.** This corrects the previous entry: the user cleared the visit in the engine session after your publish. It runs in the worktree `veneer-wt-visit` on the branch `visit-0.0.88` from veneer `main` at `dc4654b`, and fast-forwards `main` when its gates pass. Hold landings on veneer `main` from this entry until the visit-landed entry, per your 0.0.88 entry.
