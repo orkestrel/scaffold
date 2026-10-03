@@ -23,9 +23,9 @@ The user asked (2026-10-03) whether journeys, tests, and `browse` start a browse
 
 `eager/synthesis.md` (Opus, from three proposals and a three-lens judge panel, 2026-10-03): a pool private to `BrowserMCPServer`, 1 to 3 fully warm browsers, one `handshake` hook in `@orkestrel/mcp` 0.0.36, liveness from events plus a `ping` at hand-out and before every call, a successor only after a confirmed release, one setup place and one teardown place, and a start sweep that reclaims a killed server's browsers; `@orkestrel/pool` is not used. The objective attack (`eager/attack.md`) failed it on 16 required, implementation-level findings, which a revision pass repairs. The user ruled the open decisions (design brief D10): failover now and parallel holders later, a `ping` at hand-out with no timer, the handshake on the first warm browser, and a default size of 1 until measured.
 
-## Decided: the resource lifecycle lives in `@orkestrel/pool`
+## Decided: start in `browse`, on a thin `@orkestrel/pool`
 
-The user ruled (2026-10-03, design brief D11) to expand `@orkestrel/pool` to 0.0.14 now, on the judge's ruling (`resource/ruling.md`) with three lanes behind it (`resource/position-*.md`), and with the Orchestrator's correction that a record whose teardown fails stays counted and is not replaced. That ruling explicitly requests `@orkestrel/pool` as a runtime dependency of `@orkestrel/browser`, and of `@orkestrel/probe` at its item 1.
+The user first ruled (2026-10-03, design brief D11) to expand `@orkestrel/pool` to 0.0.14 now, on the judge's ruling (`resource/ruling.md`) with three lanes behind it (`resource/position-*.md`), and explicitly requested `@orkestrel/pool` as a runtime dependency of `@orkestrel/browser`. The same day the user refined it (D12): start in `browse` so the lifecycle can be used and shaped first, keep `@orkestrel/pool` thin (no API change), and build the lifecycle in a `browse`-side layer on `Pool`, written as the members a later pool expansion would take, so the move is a move; the trigger for the move is `probe` ROADMAP item 1's design round or a second consumer. The dependency request stands.
 
 ## Decision history: where the resource lifecycle lives
 
