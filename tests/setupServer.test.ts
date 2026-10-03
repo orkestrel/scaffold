@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { chmodSync, existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { basename, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
 import { createTeardown, requireValue } from '@orkestrel/test'
@@ -55,6 +55,7 @@ import {
 	CORE_GENERATED_COUNT,
 	createCatalogFleet,
 	createCheckout,
+	createDistributionScratch,
 	createFleet,
 	createHostRoot,
 	createOllamaServer,
@@ -108,6 +109,34 @@ import {
 	VENDORED_FILES,
 	WORKSPACE_ROOT,
 } from './setupServer.js'
+
+describe('createDistributionScratch', () => {
+	it('contains installs in the checkout and isolates inherited ignore rules', async () => {
+		const workspace = createDistributionScratch('distribution-boundary-')
+		const control = createScratch({
+			parent: join(WORKSPACE_ROOT, 'tmp'),
+			prefix: 'distribution-control-',
+		})
+		try {
+			expect(dirname(workspace.path)).toBe(join(WORKSPACE_ROOT, 'tmp'))
+			workspace.write('sample.ts', 'export {}\n')
+			control.write('sample.ts', 'export {}\n')
+			const selected = await execute(
+				{ file: 'git', arguments: ['check-ignore', 'sample.ts'] },
+				{ workspace: workspace.path, strict: false },
+			)
+			const ignored = await execute(
+				{ file: 'git', arguments: ['check-ignore', 'sample.ts'] },
+				{ workspace: control.path, strict: false },
+			)
+			expect(selected.code).toBe(1)
+			expect(ignored.code).toBe(0)
+		} finally {
+			workspace.destroy()
+			control.destroy()
+		}
+	})
+})
 
 // The subject is the Node-only test infrastructure `tests/setupServer.ts` exports.
 // Every resource a case opens is released in the same case, and the mirrored suites

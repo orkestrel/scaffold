@@ -7,6 +7,232 @@ import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('compares real browser project identities from full and file-only listings', () => {
+		const scratch = createScratch({ prefix: 'discovery-browser-list-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write('package.json', '{"type":"module"}')
+			scratch.write(
+				'vite.config.ts',
+				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }\n",
+			)
+			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
+			for (const args of [[], ['--filesOnly']]) {
+				const run = runSkillScript(
+					'node_modules/vitest/vitest.mjs',
+					['list', '--config', 'vite.config.ts', '--project', 'web', '--json=listed.json', ...args],
+					{ cwd: scratch.path },
+				)
+				expect.soft(run.status, run.stderr).toBe(0)
+				const listed: unknown = JSON.parse(scratch.read('listed.json') ?? 'null')
+				expect(listed).toEqual([
+					expect.objectContaining({
+						projectName: 'web (chromium)',
+						file: join(scratch.path, 'tests/web.test.ts').replaceAll('\\', '/'),
+					}),
+				])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lets Vitest apply name patterns, exclusions, line filters, and shards', () => {
+		const scratch = createScratch({ prefix: 'discovery-selectors-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/*.test.ts'] } }\n",
+			)
+			for (const name of ['a', 'b'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('selected', () => {})\nit('outside', () => {})\n",
+				)
+			for (const test of [
+				'vitest run -t selected',
+				'vitest run --test-name-pattern=selected',
+				'vitest run --exclude tests/b.test.ts',
+				'vitest run tests/a.test.ts:2',
+				'vitest run --shard 1/2',
+			]) {
+				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
+				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				expect.soft(run.status, `${test}\n${run.stderr}`).toBe(3)
+				expect.soft(run.json?.projects, test).toEqual([{ name: 'core', files: 2, tests: 4 }])
+			}
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'vitest run -t selected && vitest run --testNamePattern outside --reporter dot --no-cache --no-color --typecheck.only=false',
+					},
+				}),
+			)
+			const complete = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect.soft(complete.status, complete.stderr).toBe(0)
+			expect(complete.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 2, tests: 4 }])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('F1 leaves a real browser project ungated when its base name is negated', () => {
+		const scratch = createScratch({ prefix: 'discovery-f1-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run --project !web' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { projects: [{ test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }] } }\n",
+			)
+			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.projects).toEqual([{ name: 'web (chromium)', files: 1, tests: 1 }])
+			expect(run.json?.ungated).toEqual(['web (chromium)'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('F2 leaves the file outside a positional filter ungated', () => {
+		const scratch = createScratch({ prefix: 'discovery-f2-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run tests/a.test.ts' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'node', include: ['tests/*.test.ts'] } }\n",
+			)
+			for (const name of ['a', 'b'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.projects).toEqual([{ name: 'node', files: 2, tests: 2 }])
+			expect(run.json?.ungated).toEqual(['node'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('F3 refuses benchmark commands as ordinary test gates', () => {
+		const scratch = createScratch({ prefix: 'discovery-f3-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest bench --project core' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/a.test.ts'] } }\n",
+			)
+			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(3)
+			expect(run.json?.projects).toEqual([{ name: 'core', files: 1, tests: 1 }])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('F4 merges real browser identities across modes without folding', () => {
+		const scratch = createScratch({ prefix: 'discovery-f4-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({ type: 'module', scripts: { test: 'vitest run --mode ci --project web' } }),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { projects: [{ test: { name: 'web', include: ['tests/web.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }] } }\n",
+			)
+			scratch.write('tests/web.test.ts', "import { it } from 'vitest'\nit('browser', () => {})\n")
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.projects).toEqual([
+				{
+					name: 'web (chromium)',
+					gate: 'test',
+					files: 1,
+					tests: 1,
+					units: [{ config: 'vite.config.ts' }, { config: 'vite.config.ts', mode: 'ci' }],
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('F5 classifies an empty chained project independently of script order', () => {
+		const scratch = createScratch({ prefix: 'discovery-f5-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: [{ test: { name: 'core', include: ['tests/a.test.ts'] } }, { test: { name: 'probe', include: [] } }] } }\n",
+			)
+			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			for (const scripts of [
+				{
+					probe: 'vitest run --project probe',
+					test: 'npm run test:unit',
+					'test:unit': 'vitest run --project core --project probe',
+				},
+				{
+					test: 'npm run test:unit',
+					'test:unit': 'vitest run --project core --project probe',
+					probe: 'vitest run --project probe',
+				},
+			]) {
+				scratch.write('package.json', JSON.stringify({ type: 'module', scripts }))
+				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				expect(run.status).toBe(3)
+				expect(run.json?.empty).toEqual(['probe'])
+				expect(run.json?.workbenches).toEqual([])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('O2 recognizes the runner after Node options and npm exec', () => {
+		const scratch = createScratch({ prefix: 'discovery-o2-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/a.test.ts'] } }\n",
+			)
+			scratch.write('tests/a.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			for (const test of [
+				'node --max-old-space-size=4096 node_modules/vitest/vitest.mjs run',
+				'npm exec vitest run',
+			]) {
+				scratch.write('package.json', JSON.stringify({ type: 'module', scripts: { test } }))
+				const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+				expect.soft(run.status, test).toBe(0)
+				expect
+					.soft(run.json?.projects, test)
+					.toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+			}
+		} finally {
+			scratch.destroy()
+		}
+	})
 	it('keeps an empty workbench outside an unrelated unfiltered listing gate', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-empty-' })
 		try {
@@ -270,7 +496,7 @@ describe('discovery.ts', () => {
 		}
 	})
 
-	it('lists a bench gate in benchmark mode by default', () => {
+	it('X2 excludes benchmark-only collection from the test universe', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-benchmark-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -293,9 +519,8 @@ describe('discovery.ts', () => {
 			expect(run.json?.projects).toEqual([
 				{
 					name: 'core',
-					files: 2,
-					tests: 2,
-					units: [{ config: 'vite.config.ts' }, { config: 'vite.config.ts', mode: 'benchmark' }],
+					files: 1,
+					tests: 1,
 				},
 			])
 		} finally {
@@ -331,7 +556,7 @@ describe('discovery.ts', () => {
 		}
 	})
 
-	it('folds an instance only through its own listing gates', () => {
+	it('keeps distinct reported project names across listing gates', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-fold-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -363,7 +588,7 @@ describe('discovery.ts', () => {
 		}
 	})
 
-	it('counts a repeated test once after each listing folds its instance', () => {
+	it('counts repeated browser identities once across listings and retains duplicate names', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-dedupe-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -371,14 +596,11 @@ describe('discovery.ts', () => {
 				'package.json',
 				'{"type":"module","scripts":{"test":"vitest run --project core && vitest run --config second.config.ts --project core"}}',
 			)
-			scratch.write(
-				'vite.config.ts',
-				"export default { test: { name: 'core (chromium)', include: ['tests/shared.test.ts'] } }\n",
-			)
-			scratch.write(
-				'second.config.ts',
-				"export default { test: { name: 'core', include: ['tests/shared.test.ts'] } }\n",
-			)
+			for (const config of ['vite.config.ts', 'second.config.ts'])
+				scratch.write(
+					config,
+					"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { name: 'core', include: ['tests/shared.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }\n",
+				)
 			scratch.write(
 				'tests/shared.test.ts',
 				"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
@@ -387,7 +609,7 @@ describe('discovery.ts', () => {
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([
 				{
-					name: 'core',
+					name: 'core (chromium)',
 					gate: 'test',
 					files: 1,
 					tests: 2,
@@ -441,7 +663,7 @@ describe('discovery.ts', () => {
 			)
 			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
 			expect(run.status).toBe(0)
-			expect(scratch.read('listings')).toBe('listed\n')
+			expect(scratch.read('listings')).toBe('listed\nlisted\n')
 			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
 		} finally {
 			scratch.destroy()
@@ -620,7 +842,7 @@ describe('discovery.ts', () => {
 		}
 	})
 
-	it('unions project filters per unit and collects that config and mode once', () => {
+	it('collects an unfiltered universe per unit and lets each gate select separately', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-filters-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -653,11 +875,12 @@ describe('discovery.ts', () => {
 				)
 			scratch.write(
 				'cases/selected/excluded.test.ts',
-				"throw new Error('Excluded project collected')\n",
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
 			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
-			expect(run.status).toBe(0)
-			expect(scratch.read('listings')).toBe('listed\n')
+			expect(run.status).toBe(3)
+			expect(scratch.read('listings')).toBe('listed\nlisted\nlisted\n')
+			expect(run.json?.ungated).toEqual(['excluded'])
 			expect(run.json?.projects).toEqual([
 				expect.objectContaining({
 					name: 'browser',
@@ -667,6 +890,12 @@ describe('discovery.ts', () => {
 					units: [{ config: 'selected.config.ts', mode: 'selected' }],
 				}),
 				{ name: 'core', gate: 'test > test:core', files: 1, tests: 1 },
+				{
+					name: 'excluded',
+					files: 1,
+					tests: 1,
+					units: [{ config: 'selected.config.ts', mode: 'selected' }],
+				},
 				expect.objectContaining({
 					name: 'server',
 					gate: 'test > test:server',
@@ -734,7 +963,10 @@ describe('discovery.ts', () => {
 				'vite.config.ts',
 				"export default { test: { name: 'core', include: ['tests/sample.test.ts'] } }\n",
 			)
-			scratch.write('tests/sample.test.ts', "throw new Error('Excluded project collected')\n")
+			scratch.write(
+				'tests/sample.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
 			const run = runSkillScript(SCRIPT, ['--projects', 'absent', '--json'], { cwd: scratch.path })
 			expect(run.status).toBe(3)
 			expect(run.json?.empty).toEqual(['absent'])
@@ -792,7 +1024,7 @@ describe('discovery.ts', () => {
 		}
 	})
 
-	it('counts a browser instance under the gated project it belongs to', () => {
+	it('retains a real browser instance name under its base project gate', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-instance-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -800,17 +1032,18 @@ describe('discovery.ts', () => {
 				'package.json',
 				'{"type":"module","scripts":{"test":"vitest run --project core"}}',
 			)
-			// Vitest reports a browser project's tests under the instance name `core (chromium)`.
 			scratch.write(
 				'vite.config.ts',
-				"export default { test: { name: 'core (chromium)', include: ['tests/sample.test.ts'] } }\n",
+				"import { playwright } from '@vitest/browser-playwright'\nexport default { test: { name: 'core', include: ['tests/sample.test.ts'], browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] } } }\n",
 			)
 			scratch.write(
 				'tests/sample.test.ts',
 				"import { it } from 'vitest'\nit('collects', () => {})\n",
 			)
 			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
-			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+			expect(run.json?.projects).toEqual([
+				{ name: 'core (chromium)', gate: 'test', files: 1, tests: 1 },
+			])
 			expect(run.json?.ungated).toEqual([])
 			expect(run.json?.empty).toEqual([])
 			expect(run.status).toBe(0)
@@ -819,7 +1052,7 @@ describe('discovery.ts', () => {
 		}
 	})
 
-	it('scopes collection to every requested project before excluded modules execute', () => {
+	it('scopes reporting with Vitest after collecting the unfiltered universe', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-scope-' })
 		try {
 			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
@@ -844,7 +1077,7 @@ describe('discovery.ts', () => {
 			const run = runSkillScript(SCRIPT, ['--projects', 'core,server', '--json'], {
 				cwd: scratch.path,
 			})
-			expect(scratch.has('collected')).toBe(false)
+			expect(scratch.has('collected')).toBe(true)
 			expect(run.status).toBe(0)
 			expect(run.json?.projects).toEqual([
 				{ name: 'core', gate: 'test', files: 1, tests: 1 },
@@ -898,7 +1131,7 @@ describe('discovery.ts', () => {
 
 	it('reads this checkout: every gated project, its root chain, the workbench, and the skip markers', () => {
 		const run = runSkillScript(SCRIPT, ['--json'], { cwd: WORKSPACE_ROOT })
-		expect(run.status).toBe(0)
+		expect.soft(run.status, run.stdout + run.stderr).toBe(0)
 		const projects = run.json?.projects
 		if (!isArray(projects)) throw new Error('The census carries no projects')
 		const gates = new Map(

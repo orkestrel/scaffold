@@ -15,7 +15,7 @@ import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
-import { chmodSync, globSync, readFileSync, realpathSync } from 'node:fs'
+import { chmodSync, globSync, mkdirSync, readFileSync, realpathSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
@@ -842,6 +842,26 @@ export function installPackedScaffold(
 		)
 	}
 	return join(packed, archive)
+}
+
+/**
+ * Creates a distribution fixture inside the checkout with its own Git ignore boundary.
+ *
+ * @param prefix - The scratch directory's name prefix.
+ * @returns The owned fixture, removed by its destroy method.
+ * @throws When allocation or Git initialization fails.
+ */
+export function createDistributionScratch(prefix: string): ScratchInterface {
+	const parent = join(WORKSPACE_ROOT, 'tmp')
+	mkdirSync(parent, { recursive: true })
+	const workspace = createScratch({ parent, prefix })
+	try {
+		createRepository(workspace.path)
+		return workspace
+	} catch (error) {
+		workspace.destroy()
+		throw error
+	}
 }
 
 /**

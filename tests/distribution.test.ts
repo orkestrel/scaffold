@@ -29,6 +29,7 @@ import {
 	buildSkillRun,
 	buildEnvironment,
 	createUpstreamServer,
+	createDistributionScratch,
 	installGeneratedWorkspace,
 	GENERATED_VUE_SETUP_FILES,
 	installPackedScaffold,
@@ -183,7 +184,7 @@ describe('installed package consumer', () => {
 	it('runs the complete selection through a packed CLI adopter and repairs its wrapper', async () => {
 		const started = performance.now()
 		const teardown = createTeardown()
-		const workspace = createScratch({ prefix: 'propagation-adopter-' })
+		const workspace = createDistributionScratch('propagation-adopter-')
 		teardown.add(() => workspace.destroy())
 		console.info(`adopter: scratch ${workspace.path}`)
 		const environment = buildEnvironment({
@@ -193,6 +194,7 @@ describe('installed package consumer', () => {
 		})
 		const signal = AbortSignal.timeout(590_000)
 		try {
+			expect(dirname(workspace.path)).toBe(join(root, 'tmp'))
 			const archive = installPackedScaffold(workspace, environment)
 			console.info('adopter: pack and consumer install: exit 0')
 			const target = join(workspace.path, 'generated')
@@ -622,7 +624,7 @@ describe('installed package consumer', () => {
 	})
 
 	it('answers every example its shipped declarations print exactly as printed', async () => {
-		const workspace = createScratch({ prefix: 'scaffold-e4-examples-' })
+		const workspace = createDistributionScratch('scaffold-e4-examples-')
 		try {
 			const driven: string[] = []
 			const undriven: string[] = []
@@ -943,7 +945,7 @@ describe('installed package consumer', () => {
 	})
 
 	it('skips generated entry drives when no installed entry matches their filters', async () => {
-		const workspace = createScratch({ prefix: 'scaffold-empty-drives-' })
+		const workspace = createDistributionScratch('scaffold-empty-drives-')
 		const fixture = await createUpstreamServer({
 			'/-/ping': { status: 200, body: '{}', type: 'application/json' },
 		})
@@ -1030,7 +1032,7 @@ describe('installed package consumer', () => {
 	// this checkout's installed toolchain, linked rather than installed: the subject is the
 	// configuration and the proof, and the refusing registry could install nothing.
 	it('fails the release run of a generated distribution proof on a refusing registry and skips the ordinary run', async () => {
-		const workspace = createScratch({ prefix: 'scaffold-release-mode-' })
+		const workspace = createDistributionScratch('scaffold-release-mode-')
 		const refusal = await createUpstreamServer({
 			'/-/ping': { status: 503, body: '{"error":"refused"}', type: 'application/json' },
 		})
@@ -1142,7 +1144,7 @@ describe('installed package consumer', () => {
 	}, 600_000)
 
 	it('installs a preserved peer beside an exact co-peer witness and rejects the narrowed control', () => {
-		const workspace = createScratch({ prefix: 'scaffold-peer-install-' })
+		const workspace = createDistributionScratch('scaffold-peer-install-')
 		const packed = workspace.ensure('packed')
 		const cache = workspace.ensure('cache')
 		// npm reads its peer-resolution policy from the environment and from every
@@ -1293,7 +1295,7 @@ describe('installed package consumer', () => {
 			if (!registry) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
-			const workspace = createScratch({ prefix: 'scaffold-e4-install-' })
+			const workspace = createDistributionScratch('scaffold-e4-install-')
 			const consumer = workspace.ensure('consumer')
 			const cache = workspace.ensure('cache')
 			// Pinned for the reason the refused-peer fixture above pins it: an npm
@@ -1393,7 +1395,7 @@ describe('installed package consumer', () => {
 			if (!registry) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
-			const workspace = createScratch({ prefix: 'scaffold-e4-app-install-' })
+			const workspace = createDistributionScratch('scaffold-e4-app-install-')
 			const cache = workspace.ensure('cache')
 			// Pinned for the reason the preceding case pins it: an npm environment variable outranks
 			// every `.npmrc`, so a host carrying a peer policy would otherwise answer for this install.
@@ -1452,7 +1454,7 @@ describe('installed package consumer', () => {
 			if (!registry) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
-			const workspace = createScratch({ prefix: 'scaffold-vue-setup-install-' })
+			const workspace = createDistributionScratch('scaffold-vue-setup-install-')
 			const environment = {
 				...process.env,
 				npm_config_cache: workspace.ensure('cache'),
@@ -1528,7 +1530,7 @@ describe('installed package consumer', () => {
 			if (!registry) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
-			const workspace = createScratch({ prefix: 'scaffold-skill-twin-' })
+			const workspace = createDistributionScratch('scaffold-skill-twin-')
 			const cache = workspace.ensure('cache')
 			// Pinned for the reason the core/server install case pins it: an npm environment variable
 			// outranks every `.npmrc`, so a host carrying a peer policy would otherwise answer for it.
@@ -1592,7 +1594,7 @@ describe('installed package consumer', () => {
 	it.skipIf(compareVersions(ambient, MINIMUM_NPM_VERSION) >= 0)(
 		'provisions the floor and resolves that copy when the ambient npm is beneath it [inapplicable where the ambient npm already satisfies the floor, which leaves nothing to provision]',
 		() => {
-			const workspace = createScratch({ prefix: 'scaffold-e4-provision-' })
+			const workspace = createDistributionScratch('scaffold-e4-provision-')
 			try {
 				const prefix = workspace.ensure('npm')
 				const admitted = provisionNpm({ floor: MINIMUM_NPM_VERSION, prefix })

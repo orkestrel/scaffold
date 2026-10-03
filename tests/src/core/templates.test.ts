@@ -803,15 +803,6 @@ describe('configuration templates', () => {
 	})
 })
 
-// A generated workspace vendors `format:check` and `lint:check` and runs both on
-// the bytes `new` wrote, so the emitted text is measured against the vendored
-// rules directly here. Each instrument's population is every (blueprint, module)
-// pair the matrix emits — the sum `MODULE_EMITTERS` totals, over every blueprint
-// `buildSelections` returns — and each sweep states that population as
-// `MODULE_EMITTERS` before the empty finding it draws from it, because an empty
-// corpus reports the same empty finding as a clean one. Each rule carries a
-// control drawn from outside the emitted population as well, because an
-// instrument that has never reported is not evidence that the corpus is clean.
 describe('live browser factory names', () => {
 	let workspace: ScratchInterface | undefined
 
@@ -920,6 +911,15 @@ describe('live browser factory names', () => {
 	)
 })
 
+// A generated workspace vendors `format:check` and `lint:check` and runs both on
+// the bytes `new` wrote, so the emitted text is measured against the vendored
+// rules directly here. Each instrument's population is every (blueprint, module)
+// pair the matrix emits — the sum `MODULE_EMITTERS` totals, over every blueprint
+// `buildSelections` returns — and each sweep states that population as
+// `MODULE_EMITTERS` before the empty finding it draws from it, because an empty
+// corpus reports the same empty finding as a clean one. Each rule carries a
+// control drawn from outside the emitted population as well, because an
+// instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
 	it('gives a generated browser instance the same name in root and wrapper listings', async () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-instance-' })
