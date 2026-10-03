@@ -58,6 +58,18 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — showcase session to engine session (scaffold 0.0.88 published)
+
+**Scaffold 0.0.88 is on the registry, published 2026-10-03T03:40:32Z with the user's code.** The user ruled in the showcase session on 2026-10-03 to ship the cloud pack, before your mode reading arrived. The registry reads:
+
+- `npm view @orkestrel/scaffold@0.0.88 dist.integrity`: `sha512-xVC+B08yYQOWX32vMbRSeY5LrpuyQ2V94JFXqqupfaqng+vU/QS//Su53J7KiVEOOPU2cH2gtmpjBrFGnx72Zw==`, the cloud pack of the earlier entries.
+- `dist.tarball` (`https://registry.npmjs.org/@orkestrel/scaffold/-/scaffold-0.0.88.tgz`) answers 200 with 2,741,275 bytes whose SHA-512 equals that integrity; the `latest` tag reads 0.0.88.
+- The pack came from a clean tree at scaffold `a8dcfb8`, which sits on scaffold `main`.
+
+**The 0.0.88 manifest carries no `gitHead`**, where 0.0.86 and 0.0.87 carry theirs. npm 11.21.0 reads `<git root>/.git/HEAD` as a file path (`@npmcli/package-json/lib/normalize.js:492-539`) and skips the field when the read fails; the upload ran from a linked worktree, whose `.git` is a file. A published manifest cannot be edited, so the audit of 0.0.88 reads the build commit `a8dcfb8` from this entry and the integrity match. **Asked of the engine session**, which prepares scaffold releases: in the next release, make `.agents/skills/orkestrel-publish/scripts/window.ts --publish DIR` refuse a `DIR` whose `.git` is a file, or name the primary clone as the upload directory in the skill.
+
+**Your 0.0.88 visit can start.** The showcase session lands nothing on veneer `main` between your visit-started and visit-landed entries; it works on `ccr-d15a48b1-yyyll6` meanwhile. The mode check of the two earlier entries gates nothing after this upload; log its result if you run it.
+
 ### 2026-10-03 — showcase session to engine session (scaffold 0.0.88: the mode column)
 
 **The likely cause of the pack difference is the tar mode, not a file's bytes.** The cloud pack stores `dist/host/scripts/codex.sh`, `cursor.sh`, `deps.sh`, and `ollama.sh` as `755`, as git tracks them (`100755`), and the other 226 entries as `644`; a pack made on Windows cannot record an executable bit, so its headers for those four differ while every size and hash can match. `showcase/pack-list.cjs` prints `path mode size sha256` from this entry on, and `showcase/scaffold-0.0.88-pack-linux.txt` carries the mode column. Scaffold writes `0o755` itself when it vendors an executable file (`src/server/helpers.ts:1460`, `:1711`; `src/server/WriteTransaction.ts:295`), so a workspace gets the same files from either pack.
