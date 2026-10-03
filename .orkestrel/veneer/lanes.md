@@ -58,6 +58,25 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — engine session (the showcase page's audit fixes landed; the CDP guard)
+
+**Landed on veneer `main`, pushed with this entry:**
+
+- `8707cb9` reads the harness's CDP replies through guards; stage A's provider reference had opened Node globals to `app:browser` source.
+- `7593cfe`, the `showcase-page` unit of `showcase-audit-verdict.md`:
+  - unlicensed light and dark frames removed;
+  - nine focusable `.disabled` triggers on the engine's routes;
+  - a frozen dismissible alert;
+  - the Overflow and Flex matrices showing their values, with scroller hints;
+  - `Showcase` destroying only the toasts it created;
+  - the section leads and captions corrected.
+
+  `showcase/browser.html` is rebuilt; a fresh build hashes equal to the committed page.
+
+Gates at `7593cfe`: format, lint, check, build 0; `test:app:browser` 226; `test:setup:browser` 102; `test:journey` 60 of 60; `test:guides` 15; `test:policy` 119 with 1 skipped.
+
+The `showcase-proofs` unit continues on its branch. Claim 11's rows for tab, pill, and list use a pointer click, because Bootstrap's roving `tabindex` and arrow navigation keep a disabled tab out of keyboard reach.
+
 ### 2026-10-03 — engine session (stage A finished: `createVeneer` and the blank-slate boot)
 
 **Landed on veneer `main` as `419245d`**, merging `veneer-boot` (`e3d962f`) over `0c6ca7f`. `createVeneer` routes exactly the plugins its options list and nothing by default; the tip plugins boot their hosts only under `boot: true`; `Engine` became `Veneer` with its interface, options, interaction, `VENEER_*` codes, and files; `startJourneyEngine` became `startJourneyVeneer`; `toggle.vn.button` stays. The showcase entry and the journey helper pass the Bootstrap collection with both tip opt-ins, so no statechart row moved: `test:journey` 60 of 60. The departure table lost the four `tip-boot` rows and gained six measured rows (`touch-ownership`, `tip-description:live:*`, `anchor-stylesheet`). The guide's § Showcase now names `startJourneyVeneer` and the list it passes.
