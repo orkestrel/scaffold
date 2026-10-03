@@ -77,6 +77,33 @@ describe('discovery.ts', () => {
 		}
 	})
 
+	it('counts a browser instance under the gated project it belongs to', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-instance-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project core"}}',
+			)
+			// Vitest reports a browser project's tests under the instance name `core (chromium)`.
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core (chromium)', include: ['tests/sample.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/sample.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+			expect(run.json?.ungated).toEqual([])
+			expect(run.json?.empty).toEqual([])
+			expect(run.status).toBe(0)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('scopes collection to every requested project before excluded modules execute', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-scope-' })
 		try {

@@ -7,6 +7,7 @@
 // reads every collected file for `.skip(`, `.todo(`, `.skipIf(`, `.runIf(`, `retry:`, and
 // `timeout:`. It flags a collected project no root chain reaches, a named project that collects
 // nothing, and a test file under tests/ that no project collects and no root script runs directly.
+// A browser instance's tests, which Vitest names `NAME (BROWSER)`, count under the gated project NAME.
 // A project with no test file and no gate is outside the census. Exit 0 with no flag, 3 with one, 2 when Vitest cannot list, 64 on
 // usage.
 import { spawnSync } from 'node:child_process'
@@ -43,6 +44,12 @@ interface Census {
 	readonly file: string
 	readonly projects: readonly string[]
 	readonly markers: Readonly<Record<string, number>>
+}
+
+// Vitest reports a browser project's tests under `NAME (BROWSER)` while a gate names `NAME`.
+function normalizeProject(name: string, known: ReadonlySet<string>): string {
+	const base = name.replace(/ \([^()]+\)$/u, '')
+	return base !== name && known.has(base) ? base : name
 }
 
 function readScripts(): Readonly<Record<string, string>> {
@@ -188,11 +195,16 @@ function main(argv: readonly string[]): number {
 	}
 	const gates = readGates(readScripts())
 	const named = (readOption(argv, '--projects') ?? '').split(',').filter((name) => name !== '')
-	const collected = listCollected(config, named)
-	if (collected === undefined) {
+	const listed = listCollected(config, named)
+	if (listed === undefined) {
 		console.error('discovery: vitest list failed')
 		return 2
 	}
+	const known = new Set([...gates.projects.keys(), ...named])
+	const collected = listed.map((entry) => ({
+		file: entry.file,
+		projectName: normalizeProject(entry.projectName, known),
+	}))
 	const names = new Set<string>([
 		...(named.length === 0 ? gates.projects.keys() : named),
 		...collected.map((entry) => entry.projectName),
