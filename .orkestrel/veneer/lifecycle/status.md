@@ -11,7 +11,7 @@ The user asked (2026-10-03) whether journeys, tests, and `browse` start a browse
 
 - 2026-10-03, the user: the `browse` server launches Chromium at server start, the highest point upstream, never inside a tool call, and recovers a crashed browser. Both come first. Then a warm spare browser that starts outside every tool call, so no call pays a startup; its value is measured.
 - 2026-10-03, the user: `@orkestrel/probe` moves the same way, from a lazy start on the first `prove` to server start, so a broken tool shows at the onset. Recorded as probe `ROADMAP.md` item 1 (probe `0690762`).
-- 2026-10-03, the user: the browsers form a small, simple pool that balances work: two expected, three at most, because the target hosts do not take heavy load. Every browser is launched when the owner decides, tracked and known, set up and torn down where the owner chooses, used through recorded leases, assigned by the pool, and warm before work arrives (design brief D6 and D7).
+- 2026-10-03, the user: the browsers form a small, simple pool that balances work: two expected, three at most, because the target hosts do not take heavy load. Every browser is launched when the owner decides, tracked and known, its liveness tracked at all times, set up and torn down where the owner chooses, assigned by the pool, and warm before work arrives (design brief D6 and D7).
 - 2026-10-03, the user: tap `PLAYWRIGHT_WS_ENDPOINT` for warm test browsers if it works as expected. The provider calls Playwright's `chromium.connect` (`@vitest/browser-playwright/dist/index.js:920`), Playwright's own protocol, so the endpoint comes from a Playwright browser server, not from a raw CDP endpoint.
 
 ## Running
