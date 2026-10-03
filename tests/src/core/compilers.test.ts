@@ -47,6 +47,140 @@ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import { buildBlueprint } from '../../setup.js'
 import { readStatements } from '../../setupServer.js'
+import { buildEnvironment } from '../../setupServer.js'
+
+describe('generated defect regressions', () => {
+	it('excludes Node globals from every scoped browser configuration', () => {
+		const scratch = createScratch({ prefix: 'scaffold-browser-isolation-' })
+		try {
+			for (const name of ['vite', 'vitest', '@vitest/browser-playwright'])
+				linkPackage(scratch, name)
+			// This fixture calls no Vue API; the ambient entry supplies only its configured type name.
+			scratch.write('node_modules/vue/index.d.ts', 'export {}\n')
+			const blueprint = createBlueprint('proof', {
+				src: ['browser'],
+				app: ['browser'],
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			})
+			for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+				if (artifact.origin === 'template') scratch.write(artifact.path, artifact.content)
+			}
+			scratch.write('package.json', '{"type":"module"}')
+			scratch.write(
+				'tests/setupBrowser.ts',
+				"import { cdp } from 'vitest/browser'\nexport const session: unknown = cdp()\n",
+			)
+			for (const axis of ['src', 'app']) {
+				for (const face of ['browser', 'vue']) {
+					const file = axis + '/' + face + '/helpers.ts'
+					scratch.write(file, 'export const probeMode = document.title\n')
+					const path = 'configs/' + axis + '/tsconfig.' + face + '.json'
+					const run = spawnSync(
+						process.execPath,
+						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
+						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+					)
+					expect({ path, status: run.status, output: run.stdout + run.stderr }).toEqual({
+						path,
+						status: 0,
+						output: '',
+					})
+					scratch.write(file, 'export const probeMode = process.env.MODE\n')
+					const refused = spawnSync(
+						process.execPath,
+						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
+						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+					)
+					expect(refused.status).not.toBe(0)
+					expect(refused.stdout).toContain("Cannot find name 'process'")
+					scratch.write(file, 'export const probeMode = document.title\n')
+				}
+			}
+		} finally {
+			scratch.destroy()
+		}
+	}, 30_000)
+
+	it('lists a generated distribution project without creating a staging directory', () => {
+		const scratch = createScratch({ prefix: 'scaffold-distribution-collection-' })
+		try {
+			scratch.link('node_modules', resolve('node_modules'))
+			const blueprint = createBlueprint('proof', { src: ['core'] })
+			for (const artifact of [
+				...blueprintToConfigArtifacts(blueprint),
+				...blueprintToTestArtifacts(blueprint),
+			]) {
+				if (artifact.origin === 'template') scratch.write(artifact.path, artifact.content)
+			}
+			scratch.write('package.json', blueprintToManifest(blueprint))
+			scratch.write('configs/helpers.ts', readFileSync('configs/helpers.ts', 'utf8'))
+			const temporary = scratch.ensure('temporary')
+			const run = spawnSync(
+				process.execPath,
+				[
+					resolve('node_modules/vitest/vitest.mjs'),
+					'list',
+					'--config',
+					'vite.config.ts',
+					'--project',
+					'distribution',
+					'--json=listing.json',
+				],
+				{
+					cwd: scratch.path,
+					encoding: 'utf8',
+					windowsHide: true,
+					env: buildEnvironment({
+						TEMP: temporary,
+						TMP: temporary,
+						TMPDIR: temporary,
+						npm_config_registry: 'http://127.0.0.1:1/',
+						npm_config_fetch_retries: '0',
+					}),
+				},
+			)
+			expect(scratch.names('temporary').filter((name) => name.startsWith('distribution-'))).toEqual(
+				[],
+			)
+			expect(run.status, `${run.stdout}${run.stderr}`).toBe(0)
+			expect(scratch.read('listing.json')).toContain(
+				'packs one archive and installs it in isolation',
+			)
+			const execution = spawnSync(
+				process.execPath,
+				[
+					resolve('node_modules/vitest/vitest.mjs'),
+					'run',
+					'--config',
+					'vite.config.ts',
+					'--project',
+					'distribution',
+					'-t',
+					'classifies synthetic export mappings',
+				],
+				{
+					cwd: scratch.path,
+					encoding: 'utf8',
+					windowsHide: true,
+					env: buildEnvironment({
+						TEMP: temporary,
+						TMP: temporary,
+						TMPDIR: temporary,
+						npm_config_registry: 'http://127.0.0.1:1/',
+						npm_config_fetch_retries: '0',
+					}),
+				},
+			)
+			expect(execution.status, `${execution.stdout}${execution.stderr}`).toBe(0)
+			expect(execution.stdout).toContain('1 passed')
+			expect(scratch.names('temporary').filter((name) => name.startsWith('distribution-'))).toEqual(
+				[],
+			)
+		} finally {
+			scratch.destroy()
+		}
+	}, 30_000)
+})
 
 describe('blueprintToProjects', () => {
 	it('lists only the root projects for a workspace without faces or setup proofs', () => {
@@ -1851,8 +1985,8 @@ describe('blueprintToScripts config projects', () => {
 		expect(content).toContain('if (isList(entry)) {')
 	})
 
-	// Each Node drive's `it.runIf` predicate requires `!entry.browser`, so both the Node
-	// import and the Node require retire for a browser entry, and a workspace publishing
+	// Each Node drive filters installed entries by its runtime capability, so entries
+	// resolved only by a browser reach neither Node drive, and a workspace publishing
 	// no browser face carries no branch that drives one. Presence ownership never rewrites the proof, so a face published
 	// later meets whichever variant was written: the guard reddens on it, and the
 	// browser branch drives it. Every selection carries exactly one of them.

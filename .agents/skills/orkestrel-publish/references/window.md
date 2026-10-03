@@ -9,6 +9,8 @@ rest of the layer either fits inside it or takes another approval.
 
 ## Arm the terminal
 
+- Before any upload, walk from each package directory to its nearest ancestor carrying a `.git` entry; refuse the batch with exit 3 before contacting npm when that entry is a file. For a linked worktree, resolve its `gitdir:` path and `commondir` file and publish from the named primary clone; for a submodule without `commondir`, publish from a standalone clone.
+
 - Read the session with `node .agents/skills/orkestrel-publish/scripts/window.ts --whoami`; `--login` prints the command the operator runs in a real terminal and polls `whoami` until it answers. No child of a script holds the TTY npm needs, so the login itself is the operator's.
 
 - Run the login and every browser-authorized publish under `script -qfc '<command>' <log>`. npm

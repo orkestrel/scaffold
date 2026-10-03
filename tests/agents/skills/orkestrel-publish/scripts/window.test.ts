@@ -79,6 +79,81 @@ function buildNpmEnvironment(root: string, registry: Registry): Readonly<Record<
 }
 
 describe('window.ts', () => {
+	it('refuses a linked worktree anywhere in the publish batch and names its primary clone', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-worktree-' })
+		const registry = await startRegistry('fixture')
+		try {
+			const env = buildNpmEnvironment(scratch.path, registry)
+			scratch.write('primary/package.json', '{"name":"@fixture/primary","version":"1.0.0"}')
+			scratch.write('primary/.git/worktrees/linked/commondir', '../..\n')
+			scratch.write('linked/package.json', '{"name":"@fixture/linked","version":"1.0.0"}')
+			scratch.write('linked/.git', 'gitdir: ../primary/.git/worktrees/linked\r\n')
+			const result = await spawnSkillScript(
+				SCRIPT,
+				['--publish', 'primary', 'linked', '--otp', '123456'],
+				{ cwd: scratch.path, env },
+			)
+			expect(result.status).toBe(3)
+			expect(result.stderr).toContain('linked worktree')
+			expect(result.stderr.split(/\r\n|\n/u)).toContain(
+				`window: linked is a linked worktree; publish from its primary clone at ${join(scratch.path, 'primary')} so npm records gitHead`,
+			)
+			expect(registry.requests).toEqual([])
+			expect(scratch.has('tmp/units')).toBe(false)
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a package nested inside a linked worktree before contacting npm', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-nested-' })
+		const registry = await startRegistry('fixture')
+		try {
+			scratch.write('primary/.git/worktrees/linked/commondir', '../..\n')
+			scratch.write('linked/.git', 'gitdir: ../primary/.git/worktrees/linked\n')
+			scratch.write(
+				'linked/packages/widget/package.json',
+				'{"name":"@fixture/widget","version":"1.0.0"}',
+			)
+			const result = await spawnSkillScript(
+				SCRIPT,
+				['--publish', 'linked/packages/widget', '--otp', '123456'],
+				{ cwd: scratch.path, env: buildNpmEnvironment(scratch.path, registry) },
+			)
+			expect(result.status).toBe(3)
+			expect(result.stderr.split(/\r\n|\n/u)).toContain(
+				`window: linked/packages/widget is a linked worktree; publish from its primary clone at ${join(scratch.path, 'primary')} so npm records gitHead`,
+			)
+			expect(registry.requests).toEqual([])
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
+	it('names a submodule without claiming the superproject is its primary clone', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-submodule-' })
+		const registry = await startRegistry('fixture')
+		try {
+			scratch.ensure('primary/.git/modules/widget')
+			scratch.write('primary/widget/.git', 'gitdir: ../.git/modules/widget\n')
+			scratch.write('primary/widget/package.json', '{"name":"@fixture/widget","version":"1.0.0"}')
+			const result = await spawnSkillScript(
+				SCRIPT,
+				['--publish', 'primary/widget', '--otp', '123456'],
+				{ cwd: scratch.path, env: buildNpmEnvironment(scratch.path, registry) },
+			)
+			expect(result.status).toBe(3)
+			expect(result.stderr).toContain('is a submodule; publish from a standalone clone')
+			expect(result.stderr).not.toContain('primary clone')
+			expect(registry.requests).toEqual([])
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
 	it('refuses malformed publish, confirm, wait, and mode combinations before reaching npm', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-' })
 		try {
@@ -141,7 +216,7 @@ describe('window.ts', () => {
 			})
 			expect(stopped.status).toBe(3)
 			expect(stopped.stderr).toContain('whoami answers nothing')
-			expect(dark.requests.filter((line) => line === 'GET /-/whoami').length).toBeGreaterThan(1)
+			expect(dark.requests).toEqual(['GET /-/whoami', 'GET /-/whoami'])
 			expect(dark.requests.some((line) => line.startsWith('PUT '))).toBe(false)
 			expect(scratch.has('tmp/units')).toBe(false)
 		} finally {

@@ -6,7 +6,9 @@
 // --whoami reads `npm whoami` once, or polls it every 5 seconds until it answers or the wait ends.
 // --login prints the command the operator runs in a real terminal (npm offers its approval only to a
 // TTY, so no child of this script can hold it), then polls `npm whoami` until it answers or the wait
-// ends. --publish re-reads `npm whoami` immediately before the first upload and refuses when it
+// ends. --publish refuses linked worktrees and submodules found at a package or its ancestors,
+// and names a linked worktree's primary clone.
+// It then re-reads `npm whoami` immediately before the first upload and refuses when it
 // answers nothing, then runs `npm publish --ignore-scripts --browser=false --otp=CODE` in each
 // directory back to back under captured pipes (npm's non-TTY guard turns a refused code into
 // EOTP with no prompt, so the path needs no TTY), journals each upload to tmp/units/publish-<name>.log, reads the `+ name@version`
@@ -14,8 +16,8 @@
 // each accepted version against the registry. --confirm re-reads the registry for each name@version every 5
 // seconds until it serves the version or the wait (default 120 seconds) ends. Exit 0 when the mode
 // succeeded, 3 when it did not, 64 on usage.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import {
 	readList,
 	readMissingFlags,
@@ -39,8 +41,8 @@ interface Upload {
 }
 
 function waitFor(ms: number): Promise<void> {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms)
+	return new Promise((settle) => {
+		setTimeout(settle, ms)
 	})
 }
 
@@ -195,6 +197,33 @@ async function main(argv: readonly string[]): Promise<number> {
 				"usage: window.ts --publish DIR... --otp CODE [--wait SECONDS] [--json]; every DIR carries a package.json and CODE is the account's one-time code",
 			)
 			return 64
+		}
+		for (const directory of directories) {
+			let root = resolve(directory)
+			while (!existsSync(join(root, '.git')) && dirname(root) !== root) root = dirname(root)
+			const entry = join(root, '.git')
+			if (!existsSync(entry) || !statSync(entry).isFile()) continue
+			const line = readFileSync(entry, 'utf8')
+				.split(/\r\n|\n/u)
+				.find((value) => value.startsWith('gitdir:'))
+			const target = line?.slice('gitdir:'.length).trim()
+			if (target === undefined || target === '') {
+				console.error(
+					`window: ${directory} has a .git file without a gitdir: path; cannot identify its primary clone`,
+				)
+				return 3
+			}
+			const gitdir = resolve(root, target)
+			const common = join(gitdir, 'commondir')
+			if (!existsSync(common)) {
+				console.error(`window: ${directory} is a submodule; publish from a standalone clone`)
+				return 3
+			}
+			const primary = dirname(resolve(gitdir, readFileSync(common, 'utf8').trim()))
+			console.error(
+				`window: ${directory} is a linked worktree; publish from its primary clone at ${primary} so npm records gitHead`,
+			)
+			return 3
 		}
 		// A stored credential expires mid-session, so the session-start answer does not hold here.
 		if (readWhoami() === undefined) {

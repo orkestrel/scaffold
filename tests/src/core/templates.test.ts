@@ -259,7 +259,7 @@ function driveModule(file: string, binding: string, calls: readonly string[]): r
 }
 
 // The declarations the emitted distribution proof classifies an installed exports
-// map with. The proof packs and installs at module load, so it cannot be imported;
+// map with. The proof packs and installs during suite setup;
 // these are lifted out of the real emitted text instead and driven directly. A name
 // the proof stops declaring fails the lift rather than thinning the drive.
 const CLASSIFIER_DECLARATIONS: readonly string[] = [
