@@ -239,14 +239,14 @@ then runs the configured scoped checks that prove environment isolation.
 - Lint is a separate complementary gate; neither lint nor root checking replaces
   environment-isolation checks.
 
-| Scope                        | `lib`                             | `types`                 | Permitted host globals                                                                                                                   |
-| ---------------------------- | --------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `src:core`, `app:core`       | `["ESNext","WebWorker"]`          | `[]`                    | WHATWG web interop: fetch family, streams, URL, Abort, encoders, crypto, timers, console, DOMException, structuredClone; no DOM, no Node |
-| `src:browser`, `app:browser` | `["ESNext","DOM","DOM.Iterable"]` | default                 | DOM; no Node                                                                                                                             |
-| `src:server`, `app:server`   | `["ESNext"]`                      | `["node"]`              | Node; no DOM                                                                                                                             |
-| `src:styles`, `src:<name>`   | `["ESNext"]`                      | `["vite/client"]`       | Vite SCSS module declaration only                                                                                                        |
-| `src:vue`                    | `["ESNext","DOM","DOM.Iterable"]` | `["vite/client"]`       | DOM; no Node                                                                                                                             |
-| `app:vue`                    | `["ESNext","DOM","DOM.Iterable"]` | `["vite/client","vue"]` | DOM and Vue; no Node                                                                                                                     |
+| Scope                        | `lib`                             | `types`                                              | Permitted host globals                                                                                                                   |
+| ---------------------------- | --------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `src:core`, `app:core`       | `["ESNext","WebWorker"]`          | `[]`                                                 | WHATWG web interop: fetch family, streams, URL, Abort, encoders, crypto, timers, console, DOMException, structuredClone; no DOM, no Node |
+| `src:browser`, `app:browser` | `["ESNext","DOM","DOM.Iterable"]` | ["vite/client","@vitest/browser-playwright"]         | DOM; no Node                                                                                                                             |
+| `src:server`, `app:server`   | `["ESNext"]`                      | `["node"]`                                           | Node; no DOM                                                                                                                             |
+| `src:styles`, `src:<name>`   | `["ESNext"]`                      | `["vite/client"]`                                    | Vite SCSS module declaration only                                                                                                        |
+| `src:vue`                    | `["ESNext","DOM","DOM.Iterable"]` | `["vite/client","@vitest/browser-playwright"]`       | DOM; no Node                                                                                                                             |
+| `app:vue`                    | `["ESNext","DOM","DOM.Iterable"]` | `["vite/client","vue","@vitest/browser-playwright"]` | DOM and Vue; no Node                                                                                                                     |
 
 Strict core is load-bearing:
 

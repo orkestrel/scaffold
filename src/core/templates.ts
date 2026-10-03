@@ -799,7 +799,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client"],
+		"types": ["vite/client", "@vitest/browser-playwright"],
 		"noEmit": false,
 		"declaration": true,
 		"emitDeclarationOnly": true,
@@ -818,7 +818,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "vue"]
+		"types": ["vite/client", "vue", "@vitest/browser-playwright"]
 	},
 	"include": [
 {{include}}
@@ -860,7 +860,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client"],
+		"types": ["vite/client", "@vitest/browser-playwright"],
 		"noEmit": false,
 		"declaration": true,
 		"emitDeclarationOnly": true,
@@ -919,7 +919,7 @@ export function probe(override?: UserConfig): UserConfig {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client"]
+		"types": ["vite/client", "@vitest/browser-playwright"]
 	},
 	"include": [
 {{include}}
@@ -1846,7 +1846,7 @@ import {
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-{{launcher}}import { afterAll, describe, expect, it } from 'vitest'
+{{launcher}}import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -2062,7 +2062,7 @@ function runNpm(args: readonly string[], cwd: string): SpawnSyncReturns<string> 
 	return spawnSync(NPM, [...args], {
 		cwd,
 		encoding: 'utf8',
-		env: { ...process.env, npm_config_cache: CACHE },
+		env: { ...process.env, npm_config_cache: join(readScratch(), 'cache') },
 		shell: SHELL,
 		windowsHide: true,
 	})
@@ -2419,8 +2419,8 @@ function driveRuntime(stage: Stage, specifier: string, driver: string): readonly
 // published surface back off the installed tree. Every later claim reads this
 // result, so a failure here is raised where it happens rather than once per entry.
 function buildStage(): Stage {
-	const packed = join(SCRATCH, 'packed')
-	const consumer = join(SCRATCH, 'consumer')
+	const packed = join(readScratch(), 'packed')
+	const consumer = join(readScratch(), 'consumer')
 	mkdirSync(packed, { recursive: true })
 	const pack = runNpm(['pack', '--ignore-scripts', '--pack-destination', packed], ROOT)
 	if (pack.status !== 0) throw new Error(\`npm pack refused this workspace: \${readOutput(pack)}\`)
@@ -2494,21 +2494,31 @@ function buildStage(): Stage {
 	return { consumer, installed, archives, entries, subpaths, undeclared, excluded, targets }
 }
 
-const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
-const CACHE = join(SCRATCH, 'cache')
-mkdirSync(CACHE, { recursive: true })
-// The scratch tree holds the npm cache, the packed archive, and the installed
-// consumer, so its removal is registered before the first thing that can throw.
+let scratch: string | undefined
+let staged: Stage | undefined
+
+function readScratch(): string {
+	if (scratch === undefined) {
+		throw new Error('The distribution setup has not allocated its scratch directory')
+	}
+	return scratch
+}
+
+beforeAll(() => {
+	scratch = mkdtempSync(join(tmpdir(), 'distribution-'))
+	mkdirSync(join(scratch, 'cache'), { recursive: true })
+	staged = openStage()
+})
+
 afterAll(() => {
-	rmSync(SCRATCH, { force: true, recursive: true })
+	if (scratch !== undefined) {
+		rmSync(scratch, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
+	}
 })
 
 // Installing the packed archive resolves its own runtime dependencies, so an
 // unreachable registry leaves nothing to measure. Under release that is the gate
 // failing; anywhere else the suite skips and names the mechanism it wanted.
-//
-// A module that throws while loading never reaches the \`afterAll\` it registered,
-// so every throw here removes the scratch tree on its way out.
 function openStage(): Stage | undefined {
 	try {
 		if (runNpm(PING, ROOT).status !== 0) {
@@ -2519,17 +2529,14 @@ function openStage(): Stage | undefined {
 		}
 		return buildStage()
 	} catch (error) {
-		rmSync(SCRATCH, { force: true, recursive: true })
+		rmSync(readScratch(), { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
 		throw error
 	}
 }
 
-const STAGE = openStage()
-const STAGED = STAGE !== undefined
-
 describe('distribution classifiers', () => {
 	it('classifies synthetic export mappings without a registry stage', () => {
-		const root = join(SCRATCH, 'classifiers')
+		const root = join(readScratch(), 'classifiers')
 		writeFile(
 			join(root, 'package.json'),
 			JSON.stringify({
@@ -2598,10 +2605,10 @@ describe('distribution classifiers', () => {
 // The staged consumer, or a skip naming what the run could not reach. \`it.skipIf\`
 // carries no reason, so the gate sits here where the test context can state one.
 function requireStage(context: TestContext): Stage {
-	if (!STAGED) {
+	if (staged === undefined) {
 		return context.skip('\`npm ping\` did not answer, so nothing was packed or installed')
 	}
-	return STAGE
+	return staged
 }
 
 describe('installed package consumer', () => {
@@ -2687,50 +2694,39 @@ describe('installed package consumer', () => {
 	})
 {{guard}}})
 
-for (const entry of STAGE?.entries ?? []) {
-	describe(\`installed entry \${entry.subpath}\`, () => {
-		it.runIf(entry.importable)(
-			'publishes what it declares to a Node import, and no more',
-			(context) => {
-				const stage = requireStage(context)
-				// The exports-map walk resolved a declaration a typed importer reads, so an
-				// entry reaching this drive without one is reported for that rather than for
-				// what a consumer of a missing declaration goes on to say.
-				if (!entry.declaration.importable) {
-					throw new Error(\`\${entry.subpath} publishes no import declaration\`)
-				}
-				const published = driveRuntime(stage, entry.specifier, ESM_DRIVER)
-				const drivers = selectDrivers(entry, 'module')
-				expect(drivers).not.toStrictEqual([])
-				const reported = drivers.flatMap((driver) =>
-					checkSurface(stage, { entry, extension: 'ts', published, driver }),
-				)
-				expect(reported).toStrictEqual([])
-			},
-		)
+describe('installed entries', () => {
+	it('publishes what it declares to a Node import, and no more', (context) => {
+		const stage = requireStage(context)
+		for (const entry of stage.entries.filter((entry) => entry.importable)) {
+			if (!entry.declaration.importable) {
+				throw new Error(\`\${entry.subpath} publishes no import declaration\`)
+			}
+			const published = driveRuntime(stage, entry.specifier, ESM_DRIVER)
+			const drivers = selectDrivers(entry, 'module')
+			expect(drivers).not.toStrictEqual([])
+			const reported = drivers.flatMap((driver) =>
+				checkSurface(stage, { entry, extension: 'ts', published, driver }),
+			)
+			expect(reported).toStrictEqual([])
+		}
+	})
 
-		it.runIf(entry.requirable)(
-			'publishes what it declares to a Node require, and no more',
-			(context) => {
-				const stage = requireStage(context)
-				if (!entry.declaration.requirable) {
-					throw new Error(\`\${entry.subpath} publishes no require declaration\`)
-				}
-				const published = driveRuntime(stage, entry.specifier, CJS_DRIVER)
-				// A subpath whose \`require\` resolves to a module that no typed CommonJS
-				// consumer can compile against carries no declared side to compare here, and
-				// whether it may publish one at all is the untypable set's question rather
-				// than this drive's. The preceding runtime drive ran either way.
-				const drivers = selectDrivers(entry, 'commonjs')
-				expect(drivers).not.toStrictEqual([])
-				const reported = drivers.flatMap((driver) =>
-					checkSurface(stage, { entry, extension: 'cts', published, driver }),
-				)
-				expect(reported).toStrictEqual([])
-			},
-		)
-{{drive}}	})
-}
+	it('publishes what it declares to a Node require, and no more', (context) => {
+		const stage = requireStage(context)
+		for (const entry of stage.entries.filter((entry) => entry.requirable)) {
+			if (!entry.declaration.requirable) {
+				throw new Error(\`\${entry.subpath} publishes no require declaration\`)
+			}
+			const published = driveRuntime(stage, entry.specifier, CJS_DRIVER)
+			const drivers = selectDrivers(entry, 'commonjs')
+			expect(drivers).not.toStrictEqual([])
+			const reported = drivers.flatMap((driver) =>
+				checkSurface(stage, { entry, extension: 'cts', published, driver }),
+			)
+			expect(reported).toStrictEqual([])
+		}
+	})
+{{drive}}})
 `,
 			transport: `import { createServer } from 'node:http'
 `,
@@ -2839,36 +2835,35 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 }
 `,
 			drive: `
-		it.runIf(entry.browsable)(
-			'publishes what it declares to a real browser, and no more [requires a browser]',
-			async (context) => {
-				const stage = requireStage(context)
-				if (!entry.declaration.browsable) {
-					throw new Error(\`\${entry.subpath} publishes no browser declaration\`)
-				}
-				const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
-				const browser = await launchBrowser(options).catch((error: unknown) => {
-					const cause = \`\${describeBrowser(options)} was rejected: \${String(error)}\`
-					if (RELEASE) throw new Error(\`The release gate requires a browser, and \${cause}\`)
-					return context.skip(\`No browser launched. \${cause}\`)
+	it('publishes what it declares to a real browser [requires a browser]', async (context) => {
+		const stage = requireStage(context)
+		for (const entry of stage.entries.filter((entry) => entry.browsable)) {
+			if (!entry.declaration.browsable) {
+				throw new Error(\`\${entry.subpath} publishes no browser declaration\`)
+			}
+			const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+			const browser = await launchBrowser(options).catch((error: unknown) => {
+				const cause = \`\${describeBrowser(options)} was rejected: \${String(error)}\`
+				if (RELEASE) throw new Error(\`The release gate requires a browser, and \${cause}\`)
+				return context.skip(\`No browser launched. \${cause}\`)
+			})
+			try {
+				const bundle = await bundleEntry(stage, entry)
+				const published = await readBrowserExports(browser, bundle)
+				// A browser consumer reads the installed declarations through a bundler, so
+				// that is the one driver this face answers under.
+				const reported = checkSurface(stage, {
+					entry,
+					extension: 'ts',
+					published,
+					driver: BROWSER_DRIVER,
 				})
-				try {
-					const bundle = await bundleEntry(stage, entry)
-					const published = await readBrowserExports(browser, bundle)
-					// A browser consumer reads the installed declarations through a bundler, so
-					// that is the one driver this face answers under.
-					const reported = checkSurface(stage, {
-						entry,
-						extension: 'ts',
-						published,
-						driver: BROWSER_DRIVER,
-					})
-					expect(reported).toStrictEqual([])
-				} finally {
-					await browser.close()
-				}
-			},
-		)
+				expect(reported).toStrictEqual([])
+			} finally {
+				await browser.close()
+			}
+		}
+	})
 `,
 			guard: `
 	// This proof drives a Node import and a Node require and carries no browser
@@ -2880,7 +2875,7 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 	// a published browser face. \`vite\` selects nothing either, though the branch
 	// imports it: scaffold puts \`vite\` in every workspace's base development
 	// dependencies, whatever that workspace publishes. The later Node
-	// \`it.runIf\` predicates retire each matching Node drive for a face published
+	// entry filters retire each matching Node drive for a face published
 	// later, which leaves nothing measuring it. So it reddens here and names the
 	// subpath a browser branch is owed for. A workspace that gains one deletes this
 	// file and runs the \`repair\` verb, which writes the variant carrying that branch.

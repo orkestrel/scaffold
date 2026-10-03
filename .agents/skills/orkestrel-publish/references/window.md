@@ -9,6 +9,8 @@ rest of the layer either fits inside it or takes another approval.
 
 ## Arm the terminal
 
+- Before any upload, refuse every publish directory whose `.git` entry is a file; read its `gitdir:` path and publish from the primary clone it names so npm records `gitHead`. Expect `window.ts --publish` to refuse the whole batch with exit 3 before contacting npm.
+
 - Read the session with `node .agents/skills/orkestrel-publish/scripts/window.ts --whoami`; `--login` prints the command the operator runs in a real terminal and polls `whoami` until it answers. No child of a script holds the TTY npm needs, so the login itself is the operator's.
 
 - Run the login and every browser-authorized publish under `script -qfc '<command>' <log>`. npm

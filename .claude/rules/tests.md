@@ -292,6 +292,7 @@ Use the real browser as the system under test:
 
 - Do not replace DOM events, storage, observers, viewports, layout methods, pointer, or drag APIs unless the browser genuinely lacks one.
 - Prefer real nodes, events, styles/layout, and observers.
+- When a browser test moves the real pointer through CDP, move it to `(-1, -1)` in the case's `finally` block.
 - Centralize event factories: `createPointerEvent`, `createDragEvent`, `typeInput`, `fireTransitionEnd`.
 - Centralize DOM builders: `createButtonElement`, `createDropdownElements`, `createModalElement`.
 - Assert DOM state, emitted events, callback records, focus, classes, attributes, and public API state.

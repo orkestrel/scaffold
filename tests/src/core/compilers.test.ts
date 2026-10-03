@@ -47,6 +47,146 @@ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import { buildBlueprint } from '../../setup.js'
 import { readStatements } from '../../setupServer.js'
+import { buildEnvironment } from '../../setupServer.js'
+
+describe('generated defect regressions', () => {
+	it('provides CDP send types in every scoped browser configuration', () => {
+		const scratch = createScratch({ prefix: 'scaffold-cdp-types-' })
+		try {
+			for (const name of ['vite', 'vitest', '@vitest/browser-playwright'])
+				linkPackage(scratch, name)
+			// This fixture calls no Vue API; its ambient entry is inert while CDP uses installed declarations.
+			scratch.write('node_modules/vue/index.d.ts', 'export {}\n')
+			const blueprint = createBlueprint('proof', {
+				src: ['browser'],
+				app: ['browser'],
+				extensions: [{ surface: 'browser', name: 'vue', axes: ['src', 'app'] }],
+			})
+			for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+				if (artifact.origin === 'template') scratch.write(artifact.path, artifact.content)
+			}
+			scratch.write('package.json', '{"type":"module"}')
+			for (const face of ['browser', 'vue']) {
+				scratch.write(
+					`src/${face}/helpers.ts`,
+					"import { cdp } from 'vitest/browser'\nexport async function movePointer(): Promise<void> { await cdp().send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: -1, y: -1 }) }\n",
+				)
+			}
+			scratch.write(
+				'tests/setupBrowser.ts',
+				"import { cdp } from 'vitest/browser'\nexport async function movePointer(): Promise<void> { await cdp().send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: -1, y: -1 }) }\n",
+			)
+			for (const axis of ['src', 'app']) {
+				for (const face of ['browser', 'vue']) {
+					const run = spawnSync(
+						process.execPath,
+						[
+							resolve('node_modules/typescript/bin/tsc'),
+							'--noEmit',
+							'-p',
+							`configs/${axis}/tsconfig.${face}.json`,
+						],
+						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+					)
+					expect(run.status, `${axis}/${face}: ${run.stdout}${run.stderr}`).toBe(0)
+					const path = `configs/${axis}/tsconfig.${face}.json`
+					const source = requireValue(scratch.read(path))
+					scratch.write(path, source.replace(', "@vitest/browser-playwright"', ''))
+					const control = spawnSync(
+						process.execPath,
+						[resolve('node_modules/typescript/bin/tsc'), '--noEmit', '-p', path],
+						{ cwd: scratch.path, encoding: 'utf8', windowsHide: true },
+					)
+					expect(control.status).not.toBe(0)
+					expect(control.stdout).toContain("Property 'send' does not exist on type 'CDPSession'")
+					scratch.write(path, source)
+				}
+			}
+		} finally {
+			scratch.destroy()
+		}
+	}, 30_000)
+
+	it('lists a generated distribution project without creating a staging directory', () => {
+		const scratch = createScratch({ prefix: 'scaffold-distribution-collection-' })
+		try {
+			scratch.link('node_modules', resolve('node_modules'))
+			const blueprint = createBlueprint('proof', { src: ['core'] })
+			for (const artifact of [
+				...blueprintToConfigArtifacts(blueprint),
+				...blueprintToTestArtifacts(blueprint),
+			]) {
+				if (artifact.origin === 'template') scratch.write(artifact.path, artifact.content)
+			}
+			scratch.write('package.json', blueprintToManifest(blueprint))
+			scratch.write('configs/helpers.ts', readFileSync('configs/helpers.ts', 'utf8'))
+			const temporary = scratch.ensure('temporary')
+			const run = spawnSync(
+				process.execPath,
+				[
+					resolve('node_modules/vitest/vitest.mjs'),
+					'list',
+					'--config',
+					'vite.config.ts',
+					'--project',
+					'distribution',
+					'--json=listing.json',
+				],
+				{
+					cwd: scratch.path,
+					encoding: 'utf8',
+					windowsHide: true,
+					env: buildEnvironment({
+						TEMP: temporary,
+						TMP: temporary,
+						TMPDIR: temporary,
+						npm_config_registry: 'http://127.0.0.1:1/',
+						npm_config_fetch_retries: '0',
+					}),
+				},
+			)
+			expect(scratch.names('temporary').filter((name) => name.startsWith('distribution-'))).toEqual(
+				[],
+			)
+			expect(run.status, `${run.stdout}${run.stderr}`).toBe(0)
+			expect(scratch.read('listing.json')).toContain(
+				'packs one archive and installs it in isolation',
+			)
+			const execution = spawnSync(
+				process.execPath,
+				[
+					resolve('node_modules/vitest/vitest.mjs'),
+					'run',
+					'--config',
+					'vite.config.ts',
+					'--project',
+					'distribution',
+					'-t',
+					'classifies synthetic export mappings',
+				],
+				{
+					cwd: scratch.path,
+					encoding: 'utf8',
+					windowsHide: true,
+					env: buildEnvironment({
+						TEMP: temporary,
+						TMP: temporary,
+						TMPDIR: temporary,
+						npm_config_registry: 'http://127.0.0.1:1/',
+						npm_config_fetch_retries: '0',
+					}),
+				},
+			)
+			expect(execution.status, `${execution.stdout}${execution.stderr}`).toBe(0)
+			expect(execution.stdout).toContain('1 passed')
+			expect(scratch.names('temporary').filter((name) => name.startsWith('distribution-'))).toEqual(
+				[],
+			)
+		} finally {
+			scratch.destroy()
+		}
+	}, 30_000)
+})
 
 describe('blueprintToProjects', () => {
 	it('lists only the root projects for a workspace without faces or setup proofs', () => {
@@ -484,7 +624,10 @@ describe('Vue face planning', () => {
 			expect(JSON.parse(wrapper.content)).toMatchObject({
 				compilerOptions: {
 					lib: ['ESNext', 'DOM', 'DOM.Iterable'],
-					types: axis === 'app' ? ['vite/client', 'vue'] : ['vite/client'],
+					types:
+						axis === 'app'
+							? ['vite/client', 'vue', '@vitest/browser-playwright']
+							: ['vite/client', '@vitest/browser-playwright'],
 				},
 			})
 			expect(types).toContain(`"@${axis}/vue": ["./${axis}/vue/index.ts"]`)
@@ -2129,7 +2272,7 @@ describe('blueprintToScripts config projects', () => {
 			({ path }) => path === 'configs/app/tsconfig.vue.json',
 		)
 		expect(config?.origin !== 'host' ? config?.content : undefined).toContain(
-			'"types": ["vite/client", "vue"]',
+			'"types": ["vite/client", "vue", "@vitest/browser-playwright"]',
 		)
 	})
 
@@ -3094,7 +3237,7 @@ describe('blueprintToConfigArtifacts app check scopes', () => {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["vite/client"]
+		"types": ["vite/client", "@vitest/browser-playwright"]
 	},
 	"include": [
 		"../../app/browser/**/*.cts",

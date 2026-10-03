@@ -7,6 +7,70 @@ import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('reads a listing despite bracketed optimizer output', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-output-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project core"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"console.log('[vite] (client) [optimizer] dependencies optimized')\nexport default { test: { name: 'core', include: ['tests/sample.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/sample.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.projects).toEqual([{ name: 'core', gate: 'test', files: 1, tests: 1 }])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('scopes collection to every requested project before excluded modules execute', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-scope-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				'{"type":"module","scripts":{"test":"vitest run --project core --project server --project distribution"}}',
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { projects: ['core', 'server', 'distribution'].map((name) => ({ test: { name, include: ['tests/' + name + '.test.ts'] } })) } }\n",
+			)
+			for (const name of ['core', 'server']) {
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			}
+			scratch.write(
+				'tests/distribution.test.ts',
+				"import { writeFileSync } from 'node:fs'\nimport { it } from 'vitest'\nwriteFileSync('collected', 'yes')\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--projects', 'core,server', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(scratch.has('collected')).toBe(false)
+			expect(run.status).toBe(0)
+			expect(run.json?.projects).toEqual([
+				{ name: 'core', gate: 'test', files: 1, tests: 1 },
+				{ name: 'server', gate: 'test', files: 1, tests: 1 },
+			])
+			expect(run.json?.undiscovered).toEqual([])
+			const control = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(control.status).toBe(0)
+			expect(scratch.has('collected')).toBe(true)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('prints the Vitest worker-group diagnostic and keeps exit 2 when listing fails', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-refusal-' })
 		try {

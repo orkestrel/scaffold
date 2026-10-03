@@ -79,6 +79,31 @@ function buildNpmEnvironment(root: string, registry: Registry): Readonly<Record<
 }
 
 describe('window.ts', () => {
+	it('refuses a linked worktree anywhere in the publish batch and names its primary clone', async () => {
+		const scratch = createScratch({ prefix: 'orkestrel-window-worktree-' })
+		const registry = await startRegistry('fixture')
+		try {
+			const env = buildNpmEnvironment(scratch.path, registry)
+			scratch.write('primary/package.json', '{"name":"@fixture/primary","version":"1.0.0"}')
+			scratch.ensure('primary/.git/worktrees/linked')
+			scratch.write('linked/package.json', '{"name":"@fixture/linked","version":"1.0.0"}')
+			scratch.write('linked/.git', 'gitdir: ../primary/.git/worktrees/linked\r\n')
+			const result = await spawnSkillScript(
+				SCRIPT,
+				['--publish', 'primary', 'linked', '--otp', '123456'],
+				{ cwd: scratch.path, env },
+			)
+			expect(result.status).toBe(3)
+			expect(result.stderr).toContain('linked worktree')
+			expect(result.stderr).toContain(join(scratch.path, 'primary'))
+			expect(registry.requests).toEqual([])
+			expect(scratch.has('tmp/units')).toBe(false)
+		} finally {
+			await stopRegistry(registry)
+			scratch.destroy()
+		}
+	})
+
 	it('refuses malformed publish, confirm, wait, and mode combinations before reaching npm', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-window-' })
 		try {

@@ -259,7 +259,7 @@ function driveModule(file: string, binding: string, calls: readonly string[]): r
 }
 
 // The declarations the emitted distribution proof classifies an installed exports
-// map with. The proof packs and installs at module load, so it cannot be imported;
+// map with. The proof packs and installs during suite setup;
 // these are lifted out of the real emitted text instead and driven directly. A name
 // the proof stops declaring fails the lift rather than thinning the drive.
 const CLASSIFIER_DECLARATIONS: readonly string[] = [
@@ -644,7 +644,9 @@ describe('configuration templates', () => {
 		expect(rootVite?.content).toContain('\t\t\tprobe,')
 		expect(coreConfig?.content).toContain('"lib": ["ESNext", "WebWorker"]')
 		expect(coreConfig?.content).toContain('"types": []')
-		expect(browserConfig?.content).toContain('"types": ["vite/client"]')
+		expect(browserConfig?.content).toContain(
+			'"types": ["vite/client", "@vitest/browser-playwright"]',
+		)
 		expect(blueprintToDevDependencies(blueprint)['vite-plugin-singlefile']).toBe('^2.3.3')
 	})
 
@@ -658,7 +660,9 @@ describe('configuration templates', () => {
 		if (browserConfig?.origin === 'host') {
 			throw new Error('Expected configuration template content')
 		}
-		expect(browserConfig?.content).toContain('"types": ["vite/client", "vue"]')
+		expect(browserConfig?.content).toContain(
+			'"types": ["vite/client", "vue", "@vitest/browser-playwright"]',
+		)
 		expect(browserConfig?.content).not.toMatch(/{{[^{}]+}}/)
 	})
 

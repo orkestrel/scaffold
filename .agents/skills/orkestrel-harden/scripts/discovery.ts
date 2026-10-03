@@ -3,15 +3,15 @@
 //   node .agents/skills/orkestrel-harden/scripts/discovery.ts [--config vite.config.ts] [--projects a,b] [--json]
 // The script follows every root script chain in package.json (a script no other script invokes) to
 // the `--project` names its Vitest scripts gate and the test files its `node` scripts run, runs
-// `vitest list --json` once through the local vitest entry to read what each project collects, and
+// `vitest list --json=FILE` once through the local vitest entry to read what each project collects, and
 // reads every collected file for `.skip(`, `.todo(`, `.skipIf(`, `.runIf(`, `retry:`, and
 // `timeout:`. It flags a collected project no root chain reaches, a named project that collects
 // nothing, and a test file under tests/ that no project collects and no root script runs directly.
 // A project with no test file and no gate is outside the census. Exit 0 with no flag, 3 with one, 2 when Vitest cannot list, 64 on
 // usage.
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
-import { relative, resolve } from 'node:path'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 import {
 	listFiles,
 	readMissingFlags,
@@ -91,38 +91,61 @@ function readGates(scripts: Readonly<Record<string, string>>): Gates {
 	return { projects, files }
 }
 
-function listCollected(config: string): readonly Collected[] | undefined {
-	const result = spawnSync(process.execPath, [VITEST, 'list', '--config', config, '--json'], {
-		encoding: 'utf8',
-		maxBuffer: 64 * 1024 * 1024,
-		windowsHide: true,
-	})
-	const start = result.stdout.indexOf('[')
-	if (result.status !== 0 || start === -1) {
-		const diagnostic = result.stderr || result.error?.message || result.stdout
-		console.error(
-			diagnostic
-				.split(/\r\n|\n/u)
-				.filter((line) => line.trim() !== '')
-				.slice(0, 12)
-				.join('\n'),
+function listCollected(
+	config: string,
+	projects: readonly string[],
+): readonly Collected[] | undefined {
+	mkdirSync('tmp', { recursive: true })
+	const directory = mkdtempSync(resolve('tmp', 'discovery-'))
+	const listing = join(directory, 'listing.json')
+	try {
+		const result = spawnSync(
+			process.execPath,
+			[
+				VITEST,
+				'list',
+				'--config',
+				config,
+				`--json=${listing}`,
+				...projects.flatMap((name) => ['--project', name]),
+			],
+			{
+				encoding: 'utf8',
+				maxBuffer: 64 * 1024 * 1024,
+				windowsHide: true,
+			},
 		)
-		return undefined
-	}
-	const parsed: unknown = JSON.parse(result.stdout.slice(start))
-	if (!Array.isArray(parsed)) return undefined
-	const collected: Collected[] = []
-	for (const entry of parsed) {
-		if (typeof entry !== 'object' || entry === null) continue
-		const record = Object.fromEntries(Object.entries(entry))
-		if (typeof record.file === 'string' && typeof record.projectName === 'string') {
-			collected.push({
-				file: relative(process.cwd(), record.file).split('\\').join('/'),
-				projectName: record.projectName,
-			})
+		if (result.status !== 0 || !existsSync(listing)) {
+			const diagnostic = result.stderr || result.error?.message || result.stdout
+			console.error(
+				diagnostic
+					.split(/\r\n|\n/u)
+					.filter((line) => line.trim() !== '')
+					.slice(0, 12)
+					.join('\n'),
+			)
+			return undefined
 		}
+		const parsed: unknown = JSON.parse(readFileSync(listing, 'utf8'))
+		if (!Array.isArray(parsed)) return undefined
+		const collected: Collected[] = []
+		for (const entry of parsed) {
+			if (typeof entry !== 'object' || entry === null) continue
+			const record = Object.fromEntries(Object.entries(entry))
+			if (typeof record.file === 'string' && typeof record.projectName === 'string') {
+				collected.push({
+					file: relative(process.cwd(), record.file).split('\\').join('/'),
+					projectName: record.projectName,
+				})
+			}
+		}
+		return collected
+	} catch (error) {
+		console.error(error instanceof Error ? error.message : String(error))
+		return undefined
+	} finally {
+		rmSync(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
 	}
-	return collected
 }
 
 function listTestFiles(directory: string): readonly string[] {
@@ -158,14 +181,14 @@ function main(argv: readonly string[]): number {
 		return 2
 	}
 	const gates = readGates(readScripts())
-	const collected = listCollected(config)
+	const named = (readOption(argv, '--projects') ?? '').split(',').filter((name) => name !== '')
+	const collected = listCollected(config, named)
 	if (collected === undefined) {
 		console.error('discovery: vitest list failed')
 		return 2
 	}
-	const named = (readOption(argv, '--projects') ?? '').split(',').filter((name) => name !== '')
 	const names = new Set<string>([
-		...gates.projects.keys(),
+		...(named.length === 0 ? gates.projects.keys() : named),
 		...collected.map((entry) => entry.projectName),
 		...named,
 	])
@@ -182,7 +205,7 @@ function main(argv: readonly string[]): number {
 		}
 	})
 	const collectedFiles = new Set(collected.map((entry) => entry.file))
-	const undiscovered = listTestFiles('tests')
+	const undiscovered = (named.length === 0 ? listTestFiles('tests') : [])
 		.filter((file) => !collectedFiles.has(file) && !gates.files.has(file))
 		.sort()
 	const ungated = projects

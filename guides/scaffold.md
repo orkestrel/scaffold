@@ -2084,7 +2084,8 @@ Nothing is fixed except the manifest.
   `dist/`, and `npm run check` would wait on `npm run build`. Every subpath is written before the
   bare specifier, because `vite.config.ts` derives its `alias` record from these entries in order and
   a bare specifier also matches its own subpaths. An `app` environment publishes nothing and maps no
-  such entry.
+  such entry. Browser and Vue scoped configurations include the Playwright provider's types so
+  browser setup helpers can call the CDP session's `send` method during scoped checks.
 - One template artifact, `configs/browsers.ts`, for a workspace selecting `browser` on either
   environment axis or in its setup runtime list.
   It resolves the Chromium the Playwright provider launches, and the root `vite.config.ts` calls it
@@ -2110,7 +2111,8 @@ Nothing is fixed except the manifest.
   journey per application of a journey workspace. Surfaces and extensions lists each face.
 - One template artifact, `tests/distribution.test.ts`, for a workspace publishing any `src`
   environment or sheet face. It is the packed-package proof, and it is claimed by presence rather
-  than birth, so a workspace that replaces it keeps its replacement. A published browser environment
+  than birth, so a workspace that replaces it keeps its replacement. The suite stages its consumer
+  during setup; listing the project creates no distribution staging directory. A published browser environment
   adds the
   real-browser stage to it: the stage bundles the installed package with the workspace's own
   `configs/browsers.ts` resolution, serves the bundle over a loopback server, and drives it in
