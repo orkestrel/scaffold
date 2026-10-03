@@ -7,6 +7,279 @@ import { runSkillScript, WORKSPACE_ROOT } from '../../../../setupServer.js'
 const SCRIPT = '.agents/skills/orkestrel-harden/scripts/discovery.ts'
 
 describe('discovery.ts', () => {
+	it('gates every project in a wrapper config without a project filter', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-wrapper-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'npm run test:wrapper',
+						'test:wrapper': 'vitest run --config="wrapper.config.ts"',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'wrapper (chromium)', include: ['tests/sample.test.ts'] } }\n",
+			)
+			scratch.write(
+				'wrapper.config.ts',
+				"export default { test: { name: 'wrapped', include: ['tests/sample.test.ts'] } }\n",
+			)
+			scratch.write(
+				'tests/sample.test.ts',
+				"import { it } from 'vitest'\nit('collects', () => {})\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.ungated).toEqual([])
+			expect(run.json?.projects).toEqual([
+				expect.objectContaining({
+					name: 'wrapped',
+					gate: 'test > test:wrapper',
+					files: 1,
+					tests: 1,
+				}),
+				expect.objectContaining({
+					name: 'wrapper (chromium)',
+					gate: 'test > test:wrapper',
+					files: 1,
+					tests: 1,
+				}),
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('collects a file reached only through a second config script', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-config-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'npm run test:core && npm run test:journey',
+						'test:core': 'vitest run --project=core',
+						'test:journey': 'vitest run --config journey.config.ts --project journey',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			scratch.write(
+				'journey.config.ts',
+				"export default { test: { name: 'journey', include: ['tests/journey.test.ts'] } }\n",
+			)
+			for (const name of ['core', 'journey'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.undiscovered).toEqual([])
+			expect(run.json?.projects).toContainEqual(
+				expect.objectContaining({
+					name: 'journey',
+					gate: 'test > test:journey',
+					files: 1,
+					tests: 1,
+				}),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('collects the files selected by each gated config mode', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-mode-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'npm run test:core && npm run test:vue && npm run test:browser',
+						'test:core': 'vitest run --project core',
+						'test:vue': 'vitest run --config=journey.config.ts --mode=vue',
+						'test:browser': 'vitest run --config journey.config.ts --mode browser',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			scratch.write(
+				'journey.config.ts',
+				"export default ({ mode }) => ({ test: { name: 'journey', include: ['tests/' + mode + '.test.ts'] } })\n",
+			)
+			for (const name of ['core', 'vue', 'browser'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.undiscovered).toEqual([])
+			expect(run.json?.projects).toContainEqual(
+				expect.objectContaining({ name: 'journey', files: 2, tests: 2 }),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('keeps a project in an ungated second config outside another units gate', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-ungated-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'npm run test:core',
+						'test:core': 'vitest run --config vite.config.ts',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			scratch.write(
+				'second.config.ts',
+				"export default { test: { name: 'orphan', include: ['tests/orphan.test.ts'] } }\n",
+			)
+			for (const name of ['core', 'orphan'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--config', 'second.config.ts', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(3)
+			expect(run.json?.ungated).toEqual(['orphan'])
+			expect(run.json?.undiscovered).toEqual([])
+			expect(run.json?.projects).toContainEqual(
+				expect.objectContaining({ name: 'core', gate: 'test > test:core', files: 1, tests: 1 }),
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('unions project filters per unit and collects that config and mode once', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-filters-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'npm run test:core && npm run test:server -- --mode=selected && npm run test:browser',
+						'test:core': 'vitest run --project core',
+						'test:server': 'vitest run --config=./selected.config.ts --project=server',
+						'test:browser':
+							'vitest run --config selected.config.ts --mode selected --project browser',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'core', include: ['tests/core.test.ts'] } }\n",
+			)
+			scratch.write(
+				'selected.config.ts',
+				"import { appendFileSync } from 'node:fs'\nappendFileSync('listings', 'listed\\n')\nexport default ({ mode }) => ({ test: { projects: ['server', 'browser', 'excluded'].map((name) => ({ test: { name, include: ['cases/' + mode + '/' + name + '.test.ts'] } })) } })\n",
+			)
+			scratch.write('tests/core.test.ts', "import { it } from 'vitest'\nit('collects', () => {})\n")
+			for (const name of ['server', 'browser'])
+				scratch.write(
+					`cases/selected/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('collects', () => {})\n",
+				)
+			scratch.write(
+				'cases/selected/excluded.test.ts',
+				"throw new Error('Excluded project collected')\n",
+			)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(scratch.read('listings')).toBe('listed\n')
+			expect(run.json?.projects).toEqual([
+				expect.objectContaining({
+					name: 'browser',
+					files: 1,
+					tests: 1,
+					units: [{ config: 'selected.config.ts', mode: 'selected' }],
+				}),
+				{ name: 'core', gate: 'test > test:core', files: 1, tests: 1 },
+				expect.objectContaining({
+					name: 'server',
+					files: 1,
+					tests: 1,
+					units: [{ config: 'selected.config.ts', mode: 'selected' }],
+				}),
+			])
+			const scoped = runSkillScript(SCRIPT, ['--projects', 'core', '--json'], { cwd: scratch.path })
+			expect(scoped.status).toBe(0)
+			expect(scoped.json?.projects).toEqual([
+				{ name: 'core', gate: 'test > test:core', files: 1, tests: 1 },
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('lets an unfiltered gate collect beyond another gate on the same unit', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-discovery-all-' })
+		try {
+			scratch.link('node_modules', join(WORKSPACE_ROOT, 'node_modules'))
+			scratch.write(
+				'package.json',
+				JSON.stringify({
+					type: 'module',
+					scripts: {
+						test: 'vitest run --config "selected config.ts" --project server && vitest run --config="selected config.ts"',
+					},
+				}),
+			)
+			scratch.write(
+				'vite.config.ts',
+				"export default { test: { name: 'server', include: ['tests/server.test.ts'] } }\n",
+			)
+			scratch.write(
+				'selected config.ts',
+				"export default { test: { projects: ['server', 'browser'].map((name) => ({ test: { name, include: ['tests/' + name + '.test.ts'] } })) } }\n",
+			)
+			for (const name of ['server', 'browser'])
+				scratch.write(
+					`tests/${name}.test.ts`,
+					"import { it } from 'vitest'\nit('same', () => {})\nit('same', () => {})\n",
+				)
+			const run = runSkillScript(SCRIPT, ['--json'], { cwd: scratch.path })
+			expect(run.status).toBe(0)
+			expect(run.json?.projects).toEqual([
+				expect.objectContaining({ name: 'browser', gate: 'test', files: 1, tests: 2 }),
+				expect.objectContaining({ name: 'server', gate: 'test', files: 1, tests: 2 }),
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('reports a gated project absent from the config as empty', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-absent-' })
 		try {
