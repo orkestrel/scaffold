@@ -15,7 +15,7 @@ import type { ExecuteOptions, ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
-import { chmodSync, globSync, mkdirSync, readFileSync, realpathSync } from 'node:fs'
+import { chmodSync, existsSync, globSync, readFileSync, realpathSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
@@ -845,17 +845,20 @@ export function installPackedScaffold(
 }
 
 /**
- * Creates a distribution fixture inside the checkout with its own Git ignore boundary.
+ * Creates a distribution fixture in the system temporary directory with isolated dependency lookup.
  *
  * @param prefix - The scratch directory's name prefix.
  * @returns The owned fixture, removed by its destroy method.
- * @throws When allocation or Git initialization fails.
+ * @throws When allocation or Git initialization fails, or an ancestor contains node_modules.
  */
 export function createDistributionScratch(prefix: string): ScratchInterface {
-	const parent = join(WORKSPACE_ROOT, 'tmp')
-	mkdirSync(parent, { recursive: true })
-	const workspace = createScratch({ parent, prefix })
+	const workspace = createScratch({ prefix })
 	try {
+		for (let parent = dirname(workspace.path); ; parent = dirname(parent)) {
+			if (existsSync(join(parent, 'node_modules')))
+				throw new Error(`Distribution fixture inherits dependencies from ${parent}`)
+			if (dirname(parent) === parent) break
+		}
 		createRepository(workspace.path)
 		return workspace
 	} catch (error) {

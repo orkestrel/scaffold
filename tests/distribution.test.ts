@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, globSync, readdirSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
@@ -194,7 +195,7 @@ describe('installed package consumer', () => {
 		})
 		const signal = AbortSignal.timeout(590_000)
 		try {
-			expect(dirname(workspace.path)).toBe(join(root, 'tmp'))
+			expect(dirname(workspace.path)).toBe(tmpdir())
 			const archive = installPackedScaffold(workspace, environment)
 			console.info('adopter: pack and consumer install: exit 0')
 			const target = join(workspace.path, 'generated')
