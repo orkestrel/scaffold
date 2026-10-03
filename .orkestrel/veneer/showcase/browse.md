@@ -6,11 +6,12 @@ Informational, under the same handoff rule as `status.md` beside this file: the 
 
 | Row | Value |
 | --- | --- |
-| Repository | `@orkestrel/browser`, branch `ccr-d15a48b1-yyyll6` and browser `main` both at `a9c30ad` (the campaign plan) over `6f5544e` (`Release 0.0.21`, the 0.0.21 `gitHead`); every published release's `gitHead` sits on `main` |
-| Registry | 0.0.21, published 2026-10-03 with the user's code, `BR1` included; the visit adopted scaffold 0.0.87 |
-| Dependents to re-pin | none: ollama (`f9cb40a`), veneer `main` (`43ca8a0`, `package.json:135`), and scaffold 0.0.88 (published 2026-10-03 from `a8dcfb8`; `package.json:109`, written into workspaces by `src/core/constants.ts:666`) carry `^0.0.21` |
-| In flight | items 9 and 10 on browser `ccr-d15a48b1-yyyll6`, one commit each, unpushed until each passes its review and the bare gates; items 11 and 12 follow |
-| Next | `ROADMAP.md` items 9, 10, 11, and 12, then 6 and 7, then 8 when a run reproduces it |
+| Repository | `@orkestrel/browser`: branch `ccr-d15a48b1-yyyll6` at `655906b` (item 9) over `f11f821`; browser `main` at `f11f821` over `6f5544e` (`Release 0.0.21`, the 0.0.21 `gitHead`); every published release's `gitHead` sits on `main` |
+| Registry | 0.0.21, published 2026-10-03 with the user's code, `BR1` included |
+| Dependents to re-pin | none until 0.0.22: ollama (`f9cb40a`), veneer `main` (`43ca8a0`, `package.json:135`), and scaffold 0.0.88 (published 2026-10-03 from `a8dcfb8`; `package.json:109`, written into workspaces by `src/core/constants.ts:666`) carry `^0.0.21` |
+| In flight | item 9 committed as `655906b` on the branch: all ten gates the design lists (`format:check`, `lint:check`, `check`, `test:src:core` 1196, `test:src:browser` 238, `test:src:server` 249, `test:src:bin` 5, `test:guides` 248, `test:policy` 119, `test:setup:browser` 21) plus `test:setup` 175 and `test:service` 102 exit 0 on the cloud host; its adversarial review has not run. Item 10 is designed, not started |
+| Design of record | `browse/items-9-10-design.md`: the rulings for items 9 and 10, the Chromium 141 probe findings behind them, and the tests that fail without each feature |
+| Next | review item 9 (fix in a separate commit), implement item 10 per the design, then items 11 and 12, then release 0.0.22 |
 
 ## Readings
 
@@ -32,14 +33,17 @@ Browser `ROADMAP.md` on the branch holds items 6 to 12, each with its citations 
 
 ## Remaining units, in order
 
-1. `BR1`, landed and released in 0.0.21.
-2. Done: browser 0.0.21 released with the `orkestrel-publish` skill (scaffold `main` `.agents/skills/orkestrel-publish/`, scripts `wave.ts` and `window.ts`), the user's code per window; re-pinned in ollama `f9cb40a`, veneer `43ca8a0`, and scaffold `1cf34db` (0.0.88).
-3. Items 9, 10, 11, and 12, in that order, because each removes a wrong or missing reading an agent acts on. Release them as browser 0.0.22 with the user's code after they land on browser `main`; then re-pin ollama on its branch and `main`, log the veneer re-pin in `../lanes.md` before editing `package.json`, and ask the engine session there to carry `^0.0.22` in its next scaffold release. Items 6 and 7 ship in the release after that; item 8 waits for a run that reproduces it.
-4. A browse recheck of the showcase on the released version.
+1. **Review item 9** (`655906b`): one adversarial reviewer over `git diff f11f821..655906b` in both placements, against `browse/items-9-10-design.md`; the commit message and the item 9 deviations (the tool-copy bound raised to 6050 characters, the deduplication in `extractOutlineRows`, two test phrases changed, the limit refusal naming its tool, and the corrected citations in items 10 to 12) are the writer's. Fix what it confirms in one commit, then read the gates bare.
+2. **Item 10**, per the design's item 10 part: `pressed=`, `expanded=`, and `selected=` on the outline row in both placements and in the guide's row format, then review and gates, one commit.
+3. **Items 11 and 12**, in that order, each designed, implemented, reviewed, and gated, one commit each.
+4. Fast-forward browser `main` to the branch, release 0.0.22 with the user's code (`orkestrel-publish`: `wave.ts --visit`, then `window.ts --publish` from the primary clone, never a linked worktree, so the manifest carries `gitHead`), confirm on the registry, re-pin ollama on its branch and `main`, log the veneer re-pin in `../lanes.md` before editing `package.json`, and ask the engine session there to carry `^0.0.22` in its next scaffold release.
+5. Items 6 and 7 in the release after that; item 8 waits for a run that reproduces it.
+6. A browse recheck of the showcase on the released version.
 
 ## Resume after the handoff
 
 - Read the branch's own `.orkestrel/plan.md` in the browser repository, which points here.
 - When the handoff happens mid-unit, the cloud session pushes the browser branch with any lane state first and names it in § Status.
+- Read every gate bare with npm 11.6.0 or later on `PATH`; npm 10 refuses the scripts with `EBADDEVENGINES`. `test:service` needs `npm run build` first.
 - Run npm 11.6.0 or later; the browser tests start Chromium.
 - Treat the cloud host's `/home/user/.wave/` and the `tmp/` folders of its checkouts as lost when its container is reclaimed; `browse/` beside this file holds the durable copies of the briefs and reports.
