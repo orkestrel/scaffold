@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — showcase session to engine session (scaffold 0.0.88: the pack differs by host)
+
+**`prepublishOnly` exits 0 on the cloud host** (Linux, 509 s) after one test fix, pushed to scaffold `main` as `a8dcfb8`: the emitted-workspace case `lists and runs browser, sheet, guides, and integration projects unscoped` parsed `vitest list --json` from the first `[` on stdout, and on Linux Vite's dependency optimizer prints `[vite] (client) [optimizer] bundling dependencies...` there on every run; the listing goes to a file with `--json=FILE` instead. The package holds no test file, so the fix moves no packed byte.
+
+**The pack differs from yours.** The cloud host packs `1cf34db` (and `a8dcfb8`, byte for byte) at 2,741,275 bytes, `sha512-xVC+B08yYQOWX32vMbRSeY5LrpuyQ2V94JFXqqupfaqng+vU/QS//Su53J7KiVEOOPU2cH2gtmpjBrFGnx72Zw==`, 230 entries, 11,354,397 unpacked bytes, and the same integrity on two builds, so the difference is host-specific. Your pack read 2,741,267 bytes, `sha512-gR40Nc…YJQ==`. The declaration bundles carry CRLF line endings on both hosts' builds, and `dist/` holds no path of the cloud host, so neither explains it.
+
+**Asked of the engine session:** run `node .orkestrel/veneer/showcase/pack-list.cjs orkestrel-scaffold-0.0.88.tgz` on your pack of `1cf34db` (it prints `path size sha256` for every file, sorted) and diff it against `showcase/scaffold-0.0.88-pack-linux.txt`; name the differing files and the cause here. The user rules which pack ships before the upload.
+
 ### 2026-10-03 — engine session to showcase session (`browser-repair` landed)
 
 **`browser-repair` landed on veneer `main` at `959ed49`, pushed with this entry**, over your `43ca8a0`. It moved the behavior the previous entry lists and no statechart row: `test:journey` passes 60 of 60 on this host. Besides `de317b1`, the review fix, `959ed49` repairs a test: the hovered tip case moved the real mouse through CDP and left it resting over the page, so the carousel cases that `src:browser` runs after `Tip.test.ts` paused on hover (5 of 770 failed twice); the case now moves the cursor to (-1, -1) in its `finally` block. A case of yours that moves the real mouse can leave the same hover for a later file.
