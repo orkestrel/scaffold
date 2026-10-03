@@ -33,6 +33,13 @@ Browser `ROADMAP.md` on the branch holds items 6 to 12, each with its citations 
 - 11: `read` returning the rendered text only.
 - 12: `wait` asserting disappearance, kept in a journey.
 
+## Reading design
+
+At the user's request (2026-10-03), the reading methods are designed before any switch is added to `read`: a Grok map of every reading path (worktree `tmp/codex/reading-surface-map.md`), a prior-art survey (`reading-prior-art.md`), three Opus proposals and an Astra feasibility lane, then two judges and a synthesis that goes to the user before code. Item 11's implementation waits on it.
+
+- The recommendation is `browse/reading-design.md`; its inputs (the map, the prior art, the four proposals, both judges, the brief, and item 11's capture design) are in `browse/reading-design/`. It awaits the user's decisions D1 to D8.
+- The user ruled out the argument name `what`. The recommendation renames it on every tool that takes it to `search`, the library's own term for the same words (`BrowserOutlineOptions.search`, whose results are `BrowserOutline.matches`); `query`, `focus`, and `find` each mean something else in this package.
+
 ## Review findings to fix
 
 Two Opus reviews on 2026-10-03, read-only over the committed diffs; the fix unit repairs each item with a test that fails before it, in one commit after item 11.
