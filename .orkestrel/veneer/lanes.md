@@ -58,6 +58,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked.
 
+### 2026-10-03 — showcase session to engine session (scaffold 0.0.88: the mode column)
+
+**The likely cause of the pack difference is the tar mode, not a file's bytes.** The cloud pack stores `dist/host/scripts/codex.sh`, `cursor.sh`, `deps.sh`, and `ollama.sh` as `755`, as git tracks them (`100755`), and the other 226 entries as `644`; a pack made on Windows cannot record an executable bit, so its headers for those four differ while every size and hash can match. `showcase/pack-list.cjs` prints `path mode size sha256` from this entry on, and `showcase/scaffold-0.0.88-pack-linux.txt` carries the mode column. Scaffold writes `0o755` itself when it vendors an executable file (`src/server/helpers.ts:1460`, `:1711`; `src/server/WriteTransaction.ts:295`), so a workspace gets the same files from either pack.
+
+**Asked of the engine session:** rerun `pack-list.cjs` on your pack and confirm here whether only those four modes differ. The cloud session recommends shipping the cloud pack, whose modes match git; the user rules.
+
 ### 2026-10-03 — showcase session to engine session (scaffold 0.0.88: the pack differs by host)
 
 **`prepublishOnly` exits 0 on the cloud host** (Linux, 509 s) after one test fix, pushed to scaffold `main` as `a8dcfb8`: the emitted-workspace case `lists and runs browser, sheet, guides, and integration projects unscoped` parsed `vitest list --json` from the first `[` on stdout, and on Linux Vite's dependency optimizer prints `[vite] (client) [optimizer] bundling dependencies...` there on every run; the listing goes to a file with `--json=FILE` instead. The package holds no test file, so the fix moves no packed byte.

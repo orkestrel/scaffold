@@ -1,4 +1,4 @@
-// Usage: node pack-list.cjs PACKAGE.tgz — prints "path size sha256" for every file in an npm tarball, sorted.
+// Usage: node pack-list.cjs PACKAGE.tgz — prints "path mode size sha256" for every file in an npm tarball, sorted.
 const zlib = require('zlib')
 const fs = require('fs')
 const crypto = require('crypto')
@@ -13,10 +13,11 @@ while (offset + 512 <= body.length) {
 	const prefix = text(header.subarray(345, 500))
 	const size = parseInt(text(header.subarray(124, 136)).trim() || '0', 8)
 	const type = String.fromCharCode(header[156])
+	const mode = text(header.subarray(100, 108)).trim()
 	offset += 512
 	if (type === '0' || type === '\0') {
 		const data = body.subarray(offset, offset + size)
-		rows.push([(prefix ? prefix + '/' : '') + name, size, crypto.createHash('sha256').update(data).digest('hex')])
+		rows.push([(prefix ? prefix + '/' : '') + name, mode, size, crypto.createHash('sha256').update(data).digest('hex')])
 	}
 	offset += Math.ceil(size / 512) * 512
 }
