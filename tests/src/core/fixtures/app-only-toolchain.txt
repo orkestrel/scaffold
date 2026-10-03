@@ -1,5 +1,5 @@
 {
-	"@orkestrel/browser": "^0.0.20",
+	"@orkestrel/browser": "^0.0.21",
 	"@orkestrel/contract": "^0.0.19",
 	"@orkestrel/guide": "^0.0.24",
 	"@orkestrel/html": "^0.0.12",
