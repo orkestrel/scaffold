@@ -22,7 +22,7 @@ I edited no repository file. The probes I ran against the real Chromium build ar
 - **`selected`:**
   - Its value is a boolean.
   - These roles report it: `option`, `tab`, `treeitem` (plus `gridcell` and `row`, which get no reference).
-  - It is reported even when the attribute is absent; for example, `tab` and `option` with no `aria-selected` give `false`.
+  - Amended 2026-10-03 on Chromium 154 (Edge 154.0.4258.53): an unannotated `tab` inside a `tablist` and an unannotated `treeitem` inside a `tree` carry no `selected` property, while an explicit `aria-selected="false"` gives `false`, and an unannotated `tab` outside a `tablist` gives `false`. The Chromium 141 reading that `tab` and `option` with no `aria-selected` give `false` is superseded for `tab` and `treeitem`.
   - When a native `<option>` carries a valid `aria-selected`, that value overrides its selectedness: a selected option with `aria-selected="false"` reports `false`. Without the attribute it reports `option.selected`.
   - A `button`, `link`, `radio` or `checkbox` carrying `aria-selected` reports nothing. The value `"mixed"` or `"foo"` gives `true`.
 - **`focused`:**
@@ -213,7 +213,7 @@ I edited no repository file. The probes I ran against the real Chromium build ar
    - **Token reading:** an ARIA token is read lowercased and not trimmed. An empty value or `undefined` counts as absent.
    - **`pressed`:** only for role `button`. `false` gives `'false'`, `mixed` gives `'mixed'`, any other value gives `'true'`.
    - **`expanded`:** a native single `<select>` (combobox role) is always `false`. For the roles in `BROWSER_EXPANDED_ROLES`, the value is the token not equal to `false`. Those roles are `button`, `link`, `checkbox`, `switch`, `menuitem`, `menuitemcheckbox`, `menuitemradio`, `tab`, `treeitem` and `combobox`.
-   - **`selected`:** for the roles in `BROWSER_SELECTED_ROLES` (`option`, `tab` and `treeitem`): a valid `aria-selected` token gives the token not equal to `false`; otherwise an `HTMLOptionElement` gives `option.selected`; otherwise `false`.
+   - **`selected`:** for the roles in `BROWSER_SELECTED_ROLES` (`option`, `tab` and `treeitem`): a valid `aria-selected` token gives the token not equal to `false`; otherwise an `HTMLOptionElement` gives `option.selected`; otherwise the row carries no `selected` (amended 2026-10-03: the rows must equal CDP's, and Chromium 154 omits the property for an unannotated `tab` in a `tablist` and `treeitem` in a `tree`). An unannotated `tab` outside a `tablist`, which CDP reports as `false`, is invalid ARIA structure; the DOM placement does not emulate it, and the guide names that difference.
    - **`<details>`/`<summary>`: not read.** The DOM placement gives `summary` no role and so no row (`src/browser/constants.ts:21-81` has no `summary`), while CDP lists a `DisclosureTriangle` row. That role gap predates this item and is outside it.
    - **`option.selected`: read**, because CDP reports native options' selectedness, including the `aria-selected` override.
 4. **Which roles get which state:** these come out of rulings 2 and 3. `pressed` goes on `button` only; `expanded` and `selected` go on the role sets that rule 3 names, matching what Chromium reports.
