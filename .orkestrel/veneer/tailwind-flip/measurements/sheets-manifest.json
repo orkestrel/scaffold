@@ -1,0 +1,179 @@
+{
+	"bootstrap-lifted.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-lifted.css",
+		"bytes": 332388,
+		"sha256": "7932f7a573bbacf39037481c0e0bbc94a0de59c029b4d494fd1956f301c6d49f",
+		"construction": "verbatim copy of /home/user/veneer/dist/src/bootstrap/index.css",
+		"counts": {
+			"topRules": 1880,
+			"styleRules": 2614,
+			"lines": 13903,
+			"source": 0,
+			"important": 1716
+		}
+	},
+	"bootstrap-without-reboot.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-without-reboot.css",
+		"bytes": 325790,
+		"sha256": "0e1f846f92d8535c5d2126f0a9fd80a7e719616dc7e35ef6d127dfb298b5ae6c",
+		"construction": "sass.compileString(\"@forward 'tokens' show $layered;\\n@use 'elements';\\n@use 'components';\\n@use 'utilities';\", { loadPaths: ['/home/user/veneer/src/bootstrap'], style: 'expanded' }).css",
+		"counts": {
+			"topRules": 1875,
+			"styleRules": 2539,
+			"lines": 13518,
+			"source": 0,
+			"important": 1714
+		}
+	},
+	"reboot-in-reset.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/reboot-in-reset.css",
+		"bytes": 5862,
+		"sha256": "fcc7668d4621f16bf535ed9368627e9a3ed03dc2b591263018ad9dbc25163df1",
+		"construction": "'@layer reset {\\n' + sass.compileString(\"@use 'mixins' with ($layered: false);\\n@use 'reset';\", same options).css + '\\n}'",
+		"counts": {
+			"topRules": 1,
+			"styleRules": 75,
+			"rebootTopRulesUnwrapped": 75,
+			"rebootImportant": 2,
+			"rebootCharset": false,
+			"lines": 450,
+			"source": 0,
+			"important": 2
+		}
+	},
+	"bootstrap-reboot-reset.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-reboot-reset.css",
+		"bytes": 331653,
+		"sha256": "7414eee9cf4947183ee932dd0d19c85cfdaac056497f2870cd9cc3e1b7c022f2",
+		"construction": "bootstrap-without-reboot.css split on '\\n' with reboot-in-reset.css inserted after line 2 (the order statement), rejoined with '\\n'",
+		"counts": {
+			"topRules": 1876,
+			"styleRules": 2614,
+			"lines": 13968,
+			"source": 0,
+			"important": 1716
+		}
+	},
+	"bootstrap-lifted-minus-shared.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-lifted-minus-shared.css",
+		"bytes": 286042,
+		"sha256": "f9b7081c683a17be1fb1724ac294b0a9ab74c9e3b8d13580ac931a231916cb86",
+		"construction": "Chromium 141.0.7390.37: new CSSStyleSheet().replaceSync(bootstrap-lifted.css); recursive walk deleting every CSSStyleRule whose selectorText === '.' + CSS.escape(NAME) for the 192 shared utilities; top-level cssText joined by '\\n'",
+		"counts": {
+			"deletedRules": 199,
+			"topRules": 1688,
+			"zeroDeletions": 0,
+			"multipleDeletions": 7,
+			"lines": 5486,
+			"source": 0,
+			"important": 1397
+		}
+	},
+	"bootstrap-reboot-reset-minus-shared.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-reboot-reset-minus-shared.css",
+		"bytes": 286000,
+		"sha256": "9eecdf7524d2dd8fc51211f5148292fd4d2c7e7cb41926976dfa2facc495afcb",
+		"construction": "Chromium 141.0.7390.37: new CSSStyleSheet().replaceSync(bootstrap-reboot-reset.css); recursive walk deleting every CSSStyleRule whose selectorText === '.' + CSS.escape(NAME) for the 192 shared utilities; top-level cssText joined by '\\n'",
+		"counts": {
+			"deletedRules": 199,
+			"topRules": 1684,
+			"zeroDeletions": 0,
+			"multipleDeletions": 7,
+			"lines": 5482,
+			"source": 0,
+			"important": 1397
+		}
+	},
+	"bootstrap-lifted-cssom.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-lifted-cssom.css",
+		"bytes": 295588,
+		"sha256": "3360d57727d63a488ef98ddc2cbcfde4b369ad718f72b2f52b41db0b83e4c7d7",
+		"construction": "CONTROL: Chromium 141.0.7390.37 replaceSync(bootstrap-lifted.css) then top-level cssText joined by '\\n', zero deletions (isolates CSSOM serialization loss)",
+		"counts": {
+			"lines": 5685,
+			"source": 0,
+			"important": 1615
+		}
+	},
+	"bootstrap-reboot-reset-cssom.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-reboot-reset-cssom.css",
+		"bytes": 295546,
+		"sha256": "b0199e76f4fd0b333ad58fd3929351884da27043f5f2184821f50e8f73192785",
+		"construction": "CONTROL: Chromium 141.0.7390.37 replaceSync(bootstrap-reboot-reset.css) then top-level cssText joined by '\\n', zero deletions (isolates CSSOM serialization loss)",
+		"counts": {
+			"lines": 5681,
+			"source": 0,
+			"important": 1615
+		}
+	},
+	"tailwind-unexcluded.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/tailwind-unexcluded.css",
+		"bytes": 19266,
+		"sha256": "0e753765bbaa391eba3b4a7c2e7edba5bbea69862c823ae0fa91521286754b20",
+		"construction": "tests/fixtures/tailwindcss/recipe.json field unexcluded, verbatim",
+		"counts": {
+			"classTokens": 213,
+			"styleRules": 251,
+			"lines": 945,
+			"source": 0,
+			"important": 1
+		}
+	},
+	"tailwind-flipped.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/tailwind-flipped.css",
+		"bytes": 19736,
+		"sha256": "845ee32e11b680ef6499402722a4fdb45d622e02f064b9321df8264a11786b39",
+		"construction": "tailwindcss compile(input, { base: TAILWIND_ROOT, loadStylesheet: disk }).build(app/browser/recipe.json candidates, 2039); input = order statement + \"@import 'tailwindcss';\" + @source not inline of 1833 names (input sha256 5c3b78d1b321896bf9e9070b8c5397110bf01f030cbc2ec2c2849764560e0605)",
+		"counts": {
+			"excludedNames": 1833,
+			"candidates": 2039,
+			"styleRules": 244,
+			"styleRulesWithClass": 206,
+			"distinctClassTokens": 206,
+			"lines": 920,
+			"source": 0,
+			"important": 1
+		}
+	},
+	"tailwind-flipped-theme.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/tailwind-flipped-theme.css",
+		"bytes": 19736,
+		"sha256": "845ee32e11b680ef6499402722a4fdb45d622e02f064b9321df8264a11786b39",
+		"construction": "same as tailwind-flipped.css with \"\\n@theme { --color-primary: #0d6efd; }\" appended to the input; candidates = app candidates ∪ {bg-primary, text-primary, bg-sky-500} (2039) (input sha256 ca4f58ee0590d69f9ec7d86f87e45cd1d7eb6f871e8a786aa107e5a3a0cfc36a)",
+		"counts": {
+			"candidates": 2039,
+			"styleRules": 244,
+			"styleRulesWithClass": 206,
+			"distinctClassTokens": 206,
+			"lines": 920,
+			"source": 0,
+			"important": 1
+		}
+	},
+	"bootstrap-lifted-minus-shared.text.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-lifted-minus-shared.text.css",
+		"bytes": 322412,
+		"sha256": "2777f05b21694afeb670289289a6a52ad08dc17c109264bddc62f3ea4294f433",
+		"construction": "ALTERNATE to the CSSOM-serialized variant: bootstrap-lifted.css as text, deleting each line whose trimmed text is '.NAME {' (NAME in the 192 shared utilities) through the next '}' line at the same indentation; no CSSOM serialization",
+		"counts": {
+			"deletedRules": 199,
+			"source": 0,
+			"important": 1498,
+			"lines": 13280,
+			"equalsOriginalParseMinusDeleted": true
+		}
+	},
+	"bootstrap-reboot-reset-minus-shared.text.css": {
+		"path": "/home/user/veneer/tmp/probes/flip/sheets/bootstrap-reboot-reset-minus-shared.text.css",
+		"bytes": 321677,
+		"sha256": "ce9c1463c4a9e735f133d578ca64fec0fc4e2c234bffb4df5601f10262ae3709",
+		"construction": "ALTERNATE to the CSSOM-serialized variant: bootstrap-reboot-reset.css as text, deleting each line whose trimmed text is '.NAME {' (NAME in the 192 shared utilities) through the next '}' line at the same indentation; no CSSOM serialization",
+		"counts": {
+			"deletedRules": 199,
+			"source": 0,
+			"important": 1498,
+			"lines": 13345,
+			"equalsOriginalParseMinusDeleted": true
+		}
+	}
+}
