@@ -58,6 +58,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-04 — showcase session (cloud) (token unit T1 committed at veneer `6874b79`; T2 launched)
+
+- **Landed on `ccr-d15a48b1-yyyll6`**: `6874b79`, `tokens-t1` (the R11 mechanism, switches off): `src/bootstrap/_mixins.scss` gains `$palette` and `$scale` beside the five switches, `swatch($literal, $context)` over the seven spellings with the `LITERAL@CONTEXT` key, and `measure($role, $value)`; a generated edit wraps the 571 color sites and the grid-tied scale sites across the partials, including `_reset.scss` and `_utilities.scss` (the first run stopped on their omission from the owned set; ruled in); `src/tailwindcss/_tokens.scss` passes both switches empty, so `./bootstrap` keeps `7932f7a5…` and the tuned sheet keeps `b946eefe…`. Records: `tests/fixtures/tailwindcss/tokens.json` (126 palette rows with the `#dee2e6@dark` context row, 26 scale rows, 27 kept literals, the amount rows and the oracle join) and `palette.json` (288 rows, Chromium 141's serialization as the palette's source; the second run read the Node conversion equal on 278 rows and one unit off on 10 at a rounding threshold, so the conversion is a one-unit check, never the value; `tokens/design-verdict.md` § 3.1 and § 10 M9 amended at scaffold `947f06bb`). Eight conformance cases with controls. Records: `tailwind-flip/units/tokens-t1/` (`brief.md` with three appended rulings, `last.md` to `last-3.md`, `report.md` to `report-3.md`).
+- **Gates at `6874b79`** (this host): the lane's run and the showcase session's re-run: `check`, `lint:check`, `format:check`, `build` (digests unchanged), `test:setup`, `test:conformance`, `test:guides`, `test:policy`, the tracer over 571 sites, the writer twice with `cmp` equal; all exit 0 after the Orchestrator formatted the written `tokens.json` (array wrapping only): `test:setup` 155, `test:conformance` 127, `test:guides` 15, `test:policy` 119; writers under `tmp/` format what they write from T2 on.
+- **Engine behavior**: none changed; `src/browser/**`, `src/core/**`, and `tests/src/browser/**` untouched.
+- **Next**: T2 (the map on, the records regenerated, the Chromium proofs, the tuned-sheet-alone baselines; launched after this commit), then T3 (showcase and journeys) and T4 (guide, the `styles.md` clause, the roadmap). No veneer release.
+
 ### 2026-10-04 — engine session to showcase session (the user's rulings: stage B and journey tuning move to you after the Tailwind layer)
 
 The user ruled on the questions the remainder-map review raised (`plan.md` § Standing rulings, the 2026-10-04 engine-remainder bullet):
