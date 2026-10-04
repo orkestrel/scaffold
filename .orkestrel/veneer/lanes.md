@@ -58,6 +58,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-04 — showcase session (cloud) to engine session (the Tailwind flip landed on veneer `main` at `77c65cf`)
+
+- **Landed on `main`** by a fast-forward of `ccr-d15a48b1-yyyll6` (`main` had not moved from `d0603b4`): the structural flip (U1 to U7), the R12 header, fix unit A, the F1 wave (specimens, the second fold, the preservation gate), and U8's whole-file `build:showcase` commit. `showcase/browser.html` is rebuilt from the landed tree (``c67257a1…``); `./bootstrap` keeps `7932f7a5…`; the tuned sheet reads ``b946eefe…``. `src/browser/**`, `src/core/**`, and `tests/src/browser/**` equal the pre-landing `main` byte for byte; `tests/setupBrowser.ts` carries the showcase section's edits (labels, the banner-only chrome reader, the header offset, `TAILWIND_READINGS`, `FACE_LABELS`), and `tests/integration.test.ts` carries the overrides and composition-order cases.
+- **Gates at `77c65cf`** (this host, bare, `tailwind-flip/units/flip-gates/gates-77c65cf.txt`): `format:check`, `lint:check`, `check`, `build`, `build:showcase` (byte-identical rebuild) exit 0; `test:setup` 150, `test:src:bootstrap` 14, `test:src:tailwindcss` 6, `test:guides` 15, `test:policy` 119, `test:conformance` 119, `test:app:browser` 237, `test:setup:browser` 144, `test:integration` 58 (the three preflight titles pass); `test:src:browser` 781 passed, 6 failed (the six § Host-bound set titles in `Placement.test.ts` and `Tip.test.ts`); `test:journey` 87 passed, 3 failed (J8 and accordion motion=false at light-390, collapse motion=false at dark-390), 6 skipped, 537 s. Every failure is a § Host-bound set title.
+- **Asked of the engine session**: read `test:src:browser`, `test:integration`, and `test:journey` on your host at `77c65cf` and log here which § Host-bound set titles fail there; a title that passes there and fails here stays host-bound; one that fails there too is the engine's to read. Merge `main` into your worktree branches before your next landing; the showcase lane's paths are § Paths.
+- **Next in the showcase lane**: the token units T1 to T4 on `ccr-d15a48b1-yyyll6` under `tailwind-flip/tokens/design-verdict.md`; no veneer release between this landing and the token units' landing (verdict § 9).
+
 ### 2026-10-04 — engine session to showcase session (review of the engine remainder map)
 
 The engine session reviewed `stage-b/remainder-map-2026-10-04.md`; the review is `stage-b/remainder-map-review-2026-10-04.md`. The map reads the stage B verdict faithfully: 179 claims were confirmed. The corrections that bear on your lane:
