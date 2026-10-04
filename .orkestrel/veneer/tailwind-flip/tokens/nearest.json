@@ -1,0 +1,4759 @@
+{
+  "metric": "Euclidean OKLab distance; L in [0,1]. Bootstrap normalized 8-bit sRGB converted to linear RGB then OKLab; Tailwind original OKLCH converted to OKLab. Alpha ignored, with no assumed background. Same-family mapping uses exact base hue names; gray means Tailwind gray, not slate/zinc/neutral.",
+  "forward": [
+    "linear RGB -> LMS: [0.4122214708,0.5363325363,0.0514459929]; [0.2119034982,0.6806995451,0.1073969566]; [0.0883024619,0.2817188376,0.6299787005]",
+    "cube-root LMS -> Lab: [0.2104542553,0.7936177850,-0.0040720468]; [1.9779984951,-2.4285922050,0.4505937099]; [0.0259040371,0.7827717662,-0.8086757660]"
+  ],
+  "literals": [
+    {
+      "literal": "#000",
+      "hex": "#000000",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "#031633",
+      "hex": "#031633",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-900",
+          "hex": "#0f172b",
+          "distance": 0.022806239282472034
+        },
+        {
+          "name": "--color-gray-900",
+          "hex": "#101828",
+          "distance": 0.03035905449633396
+        },
+        {
+          "name": "--color-mauve-900",
+          "hex": "#1d161e",
+          "distance": 0.05822261167503821
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-950",
+          "hex": "#162456",
+          "distance": 0.08371994844141448
+        }
+      ]
+    },
+    {
+      "literal": "#032830",
+      "hex": "#032830",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-teal-950",
+          "hex": "#022f2e",
+          "distance": 0.02778087484967793
+        },
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.03576671293577934
+        },
+        {
+          "name": "--color-emerald-950",
+          "hex": "#002c22",
+          "distance": 0.03579638891144879
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-950",
+          "hex": "#053345",
+          "distance": 0.04944619199839515
+        }
+      ]
+    },
+    {
+      "literal": "#051b11",
+      "hex": "#051b11",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-900",
+          "hex": "#171717",
+          "distance": 0.035692731304610745
+        },
+        {
+          "name": "--color-mist-900",
+          "hex": "#161b1d",
+          "distance": 0.03693668917753814
+        },
+        {
+          "name": "--color-zinc-900",
+          "hex": "#18181b",
+          "distance": 0.04024993476824809
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-950",
+          "hex": "#032e15",
+          "distance": 0.07243407660942634
+        }
+      ]
+    },
+    {
+      "literal": "#052c65",
+      "hex": "#052c65",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-950",
+          "hex": "#162456",
+          "distance": 0.0343368259057383
+        },
+        {
+          "name": "--color-sky-950",
+          "hex": "#052f4a",
+          "distance": 0.05090831514593357
+        },
+        {
+          "name": "--color-indigo-950",
+          "hex": "#1e1a4d",
+          "distance": 0.06559074545100979
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-950",
+          "hex": "#162456",
+          "distance": 0.0343368259057383
+        }
+      ]
+    },
+    {
+      "literal": "#055160",
+      "hex": "#055160",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-900",
+          "hex": "#104e64",
+          "distance": 0.014022565011477146
+        },
+        {
+          "name": "--color-teal-900",
+          "hex": "#0b4f4a",
+          "distance": 0.03592734018669171
+        },
+        {
+          "name": "--color-sky-900",
+          "hex": "#024a70",
+          "distance": 0.04085253351682932
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-900",
+          "hex": "#104e64",
+          "distance": 0.014022565011477146
+        }
+      ]
+    },
+    {
+      "literal": "#084298",
+      "hex": "#084298",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-900",
+          "hex": "#1c398e",
+          "distance": 0.028424648412379995
+        },
+        {
+          "name": "--color-blue-800",
+          "hex": "#193cb8",
+          "distance": 0.055053693724667875
+        },
+        {
+          "name": "--color-indigo-900",
+          "hex": "#312c85",
+          "distance": 0.06577475587537969
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-900",
+          "hex": "#1c398e",
+          "distance": 0.028424648412379995
+        }
+      ]
+    },
+    {
+      "literal": "#087990",
+      "hex": "#087990",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-700",
+          "hex": "#007595",
+          "distance": 0.01916537727975155
+        },
+        {
+          "name": "--color-teal-700",
+          "hex": "#00786f",
+          "distance": 0.055202959406163356
+        },
+        {
+          "name": "--color-slate-500",
+          "hex": "#62748e",
+          "distance": 0.0689533064876298
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-700",
+          "hex": "#007595",
+          "distance": 0.01916537727975155
+        }
+      ]
+    },
+    {
+      "literal": "#0a3622",
+      "hex": "#0a3622",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-green-950",
+          "hex": "#032e15",
+          "distance": 0.03233725552408042
+        },
+        {
+          "name": "--color-emerald-950",
+          "hex": "#002c22",
+          "distance": 0.03849324253674631
+        },
+        {
+          "name": "--color-teal-950",
+          "hex": "#022f2e",
+          "distance": 0.03879451084795321
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-950",
+          "hex": "#032e15",
+          "distance": 0.03233725552408042
+        }
+      ]
+    },
+    {
+      "literal": "#0a53be",
+      "hex": "#0a53be",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-800",
+          "hex": "#193cb8",
+          "distance": 0.05425384168483902
+        },
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.06649730663561051
+        },
+        {
+          "name": "--color-sky-700",
+          "hex": "#0069a8",
+          "distance": 0.07170930453132454
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-800",
+          "hex": "#193cb8",
+          "distance": 0.05425384168483902
+        }
+      ]
+    },
+    {
+      "literal": "#0a58ca",
+      "hex": "#0a58ca",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.055479665576518705
+        },
+        {
+          "name": "--color-blue-800",
+          "hex": "#193cb8",
+          "distance": 0.0710754258961806
+        },
+        {
+          "name": "--color-sky-700",
+          "hex": "#0069a8",
+          "distance": 0.07409134504686624
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.055479665576518705
+        }
+      ]
+    },
+    {
+      "literal": "#0b5ed7",
+      "hex": "#0b5ed7",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.053929674088262096
+        },
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.056217906417588136
+        },
+        {
+          "name": "--color-sky-700",
+          "hex": "#0069a8",
+          "distance": 0.08301181365880847
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.053929674088262096
+        }
+      ]
+    },
+    {
+      "literal": "#0d6efd",
+      "hex": "#0d6efd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.03818018744159311
+        },
+        {
+          "name": "--color-blue-500",
+          "hex": "#2b7fff",
+          "distance": 0.04700546728138984
+        },
+        {
+          "name": "--color-indigo-500",
+          "hex": "#615fff",
+          "distance": 0.06903617724372568
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.03818018744159311
+        }
+      ]
+    },
+    {
+      "literal": "#0dcaf0",
+      "hex": "#0dcaf0",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.027021631998782505
+        },
+        {
+          "name": "--color-sky-400",
+          "hex": "#00bcff",
+          "distance": 0.05243140699121049
+        },
+        {
+          "name": "--color-cyan-500",
+          "hex": "#00b8db",
+          "distance": 0.060539238974559435
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.027021631998782505
+        }
+      ]
+    },
+    {
+      "literal": "#0f5132",
+      "hex": "#0f5132",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-green-900",
+          "hex": "#0d542b",
+          "distance": 0.015630433062445024
+        },
+        {
+          "name": "--color-emerald-900",
+          "hex": "#004f3b",
+          "distance": 0.018992513787524458
+        },
+        {
+          "name": "--color-teal-900",
+          "hex": "#0b4f4a",
+          "distance": 0.04349224306813587
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-900",
+          "hex": "#0d542b",
+          "distance": 0.015630433062445024
+        }
+      ]
+    },
+    {
+      "literal": "#13653f",
+      "hex": "#13653f",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-emerald-800",
+          "hex": "#006045",
+          "distance": 0.02386750478581602
+        },
+        {
+          "name": "--color-green-800",
+          "hex": "#016630",
+          "distance": 0.024010187383698207
+        },
+        {
+          "name": "--color-teal-800",
+          "hex": "#005f5a",
+          "distance": 0.05202304234003736
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-800",
+          "hex": "#016630",
+          "distance": 0.024010187383698207
+        }
+      ]
+    },
+    {
+      "literal": "#146c43",
+      "hex": "#146c43",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-green-800",
+          "hex": "#016630",
+          "distance": 0.02984737736671354
+        },
+        {
+          "name": "--color-emerald-700",
+          "hex": "#007a55",
+          "distance": 0.04280180935620285
+        },
+        {
+          "name": "--color-emerald-800",
+          "hex": "#006045",
+          "distance": 0.04336083119711907
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-800",
+          "hex": "#016630",
+          "distance": 0.02984737736671354
+        }
+      ]
+    },
+    {
+      "literal": "#157347",
+      "hex": "#157347",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-emerald-700",
+          "hex": "#007a55",
+          "distance": 0.024825222344470765
+        },
+        {
+          "name": "--color-green-800",
+          "hex": "#016630",
+          "distance": 0.04657059792233313
+        },
+        {
+          "name": "--color-teal-700",
+          "hex": "#00786f",
+          "distance": 0.05696459444827882
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-800",
+          "hex": "#016630",
+          "distance": 0.04657059792233313
+        }
+      ]
+    },
+    {
+      "literal": "#161719",
+      "hex": "#161719",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-900",
+          "hex": "#171717",
+          "distance": 0.004303288027716201
+        },
+        {
+          "name": "--color-zinc-900",
+          "hex": "#18181b",
+          "distance": 0.006176881038021583
+        },
+        {
+          "name": "--color-mist-900",
+          "hex": "#161b1d",
+          "distance": 0.014693838298318544
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-900",
+          "hex": "#101828",
+          "distance": 0.030268231379364862
+        }
+      ]
+    },
+    {
+      "literal": "#198754",
+      "hex": "#198754",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-green-700",
+          "hex": "#008236",
+          "distance": 0.042913303226648124
+        },
+        {
+          "name": "--color-emerald-700",
+          "hex": "#007a55",
+          "distance": 0.04790434709557686
+        },
+        {
+          "name": "--color-emerald-600",
+          "hex": "#009966",
+          "distance": 0.05109410945845316
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-700",
+          "hex": "#008236",
+          "distance": 0.042913303226648124
+        }
+      ]
+    },
+    {
+      "literal": "#1a1d20",
+      "hex": "#1a1d20",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-900",
+          "hex": "#161b1d",
+          "distance": 0.01135927807597084
+        },
+        {
+          "name": "--color-stone-900",
+          "hex": "#1c1917",
+          "distance": 0.018505289134047122
+        },
+        {
+          "name": "--color-olive-900",
+          "hex": "#1d1d16",
+          "distance": 0.019297059214726346
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-900",
+          "hex": "#101828",
+          "distance": 0.03295713475448635
+        }
+      ]
+    },
+    {
+      "literal": "#20c997",
+      "hex": "#20c997",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-emerald-400",
+          "hex": "#00d492",
+          "distance": 0.03681873970936268
+        },
+        {
+          "name": "--color-teal-400",
+          "hex": "#00d5be",
+          "distance": 0.05239914281200909
+        },
+        {
+          "name": "--color-emerald-500",
+          "hex": "#00bc7d",
+          "distance": 0.05395604356657152
+        }
+      ],
+      "family": "teal",
+      "within": [
+        {
+          "name": "--color-teal-400",
+          "hex": "#00d5be",
+          "distance": 0.05239914281200909
+        }
+      ]
+    },
+    {
+      "literal": "#212529",
+      "hex": "#212529",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-800",
+          "hex": "#262626",
+          "distance": 0.011740344852659105
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.013339610537733798
+        },
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.014115389463020624
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.028508565445340635
+        }
+      ]
+    },
+    {
+      "literal": "#25cff2",
+      "hex": "#25cff2",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.022924485519032225
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.053862485090410556
+        },
+        {
+          "name": "--color-sky-400",
+          "hex": "#00bcff",
+          "distance": 0.06496794800255727
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.022924485519032225
+        }
+      ]
+    },
+    {
+      "literal": "#2b2f32",
+      "hex": "#2b2f32",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-800",
+          "hex": "#2b2b22",
+          "distance": 0.02750944539539169
+        },
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.027866569426773
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.02898691612250322
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.03539720911450311
+        }
+      ]
+    },
+    {
+      "literal": "#2b3035",
+      "hex": "#2b3035",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.03190663672376611
+        },
+        {
+          "name": "--color-olive-800",
+          "hex": "#2b2b22",
+          "distance": 0.0328997144762107
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.03321224378004238
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.03573459681653124
+        }
+      ]
+    },
+    {
+      "literal": "#2c0b0e",
+      "hex": "#2c0b0e",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-900",
+          "hex": "#1d161e",
+          "distance": 0.04685047793964405
+        },
+        {
+          "name": "--color-taupe-900",
+          "hex": "#1d1816",
+          "distance": 0.047096192210344466
+        },
+        {
+          "name": "--color-stone-900",
+          "hex": "#1c1917",
+          "distance": 0.05077263125529329
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-950",
+          "hex": "#460809",
+          "distance": 0.06383880893540578
+        }
+      ]
+    },
+    {
+      "literal": "#2c3034",
+      "hex": "#2c3034",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-800",
+          "hex": "#2b2b22",
+          "distance": 0.03162088257424353
+        },
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.032348793104542375
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.03333836827172616
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.037530530624831554
+        }
+      ]
+    },
+    {
+      "literal": "#31d2f2",
+      "hex": "#31d2f2",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.02562440373216321
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.04835987809287859
+        },
+        {
+          "name": "--color-cyan-300",
+          "hex": "#53eafd",
+          "distance": 0.06921562481327892
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.02562440373216321
+        }
+      ]
+    },
+    {
+      "literal": "#323539",
+      "hex": "#323539",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.04302505514743141
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.0441828637496515
+        },
+        {
+          "name": "--color-mauve-700",
+          "hex": "#463947",
+          "distance": 0.04537357168856928
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.052247083146366335
+        }
+      ]
+    },
+    {
+      "literal": "#332701",
+      "hex": "#332701",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-yellow-950",
+          "hex": "#432004",
+          "distance": 0.04026017669317946
+        },
+        {
+          "name": "--color-olive-800",
+          "hex": "#2b2b22",
+          "distance": 0.04144105739032613
+        },
+        {
+          "name": "--color-lime-950",
+          "hex": "#192e03",
+          "distance": 0.048025087086411566
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-950",
+          "hex": "#432004",
+          "distance": 0.04026017669317946
+        }
+      ]
+    },
+    {
+      "literal": "#343a40",
+      "hex": "#343a40",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.026262120078326543
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.02907281423681835
+        },
+        {
+          "name": "--color-mist-700",
+          "hex": "#394447",
+          "distance": 0.033821110332350364
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.03497249779188795
+        }
+      ]
+    },
+    {
+      "literal": "#373b3e",
+      "hex": "#373b3e",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.022448543389488596
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.022661646890201413
+        },
+        {
+          "name": "--color-taupe-700",
+          "hex": "#473c39",
+          "distance": 0.028890094265887976
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.035719241280663776
+        }
+      ]
+    },
+    {
+      "literal": "#3dd5f3",
+      "hex": "#3dd5f3",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.032393646008476794
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.04268523659861687
+        },
+        {
+          "name": "--color-cyan-300",
+          "hex": "#53eafd",
+          "distance": 0.05928839455180923
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.032393646008476794
+        }
+      ]
+    },
+    {
+      "literal": "#41464b",
+      "hex": "#41464b",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-700",
+          "hex": "#394447",
+          "distance": 0.015714916433949656
+        },
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.02283315128016806
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.02305410413228117
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.029909121121567007
+        }
+      ]
+    },
+    {
+      "literal": "#424649",
+      "hex": "#424649",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-700",
+          "hex": "#394447",
+          "distance": 0.01615649826682215
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.021812418843711767
+        },
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.023533299038805182
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.03292057203203717
+        }
+      ]
+    },
+    {
+      "literal": "#495057",
+      "hex": "#495057",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-600",
+          "hex": "#52525c",
+          "distance": 0.017822237782737303
+        },
+        {
+          "name": "--color-neutral-600",
+          "hex": "#525252",
+          "distance": 0.01862718838742156
+        },
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.024165305362532426
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.024165305362532426
+        }
+      ]
+    },
+    {
+      "literal": "#4d5154",
+      "hex": "#4d5154",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-600",
+          "hex": "#525252",
+          "distance": 0.009769737782133612
+        },
+        {
+          "name": "--color-zinc-600",
+          "hex": "#52525c",
+          "distance": 0.016233734054644726
+        },
+        {
+          "name": "--color-mist-600",
+          "hex": "#4b585b",
+          "distance": 0.0208347025459312
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.02694423330648912
+        }
+      ]
+    },
+    {
+      "literal": "#51585e",
+      "hex": "#51585e",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-600",
+          "hex": "#4b585b",
+          "distance": 0.0108288911803698
+        },
+        {
+          "name": "--color-zinc-600",
+          "hex": "#52525c",
+          "distance": 0.018292808145165016
+        },
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.02021030444024518
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.02021030444024518
+        }
+      ]
+    },
+    {
+      "literal": "#565e64",
+      "hex": "#565e64",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-600",
+          "hex": "#4b585b",
+          "distance": 0.02815547587189712
+        },
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.03545899016523969
+        },
+        {
+          "name": "--color-zinc-600",
+          "hex": "#52525c",
+          "distance": 0.03715749096029777
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.03545899016523969
+        }
+      ]
+    },
+    {
+      "literal": "#58151c",
+      "hex": "#58151c",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-pink-950",
+          "hex": "#510424",
+          "distance": 0.04073408832427492
+        },
+        {
+          "name": "--color-rose-950",
+          "hex": "#4d0218",
+          "distance": 0.04339776932281587
+        },
+        {
+          "name": "--color-red-950",
+          "hex": "#460809",
+          "distance": 0.055335671542613464
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-950",
+          "hex": "#460809",
+          "distance": 0.055335671542613464
+        }
+      ]
+    },
+    {
+      "literal": "#5c636a",
+      "hex": "#5c636a",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-600",
+          "hex": "#4b585b",
+          "distance": 0.04705992117944647
+        },
+        {
+          "name": "--color-olive-600",
+          "hex": "#5b5b4b",
+          "distance": 0.0477236504025269
+        },
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.05257923395297831
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-600",
+          "hex": "#4a5565",
+          "distance": 0.05257923395297831
+        }
+      ]
+    },
+    {
+      "literal": "#6610f2",
+      "hex": "#6610f2",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-violet-700",
+          "hex": "#7008e7",
+          "distance": 0.028125398320011506
+        },
+        {
+          "name": "--color-indigo-600",
+          "hex": "#4f39f6",
+          "distance": 0.05246448886710861
+        },
+        {
+          "name": "--color-violet-600",
+          "hex": "#7f22fe",
+          "distance": 0.05526341542687073
+        }
+      ],
+      "family": "indigo",
+      "within": [
+        {
+          "name": "--color-indigo-600",
+          "hex": "#4f39f6",
+          "distance": 0.05246448886710861
+        }
+      ]
+    },
+    {
+      "literal": "#664d03",
+      "hex": "#664d03",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-yellow-900",
+          "hex": "#733e0a",
+          "distance": 0.04819447892675467
+        },
+        {
+          "name": "--color-yellow-800",
+          "hex": "#894b00",
+          "distance": 0.06503573821999856
+        },
+        {
+          "name": "--color-olive-600",
+          "hex": "#5b5b4b",
+          "distance": 0.07189622148538474
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-900",
+          "hex": "#733e0a",
+          "distance": 0.04819447892675467
+        }
+      ]
+    },
+    {
+      "literal": "#6c757d",
+      "hex": "#6c757d",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-500",
+          "hex": "#67787c",
+          "distance": 0.011304311467453535
+        },
+        {
+          "name": "--color-zinc-500",
+          "hex": "#71717b",
+          "distance": 0.012673842773918904
+        },
+        {
+          "name": "--color-gray-500",
+          "hex": "#6a7282",
+          "distance": 0.014282911905674949
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-500",
+          "hex": "#6a7282",
+          "distance": 0.014282911905674949
+        }
+      ]
+    },
+    {
+      "literal": "#6ea8fe",
+      "hex": "#6ea8fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-400",
+          "hex": "#51a2ff",
+          "distance": 0.03448829959172413
+        },
+        {
+          "name": "--color-sky-400",
+          "hex": "#00bcff",
+          "distance": 0.07095040438708856
+        },
+        {
+          "name": "--color-indigo-300",
+          "hex": "#a3b3ff",
+          "distance": 0.07163554200746945
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-400",
+          "hex": "#51a2ff",
+          "distance": 0.03448829959172413
+        }
+      ]
+    },
+    {
+      "literal": "#6edff6",
+      "hex": "#6edff6",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-300",
+          "hex": "#53eafd",
+          "distance": 0.029690175104661976
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.037980076306992086
+        },
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.07364493682507832
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-300",
+          "hex": "#53eafd",
+          "distance": 0.029690175104661976
+        }
+      ]
+    },
+    {
+      "literal": "#6f42c1",
+      "hex": "#6f42c1",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-purple-800",
+          "hex": "#6e11b0",
+          "distance": 0.07659562623077402
+        },
+        {
+          "name": "--color-purple-700",
+          "hex": "#8200db",
+          "distance": 0.08146713201097597
+        },
+        {
+          "name": "--color-violet-800",
+          "hex": "#5d0ec0",
+          "distance": 0.08249225259313091
+        }
+      ],
+      "family": "purple",
+      "within": [
+        {
+          "name": "--color-purple-800",
+          "hex": "#6e11b0",
+          "distance": 0.07659562623077402
+        }
+      ]
+    },
+    {
+      "literal": "#75b798",
+      "hex": "#75b798",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-teal-500",
+          "hex": "#00bba7",
+          "distance": 0.07197395127940695
+        },
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.07299799572553346
+        },
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.07382415811684823
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-500",
+          "hex": "#00c950",
+          "distance": 0.14093094618700944
+        }
+      ]
+    },
+    {
+      "literal": "#842029",
+      "hex": "#842029",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-900",
+          "hex": "#82181a",
+          "distance": 0.01966844572195838
+        },
+        {
+          "name": "--color-rose-900",
+          "hex": "#8b0836",
+          "distance": 0.03634083365387344
+        },
+        {
+          "name": "--color-orange-900",
+          "hex": "#7e2a0c",
+          "distance": 0.0405989984964519
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-900",
+          "hex": "#82181a",
+          "distance": 0.01966844572195838
+        }
+      ]
+    },
+    {
+      "literal": "#86b7fe",
+      "hex": "#86b7fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-indigo-300",
+          "hex": "#a3b3ff",
+          "distance": 0.03633374476477468
+        },
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.03914460281441608
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.0768142761182338
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.03914460281441608
+        }
+      ]
+    },
+    {
+      "literal": "#8bb9fe",
+      "hex": "#8bb9fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.0321709540929015
+        },
+        {
+          "name": "--color-indigo-300",
+          "hex": "#a3b3ff",
+          "distance": 0.03292586264864353
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.07209465915490852
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.0321709540929015
+        }
+      ]
+    },
+    {
+      "literal": "#997404",
+      "hex": "#997404",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-yellow-700",
+          "hex": "#a65f00",
+          "distance": 0.052910969049685855
+        },
+        {
+          "name": "--color-olive-500",
+          "hex": "#7c7c67",
+          "distance": 0.08944187600038955
+        },
+        {
+          "name": "--color-amber-700",
+          "hex": "#bb4d00",
+          "distance": 0.10198651791272753
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-700",
+          "hex": "#a65f00",
+          "distance": 0.052910969049685855
+        }
+      ]
+    },
+    {
+      "literal": "#9ec5fe",
+      "hex": "#9ec5fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.01851063565961375
+        },
+        {
+          "name": "--color-indigo-300",
+          "hex": "#a3b3ff",
+          "distance": 0.049368252832079663
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.05306740842792502
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.01851063565961375
+        }
+      ]
+    },
+    {
+      "literal": "#9eeaf9",
+      "hex": "#9eeaf9",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-200",
+          "hex": "#a2f4fd",
+          "distance": 0.02599972752805819
+        },
+        {
+          "name": "--color-sky-200",
+          "hex": "#b8e6fe",
+          "distance": 0.031109066715267586
+        },
+        {
+          "name": "--color-teal-200",
+          "hex": "#96f7e4",
+          "distance": 0.052504951535089286
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-200",
+          "hex": "#a2f4fd",
+          "distance": 0.02599972752805819
+        }
+      ]
+    },
+    {
+      "literal": "#a3cfbb",
+      "hex": "#a3cfbb",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.07424534397502243
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.07546518298648311
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.0761205437624785
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-300",
+          "hex": "#7bf1a8",
+          "distance": 0.11114754096244817
+        }
+      ]
+    },
+    {
+      "literal": "#a52834",
+      "hex": "#a52834",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-rose-800",
+          "hex": "#a50036",
+          "distance": 0.04313010494545001
+        },
+        {
+          "name": "--color-red-800",
+          "hex": "#9f0712",
+          "distance": 0.0437373553084417
+        },
+        {
+          "name": "--color-orange-800",
+          "hex": "#9f2d00",
+          "distance": 0.04685601596183141
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-800",
+          "hex": "#9f0712",
+          "distance": 0.0437373553084417
+        }
+      ]
+    },
+    {
+      "literal": "#a6b5cc",
+      "hex": "#a6b5cc",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.054200676064289334
+        },
+        {
+          "name": "--color-gray-400",
+          "hex": "#99a1af",
+          "distance": 0.06377252866203727
+        },
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.0648071806482441
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.0793078075605859
+        }
+      ]
+    },
+    {
+      "literal": "#a6c3ca",
+      "hex": "#a6c3ca",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.074144714582099
+        },
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.07503936017134571
+        },
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.07721608653351965
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-300",
+          "hex": "#53eafd",
+          "distance": 0.11588183940962886
+        }
+      ]
+    },
+    {
+      "literal": "#a7acb1",
+      "hex": "#a7acb1",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.020616139817887617
+        },
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.029126821483487362
+        },
+        {
+          "name": "--color-neutral-400",
+          "hex": "#a1a1a1",
+          "distance": 0.03515684504706889
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-400",
+          "hex": "#99a1af",
+          "distance": 0.03737542237643606
+        }
+      ]
+    },
+    {
+      "literal": "#a7b9b1",
+      "hex": "#a7b9b1",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.03933912857321065
+        },
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.049488089406349495
+        },
+        {
+          "name": "--color-taupe-400",
+          "hex": "#aba09c",
+          "distance": 0.0646472135934134
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-300",
+          "hex": "#7bf1a8",
+          "distance": 0.16320252262246185
+        }
+      ]
+    },
+    {
+      "literal": "#adb5bd",
+      "hex": "#adb5bd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.046541341253918685
+        },
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.04697638473916571
+        },
+        {
+          "name": "--color-mauve-400",
+          "hex": "#a89ea9",
+          "distance": 0.0618175126403034
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-400",
+          "hex": "#99a1af",
+          "distance": 0.0628290162265901
+        }
+      ]
+    },
+    {
+      "literal": "#b02a37",
+      "hex": "#b02a37",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-700",
+          "hex": "#c10007",
+          "distance": 0.04869705456754052
+        },
+        {
+          "name": "--color-rose-700",
+          "hex": "#c70036",
+          "distance": 0.055396909083963386
+        },
+        {
+          "name": "--color-rose-800",
+          "hex": "#a50036",
+          "distance": 0.055645661315257854
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-700",
+          "hex": "#c10007",
+          "distance": 0.04869705456754052
+        }
+      ]
+    },
+    {
+      "literal": "#b5b6b7",
+      "hex": "#b5b6b7",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.04479105439273974
+        },
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.05423423610107456
+        },
+        {
+          "name": "--color-taupe-400",
+          "hex": "#aba09c",
+          "distance": 0.06371647794627236
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-400",
+          "hex": "#99a1af",
+          "distance": 0.07168492934208091
+        }
+      ]
+    },
+    {
+      "literal": "#b6d4fe",
+      "hex": "#b6d4fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-indigo-200",
+          "hex": "#c6d2ff",
+          "distance": 0.02135852146707129
+        },
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.021628181953789443
+        },
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.04557351766850403
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.021628181953789443
+        }
+      ]
+    },
+    {
+      "literal": "#babbbc",
+      "hex": "#babbbc",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.05899910914546248
+        },
+        {
+          "name": "--color-mist-400",
+          "hex": "#9ca8ab",
+          "distance": 0.0697065017839745
+        },
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.07436463175625811
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.08085046854391047
+        }
+      ]
+    },
+    {
+      "literal": "#bacbe6",
+      "hex": "#bacbe6",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.037253476371093844
+        },
+        {
+          "name": "--color-indigo-200",
+          "hex": "#c6d2ff",
+          "distance": 0.04152189849364988
+        },
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.046895041943406844
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.04745078540708434
+        }
+      ]
+    },
+    {
+      "literal": "#badce3",
+      "hex": "#badce3",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.02541049168776296
+        },
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.03020326670029547
+        },
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.031141044453616408
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-200",
+          "hex": "#a2f4fd",
+          "distance": 0.06241330639959459
+        }
+      ]
+    },
+    {
+      "literal": "#bb2d3b",
+      "hex": "#bb2d3b",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-700",
+          "hex": "#c10007",
+          "distance": 0.04665671049622277
+        },
+        {
+          "name": "--color-rose-700",
+          "hex": "#c70036",
+          "distance": 0.047854127192450184
+        },
+        {
+          "name": "--color-orange-700",
+          "hex": "#ca3500",
+          "distance": 0.06544239521383162
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-700",
+          "hex": "#c10007",
+          "distance": 0.04665671049622277
+        }
+      ]
+    },
+    {
+      "literal": "#bcd0c7",
+      "hex": "#bcd0c7",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.03853461959156518
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.039028752444996796
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.03970819156194933
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-200",
+          "hex": "#b9f8cf",
+          "distance": 0.1039441369529344
+        }
+      ]
+    },
+    {
+      "literal": "#bfd1ec",
+      "hex": "#bfd1ec",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.02454152306320962
+        },
+        {
+          "name": "--color-indigo-200",
+          "hex": "#c6d2ff",
+          "distance": 0.030284870615748638
+        },
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.03126497548707967
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.03126497548707967
+        }
+      ]
+    },
+    {
+      "literal": "#bfe2e9",
+      "hex": "#bfe2e9",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-sky-200",
+          "hex": "#b8e6fe",
+          "distance": 0.028083353925147752
+        },
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.03331816576238159
+        },
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.03575987802663552
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-200",
+          "hex": "#a2f4fd",
+          "distance": 0.050444307336506906
+        }
+      ]
+    },
+    {
+      "literal": "#c1d6cc",
+      "hex": "#c1d6cc",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.02716707871435339
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.029186902314285945
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.030652074837131477
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-200",
+          "hex": "#b9f8cf",
+          "distance": 0.08908517623995733
+        }
+      ]
+    },
+    {
+      "literal": "#c4c8cb",
+      "hex": "#c4c8cb",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.03685229222849392
+        },
+        {
+          "name": "--color-taupe-300",
+          "hex": "#d8d2d0",
+          "distance": 0.03961689441385368
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.0399287417430536
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.04171941904385631
+        }
+      ]
+    },
+    {
+      "literal": "#c5d7f2",
+      "hex": "#c5d7f2",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.018875370850023346
+        },
+        {
+          "name": "--color-slate-300",
+          "hex": "#cad5e2",
+          "distance": 0.02107346343805546
+        },
+        {
+          "name": "--color-indigo-200",
+          "hex": "#c6d2ff",
+          "distance": 0.02721801279325812
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-200",
+          "hex": "#bedbff",
+          "distance": 0.018875370850023346
+        }
+      ]
+    },
+    {
+      "literal": "#c5e8ef",
+      "hex": "#c5e8ef",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-sky-200",
+          "hex": "#b8e6fe",
+          "distance": 0.02678256645249426
+        },
+        {
+          "name": "--color-blue-100",
+          "hex": "#dbeafe",
+          "distance": 0.03606270209384908
+        },
+        {
+          "name": "--color-slate-200",
+          "hex": "#e2e8f0",
+          "distance": 0.036527908532792266
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-200",
+          "hex": "#a2f4fd",
+          "distance": 0.04354242715136239
+        }
+      ]
+    },
+    {
+      "literal": "#c6acae",
+      "hex": "#c6acae",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-400",
+          "hex": "#abab9c",
+          "distance": 0.04888431156530162
+        },
+        {
+          "name": "--color-taupe-400",
+          "hex": "#aba09c",
+          "distance": 0.05689545142363475
+        },
+        {
+          "name": "--color-mauve-400",
+          "hex": "#a89ea9",
+          "distance": 0.061071118911754964
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-300",
+          "hex": "#ffa2a2",
+          "distance": 0.09322421197993462
+        }
+      ]
+    },
+    {
+      "literal": "#c6c7c8",
+      "hex": "#c6c7c8",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.03769858655984947
+        },
+        {
+          "name": "--color-taupe-300",
+          "hex": "#d8d2d0",
+          "distance": 0.03976240671522282
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.04038807482022457
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.04360774602958929
+        }
+      ]
+    },
+    {
+      "literal": "#c7dbd2",
+      "hex": "#c7dbd2",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.021244298441638654
+        },
+        {
+          "name": "--color-olive-300",
+          "hex": "#d8d8d0",
+          "distance": 0.022330474224337406
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.02497513214305888
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-200",
+          "hex": "#b9f8cf",
+          "distance": 0.0787856277038498
+        }
+      ]
+    },
+    {
+      "literal": "#cbccce",
+      "hex": "#cbccce",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.022751893925414556
+        },
+        {
+          "name": "--color-taupe-300",
+          "hex": "#d8d2d0",
+          "distance": 0.024806974260623414
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.025157515262997115
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.027887522870075534
+        }
+      ]
+    },
+    {
+      "literal": "#ccc2a4",
+      "hex": "#ccc2a4",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-taupe-300",
+          "hex": "#d8d2d0",
+          "distance": 0.06586249456046588
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.0666310119065592
+        },
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.0697736450701796
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-500",
+          "hex": "#f0b100",
+          "distance": 0.14345803625951722
+        }
+      ]
+    },
+    {
+      "literal": "#ced4da",
+      "hex": "#ced4da",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.005296406503471548
+        },
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.00739858160027257
+        },
+        {
+          "name": "--color-zinc-300",
+          "hex": "#d4d4d8",
+          "distance": 0.007976599668489388
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.005296406503471548
+        }
+      ]
+    },
+    {
+      "literal": "#cfe2ff",
+      "hex": "#cfe2ff",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-indigo-100",
+          "hex": "#e0e7ff",
+          "distance": 0.026462499877915654
+        },
+        {
+          "name": "--color-blue-100",
+          "hex": "#dbeafe",
+          "distance": 0.027456399015052962
+        },
+        {
+          "name": "--color-sky-200",
+          "hex": "#b8e6fe",
+          "distance": 0.028690200825612366
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-100",
+          "hex": "#dbeafe",
+          "distance": 0.027456399015052962
+        }
+      ]
+    },
+    {
+      "literal": "#cff4fc",
+      "hex": "#cff4fc",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-100",
+          "hex": "#cefafe",
+          "distance": 0.015190895213457399
+        },
+        {
+          "name": "--color-sky-100",
+          "hex": "#dff2fe",
+          "distance": 0.02088950818113404
+        },
+        {
+          "name": "--color-teal-100",
+          "hex": "#cbfbf1",
+          "distance": 0.028547636718018573
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-100",
+          "hex": "#cefafe",
+          "distance": 0.015190895213457399
+        }
+      ]
+    },
+    {
+      "literal": "#d1d2d4",
+      "hex": "#d1d2d4",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.007070608364145181
+        },
+        {
+          "name": "--color-zinc-300",
+          "hex": "#d4d4d8",
+          "distance": 0.008178154962882794
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.00944524719495977
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.01099520235389599
+        }
+      ]
+    },
+    {
+      "literal": "#d1e7dd",
+      "hex": "#d1e7dd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-200",
+          "hex": "#e3e7e8",
+          "distance": 0.028767155513910708
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.029941698967761287
+        },
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.03115170525062282
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-100",
+          "hex": "#dcfce7",
+          "distance": 0.056108059606378075
+        }
+      ]
+    },
+    {
+      "literal": "#d3d4d5",
+      "hex": "#d3d4d5",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.0018437319533106936
+        },
+        {
+          "name": "--color-zinc-300",
+          "hex": "#d4d4d8",
+          "distance": 0.004995718637436838
+        },
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.006073802802362768
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.008659513092953302
+        }
+      ]
+    },
+    {
+      "literal": "#d63384",
+      "hex": "#d63384",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-pink-600",
+          "hex": "#e60076",
+          "distance": 0.045356702791443756
+        },
+        {
+          "name": "--color-pink-500",
+          "hex": "#f6339a",
+          "distance": 0.06870197674806292
+        },
+        {
+          "name": "--color-pink-700",
+          "hex": "#c6005c",
+          "distance": 0.07878754937338928
+        }
+      ],
+      "family": "pink",
+      "within": [
+        {
+          "name": "--color-pink-600",
+          "hex": "#e60076",
+          "distance": 0.045356702791443756
+        }
+      ]
+    },
+    {
+      "literal": "#d7d8da",
+      "hex": "#d7d8da",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.011368360945954276
+        },
+        {
+          "name": "--color-zinc-300",
+          "hex": "#d4d4d8",
+          "distance": 0.011561863305876295
+        },
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.01228442869275979
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.01228442869275979
+        }
+      ]
+    },
+    {
+      "literal": "#dc3545",
+      "hex": "#dc3545",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-600",
+          "hex": "#e7000b",
+          "distance": 0.051151106006065324
+        },
+        {
+          "name": "--color-rose-600",
+          "hex": "#ec003f",
+          "distance": 0.05326288879315731
+        },
+        {
+          "name": "--color-red-500",
+          "hex": "#fb2c36",
+          "distance": 0.05943962163123907
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-600",
+          "hex": "#e7000b",
+          "distance": 0.051151106006065324
+        }
+      ]
+    },
+    {
+      "literal": "#dee2e6",
+      "hex": "#dee2e6",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.010202463586040055
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.013122985100958943
+        },
+        {
+          "name": "--color-mauve-200",
+          "hex": "#e7e4e7",
+          "distance": 0.013505915688447659
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.017254155358398502
+        }
+      ]
+    },
+    {
+      "literal": "#dfc2c4",
+      "hex": "#dfc2c4",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.03694575838772811
+        },
+        {
+          "name": "--color-taupe-300",
+          "hex": "#d8d2d0",
+          "distance": 0.039446531157794
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.04200487057961205
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-200",
+          "hex": "#ffc9c9",
+          "distance": 0.054333437076968694
+        }
+      ]
+    },
+    {
+      "literal": "#dfe0e1",
+      "hex": "#dfe0e1",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.01407898545176003
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.015883195221454493
+        },
+        {
+          "name": "--color-mauve-200",
+          "hex": "#e7e4e7",
+          "distance": 0.0165405188257127
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.02221943742273759
+        }
+      ]
+    },
+    {
+      "literal": "#e2e3e5",
+      "hex": "#e2e3e5",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.004682749216003627
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.007003410576585339
+        },
+        {
+          "name": "--color-mauve-200",
+          "hex": "#e7e4e7",
+          "distance": 0.0077432014957922405
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.012747811091777517
+        }
+      ]
+    },
+    {
+      "literal": "#e5c7ca",
+      "hex": "#e5c7ca",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.02857310991772522
+        },
+        {
+          "name": "--color-taupe-300",
+          "hex": "#d8d2d0",
+          "distance": 0.03068558191596099
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.033511669532052354
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-200",
+          "hex": "#ffc9c9",
+          "distance": 0.040767243480738076
+        }
+      ]
+    },
+    {
+      "literal": "#e5e6e7",
+      "hex": "#e5e6e7",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.0030041636264051745
+        },
+        {
+          "name": "--color-mist-200",
+          "hex": "#e3e7e8",
+          "distance": 0.0037224136844837244
+        },
+        {
+          "name": "--color-stone-200",
+          "hex": "#e7e5e4",
+          "distance": 0.004893104511649731
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.005626513042266612
+        }
+      ]
+    },
+    {
+      "literal": "#e685b5",
+      "hex": "#e685b5",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-pink-400",
+          "hex": "#fb64b6",
+          "distance": 0.07271799945377792
+        },
+        {
+          "name": "--color-pink-300",
+          "hex": "#fda5d5",
+          "distance": 0.08956063333824227
+        },
+        {
+          "name": "--color-rose-300",
+          "hex": "#ffa1ad",
+          "distance": 0.09003747932997296
+        }
+      ],
+      "family": "pink",
+      "within": [
+        {
+          "name": "--color-pink-400",
+          "hex": "#fb64b6",
+          "distance": 0.07271799945377792
+        }
+      ]
+    },
+    {
+      "literal": "#e6dbb9",
+      "hex": "#e6dbb9",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-300",
+          "hex": "#d8d8d0",
+          "distance": 0.03781270585597976
+        },
+        {
+          "name": "--color-orange-200",
+          "hex": "#ffd6a7",
+          "distance": 0.03806518695172002
+        },
+        {
+          "name": "--color-stone-300",
+          "hex": "#d6d3d1",
+          "distance": 0.048197489036489155
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-100",
+          "hex": "#fef9c2",
+          "distance": 0.08577486681018864
+        }
+      ]
+    },
+    {
+      "literal": "#e9ecef",
+      "hex": "#e9ecef",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.013773982176514106
+        },
+        {
+          "name": "--color-slate-200",
+          "hex": "#e2e8f0",
+          "distance": 0.01491765288868411
+        },
+        {
+          "name": "--color-olive-200",
+          "hex": "#e8e8e3",
+          "distance": 0.016377680688265752
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.013773982176514106
+        }
+      ]
+    },
+    {
+      "literal": "#ea868f",
+      "hex": "#ea868f",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-rose-400",
+          "hex": "#ff637e",
+          "distance": 0.07376894212763717
+        },
+        {
+          "name": "--color-red-400",
+          "hex": "#ff6467",
+          "distance": 0.07582736264350623
+        },
+        {
+          "name": "--color-red-300",
+          "hex": "#ffa2a2",
+          "distance": 0.07918053741249674
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-400",
+          "hex": "#ff6467",
+          "distance": 0.07582736264350623
+        }
+      ]
+    },
+    {
+      "literal": "#eccccf",
+      "hex": "#eccccf",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-rose-200",
+          "hex": "#ffccd3",
+          "distance": 0.028914646844312688
+        },
+        {
+          "name": "--color-red-200",
+          "hex": "#ffc9c9",
+          "distance": 0.028989204791583952
+        },
+        {
+          "name": "--color-mauve-300",
+          "hex": "#d7d0d7",
+          "distance": 0.030234601851833028
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-200",
+          "hex": "#ffc9c9",
+          "distance": 0.028989204791583952
+        }
+      ]
+    },
+    {
+      "literal": "#ece1be",
+      "hex": "#ece1be",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-orange-200",
+          "hex": "#ffd6a7",
+          "distance": 0.03745949810769941
+        },
+        {
+          "name": "--color-olive-200",
+          "hex": "#e8e8e3",
+          "distance": 0.045662707185513865
+        },
+        {
+          "name": "--color-taupe-200",
+          "hex": "#e8e4e3",
+          "distance": 0.046853555689659626
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-100",
+          "hex": "#fef9c2",
+          "distance": 0.06844651165923776
+        }
+      ]
+    },
+    {
+      "literal": "#ecedee",
+      "hex": "#ecedee",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mauve-100",
+          "hex": "#f3f1f3",
+          "distance": 0.014713887916323228
+        },
+        {
+          "name": "--color-taupe-100",
+          "hex": "#f3f1f1",
+          "distance": 0.01476693889681927
+        },
+        {
+          "name": "--color-mist-100",
+          "hex": "#f1f3f3",
+          "distance": 0.017452647256290726
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.018157735697205767
+        }
+      ]
+    },
+    {
+      "literal": "#f1aeb5",
+      "hex": "#f1aeb5",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-300",
+          "hex": "#ffa2a2",
+          "distance": 0.037903679737864814
+        },
+        {
+          "name": "--color-rose-300",
+          "hex": "#ffa1ad",
+          "distance": 0.03839578752556813
+        },
+        {
+          "name": "--color-pink-300",
+          "hex": "#fda5d5",
+          "distance": 0.06047686757813325
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-300",
+          "hex": "#ffa2a2",
+          "distance": 0.037903679737864814
+        }
+      ]
+    },
+    {
+      "literal": "#f2e7c3",
+      "hex": "#f2e7c3",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-orange-100",
+          "hex": "#ffedd4",
+          "distance": 0.03148085887833901
+        },
+        {
+          "name": "--color-amber-100",
+          "hex": "#fef3c6",
+          "distance": 0.036065261215568405
+        },
+        {
+          "name": "--color-olive-200",
+          "hex": "#e8e8e3",
+          "distance": 0.041930836098522196
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-100",
+          "hex": "#fef9c2",
+          "distance": 0.051723401641272114
+        }
+      ]
+    },
+    {
+      "literal": "#f8d7da",
+      "hex": "#f8d7da",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-rose-200",
+          "hex": "#ffccd3",
+          "distance": 0.02614478308628402
+        },
+        {
+          "name": "--color-red-100",
+          "hex": "#ffe2e2",
+          "distance": 0.0291750324486071
+        },
+        {
+          "name": "--color-red-200",
+          "hex": "#ffc9c9",
+          "distance": 0.03410574433881178
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-100",
+          "hex": "#ffe2e2",
+          "distance": 0.0291750324486071
+        }
+      ]
+    },
+    {
+      "literal": "#f8f9fa",
+      "hex": "#f8f9fa",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-50",
+          "hex": "#f8fafc",
+          "distance": 0.0026917583807397295
+        },
+        {
+          "name": "--color-gray-50",
+          "hex": "#f9fafb",
+          "distance": 0.0033737741162442017
+        },
+        {
+          "name": "--color-mauve-50",
+          "hex": "#fafafa",
+          "distance": 0.003769841393454648
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-50",
+          "hex": "#f9fafb",
+          "distance": 0.0033737741162442017
+        }
+      ]
+    },
+    {
+      "literal": "#fcfcfd",
+      "hex": "#fcfcfd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.004957499886837419
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.005463847178872069
+        },
+        {
+          "name": "--color-taupe-50",
+          "hex": "#fbfaf9",
+          "distance": 0.006201666242248948
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-50",
+          "hex": "#f9fafb",
+          "distance": 0.006474036165025486
+        }
+      ]
+    },
+    {
+      "literal": "#fd7e14",
+      "hex": "#fd7e14",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-orange-400",
+          "hex": "#ff8904",
+          "distance": 0.027442206747076408
+        },
+        {
+          "name": "--color-orange-500",
+          "hex": "#ff6900",
+          "distance": 0.0391339888436559
+        },
+        {
+          "name": "--color-amber-600",
+          "hex": "#e17100",
+          "distance": 0.06440964210974794
+        }
+      ],
+      "family": "orange",
+      "within": [
+        {
+          "name": "--color-orange-400",
+          "hex": "#ff8904",
+          "distance": 0.027442206747076408
+        }
+      ]
+    },
+    {
+      "literal": "#ffc107",
+      "hex": "#ffc107",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-400",
+          "hex": "#ffb900",
+          "distance": 0.02340189147407937
+        },
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.03595573565907027
+        },
+        {
+          "name": "--color-amber-300",
+          "hex": "#ffd230",
+          "distance": 0.04021262414355242
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.03595573565907027
+        }
+      ]
+    },
+    {
+      "literal": "#ffc720",
+      "hex": "#ffc720",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-300",
+          "hex": "#ffd230",
+          "distance": 0.026319010302599713
+        },
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.033520611826712676
+        },
+        {
+          "name": "--color-amber-400",
+          "hex": "#ffb900",
+          "distance": 0.03534789565305656
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.033520611826712676
+        }
+      ]
+    },
+    {
+      "literal": "#ffca2c",
+      "hex": "#ffca2c",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-300",
+          "hex": "#ffd230",
+          "distance": 0.019689796001593048
+        },
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.03610540870055225
+        },
+        {
+          "name": "--color-amber-400",
+          "hex": "#ffb900",
+          "distance": 0.04254447903026659
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.03610540870055225
+        }
+      ]
+    },
+    {
+      "literal": "#ffcd39",
+      "hex": "#ffcd39",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-300",
+          "hex": "#ffd230",
+          "distance": 0.01462619221199233
+        },
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.04152418133917303
+        },
+        {
+          "name": "--color-yellow-300",
+          "hex": "#ffdf20",
+          "distance": 0.04974759855551834
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.04152418133917303
+        }
+      ]
+    },
+    {
+      "literal": "#ffda6a",
+      "hex": "#ffda6a",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-200",
+          "hex": "#fee685",
+          "distance": 0.032266243248086295
+        },
+        {
+          "name": "--color-amber-300",
+          "hex": "#ffd230",
+          "distance": 0.03772392649637594
+        },
+        {
+          "name": "--color-yellow-300",
+          "hex": "#ffdf20",
+          "distance": 0.04970402085328395
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-300",
+          "hex": "#ffdf20",
+          "distance": 0.04970402085328395
+        }
+      ]
+    },
+    {
+      "literal": "#ffe69c",
+      "hex": "#ffe69c",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-200",
+          "hex": "#fee685",
+          "distance": 0.02525528333795711
+        },
+        {
+          "name": "--color-yellow-200",
+          "hex": "#fff085",
+          "distance": 0.0411694983729849
+        },
+        {
+          "name": "--color-orange-200",
+          "hex": "#ffd6a7",
+          "distance": 0.046433146583944165
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-200",
+          "hex": "#fff085",
+          "distance": 0.0411694983729849
+        }
+      ]
+    },
+    {
+      "literal": "#fff",
+      "hex": "#ffffff",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "#fff3cd",
+      "hex": "#fff3cd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-100",
+          "hex": "#fef3c6",
+          "distance": 0.008816850916610702
+        },
+        {
+          "name": "--color-orange-100",
+          "hex": "#ffedd4",
+          "distance": 0.0210918414305714
+        },
+        {
+          "name": "--color-yellow-100",
+          "hex": "#fef9c2",
+          "distance": 0.024644984303072017
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-100",
+          "hex": "#fef9c2",
+          "distance": 0.024644984303072017
+        }
+      ]
+    },
+    {
+      "literal": "0, 0, 0",
+      "hex": "#000000",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "10, 88, 202",
+      "hex": "#0a58ca",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.055479665576518705
+        },
+        {
+          "name": "--color-blue-800",
+          "hex": "#193cb8",
+          "distance": 0.0710754258961806
+        },
+        {
+          "name": "--color-sky-700",
+          "hex": "#0069a8",
+          "distance": 0.07409134504686624
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-700",
+          "hex": "#1447e6",
+          "distance": 0.055479665576518705
+        }
+      ]
+    },
+    {
+      "literal": "108, 117, 125",
+      "hex": "#6c757d",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-500",
+          "hex": "#67787c",
+          "distance": 0.011304311467453535
+        },
+        {
+          "name": "--color-zinc-500",
+          "hex": "#71717b",
+          "distance": 0.012673842773918904
+        },
+        {
+          "name": "--color-gray-500",
+          "hex": "#6a7282",
+          "distance": 0.014282911905674949
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-500",
+          "hex": "#6a7282",
+          "distance": 0.014282911905674949
+        }
+      ]
+    },
+    {
+      "literal": "11, 172, 204",
+      "hex": "#0baccc",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-500",
+          "hex": "#00b8db",
+          "distance": 0.035256447007744926
+        },
+        {
+          "name": "--color-sky-500",
+          "hex": "#00a6f4",
+          "distance": 0.06810232589065568
+        },
+        {
+          "name": "--color-sky-400",
+          "hex": "#00bcff",
+          "distance": 0.07892646087220757
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-500",
+          "hex": "#00b8db",
+          "distance": 0.035256447007744926
+        }
+      ]
+    },
+    {
+      "literal": "110, 168, 254",
+      "hex": "#6ea8fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-400",
+          "hex": "#51a2ff",
+          "distance": 0.03448829959172413
+        },
+        {
+          "name": "--color-sky-400",
+          "hex": "#00bcff",
+          "distance": 0.07095040438708856
+        },
+        {
+          "name": "--color-indigo-300",
+          "hex": "#a3b3ff",
+          "distance": 0.07163554200746945
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-400",
+          "hex": "#51a2ff",
+          "distance": 0.03448829959172413
+        }
+      ]
+    },
+    {
+      "literal": "13, 110, 253",
+      "hex": "#0d6efd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.03818018744159311
+        },
+        {
+          "name": "--color-blue-500",
+          "hex": "#2b7fff",
+          "distance": 0.04700546728138984
+        },
+        {
+          "name": "--color-indigo-500",
+          "hex": "#615fff",
+          "distance": 0.06903617724372568
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.03818018744159311
+        }
+      ]
+    },
+    {
+      "literal": "13, 202, 240",
+      "hex": "#0dcaf0",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.027021631998782505
+        },
+        {
+          "name": "--color-sky-400",
+          "hex": "#00bcff",
+          "distance": 0.05243140699121049
+        },
+        {
+          "name": "--color-cyan-500",
+          "hex": "#00b8db",
+          "distance": 0.060539238974559435
+        }
+      ],
+      "family": "cyan",
+      "within": [
+        {
+          "name": "--color-cyan-400",
+          "hex": "#00d3f2",
+          "distance": 0.027021631998782505
+        }
+      ]
+    },
+    {
+      "literal": "130, 138, 145",
+      "hex": "#828a91",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-olive-500",
+          "hex": "#7c7c67",
+          "distance": 0.06489886596352955
+        },
+        {
+          "name": "--color-mist-500",
+          "hex": "#67787c",
+          "distance": 0.07004632823019748
+        },
+        {
+          "name": "--color-neutral-500",
+          "hex": "#737373",
+          "distance": 0.07445202178545786
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-400",
+          "hex": "#99a1af",
+          "distance": 0.07846834537108452
+        }
+      ]
+    },
+    {
+      "literal": "139, 185, 254",
+      "hex": "#8bb9fe",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.0321709540929015
+        },
+        {
+          "name": "--color-indigo-300",
+          "hex": "#a3b3ff",
+          "distance": 0.03292586264864353
+        },
+        {
+          "name": "--color-sky-300",
+          "hex": "#74d4ff",
+          "distance": 0.07209465915490852
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-300",
+          "hex": "#8ec5ff",
+          "distance": 0.0321709540929015
+        }
+      ]
+    },
+    {
+      "literal": "211, 212, 213",
+      "hex": "#d3d4d5",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-300",
+          "hex": "#d4d4d4",
+          "distance": 0.0018437319533106936
+        },
+        {
+          "name": "--color-zinc-300",
+          "hex": "#d4d4d8",
+          "distance": 0.004995718637436838
+        },
+        {
+          "name": "--color-mist-300",
+          "hex": "#d0d6d8",
+          "distance": 0.006073802802362768
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-300",
+          "hex": "#d1d5dc",
+          "distance": 0.008659513092953302
+        }
+      ]
+    },
+    {
+      "literal": "217, 164, 6",
+      "hex": "#d9a406",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-yellow-500",
+          "hex": "#f0b100",
+          "distance": 0.05689007771640862
+        },
+        {
+          "name": "--color-amber-500",
+          "hex": "#fe9a00",
+          "distance": 0.0605212576550611
+        },
+        {
+          "name": "--color-yellow-600",
+          "hex": "#d08700",
+          "distance": 0.07209529854512817
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-500",
+          "hex": "#f0b100",
+          "distance": 0.05689007771640862
+        }
+      ]
+    },
+    {
+      "literal": "220, 53, 69",
+      "hex": "#dc3545",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-600",
+          "hex": "#e7000b",
+          "distance": 0.051151106006065324
+        },
+        {
+          "name": "--color-rose-600",
+          "hex": "#ec003f",
+          "distance": 0.05326288879315731
+        },
+        {
+          "name": "--color-red-500",
+          "hex": "#fb2c36",
+          "distance": 0.05943962163123907
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-600",
+          "hex": "#e7000b",
+          "distance": 0.051151106006065324
+        }
+      ]
+    },
+    {
+      "literal": "222, 226, 230",
+      "hex": "#dee2e6",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.010202463586040055
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.013122985100958943
+        },
+        {
+          "name": "--color-mauve-200",
+          "hex": "#e7e4e7",
+          "distance": 0.013505915688447659
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.017254155358398502
+        }
+      ]
+    },
+    {
+      "literal": "225, 83, 97",
+      "hex": "#e15361",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-red-500",
+          "hex": "#fb2c36",
+          "distance": 0.06602500283542705
+        },
+        {
+          "name": "--color-rose-500",
+          "hex": "#ff2056",
+          "distance": 0.07043259562744618
+        },
+        {
+          "name": "--color-red-400",
+          "hex": "#ff6467",
+          "distance": 0.07181015998282851
+        }
+      ],
+      "family": "red",
+      "within": [
+        {
+          "name": "--color-red-500",
+          "hex": "#fb2c36",
+          "distance": 0.06602500283542705
+        }
+      ]
+    },
+    {
+      "literal": "233, 236, 239",
+      "hex": "#e9ecef",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.013773982176514106
+        },
+        {
+          "name": "--color-slate-200",
+          "hex": "#e2e8f0",
+          "distance": 0.01491765288868411
+        },
+        {
+          "name": "--color-olive-200",
+          "hex": "#e8e8e3",
+          "distance": 0.016377680688265752
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.013773982176514106
+        }
+      ]
+    },
+    {
+      "literal": "248, 249, 250",
+      "hex": "#f8f9fa",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-slate-50",
+          "hex": "#f8fafc",
+          "distance": 0.0026917583807397295
+        },
+        {
+          "name": "--color-gray-50",
+          "hex": "#f9fafb",
+          "distance": 0.0033737741162442017
+        },
+        {
+          "name": "--color-mauve-50",
+          "hex": "#fafafa",
+          "distance": 0.003769841393454648
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-50",
+          "hex": "#f9fafb",
+          "distance": 0.0033737741162442017
+        }
+      ]
+    },
+    {
+      "literal": "25, 135, 84",
+      "hex": "#198754",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-green-700",
+          "hex": "#008236",
+          "distance": 0.042913303226648124
+        },
+        {
+          "name": "--color-emerald-700",
+          "hex": "#007a55",
+          "distance": 0.04790434709557686
+        },
+        {
+          "name": "--color-emerald-600",
+          "hex": "#009966",
+          "distance": 0.05109410945845316
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-700",
+          "hex": "#008236",
+          "distance": 0.042913303226648124
+        }
+      ]
+    },
+    {
+      "literal": "255, 193, 7",
+      "hex": "#ffc107",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-amber-400",
+          "hex": "#ffb900",
+          "distance": 0.02340189147407937
+        },
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.03595573565907027
+        },
+        {
+          "name": "--color-amber-300",
+          "hex": "#ffd230",
+          "distance": 0.04021262414355242
+        }
+      ],
+      "family": "yellow",
+      "within": [
+        {
+          "name": "--color-yellow-400",
+          "hex": "#fdc700",
+          "distance": 0.03595573565907027
+        }
+      ]
+    },
+    {
+      "literal": "255, 255, 255",
+      "hex": "#ffffff",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "33, 37, 41",
+      "hex": "#212529",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-neutral-800",
+          "hex": "#262626",
+          "distance": 0.011740344852659105
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.013339610537733798
+        },
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.014115389463020624
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.028508565445340635
+        }
+      ]
+    },
+    {
+      "literal": "43, 48, 53",
+      "hex": "#2b3035",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.03190663672376611
+        },
+        {
+          "name": "--color-olive-800",
+          "hex": "#2b2b22",
+          "distance": 0.0328997144762107
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.03321224378004238
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.03573459681653124
+        }
+      ]
+    },
+    {
+      "literal": "49, 132, 253",
+      "hex": "#3184fd",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-blue-500",
+          "hex": "#2b7fff",
+          "distance": 0.018495006703141508
+        },
+        {
+          "name": "--color-sky-600",
+          "hex": "#0084d1",
+          "distance": 0.07614420409914885
+        },
+        {
+          "name": "--color-indigo-400",
+          "hex": "#7c86ff",
+          "distance": 0.07646447142247531
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-500",
+          "hex": "#2b7fff",
+          "distance": 0.018495006703141508
+        }
+      ]
+    },
+    {
+      "literal": "52, 58, 64",
+      "hex": "#343a40",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.026262120078326543
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.02907281423681835
+        },
+        {
+          "name": "--color-mist-700",
+          "hex": "#394447",
+          "distance": 0.033821110332350364
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.03497249779188795
+        }
+      ]
+    },
+    {
+      "literal": "60, 153, 110",
+      "hex": "#3c996e",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-emerald-600",
+          "hex": "#009966",
+          "distance": 0.0402121685099213
+        },
+        {
+          "name": "--color-teal-600",
+          "hex": "#009689",
+          "distance": 0.05119580451425117
+        },
+        {
+          "name": "--color-green-600",
+          "hex": "#00a63e",
+          "distance": 0.0889785214702762
+        }
+      ],
+      "family": "green",
+      "within": [
+        {
+          "name": "--color-green-600",
+          "hex": "#00a63e",
+          "distance": 0.0889785214702762
+        }
+      ]
+    },
+    {
+      "literal": "66, 70, 73",
+      "hex": "#424649",
+      "alpha": 1,
+      "nearest": [
+        {
+          "name": "--color-mist-700",
+          "hex": "#394447",
+          "distance": 0.01615649826682215
+        },
+        {
+          "name": "--color-neutral-700",
+          "hex": "#404040",
+          "distance": 0.021812418843711767
+        },
+        {
+          "name": "--color-zinc-700",
+          "hex": "#3f3f46",
+          "distance": 0.023533299038805182
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-700",
+          "hex": "#364153",
+          "distance": 0.03292057203203717
+        }
+      ]
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0)",
+      "hex": "#000000",
+      "alpha": 0,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.075)",
+      "hex": "#000000",
+      "alpha": 0.075,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.125)",
+      "hex": "#000000",
+      "alpha": 0.125,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.15)",
+      "hex": "#000000",
+      "alpha": 0.15,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.175)",
+      "hex": "#000000",
+      "alpha": 0.175,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.25)",
+      "hex": "#000000",
+      "alpha": 0.25,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.5)",
+      "hex": "#000000",
+      "alpha": 0.5,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(0, 0, 0, 0.8)",
+      "hex": "#000000",
+      "alpha": 0.8,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(13, 110, 253, 0.25)",
+      "hex": "#0d6efd",
+      "alpha": 0.25,
+      "nearest": [
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.03818018744159311
+        },
+        {
+          "name": "--color-blue-500",
+          "hex": "#2b7fff",
+          "distance": 0.04700546728138984
+        },
+        {
+          "name": "--color-indigo-500",
+          "hex": "#615fff",
+          "distance": 0.06903617724372568
+        }
+      ],
+      "family": "blue",
+      "within": [
+        {
+          "name": "--color-blue-600",
+          "hex": "#155dfc",
+          "distance": 0.03818018744159311
+        }
+      ]
+    },
+    {
+      "literal": "rgba(222, 226, 230, 0.5)",
+      "hex": "#dee2e6",
+      "alpha": 0.5,
+      "nearest": [
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.010202463586040055
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.013122985100958943
+        },
+        {
+          "name": "--color-mauve-200",
+          "hex": "#e7e4e7",
+          "distance": 0.013505915688447659
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.017254155358398502
+        }
+      ]
+    },
+    {
+      "literal": "rgba(222, 226, 230, 0.75)",
+      "hex": "#dee2e6",
+      "alpha": 0.75,
+      "nearest": [
+        {
+          "name": "--color-zinc-200",
+          "hex": "#e4e4e7",
+          "distance": 0.010202463586040055
+        },
+        {
+          "name": "--color-neutral-200",
+          "hex": "#e5e5e5",
+          "distance": 0.013122985100958943
+        },
+        {
+          "name": "--color-mauve-200",
+          "hex": "#e7e4e7",
+          "distance": 0.013505915688447659
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-200",
+          "hex": "#e5e7eb",
+          "distance": 0.017254155358398502
+        }
+      ]
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0)",
+      "hex": "#ffffff",
+      "alpha": 0,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0.1)",
+      "hex": "#ffffff",
+      "alpha": 0.1,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0.15)",
+      "hex": "#ffffff",
+      "alpha": 0.15,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0.25)",
+      "hex": "#ffffff",
+      "alpha": 0.25,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0.5)",
+      "hex": "#ffffff",
+      "alpha": 0.5,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0.55)",
+      "hex": "#ffffff",
+      "alpha": 0.55,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(255, 255, 255, 0.75)",
+      "hex": "#ffffff",
+      "alpha": 0.75,
+      "nearest": [
+        {
+          "name": "--color-white",
+          "hex": "#ffffff",
+          "distance": 0
+        },
+        {
+          "name": "--color-olive-50",
+          "hex": "#fbfbf9",
+          "distance": 0.01236930188291733
+        },
+        {
+          "name": "--color-mist-50",
+          "hex": "#f9fbfb",
+          "distance": 0.013152941665774133
+        }
+      ],
+      "within": []
+    },
+    {
+      "literal": "rgba(33, 37, 41, 0.5)",
+      "hex": "#212529",
+      "alpha": 0.5,
+      "nearest": [
+        {
+          "name": "--color-neutral-800",
+          "hex": "#262626",
+          "distance": 0.011740344852659105
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.013339610537733798
+        },
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.014115389463020624
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.028508565445340635
+        }
+      ]
+    },
+    {
+      "literal": "rgba(33, 37, 41, 0.75)",
+      "hex": "#212529",
+      "alpha": 0.75,
+      "nearest": [
+        {
+          "name": "--color-neutral-800",
+          "hex": "#262626",
+          "distance": 0.011740344852659105
+        },
+        {
+          "name": "--color-zinc-800",
+          "hex": "#27272a",
+          "distance": 0.013339610537733798
+        },
+        {
+          "name": "--color-mist-800",
+          "hex": "#22292b",
+          "distance": 0.014115389463020624
+        }
+      ],
+      "family": "gray",
+      "within": [
+        {
+          "name": "--color-gray-800",
+          "hex": "#1e2939",
+          "distance": 0.028508565445340635
+        }
+      ]
+    },
+    {
+      "literal": "transparent",
+      "hex": "#000000",
+      "alpha": 0,
+      "nearest": [
+        {
+          "name": "--color-black",
+          "hex": "#000000",
+          "distance": 0
+        },
+        {
+          "name": "--color-gray-950",
+          "hex": "#030712",
+          "distance": 0.13298120167903432
+        },
+        {
+          "name": "--color-slate-950",
+          "hex": "#020618",
+          "distance": 0.13566502865514016
+        }
+      ],
+      "within": []
+    }
+  ]
+}
