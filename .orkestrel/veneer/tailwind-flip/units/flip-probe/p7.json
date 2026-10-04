@@ -1,0 +1,218 @@
+[
+	{
+		"family": "dropdown",
+		"expected": "same inline declarations; computed placement may follow changed geometry",
+		"readings": [
+			{
+				"face": "bootstrap",
+				"event": "shown.bs.dropdown",
+				"reading": {
+					"style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;",
+					"inline": {
+						"margin": "2px 0px 0px",
+						"inset": "auto",
+						"width": "160px",
+						"position": "fixed"
+					},
+					"computed": {
+						"margin": "2px 0px 0px",
+						"inset": "0px",
+						"width": "160px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": null,
+						"inline": "",
+						"computed": "0px"
+					}
+				}
+			},
+			{
+				"face": "tailwindcss",
+				"event": "shown.bs.dropdown",
+				"reading": {
+					"style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-end span-inline-end; position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline; inset: auto; margin: 2px 0px 0px; width: 160px;",
+					"inline": {
+						"margin": "2px 0px 0px",
+						"inset": "auto",
+						"width": "160px",
+						"position": "fixed"
+					},
+					"computed": {
+						"margin": "2px 0px 0px",
+						"inset": "0px",
+						"width": "160px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": null,
+						"inline": "",
+						"computed": "0px"
+					}
+				}
+			}
+		]
+	},
+	{
+		"family": "popover",
+		"expected": "same inline declarations; computed placement may follow changed geometry",
+		"readings": [
+			{
+				"face": "bootstrap",
+				"event": "shown.bs.popover",
+				"reading": {
+					"style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-1-1, flip-block, --vn-placement-1-3; inset: auto; margin: 0px 0px 8px; width: 276px;",
+					"inline": {
+						"margin": "0px 0px 8px",
+						"inset": "auto",
+						"width": "276px",
+						"position": "fixed"
+					},
+					"computed": {
+						"margin": "0px 0px 8px",
+						"inset": "0px",
+						"width": "276px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": null,
+						"inline": "",
+						"computed": "0px"
+					}
+				}
+			},
+			{
+				"face": "tailwindcss",
+				"event": "shown.bs.popover",
+				"reading": {
+					"style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-1-1, flip-block, --vn-placement-1-3; inset: auto; margin: 0px 0px 8px; width: 276px;",
+					"inline": {
+						"margin": "0px 0px 8px",
+						"inset": "auto",
+						"width": "276px",
+						"position": "fixed"
+					},
+					"computed": {
+						"margin": "0px 0px 8px",
+						"inset": "0px",
+						"width": "276px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": null,
+						"inline": "",
+						"computed": "0px"
+					}
+				}
+			}
+		]
+	},
+	{
+		"family": "tooltip",
+		"expected": "same inline declarations; computed placement may follow changed geometry",
+		"readings": [
+			{
+				"face": "bootstrap",
+				"event": "shown.bs.tooltip",
+				"reading": {
+					"style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-1-1, flip-block, --vn-placement-1-3; inset: auto; margin: 0px 0px 6px; width: 110.75px;",
+					"inline": {
+						"margin": "0px 0px 6px",
+						"inset": "auto",
+						"width": "110.75px",
+						"position": "fixed"
+					},
+					"computed": {
+						"margin": "0px 0px 6px",
+						"inset": "0px",
+						"width": "110.75px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": null,
+						"inline": "",
+						"computed": "0px"
+					}
+				}
+			},
+			{
+				"face": "tailwindcss",
+				"event": "shown.bs.tooltip",
+				"reading": {
+					"style": "position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: --vn-placement-1-1, flip-block, --vn-placement-1-3; inset: auto; margin: 0px 0px 6px; width: 110.75px;",
+					"inline": {
+						"margin": "0px 0px 6px",
+						"inset": "auto",
+						"width": "110.75px",
+						"position": "fixed"
+					},
+					"computed": {
+						"margin": "0px 0px 6px",
+						"inset": "0px",
+						"width": "110.75px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": null,
+						"inline": "",
+						"computed": "0px"
+					}
+				}
+			}
+		]
+	},
+	{
+		"family": "modal",
+		"expected": "same inline declarations; computed placement may follow changed geometry",
+		"readings": [
+			{
+				"face": "bootstrap",
+				"event": "shown.bs.modal",
+				"reading": {
+					"style": "display: block;",
+					"inline": {
+						"margin": "",
+						"inset": "",
+						"width": "",
+						"position": ""
+					},
+					"computed": {
+						"margin": "0px",
+						"inset": "0px",
+						"width": "1280px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": "overflow: hidden; padding-right: 0px;",
+						"inline": "0px",
+						"computed": "0px"
+					}
+				}
+			},
+			{
+				"face": "tailwindcss",
+				"event": "shown.bs.modal",
+				"reading": {
+					"style": "display: block;",
+					"inline": {
+						"margin": "",
+						"inset": "",
+						"width": "",
+						"position": ""
+					},
+					"computed": {
+						"margin": "0px",
+						"inset": "0px",
+						"width": "1280px",
+						"position": "fixed"
+					},
+					"body": {
+						"style": "overflow: hidden; padding-right: 0px;",
+						"inline": "0px",
+						"computed": "0px"
+					}
+				}
+			}
+		]
+	}
+]
