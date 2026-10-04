@@ -38,7 +38,7 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 - **The environment boundary.** `tests/setupBrowser.ts` imports no value from `app/`, only types. Every `src:browser` suite imports the harness, and the boundary plugin refuses an application module on that graph ("Published modules cannot depend on private application modules"); pass application values to a helper as arguments, as `buildPairScenarios(FACES, THEMES)` does (veneer `e7b7c2b`).
 - **The built page.** Never hand-merge `showcase/browser.html`. The side that merges rebuilds it with `npm run build:showcase` from the merged tree and commits the result.
 - **Merges.** The engine session merges its worktree branches into veneer `main`. The showcase session merges `main` into `ccr-d15a48b1-yyyll6` before each unit and merges back into `main` when a unit is accepted. The merging side resolves a shared file by union, keeps the other side's section byte for byte, and logs the merge here.
-- **Contract changes.** When the engine changes a contract the showcase consumes (`createEngine`, the plugin factories, the event constants, a harness export), it migrates the showcase's call sites on `main` in the same change and logs it here.
+- **Contract changes.** When the engine changes a contract the showcase consumes (`createVeneer`, the plugin factories, the event constants, a harness export), it migrates the showcase's call sites on `main` in the same change and logs it here.
 - **Behavior changes.** When an engine change moves what a journey or statechart reads, the engine session logs it here before it lands. The oracle wins: the showcase session updates its expectations to Bootstrap's behavior after it merges `main`.
 - **Gates before landing on `main`.** The engine session runs its projects and `npm run test:journey`. The showcase session runs `npm run test:src:browser` and `npm run test:setup:browser` besides the journeys, because its harness edits reach every `src:browser` suite.
 - **Host-bound failures.** The cloud host's Chromium 141 fails a named set of engine cases that pass on the engine session's host. The showcase session lands on `main` when every failure in `test:src:browser`, `test:setup:browser`, and `test:integration` is in that set and `src/`, `tests/src/`, and `tests/integration.test.ts` equal `main` byte for byte; any other failure blocks the landing. The set is named by test title, because the engine lane moves line numbers; the showcase session keeps it current here. The engine session reads those projects on its host after the landing and logs any difference.
@@ -57,6 +57,16 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 - `setup:browser`: none.
 
 ## Log
+
+### 2026-10-04 — engine session to showcase session (review of the engine remainder map)
+
+The engine session reviewed `stage-b/remainder-map-2026-10-04.md`; the review is `stage-b/remainder-map-review-2026-10-04.md`. The map reads the stage B verdict faithfully: 179 claims were confirmed. The corrections that bear on your lane:
+
+- **Ownership.** The engine session holds the showcase and `browse` lanes since the user's 2026-10-03 hand-off (the 2026-10-03 entry, "The engine session owns both lanes"), apart from your flip grant (the 2026-10-04 flip-lane entry). That covers `browse` and its decisions, `showcase-guide`, and the stage B decision packet. Journey cost tuning has no owner yet: record the chunk in the ROADMAP showcase lines if you wish, and the user names who runs it. Nothing moves to your lane without the user's word here.
+- **Your one `browse` task** is the D-4 Linux run after the flip lands (`lifecycle/reassessment-2026-10-04.md`, D-4). Coordinate it here: the engine session moves the browser branch to 0.0.24 (hardening) and 0.0.25 (parallel holders, `lifecycle/holders/`).
+- **Already done or ruled:** `showcase-proofs` landed at `4929856`; the `createVeneer` migration landed at `419245d` (this entry corrects § Rules, Contract changes); `browse` D-3 is ruled (`lifecycle/eager/readings.md`, browser `3924fbb`) and D-5 is ruled (`lifecycle/holders/synthesis.md`, Q3); the `0.0.22` re-pin landed at `8159757`; the ownership-boundary ask is closed.
+- **Stays with the engine session:** P0 (Chromium 153 on this host; a read-only probe, so it can run before your landing), the guide's Browser-entry fixes (the `engine.destroy()` line with the first veneer write after your landing; the "designed next" line with B7), and the scaffold 0.0.91 overwrite with its host readings. The `package.json` and lockfile re-pin is yours if you log it, as the 2026-10-04 publication entry offers.
+- **For the map itself** (your record, in an engine path): split the refused-candidates row into measured refusals (final) and the five scope refusals (ruling 5); give each stage B unit one status, all unstarted until the user opens stage B; rulings 3 and 4 come before B0; mark contradictions 4 to 14 resolved by the verdict. The review lists each with its line.
 
 ### 2026-10-04 — showcase session (cloud) (probe-4 read; the second fold committed at veneer `bc35a3e`; the preservation gate launched)
 
