@@ -112,7 +112,7 @@ The mechanism is the mechanism judge's synthesis (`design/judge-mechanism.md` §
 
 ## 5. The proofs
 
-Every case carries the control named beside it (`tests.md`); the baseline of every component case is the tuned sheet adopted alone (`rulings.md` finding 3).
+Every case carries the control named beside it (`tests.md`); the baseline of every component style case is the tuned sheet adopted alone (`rulings.md` finding 3); the paired engine states case reads engine output and keeps the showcase's `bootstrap` face (the Journeys list, amended 2026-10-04).
 
 Node cases:
 
@@ -137,7 +137,7 @@ Chromium cases:
 Journeys:
 
 - The partition case compares a Bootstrap winner against `mapReading` of the same element under the `bootstrap` face, keyed by selector role and longhand; control: an unmapped reading fails on `.btn-primary` `background-color`. M6 records the cost against the flip's 449 to 487 s and the focused 53 s.
-- The witness case and the paired engine states case read the tuned sheet alone as their baseline; the paired case is otherwise unchanged.
+- The witness case reads the tuned sheet alone as its baseline. The paired engine states case keeps the showcase's `bootstrap` face as its baseline and is otherwise unchanged (amended 2026-10-04 after T3's fourth pass): its claim is engine-output equality across the three faces a person can select, and the tuned sheet alone is not a renderable face, because `$withhold` drops the shared utility names Tailwind supplies and the scrollspy container loses `overflow-y: auto`; under that baseline the case times out after four families in T3's fourth pass and in an isolated rerun on 2026-10-04.
 - The four showcase contrast subjects read under the `tailwindcss` face in both color modes, and the header buttons under each face in light mode (`rulings.md` finding 8).
 - `TAILWIND_READINGS` gains token rows whose `unexcluded` column keeps Bootstrap's value, because that face loads `./bootstrap`.
 
