@@ -10,6 +10,8 @@ This document fixes every user-visible string the Tailwind flip changes in the v
 
 A string in this document is exact. A caption string holds HTML: each `<code>` element in it stays a `<code>` element, and `<strong>` stays `<strong>`. A triple lists the readings under `bootstrap`, `unexcluded`, and `tailwindcss`, in that order.
 
+R12, the user's header ruling of 2026-10-04, supersedes the labels of § 1: the buttons read `Bootstrap`, `Tailwind, no layer`, and `Tailwind + layer`; the status sentence is visually hidden and reads `LABEL, THEME color mode` with those labels; the brand line reads `Veneer` beside `Bootstrap 5.3.8` in a sticky toolbar. The rows of § 1 carry the labels in force. The caption forms of § 3.0 keep `Bootstrap only` as prose for the face, because a caption names the sheet set and not the button.
+
 ## 1. Face labels and the toggle
 
 The following table rules the toggle:
@@ -17,19 +19,19 @@ The following table rules the toggle:
 | Id | Item | Ruling | Reason | Source |
 | --- | --- | --- | --- | --- |
 | 1.1 | Face identifiers | `bootstrap`, `unexcluded`, `tailwindcss` | The `Face` type, the `TAILWIND_READINGS` keys, and the `unexcluded` field of `app/browser/recipe.json` already use these three values. | verdict R7; `tests/setupBrowser.ts:145`; guide § Tailwind record |
-| 1.2 | Label of `bootstrap` | `Bootstrap only` | The label is in use, names the sheet set exactly, and P4 measured it at 90.25 px wide at 390 px. | `app/browser/constants.ts:32`; P4 |
-| 1.3 | Label of `unexcluded` | `Tailwind without the layer` | It forms a minimal pair with 1.4 that names the one difference between the two Tailwind faces, and P4 measured it at 144.97 px wide at 390 px with no overflow. | verdict § 5, § 10 item 2; P4 |
-| 1.4 | Label of `tailwindcss` | `Tailwind with the layer` | The verdict default is kept over `Bootstrap with Tailwind`, which names no difference from the `unexcluded` face, and over `Bootstrap for Tailwind`, which reads as an anagram of a face label beside `Tailwind without the layer`; the collision of "layer" with CSS cascade layers is closed by rule 7.1. | verdict § 5, R6, § 10 item 2 |
+| 1.2 | Label of `bootstrap` | `Bootstrap` | The label is in use, names the sheet set exactly, and P4 measured it at 90.25 px wide at 390 px. | `app/browser/constants.ts:32`; P4 |
+| 1.3 | Label of `unexcluded` | `Tailwind, no layer` | It forms a minimal pair with 1.4 that names the one difference between the two Tailwind faces, and P4 measured it at 144.97 px wide at 390 px with no overflow. | verdict § 5, § 10 item 2; P4 |
+| 1.4 | Label of `tailwindcss` | `Tailwind + layer` | The verdict default is kept over `Bootstrap with Tailwind`, which names no difference from the `unexcluded` face, and over `Bootstrap for Tailwind`, which reads as an anagram of a face label beside `Tailwind, no layer`; the collision of "layer" with CSS cascade layers is closed by rule 7.1. | verdict § 5, R6, § 10 item 2 |
 | 1.5 | Toggle order | `bootstrap`, `unexcluded`, `tailwindcss` | The order matches the caption form "Bootstrap only: … Without the layer: … With the layer: …", so a reader scans buttons and captions in one order. | verdict § 5 |
 | 1.6 | Group accessible name | `Stylesheets`, with no visible group title | The name tells a page visitor what the buttons change, the header has no width for a visible title at 390 px, and `readShowcaseChrome` and `applyFace` find the group by this name. | `app/browser/factories.ts:786`; `tests/setupBrowser.ts:944` |
 | 1.7 | Default face on load | `bootstrap` | `Showcase.start` mounts under the Bootstrap face, and every departure is read against it. | `app/browser/Showcase.ts:57-81`; verdict R5 |
 | 1.8 | State carrier | None: no URL fragment, no query, no storage; a reload returns to `bootstrap` | The face lives only in the connected `style` elements and the pressed buttons, and the color mode follows the same rule. | `app/browser/Showcase.ts:165-187`; `app/browser/main.ts` |
-| 1.9 | Status sentence | `LABEL, THEME color mode`, where `LABEL` is the face label and `THEME` is `light` or `dark`; for example `Tailwind without the layer, dark color mode` | `describeState` keeps its form and reads the label from `FACES`, so the third face needs no other string. | `app/browser/helpers.ts:115-129` |
+| 1.9 | Status sentence | `LABEL, THEME color mode`, where `LABEL` is the face label and `THEME` is `light` or `dark`; for example `Tailwind, no layer, dark color mode` | `describeState` keeps its form and reads the label from `FACES`, so the third face needs no other string. | `app/browser/helpers.ts:115-129` |
 | 1.10 | Where the face descriptions show | In the Tailwind section's introduction (rulings 2.5 to 2.7), one paragraph per face in toggle order, never in the header | The header has no width for three description lines at 390 px, and the descriptions explain the specimens that follow them. | P4; verdict § 5 |
-| 1.11 | Description of `bootstrap` | `<strong>Bootstrap only</strong> holds the built <code>./bootstrap</code> sheet alone, the baseline every departure is read against.` | The face proves the baseline that the partition reads every departure against. | verdict R5, R7 |
-| 1.12 | Description of `unexcluded` | `<strong>Tailwind without the layer</strong> holds the compile of the following recipe without its <code>@orkestrel/veneer/tailwindcss</code> import, before that same <code>./bootstrap</code> sheet: Tailwind's <code>collapse</code> and <code>container</code> utilities reach Bootstrap's components, and Bootstrap's important utilities outrank Tailwind's on every name both declare.` | The face is the failing control that shows what the layer prevents, with the two witnesses P5 reads. | verdict R7, § 5; P5 rows `.collapse` and `.container` |
-| 1.13 | Description of `tailwindcss` | `<strong>Tailwind with the layer</strong> holds the compile of the whole recipe alone, whose <code>@orkestrel/veneer/tailwindcss</code> import is the layer, Bootstrap for Tailwind: Tailwind wins at every conflict, and Bootstrap's components keep their look.` | The sentence defines "the layer" on the page and states the tenet the partition proves. | verdict R6, R9 |
-| 1.14 | Guide § Faces table (U7) | Columns `Face`, `Sheets in the document`, `What the face proves`; rows: `Bootstrap only` / `` `style#veneer-bootstrap`, the built `./bootstrap` sheet `` / `The baseline every departure is read against`; `Tailwind without the layer` / ``the recipe compile without the `@orkestrel/veneer/tailwindcss` import, directly before `style#veneer-bootstrap` `` / ``Tailwind's `collapse` and `container` utilities reach Bootstrap's components, and Bootstrap's important utilities outrank Tailwind's on every shared utility name``; `Tailwind with the layer` / `the recipe compile alone, which embeds Bootstrap for Tailwind` / `Tailwind wins at every conflict, and Bootstrap's components keep their look` | The guide repeats the page's three descriptions so the two never disagree. | guide § Faces; verdict § 7 |
+| 1.11 | Description of `bootstrap` | `<strong>Bootstrap</strong> holds the built <code>./bootstrap</code> sheet alone, the baseline every departure is read against.` | The face proves the baseline that the partition reads every departure against. | verdict R5, R7 |
+| 1.12 | Description of `unexcluded` | `<strong>Tailwind, no layer</strong> holds the compile of the following recipe without its <code>@orkestrel/veneer/tailwindcss</code> import, before that same <code>./bootstrap</code> sheet: Tailwind's <code>collapse</code> and <code>container</code> utilities reach Bootstrap's components, and Bootstrap's important utilities outrank Tailwind's on every name both declare.` | The face is the failing control that shows what the layer prevents, with the two witnesses P5 reads. | verdict R7, § 5; P5 rows `.collapse` and `.container` |
+| 1.13 | Description of `tailwindcss` | `<strong>Tailwind + layer</strong> holds the compile of the whole recipe alone, whose <code>@orkestrel/veneer/tailwindcss</code> import is the layer, Bootstrap for Tailwind: Tailwind wins at every conflict, and Bootstrap's components keep their look.` | The sentence defines "the layer" on the page and states the tenet the partition proves. | verdict R6, R9 |
+| 1.14 | Guide § Faces table (U7) | Columns `Face`, `Sheets in the document`, `What the face proves`; rows: `Bootstrap` / `` `style#veneer-bootstrap`, the built `./bootstrap` sheet `` / `The baseline every departure is read against`; `Tailwind, no layer` / ``the recipe compile without the `@orkestrel/veneer/tailwindcss` import, directly before `style#veneer-bootstrap` `` / ``Tailwind's `collapse` and `container` utilities reach Bootstrap's components, and Bootstrap's important utilities outrank Tailwind's on every shared utility name``; `Tailwind + layer` / `the recipe compile alone, which embeds Bootstrap for Tailwind` / `Tailwind wins at every conflict, and Bootstrap's components keep their look` | The guide repeats the page's three descriptions so the two never disagree. | guide § Faces; verdict § 7 |
 
 ## 2. Group title, section, and introduction
 
@@ -141,10 +143,10 @@ The following table rules the header:
 | Id | Item | Ruling | Reason | Source |
 | --- | --- | --- | --- | --- |
 | 5.1 | Toggle location | The header, in the `Stylesheets` group | A face changes every section, not only the Tailwind section, and the statechart tables, J2, and J4 drive the header buttons. | `app/browser/Showcase.ts:165-187`; `tests/app/browser/integration.test.ts:203`, `:311`, `:1004` |
-| 5.2 | Face buttons | `Bootstrap only`, `Tailwind without the layer`, `Tailwind with the layer`, in that order | The labels and order are rulings 1.2 to 1.5. | § 1 |
-| 5.3 | What each face button does | `Bootstrap only`: the document holds `style#veneer-bootstrap` alone. `Tailwind without the layer`: the document holds the `unexcluded` compile directly before `style#veneer-bootstrap`. `Tailwind with the layer`: the document holds the recipe compile alone. Each press sets `aria-pressed="true"` on its button, `false` on the other two, and writes the status sentence of 1.9. | The button behavior follows the face definitions. | verdict § 5, R7 |
+| 5.2 | Face buttons | `Bootstrap`, `Tailwind, no layer`, `Tailwind + layer`, in that order (R12) | The labels and order are rulings 1.2 to 1.5. | § 1 |
+| 5.3 | What each face button does | `Bootstrap`: the document holds `style#veneer-bootstrap` alone. `Tailwind, no layer`: the document holds the `unexcluded` compile directly before `style#veneer-bootstrap`. `Tailwind + layer`: the document holds the recipe compile alone. Each press sets `aria-pressed="true"` on its button, `false` on the other two, and writes the status sentence of 1.9. | The button behavior follows the face definitions. | verdict § 5, R7 |
 | 5.4 | Color mode group and status | `Light` and `Dark` in the `Color mode` group, then the status line named `Showcase state`, all kept | The flip changes no color mode copy. | `app/browser/constants.ts:44-47`; `app/browser/factories.ts:777-788` |
-| 5.5 | Layout at 390 px | The three face buttons stay on one row inside the 366 px content width, and each label wraps to two lines inside its button; the Color mode group and the status wrap to rows of their own; no label is shortened to avoid the wrap | P4 reads a 52 px button height, no group past the viewport, and no button on a row of its own, and a shorter label loses the minimal pair of 1.3 and 1.4. | P4 (group box 366 px wide, `buttons wrap to separate rows: false`, `group extends past viewport: false`) |
+| 5.5 | Layout at 390 px | The three face buttons stay on one row inside the 366 px content width with no label wrapping, the Color mode group wraps to a row of its own, and the status is visually hidden; the brand line, the face row, and the color mode row make a 116 px sticky toolbar (R12) | The chrome reading of 2026-10-04 reads 31 px button heights and 86.2, 139.6, and 129.5 px widths, no group past the viewport, and no button on a row of its own, and a shorter label loses the minimal pair of 1.3 and 1.4. | P4 (group box 366 px wide, `buttons wrap to separate rows: false`, `group extends past viewport: false`) |
 | 5.6 | Check for the final strings | U5b reruns P4 with the label `Tailwind with the layer` in place of the measured `Bootstrap with Tailwind` | P4 measured `Bootstrap with Tailwind` (132.78 px), which has the same 23 characters but not the same glyphs. | verdict § 8 item 6 (U5b acceptance) |
 
 ## 6. Chrome replacement copy
@@ -186,24 +188,24 @@ The flip retires the following words; each takes its replacement everywhere, the
 | 7.16 | `Tailwind bends` and `Bootstrap bends` | "Tailwind wins at every conflict" | verdict R9 |
 | 7.17 | `revert-layer` as a user-facing term | Never on the page or in a face label; the guide names `revert` only for a restore row | verdict R1, R5 |
 | 7.18 | `stylesheet set`, `both stylesheet sets`, `either stylesheet set` | "face", "the three faces", "each face"; the group's accessible name `Stylesheets` stays | rulings 1.6, 7.7 |
-| 7.19 | `Bootstrap with Tailwind` | `Tailwind with the layer` for the face, `Tailwind` for the group | rulings 1.4, 2.1 |
+| 7.19 | `Bootstrap with Tailwind` | `Tailwind + layer` for the face (R12), `Tailwind` for the group | rulings 1.4, 2.1 |
 | 7.20 | `the Tailwind face`, `the layer face` | "the `tailwindcss` face" in the guide, "the tailwindcss face" in test titles | ruling 7.7 |
-| 7.21 | `unexcluded` on the page | `Tailwind without the layer`; the identifier stays in code, the guide, and test titles | ruling 1.3 |
+| 7.21 | `unexcluded` on the page | `Tailwind, no layer`; the identifier stays in code, the guide, and test titles | ruling 1.3 |
 
 ## 8. Test titles
 
 Titles follow the repository style read in `tests/app/browser/*.test.ts` and `tests/setupBrowser.test.ts`: lower case first word, a present-tense verb whose subject is the describe block, no closing period, journey titles opening with `J` and the number. The following rulings set the titles:
 
 - **8.1 Face statechart rows (`FACE_SCENARIOS`, U6).** Nine rows, one per starting face per button, in toggle order of the starting face, then of the button; each `transition.name` follows the existing pattern `FROM becomes TO through the LABEL button` or `FROM stays FROM through the LABEL button`. Reason: `FACE_SCENARIOS` enumerates starting face × pressed button today (4 rows), not load, toggle, and toggle back. Source: `tests/setupBrowser.ts:1140-1186`; verdict R7. The nine names:
-  - `bootstrap stays bootstrap through the Bootstrap only button`
-  - `bootstrap becomes unexcluded through the Tailwind without the layer button`
-  - `bootstrap becomes tailwindcss through the Tailwind with the layer button`
-  - `unexcluded becomes bootstrap through the Bootstrap only button`
-  - `unexcluded stays unexcluded through the Tailwind without the layer button`
-  - `unexcluded becomes tailwindcss through the Tailwind with the layer button`
-  - `tailwindcss becomes bootstrap through the Bootstrap only button`
-  - `tailwindcss becomes unexcluded through the Tailwind without the layer button`
-  - `tailwindcss stays tailwindcss through the Tailwind with the layer button`
+  - `bootstrap stays bootstrap through the Bootstrap button`
+  - `bootstrap becomes unexcluded through the Tailwind, no layer button`
+  - `bootstrap becomes tailwindcss through the Tailwind + layer button`
+  - `unexcluded becomes bootstrap through the Bootstrap button`
+  - `unexcluded stays unexcluded through the Tailwind, no layer button`
+  - `unexcluded becomes tailwindcss through the Tailwind + layer button`
+  - `tailwindcss becomes bootstrap through the Bootstrap button`
+  - `tailwindcss becomes unexcluded through the Tailwind, no layer button`
+  - `tailwindcss stays tailwindcss through the Tailwind + layer button`
 - **8.2 Statechart case.** `drives the $family header table through the header buttons` kept; the pair rows keep the pattern `FACE and THEME through both header buttons` and number 6. Reason: the case title names no face count. Source: `tests/app/browser/integration.test.ts:1022`; `tests/setupBrowser.ts:1287-1308`.
 - **8.3 Partition proof (U6).** `reads the resolved values under its declared variant and partitions every departure of the tailwindcss face` replaces `reads the resolved values under its declared variant and both stylesheet sets`. Reason: the case still reads the resolved values per variant, and the partition replaces the equality between two faces; the `unexcluded` face and the stripped-curation copy stay controls inside the case. Source: `tests/app/browser/integration.test.ts:826`; verdict § 5.
 - **8.4 J4 (U6).** `J4 compares the three faces through the Stylesheets buttons` replaces `J4 compares the two stylesheet sets through the Stylesheets buttons`; its wait descriptions read `the status names the unexcluded face`, `the status names the tailwindcss face`, and `the status names the bootstrap face`. Reason: J4 presses all three buttons. Source: `tests/app/browser/integration.test.ts:311-353`; verdict § 6.
