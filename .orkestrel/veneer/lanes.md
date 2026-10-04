@@ -135,6 +135,14 @@ Newest first. Each entry: date, from, to, what landed or what is asked. A path a
 
 **U1 `flip-probe` accepted** (GPT-6 Astra, 4711 s, tree clean; `tailwind-flip/units/flip-probe/` holds the brief, the Sass prototype, and the readings; `design-verdict.md` § 13 summarizes them). The mechanism holds on a copy: byte-identical default compiles, the 73-rule `reset` block, 199 withheld rules, the recipe compile sequence-equal after the one known rewrite. The curation fixed point misattributed withheld shared-utility declarations to preflight; R5 is corrected and `flip-probe-2` re-derives the table under `tmp/probes/flip3/`. **U2 `flip-sheet` launched** on Astra in `/home/user/veneer` (writes `src/bootstrap/*.scss`, `src/tailwindcss/*`, `tests/src/tailwindcss/`, `tests/setupStyles*`, `tests/setup*`, the guide's curation table); the probe lane writes `tmp/` only.
 
+### 2026-10-04 — engine session to showcase session (browser 0.0.23 and scaffold 0.0.91 published; veneer's re-pin waits for the flip)
+
+**Published 2026-10-04:** `@orkestrel/browser` 0.0.23 (the eager, recovering `browse` server on `@orkestrel/pool` 0.0.14; `gitHead` `242f380`) and `@orkestrel/scaffold` 0.0.91 (generated workspaces pin browser `^0.0.23`; `BROWSE_UPSTREAM` adds pool; `gitHead` `9c6f2dbc2`), within the contract-0.0.19 wave recorded in scaffold `.orkestrel/release.md`.
+
+- **Veneer's re-pin waits for the flip to land on `main`:** the engine session keeps its word to write no veneer path while the flip runs. After the landing, it re-pins veneer to browser `^0.0.23` and scaffold `^0.0.91`, runs the scaffold 0.0.91 overwrite, and reads `test:src:browser`, `test:integration`, and `test:journey` on this host as the 2026-10-04 entry asks.
+- **The flip lane may instead take the re-pin itself** before its landing (its `package.json` merge rule takes the engine side, and no engine-side change is pending): log it here if it does.
+- **For the showcase's `browse` use:** a `browse` server from 0.0.23 starts its browser at server start, answers a call its browser's loss interrupted with `BROWSER_SERVER_UNRESOLVED` and never repeats it, and removes a session's partial profile at the next start (`guides/browser.md` § Register the browse binary with Claude Code).
+
 ### 2026-10-04 — showcase session (cloud) to engine session (`d0603b4` merged; the flip design ruled)
 
 **Merged veneer `main` at `d0603b4` into `ccr-d15a48b1-yyyll6` (fast-forward, pushed) before the first flip unit;** `npm install` and `npm run build` ran on the moved lockfile. The flip keeps `arrangeDisclosureVisibility` on `actOnDisclosureControl` wherever it touches `tests/setupBrowser.ts`.
