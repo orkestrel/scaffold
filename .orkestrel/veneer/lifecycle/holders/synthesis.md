@@ -2,6 +2,13 @@
 
 Reconciled 2026-10-04 by the Orchestrator from `proposal-analyst.md` (GPT-6 Astra, objective lane) and `proposal-planner.md` (Opus 5.5, subjective lane), both blind to each other over `design-brief.md`, with `map.md` and `clients.md` as inputs. Heads: browser `3924fbb`, pool `5a3a631`, mcp `50afe56`, probe `dee8845`. Revised after the Opus attack in `attack.md` (verdict FAIL on the first draft); each repair below adopts the attack's prescription.
 
+## The user's rulings (2026-10-04)
+
+- **Q1: a server-minted handle.** An `acquire` tool returns an opaque holder id and that holder's tool catalog; named work runs through `execute { holder, name, arguments }`; a `tools { holder }` call lists that holder's catalog; `destroy { holder }` ends it. The named browser tools stay the shared browser's path, unchanged. This supersedes ruling 5 (each holder's page tools are reachable through its own catalog and `execute`) and ruling 8's name pattern (the server mints the id). Acquisition waits under the request's signal and the holder's lifetime is the session's, apart from that signal (`proposal-analyst.md:38-42`). An unknown or ended handle is refused and never falls back to the shared browser. `acquire`, `execute`, `tools`, and `destroy` join the reserved names; `execute` is advertised as not read-only.
+- **Q2: `destroy`** ends a holder.
+- **Q3: a grant resets the restart budget only when the granted browser was created after the last strike** (ruling 1), shipped as pool 0.0.15.
+- **Q4: no reserved spare.** Every browser can serve a holder; a holder that loses its browser waits for the refill.
+
 ## Where the lanes agree
 
 - **A holder is named in the tool arguments.** MCP carries no caller identity inside a session (`clients.md` facts 9 and 12), and `caller` is consumer-asserted (`mcp/src/core/types.ts:1716-1719`). Item 14 serves subagents that reuse the parent's server, parallel calls in one turn, and a replay beside interactive work, over the shipped stdio entry. Several sessions on a multi-session transport stay out of item 14.
@@ -13,7 +20,7 @@ Reconciled 2026-10-04 by the Orchestrator from `proposal-analyst.md` (GPT-6 Astr
 - **A call in flight when its holder is ended answers `BROWSER_SERVER_UNRESOLVED`;** the action is never repeated.
 - **The pool's waiter order stays FIFO at `#waiters[0]`;** an aborted waiter leaves and the next proceeds. No recovery priority.
 - **No `@orkestrel/mcp` change.** `server/discover` does not await the handshake (`mcp/src/core/MCPServer.ts:464-466`), so the browser-call gate stays.
-- **The default size stays 1** until a contention measurement on the target host rules it; `BROWSER_SERVER_RESTARTS` stays 1. At size 1 a named browser is always refused, and omitting the argument always works.
+- **The default size stays 1** until a contention measurement on the target host rules it; `BROWSER_SERVER_RESTARTS` stays 1. At size 1 an `acquire` is always refused, and the named tools always work.
 
 ## Orchestrator rulings where the lanes differ
 
@@ -25,7 +32,7 @@ Reconciled 2026-10-04 by the Orchestrator from `proposal-analyst.md` (GPT-6 Astr
 6. **Cross-holder journey admission is built.** `#idleReplay` checks only its own toolset (`BrowserJourneyToolset.ts:606-608`), and `FileBrowserRunStore.clear` deletes every run directory, including one a replay is still writing (`FileBrowserRunStore.ts:147-152`), so holder B's `forget` breaks holder A's replay at its next capture (`:176-179`). The server admits per journey name: an active replay holds shared access through its run persistence, `forget` takes exclusive access, and a conflict answers the existing locked error. Limit: a second `browse` process on the same root still races (`proposal-analyst.md:126`).
 7. **Downloads are proved, then contained if they escape.** The slot's context sets download behavior `default` with no path (`BrowserContext.ts:517-528`, `BrowserMCPServer.ts:576`). The exposure exists today with one browser; holders multiply it. The proof needs a real Chromium.
 8. **Holder names follow `BROWSER_JOURNEY_NAME_PATTERN`** (planner); a malformed name answers `BROWSER_TOOLSET_ARGUMENT`. `BROWSE_POOL` and `pool.size` are re-described as the number of browsers, and so the most holders at once.
-9. **The capacity code is `BROWSER_SERVER_BUSY`,** its text listing the holders and telling the agent to end one it no longer needs or omit the argument to share the shared browser.
+9. **The capacity code is `BROWSER_SERVER_BUSY`,** its text listing the holder ids and telling the agent to `destroy` one it no longer needs or call the named tools to share the shared browser.
 10. **Release order.** The hardening commits on browser main (`3785b94`, `5782c08`, `0413e6f`; `package.json` still reads 0.0.23) publish as browser 0.0.24 after the store campaign, with whatever it keeps. Item 14 ships as pool 0.0.15, then browser 0.0.25.
 
 ## Corrections to the inputs
@@ -51,7 +58,7 @@ Reconciled 2026-10-04 by the Orchestrator from `proposal-analyst.md` (GPT-6 Astr
 | Unit | Owned files | Route | Acceptance |
 | --- | --- | --- | --- |
 | H1 pool strike rule | pool `src/core/Pool.ts`, `src/core/types.ts`, `tests/src/core/Pool.test.ts`, `guides/pool.md`, guide proofs | Astra; one Opus review pass (a public contract remark changes) | Red: a refill that always fails relaunches on every grant of an older healthy record; green after; the idle-spare case reaches the spent floor; `Pool.test.ts:855` (a grant of a fresh record resets) stays green; the leased-loss credit unchanged; `npm run test:src`, `test:guides`; browse's `BrowserMCPServer.test.ts:380-404` and the U6 and U7 failover cases rerun green against the linked pool |
-| H2 holders in `browse` | browser `src/server/types.ts`, `constants.ts`, `helpers.ts`, `BrowserMCPServer.ts`, mirrored `tests/src/server/*` | Astra writer; one Opus review pass on the concurrency seam | Per-holder admission, an ending holder counted until disposal settles, `BROWSER_SERVER_BUSY` text, name validation, argument stripping, the end tool idempotent, per-holder notices, a cancelled first-call grant leaving no admitted holder, a cross-holder reference refused, continuation checks on the exact holder and token, unnamed behavior unchanged |
+| H2 holders in `browse` | browser `src/server/types.ts`, `constants.ts`, `helpers.ts`, `BrowserMCPServer.ts`, mirrored `tests/src/server/*` | Astra writer; one Opus review pass on the concurrency seam | `acquire`, `execute`, `tools`, and `destroy` per the user's Q1 ruling; per-holder admission, an ending holder counted until disposal settles, `BROWSER_SERVER_BUSY` text listing the holder ids; each holder's catalog carries its page tools without touching the shared browser's mirrored list; an unknown or ended handle refused; `destroy` idempotent; per-holder notices; a cancelled `acquire` leaving no admitted holder and destroying an undeliverable grant; a cross-holder reference refused; continuation checks on the exact holder and token; unnamed behavior unchanged |
 | H3 journey admission and downloads | browser `src/server/BrowserMCPServer.ts` and the kind files the admission needs, `tests/src/server/*`, `tests/service/browse.test.ts` for the download proof | Astra; one Opus review pass (concurrency) | `forget` refused while another holder's replay persists that name; replays of one name coexist; the download location proved with a real Chromium, and contained under the profile if it escaped |
 | H4 real-Chromium proofs | browser `tests/service/browse.test.ts`, `tests/setupService.ts` | Astra | A held fixture request on one holder while another holder completes an action (red when the server serializes holders); isolation of cookies, storage, tabs, and references; loss on one holder only; capacity and recovery with every browser leased; the destroy contract; parallel replay; teardown with several leases live, including an injected cleanup refusal reported; each red with its mechanism removed; U6 to U8 unchanged |
 | H5 guide and roadmap | browser `guides/browser.md`, `ROADMAP.md`, `tests/distribution.test.ts` vocabulary; pool `ROADMAP.md` line for ruling 2 | Opus | `npm run test:guides`; an executed assertion behind the destroy-on-end sentence; the Codex approval prompt for the end tool named |
@@ -71,6 +78,6 @@ Gates: `verifier` on pool and browser tree-wide once; one `orkestrel-falsify` ro
 
 - An abandoned named browser costs one warm browser (1.22 GB to 1.78 GB summed working set on Edge, shared pages counted per process, `eager/readings.md:46`) until it is ended or the server ends.
 - `tools/list` grows by one optional parameter on every tool and one tool; unmeasured.
-- Codex asks approval for the end tool, because it is not read-only (`eager/readings.md:13`).
+- Codex asks approval for `execute` and `destroy`, because neither is read-only (`eager/readings.md:13`); under Codex every named-holder call can prompt, depending on its approval mode.
 - A second `browse` process on the same root can still race a replay against `forget`.
 - POSIX failover rows stay limits for the Linux run.
