@@ -17,6 +17,8 @@ Host: Windows 11, Node 24.21.0, Edge 154.0.4258.53, browser `main` at `50dee0c` 
 
 **For U13.** The guide states the Codex approval for `browse`'s mutating tools, that Codex hides a server whose `initialize` fails (read its log), that Claude Code shows the refusal at the first call, and that profile folders from ended sessions are removed at the next start.
 
+**D-3 readings (2026-10-04, `tmp/u11/onset.ts`).** With `-c mcp_servers.browse.required=true`, Codex refused to start the session against the landed `browse` with a missing executable and printed the refusal with its cause (`required MCP servers failed to initialize: browse: handshaking with MCP server failed: JSON-RPC error: -32000: BROWSER_SERVER_UNAVAILABLE: spawn … ENOENT.`). Against a stand-in that writes the same `browse:` line and exits at once (option c), Codex showed no `browse` tools and no cause, and Claude Code reported the server `failed` (`CONNECTION_CLOSED`) with no cause. Ruling, by the user's condition: keep the landed `initialize` refusal and tell Codex users to set `required = true` (browser `3924fbb`, the guide's client observations). Probe item 1 copies this onset mechanism.
+
 ## U12: measurements
 
 `tmp/u12/run.ts` ran the instruments of `tmp/probes/eager/` serially on 2026-10-04 (08:08 to 08:58 local), each under the load of veneer's `npm run test:journey` at `d0603b4` plus a heavy local page driven through the tools. Every instrument's load control held: median loaded `start()` onset 1.3 to 2.0 s against 0.66 to 0.75 s idle. Every cleanup census found no recorded process alive. Medians follow, with the range in parentheses; every sample is in `tmp/probes/eager/readings/*.json` and the table in `tmp/u12/summary.md`.
