@@ -105,7 +105,7 @@ Choose one event model per environment. `Emitter<TMap>` remains the default outs
 - Never publish a generic `status` event carrying a transition value; publish each transition as its own event.
 - Type errors as `unknown`.
 - Use empty tuples for signals and labeled tuple elements for IDE clarity.
-- Keep an entity's event map focused, normally four to eight events.
+- Keep an entity's event map focused on the transitions and operations a consumer observes.
 
 ## Validation and contracts
 

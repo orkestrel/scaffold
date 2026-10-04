@@ -120,7 +120,7 @@ Each row is a normative extension of this file. Its `paths` frontmatter controls
 | `.claude/rules/portability.md`   | Host branching, paths, line endings, processes, terminals, OS claims   |
 | `.claude/rules/documentation.md` | Guides, parity, roadmap, showcase, examples, skill files               |
 | `.claude/rules/writing.md`       | Prose in guides, replies, commits, and instruction files               |
-| `.claude/rules/quality.md`       | Evidence, probes, instruments, research, completion                    |
+| `.claude/rules/quality.md`       | Evidence, probes, instruments, performance, research, completion       |
 
 ## Writing
 

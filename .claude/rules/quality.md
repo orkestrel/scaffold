@@ -44,6 +44,17 @@ paths:
 - Baseline a published-artifact claim against the published artifact (the tarball, the deployed asset). Prove a module cycle by loading the built entry points.
 - Promote an instrument that settled a claim into a test, with its control, before accepting the work it settled.
 
+## Performance
+
+- Keep runtime cost reasonable and measurable. When a change claims a cost or a gain in speed, name the instrument that reads it and report each reading with its run.
+- Change code for speed only when a measurement shows a gain worth having under the heavy load that real pages or callers produce. Never justify a change with an invented load.
+- Refuse a micro optimization (hoisting a small array, caching one cheap read, shaving a constant) unless its own measurement shows a gain worth having.
+- Keep an algorithmic repair (a superlinear term, a repeated layout) when the measurement shows it.
+- Before the run, size the fixtures, the sample count, and the threshold to the case, and state the reasoning and the result that makes the change worth keeping.
+- Read the difference between methods against each side's reported uncertainty, and record no difference smaller than the result stated before the run.
+- Report every measurement with the host's other load during the run.
+- Rule a cost finding advisory unless it shows its effect under a realistic load, and never carry an advisory into a fix brief as a required change; `.agents/skills/orkestrel-falsify/SKILL.md` § Verdict shape places it in a review lane's return.
+
 ## Ecosystem reuse
 
 - Prove a semantic difference before keeping a local variant of an installed primitive.

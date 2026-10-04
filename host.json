@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "cfdb7fa3de1970454ad2ad2036711c22b3e3da4f170ceea771c56d21226de511"
+			"digest": "a2b8f91b6531aba0b44a096983f23c4b346f90ee6a8334b8350cbcf3cec72c16"
 		},
 		{
 			"storage": "LICENSE",
@@ -220,7 +220,7 @@
 			"storage": "agents/skills/orkestrel-falsify/SKILL.md",
 			"destination": ".agents/skills/orkestrel-falsify/SKILL.md",
 			"executable": false,
-			"digest": "44c5f28bab784f2218032ffb1172b2ff7d21ce7990ae05ee75dfa73564fda46f"
+			"digest": "89bb686259edf5a7027ee129e62facf581f3461a7b1224282def10bc8309ad07"
 		},
 		{
 			"storage": "agents/skills/orkestrel-falsify/agents/openai.yaml",
@@ -424,7 +424,7 @@
 			"storage": "agents/templates/brief.md",
 			"destination": ".agents/templates/brief.md",
 			"executable": false,
-			"digest": "2e00bf607e3d9776e7f5dbe095201544a7479be7ae3a8e8d8c8ff62f204c42c1"
+			"digest": "7f479c0f2cfed85d5535a392474f6fe1a0a6de40ba1dfc37c4dc9c5e91a25ba8"
 		},
 		{
 			"storage": "agents/transports/claude-cli.md",
@@ -562,7 +562,7 @@
 			"storage": "claude/rules/patterns.md",
 			"destination": ".claude/rules/patterns.md",
 			"executable": false,
-			"digest": "0fc0301c96b6b7ee23a4c743dc1903b06cf15a296155d9634ead0e813d61f200"
+			"digest": "b17a9102761262e116416d3c5a0f78b16fa2c3598ba203d35bba7b93b7ccbf1b"
 		},
 		{
 			"storage": "claude/rules/portability.md",
@@ -574,7 +574,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "7b8b9b3a4f4ee586d96deeb0cdd4fc9da68da663742cb56c96f64b2230ba89e6"
+			"digest": "4a67842795882635436aa001a7ad1d0b2b6b81b9d8dd51730b8c37e65ebd367a"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -586,7 +586,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "5808e375cf559c6d51aa3a744bcea574613945629e66e304c3d2f338b2f7abc0"
+			"digest": "0a7cf69072de3fb89afdd580c4d3b728130862f6d6865a2ec02a4881ddb504fa"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -604,7 +604,7 @@
 			"storage": "claude/rules/writing.md",
 			"destination": ".claude/rules/writing.md",
 			"executable": false,
-			"digest": "f18fad032d2b02533c1e66420109af16d4b48a151069a457f4a6458e2bc54588"
+			"digest": "f9ffad898c4ed5d4bd06927d86c186874ceedbcd7b22c7f083b339f58785bfda"
 		},
 		{
 			"storage": "claude/settings.json",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "787bc2631cd9a30ba6c402d26c997787356b1d448aa585b00fd607c972a1f99c"
+	"digest": "8f91ea49a3a1aff8b1cc41b339aa8ddbf2a9cd037522aef20a303aa1e1ac059c"
 }

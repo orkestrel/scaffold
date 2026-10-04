@@ -25,7 +25,7 @@ paths:
   population. The policy sweep (`tests/setupPolicy.ts`) enforces both directions.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
 - Tests are deterministic: identical inputs produce identical results.
-- Keep default suites fast: timers normally use 10–50 ms and tests make no network calls.
+- Keep default suites fast: give each timer the shortest real duration that still separates the orderings the test asserts on a loaded host, and make no network calls.
 - Use real implementations and small scenarios. Never use mocks, behavioral fakes, module replacement, or framework spies for project-owned or integrated behavior.
 - Use recorders for calls/events, temporary resources for stateful boundaries, protocol-faithful fixture servers for deterministic network peers, and the real external service when its behavior is the claim.
 - Prefer inert customizable data and input stubs.
@@ -127,13 +127,12 @@ Run a probe before relying on an unverified belief about behaviour: what a funct
 configuration resolves to, whether a path is reached at all. Prefer a probe to an argument whenever
 the probe is cheap.
 
-When the question is whether the difference between methods is a magnitude or negligible, write a
-guarded bench block beside the probe test and run the `test:bench` script. Declare the threshold
-before the run, read the ratio between the methods against each side's reported uncertainty, and
-record nothing below a magnitude. A settled magnitude that underwrites an implementation choice
-promotes with its test into the mirrored suite and keeps its guarded block there while that choice
-stands. A deterministic relationship promotes as an ordinary assertion, so delete the block. Never
-commit baseline output.
+When the question is whether the difference between methods is worth having, write a guarded bench
+block beside the probe test, run the `test:bench` script, and size its fixtures, declare its
+threshold, and read its result per `.claude/rules/quality.md` § Performance. A settled difference
+that underwrites an implementation choice promotes with its test into the mirrored suite and keeps
+its guarded block there while that choice stands. A deterministic relationship promotes as an
+ordinary assertion, so delete the block. Never commit baseline output.
 
 These rules bind every probe:
 

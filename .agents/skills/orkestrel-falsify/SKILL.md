@@ -41,7 +41,7 @@ Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/
 Every lane returns exactly this:
 
 1. Numbered verdicts in claim order, one value each: `CONFIRMED` (attacked and held, with the attack), `BROKEN` (the failing input, state, or interleaving plus the smallest correct fix), `UNRESOLVED` (what would settle it; a claim whose only evidence is the writer's report), `NOT-EVIDENCED` (the capture that is missing).
-2. Findings outside the claims, each substantiated to the `BROKEN` standard.
+2. Findings outside the claims, each substantiated to the `BROKEN` standard. After them, list each cost finding that `.claude/rules/quality.md` § Performance rules advisory, marked `ADVISORY`; an advisory never enters the terminal line.
 3. Attacked and held: attacks no verdict line carries, and the adjacent behavior that looks like the defect and is correct.
 4. One terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>; outside the claims: <finding ids or none>`. `PASS` needs every claim `CONFIRMED` and no substantiated outside finding.
 

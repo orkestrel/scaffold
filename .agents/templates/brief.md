@@ -50,6 +50,8 @@ Stop and report (expected, found, evidence, done or not done, one hypothesis) on
 
 **Observations, not criteria.** TIMING_SENSITIVE_OR_TREE_WIDE_GATES the unit reports and the Orchestrator re-runs.
 
+**Measurement.** FIXTURE_KINDS: the realistic heavy loads a cost claim is read under, named by kind; the unit sizes and reads them per `.claude/rules/quality.md` § Performance.
+
 ## Review evidence
 
 The actual diff and `git status --porcelain` for a code change; the capture portfolio for a rendered surface; the proposal, the canon it must satisfy, and its motivation for a process proposal.
