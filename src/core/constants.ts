@@ -683,6 +683,7 @@ export const BROWSE_UPSTREAM: readonly string[] = Object.freeze([
 	'@orkestrel/html',
 	'@orkestrel/markdown',
 	'@orkestrel/mcp',
+	'@orkestrel/pool',
 	'@orkestrel/process',
 	'@orkestrel/router',
 	'@orkestrel/server',

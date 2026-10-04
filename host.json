@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "357cfbe336a026543ec68f3eb999f1094c3139d33331b0ba5f153352cef75fde"
+			"digest": "cfdb7fa3de1970454ad2ad2036711c22b3e3da4f170ceea771c56d21226de511"
 		},
 		{
 			"storage": "LICENSE",
@@ -496,7 +496,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "565dee392dced6c3e1e632295739eeb9465ca4828d26c18d02b57f106fdc5f38"
+			"digest": "a095854bd6b660c9a833ddfb1865ab777c1787f682ebb296236cab70839c51fe"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -580,7 +580,7 @@
 			"storage": "claude/rules/styles.md",
 			"destination": ".claude/rules/styles.md",
 			"executable": false,
-			"digest": "869f88c392b4795e47af881d668f4dc591e0c419229a843eb4105e38dfb6f831"
+			"digest": "ae1c97f23d71c53ef117b2cd661df6258712988ec86de6c60a1cbad4670eb996"
 		},
 		{
 			"storage": "claude/rules/tests.md",
@@ -862,7 +862,7 @@
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "4dd8f7377b165d840dd3060f0af955458fff193612f833aadd04d37c34734afe"
+			"digest": "1c96e1562f4b5107ad9ce0b69a3b98223f12f6bd1211071314b3a31c57dc774f"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "551ef9dbdc726896039afd3e7edc69321303f148e28cd711a6e4ba028dba2d46"
+	"digest": "787bc2631cd9a30ba6c402d26c997787356b1d448aa585b00fd607c972a1f99c"
 }
