@@ -1,0 +1,10 @@
+# U7 flip-guide: the Orchestrator's record of the Opus unit's report (2026-10-04)
+
+Committed on `ccr-d15a48b1-yyyll6` at veneer `473edd6`; scaffold `plan.md` § Standing rulings at scaffold `2f48a109`.
+
+- Touched: `guides/veneer.md` (the Tailwind prose outside the curation table, +492 −278 with formatter realignment; the table rows byte-identical), `ROADMAP.md` (53 lines: the tenet, cascade contract, faces, proof rows, sequence, the token round as § Next, scaffold propagation item 11), `guides/README.md` (the `./tailwindcss` row names the conformance proof); `README.md` unchanged; scaffold `plan.md` § Standing rulings (the flip's rulings; R11 as not landed).
+- Gates: `test:guides` 15, `test:policy` 119 passed 1 skipped, `format:check`, `lint:check`, the curation reader case, `git diff --check` in both checkouts, all exit 0 (re-read by the Orchestrator).
+- Sweeps: the retired-term sweep leaves four hits in `ROADMAP.md` that are not the retired sense (Bootstrap's own "exemptions" at lines 14 and 83, "partials mirror" at 115, Bootstrap's `revert-layer` history at 142); the banned-term sweep over added lines reads 0 in both repositories.
+- Titles: every flip case title resolves; five pre-existing titles outside the flip do not (`exports only the Bootstrap registries with names keyed by their segments`, `settles retained, configured, replaced, and destroyed lifetimes in the registry`, `keeps every fixed text color readable in the %s color mode`, `drives the $family table through its controls` without its `with motion=$motion` suffix, `drives the modal table through its controls`); reported, not fixed; the fix unit rules.
+- Deviation ruled by the Orchestrator: five consumer-table rows of the verdict § 2 have no case and were left out of the guide's table (`dark:` variants, the `mt-3!` important modifier, a consumer's later unlayered `!important`, `./tailwindcss` linked alone without Tailwind, the three-face readings of `h1` and `h5.modal-title`); the fix unit adds the cases and the rows return.
+- The unit named five switches (the fold's `$scoped` beside the four), following verdict § 12.
