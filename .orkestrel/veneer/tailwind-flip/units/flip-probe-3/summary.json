@@ -1,0 +1,1637 @@
+{
+	"closed": {
+		"utility": 30147,
+		"resolved": 646,
+		"preflight": 0,
+		"inherited": 0,
+		"unattributed": 18,
+		"layout": 37358,
+		"invisible": 40483,
+		"admitted": 4
+	},
+	"absorbed": {
+		"preflight": 390,
+		"inherited": 0,
+		"unattributed": 256
+	},
+	"widened": 2872,
+	"roots": {
+		"table": 2734,
+		"blockquote": 1,
+		"table-group-divider": 9,
+		"table-active": 3,
+		"table-primary": 2,
+		"table-secondary": 2,
+		"table-success": 2,
+		"table-danger": 2,
+		"table-warning": 2,
+		"table-info": 2,
+		"table-light": 2,
+		"table-dark": 2,
+		"form-floating": 6,
+		"carousel-indicators": 5,
+		"ratio": 98
+	},
+	"total": {
+		"utility": 427252,
+		"resolved": 12418,
+		"preflight": 0,
+		"inherited": 0,
+		"unattributed": 256,
+		"layout": 551712,
+		"invisible": 620920,
+		"admitted": 56
+	},
+	"rows": 81,
+	"reproduced": 25,
+	"outside": [
+		".table thead",
+		".table th",
+		".table tbody",
+		".table td",
+		"lead",
+		"display-1",
+		"display-2",
+		"display-3",
+		"display-4",
+		"display-5",
+		"list-unstyled",
+		"table-group-divider",
+		".table-group-divider th",
+		".table-group-divider td",
+		".table tr",
+		"table-active",
+		".table-active th",
+		".table-active td",
+		".table-primary th",
+		".table-primary td",
+		".table-secondary th",
+		".table-secondary td",
+		".table-success th",
+		".table-success td",
+		".table-danger th",
+		".table-danger td",
+		".table-warning th",
+		".table-warning td",
+		".table-info th",
+		".table-info td",
+		".table-light th",
+		".table-light td",
+		".table-dark th",
+		".table-dark td",
+		"img:where(.img-fluid)",
+		"img:where(.card-img-top)",
+		"a:where(.card-link)",
+		"a:where(.icon-link)",
+		"img:where(.card-img)",
+		"img:where(.card-img-bottom)",
+		".carousel-indicators button",
+		"focus-ring",
+		"focus-ring-primary",
+		"focus-ring-secondary",
+		"focus-ring-success",
+		"focus-ring-danger",
+		"focus-ring-warning",
+		"focus-ring-info",
+		"focus-ring-light",
+		"focus-ring-dark",
+		"a:where(.icon-link-hover)",
+		"icon-link-hover",
+		"a:where(.stretched-link)",
+		"offcanvas-title",
+		"popover-header",
+		"button:where(.accordion-button)"
+	],
+	"missing": [],
+	"unexpected": [
+		{
+			"form": "scoped",
+			"selector": ".table-group-divider th",
+			"longhands": [
+				"border-block-end-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(222, 226, 230)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-group-divider td",
+			"longhands": [
+				"border-block-end-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(222, 226, 230)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-active th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(222, 226, 230)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-active td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(222, 226, 230)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(222, 226, 230)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(73, 80, 87)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-primary th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(166, 181, 204)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-primary td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(166, 181, 204)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(166, 181, 204)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-secondary th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(181, 182, 183)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-secondary td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(181, 182, 183)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(181, 182, 183)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-success th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(167, 185, 177)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-success td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(167, 185, 177)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(167, 185, 177)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-danger th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(198, 172, 174)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-danger td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(198, 172, 174)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(198, 172, 174)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-warning th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(204, 194, 164)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-warning td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(204, 194, 164)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(204, 194, 164)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-info th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(166, 195, 202)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-info td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(166, 195, 202)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(166, 195, 202)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-light th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(198, 199, 200)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-light td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(198, 199, 200)",
+			"F": "rgb(0, 0, 0)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(198, 199, 200)",
+					"F": "rgb(0, 0, 0)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-dark th",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<th scope=\"row\">",
+			"A": "rgb(77, 81, 84)",
+			"F": "rgb(255, 255, 255)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<th scope=\"row\">"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".table-dark td",
+			"longhands": [
+				"border-block-end-color",
+				"border-block-start-color",
+				"border-bottom-color",
+				"border-inline-end-color",
+				"border-inline-start-color",
+				"border-left-color",
+				"border-right-color",
+				"border-top-color"
+			],
+			"witness": "<td>",
+			"A": "rgb(77, 81, 84)",
+			"F": "rgb(255, 255, 255)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "border-block-end-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-block-start-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-bottom-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-end-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-inline-start-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-left-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-right-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				},
+				{
+					"property": "border-top-color",
+					"A": "rgb(77, 81, 84)",
+					"F": "rgb(255, 255, 255)",
+					"witness": "<td>"
+				}
+			]
+		},
+		{
+			"form": "scoped",
+			"selector": ".carousel-indicators button",
+			"longhands": [
+				"color"
+			],
+			"witness": "<button type=\"button\" data-bs-target=\"#carousel-slides\" data-bs-slide-to=\"0\" class=\"active\" aria-current=\"true\" aria-label=\"Route 1\">",
+			"A": "rgb(0, 0, 0)",
+			"F": "rgb(33, 37, 41)",
+			"iteration": 0,
+			"readings": [
+				{
+					"property": "color",
+					"A": "rgb(0, 0, 0)",
+					"F": "rgb(33, 37, 41)",
+					"witness": "<button type=\"button\" data-bs-target=\"#carousel-slides\" data-bs-slide-to=\"0\" class=\"active\" aria-current=\"true\" aria-label=\"Route 1\">"
+				},
+				{
+					"property": "color",
+					"A": "rgb(255, 255, 255)",
+					"F": "rgb(222, 226, 230)",
+					"witness": "<button type=\"button\" data-bs-target=\"#carousel-slides\" data-bs-slide-to=\"0\" class=\"active\" aria-current=\"true\" aria-label=\"Route 1\">"
+				}
+			]
+		}
+	],
+	"copies": 72,
+	"scopedCopies": 36,
+	"cmp": 0,
+	"errors": []
+}
