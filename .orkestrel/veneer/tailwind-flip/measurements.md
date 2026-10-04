@@ -55,3 +55,23 @@ Consequence: a thin sheet can neutralize Bootstrap's unlayered `!important` on a
 ## Verify (`measurements/verify.md`)
 
 All 14 probe runs reproduced; every finding confirmed, two refuted in part (M2 named the default Chromium launch where the probe's catch branch launched the pinned binary; M3's spinner widths are 4px with 3px on the small variant). Method weaknesses: 6 of the 406 enumerated names are shorthands (32 `text-decoration` rows double-count `text-decoration-line`); the CSSOM minus-shared sheets lose the spinner border and round the column percentages (171 of 59241 rows); strict `preflight` attribution rests on a row existing for the tag and longhand, and the extended attribution's `div` fallback labels 3334 occurrences on `figcaption`, `li`, `nav`, and `form` with no row of their own; 10337 strict occurrences stay unknown. Objections a skeptic raises: one engine (Chromium is the project's only target); probe-built sheets rather than built artifacts; departure counts dominated by invisible longhands.
+
+## M6: reboot counters, the reboot's class rules, and Tailwind inlining Bootstrap (Orchestrator, `probes/m6-counter-*.ts`, `measurements/m6-counter-output.json`)
+
+Fixture: `<h1>`, `<h1 class="h1">`, `<div class="h1">`, `<p>`, `<a href>`, `<span class="small">`, `<small>`, `<h5 class="modal-title">`; counter = `@layer bootstrap { h1..h6 { font-size, font-weight, line-height, margin-bottom: revert-layer } p { margin-bottom: revert-layer } a { color, text-decoration: revert-layer } body { color: revert-layer } }` (the `body` row is the deliberate over-reach: preflight declares no body color).
+
+| Case (sheets in order) | `h1` size, weight, margin | `h1.h1` size | `div.h1` size | `p` margin | `a` color | `small` size | `h5.modal-title` size, weight |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A lifted alone | 40px 500 8px | 40px | 40px | 16px | rgb(13, 110, 253) | 14px | 20px 500 |
+| C flipped, reboot in `reset` | 16px 400 0px | 16px | 40px | 0px | rgb(33, 37, 41) | 12.8px | 16px 400 |
+| N1 flipped, lifted, normal counter after | 16px 400 0px | 40px | 40px | 0px | rgb(0, 0, 0) (body row reached the user agent) | 14px | 16px 400 |
+| N2 flipped, normal counter before lifted | 40px 500 8px | 40px | 40px | 16px | rgb(13, 110, 253) | 14px | 20px 500 |
+| I1 flipped, important counter before lifted | 16px 400 0px | 16px | 40px | (probe artifact) | (probe artifact) | 14px | 16px 400 |
+| N1c N1 then a consumer unlayered `h1 { font-size: 48px } p { margin-bottom: 7px }` | 48px | 48px | 40px | 7px | | | |
+| I1c I1 then the same consumer rules | 16px | 16px | 40px | 7px | | | |
+| Cc C then the same consumer rules | 48px | 48px | 40px | 7px | | | |
+| N0 lifted and the normal counter, no Tailwind | 32px 700 21.44px (user agent) | 40px | 40px | 16px | rgb(0, 0, 238) | 14px | 13.28px 700 |
+
+Readings: a normal `revert-layer` counter inside `bootstrap` hands the reboot's declaration to preflight only when it loads after the Bootstrap sheet (N1 against N2), keeps `.h1` on an `h1` by specificity (40px), and lets a consumer's unlayered rule win (N1c); a counter on a property preflight never declares reaches the user agent (the `body` row, and every row without Tailwind in N0). An important counter works in either order but beats `.h1` on an `h1` and the consumer's unlayered rule (I1, I1c). The reboot moved into `reset` takes its class rules with it: `.h1` on an `h1` reads 16px under C, while `.h1` on a `div` keeps 40px; `small` reads preflight's 12.8px and `.small` keeps 14px.
+
+Tailwind inlining Bootstrap (`inline.ts`, `inline-equal.ts`): the entry `ORDER_STATEMENT`, `@import 'tailwindcss'`, `@import 'bootstrap.css'` (the lifted sheet), the 1833-name exclusion compiles; the output keeps `.btn`, the 75 `@layer bootstrap` blocks, Bootstrap's unlayered `.mt-3 !important` and `.d-flex !important`, emits Tailwind's `.mt-3` in `utilities`, emits no `.collapse`, and places Tailwind's own layer blocks before the inlined Bootstrap text. Flattened in CSSOM to (context, selector, property, value, priority) rows, the inlined output carries 8093 of the lifted sheet's 8094 rows: Tailwind merges the two adjacent `.dropstart .dropdown-toggle::after` rules and drops the overridden `display: inline-block`, and it rewrites the 400 empty `@layer bootstrap {}` blocks (rules whose declarations are all important) as `@layer bootstrap;` statements. Semantically equal; not sequence-equal.
