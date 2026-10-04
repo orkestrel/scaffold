@@ -29,7 +29,7 @@ Hard targets:
 - Ungrouped option keys: one word.
 - Grouped option key: the configured entity noun; every leaf remains one word.
 - Events: one present-tense verb or noun.
-- Private methods: two or three words are acceptable.
+- Private methods: as many words as name the step unambiguously, and no more.
 
 The rule does not apply to standalone helpers, type names with role suffixes, or qualified constants.
 

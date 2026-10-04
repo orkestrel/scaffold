@@ -136,10 +136,9 @@ rest of the layer either fits inside it or takes another approval.
   moving target the user cannot approve in time. Publish a layer's opening package with exactly
   one attempt.
 - Retry only an upload that failed **inside** an already-open window. `EOTP` there is intermittent
-  contention rather than the window closing: retry about three times, and retry a failed set after
-  the layer ends. Packages have landed on a third attempt and on a later pass with no new
-  approval. These are different failures wearing similar codes; a retry fixes in-window contention
-  and causes the moving approval target.
+  contention rather than the window closing: retry while the window stays open, and retry a failed
+  set after the layer ends. These failures carry similar codes: a retry clears in-window
+  contention and moves the approval target.
 - Expect a large layer to outlast one window. Size batches to what uploads in five minutes and
   name each planned approval point to the user, rather than discovering them mid-run.
 - The contract's serialization law binds every upload in the window, and

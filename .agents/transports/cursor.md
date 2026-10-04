@@ -21,7 +21,7 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/cursor/<u
 
 - Write the brief to `tmp/cursor/<unit>-brief.md` with `scripts/brief.ts --lane cursor`; the prompt is a pointer to it.
 - Read the answer and the session id with `node .agents/skills/orkestrel-dispatch/scripts/result.ts --cursor tmp/cursor/<unit>.jsonl`. The `init` event carries the session id; resume through the CLI's `--resume` option, probed before its first use.
-- A driver runs a lane finishing in about two minutes itself and returns the result. For anything longer its job ends at drafting: return the brief path, the resolved command, and the journal path. A driver never recommends a cap and never detaches a run.
+- A driver runs a lane itself when the lane finishes well inside the foreground command cap of the harness running it (on Claude Code, `.claude/AGENTS.md` § Dispatch), and returns the result. For anything longer its job ends at drafting: return the brief path, the resolved command, and the journal path. A driver never recommends a cap and never detaches a run.
 - A driver pinned read-only writes nothing: it returns the brief text, its intended path, the resolved command, and the journal paths, and the Orchestrator writes and launches.
 
 ## Containment

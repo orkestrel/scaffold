@@ -62,6 +62,6 @@ Read `references/reconcile.md`.
 
 Write `.orkestrel/<package>/<unit>-audit-verdict.md` with the lanes that ran, their engines, the per-claim rulings, the findings carried into fix units, and any lane the round did not run with the reason. Delete the claims file and the verdict when the seam closes.
 
-## After three rounds at one seam
+## End the depth search
 
-Stop the depth search. Name what the audit is for, dispatch one blind lens per station of the stream the defect moves along, locate the source, and plan from the source. A subject that reprices on every edit (a count, a census) is not a seam; drop the claim.
+When review rounds at one seam keep surfacing defects without converging on their source, name what the audit is for, dispatch one blind lens per station of the stream the defect moves along, locate the source, and plan from the source. A subject that reprices on every edit (a count, a census) is not a seam; drop the claim.

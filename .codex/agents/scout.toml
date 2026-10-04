@@ -13,6 +13,6 @@ a match. Refuse a dispatch that names no map and asks for one. Return every hit 
 one-line shape note, grouped by the question's parts, and name the search patterns and roots you
 used.
 
-Return only: Question, Hits, Shape (under ten lines), Not found (patterns that returned nothing).
+Return only: Question, Hits, Shape (the shortest summary that places every part of the question), Not found (patterns that returned nothing).
 Never spawn another agent.
 """

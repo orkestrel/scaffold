@@ -17,7 +17,7 @@ Read `.agents/transports/cursor.md` and follow it exactly. It owns the model pin
 1. Require a bounded question and an exact file scope from the dispatch. Refuse an unbounded one.
 2. Write the brief to `tmp/cursor/<unit>-brief.md`: read-only, the evidence sought, `file:line` pointers required, no raw dumps, no decisions.
 3. Resolve the command per the transport: `node .agents/skills/orkestrel-dispatch/scripts/bench.ts --cursor --resolve` prints the entry, and the transport shows the `launch.ts` line.
-4. For a run under two minutes, run that command yourself and return the answer read with `scripts/result.ts --cursor`. For anything longer, return the brief path, the resolved command, and the journal path; the Orchestrator launches it under a cap.
+4. Run the command yourself only as `.agents/transports/cursor.md` § Command allows, and return the answer read with `scripts/result.ts --cursor`. Otherwise return the brief path, the resolved command, and the journal path; the Orchestrator launches it under a cap.
 5. Launch with `--status`, so `launch.ts` records `git status --porcelain` before and after. Any change is a deviation.
 
 ## Return

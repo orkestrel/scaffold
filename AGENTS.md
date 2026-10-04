@@ -82,7 +82,7 @@ A repair inside an existing file is never large by itself. A private retry, cach
 Within the size, in order:
 
 1. **Types.** Write or revise the contract in `*/types.ts`. Typecheck it.
-2. **Prove.** Select the instrument per `.claude/rules/quality.md` § Instruments: a `prove` claim (edit, test, breaking edit, breaking stage) for a TypeScript claim, otherwise the smallest test or probe. Quote a `prove` closing line where the claim is reported. After two failed attempts to form a claim, write the test and continue.
+2. **Prove.** Select the instrument per `.claude/rules/quality.md` § Instruments: a `prove` claim (edit, test, breaking edit, breaking stage) for a TypeScript claim, otherwise the smallest test or probe. Quote a `prove` closing line where the claim is reported. When attempts to form a claim stop narrowing the question, write the test and continue.
 3. **Implement.** Conform to the types. Place each declaration in its kind file. Update the barrel.
 4. **Test.** Cover happy paths, edge cases, failures, and boundaries with deterministic tests against real implementations. For a defect, record the failing command and count before the fix and the same command green after.
 5. **Consolidate.** Remove duplication, nested functions, and superfluous wrappers without widening the API.

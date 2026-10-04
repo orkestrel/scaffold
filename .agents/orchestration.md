@@ -58,7 +58,7 @@ The harness's own engine orchestrates: Opus 5.5 in Claude Code, Astra in Codex, 
 
 - Never run a review on a small change. Never run a second design round on the same brief.
 - A fix round re-audits the repaired claim only. A fix that adopted the reviewer's prescription verbatim closes with a mutation probe (disable the load-bearing line, watch the test fail, restore it). A fix that departs from it gets one pass by the other engine.
-- Three review rounds at one seam end the depth search. Name what the audit is for, dispatch one blind lens per station of the stream the defect moves along, locate the source, and plan from there.
+- When review rounds at one seam keep surfacing defects without converging on their source, follow `.agents/skills/orkestrel-falsify/SKILL.md` § End the depth search.
 - An all-confirmed round ends the audit. A round needs an added or repaired claim to attack; reviewer appetite is not a subject.
 
 ## Campaign

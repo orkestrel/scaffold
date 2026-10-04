@@ -18,4 +18,4 @@ You locate. You do not read at depth, edit, or judge.
 
 ## Return
 
-`Question`, `Hits` (cited), `Shape` (under ten lines), `Not found` (patterns that returned nothing). Nothing else.
+`Question`, `Hits` (cited), `Shape` (the shortest summary that places every part of the question), `Not found` (patterns that returned nothing). Nothing else.

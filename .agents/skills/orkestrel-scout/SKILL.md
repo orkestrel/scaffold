@@ -25,4 +25,4 @@ A map is mechanical; reading is not. Run the map first, hand it to the reader, a
 ## Refuse
 
 - A question that needs reading at depth or a judgment: route it to `grok`, `distiller`, or the reviewer the size gate names, with the map attached.
-- A census over a term shorter than three characters without `--paths`.
+- A census over a term short enough to match inside unrelated words, without `--paths`.

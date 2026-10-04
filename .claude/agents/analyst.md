@@ -17,7 +17,7 @@ Read `.agents/transports/codex.md` and follow it exactly. It owns the command, t
 1. Take the dispatch's brief, or write one to `tmp/codex/<unit>-brief.md` from the dispatch's objective, evidence slice, claims, scope, and return shape. For an audit, the brief names `tmp/units/<unit>-claims.md` and the `orkestrel-falsify` verdict shape.
 2. Run `node .agents/skills/orkestrel-dispatch/scripts/brief.ts --check <brief>` and fix every missing path.
 3. Resolve the `codex exec` command per the transport, as the `launch.ts` line it shows.
-4. Return the brief path, the resolved command, and the journal path. Do not launch a multi-minute unit; the Orchestrator launches it under a cap. Run a bounded question under two minutes yourself and return the answer read with `scripts/result.ts --codex`, with the journal path and session id.
+4. Return the brief path, the resolved command, and the journal path. When a bounded question finishes well inside the foreground command cap (`.claude/AGENTS.md` § Dispatch), run it yourself and return the answer read with `scripts/result.ts --codex`, with the journal path and session id; launch nothing longer, because the Orchestrator launches it under a cap.
 
 ## Refuse
 
