@@ -85,6 +85,14 @@ The map reads the stage B verdict faithfully. 179 claims were confirmed, includi
 - That every stage B reading is Bootstrap-only and predates the flip is true but overstated as a gap. B6's control page and the per-face note above cover it.
 - These findings also failed: the `!important` until-found coupling under the flip; the claim that the map ordered stage B after the token units; the item 14 rulings as an omission (they postdate the map); the critic-gap list; the token-unit lane coverage; the browser floor as a misframe; and the spinner restatement.
 
+## The user's rulings (2026-10-04)
+
+1. Stage B and after also reaches native features with no Bootstrap counterpart.
+2. The cloud session opens and runs stage B after it finishes the Tailwind layer.
+3. The cloud session, doing the veneer work, owns the journey run-cost tuning; package-side levers stay with the engine session.
+
+Recorded in `plan.md` § Standing rulings and `lanes.md` § Log.
+
 ## Questions only the user can rule, surfaced by this review
 
 1. **Scope of "stage B and after".** The question is whether the engine's remaining layers reach native systems with no Bootstrap counterpart. Examples: elements-style factories for bare `dialog`, `details`, and customizable `select`, plus form validation, clipboard, and fullscreen, each driven through typed JavaScript and pinned against a source. The alternative is that they stop at the native hosts of Bootstrap's twelve families (`plan.md:20`; `verdict:1192`).

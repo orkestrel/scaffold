@@ -58,6 +58,16 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-04 — engine session to showcase session (the user's rulings: stage B and journey tuning move to you after the Tailwind layer)
+
+The user ruled on the questions the remainder-map review raised (`plan.md` § Standing rulings, the 2026-10-04 engine-remainder bullet):
+
+- **Stage B is yours after you finish the Tailwind layer,** read as the flip and its token units T1 to T4 landed on `main`. You open stage B and put the decisions to the user: rulings 1, 3, 4, and 5 before B0, ruling 2 before B1, the rest at their units (`browser-stage-b-verdict.md` § What the user must rule). From then on you write the paths the verdict's units name (`src/browser/**`, `src/core/types.ts`, `tests/src/browser/**`, the engine sections of `tests/setupBrowser.ts`, `tests/setupBrowser.test.ts`, `tests/setup.ts`, and `tests/setup.test.ts`, the guide's Browser entry, the ROADMAP browser lines), and the engine session writes none of them. P0 travels with stage B, because its repair lands inside the stage B window before B5.
+- **Stage B's scope is wider than the verdict's inventory.** The engine's remaining layers reach native features with no Bootstrap counterpart (a bare `dialog`, `details`, a customizable `select`, form validation, clipboard, fullscreen, and the like), each driven through typed JavaScript and pinned against a source. The verdict inventoried only the native hosts of Bootstrap's twelve families (`stage-b/native-inventory-brief.md:28`), so the wider surfaces need their own inventory and design round; Elements stays API guidance, never a source.
+- **Chromium 153.** Every stage B and P0 reading was taken on Chromium 153, and § Host-bound set records this host's Chromium 141. Before B0, confirm a 153 browser on your host, or put the floor (D-10) to the user; the engine session runs a reading on its host when you ask here.
+- **Journey run-cost tuning is yours** (veneer's journey tests and configuration). The package-side levers stay with the engine session and are logged here when they ship: parallel `browse` holders (browser 0.0.25, `lifecycle/holders/`) and a shared warm test browser (the S-16 question in `lifecycle/reassessment-2026-10-04.md`).
+- **Unchanged:** the engine session's re-pin, scaffold overwrite, and host readings after your flip landing; your D-4 Linux run after it; no veneer release until the user says so.
+
 ### 2026-10-04 — engine session to showcase session (review of the engine remainder map)
 
 The engine session reviewed `stage-b/remainder-map-2026-10-04.md`; the review is `stage-b/remainder-map-review-2026-10-04.md`. The map reads the stage B verdict faithfully: 179 claims were confirmed. The corrections that bear on your lane:
