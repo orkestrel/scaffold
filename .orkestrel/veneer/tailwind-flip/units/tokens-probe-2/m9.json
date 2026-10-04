@@ -1,0 +1,3882 @@
+{
+	"finding": "refuted",
+	"palette": 288,
+	"disagreements": [
+		{
+			"name": "--color-orange-200",
+			"source": "oklch(90.1% 0.076 70.697)",
+			"expected": "#ffd6a7",
+			"serialization": "color(srgb 1.00035 0.841206 0.65694)",
+			"channels": [
+				255,
+				215,
+				168
+			],
+			"hex": "#ffd7a8",
+			"equal": false
+		},
+		{
+			"name": "--color-orange-600",
+			"source": "oklch(64.6% 0.222 41.116)",
+			"expected": "#f54900",
+			"serialization": "color(srgb 0.960701 0.288282 -0.154371)",
+			"channels": [
+				245,
+				74,
+				0
+			],
+			"hex": "#f54a00",
+			"equal": false
+		},
+		{
+			"name": "--color-green-100",
+			"source": "oklch(96.2% 0.044 156.743)",
+			"expected": "#dcfce7",
+			"serialization": "color(srgb 0.860771 0.988274 0.904785)",
+			"channels": [
+				219,
+				252,
+				231
+			],
+			"hex": "#dbfce7",
+			"equal": false
+		},
+		{
+			"name": "--color-green-500",
+			"source": "oklch(72.3% 0.219 149.579)",
+			"expected": "#00c950",
+			"serialization": "color(srgb -0.194493 0.787239 0.315708)",
+			"channels": [
+				0,
+				201,
+				81
+			],
+			"hex": "#00c951",
+			"equal": false
+		},
+		{
+			"name": "--color-teal-300",
+			"source": "oklch(85.5% 0.138 181.071)",
+			"expected": "#46ecd5",
+			"serialization": "color(srgb 0.275288 0.927525 0.833603)",
+			"channels": [
+				70,
+				237,
+				213
+			],
+			"hex": "#46edd5",
+			"equal": false
+		},
+		{
+			"name": "--color-cyan-400",
+			"source": "oklch(78.9% 0.154 211.53)",
+			"expected": "#00d3f2",
+			"serialization": "color(srgb -0.259729 0.827446 0.951096)",
+			"channels": [
+				0,
+				211,
+				243
+			],
+			"hex": "#00d3f3",
+			"equal": false
+		},
+		{
+			"name": "--color-sky-900",
+			"source": "oklch(39.1% 0.09 240.876)",
+			"expected": "#024a70",
+			"serialization": "color(srgb 0.00659131 0.290335 0.441195)",
+			"channels": [
+				2,
+				74,
+				113
+			],
+			"hex": "#024a71",
+			"equal": false
+		},
+		{
+			"name": "--color-blue-950",
+			"source": "oklch(28.2% 0.091 267.935)",
+			"expected": "#162456",
+			"serialization": "color(srgb 0.0872622 0.143184 0.335752)",
+			"channels": [
+				22,
+				37,
+				86
+			],
+			"hex": "#162556",
+			"equal": false
+		},
+		{
+			"name": "--color-fuchsia-400",
+			"source": "oklch(74% 0.238 322.16)",
+			"expected": "#ed6aff",
+			"serialization": "color(srgb 0.929943 0.417662 1.00844)",
+			"channels": [
+				237,
+				107,
+				255
+			],
+			"hex": "#ed6bff",
+			"equal": false
+		},
+		{
+			"name": "--color-zinc-700",
+			"source": "oklch(37% 0.013 285.805)",
+			"expected": "#3f3f46",
+			"serialization": "color(srgb 0.246475 0.24649 0.276522)",
+			"channels": [
+				63,
+				63,
+				71
+			],
+			"hex": "#3f3f47",
+			"equal": false
+		}
+	],
+	"rows": [
+		{
+			"name": "--color-red-50",
+			"source": "oklch(97.1% 0.013 17.38)",
+			"expected": "#fef2f2",
+			"serialization": "color(srgb 0.996719 0.949715 0.94973)",
+			"channels": [
+				254,
+				242,
+				242
+			],
+			"hex": "#fef2f2",
+			"equal": true
+		},
+		{
+			"name": "--color-red-100",
+			"source": "oklch(93.6% 0.032 17.717)",
+			"expected": "#ffe2e2",
+			"serialization": "color(srgb 0.999199 0.885715 0.885761)",
+			"channels": [
+				255,
+				226,
+				226
+			],
+			"hex": "#ffe2e2",
+			"equal": true
+		},
+		{
+			"name": "--color-red-200",
+			"source": "oklch(88.5% 0.062 18.334)",
+			"expected": "#ffc9c9",
+			"serialization": "color(srgb 1.00285 0.789944 0.790138)",
+			"channels": [
+				255,
+				201,
+				201
+			],
+			"hex": "#ffc9c9",
+			"equal": true
+		},
+		{
+			"name": "--color-red-300",
+			"source": "oklch(80.8% 0.114 19.571)",
+			"expected": "#ffa2a2",
+			"serialization": "color(srgb 1.00966 0.634781 0.636486)",
+			"channels": [
+				255,
+				162,
+				162
+			],
+			"hex": "#ffa2a2",
+			"equal": true
+		},
+		{
+			"name": "--color-red-400",
+			"source": "oklch(70.4% 0.191 22.216)",
+			"expected": "#ff6467",
+			"serialization": "color(srgb 1.00552 0.391222 0.403934)",
+			"channels": [
+				255,
+				100,
+				103
+			],
+			"hex": "#ff6467",
+			"equal": true
+		},
+		{
+			"name": "--color-red-500",
+			"source": "oklch(63.7% 0.237 25.331)",
+			"expected": "#fb2c36",
+			"serialization": "color(srgb 0.982628 0.171899 0.21316)",
+			"channels": [
+				251,
+				44,
+				54
+			],
+			"hex": "#fb2c36",
+			"equal": true
+		},
+		{
+			"name": "--color-red-600",
+			"source": "oklch(57.7% 0.245 27.325)",
+			"expected": "#e7000b",
+			"serialization": "color(srgb 0.906441 -0.0958862 0.0423903)",
+			"channels": [
+				231,
+				0,
+				11
+			],
+			"hex": "#e7000b",
+			"equal": true
+		},
+		{
+			"name": "--color-red-700",
+			"source": "oklch(50.5% 0.213 27.518)",
+			"expected": "#c10007",
+			"serialization": "color(srgb 0.756893 -0.0623388 0.0288542)",
+			"channels": [
+				193,
+				0,
+				7
+			],
+			"hex": "#c10007",
+			"equal": true
+		},
+		{
+			"name": "--color-red-800",
+			"source": "oklch(44.4% 0.177 26.899)",
+			"expected": "#9f0712",
+			"serialization": "color(srgb 0.622242 0.0288754 0.0690217)",
+			"channels": [
+				159,
+				7,
+				18
+			],
+			"hex": "#9f0712",
+			"equal": true
+		},
+		{
+			"name": "--color-red-900",
+			"source": "oklch(39.6% 0.141 25.723)",
+			"expected": "#82181a",
+			"serialization": "color(srgb 0.509174 0.0923948 0.100753)",
+			"channels": [
+				130,
+				24,
+				26
+			],
+			"hex": "#82181a",
+			"equal": true
+		},
+		{
+			"name": "--color-red-950",
+			"source": "oklch(25.8% 0.092 26.042)",
+			"expected": "#460809",
+			"serialization": "color(srgb 0.275417 0.031611 0.0345138)",
+			"channels": [
+				70,
+				8,
+				9
+			],
+			"hex": "#460809",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-50",
+			"source": "oklch(98% 0.016 73.684)",
+			"expected": "#fff7ed",
+			"serialization": "color(srgb 1.00076 0.969131 0.92939)",
+			"channels": [
+				255,
+				247,
+				237
+			],
+			"hex": "#fff7ed",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-100",
+			"source": "oklch(95.4% 0.038 75.164)",
+			"expected": "#ffedd4",
+			"serialization": "color(srgb 1.00095 0.928982 0.832691)",
+			"channels": [
+				255,
+				237,
+				212
+			],
+			"hex": "#ffedd4",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-200",
+			"source": "oklch(90.1% 0.076 70.697)",
+			"expected": "#ffd6a7",
+			"serialization": "color(srgb 1.00035 0.841206 0.65694)",
+			"channels": [
+				255,
+				215,
+				168
+			],
+			"hex": "#ffd7a8",
+			"equal": false
+		},
+		{
+			"name": "--color-orange-300",
+			"source": "oklch(83.7% 0.128 66.29)",
+			"expected": "#ffb86a",
+			"serialization": "color(srgb 1.01107 0.722359 0.414021)",
+			"channels": [
+				255,
+				184,
+				106
+			],
+			"hex": "#ffb86a",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-400",
+			"source": "oklch(75% 0.183 55.934)",
+			"expected": "#ff8904",
+			"serialization": "color(srgb 1.01244 0.537086 0.0140727)",
+			"channels": [
+				255,
+				137,
+				4
+			],
+			"hex": "#ff8904",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-500",
+			"source": "oklch(70.5% 0.213 47.604)",
+			"expected": "#ff6900",
+			"serialization": "color(srgb 1.01862 0.410812 -0.165752)",
+			"channels": [
+				255,
+				105,
+				0
+			],
+			"hex": "#ff6900",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-600",
+			"source": "oklch(64.6% 0.222 41.116)",
+			"expected": "#f54900",
+			"serialization": "color(srgb 0.960701 0.288282 -0.154371)",
+			"channels": [
+				245,
+				74,
+				0
+			],
+			"hex": "#f54a00",
+			"equal": false
+		},
+		{
+			"name": "--color-orange-700",
+			"source": "oklch(55.3% 0.195 38.402)",
+			"expected": "#ca3500",
+			"serialization": "color(srgb 0.791893 0.207346 -0.0962658)",
+			"channels": [
+				202,
+				53,
+				0
+			],
+			"hex": "#ca3500",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-800",
+			"source": "oklch(47% 0.157 37.304)",
+			"expected": "#9f2d00",
+			"serialization": "color(srgb 0.624527 0.176695 -0.00427411)",
+			"channels": [
+				159,
+				45,
+				0
+			],
+			"hex": "#9f2d00",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-900",
+			"source": "oklch(40.8% 0.123 38.172)",
+			"expected": "#7e2a0c",
+			"serialization": "color(srgb 0.495106 0.165469 0.0457287)",
+			"channels": [
+				126,
+				42,
+				12
+			],
+			"hex": "#7e2a0c",
+			"equal": true
+		},
+		{
+			"name": "--color-orange-950",
+			"source": "oklch(26.6% 0.079 36.259)",
+			"expected": "#441306",
+			"serialization": "color(srgb 0.266455 0.0744543 0.0219199)",
+			"channels": [
+				68,
+				19,
+				6
+			],
+			"hex": "#441306",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-50",
+			"source": "oklch(98.7% 0.022 95.277)",
+			"expected": "#fffbeb",
+			"serialization": "color(srgb 1.00053 0.984573 0.920105)",
+			"channels": [
+				255,
+				251,
+				235
+			],
+			"hex": "#fffbeb",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-100",
+			"source": "oklch(96.2% 0.059 95.617)",
+			"expected": "#fef3c6",
+			"serialization": "color(srgb 0.99688 0.953194 0.777634)",
+			"channels": [
+				254,
+				243,
+				198
+			],
+			"hex": "#fef3c6",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-200",
+			"source": "oklch(92.4% 0.12 95.746)",
+			"expected": "#fee685",
+			"serialization": "color(srgb 0.995628 0.901276 0.522263)",
+			"channels": [
+				254,
+				230,
+				133
+			],
+			"hex": "#fee685",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-300",
+			"source": "oklch(87.9% 0.169 91.605)",
+			"expected": "#ffd230",
+			"serialization": "color(srgb 1.00289 0.823944 0.187729)",
+			"channels": [
+				255,
+				210,
+				48
+			],
+			"hex": "#ffd230",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-400",
+			"source": "oklch(82.8% 0.189 84.429)",
+			"expected": "#ffb900",
+			"serialization": "color(srgb 1.00024 0.727337 -0.229836)",
+			"channels": [
+				255,
+				185,
+				0
+			],
+			"hex": "#ffb900",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-500",
+			"source": "oklch(76.9% 0.188 70.08)",
+			"expected": "#fe9a00",
+			"serialization": "color(srgb 0.994202 0.602203 -0.217506)",
+			"channels": [
+				254,
+				154,
+				0
+			],
+			"hex": "#fe9a00",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-600",
+			"source": "oklch(66.6% 0.179 58.318)",
+			"expected": "#e17100",
+			"serialization": "color(srgb 0.883736 0.443449 -0.169796)",
+			"channels": [
+				225,
+				113,
+				0
+			],
+			"hex": "#e17100",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-700",
+			"source": "oklch(55.5% 0.163 48.998)",
+			"expected": "#bb4d00",
+			"serialization": "color(srgb 0.731777 0.301107 -0.103747)",
+			"channels": [
+				187,
+				77,
+				0
+			],
+			"hex": "#bb4d00",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-800",
+			"source": "oklch(47.3% 0.137 46.201)",
+			"expected": "#973c00",
+			"serialization": "color(srgb 0.590336 0.23381 -0.0307146)",
+			"channels": [
+				151,
+				60,
+				0
+			],
+			"hex": "#973c00",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-900",
+			"source": "oklch(41.4% 0.112 45.904)",
+			"expected": "#7b3306",
+			"serialization": "color(srgb 0.480427 0.199821 0.0248778)",
+			"channels": [
+				123,
+				51,
+				6
+			],
+			"hex": "#7b3306",
+			"equal": true
+		},
+		{
+			"name": "--color-amber-950",
+			"source": "oklch(27.9% 0.077 45.635)",
+			"expected": "#461901",
+			"serialization": "color(srgb 0.274082 0.0985422 0.00468026)",
+			"channels": [
+				70,
+				25,
+				1
+			],
+			"hex": "#461901",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-50",
+			"source": "oklch(98.7% 0.026 102.212)",
+			"expected": "#fefce8",
+			"serialization": "color(srgb 0.995445 0.987862 0.910172)",
+			"channels": [
+				254,
+				252,
+				232
+			],
+			"hex": "#fefce8",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-100",
+			"source": "oklch(97.3% 0.071 103.193)",
+			"expected": "#fef9c2",
+			"serialization": "color(srgb 0.996864 0.976852 0.759827)",
+			"channels": [
+				254,
+				249,
+				194
+			],
+			"hex": "#fef9c2",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-200",
+			"source": "oklch(94.5% 0.129 101.54)",
+			"expected": "#fff085",
+			"serialization": "color(srgb 0.998573 0.941269 0.5229)",
+			"channels": [
+				255,
+				240,
+				133
+			],
+			"hex": "#fff085",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-300",
+			"source": "oklch(90.5% 0.182 98.111)",
+			"expected": "#ffdf20",
+			"serialization": "color(srgb 1.00361 0.876324 0.125883)",
+			"channels": [
+				255,
+				223,
+				32
+			],
+			"hex": "#ffdf20",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-400",
+			"source": "oklch(85.2% 0.199 91.936)",
+			"expected": "#fdc700",
+			"serialization": "color(srgb 0.992912 0.78204 -0.269117)",
+			"channels": [
+				253,
+				199,
+				0
+			],
+			"hex": "#fdc700",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-500",
+			"source": "oklch(79.5% 0.184 86.047)",
+			"expected": "#f0b100",
+			"serialization": "color(srgb 0.941315 0.693024 -0.232147)",
+			"channels": [
+				240,
+				177,
+				0
+			],
+			"hex": "#f0b100",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-600",
+			"source": "oklch(68.1% 0.162 75.834)",
+			"expected": "#d08700",
+			"serialization": "color(srgb 0.817535 0.529686 -0.181499)",
+			"channels": [
+				208,
+				135,
+				0
+			],
+			"hex": "#d08700",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-700",
+			"source": "oklch(55.4% 0.135 66.442)",
+			"expected": "#a65f00",
+			"serialization": "color(srgb 0.651062 0.373266 -0.10696)",
+			"channels": [
+				166,
+				95,
+				0
+			],
+			"hex": "#a65f00",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-800",
+			"source": "oklch(47.6% 0.114 61.907)",
+			"expected": "#894b00",
+			"serialization": "color(srgb 0.535889 0.292782 -0.0376666)",
+			"channels": [
+				137,
+				75,
+				0
+			],
+			"hex": "#894b00",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-900",
+			"source": "oklch(42.1% 0.095 57.708)",
+			"expected": "#733e0a",
+			"serialization": "color(srgb 0.450504 0.242449 0.0409794)",
+			"channels": [
+				115,
+				62,
+				10
+			],
+			"hex": "#733e0a",
+			"equal": true
+		},
+		{
+			"name": "--color-yellow-950",
+			"source": "oklch(28.6% 0.066 53.813)",
+			"expected": "#432004",
+			"serialization": "color(srgb 0.261881 0.12405 0.0174354)",
+			"channels": [
+				67,
+				32,
+				4
+			],
+			"hex": "#432004",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-50",
+			"source": "oklch(98.6% 0.031 120.757)",
+			"expected": "#f7fee7",
+			"serialization": "color(srgb 0.968933 0.996582 0.906326)",
+			"channels": [
+				247,
+				254,
+				231
+			],
+			"hex": "#f7fee7",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-100",
+			"source": "oklch(96.7% 0.067 122.328)",
+			"expected": "#ecfcca",
+			"serialization": "color(srgb 0.924992 0.988861 0.793488)",
+			"channels": [
+				236,
+				252,
+				202
+			],
+			"hex": "#ecfcca",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-200",
+			"source": "oklch(93.8% 0.127 124.321)",
+			"expected": "#d8f999",
+			"serialization": "color(srgb 0.847664 0.978371 0.600021)",
+			"channels": [
+				216,
+				249,
+				153
+			],
+			"hex": "#d8f999",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-300",
+			"source": "oklch(89.7% 0.196 126.665)",
+			"expected": "#bbf451",
+			"serialization": "color(srgb 0.732826 0.955261 0.317911)",
+			"channels": [
+				187,
+				244,
+				81
+			],
+			"hex": "#bbf451",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-400",
+			"source": "oklch(84.1% 0.238 128.85)",
+			"expected": "#9ae600",
+			"serialization": "color(srgb 0.602352 0.901733 -0.187886)",
+			"channels": [
+				154,
+				230,
+				0
+			],
+			"hex": "#9ae600",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-500",
+			"source": "oklch(76.8% 0.233 130.85)",
+			"expected": "#7ccf00",
+			"serialization": "color(srgb 0.487148 0.810005 -0.209251)",
+			"channels": [
+				124,
+				207,
+				0
+			],
+			"hex": "#7ccf00",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-600",
+			"source": "oklch(64.8% 0.2 131.684)",
+			"expected": "#5ea500",
+			"serialization": "color(srgb 0.368624 0.647568 -0.162268)",
+			"channels": [
+				94,
+				165,
+				0
+			],
+			"hex": "#5ea500",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-700",
+			"source": "oklch(53.2% 0.157 131.589)",
+			"expected": "#497d00",
+			"serialization": "color(srgb 0.28475 0.491539 -0.0827885)",
+			"channels": [
+				73,
+				125,
+				0
+			],
+			"hex": "#497d00",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-800",
+			"source": "oklch(45.3% 0.124 130.933)",
+			"expected": "#3c6300",
+			"serialization": "color(srgb 0.237177 0.388111 -0.00237297)",
+			"channels": [
+				60,
+				99,
+				0
+			],
+			"hex": "#3c6300",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-900",
+			"source": "oklch(40.5% 0.101 131.063)",
+			"expected": "#35530e",
+			"serialization": "color(srgb 0.206987 0.327286 0.0552912)",
+			"channels": [
+				53,
+				83,
+				14
+			],
+			"hex": "#35530e",
+			"equal": true
+		},
+		{
+			"name": "--color-lime-950",
+			"source": "oklch(27.4% 0.072 132.109)",
+			"expected": "#192e03",
+			"serialization": "color(srgb 0.099082 0.181336 0.0109478)",
+			"channels": [
+				25,
+				46,
+				3
+			],
+			"hex": "#192e03",
+			"equal": true
+		},
+		{
+			"name": "--color-green-50",
+			"source": "oklch(98.2% 0.018 155.826)",
+			"expected": "#f0fdf4",
+			"serialization": "color(srgb 0.941345 0.992264 0.957146)",
+			"channels": [
+				240,
+				253,
+				244
+			],
+			"hex": "#f0fdf4",
+			"equal": true
+		},
+		{
+			"name": "--color-green-100",
+			"source": "oklch(96.2% 0.044 156.743)",
+			"expected": "#dcfce7",
+			"serialization": "color(srgb 0.860771 0.988274 0.904785)",
+			"channels": [
+				219,
+				252,
+				231
+			],
+			"hex": "#dbfce7",
+			"equal": false
+		},
+		{
+			"name": "--color-green-200",
+			"source": "oklch(92.5% 0.084 155.995)",
+			"expected": "#b9f8cf",
+			"serialization": "color(srgb 0.72496 0.971336 0.811951)",
+			"channels": [
+				185,
+				248,
+				207
+			],
+			"hex": "#b9f8cf",
+			"equal": true
+		},
+		{
+			"name": "--color-green-300",
+			"source": "oklch(87.1% 0.15 154.449)",
+			"expected": "#7bf1a8",
+			"serialization": "color(srgb 0.481258 0.946472 0.657101)",
+			"channels": [
+				123,
+				241,
+				168
+			],
+			"hex": "#7bf1a8",
+			"equal": true
+		},
+		{
+			"name": "--color-green-400",
+			"source": "oklch(79.2% 0.209 151.711)",
+			"expected": "#05df72",
+			"serialization": "color(srgb 0.0180482 0.875374 0.448605)",
+			"channels": [
+				5,
+				223,
+				114
+			],
+			"hex": "#05df72",
+			"equal": true
+		},
+		{
+			"name": "--color-green-500",
+			"source": "oklch(72.3% 0.219 149.579)",
+			"expected": "#00c950",
+			"serialization": "color(srgb -0.194493 0.787239 0.315708)",
+			"channels": [
+				0,
+				201,
+				81
+			],
+			"hex": "#00c951",
+			"equal": false
+		},
+		{
+			"name": "--color-green-600",
+			"source": "oklch(62.7% 0.194 149.214)",
+			"expected": "#00a63e",
+			"serialization": "color(srgb -0.166301 0.651379 0.242048)",
+			"channels": [
+				0,
+				166,
+				62
+			],
+			"hex": "#00a63e",
+			"equal": true
+		},
+		{
+			"name": "--color-green-700",
+			"source": "oklch(52.7% 0.154 150.069)",
+			"expected": "#008236",
+			"serialization": "color(srgb -0.0907125 0.510048 0.209866)",
+			"channels": [
+				0,
+				130,
+				54
+			],
+			"hex": "#008236",
+			"equal": true
+		},
+		{
+			"name": "--color-green-800",
+			"source": "oklch(44.8% 0.119 151.328)",
+			"expected": "#016630",
+			"serialization": "color(srgb 0.00546433 0.401524 0.18864)",
+			"channels": [
+				1,
+				102,
+				48
+			],
+			"hex": "#016630",
+			"equal": true
+		},
+		{
+			"name": "--color-green-900",
+			"source": "oklch(39.3% 0.095 152.535)",
+			"expected": "#0d542b",
+			"serialization": "color(srgb 0.0509663 0.328749 0.170216)",
+			"channels": [
+				13,
+				84,
+				43
+			],
+			"hex": "#0d542b",
+			"equal": true
+		},
+		{
+			"name": "--color-green-950",
+			"source": "oklch(26.6% 0.065 152.934)",
+			"expected": "#032e15",
+			"serialization": "color(srgb 0.0119265 0.181048 0.08354)",
+			"channels": [
+				3,
+				46,
+				21
+			],
+			"hex": "#032e15",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-50",
+			"source": "oklch(97.9% 0.021 166.113)",
+			"expected": "#ecfdf5",
+			"serialization": "color(srgb 0.924236 0.992088 0.960297)",
+			"channels": [
+				236,
+				253,
+				245
+			],
+			"hex": "#ecfdf5",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-100",
+			"source": "oklch(95% 0.052 163.051)",
+			"expected": "#d0fae5",
+			"serialization": "color(srgb 0.81583 0.980934 0.896603)",
+			"channels": [
+				208,
+				250,
+				229
+			],
+			"hex": "#d0fae5",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-200",
+			"source": "oklch(90.5% 0.093 164.15)",
+			"expected": "#a4f4cf",
+			"serialization": "color(srgb 0.644379 0.955917 0.813435)",
+			"channels": [
+				164,
+				244,
+				207
+			],
+			"hex": "#a4f4cf",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-300",
+			"source": "oklch(84.5% 0.143 164.978)",
+			"expected": "#5ee9b5",
+			"serialization": "color(srgb 0.369625 0.915165 0.708866)",
+			"channels": [
+				94,
+				233,
+				181
+			],
+			"hex": "#5ee9b5",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-400",
+			"source": "oklch(76.5% 0.177 163.223)",
+			"expected": "#00d492",
+			"serialization": "color(srgb -0.194226 0.832676 0.572437)",
+			"channels": [
+				0,
+				212,
+				146
+			],
+			"hex": "#00d492",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-500",
+			"source": "oklch(69.6% 0.17 162.48)",
+			"expected": "#00bc7d",
+			"serialization": "color(srgb -0.216982 0.738857 0.48933)",
+			"channels": [
+				0,
+				188,
+				125
+			],
+			"hex": "#00bc7d",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-600",
+			"source": "oklch(59.6% 0.145 163.225)",
+			"expected": "#009966",
+			"serialization": "color(srgb -0.174767 0.599033 0.39904)",
+			"channels": [
+				0,
+				153,
+				102
+			],
+			"hex": "#009966",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-700",
+			"source": "oklch(50.8% 0.118 165.612)",
+			"expected": "#007a55",
+			"serialization": "color(srgb -0.123506 0.478256 0.333612)",
+			"channels": [
+				0,
+				122,
+				85
+			],
+			"hex": "#007a55",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-800",
+			"source": "oklch(43.2% 0.095 166.913)",
+			"expected": "#006045",
+			"serialization": "color(srgb -0.0655918 0.377771 0.270632)",
+			"channels": [
+				0,
+				96,
+				69
+			],
+			"hex": "#006045",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-900",
+			"source": "oklch(37.8% 0.077 168.94)",
+			"expected": "#004f3b",
+			"serialization": "color(srgb -0.0113741 0.308172 0.229876)",
+			"channels": [
+				0,
+				79,
+				59
+			],
+			"hex": "#004f3b",
+			"equal": true
+		},
+		{
+			"name": "--color-emerald-950",
+			"source": "oklch(26.2% 0.051 172.552)",
+			"expected": "#002c22",
+			"serialization": "color(srgb -0.00212456 0.173684 0.132831)",
+			"channels": [
+				0,
+				44,
+				34
+			],
+			"hex": "#002c22",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-50",
+			"source": "oklch(98.4% 0.014 180.72)",
+			"expected": "#f0fdfa",
+			"serialization": "color(srgb 0.942223 0.992577 0.981003)",
+			"channels": [
+				240,
+				253,
+				250
+			],
+			"hex": "#f0fdfa",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-100",
+			"source": "oklch(95.3% 0.051 180.801)",
+			"expected": "#cbfbf1",
+			"serialization": "color(srgb 0.796688 0.985909 0.945877)",
+			"channels": [
+				203,
+				251,
+				241
+			],
+			"hex": "#cbfbf1",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-200",
+			"source": "oklch(91% 0.096 180.426)",
+			"expected": "#96f7e4",
+			"serialization": "color(srgb 0.58691 0.967537 0.894669)",
+			"channels": [
+				150,
+				247,
+				228
+			],
+			"hex": "#96f7e4",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-300",
+			"source": "oklch(85.5% 0.138 181.071)",
+			"expected": "#46ecd5",
+			"serialization": "color(srgb 0.275288 0.927525 0.833603)",
+			"channels": [
+				70,
+				237,
+				213
+			],
+			"hex": "#46edd5",
+			"equal": false
+		},
+		{
+			"name": "--color-teal-400",
+			"source": "oklch(77.7% 0.152 181.912)",
+			"expected": "#00d5be",
+			"serialization": "color(srgb -0.221943 0.835335 0.743404)",
+			"channels": [
+				0,
+				213,
+				190
+			],
+			"hex": "#00d5be",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-500",
+			"source": "oklch(70.4% 0.14 182.503)",
+			"expected": "#00bba7",
+			"serialization": "color(srgb -0.212536 0.733429 0.654961)",
+			"channels": [
+				0,
+				187,
+				167
+			],
+			"hex": "#00bba7",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-600",
+			"source": "oklch(60% 0.118 184.704)",
+			"expected": "#009689",
+			"serialization": "color(srgb -0.164703 0.589359 0.537346)",
+			"channels": [
+				0,
+				150,
+				137
+			],
+			"hex": "#009689",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-700",
+			"source": "oklch(51.1% 0.096 186.391)",
+			"expected": "#00786f",
+			"serialization": "color(srgb -0.0943174 0.469048 0.435057)",
+			"channels": [
+				0,
+				120,
+				111
+			],
+			"hex": "#00786f",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-800",
+			"source": "oklch(43.7% 0.078 188.216)",
+			"expected": "#005f5a",
+			"serialization": "color(srgb -0.0277743 0.373188 0.352188)",
+			"channels": [
+				0,
+				95,
+				90
+			],
+			"hex": "#005f5a",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-900",
+			"source": "oklch(38.6% 0.063 188.416)",
+			"expected": "#0b4f4a",
+			"serialization": "color(srgb 0.0418501 0.308241 0.291824)",
+			"channels": [
+				11,
+				79,
+				74
+			],
+			"hex": "#0b4f4a",
+			"equal": true
+		},
+		{
+			"name": "--color-teal-950",
+			"source": "oklch(27.7% 0.046 192.524)",
+			"expected": "#022f2e",
+			"serialization": "color(srgb 0.00805184 0.184798 0.180874)",
+			"channels": [
+				2,
+				47,
+				46
+			],
+			"hex": "#022f2e",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-50",
+			"source": "oklch(98.4% 0.019 200.873)",
+			"expected": "#ecfeff",
+			"serialization": "color(srgb 0.924919 0.996078 1.00004)",
+			"channels": [
+				236,
+				254,
+				255
+			],
+			"hex": "#ecfeff",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-100",
+			"source": "oklch(95.6% 0.045 203.388)",
+			"expected": "#cefafe",
+			"serialization": "color(srgb 0.809181 0.980659 0.996605)",
+			"channels": [
+				206,
+				250,
+				254
+			],
+			"hex": "#cefafe",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-200",
+			"source": "oklch(91.7% 0.08 205.041)",
+			"expected": "#a2f4fd",
+			"serialization": "color(srgb 0.636536 0.955528 0.992233)",
+			"channels": [
+				162,
+				244,
+				253
+			],
+			"hex": "#a2f4fd",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-300",
+			"source": "oklch(86.5% 0.127 207.078)",
+			"expected": "#53eafd",
+			"serialization": "color(srgb 0.326416 0.917072 0.991432)",
+			"channels": [
+				83,
+				234,
+				253
+			],
+			"hex": "#53eafd",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-400",
+			"source": "oklch(78.9% 0.154 211.53)",
+			"expected": "#00d3f2",
+			"serialization": "color(srgb -0.259729 0.827446 0.951096)",
+			"channels": [
+				0,
+				211,
+				243
+			],
+			"hex": "#00d3f3",
+			"equal": false
+		},
+		{
+			"name": "--color-cyan-500",
+			"source": "oklch(71.5% 0.143 215.221)",
+			"expected": "#00b8db",
+			"serialization": "color(srgb -0.230438 0.721947 0.857422)",
+			"channels": [
+				0,
+				184,
+				219
+			],
+			"hex": "#00b8db",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-600",
+			"source": "oklch(60.9% 0.126 221.723)",
+			"expected": "#0092b8",
+			"serialization": "color(srgb -0.170921 0.574276 0.722656)",
+			"channels": [
+				0,
+				146,
+				184
+			],
+			"hex": "#0092b8",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-700",
+			"source": "oklch(52% 0.105 223.128)",
+			"expected": "#007595",
+			"serialization": "color(srgb -0.103048 0.459099 0.583351)",
+			"channels": [
+				0,
+				117,
+				149
+			],
+			"hex": "#007595",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-800",
+			"source": "oklch(45% 0.085 224.283)",
+			"expected": "#005f78",
+			"serialization": "color(srgb -0.00376007 0.371223 0.471298)",
+			"channels": [
+				0,
+				95,
+				120
+			],
+			"hex": "#005f78",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-900",
+			"source": "oklch(39.8% 0.07 227.392)",
+			"expected": "#104e64",
+			"serialization": "color(srgb 0.0636234 0.30678 0.393791)",
+			"channels": [
+				16,
+				78,
+				100
+			],
+			"hex": "#104e64",
+			"equal": true
+		},
+		{
+			"name": "--color-cyan-950",
+			"source": "oklch(30.2% 0.056 229.695)",
+			"expected": "#053345",
+			"serialization": "color(srgb 0.0211067 0.200693 0.269886)",
+			"channels": [
+				5,
+				51,
+				69
+			],
+			"hex": "#053345",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-50",
+			"source": "oklch(97.7% 0.013 236.62)",
+			"expected": "#f0f9ff",
+			"serialization": "color(srgb 0.939789 0.976669 1.00117)",
+			"channels": [
+				240,
+				249,
+				255
+			],
+			"hex": "#f0f9ff",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-100",
+			"source": "oklch(95.1% 0.026 236.824)",
+			"expected": "#dff2fe",
+			"serialization": "color(srgb 0.875484 0.949059 0.997894)",
+			"channels": [
+				223,
+				242,
+				254
+			],
+			"hex": "#dff2fe",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-200",
+			"source": "oklch(90.1% 0.058 230.902)",
+			"expected": "#b8e6fe",
+			"serialization": "color(srgb 0.721756 0.902767 0.997086)",
+			"channels": [
+				184,
+				230,
+				254
+			],
+			"hex": "#b8e6fe",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-300",
+			"source": "oklch(82.8% 0.111 230.318)",
+			"expected": "#74d4ff",
+			"serialization": "color(srgb 0.453091 0.831753 1.00848)",
+			"channels": [
+				116,
+				212,
+				255
+			],
+			"hex": "#74d4ff",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-400",
+			"source": "oklch(74.6% 0.16 232.661)",
+			"expected": "#00bcff",
+			"serialization": "color(srgb -0.131802 0.736485 1.00436)",
+			"channels": [
+				0,
+				188,
+				255
+			],
+			"hex": "#00bcff",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-500",
+			"source": "oklch(68.5% 0.169 237.323)",
+			"expected": "#00a6f4",
+			"serialization": "color(srgb -0.2034 0.649849 0.957237)",
+			"channels": [
+				0,
+				166,
+				244
+			],
+			"hex": "#00a6f4",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-600",
+			"source": "oklch(58.8% 0.158 241.966)",
+			"expected": "#0084d1",
+			"serialization": "color(srgb -0.162037 0.518211 0.819904)",
+			"channels": [
+				0,
+				132,
+				209
+			],
+			"hex": "#0084d1",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-700",
+			"source": "oklch(50% 0.134 242.749)",
+			"expected": "#0069a8",
+			"serialization": "color(srgb -0.110871 0.411694 0.660385)",
+			"channels": [
+				0,
+				105,
+				168
+			],
+			"hex": "#0069a8",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-800",
+			"source": "oklch(44.3% 0.11 240.79)",
+			"expected": "#00598a",
+			"serialization": "color(srgb -0.0621314 0.349068 0.539917)",
+			"channels": [
+				0,
+				89,
+				138
+			],
+			"hex": "#00598a",
+			"equal": true
+		},
+		{
+			"name": "--color-sky-900",
+			"source": "oklch(39.1% 0.09 240.876)",
+			"expected": "#024a70",
+			"serialization": "color(srgb 0.00659131 0.290335 0.441195)",
+			"channels": [
+				2,
+				74,
+				113
+			],
+			"hex": "#024a71",
+			"equal": false
+		},
+		{
+			"name": "--color-sky-950",
+			"source": "oklch(29.3% 0.066 243.157)",
+			"expected": "#052f4a",
+			"serialization": "color(srgb 0.0197463 0.183983 0.290628)",
+			"channels": [
+				5,
+				47,
+				74
+			],
+			"hex": "#052f4a",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-50",
+			"source": "oklch(97% 0.014 254.604)",
+			"expected": "#eff6ff",
+			"serialization": "color(srgb 0.93689 0.964127 0.998947)",
+			"channels": [
+				239,
+				246,
+				255
+			],
+			"hex": "#eff6ff",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-100",
+			"source": "oklch(93.2% 0.032 255.585)",
+			"expected": "#dbeafe",
+			"serialization": "color(srgb 0.85815 0.917912 0.997353)",
+			"channels": [
+				219,
+				234,
+				254
+			],
+			"hex": "#dbeafe",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-200",
+			"source": "oklch(88.2% 0.059 254.128)",
+			"expected": "#bedbff",
+			"serialization": "color(srgb 0.74501 0.858742 1.00063)",
+			"channels": [
+				190,
+				219,
+				255
+			],
+			"hex": "#bedbff",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-300",
+			"source": "oklch(80.9% 0.105 251.813)",
+			"expected": "#8ec5ff",
+			"serialization": "color(srgb 0.556503 0.773251 1.01472)",
+			"channels": [
+				142,
+				197,
+				255
+			],
+			"hex": "#8ec5ff",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-400",
+			"source": "oklch(70.7% 0.165 254.624)",
+			"expected": "#51a2ff",
+			"serialization": "color(srgb 0.315712 0.635681 1.02106)",
+			"channels": [
+				81,
+				162,
+				255
+			],
+			"hex": "#51a2ff",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-500",
+			"source": "oklch(62.3% 0.214 259.815)",
+			"expected": "#2b7fff",
+			"serialization": "color(srgb 0.169209 0.498104 1.0229)",
+			"channels": [
+				43,
+				127,
+				255
+			],
+			"hex": "#2b7fff",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-600",
+			"source": "oklch(54.6% 0.245 262.881)",
+			"expected": "#155dfc",
+			"serialization": "color(srgb 0.0835114 0.364489 0.98642)",
+			"channels": [
+				21,
+				93,
+				252
+			],
+			"hex": "#155dfc",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-700",
+			"source": "oklch(48.8% 0.243 264.376)",
+			"expected": "#1447e6",
+			"serialization": "color(srgb 0.0778637 0.279203 0.901848)",
+			"channels": [
+				20,
+				71,
+				230
+			],
+			"hex": "#1447e6",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-800",
+			"source": "oklch(42.4% 0.199 265.638)",
+			"expected": "#193cb8",
+			"serialization": "color(srgb 0.0997686 0.233826 0.723003)",
+			"channels": [
+				25,
+				60,
+				184
+			],
+			"hex": "#193cb8",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-900",
+			"source": "oklch(37.9% 0.146 265.522)",
+			"expected": "#1c398e",
+			"serialization": "color(srgb 0.109044 0.222244 0.55759)",
+			"channels": [
+				28,
+				57,
+				142
+			],
+			"hex": "#1c398e",
+			"equal": true
+		},
+		{
+			"name": "--color-blue-950",
+			"source": "oklch(28.2% 0.091 267.935)",
+			"expected": "#162456",
+			"serialization": "color(srgb 0.0872622 0.143184 0.335752)",
+			"channels": [
+				22,
+				37,
+				86
+			],
+			"hex": "#162556",
+			"equal": false
+		},
+		{
+			"name": "--color-indigo-50",
+			"source": "oklch(96.2% 0.018 272.314)",
+			"expected": "#eef2ff",
+			"serialization": "color(srgb 0.933338 0.949265 1.00039)",
+			"channels": [
+				238,
+				242,
+				255
+			],
+			"hex": "#eef2ff",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-100",
+			"source": "oklch(93% 0.034 272.788)",
+			"expected": "#e0e7ff",
+			"serialization": "color(srgb 0.877903 0.905975 1.00169)",
+			"channels": [
+				224,
+				231,
+				255
+			],
+			"hex": "#e0e7ff",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-200",
+			"source": "oklch(87% 0.065 274.039)",
+			"expected": "#c6d2ff",
+			"serialization": "color(srgb 0.77829 0.823284 1.00349)",
+			"channels": [
+				198,
+				210,
+				255
+			],
+			"hex": "#c6d2ff",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-300",
+			"source": "oklch(78.5% 0.115 274.713)",
+			"expected": "#a3b3ff",
+			"serialization": "color(srgb 0.639088 0.702232 1.01434)",
+			"channels": [
+				163,
+				179,
+				255
+			],
+			"hex": "#a3b3ff",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-400",
+			"source": "oklch(67.3% 0.182 276.935)",
+			"expected": "#7c86ff",
+			"serialization": "color(srgb 0.487789 0.526573 1.01684)",
+			"channels": [
+				124,
+				134,
+				255
+			],
+			"hex": "#7c86ff",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-500",
+			"source": "oklch(58.5% 0.233 277.117)",
+			"expected": "#615fff",
+			"serialization": "color(srgb 0.382151 0.371956 1.00776)",
+			"channels": [
+				97,
+				95,
+				255
+			],
+			"hex": "#615fff",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-600",
+			"source": "oklch(51.1% 0.262 276.966)",
+			"expected": "#4f39f6",
+			"serialization": "color(srgb 0.310917 0.224478 0.966354)",
+			"channels": [
+				79,
+				57,
+				246
+			],
+			"hex": "#4f39f6",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-700",
+			"source": "oklch(45.7% 0.24 277.023)",
+			"expected": "#432dd7",
+			"serialization": "color(srgb 0.264372 0.176659 0.844925)",
+			"channels": [
+				67,
+				45,
+				215
+			],
+			"hex": "#432dd7",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-800",
+			"source": "oklch(39.8% 0.195 277.366)",
+			"expected": "#372aac",
+			"serialization": "color(srgb 0.215441 0.16328 0.673798)",
+			"channels": [
+				55,
+				42,
+				172
+			],
+			"hex": "#372aac",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-900",
+			"source": "oklch(35.9% 0.144 278.697)",
+			"expected": "#312c85",
+			"serialization": "color(srgb 0.191658 0.17269 0.52272)",
+			"channels": [
+				49,
+				44,
+				133
+			],
+			"hex": "#312c85",
+			"equal": true
+		},
+		{
+			"name": "--color-indigo-950",
+			"source": "oklch(25.7% 0.09 281.288)",
+			"expected": "#1e1a4d",
+			"serialization": "color(srgb 0.117152 0.102678 0.300692)",
+			"channels": [
+				30,
+				26,
+				77
+			],
+			"hex": "#1e1a4d",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-50",
+			"source": "oklch(96.9% 0.016 293.756)",
+			"expected": "#f5f3ff",
+			"serialization": "color(srgb 0.960518 0.952896 0.999733)",
+			"channels": [
+				245,
+				243,
+				255
+			],
+			"hex": "#f5f3ff",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-100",
+			"source": "oklch(94.3% 0.029 294.588)",
+			"expected": "#ede9fe",
+			"serialization": "color(srgb 0.928978 0.91309 0.997139)",
+			"channels": [
+				237,
+				233,
+				254
+			],
+			"hex": "#ede9fe",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-200",
+			"source": "oklch(89.4% 0.057 293.283)",
+			"expected": "#ddd6ff",
+			"serialization": "color(srgb 0.866463 0.837967 1.00082)",
+			"channels": [
+				221,
+				214,
+				255
+			],
+			"hex": "#ddd6ff",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-300",
+			"source": "oklch(81.1% 0.111 293.571)",
+			"expected": "#c4b4ff",
+			"serialization": "color(srgb 0.770027 0.704033 1.01369)",
+			"channels": [
+				196,
+				180,
+				255
+			],
+			"hex": "#c4b4ff",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-400",
+			"source": "oklch(70.2% 0.183 293.541)",
+			"expected": "#a684ff",
+			"serialization": "color(srgb 0.652596 0.516998 1.02088)",
+			"channels": [
+				166,
+				132,
+				255
+			],
+			"hex": "#a684ff",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-500",
+			"source": "oklch(60.6% 0.25 292.717)",
+			"expected": "#8e51ff",
+			"serialization": "color(srgb 0.555927 0.31826 1.0277)",
+			"channels": [
+				142,
+				81,
+				255
+			],
+			"hex": "#8e51ff",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-600",
+			"source": "oklch(54.1% 0.281 293.009)",
+			"expected": "#7f22fe",
+			"serialization": "color(srgb 0.499912 0.133816 0.996063)",
+			"channels": [
+				127,
+				34,
+				254
+			],
+			"hex": "#7f22fe",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-700",
+			"source": "oklch(49.1% 0.27 292.581)",
+			"expected": "#7008e7",
+			"serialization": "color(srgb 0.439726 0.0315674 0.906502)",
+			"channels": [
+				112,
+				8,
+				231
+			],
+			"hex": "#7008e7",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-800",
+			"source": "oklch(43.2% 0.232 292.759)",
+			"expected": "#5d0ec0",
+			"serialization": "color(srgb 0.36541 0.0556502 0.753391)",
+			"channels": [
+				93,
+				14,
+				192
+			],
+			"hex": "#5d0ec0",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-900",
+			"source": "oklch(38% 0.189 293.745)",
+			"expected": "#4d179a",
+			"serialization": "color(srgb 0.302511 0.0891838 0.603821)",
+			"channels": [
+				77,
+				23,
+				154
+			],
+			"hex": "#4d179a",
+			"equal": true
+		},
+		{
+			"name": "--color-violet-950",
+			"source": "oklch(28.3% 0.141 291.089)",
+			"expected": "#2f0d68",
+			"serialization": "color(srgb 0.18257 0.0509562 0.406412)",
+			"channels": [
+				47,
+				13,
+				104
+			],
+			"hex": "#2f0d68",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-50",
+			"source": "oklch(97.7% 0.014 308.299)",
+			"expected": "#faf5ff",
+			"serialization": "color(srgb 0.980339 0.961205 0.999847)",
+			"channels": [
+				250,
+				245,
+				255
+			],
+			"hex": "#faf5ff",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-100",
+			"source": "oklch(94.6% 0.033 307.174)",
+			"expected": "#f3e8ff",
+			"serialization": "color(srgb 0.952515 0.909157 1.00005)",
+			"channels": [
+				243,
+				232,
+				255
+			],
+			"hex": "#f3e8ff",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-200",
+			"source": "oklch(90.2% 0.063 306.703)",
+			"expected": "#e9d4ff",
+			"serialization": "color(srgb 0.914944 0.833179 1.00491)",
+			"channels": [
+				233,
+				212,
+				255
+			],
+			"hex": "#e9d4ff",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-300",
+			"source": "oklch(82.7% 0.119 306.383)",
+			"expected": "#dab2ff",
+			"serialization": "color(srgb 0.854359 0.697906 1.01746)",
+			"channels": [
+				218,
+				178,
+				255
+			],
+			"hex": "#dab2ff",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-400",
+			"source": "oklch(71.4% 0.203 305.504)",
+			"expected": "#c27aff",
+			"serialization": "color(srgb 0.759552 0.479862 1.02625)",
+			"channels": [
+				194,
+				122,
+				255
+			],
+			"hex": "#c27aff",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-500",
+			"source": "oklch(62.7% 0.265 303.9)",
+			"expected": "#ad46ff",
+			"serialization": "color(srgb 0.677921 0.276033 1.02716)",
+			"channels": [
+				173,
+				70,
+				255
+			],
+			"hex": "#ad46ff",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-600",
+			"source": "oklch(55.8% 0.288 302.321)",
+			"expected": "#9810fa",
+			"serialization": "color(srgb 0.596882 0.0619154 0.98143)",
+			"channels": [
+				152,
+				16,
+				250
+			],
+			"hex": "#9810fa",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-700",
+			"source": "oklch(49.6% 0.265 301.924)",
+			"expected": "#8200db",
+			"serialization": "color(srgb 0.509911 -0.02608 0.857346)",
+			"channels": [
+				130,
+				0,
+				219
+			],
+			"hex": "#8200db",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-800",
+			"source": "oklch(43.8% 0.218 303.724)",
+			"expected": "#6e11b0",
+			"serialization": "color(srgb 0.430023 0.0667415 0.690857)",
+			"channels": [
+				110,
+				17,
+				176
+			],
+			"hex": "#6e11b0",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-900",
+			"source": "oklch(38.1% 0.176 304.987)",
+			"expected": "#59168b",
+			"serialization": "color(srgb 0.350733 0.0873661 0.545254)",
+			"channels": [
+				89,
+				22,
+				139
+			],
+			"hex": "#59168b",
+			"equal": true
+		},
+		{
+			"name": "--color-purple-950",
+			"source": "oklch(29.1% 0.149 302.717)",
+			"expected": "#3c0366",
+			"serialization": "color(srgb 0.23465 0.0118094 0.401424)",
+			"channels": [
+				60,
+				3,
+				102
+			],
+			"hex": "#3c0366",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-50",
+			"source": "oklch(97.7% 0.017 320.058)",
+			"expected": "#fdf4ff",
+			"serialization": "color(srgb 0.991295 0.956879 0.999191)",
+			"channels": [
+				253,
+				244,
+				255
+			],
+			"hex": "#fdf4ff",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-100",
+			"source": "oklch(95.2% 0.037 318.852)",
+			"expected": "#fae8ff",
+			"serialization": "color(srgb 0.981453 0.909012 1.00179)",
+			"channels": [
+				250,
+				232,
+				255
+			],
+			"hex": "#fae8ff",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-200",
+			"source": "oklch(90.3% 0.076 319.62)",
+			"expected": "#f6cfff",
+			"serialization": "color(srgb 0.963905 0.813446 1.00068)",
+			"channels": [
+				246,
+				207,
+				255
+			],
+			"hex": "#f6cfff",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-300",
+			"source": "oklch(83.3% 0.145 321.434)",
+			"expected": "#f4a8ff",
+			"serialization": "color(srgb 0.955078 0.657375 1.00719)",
+			"channels": [
+				244,
+				168,
+				255
+			],
+			"hex": "#f4a8ff",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-400",
+			"source": "oklch(74% 0.238 322.16)",
+			"expected": "#ed6aff",
+			"serialization": "color(srgb 0.929943 0.417662 1.00844)",
+			"channels": [
+				237,
+				107,
+				255
+			],
+			"hex": "#ed6bff",
+			"equal": false
+		},
+		{
+			"name": "--color-fuchsia-500",
+			"source": "oklch(66.7% 0.295 322.15)",
+			"expected": "#e12afb",
+			"serialization": "color(srgb 0.883671 0.165875 0.984573)",
+			"channels": [
+				225,
+				42,
+				251
+			],
+			"hex": "#e12afb",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-600",
+			"source": "oklch(59.1% 0.293 322.896)",
+			"expected": "#c800de",
+			"serialization": "color(srgb 0.783627 -0.111154 0.871624)",
+			"channels": [
+				200,
+				0,
+				222
+			],
+			"hex": "#c800de",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-700",
+			"source": "oklch(51.8% 0.253 323.949)",
+			"expected": "#a800b7",
+			"serialization": "color(srgb 0.658489 -0.0727148 0.71804)",
+			"channels": [
+				168,
+				0,
+				183
+			],
+			"hex": "#a800b7",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-800",
+			"source": "oklch(45.2% 0.211 324.591)",
+			"expected": "#8a0194",
+			"serialization": "color(srgb 0.541397 0.00526995 0.581882)",
+			"channels": [
+				138,
+				1,
+				148
+			],
+			"hex": "#8a0194",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-900",
+			"source": "oklch(40.1% 0.17 325.612)",
+			"expected": "#721378",
+			"serialization": "color(srgb 0.447945 0.0754194 0.46965)",
+			"channels": [
+				114,
+				19,
+				120
+			],
+			"hex": "#721378",
+			"equal": true
+		},
+		{
+			"name": "--color-fuchsia-950",
+			"source": "oklch(29.3% 0.136 325.661)",
+			"expected": "#4b004f",
+			"serialization": "color(srgb 0.293911 0.0014936 0.310694)",
+			"channels": [
+				75,
+				0,
+				79
+			],
+			"hex": "#4b004f",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-50",
+			"source": "oklch(97.1% 0.014 343.198)",
+			"expected": "#fdf2f8",
+			"serialization": "color(srgb 0.991203 0.948746 0.971992)",
+			"channels": [
+				253,
+				242,
+				248
+			],
+			"hex": "#fdf2f8",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-100",
+			"source": "oklch(94.8% 0.028 342.258)",
+			"expected": "#fce7f3",
+			"serialization": "color(srgb 0.988571 0.90535 0.953072)",
+			"channels": [
+				252,
+				231,
+				243
+			],
+			"hex": "#fce7f3",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-200",
+			"source": "oklch(89.9% 0.061 343.231)",
+			"expected": "#fccee8",
+			"serialization": "color(srgb 0.987587 0.809151 0.910824)",
+			"channels": [
+				252,
+				206,
+				232
+			],
+			"hex": "#fccee8",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-300",
+			"source": "oklch(82.3% 0.12 346.018)",
+			"expected": "#fda5d5",
+			"serialization": "color(srgb 0.994011 0.64658 0.837246)",
+			"channels": [
+				253,
+				165,
+				213
+			],
+			"hex": "#fda5d5",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-400",
+			"source": "oklch(71.8% 0.202 349.761)",
+			"expected": "#fb64b6",
+			"serialization": "color(srgb 0.985565 0.392115 0.713959)",
+			"channels": [
+				251,
+				100,
+				182
+			],
+			"hex": "#fb64b6",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-500",
+			"source": "oklch(65.6% 0.241 354.308)",
+			"expected": "#f6339a",
+			"serialization": "color(srgb 0.96579 0.198246 0.604443)",
+			"channels": [
+				246,
+				51,
+				154
+			],
+			"hex": "#f6339a",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-600",
+			"source": "oklch(59.2% 0.249 0.584)",
+			"expected": "#e60076",
+			"serialization": "color(srgb 0.901318 -0.0922422 0.463482)",
+			"channels": [
+				230,
+				0,
+				118
+			],
+			"hex": "#e60076",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-700",
+			"source": "oklch(52.5% 0.223 3.958)",
+			"expected": "#c6005c",
+			"serialization": "color(srgb 0.777771 -0.0926914 0.358992)",
+			"channels": [
+				198,
+				0,
+				92
+			],
+			"hex": "#c6005c",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-800",
+			"source": "oklch(45.9% 0.187 3.815)",
+			"expected": "#a3004c",
+			"serialization": "color(srgb 0.63863 -0.0167391 0.298124)",
+			"channels": [
+				163,
+				0,
+				76
+			],
+			"hex": "#a3004c",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-900",
+			"source": "oklch(40.8% 0.153 2.432)",
+			"expected": "#861043",
+			"serialization": "color(srgb 0.525169 0.0633664 0.2614)",
+			"channels": [
+				134,
+				16,
+				67
+			],
+			"hex": "#861043",
+			"equal": true
+		},
+		{
+			"name": "--color-pink-950",
+			"source": "oklch(28.4% 0.109 3.907)",
+			"expected": "#510424",
+			"serialization": "color(srgb 0.318037 0.0151069 0.139872)",
+			"channels": [
+				81,
+				4,
+				36
+			],
+			"hex": "#510424",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-50",
+			"source": "oklch(96.9% 0.015 12.422)",
+			"expected": "#fff1f2",
+			"serialization": "color(srgb 0.998909 0.944874 0.948753)",
+			"channels": [
+				255,
+				241,
+				242
+			],
+			"hex": "#fff1f2",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-100",
+			"source": "oklch(94.1% 0.03 12.58)",
+			"expected": "#ffe4e6",
+			"serialization": "color(srgb 0.999962 0.893494 0.901421)",
+			"channels": [
+				255,
+				228,
+				230
+			],
+			"hex": "#ffe4e6",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-200",
+			"source": "oklch(89.2% 0.058 10.001)",
+			"expected": "#ffccd3",
+			"serialization": "color(srgb 1.00011 0.801208 0.825768)",
+			"channels": [
+				255,
+				204,
+				211
+			],
+			"hex": "#ffccd3",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-300",
+			"source": "oklch(81% 0.117 11.638)",
+			"expected": "#ffa1ad",
+			"serialization": "color(srgb 1.01389 0.630035 0.679626)",
+			"channels": [
+				255,
+				161,
+				173
+			],
+			"hex": "#ffa1ad",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-400",
+			"source": "oklch(71.2% 0.194 13.428)",
+			"expected": "#ff637e",
+			"serialization": "color(srgb 1.01601 0.388931 0.494392)",
+			"channels": [
+				255,
+				99,
+				126
+			],
+			"hex": "#ff637e",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-500",
+			"source": "oklch(64.5% 0.246 16.439)",
+			"expected": "#ff2056",
+			"serialization": "color(srgb 1.00331 0.12476 0.339087)",
+			"channels": [
+				255,
+				32,
+				86
+			],
+			"hex": "#ff2056",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-600",
+			"source": "oklch(58.6% 0.253 17.585)",
+			"expected": "#ec003f",
+			"serialization": "color(srgb 0.927399 -0.143897 0.248781)",
+			"channels": [
+				236,
+				0,
+				63
+			],
+			"hex": "#ec003f",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-700",
+			"source": "oklch(51.4% 0.222 16.935)",
+			"expected": "#c70036",
+			"serialization": "color(srgb 0.778519 -0.114591 0.210768)",
+			"channels": [
+				199,
+				0,
+				54
+			],
+			"hex": "#c70036",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-800",
+			"source": "oklch(45.5% 0.188 13.697)",
+			"expected": "#a50036",
+			"serialization": "color(srgb 0.646713 -0.0465598 0.211731)",
+			"channels": [
+				165,
+				0,
+				54
+			],
+			"hex": "#a50036",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-900",
+			"source": "oklch(41% 0.159 10.272)",
+			"expected": "#8b0836",
+			"serialization": "color(srgb 0.544502 0.0301066 0.210756)",
+			"channels": [
+				139,
+				8,
+				54
+			],
+			"hex": "#8b0836",
+			"equal": true
+		},
+		{
+			"name": "--color-rose-950",
+			"source": "oklch(27.1% 0.105 12.094)",
+			"expected": "#4d0218",
+			"serialization": "color(srgb 0.303185 0.00883948 0.0959091)",
+			"channels": [
+				77,
+				2,
+				24
+			],
+			"hex": "#4d0218",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-50",
+			"source": "oklch(98.4% 0.003 247.858)",
+			"expected": "#f8fafc",
+			"serialization": "color(srgb 0.973045 0.98011 0.987022)",
+			"channels": [
+				248,
+				250,
+				252
+			],
+			"hex": "#f8fafc",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-100",
+			"source": "oklch(96.8% 0.007 247.896)",
+			"expected": "#f1f5f9",
+			"serialization": "color(srgb 0.944447 0.960587 0.976601)",
+			"channels": [
+				241,
+				245,
+				249
+			],
+			"hex": "#f1f5f9",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-200",
+			"source": "oklch(92.9% 0.013 255.508)",
+			"expected": "#e2e8f0",
+			"serialization": "color(srgb 0.885857 0.910275 0.942677)",
+			"channels": [
+				226,
+				232,
+				240
+			],
+			"hex": "#e2e8f0",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-300",
+			"source": "oklch(86.9% 0.022 252.894)",
+			"expected": "#cad5e2",
+			"serialization": "color(srgb 0.79229 0.835918 0.888054)",
+			"channels": [
+				202,
+				213,
+				226
+			],
+			"hex": "#cad5e2",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-400",
+			"source": "oklch(70.4% 0.04 256.788)",
+			"expected": "#90a1b9",
+			"serialization": "color(srgb 0.564804 0.631794 0.725323)",
+			"channels": [
+				144,
+				161,
+				185
+			],
+			"hex": "#90a1b9",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-500",
+			"source": "oklch(55.4% 0.046 257.417)",
+			"expected": "#62748e",
+			"serialization": "color(srgb 0.383865 0.454853 0.556736)",
+			"channels": [
+				98,
+				116,
+				142
+			],
+			"hex": "#62748e",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-600",
+			"source": "oklch(44.6% 0.043 257.281)",
+			"expected": "#45556c",
+			"serialization": "color(srgb 0.270977 0.334143 0.424265)",
+			"channels": [
+				69,
+				85,
+				108
+			],
+			"hex": "#45556c",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-700",
+			"source": "oklch(37.2% 0.044 257.287)",
+			"expected": "#314158",
+			"serialization": "color(srgb 0.193493 0.255314 0.343544)",
+			"channels": [
+				49,
+				65,
+				88
+			],
+			"hex": "#314158",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-800",
+			"source": "oklch(27.9% 0.041 260.031)",
+			"expected": "#1d293d",
+			"serialization": "color(srgb 0.112131 0.160087 0.238718)",
+			"channels": [
+				29,
+				41,
+				61
+			],
+			"hex": "#1d293d",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-900",
+			"source": "oklch(20.8% 0.042 265.755)",
+			"expected": "#0f172b",
+			"serialization": "color(srgb 0.0571957 0.0900803 0.168835)",
+			"channels": [
+				15,
+				23,
+				43
+			],
+			"hex": "#0f172b",
+			"equal": true
+		},
+		{
+			"name": "--color-slate-950",
+			"source": "oklch(12.9% 0.042 264.695)",
+			"expected": "#020618",
+			"serialization": "color(srgb 0.00742457 0.0232852 0.0925455)",
+			"channels": [
+				2,
+				6,
+				24
+			],
+			"hex": "#020618",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-50",
+			"source": "oklch(98.5% 0.002 247.839)",
+			"expected": "#f9fafb",
+			"serialization": "color(srgb 0.976288 0.981056 0.985672)",
+			"channels": [
+				249,
+				250,
+				251
+			],
+			"hex": "#f9fafb",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-100",
+			"source": "oklch(96.7% 0.003 264.542)",
+			"expected": "#f3f4f6",
+			"serialization": "color(srgb 0.952782 0.957039 0.965225)",
+			"channels": [
+				243,
+				244,
+				246
+			],
+			"hex": "#f3f4f6",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-200",
+			"source": "oklch(92.8% 0.006 264.531)",
+			"expected": "#e5e7eb",
+			"serialization": "color(srgb 0.898251 0.906513 0.922737)",
+			"channels": [
+				229,
+				231,
+				235
+			],
+			"hex": "#e5e7eb",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-300",
+			"source": "oklch(87.2% 0.01 258.338)",
+			"expected": "#d1d5dc",
+			"serialization": "color(srgb 0.818958 0.835907 0.861099)",
+			"channels": [
+				209,
+				213,
+				220
+			],
+			"hex": "#d1d5dc",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-400",
+			"source": "oklch(70.7% 0.022 261.325)",
+			"expected": "#99a1af",
+			"serialization": "color(srgb 0.599987 0.631489 0.685329)",
+			"channels": [
+				153,
+				161,
+				175
+			],
+			"hex": "#99a1af",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-500",
+			"source": "oklch(55.1% 0.027 264.364)",
+			"expected": "#6a7282",
+			"serialization": "color(srgb 0.41543 0.44717 0.510559)",
+			"channels": [
+				106,
+				114,
+				130
+			],
+			"hex": "#6a7282",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-600",
+			"source": "oklch(44.6% 0.03 256.802)",
+			"expected": "#4a5565",
+			"serialization": "color(srgb 0.288828 0.333605 0.396168)",
+			"channels": [
+				74,
+				85,
+				101
+			],
+			"hex": "#4a5565",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-700",
+			"source": "oklch(37.3% 0.034 259.733)",
+			"expected": "#364153",
+			"serialization": "color(srgb 0.211523 0.255079 0.324776)",
+			"channels": [
+				54,
+				65,
+				83
+			],
+			"hex": "#364153",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-800",
+			"source": "oklch(27.8% 0.033 256.848)",
+			"expected": "#1e2939",
+			"serialization": "color(srgb 0.116978 0.160797 0.222067)",
+			"channels": [
+				30,
+				41,
+				57
+			],
+			"hex": "#1e2939",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-900",
+			"source": "oklch(21% 0.034 264.665)",
+			"expected": "#101828",
+			"serialization": "color(srgb 0.064538 0.0937824 0.156831)",
+			"channels": [
+				16,
+				24,
+				40
+			],
+			"hex": "#101828",
+			"equal": true
+		},
+		{
+			"name": "--color-gray-950",
+			"source": "oklch(13% 0.028 261.692)",
+			"expected": "#030712",
+			"serialization": "color(srgb 0.0115786 0.0276109 0.0719128)",
+			"channels": [
+				3,
+				7,
+				18
+			],
+			"hex": "#030712",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-50",
+			"source": "oklch(98.5% 0 none)",
+			"expected": "#fafafa",
+			"serialization": "color(srgb 0.980148 0.980324 0.980339)",
+			"channels": [
+				250,
+				250,
+				250
+			],
+			"hex": "#fafafa",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-100",
+			"source": "oklch(96.7% 0.001 286.375)",
+			"expected": "#f4f4f5",
+			"serialization": "color(srgb 0.956314 0.956497 0.959457)",
+			"channels": [
+				244,
+				244,
+				245
+			],
+			"hex": "#f4f4f5",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-200",
+			"source": "oklch(92% 0.004 286.32)",
+			"expected": "#e4e4e7",
+			"serialization": "color(srgb 0.894382 0.894547 0.906242)",
+			"channels": [
+				228,
+				228,
+				231
+			],
+			"hex": "#e4e4e7",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-300",
+			"source": "oklch(87.1% 0.006 286.286)",
+			"expected": "#d4d4d8",
+			"serialization": "color(srgb 0.831024 0.831177 0.848442)",
+			"channels": [
+				212,
+				212,
+				216
+			],
+			"hex": "#d4d4d8",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-400",
+			"source": "oklch(70.5% 0.015 286.067)",
+			"expected": "#9f9fa9",
+			"serialization": "color(srgb 0.622597 0.622662 0.663448)",
+			"channels": [
+				159,
+				159,
+				169
+			],
+			"hex": "#9f9fa9",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-500",
+			"source": "oklch(55.2% 0.016 285.938)",
+			"expected": "#71717b",
+			"serialization": "color(srgb 0.442995 0.443018 0.483852)",
+			"channels": [
+				113,
+				113,
+				123
+			],
+			"hex": "#71717b",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-600",
+			"source": "oklch(44.2% 0.017 285.786)",
+			"expected": "#52525c",
+			"serialization": "color(srgb 0.321184 0.321159 0.362173)",
+			"channels": [
+				82,
+				82,
+				92
+			],
+			"hex": "#52525c",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-700",
+			"source": "oklch(37% 0.013 285.805)",
+			"expected": "#3f3f46",
+			"serialization": "color(srgb 0.246475 0.24649 0.276522)",
+			"channels": [
+				63,
+				63,
+				71
+			],
+			"hex": "#3f3f47",
+			"equal": false
+		},
+		{
+			"name": "--color-zinc-800",
+			"source": "oklch(27.4% 0.006 286.033)",
+			"expected": "#27272a",
+			"serialization": "color(srgb 0.152908 0.152934 0.165812)",
+			"channels": [
+				39,
+				39,
+				42
+			],
+			"hex": "#27272a",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-900",
+			"source": "oklch(21% 0.006 285.885)",
+			"expected": "#18181b",
+			"serialization": "color(srgb 0.093811 0.0938339 0.105878)",
+			"channels": [
+				24,
+				24,
+				27
+			],
+			"hex": "#18181b",
+			"equal": true
+		},
+		{
+			"name": "--color-zinc-950",
+			"source": "oklch(14.1% 0.005 285.823)",
+			"expected": "#09090b",
+			"serialization": "color(srgb 0.0353639 0.0353633 0.0443587)",
+			"channels": [
+				9,
+				9,
+				11
+			],
+			"hex": "#09090b",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-50",
+			"source": "oklch(98.5% 0 none)",
+			"expected": "#fafafa",
+			"serialization": "color(srgb 0.980148 0.980324 0.980339)",
+			"channels": [
+				250,
+				250,
+				250
+			],
+			"hex": "#fafafa",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-100",
+			"source": "oklch(97% 0 none)",
+			"expected": "#f5f5f5",
+			"serialization": "color(srgb 0.96051 0.960686 0.960709)",
+			"channels": [
+				245,
+				245,
+				245
+			],
+			"hex": "#f5f5f5",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-200",
+			"source": "oklch(92.2% 0 none)",
+			"expected": "#e5e5e5",
+			"serialization": "color(srgb 0.898064 0.898232 0.898247)",
+			"channels": [
+				229,
+				229,
+				229
+			],
+			"hex": "#e5e5e5",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-300",
+			"source": "oklch(87% 0 none)",
+			"expected": "#d4d4d4",
+			"serialization": "color(srgb 0.831383 0.831535 0.831551)",
+			"channels": [
+				212,
+				212,
+				212
+			],
+			"hex": "#d4d4d4",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-400",
+			"source": "oklch(70.8% 0 none)",
+			"expected": "#a1a1a1",
+			"serialization": "color(srgb 0.630138 0.630257 0.630268)",
+			"channels": [
+				161,
+				161,
+				161
+			],
+			"hex": "#a1a1a1",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-500",
+			"source": "oklch(55.6% 0 none)",
+			"expected": "#737373",
+			"serialization": "color(srgb 0.451504 0.451591 0.451599)",
+			"channels": [
+				115,
+				115,
+				115
+			],
+			"hex": "#737373",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-600",
+			"source": "oklch(43.9% 0 none)",
+			"expected": "#525252",
+			"serialization": "color(srgb 0.321997 0.322062 0.322067)",
+			"channels": [
+				82,
+				82,
+				82
+			],
+			"hex": "#525252",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-700",
+			"source": "oklch(37.1% 0 none)",
+			"expected": "#404040",
+			"serialization": "color(srgb 0.250463 0.250513 0.250519)",
+			"channels": [
+				64,
+				64,
+				64
+			],
+			"hex": "#404040",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-800",
+			"source": "oklch(26.9% 0 none)",
+			"expected": "#262626",
+			"serialization": "color(srgb 0.149395 0.14943 0.149434)",
+			"channels": [
+				38,
+				38,
+				38
+			],
+			"hex": "#262626",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-900",
+			"source": "oklch(20.5% 0 none)",
+			"expected": "#171717",
+			"serialization": "color(srgb 0.0905399 0.0905647 0.0905666)",
+			"channels": [
+				23,
+				23,
+				23
+			],
+			"hex": "#171717",
+			"equal": true
+		},
+		{
+			"name": "--color-neutral-950",
+			"source": "oklch(14.5% 0 none)",
+			"expected": "#0a0a0a",
+			"serialization": "color(srgb 0.0393766 0.039393 0.0393945)",
+			"channels": [
+				10,
+				10,
+				10
+			],
+			"hex": "#0a0a0a",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-50",
+			"source": "oklch(98.5% 0.001 106.423)",
+			"expected": "#fafaf9",
+			"serialization": "color(srgb 0.980423 0.980598 0.977646)",
+			"channels": [
+				250,
+				250,
+				249
+			],
+			"hex": "#fafaf9",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-100",
+			"source": "oklch(97% 0.001 106.424)",
+			"expected": "#f5f5f4",
+			"serialization": "color(srgb 0.960777 0.960953 0.958015)",
+			"channels": [
+				245,
+				245,
+				244
+			],
+			"hex": "#f5f5f4",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-200",
+			"source": "oklch(92.3% 0.003 48.717)",
+			"expected": "#e7e5e4",
+			"serialization": "color(srgb 0.906624 0.897602 0.893028)",
+			"channels": [
+				231,
+				229,
+				228
+			],
+			"hex": "#e7e5e4",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-300",
+			"source": "oklch(86.9% 0.005 56.366)",
+			"expected": "#d6d3d1",
+			"serialization": "color(srgb 0.841103 0.827602 0.818508)",
+			"channels": [
+				214,
+				211,
+				209
+			],
+			"hex": "#d6d3d1",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-400",
+			"source": "oklch(70.9% 0.01 56.259)",
+			"expected": "#a6a09b",
+			"serialization": "color(srgb 0.6521 0.626316 0.609051)",
+			"channels": [
+				166,
+				160,
+				155
+			],
+			"hex": "#a6a09b",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-500",
+			"source": "oklch(55.3% 0.013 58.071)",
+			"expected": "#79716b",
+			"serialization": "color(srgb 0.472679 0.442087 0.420115)",
+			"channels": [
+				121,
+				113,
+				107
+			],
+			"hex": "#79716b",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-600",
+			"source": "oklch(44.4% 0.011 73.639)",
+			"expected": "#57534d",
+			"serialization": "color(srgb 0.34264 0.324743 0.302261)",
+			"channels": [
+				87,
+				83,
+				77
+			],
+			"hex": "#57534d",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-700",
+			"source": "oklch(37.4% 0.01 67.558)",
+			"expected": "#44403b",
+			"serialization": "color(srgb 0.268488 0.250467 0.232382)",
+			"channels": [
+				68,
+				64,
+				59
+			],
+			"hex": "#44403b",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-800",
+			"source": "oklch(26.8% 0.007 34.298)",
+			"expected": "#292524",
+			"serialization": "color(srgb 0.161632 0.144243 0.139889)",
+			"channels": [
+				41,
+				37,
+				36
+			],
+			"hex": "#292524",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-900",
+			"source": "oklch(21.6% 0.006 56.043)",
+			"expected": "#1c1917",
+			"serialization": "color(srgb 0.109529 0.098031 0.0903473)",
+			"channels": [
+				28,
+				25,
+				23
+			],
+			"hex": "#1c1917",
+			"equal": true
+		},
+		{
+			"name": "--color-stone-950",
+			"source": "oklch(14.7% 0.004 49.25)",
+			"expected": "#0c0a09",
+			"serialization": "color(srgb 0.0469785 0.039361 0.0355504)",
+			"channels": [
+				12,
+				10,
+				9
+			],
+			"hex": "#0c0a09",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-50",
+			"source": "oklch(98.5% 0 none)",
+			"expected": "#fafafa",
+			"serialization": "color(srgb 0.980148 0.980324 0.980339)",
+			"channels": [
+				250,
+				250,
+				250
+			],
+			"hex": "#fafafa",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-100",
+			"source": "oklch(96% 0.003 325.6)",
+			"expected": "#f3f1f3",
+			"serialization": "color(srgb 0.951973 0.945229 0.952164)",
+			"channels": [
+				243,
+				241,
+				243
+			],
+			"hex": "#f3f1f3",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-200",
+			"source": "oklch(92.2% 0.005 325.62)",
+			"expected": "#e7e4e7",
+			"serialization": "color(srgb 0.905518 0.894226 0.905693)",
+			"channels": [
+				231,
+				228,
+				231
+			],
+			"hex": "#e7e4e7",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-300",
+			"source": "oklch(86.5% 0.012 325.68)",
+			"expected": "#d7d0d7",
+			"serialization": "color(srgb 0.842518 0.815636 0.842678)",
+			"channels": [
+				215,
+				208,
+				215
+			],
+			"hex": "#d7d0d7",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-400",
+			"source": "oklch(71.1% 0.019 323.02)",
+			"expected": "#a89ea9",
+			"serialization": "color(srgb 0.658077 0.61982 0.662041)",
+			"channels": [
+				168,
+				158,
+				169
+			],
+			"hex": "#a89ea9",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-500",
+			"source": "oklch(54.2% 0.034 322.5)",
+			"expected": "#79697b",
+			"serialization": "color(srgb 0.474762 0.41151 0.482777)",
+			"channels": [
+				121,
+				105,
+				123
+			],
+			"hex": "#79697b",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-600",
+			"source": "oklch(43.5% 0.029 321.78)",
+			"expected": "#594c5b",
+			"serialization": "color(srgb 0.348602 0.298365 0.356398)",
+			"channels": [
+				89,
+				76,
+				91
+			],
+			"hex": "#594c5b",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-700",
+			"source": "oklch(36.4% 0.029 323.89)",
+			"expected": "#463947",
+			"serialization": "color(srgb 0.274378 0.224024 0.278294)",
+			"channels": [
+				70,
+				57,
+				71
+			],
+			"hex": "#463947",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-800",
+			"source": "oklch(26.3% 0.024 320.12)",
+			"expected": "#2a212c",
+			"serialization": "color(srgb 0.164904 0.12955 0.172804)",
+			"channels": [
+				42,
+				33,
+				44
+			],
+			"hex": "#2a212c",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-900",
+			"source": "oklch(21.2% 0.019 322.12)",
+			"expected": "#1d161e",
+			"serialization": "color(srgb 0.113649 0.0858841 0.117645)",
+			"channels": [
+				29,
+				22,
+				30
+			],
+			"hex": "#1d161e",
+			"equal": true
+		},
+		{
+			"name": "--color-mauve-950",
+			"source": "oklch(14.5% 0.008 326)",
+			"expected": "#0c090c",
+			"serialization": "color(srgb 0.0467215 0.0352807 0.0467315)",
+			"channels": [
+				12,
+				9,
+				12
+			],
+			"hex": "#0c090c",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-50",
+			"source": "oklch(98.8% 0.003 106.5)",
+			"expected": "#fbfbf9",
+			"serialization": "color(srgb 0.984901 0.985092 0.976189)",
+			"channels": [
+				251,
+				251,
+				249
+			],
+			"hex": "#fbfbf9",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-100",
+			"source": "oklch(96.6% 0.005 106.5)",
+			"expected": "#f4f4f0",
+			"serialization": "color(srgb 0.95665 0.956833 0.942074)",
+			"channels": [
+				244,
+				244,
+				240
+			],
+			"hex": "#f4f4f0",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-200",
+			"source": "oklch(93% 0.007 106.5)",
+			"expected": "#e8e8e3",
+			"serialization": "color(srgb 0.910328 0.91048 0.889931)",
+			"channels": [
+				232,
+				232,
+				227
+			],
+			"hex": "#e8e8e3",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-300",
+			"source": "oklch(88% 0.011 106.6)",
+			"expected": "#d8d8d0",
+			"serialization": "color(srgb 0.847054 0.847195 0.815319)",
+			"channels": [
+				216,
+				216,
+				208
+			],
+			"hex": "#d8d8d0",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-400",
+			"source": "oklch(73.7% 0.021 106.9)",
+			"expected": "#abab9c",
+			"serialization": "color(srgb 0.670578 0.6707 0.612129)",
+			"channels": [
+				171,
+				171,
+				156
+			],
+			"hex": "#abab9c",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-500",
+			"source": "oklch(58% 0.031 107.3)",
+			"expected": "#7c7c67",
+			"serialization": "color(srgb 0.485931 0.485977 0.403606)",
+			"channels": [
+				124,
+				124,
+				103
+			],
+			"hex": "#7c7c67",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-600",
+			"source": "oklch(46.6% 0.025 107.3)",
+			"expected": "#5b5b4b",
+			"serialization": "color(srgb 0.356516 0.356544 0.29365)",
+			"channels": [
+				91,
+				91,
+				75
+			],
+			"hex": "#5b5b4b",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-700",
+			"source": "oklch(39.4% 0.023 107.4)",
+			"expected": "#474739",
+			"serialization": "color(srgb 0.278978 0.279024 0.223379)",
+			"channels": [
+				71,
+				71,
+				57
+			],
+			"hex": "#474739",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-800",
+			"source": "oklch(28.6% 0.016 107.4)",
+			"expected": "#2b2b22",
+			"serialization": "color(srgb 0.168632 0.168693 0.133021)",
+			"channels": [
+				43,
+				43,
+				34
+			],
+			"hex": "#2b2b22",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-900",
+			"source": "oklch(22.8% 0.013 107.4)",
+			"expected": "#1d1d16",
+			"serialization": "color(srgb 0.11352 0.113556 0.0861406)",
+			"channels": [
+				29,
+				29,
+				22
+			],
+			"hex": "#1d1d16",
+			"equal": true
+		},
+		{
+			"name": "--color-olive-950",
+			"source": "oklch(15.3% 0.006 107.1)",
+			"expected": "#0c0c09",
+			"serialization": "color(srgb 0.0469542 0.0469742 0.0356857)",
+			"channels": [
+				12,
+				12,
+				9
+			],
+			"hex": "#0c0c09",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-50",
+			"source": "oklch(98.7% 0.002 197.1)",
+			"expected": "#f9fbfb",
+			"serialization": "color(srgb 0.977264 0.984825 0.984833)",
+			"channels": [
+				249,
+				251,
+				251
+			],
+			"hex": "#f9fbfb",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-100",
+			"source": "oklch(96.3% 0.002 197.1)",
+			"expected": "#f1f3f3",
+			"serialization": "color(srgb 0.945915 0.953415 0.953423)",
+			"channels": [
+				241,
+				243,
+				243
+			],
+			"hex": "#f1f3f3",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-200",
+			"source": "oklch(92.5% 0.005 214.3)",
+			"expected": "#e3e7e8",
+			"serialization": "color(srgb 0.888569 0.906078 0.910423)",
+			"channels": [
+				227,
+				231,
+				232
+			],
+			"hex": "#e3e7e8",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-300",
+			"source": "oklch(87.2% 0.007 219.6)",
+			"expected": "#d0d6d8",
+			"serialization": "color(srgb 0.815872 0.839161 0.846901)",
+			"channels": [
+				208,
+				214,
+				216
+			],
+			"hex": "#d0d6d8",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-400",
+			"source": "oklch(72.3% 0.014 214.4)",
+			"expected": "#9ca8ab",
+			"serialization": "color(srgb 0.612427 0.658691 0.670254)",
+			"channels": [
+				156,
+				168,
+				171
+			],
+			"hex": "#9ca8ab",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-500",
+			"source": "oklch(56% 0.021 213.5)",
+			"expected": "#67787c",
+			"serialization": "color(srgb 0.40386 0.47039 0.486023)",
+			"channels": [
+				103,
+				120,
+				124
+			],
+			"hex": "#67787c",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-600",
+			"source": "oklch(45% 0.017 213.2)",
+			"expected": "#4b585b",
+			"serialization": "color(srgb 0.293774 0.344858 0.356646)",
+			"channels": [
+				75,
+				88,
+				91
+			],
+			"hex": "#4b585b",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-700",
+			"source": "oklch(37.8% 0.015 216)",
+			"expected": "#394447",
+			"serialization": "color(srgb 0.224142 0.266665 0.278242)",
+			"channels": [
+				57,
+				68,
+				71
+			],
+			"hex": "#394447",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-800",
+			"source": "oklch(27.5% 0.011 216.9)",
+			"expected": "#22292b",
+			"serialization": "color(srgb 0.132477 0.161104 0.169285)",
+			"channels": [
+				34,
+				41,
+				43
+			],
+			"hex": "#22292b",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-900",
+			"source": "oklch(21.8% 0.008 223.9)",
+			"expected": "#161b1d",
+			"serialization": "color(srgb 0.0873861 0.10588 0.113284)",
+			"channels": [
+				22,
+				27,
+				29
+			],
+			"hex": "#161b1d",
+			"equal": true
+		},
+		{
+			"name": "--color-mist-950",
+			"source": "oklch(14.8% 0.004 228.8)",
+			"expected": "#090b0c",
+			"serialization": "color(srgb 0.0355827 0.0434275 0.0473213)",
+			"channels": [
+				9,
+				11,
+				12
+			],
+			"hex": "#090b0c",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-50",
+			"source": "oklch(98.6% 0.002 67.8)",
+			"expected": "#fbfaf9",
+			"serialization": "color(srgb 0.985306 0.980888 0.976311)",
+			"channels": [
+				251,
+				250,
+				249
+			],
+			"hex": "#fbfaf9",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-100",
+			"source": "oklch(96% 0.002 17.2)",
+			"expected": "#f3f1f1",
+			"serialization": "color(srgb 0.952904 0.945786 0.945793)",
+			"channels": [
+				243,
+				241,
+				241
+			],
+			"hex": "#f3f1f1",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-200",
+			"source": "oklch(92.2% 0.005 34.3)",
+			"expected": "#e8e4e3",
+			"serialization": "color(srgb 0.911247 0.894215 0.889938)",
+			"channels": [
+				232,
+				228,
+				227
+			],
+			"hex": "#e8e4e3",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-300",
+			"source": "oklch(86.8% 0.007 39.5)",
+			"expected": "#d8d2d0",
+			"serialization": "color(srgb 0.846512 0.823799 0.81617)",
+			"channels": [
+				216,
+				210,
+				208
+			],
+			"hex": "#d8d2d0",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-400",
+			"source": "oklch(71.4% 0.014 41.2)",
+			"expected": "#aba09c",
+			"serialization": "color(srgb 0.670296 0.627724 0.612183)",
+			"channels": [
+				171,
+				160,
+				156
+			],
+			"hex": "#aba09c",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-500",
+			"source": "oklch(54.7% 0.021 43.1)",
+			"expected": "#7c6d67",
+			"serialization": "color(srgb 0.485962 0.427639 0.404238)",
+			"channels": [
+				124,
+				109,
+				103
+			],
+			"hex": "#7c6d67",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-600",
+			"source": "oklch(43.8% 0.017 39.3)",
+			"expected": "#5b4f4b",
+			"serialization": "color(srgb 0.355865 0.309877 0.294535)",
+			"channels": [
+				91,
+				79,
+				75
+			],
+			"hex": "#5b4f4b",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-700",
+			"source": "oklch(36.7% 0.016 35.7)",
+			"expected": "#473c39",
+			"serialization": "color(srgb 0.278172 0.235859 0.224323)",
+			"channels": [
+				71,
+				60,
+				57
+			],
+			"hex": "#473c39",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-800",
+			"source": "oklch(26.8% 0.011 36.5)",
+			"expected": "#2b2422",
+			"serialization": "color(srgb 0.168645 0.141867 0.134199)",
+			"channels": [
+				43,
+				36,
+				34
+			],
+			"hex": "#2b2422",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-900",
+			"source": "oklch(21.4% 0.009 43.1)",
+			"expected": "#1d1816",
+			"serialization": "color(srgb 0.113672 0.0939217 0.0859938)",
+			"channels": [
+				29,
+				24,
+				22
+			],
+			"hex": "#1d1816",
+			"equal": true
+		},
+		{
+			"name": "--color-taupe-950",
+			"source": "oklch(14.7% 0.004 49.3)",
+			"expected": "#0c0a09",
+			"serialization": "color(srgb 0.0469756 0.0393626 0.0355466)",
+			"channels": [
+				12,
+				10,
+				9
+			],
+			"hex": "#0c0a09",
+			"equal": true
+		},
+		{
+			"name": "--color-black",
+			"source": "#000",
+			"expected": "#000000",
+			"serialization": "color(srgb 0 0 0)",
+			"channels": [
+				0,
+				0,
+				0
+			],
+			"hex": "#000000",
+			"equal": true
+		},
+		{
+			"name": "--color-white",
+			"source": "#fff",
+			"expected": "#ffffff",
+			"serialization": "color(srgb 1 1 1)",
+			"channels": [
+				255,
+				255,
+				255
+			],
+			"hex": "#ffffff",
+			"equal": true
+		}
+	]
+}
