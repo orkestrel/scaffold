@@ -1,0 +1,55 @@
+### format:check
+exit=0 :: format:check :: 5s
+### lint:check
+exit=0 :: lint:check :: 1s
+### check
+exit=0 :: check :: 59s
+### build
+exit=0 :: build :: 22s
+### test:setup
+exit=0 :: test:setup :: 19s
+### test:src:bootstrap
+exit=0 :: test:src:bootstrap :: 14s
+### test:src:tailwindcss
+exit=0 :: test:src:tailwindcss :: 24s
+### test:guides
+exit=0 :: test:guides :: 2s
+### test:policy
+exit=0 :: test:policy :: 4s
+### test:conformance
+exit=0 :: test:conformance :: 58s
+### test:app:browser
+exit=0 :: test:app:browser :: 51s
+### test:setup:browser
+exit=0 :: test:setup:browser :: 147s
+### test:integration
+exit=0 :: test:integration :: 47s
+### test:src:browser
+exit=1 :: test:src:browser :: 186s
+### test:journey
+exit=1 :: test:journey :: 477s
+### build:showcase
+exit=0 :: build:showcase :: 2s
+sha256 2332e9458dc3eef3574c207d32b39f72d950ac1213073c4613e3f403c7612699  showcase/browser.html 7932f7a573bbacf39037481c0e0bbc94a0de59c029b4d494fd1956f301c6d49f  dist/src/bootstrap/index.css 22f33114084c835a177ed2d8cf971670b75eabbd309d96915e62108b3146cf43  dist/src/tailwindcss/index.css 
+status: 
+      Tests  153 passed (153)
+      Tests  14 passed (14)
+      Tests  6 passed (6)
+[2m      Tests [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+      Tests  119 passed | 1 skipped (120)
+      Tests  117 passed (117)
+      Tests  234 passed (234)
+      Tests  134 passed (134)
+      Tests  54 passed (54)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:471:2 > Placement controls > records the config-popover-flip transient departure and compares the settled box
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:681:2 > Placement controls > measures the perpendicular keyword dimension swap warrant for constructed rules
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:969:3 > Placement moving geometry > 'Popover'-'scroll'
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:969:3 > Placement moving geometry > 'Popover'-'transform'
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:1022:1 > consumes every selected departure
+ FAIL  |src:browser (chromium)| tests/src/browser/Tip.test.ts:1147:2 > Tip initialization: popover > projects markup leaves and refuses the tooltip config and sanitizer attributes
+      Tests  6 failed | 781 passed (787)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:472:2 > showcase journeys > J8 drives the engine through the component sections and opens nothing on arrival
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:1354:2 > showcase statecharts > drives the 'accordion' table through its controls with motion=false
+      Tests  2 failed | 87 passed | 3 skipped (92)
