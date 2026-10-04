@@ -1,0 +1,77 @@
+# Tailwind flip: measurements
+
+The measurement round of 2026-10-04 ran on the cloud host (Linux, Chromium 141.0.7390.37 launched from `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, tailwindcss 4.3.3, dart-sass 1.105.1, Node 22.22.2) over veneer `4929856` with a clean tree. Four lanes measured and one lane re-ran every probe and read every probe's code; every reading reproduced byte for byte (`measurements/verify.md`). The probes live in `probes/` beside this file, named `<lane>-<file>`; they write only under veneer's ignored `tmp/probes/flip/`. The reports live in `measurements/`.
+
+## Conditions
+
+The sheets lane (`measurements/sheets.md`, `measurements/sheets-manifest.json`) built these inputs:
+
+- `bootstrap-lifted.css`: the built `./bootstrap` sheet (1880 top-level rules, 1716 `!important` declarations).
+- `bootstrap-reboot-reset.css`: the same Sass source with the reboot partial compiled unlayered and wrapped in `@layer reset`, inserted after the order statement (its two `!important` declarations sit inside that layer in this variant).
+- `*-minus-shared.css`: each Bootstrap variant with every rule whose selector is exactly `.NAME` for one of the 192 shared utilities deleted in CSSOM (199 rules: 192 unlayered `!important` rules and the 7 layered `--bs-*-opacity: 1` halves of `bg-black`, `bg-transparent`, `bg-white`, `border-black`, `border-white`, `text-black`, `text-white`). The CSSOM round trip drops `.spinner-border`'s `border` shorthand and rounds the `col-*` percentages; the `.text.css` alternates delete by text and keep both, and the M3 controls isolate the 171 readings this changes.
+- `tailwind-unexcluded.css`: `recipe.json` `.unexcluded`, the recipe without the Veneer import.
+- `tailwind-flipped.css`: real Tailwind over the showcase's 2039 candidates with the input `ORDER_STATEMENT`, `@import 'tailwindcss';`, `@source not inline("<1833 names>")`, where the names are every Bootstrap name except the 192 shared utilities. Against the unexcluded control it drops exactly the 17 shared components and adds nothing (244 style rules, 206 class tokens).
+- `tailwind-flipped-theme.css`: the same input with `@theme { --color-primary: #0d6efd; }`; byte-identical to the preceding file, because `bg-primary` and `text-primary` stay excluded and Tailwind emits no unused theme variable.
+
+Conditions read in Chromium: A = lifted alone; B = unexcluded then lifted (the raw composition without the mirror); C = flipped then reboot-reset (minus shared in M3); D = flipped then lifted (minus shared in M3), the reboot still in `bootstrap`.
+
+## M5: the exclusion inverted
+
+Under the 1833-name exclusion Tailwind emits `mt-3`, `border-1`, `rounded`, `shadow`, `px-8`, `md:flex`, `mt-[1rem]`, and `bg-sky-500`, and emits none of `collapse`, `container`, `table`, `col-1`, `caption-top`, `btn`, `bg-primary`, `text-primary`. Rule bodies, each an exact `.NAME` selector inside `@layer utilities`: `.mt-3 { margin-top: calc(var(--spacing) * 3) }`; `.border-1 { border-style: var(--tw-border-style); border-width: 1px }`; `.rounded { border-radius: 0.25rem }`; `.w-25 { width: calc(var(--spacing) * 25) }`; `.h-100 { height: calc(var(--spacing) * 100) }`; `.top-50 { top: calc(var(--spacing) * 50) }`; `.z-1 { z-index: 1 }`; `.order-1 { order: 1 }`; `.text-start { text-align: start }`; `.float-start { float: inline-start }`. Tailwind consumes the `@source` statement; no compiled output carries it.
+
+## M1: cascade mechanics (`measurements/m1-cascade.md`)
+
+213 readings on `<div class="x">` with BS = `.x { margin-top: 16px !important }` (Bootstrap-like), TW = `@layer utilities { .x { margin-top: 12px } }`, RESET = `@layer reset { .x { margin-top: 4px } }`.
+
+- An unlayered `!important` beats a layered normal declaration in both source orders (16px). A layered `!important` beats an unlayered one in both orders and from any layer (12px); among layered importants the earlier layer wins (4px).
+- `revert-layer !important` rolls back to the nearest earlier layer that declares the property and skips every unlayered declaration: in any of the 10 statement layers beside BS and TW it reads 0px (user agent); in a layer named last, after `utilities`, it reads 12px, the Tailwind value; with RESET present it reads 4px from every layer except the last, which reads 12px; without TW the last layer reads 4px, never BS's 16px.
+- `revert-layer` without `!important` loses to BS in every layer (16px). `revert`, `unset`, and `initial` with `!important` read 0px everywhere, the last layer included. `inherit !important` takes the parent's value.
+- An unlayered normal `.card .x` beats layered normal TW (20px), loses to BS (16px), and loses to a layered `!important` (12px).
+- `@layer base { * { margin: 0 } }` beats `@layer reset { h1 { margin-bottom: 8px } }` (0px) and loses to the same rule in `@layer bootstrap` (8px), in both orders.
+- `@layer base { [hidden] { display: none !important } }` beats unlayered `.d-flex { display: flex !important }` (none) in both orders; with both unlayered the later rule wins.
+
+Consequence: a thin sheet can neutralize Bootstrap's unlayered `!important` on a shared utility name only from a layer that follows `utilities` in the order, with `revert-layer !important` on the properties that rule declares, and the result is Tailwind's value when Tailwind declares the name and the user agent's when it does not. A thin sheet can make preflight beat the reboot from inside the `bootstrap` layer with `revert-layer` (normal) on the reboot's declarations, which rolls back to `base`; M1 read that mechanism only through `d.rli.bootstrap` (important form, 4px from `reset`); the normal form inside `bootstrap` was not read and is the first probe the design must take.
+
+## M2: bare elements (`measurements/m2-bare.md`)
+
+61 elements and their `::before`, `::after`, and `::backdrop` (244 subjects), 406 longhands each.
+
+- B moves 2594 rows against A over all 61 elements; D moves the same 2594 rows with the same values (B equals D on every row). C moves 2792: the same 2594 plus 198 C-only rows over 25 elements, the reboot declarations preflight now beats.
+- The 198 C-only rows by longhand: `font-size` 36, `line-height` 36, `font-weight` 24, `margin-bottom` 17 (and its logical twin 17), `font-family` 16, `padding-left` 4, border styles on `fieldset`, `hr`, `iframe` (none to solid at 0 width), `padding` on `kbd`, `caption`, `mark`, `height` on `caption`. Witnesses under A then C: `h1` 40px 500 48px 8px-margin then 16px 400 19.2px 0px; `h5` 20px then 16px; `h6` keeps 16px and loses weight 500; `p` margin-bottom 16px then 0px; `a[href]` color rgb(13, 110, 253) underline then rgb(33, 37, 41) none; `ul` padding-left 32px then 0px; `code`, `kbd`, `pre` 14px then 16px with Tailwind's `ui-monospace` stack; `small` 14px then 12.8px; `hr` margins 16px then 0px.
+- Rows that move under B, C, and D alike (preflight declarations the reboot never makes): `img` and `svg` `display` inline then block; `ul` `list-style-type` disc then none; `button` background rgb(239, 239, 239) then transparent, padding 1px 6px then 0, border width 2px then 0; `html` font-family from Bootstrap's `system-ui` stack to Tailwind's `-apple-system` stack (body keeps Bootstrap's); `tab-size` 8 then 4 on every element; eight border styles none then solid at 0 width on every element.
+- The two important reboot declarations: `<div hidden class="d-flex">` reads `flex` under A and `none` under B, C, and D (preflight's layered important `[hidden]` wins). Chromium 141 exposes no computed style for `::-webkit-calendar-picker-indicator`, so the datalist rule has no witness.
+- Record agreement: 2568 of the 2598 `preflight.json` rows read the same `alone` and `preflight` values here; 14 differ, all user-agent form-control metrics (`input` width 189px in the record against 208px here, `select` height 25px against 23px, `button` and `select` background); 16 rows name `row-rule-color`, which Chromium 141 does not enumerate. 12 moved rows have no record row (`html` font-family on 4 subjects, `table` border colors on 8). 347 of the 406 enumerated longhands appear in no record row.
+
+## M3: component departures (`measurements/m3-components.md`, `m3-summary.md`, `m3-curation-candidates.md`, `m3-functional.md`, `m3-shared-utility-census.md`)
+
+55 section fragments, 61 documents (6 also at 390x844), 4882 elements: 3197 carry a component class, 530 a shared utility without one, 573 another registry class, 582 none. No script ran.
+
+- Departing (element, longhand or box) pairs: D against A 51499, C against A 59216; on component-class elements 33985 and 36598. Every element departs in `tab-size` (8 to 4) and most in eight 0-width border styles (none to solid): 2943 of the 11743 distinct component-class rows are those two kinds and draw nothing.
+- The visible movers, by frequency: `code` font (357 pairs: `ui-monospace`, 12.25px to 14px); `w-100` width 582px to 400px (314 pairs; Tailwind's `w-100` is 25rem); `gap-3` 16px to 12px (245); `border` color rgb(222, 226, 230) to the text color (199) and `border` on `.ratio` to rgb(0, 0, 0); `rounded` 6px to 4px; `h-100` to 400px.
+- Functional departures on component-class elements: none in `visibility`, `opacity`, `pointer-events`, `position`, `overflow`, or `z-index`; 7 `display` rows, all preflight's `img, svg { display: block }` on `svg.bi` inside `.btn` and a breadcrumb link and on `img.figure-img` inside `.figure`, plus the Tailwind `grid` specimen. 4467 box rows move by more than 1px, led by `y` (2083) from collapsed heading and paragraph margins and `height` (1233).
+- Curation candidates (component-class elements, visible, attributed to preflight beating the reboot): `.modal-title` on `h4` loses weight 500; `.offcanvas-title` on `h4` loses 20px, 500, and 30px line height; `.popover-header` on `h4` loses weight 500; `.list-group-item` and `.list-group` lose `disc` (to `none`, invisible in flex); `.pagination` and `.placeholder-glow` lose a 16px bottom margin; `.mark` on a `span` loses its 3px padding; `.stretched-link` and `.visually-hidden-focusable` on `a` lose the link color and underline; `.tab-content`, `.toast-container`, `.row`, `.nav`, `.list-unstyled`, and `.small` rows are shared-utility moves (`p-3`, `mt-3`, `mb-3` on the same element) that the strict attribution missed. The showcase's chrome carries `h-100`, `w-100`, `mb-0`, `gap-3`, `bg-transparent`, `flex-wrap`, `mt-1`, `rounded`, `border`, `p-2` on its figure, card, and caption elements.
+- Census at 1280x800: 1482 of 4005 elements carry a shared utility; 74 of the 192 names appear, 118 appear on no fragment element (the generated matrices show them).
+
+## Verify (`measurements/verify.md`)
+
+All 14 probe runs reproduced; every finding confirmed, two refuted in part (M2 named the default Chromium launch where the probe's catch branch launched the pinned binary; M3's spinner widths are 4px with 3px on the small variant). Method weaknesses: 6 of the 406 enumerated names are shorthands (32 `text-decoration` rows double-count `text-decoration-line`); the CSSOM minus-shared sheets lose the spinner border and round the column percentages (171 of 59241 rows); strict `preflight` attribution rests on a row existing for the tag and longhand, and the extended attribution's `div` fallback labels 3334 occurrences on `figcaption`, `li`, `nav`, and `form` with no row of their own; 10337 strict occurrences stay unknown. Objections a skeptic raises: one engine (Chromium is the project's only target); probe-built sheets rather than built artifacts; departure counts dominated by invisible longhands.
+
+## M6: reboot counters, the reboot's class rules, and Tailwind inlining Bootstrap (Orchestrator, `probes/m6-counter-*.ts`, `measurements/m6-counter-output.json`)
+
+Fixture: `<h1>`, `<h1 class="h1">`, `<div class="h1">`, `<p>`, `<a href>`, `<span class="small">`, `<small>`, `<h5 class="modal-title">`; counter = `@layer bootstrap { h1..h6 { font-size, font-weight, line-height, margin-bottom: revert-layer } p { margin-bottom: revert-layer } a { color, text-decoration: revert-layer } body { color: revert-layer } }` (the `body` row is the deliberate over-reach: preflight declares no body color).
+
+| Case (sheets in order) | `h1` size, weight, margin | `h1.h1` size | `div.h1` size | `p` margin | `a` color | `small` size | `h5.modal-title` size, weight |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A lifted alone | 40px 500 8px | 40px | 40px | 16px | rgb(13, 110, 253) | 14px | 20px 500 |
+| C flipped, reboot in `reset` | 16px 400 0px | 16px | 40px | 0px | rgb(33, 37, 41) | 12.8px | 16px 400 |
+| N1 flipped, lifted, normal counter after | 16px 400 0px | 40px | 40px | 0px | rgb(0, 0, 0) (body row reached the user agent) | 14px | 16px 400 |
+| N2 flipped, normal counter before lifted | 40px 500 8px | 40px | 40px | 16px | rgb(13, 110, 253) | 14px | 20px 500 |
+| I1 flipped, important counter before lifted | 16px 400 0px | 16px | 40px | (probe artifact) | (probe artifact) | 14px | 16px 400 |
+| N1c N1 then a consumer unlayered `h1 { font-size: 48px } p { margin-bottom: 7px }` | 48px | 48px | 40px | 7px | | | |
+| I1c I1 then the same consumer rules | 16px | 16px | 40px | 7px | | | |
+| Cc C then the same consumer rules | 48px | 48px | 40px | 7px | | | |
+| N0 lifted and the normal counter, no Tailwind | 32px 700 21.44px (user agent) | 40px | 40px | 16px | rgb(0, 0, 238) | 14px | 13.28px 700 |
+
+Readings: a normal `revert-layer` counter inside `bootstrap` hands the reboot's declaration to preflight only when it loads after the Bootstrap sheet (N1 against N2), keeps `.h1` on an `h1` by specificity (40px), and lets a consumer's unlayered rule win (N1c); a counter on a property preflight never declares reaches the user agent (the `body` row, and every row without Tailwind in N0). An important counter works in either order but beats `.h1` on an `h1` and the consumer's unlayered rule (I1, I1c). The reboot moved into `reset` takes its class rules with it: `.h1` on an `h1` reads 16px under C, while `.h1` on a `div` keeps 40px; `small` reads preflight's 12.8px and `.small` keeps 14px.
+
+Tailwind inlining Bootstrap (`inline.ts`, `inline-equal.ts`): the entry `ORDER_STATEMENT`, `@import 'tailwindcss'`, `@import 'bootstrap.css'` (the lifted sheet), the 1833-name exclusion compiles; the output keeps `.btn`, the 75 `@layer bootstrap` blocks, Bootstrap's unlayered `.mt-3 !important` and `.d-flex !important`, emits Tailwind's `.mt-3` in `utilities`, emits no `.collapse`, and places Tailwind's own layer blocks before the inlined Bootstrap text. Flattened in CSSOM to (context, selector, property, value, priority) rows, the inlined output carries 8093 of the lifted sheet's 8094 rows: Tailwind merges the two adjacent `.dropstart .dropdown-toggle::after` rules and drops the overridden `display: inline-block`, and it rewrites the 400 empty `@layer bootstrap {}` blocks (rules whose declarations are all important) as `@layer bootstrap;` statements. Semantically equal; not sequence-equal.

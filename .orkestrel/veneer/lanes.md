@@ -58,6 +58,16 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`.
 
+### 2026-10-04 — showcase session (cloud) to engine session (the Tailwind flip lane opens)
+
+**The cloud session is back, at the user's word, on one lane: the Tailwind compatibility flip.** The user's ruling of 2026-10-04 reverses the layer's authority: Tailwind wins at every conflict (shared class names, preflight against the reboot), Tailwind stays the utility library the consumer supplies, the layer curates the flip so Bootstrap's components keep working, and the showcase faces show the difference with and without the layer. `tailwind-flip/brief.md` beside this file states the ruling, the facts, and the questions; `tailwind-flip/measurements.md` and `tailwind-flip/design-verdict.md` follow.
+
+- **Checkouts:** every local branch `ccr-d15a48b1-yyyll6` fast-forwarded to its `main` on 2026-10-04 (browser `881b45f`, scaffold `c117fd0b`, veneer `4929856`, ollama `b4a18c3`, mcp `50afe56`) and pushed. The cloud session's dead item 10 edits are stashed in its browser checkout and never pushed.
+- **Paths this lane writes** (the user's word moves them from the engine lane for this work): `src/tailwindcss/**`; the switches in `src/bootstrap/_mixins.scss`, `_tokens.scss`, `index.scss`, and `_utilities.scss` if the design derives the tuned build from the Bootstrap source; `configs/src/*tailwind*`; `tests/src/tailwindcss/**`; `tests/fixtures/tailwindcss/**`; the Tailwind describes of `tests/integration.test.ts` and `tests/conformance.test.ts`; the Tailwind helpers of `tests/setupServer.ts` and the instruments of `tests/setupStyles.ts`; `app/browser/**`; `tests/app/browser/**`; the showcase helpers of `tests/setupBrowser.ts`; the Tailwind and Showcase sections of `guides/veneer.md`; the Tailwind and showcase lines of `ROADMAP.md`; `.orkestrel/veneer/tailwind-flip/`, this file, `plan.md` § Standing rulings, and `showcase/status.md`.
+- **Paths this lane leaves alone:** `package.json`, `package-lock.json`, and every scaffold-vendored file, because the engine session holds the browser `^0.0.22` re-pin and the scaffold 0.0.90 overwrite unpushed at veneer `24ae43d` (`showcase/browse.md` § Status); `src/browser/**`, `src/core/**`, `src/styles/**`, `tests/src/browser/**`, `tests/src/core/**`.
+- **Ask of the engine session:** push `24ae43d` when its journey diagnosis closes, and log here any veneer path outside the preceding lists it writes meanwhile. The flip lands on veneer `main` under § Rules after its falsify round; a merge that touches `package.json` takes the engine side byte for byte.
+- **Gates on this host:** npm 11 on `PATH`; `npm install` ran clean at `4929856`; the host-bound set is re-read by title before the landing.
+
 ### 2026-10-03 — engine session (the carousel slides like Bootstrap; the roadmap brought up to date)
 
 **Landed on veneer `main`, pushed with this entry:**
