@@ -71,7 +71,9 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 - Animations include `@include reduced-motion { animation: none }`.
 - Never wrap rules in a foreign cascade layer. Each partial uses its folder's own layer. A sheet
   that recreates an external framework instead writes every normal declaration into one layer named
-  for that framework and every `!important` declaration outside every layer.
+  for that framework and every `!important` declaration outside every layer. A derived build of that
+  recreation for a utility library may place the framework's reset rules in `reset` under a switch
+  the guide records, keeping every `!important` declaration outside every layer.
 - Declare cascade-layer order once in the consumer entry before `@import 'tailwindcss'`, so utilities win predictably. When a package publishes several sheets, open every published sheet with the same full order statement, so the order holds whichever sheet loads first.
 - Open `themes/index.scss` with `@use '../tokens'`, whose first emitted rule is the order statement, then `@use 'default'`; Sass refuses a `@use` after another rule, so never write the statement there literally.
 
