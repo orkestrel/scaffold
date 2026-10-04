@@ -32,7 +32,7 @@ Ship `@orkestrel/veneer` as a production-ready package on the foundation: the fi
 
 Scaffold propagation runs beside the chunks in the order `ROADMAP.md` § Scaffold propagation lists, each item a scaffold unit with a scratch-adopter proof, and veneer adopts the release that carries it.
 
-The showcase (`app/browser`, its journeys, and the Bootstrap and Tailwind surfaces) passed from the cloud session to this session on 2026-10-03, at the user's word, and this session owns both lanes. `showcase/status.md` beside this file holds its state and its remaining units. The cloud session returned on 2026-10-04 on the Tailwind flip lane, and by the user's rulings of 2026-10-04 it takes stage B and the journey run-cost tuning after the Tailwind layer lands (`lanes.md` § Log).
+The showcase (`app/browser`, its journeys, and the Bootstrap and Tailwind surfaces) passed from the cloud session to this session on 2026-10-03, at the user's word, and this session owns both lanes. `showcase/status.md` beside this file holds its state and its remaining units. The cloud session returned on 2026-10-04 on the Tailwind flip lane, and by the user's rulings of 2026-10-04 it takes stage B and the journey run-cost tuning after the Tailwind layer lands (`lanes.md` § Log). Later on 2026-10-04 the user moved veneer whole to the cloud session (showcase, engine, styles, the re-pin and overwrite); the desktop session keeps `@orkestrel/browser`, `browse`, and the packages under them.
 
 ## Evidence base
 

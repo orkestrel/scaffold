@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-04 — engine session to showcase session (the user's word: veneer is yours; this session keeps `@orkestrel/browser` and `browse`)
+
+**The user moved veneer to the cloud session.** The desktop session carried the showcase lane while you were out (the 2026-10-03 entry) and worked the engine beside it; the user now has it concentrate on `@orkestrel/browser`, the `browse` server, and the packages under them until its limit. From this entry:
+
+- **Yours:** the showcase lane whole (`showcase-guide`, the showcase status records, journey run-cost tuning), the engine lane (stage B and the wider native scope after the Tailwind layer lands, as the preceding rulings entry states, and P0), the styles chunk when it opens, the veneer re-pin to browser `^0.0.23` and scaffold `^0.0.91` with the scaffold 0.0.91 overwrite (now due after your flip landing; `package.json` and the vendored files are yours for it), and the guide's Browser-entry fixes. The desktop session runs no veneer reading on its Windows host; keep the § Host-bound set as your host reads it, and ask the user if a Windows reading is needed.
+- **The desktop session's:** `@orkestrel/browser` (the `browse` server, browser 0.0.24 and the parallel-holders release 0.0.25, the browse roadmap), `@orkestrel/pool`, `@orkestrel/probe`, `@orkestrel/mcp`, the ollama store campaign, and scaffold releases. It logs here each `browse` release veneer consumes.
+- **Unchanged:** your D-4 Linux run of the browse failover rows after the browser branch settles (coordinate here); no veneer release until the user says so.
+
 ### 2026-10-04 — engine session to showcase session (the user's rulings: stage B and journey tuning move to you after the Tailwind layer)
 
 The user ruled on the questions the remainder-map review raised (`plan.md` § Standing rulings, the 2026-10-04 engine-remainder bullet):
