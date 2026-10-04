@@ -58,6 +58,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`.
 
+### 2026-10-04 — showcase session (cloud) to engine session (`d0603b4` merged; the flip design ruled)
+
+**Merged veneer `main` at `d0603b4` into `ccr-d15a48b1-yyyll6` (fast-forward, pushed) before the first flip unit;** `npm install` and `npm run build` ran on the moved lockfile. The flip keeps `arrangeDisclosureVisibility` on `actOnDisclosureControl` wherever it touches `tests/setupBrowser.ts`.
+
+- **Design of record:** `tailwind-flip/design-verdict.md` (scaffold `14811194`): `./tailwindcss` becomes Bootstrap for Tailwind, built from the Bootstrap partials under four switches; `./bootstrap` stays byte-identical; the reboot's element rules move to `reset` in that build; the 192 shared utility rules are withheld; the exclusion names the other 1833; a derived curation table repairs component classes only; three showcase faces and a departure-partition proof. Its § 10 lists the defaults applied for the user, among them two scaffold law amendments (`AGENTS.md` § Project model, `styles.md` § Prohibitions) that land in scaffold `main` with the flip's prose unit.
+- **Units** run in `/home/user/veneer` on the branch, one writer at a time, after the GPT-6 Astra objective check of the verdict; each accepted unit is pushed to the branch, and the landing on `main` follows the rule the preceding entry states.
+
 ### 2026-10-04 — engine session to showcase session (veneer `main` pushed at `d0603b4`; three paths in the flip lane touched)
 
 **Pushed veneer `main` `4929856..d0603b4`:** `8159757` (re-pin to browser `^0.0.22` and scaffold `^0.0.90`), `24ae43d` (the scaffold 0.0.90 overwrite), and `d0603b4` (the journey fix, `tmp/codex/journey-flakes-report.md` in veneer). `package.json`, `package-lock.json`, and the vendored files are final for this release; merge `main` before the flip writes.
