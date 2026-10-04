@@ -1,0 +1,3623 @@
+[
+	{
+		"original": "*, ::before, ::after",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::before, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::after",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 3,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": ":root",
+		"copy": ":root:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "@media (prefers-reduced-motion: no-preference)",
+		"before": [
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 5,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "body",
+		"copy": "body:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 7,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "hr",
+		"copy": "hr:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 9,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1",
+		"copy": "h6:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h6, h5:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h5, h4:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h4, h3:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h3, h2:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h2, h1:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h1",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 11,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h1, .h1",
+		"copy": "h1:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h1",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 13,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h1, .h1",
+		"copy": "h1:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h1",
+		"context": "@media (min-width: 1200px)",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 15,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h2, .h2",
+		"copy": "h2:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h2",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 17,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h2, .h2",
+		"copy": "h2:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h2",
+		"context": "@media (min-width: 1200px)",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 19,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h3, .h3",
+		"copy": "h3:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h3",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 21,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h3, .h3",
+		"copy": "h3:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h3",
+		"context": "@media (min-width: 1200px)",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 23,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h4, .h4",
+		"copy": "h4:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h4",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 25,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h4, .h4",
+		"copy": "h4:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h4",
+		"context": "@media (min-width: 1200px)",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 27,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h5, .h5",
+		"copy": "h5:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h5",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 29,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "h6, .h6",
+		"copy": "h6:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .h6",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 31,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "p",
+		"copy": "p:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 33,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "abbr[title]",
+		"copy": "abbr[title]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"position": 35,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "address",
+		"copy": "address:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 37,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "ol, ul",
+		"copy": "ol:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), ul:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 39,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "ol, ul, dl",
+		"copy": "ol:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), ul:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), dl:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 41,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "ol ol, ul ul, ol ul, ul ol",
+		"copy": "ol ol:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), ul ul:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), ol ul:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), ul ol:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				2
+			],
+			[
+				0,
+				0,
+				2
+			],
+			[
+				0,
+				0,
+				2
+			],
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				2
+			],
+			[
+				0,
+				0,
+				2
+			],
+			[
+				0,
+				0,
+				2
+			],
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"position": 43,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "dt",
+		"copy": "dt:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 45,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "dd",
+		"copy": "dd:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 47,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "blockquote",
+		"copy": "blockquote:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 49,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "b, strong",
+		"copy": "b:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), strong:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 51,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "small, .small",
+		"copy": "small:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .small",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 53,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "mark, .mark",
+		"copy": "mark:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), .mark",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 55,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "sub, sup",
+		"copy": "sub:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), sup:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 57,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "sub",
+		"copy": "sub:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 59,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "sup",
+		"copy": "sup:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 61,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "a",
+		"copy": "a:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 63,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "a:hover",
+		"copy": "a:hover:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"position": 65,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "pre, code, kbd, samp",
+		"copy": "pre:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), code:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), kbd:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), samp:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 68,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "pre",
+		"copy": "pre:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 70,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "pre code",
+		"copy": "pre code:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"position": 72,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "code",
+		"copy": "code:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 74,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "a > code",
+		"copy": "a > code:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"position": 76,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "kbd",
+		"copy": "kbd:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 78,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "kbd kbd",
+		"copy": "kbd kbd:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				2
+			]
+		],
+		"position": 80,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "figure",
+		"copy": "figure:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 82,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "img, svg",
+		"copy": "img:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), svg:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 84,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "table",
+		"copy": "table:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 86,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "caption",
+		"copy": "caption:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 88,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "th",
+		"copy": "th:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 90,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": "thead:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), tbody:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), tfoot:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), tr:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), td:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), th:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 92,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "label",
+		"copy": "label:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 94,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "button",
+		"copy": "button:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 96,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "button:focus:not(:focus-visible)",
+		"copy": "button:focus:not(:focus-visible):where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				2,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				2,
+				1
+			]
+		],
+		"position": 98,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "input, button, select, optgroup, textarea",
+		"copy": "input:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), button:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), select:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), optgroup:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), textarea:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 100,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "button, select",
+		"copy": "button:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), select:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 102,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "[role=\"button\"]",
+		"copy": "[role=\"button\"]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 104,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "select",
+		"copy": "select:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 106,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "select:disabled",
+		"copy": "select:disabled:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"position": 108,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "button, [type=\"button\"], [type=\"reset\"], [type=\"submit\"]",
+		"copy": "button:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), [type=\"button\"]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), [type=\"reset\"]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), [type=\"submit\"]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				1,
+				0
+			],
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 111,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "button:not(:disabled), [type=\"button\"]:not(:disabled), [type=\"reset\"]:not(:disabled), [type=\"submit\"]:not(:disabled)",
+		"copy": "button:not(:disabled):where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), [type=\"button\"]:not(:disabled):where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), [type=\"reset\"]:not(:disabled):where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring), [type=\"submit\"]:not(:disabled):where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				1
+			],
+			[
+				0,
+				2,
+				0
+			],
+			[
+				0,
+				2,
+				0
+			],
+			[
+				0,
+				2,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				1
+			],
+			[
+				0,
+				2,
+				0
+			],
+			[
+				0,
+				2,
+				0
+			],
+			[
+				0,
+				2,
+				0
+			]
+		],
+		"position": 113,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "textarea",
+		"copy": "textarea:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 115,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "fieldset",
+		"copy": "fieldset:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 117,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "legend",
+		"copy": "legend:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 119,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "legend",
+		"copy": "legend:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "@media (min-width: 1200px)",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 121,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "legend + *",
+		"copy": "legend + :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 123,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "::-webkit-datetime-edit-fields-wrapper, ::-webkit-datetime-edit-text, ::-webkit-datetime-edit-minute, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-year-field",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-fields-wrapper, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-text, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-minute, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-hour-field, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-day-field, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-month-field, :where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-datetime-edit-year-field",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			],
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 125,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "::-webkit-inner-spin-button",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-inner-spin-button",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 127,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "[type=\"search\"]",
+		"copy": "[type=\"search\"]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				0
+			]
+		],
+		"position": 129,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "[type=\"search\"]::-webkit-search-cancel-button",
+		"copy": "[type=\"search\"]:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-search-cancel-button",
+		"context": "",
+		"before": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				1,
+				1
+			]
+		],
+		"position": 131,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "::-webkit-search-decoration",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-search-decoration",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 133,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "::-webkit-color-swatch-wrapper",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-color-swatch-wrapper",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 135,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "::-webkit-file-upload-button",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::-webkit-file-upload-button",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 137,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "::file-selector-button",
+		"copy": ":where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)::file-selector-button",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 139,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "output",
+		"copy": "output:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 141,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "iframe",
+		"copy": "iframe:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 143,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "summary",
+		"copy": "summary:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 145,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "progress",
+		"copy": "progress:where(.modal-title, .offcanvas-title, .popover-header, .card-title, .card-text, .accordion-header, .pagination, .placeholder-glow, .stretched-link, .visually-hidden-focusable, .alert-link, .card-link, .icon-link, .link-primary, .link-secondary, .link-success, .link-danger, .link-warning, .link-info, .link-light, .link-dark, .link-body-emphasis, .lead, .display-1, .display-2, .display-3, .display-4, .display-5, .list-unstyled, .focus-ring)",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 147,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": ":where(.table) thead",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 158,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": ":where(.table) tbody",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 159,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": ":where(.table) tfoot",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 160,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": ":where(.table) tr",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 161,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "th",
+		"copy": ":where(.table) th",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 162,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": ":where(.table) th",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 163,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"original": "thead, tbody, tfoot, tr, td, th",
+		"copy": ":where(.table) td",
+		"context": "",
+		"before": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"after": [
+			[
+				0,
+				0,
+				1
+			]
+		],
+		"position": 164,
+		"boundary": 165,
+		"component": ".lead"
+	},
+	{
+		"controls": {
+			"stronger": [
+				[
+					0,
+					1,
+					1
+				],
+				[
+					0,
+					0,
+					1
+				]
+			],
+			"late": 2503,
+			"boundary": 165
+		}
+	},
+	{
+		"form": "reboot",
+		"selector": "modal-title",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"20px",
+					"500"
+				]
+			],
+			[
+				[
+					"20px",
+					"500"
+				]
+			],
+			[
+				[
+					"16px",
+					"400"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "offcanvas-title",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"20px",
+					"500"
+				]
+			],
+			[
+				[
+					"20px",
+					"500"
+				]
+			],
+			[
+				[
+					"16px",
+					"400"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "popover-header",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"500"
+				]
+			],
+			[
+				[
+					"500"
+				]
+			],
+			[
+				[
+					"400"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "card-title",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"20px",
+					"500"
+				]
+			],
+			[
+				[
+					"20px",
+					"500"
+				]
+			],
+			[
+				[
+					"16px",
+					"400"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "card-text",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "accordion-header",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"24px",
+					"500"
+				]
+			],
+			[
+				[
+					"24px",
+					"500"
+				]
+			],
+			[
+				[
+					"16px",
+					"400"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "pagination",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "placeholder-glow",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "stretched-link",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(13, 110, 253)",
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(13, 110, 253)",
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "visually-hidden-focusable",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(13, 110, 253)",
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(13, 110, 253)",
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "alert-link",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "card-link",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(13, 110, 253)",
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(13, 110, 253)",
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "icon-link",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(13, 110, 253)",
+					"underline"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-primary",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-secondary",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-success",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-danger",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-warning",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-info",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-light",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-dark",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "link-body-emphasis",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"underline"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "lead",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "display-1",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "display-2",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "display-3",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "display-4",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "display-5",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "list-unstyled",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"16px",
+					"16px"
+				]
+			],
+			[
+				[
+					"0px",
+					"0px"
+				]
+			]
+		]
+	},
+	{
+		"form": "reboot",
+		"selector": "focus-ring",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(13, 110, 253)"
+				]
+			],
+			[
+				[
+					"rgb(13, 110, 253)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "svg:where(.bi)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"inline"
+				]
+			],
+			[
+				[
+					"inline"
+				]
+			],
+			[
+				[
+					"block"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "img:where(.figure-img)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"inline"
+				]
+			],
+			[
+				[
+					"inline"
+				]
+			],
+			[
+				[
+					"block"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "img:where(.img-fluid)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"inline"
+				]
+			],
+			[
+				[
+					"inline"
+				]
+			],
+			[
+				[
+					"block"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "img:where(.card-img)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"none"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			],
+			[
+				[
+					"100%"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "img:where(.card-img-top)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"none"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			],
+			[
+				[
+					"100%"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "img:where(.card-img-bottom)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"none"
+				]
+			],
+			[
+				[
+					"none"
+				]
+			],
+			[
+				[
+					"100%"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "input:where(.form-check-input)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(0, 0, 0)"
+				]
+			],
+			[
+				[
+					"rgb(0, 0, 0)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "input:where(.btn-check)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(0, 0, 0)"
+				]
+			],
+			[
+				[
+					"rgb(0, 0, 0)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "input:where(.form-range)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(157, 150, 142)"
+				]
+			],
+			[
+				[
+					"rgb(157, 150, 142)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)"
+				]
+			]
+		]
+	},
+	{
+		"form": "restore",
+		"selector": "button:where(.accordion-button)",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"400"
+				]
+			],
+			[
+				[
+					"400"
+				]
+			],
+			[
+				[
+					"500"
+				]
+			]
+		]
+	},
+	{
+		"form": "scoped",
+		"selector": ":where(.table) thead",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				]
+			],
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)"
+				]
+			]
+		]
+	},
+	{
+		"form": "scoped",
+		"selector": ":where(.table) tbody",
+		"count": 2,
+		"readings": [
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"0px"
+				],
+				[
+					"rgb(33, 37, 41)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"2px"
+				]
+			],
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"0px"
+				],
+				[
+					"rgb(33, 37, 41)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"2px"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"0px"
+				],
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"2px"
+				]
+			]
+		]
+	},
+	{
+		"form": "scoped",
+		"selector": ":where(.table) tfoot",
+		"count": 1,
+		"readings": [
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				]
+			],
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)"
+				]
+			]
+		]
+	},
+	{
+		"form": "scoped",
+		"selector": ":where(.table) tr",
+		"count": 2,
+		"readings": [
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			],
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			],
+			[
+				[
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)",
+					"rgb(33, 37, 41)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			]
+		]
+	},
+	{
+		"form": "scoped",
+		"selector": ":where(.table) th",
+		"count": 2,
+		"readings": [
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			],
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			],
+			[
+				[
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)"
+				],
+				[
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)"
+				]
+			]
+		]
+	},
+	{
+		"form": "scoped",
+		"selector": ":where(.table) td",
+		"count": 2,
+		"readings": [
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			],
+			[
+				[
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)",
+					"rgb(222, 226, 230)"
+				],
+				[
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)",
+					"rgb(166, 181, 204)"
+				]
+			],
+			[
+				[
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)"
+				],
+				[
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)",
+					"rgb(0, 0, 0)"
+				]
+			]
+		]
+	},
+	{
+		"selector": "a.card-link",
+		"widths": [
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			],
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			]
+		]
+	},
+	{
+		"selector": "svg.bi",
+		"widths": [
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			],
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			]
+		]
+	},
+	{
+		"selector": "input.btn-check",
+		"widths": [
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			],
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			]
+		]
+	},
+	{
+		"selector": "input.form-range",
+		"widths": [
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			],
+			[
+				"0px",
+				"0px",
+				"0px",
+				"0px"
+			]
+		]
+	}
+]
