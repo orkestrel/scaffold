@@ -6,6 +6,7 @@
 - **D-3 Codex onset:** take the two client readings first (Codex with `required = true` for `browse`; both clients against a server that exits during setup), then rule.
 - **D-4 Linux run:** after the Tailwind flip lane lands, in the cloud session.
 - **Next work, in order:** browser 0.0.24 hardening (the cancelled-call ping repair as the critic restated it, the forced-kill proof, the orphan case's timing), probe item 1's eager start (after D-3), browser features (`BROWSE_VIEWPORT`, a screenshot journey tool, a coded `OCCLUDED`), then mcp items 13 and 14.
+- **Failover ruled proven (2026-10-04, by the user's condition):** the Windows forced-kill proof landed in browser `5782c08` (a protocol-faithful hung stand-in killed after the ping deadline, a real successor serving; red with the kill removed), beside `3785b94` (a cancelled call keeps the loss check; the next call joins the remaining ping deadline) and `0413e6f` (the orphan case waits on the browser's exit event under a derived bound); every gate green, `test:service` 183. The POSIX rows (`SIGSTOP` hang and the two-deadline total, cooperative `SIGTERM`, a detached orphan, mode 0300) stay named limits for the Linux run after the flip. Browser item 14 (parallel holders) opens with its design round.
 - **Taken by recommendation:** D-1 keeps `log` and the class-owned exit code (T-14 is settled by the kind-file law); D-8 is deferred with its trigger recorded; D-9 is ruled veneer-local.
 
 ## Decisions for the user
