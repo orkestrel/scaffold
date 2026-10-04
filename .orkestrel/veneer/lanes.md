@@ -58,6 +58,10 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`.
 
+### 2026-10-04 — showcase session (cloud) (flip units U1 accepted, U2 launched)
+
+**U1 `flip-probe` accepted** (GPT-6 Astra, 4711 s, tree clean; `tailwind-flip/units/flip-probe/` holds the brief, the Sass prototype, and the readings; `design-verdict.md` § 13 summarizes them). The mechanism holds on a copy: byte-identical default compiles, the 73-rule `reset` block, 199 withheld rules, the recipe compile sequence-equal after the one known rewrite. The curation fixed point misattributed withheld shared-utility declarations to preflight; R5 is corrected and `flip-probe-2` re-derives the table under `tmp/probes/flip3/`. **U2 `flip-sheet` launched** on Astra in `/home/user/veneer` (writes `src/bootstrap/*.scss`, `src/tailwindcss/*`, `tests/src/tailwindcss/`, `tests/setupStyles*`, `tests/setup*`, the guide's curation table); the probe lane writes `tmp/` only.
+
 ### 2026-10-04 — showcase session (cloud) to engine session (`d0603b4` merged; the flip design ruled)
 
 **Merged veneer `main` at `d0603b4` into `ccr-d15a48b1-yyyll6` (fast-forward, pushed) before the first flip unit;** `npm install` and `npm run build` ran on the moved lockfile. The flip keeps `arrangeDisclosureVisibility` on `actOnDisclosureControl` wherever it touches `tests/setupBrowser.ts`.

@@ -1,0 +1,813 @@
+[
+	{
+		"specimen": "Tailwind padding on a Bootstrap button",
+		"subject": "button",
+		"property": "padding-left",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"12px",
+			"32px",
+			"32px"
+		],
+		"measured": [
+			"12px",
+			"32px",
+			"32px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Shared spacing and radius follow Tailwind",
+		"subject": ".mt-3",
+		"property": "margin-top",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"16px",
+			"16px",
+			"12px"
+		],
+		"measured": [
+			"16px",
+			"16px",
+			"12px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Shared spacing and radius follow Tailwind",
+		"subject": ".gap-4",
+		"property": "column-gap",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"24px",
+			"24px",
+			"16px"
+		],
+		"measured": [
+			"24px",
+			"24px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Shared spacing and radius follow Tailwind",
+		"subject": "span.rounded",
+		"property": "border-top-left-radius",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"6px",
+			"6px",
+			"4px"
+		],
+		"measured": [
+			"6px",
+			"6px",
+			"4px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Collapse stays visible",
+		"subject": ".collapse",
+		"property": "display",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"block",
+			"block",
+			"block"
+		],
+		"measured": [
+			"block",
+			"block",
+			"block"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Collapse stays visible",
+		"subject": ".collapse",
+		"property": "visibility",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"visible",
+			"collapse",
+			"visible"
+		],
+		"measured": [
+			"visible",
+			"collapse",
+			"visible"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Container keeps Bootstrap's widths",
+		"subject": ".container",
+		"property": "padding-left",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"12px",
+			"12px",
+			"12px"
+		],
+		"measured": [
+			"12px",
+			"12px",
+			"12px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Container keeps Bootstrap's widths",
+		"subject": ".container",
+		"property": "max-width",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"1140px",
+			"1280px",
+			"1140px"
+		],
+		"measured": [
+			"1140px",
+			"1280px",
+			"1140px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Pill radius beside rounded-full",
+		"subject": "button",
+		"property": "border-top-left-radius",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"800px",
+			"800px",
+			"800px"
+		],
+		"measured": [
+			"800px",
+			"800px",
+			"800px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Tailwind grid in a card body",
+		"subject": ".grid",
+		"property": "display",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"block",
+			"grid",
+			"grid"
+		],
+		"measured": [
+			"block",
+			"grid",
+			"grid"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Tailwind variant at the md breakpoint",
+		"subject": ".md\\:flex",
+		"property": "display",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"block",
+			"flex",
+			"flex"
+		],
+		"measured": [
+			"block",
+			"flex",
+			"flex"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Arbitrary margin value",
+		"subject": ".mt-\\[1rem\\]",
+		"property": "margin-top",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"0px",
+			"16px",
+			"16px"
+		],
+		"measured": [
+			"0px",
+			"16px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare heading beside a heading class",
+		"subject": "#bare-heading",
+		"property": "font-size",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"20px",
+			"20px",
+			"16px"
+		],
+		"measured": [
+			"20px",
+			"20px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare heading beside a heading class",
+		"subject": ".h5",
+		"property": "font-size",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"20px",
+			"20px",
+			"20px"
+		],
+		"measured": [
+			"20px",
+			"20px",
+			"20px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bootstrap card on Tailwind's reset",
+		"subject": ".card-title",
+		"property": "font-weight",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"500",
+			"500",
+			"500"
+		],
+		"measured": [
+			"500",
+			"500",
+			"500"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bootstrap card on Tailwind's reset",
+		"subject": ".card-text",
+		"property": "margin-bottom",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"16px",
+			"16px",
+			"16px"
+		],
+		"measured": [
+			"16px",
+			"16px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bootstrap card on Tailwind's reset",
+		"subject": "#bare-paragraph",
+		"property": "margin-bottom",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"16px",
+			"16px",
+			"0px"
+		],
+		"measured": [
+			"16px",
+			"16px",
+			"0px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare image and list",
+		"subject": "img",
+		"property": "display",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"inline",
+			"block",
+			"block"
+		],
+		"measured": [
+			"inline",
+			"block",
+			"block"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare image and list",
+		"subject": "ul",
+		"property": "list-style-type",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"disc",
+			"none",
+			"none"
+		],
+		"measured": [
+			"disc",
+			"none",
+			"none"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Icon in a Bootstrap button",
+		"subject": "svg.bi",
+		"property": "display",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"inline",
+			"block",
+			"inline"
+		],
+		"measured": [
+			"inline",
+			"block",
+			"inline"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Hidden attribute with a display utility",
+		"subject": "[hidden]",
+		"property": "display",
+		"source": "shipped page",
+		"width": 1280,
+		"expected": [
+			"flex",
+			"none",
+			"none"
+		],
+		"measured": [
+			"flex",
+			"none",
+			"none"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Border width without a border style",
+		"subject": ".border-1",
+		"property": "border-top-width",
+		"source": "scratch page",
+		"width": 1280,
+		"expected": [
+			"0px",
+			"1px",
+			"1px"
+		],
+		"measured": [
+			"0px",
+			"1px",
+			"1px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Tailwind padding on a Bootstrap button",
+		"subject": "button",
+		"property": "padding-left",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"12px",
+			"32px",
+			"32px"
+		],
+		"measured": [
+			"12px",
+			"32px",
+			"32px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Shared spacing and radius follow Tailwind",
+		"subject": ".mt-3",
+		"property": "margin-top",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"16px",
+			"16px",
+			"12px"
+		],
+		"measured": [
+			"16px",
+			"16px",
+			"12px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Shared spacing and radius follow Tailwind",
+		"subject": ".gap-4",
+		"property": "column-gap",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"24px",
+			"24px",
+			"16px"
+		],
+		"measured": [
+			"24px",
+			"24px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Shared spacing and radius follow Tailwind",
+		"subject": "span.rounded",
+		"property": "border-top-left-radius",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"6px",
+			"6px",
+			"4px"
+		],
+		"measured": [
+			"6px",
+			"6px",
+			"4px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Collapse stays visible",
+		"subject": ".collapse",
+		"property": "display",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"block",
+			"block",
+			"block"
+		],
+		"measured": [
+			"block",
+			"block",
+			"block"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Collapse stays visible",
+		"subject": ".collapse",
+		"property": "visibility",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"visible",
+			"collapse",
+			"visible"
+		],
+		"measured": [
+			"visible",
+			"collapse",
+			"visible"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Container keeps Bootstrap's widths",
+		"subject": ".container",
+		"property": "padding-left",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"12px",
+			"12px",
+			"12px"
+		],
+		"measured": [
+			"12px",
+			"12px",
+			"12px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Container keeps Bootstrap's widths",
+		"subject": ".container",
+		"property": "max-width",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"none",
+			"none",
+			"none"
+		],
+		"measured": [
+			"none",
+			"none",
+			"none"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Pill radius beside rounded-full",
+		"subject": "button",
+		"property": "border-top-left-radius",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"800px",
+			"800px",
+			"800px"
+		],
+		"measured": [
+			"800px",
+			"800px",
+			"800px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Tailwind grid in a card body",
+		"subject": ".grid",
+		"property": "display",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"block",
+			"grid",
+			"grid"
+		],
+		"measured": [
+			"block",
+			"grid",
+			"grid"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Tailwind variant at the md breakpoint",
+		"subject": ".md\\:flex",
+		"property": "display",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"block",
+			"block",
+			"block"
+		],
+		"measured": [
+			"block",
+			"block",
+			"block"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Arbitrary margin value",
+		"subject": ".mt-\\[1rem\\]",
+		"property": "margin-top",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"0px",
+			"16px",
+			"16px"
+		],
+		"measured": [
+			"0px",
+			"16px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare heading beside a heading class",
+		"subject": "#bare-heading",
+		"property": "font-size",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"20px",
+			"20px",
+			"16px"
+		],
+		"measured": [
+			"20px",
+			"20px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare heading beside a heading class",
+		"subject": ".h5",
+		"property": "font-size",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"20px",
+			"20px",
+			"20px"
+		],
+		"measured": [
+			"20px",
+			"20px",
+			"20px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bootstrap card on Tailwind's reset",
+		"subject": ".card-title",
+		"property": "font-weight",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"500",
+			"500",
+			"500"
+		],
+		"measured": [
+			"500",
+			"500",
+			"500"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bootstrap card on Tailwind's reset",
+		"subject": ".card-text",
+		"property": "margin-bottom",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"16px",
+			"16px",
+			"16px"
+		],
+		"measured": [
+			"16px",
+			"16px",
+			"16px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bootstrap card on Tailwind's reset",
+		"subject": "#bare-paragraph",
+		"property": "margin-bottom",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"16px",
+			"16px",
+			"0px"
+		],
+		"measured": [
+			"16px",
+			"16px",
+			"0px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare image and list",
+		"subject": "img",
+		"property": "display",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"inline",
+			"block",
+			"block"
+		],
+		"measured": [
+			"inline",
+			"block",
+			"block"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Bare image and list",
+		"subject": "ul",
+		"property": "list-style-type",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"disc",
+			"none",
+			"none"
+		],
+		"measured": [
+			"disc",
+			"none",
+			"none"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Icon in a Bootstrap button",
+		"subject": "svg.bi",
+		"property": "display",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"inline",
+			"block",
+			"inline"
+		],
+		"measured": [
+			"inline",
+			"block",
+			"inline"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Hidden attribute with a display utility",
+		"subject": "[hidden]",
+		"property": "display",
+		"source": "shipped page",
+		"width": 390,
+		"expected": [
+			"flex",
+			"none",
+			"none"
+		],
+		"measured": [
+			"flex",
+			"none",
+			"none"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Border width without a border style",
+		"subject": ".border-1",
+		"property": "border-top-width",
+		"source": "scratch page",
+		"width": 390,
+		"expected": [
+			"0px",
+			"1px",
+			"1px"
+		],
+		"measured": [
+			"0px",
+			"1px",
+			"1px"
+		],
+		"matches": true
+	},
+	{
+		"specimen": "Responsive alignment at md",
+		"subject": ".text-center.text-md-start",
+		"property": "text-align",
+		"source": "scratch page",
+		"width": 768,
+		"expected": [
+			"left",
+			"left",
+			"start"
+		],
+		"measured": [
+			"left",
+			"left",
+			"left"
+		],
+		"matches": false,
+		"designWording": "start"
+	}
+]
