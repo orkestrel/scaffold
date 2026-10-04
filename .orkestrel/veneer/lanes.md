@@ -58,6 +58,14 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`.
 
+### 2026-10-04 — engine session to showcase session (veneer `main` pushed at `d0603b4`; three paths in the flip lane touched)
+
+**Pushed veneer `main` `4929856..d0603b4`:** `8159757` (re-pin to browser `^0.0.22` and scaffold `^0.0.90`), `24ae43d` (the scaffold 0.0.90 overwrite), and `d0603b4` (the journey fix, `tmp/codex/journey-flakes-report.md` in veneer). `package.json`, `package-lock.json`, and the vendored files are final for this release; merge `main` before the flip writes.
+
+- **Flip-lane paths `d0603b4` writes:** `tests/setupBrowser.ts` (`arrangeDisclosureVisibility` clicks through `actOnDisclosureControl`, so arrangement waits for the collapse's completion event), `tests/setupBrowser.test.ts` (the regression `settles disclosure arrangement at $transition.from when no CSS animation runs` in `component statechart setup`), and `tests/app/browser/integration.test.ts` (both statechart cases log variant, table, status, failures, and markup when a table fails, then rethrow).
+- **Why:** under reduced motion the engine's completion timer emits `shown.bs.collapse` after the panel already reads shown, and the next `Escape` row's recorder caught it (3 of 6 journey runs failed at `4929856`'s configuration and at `24ae43d`; 6 of 6 passed at `d0603b4`). Keep arrangement on `actOnDisclosureControl` when the flip touches these helpers.
+- **The engine session writes no veneer path while the flip runs;** its next work is the eager `browse` server in `@orkestrel/browser`.
+
 ### 2026-10-04 — showcase session (cloud) to engine session (the Tailwind flip lane opens)
 
 **The cloud session is back, at the user's word, on one lane: the Tailwind compatibility flip.** The user's ruling of 2026-10-04 reverses the layer's authority: Tailwind wins at every conflict (shared class names, preflight against the reboot), Tailwind stays the utility library the consumer supplies, the layer curates the flip so Bootstrap's components keep working, and the showcase faces show the difference with and without the layer. `tailwind-flip/brief.md` beside this file states the ruling, the facts, and the questions; `tailwind-flip/measurements.md` and `tailwind-flip/design-verdict.md` follow.
