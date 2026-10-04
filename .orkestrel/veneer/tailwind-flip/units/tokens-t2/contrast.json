@@ -1,0 +1,2232 @@
+[
+  {
+    "id": "btn-primary@blue",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(21, 93, 252)",
+    "ratio": 5.245696961921662,
+    "bootstrap": 4.500782787406787,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-primary-hover@blue",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(18, 79, 214)",
+    "ratio": 6.741312388035333,
+    "bootstrap": 5.838896108048675,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-primary-active@blue",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(17, 74, 202)",
+    "ratio": 7.3524276574677,
+    "bootstrap": 6.438461061495277,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-primary@blue",
+    "foreground": "rgb(21, 93, 252)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 5.245696961921662,
+    "bootstrap": 4.500782787406787,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-primary-dark@blue",
+    "foreground": "rgb(21, 93, 252)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 3.838244897402339,
+    "bootstrap": 3.427467137199575,
+    "group": "prior",
+    "inherited": false,
+    "floor": 3.427467137199575
+  },
+  {
+    "id": "badge-primary@blue",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(21, 93, 252)",
+    "ratio": 5.245696961921662,
+    "bootstrap": 4.500782787406787,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-primary@blue",
+    "foreground": "rgb(25, 60, 184)",
+    "background": "rgb(219, 234, 254)",
+    "ratio": 7.232613605350832,
+    "bootstrap": 10.276071849129831,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-primary-dark@blue",
+    "foreground": "rgb(142, 197, 255)",
+    "background": "rgb(22, 37, 86)",
+    "ratio": 8.080737389600186,
+    "bootstrap": 7.454487353184765,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-primary@blue",
+    "foreground": "rgb(25, 60, 184)",
+    "background": "rgb(219, 234, 254)",
+    "ratio": 7.232613605350832,
+    "bootstrap": 10.276071849129831,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-primary-action@blue",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(190, 219, 255)",
+    "ratio": 14.766037068751658,
+    "bootstrap": 11.871472496272565,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-primary-dark@blue",
+    "foreground": "rgb(142, 197, 255)",
+    "background": "rgb(22, 37, 86)",
+    "ratio": 8.080737389600186,
+    "bootstrap": 7.454487353184765,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-primary-action-dark@blue",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(25, 60, 184)",
+    "ratio": 8.824210032813605,
+    "bootstrap": 9.36241778730256,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-primary@blue",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(219, 234, 254)",
+    "ratio": 17.21229267521626,
+    "bootstrap": 15.975622100277809,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-primary-striped@blue",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(208, 222, 241)",
+    "ratio": 15.400664511102264,
+    "bootstrap": 14.376399804578238,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-primary-active@blue",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(197, 211, 229)",
+    "ratio": 13.823198145341895,
+    "bootstrap": 12.772829260148585,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-primary-hover@blue",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(203, 216, 235)",
+    "ratio": 14.561280415260049,
+    "bootstrap": 13.546684635829184,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "link@blue",
+    "foreground": "rgb(21, 93, 252)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 5.245696961921662,
+    "bootstrap": 4.500782787406787,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "link-hover@blue",
+    "foreground": "rgb(17, 74, 202)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 7.3524276574677,
+    "bootstrap": 6.438461061495277,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "link-dark@blue",
+    "foreground": "rgb(142, 197, 255)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 11.103241954291084,
+    "bootstrap": 6.387366083237977,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "link-hover-dark@blue",
+    "foreground": "rgb(165, 209, 255)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 12.621360792617786,
+    "bootstrap": 7.690024908944027,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "focus-ring@blue",
+    "foreground": "rgba(21, 93, 252, 0.25)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.4518538038227926,
+    "bootstrap": 1.4140247071818348,
+    "group": "prior",
+    "inherited": false,
+    "floor": 1.4140247071818348
+  },
+  {
+    "id": "focus-ring-dark@blue",
+    "foreground": "rgba(21, 93, 252, 0.25)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.2332916849714863,
+    "bootstrap": 1.2945175106680147,
+    "group": "prior",
+    "inherited": true,
+    "floor": 1.2945175106680147
+  },
+  {
+    "id": "focus-border@blue",
+    "foreground": "rgb(138, 174, 254)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 2.195222866117699,
+    "bootstrap": 2.0551539848803975,
+    "group": "prior",
+    "inherited": false,
+    "floor": 2.0551539848803975
+  },
+  {
+    "id": "focus-border-dark@blue",
+    "foreground": "rgb(138, 174, 254)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 9.171856720417038,
+    "bootstrap": 7.506145626556551,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-secondary@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(106, 114, 130)",
+    "ratio": 4.836368464139303,
+    "bootstrap": 4.689301797380369,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-secondary-hover@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(90, 97, 111)",
+    "ratio": 6.223791597165725,
+    "bootstrap": 6.090628863456251,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-secondary-active@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(85, 91, 104)",
+    "ratio": 6.812456708089264,
+    "bootstrap": 6.602137234080075,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-secondary@gray",
+    "foreground": "rgb(106, 114, 130)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 4.836368464139303,
+    "bootstrap": 4.689301797380369,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-secondary-dark@gray",
+    "foreground": "rgb(106, 114, 130)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 4.163096700904061,
+    "bootstrap": 3.2896763232701294,
+    "group": "prior",
+    "inherited": false,
+    "floor": 3.2896763232701294
+  },
+  {
+    "id": "badge-secondary@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(106, 114, 130)",
+    "ratio": 4.836368464139303,
+    "bootstrap": 4.689301797380369,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-secondary@gray",
+    "foreground": "rgb(30, 41, 57)",
+    "background": "rgb(243, 244, 246)",
+    "ratio": 13.330422309313162,
+    "bootstrap": 10.513694214937502,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-secondary-dark@gray",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(16, 24, 40)",
+    "ratio": 12.052661420973617,
+    "bootstrap": 7.840514177215894,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-secondary@gray",
+    "foreground": "rgb(30, 41, 57)",
+    "background": "rgb(243, 244, 246)",
+    "ratio": 13.330422309313162,
+    "bootstrap": 10.513694214937502,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-secondary-action@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(229, 231, 235)",
+    "ratio": 16.96159995619008,
+    "bootstrap": 12.471222481532022,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-secondary-dark@gray",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(16, 24, 40)",
+    "ratio": 12.052661420973617,
+    "bootstrap": 7.840514177215894,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-secondary-action-dark@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(30, 41, 57)",
+    "ratio": 14.670329959545258,
+    "bootstrap": 9.534935738454564,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-secondary@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(243, 244, 246)",
+    "ratio": 19.0819749295028,
+    "bootstrap": 16.352812775071506,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-secondary-striped@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(231, 232, 234)",
+    "ratio": 17.128532565086473,
+    "bootstrap": 14.724152421905853,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-secondary-active@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(219, 220, 221)",
+    "ratio": 15.293385253507475,
+    "bootstrap": 13.067694535243449,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-secondary-hover@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(225, 226, 228)",
+    "ratio": 16.200340103857624,
+    "bootstrap": 13.880392515281356,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-success@green",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(0, 130, 54)",
+    "ratio": 4.945457412311979,
+    "bootstrap": 4.530800584587276,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-success-hover@green",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(0, 111, 46)",
+    "ratio": 6.338231287829816,
+    "bootstrap": 5.873853369027723,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-success-active@green",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(0, 104, 43)",
+    "ratio": 6.965152315189623,
+    "bootstrap": 6.4499902854139695,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-success@green",
+    "foreground": "rgb(0, 130, 54)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 4.945457412311979,
+    "bootstrap": 4.530800584587276,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-success-dark@green",
+    "foreground": "rgb(0, 130, 54)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 4.071265389383282,
+    "bootstrap": 3.404759226876345,
+    "group": "prior",
+    "inherited": false,
+    "floor": 3.404759226876345
+  },
+  {
+    "id": "badge-success@green",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(0, 130, 54)",
+    "ratio": 4.945457412311979,
+    "bootstrap": 4.530800584587276,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-success@green",
+    "foreground": "rgb(1, 102, 48)",
+    "background": "rgb(219, 252, 231)",
+    "ratio": 6.483258798586505,
+    "bootstrap": 10.350972700739907,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-success-dark@green",
+    "foreground": "rgb(123, 241, 168)",
+    "background": "rgb(3, 46, 21)",
+    "ratio": 10.66507075876744,
+    "bootstrap": 7.669273173896674,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-success@green",
+    "foreground": "rgb(1, 102, 48)",
+    "background": "rgb(219, 252, 231)",
+    "ratio": 6.483258798586505,
+    "bootstrap": 10.350972700739907,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-success-action@green",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(185, 248, 207)",
+    "ratio": 17.390817010558848,
+    "bootstrap": 12.20000672387445,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-success-dark@green",
+    "foreground": "rgb(123, 241, 168)",
+    "background": "rgb(3, 46, 21)",
+    "ratio": 10.66507075876744,
+    "bootstrap": 7.669273173896674,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-success-action-dark@green",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(1, 102, 48)",
+    "ratio": 7.131894554503427,
+    "bootstrap": 9.361036506496546,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-success@green",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(219, 252, 231)",
+    "ratio": 19.09007960365115,
+    "bootstrap": 16.185519078944058,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-success-striped@green",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(208, 239, 219)",
+    "ratio": 17.051474751154892,
+    "bootstrap": 14.491658591220848,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-success-active@green",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(197, 227, 208)",
+    "ratio": 15.272510651837083,
+    "bootstrap": 12.985327551597043,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-success-hover@green",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(203, 233, 214)",
+    "ratio": 16.16587529174873,
+    "bootstrap": 13.758044864282537,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "valid@green",
+    "foreground": "rgb(0, 130, 54)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 4.945457412311979,
+    "bootstrap": 4.530800584587276,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "valid-dark@green",
+    "foreground": "rgb(123, 241, 168)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 14.371784274876271,
+    "bootstrap": 6.598906212229695,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-danger@red",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(231, 0, 11)",
+    "ratio": 4.7698900124065196,
+    "bootstrap": 4.527516759217673,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-danger-hover@red",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(196, 0, 9)",
+    "ratio": 6.266604420479404,
+    "bootstrap": 5.913049593660945,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-danger-active@red",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(185, 0, 9)",
+    "ratio": 6.847523496835932,
+    "bootstrap": 6.496772712016201,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-danger@red",
+    "foreground": "rgb(231, 0, 11)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 4.7698900124065196,
+    "bootstrap": 4.527516759217673,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-danger-dark@red",
+    "foreground": "rgb(231, 0, 11)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 4.221118211330951,
+    "bootstrap": 3.40722871187689,
+    "group": "prior",
+    "inherited": false,
+    "floor": 3.40722871187689
+  },
+  {
+    "id": "badge-danger@red",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(231, 0, 11)",
+    "ratio": 4.7698900124065196,
+    "bootstrap": 4.527516759217673,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-danger@red",
+    "foreground": "rgb(159, 7, 18)",
+    "background": "rgb(255, 226, 226)",
+    "ratio": 6.854995269868319,
+    "bootstrap": 10.217093736083909,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-danger-dark@red",
+    "foreground": "rgb(255, 162, 162)",
+    "background": "rgb(70, 8, 9)",
+    "ratio": 8.422671358122042,
+    "bootstrap": 7.151575771344431,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-danger@red",
+    "foreground": "rgb(159, 7, 18)",
+    "background": "rgb(255, 226, 226)",
+    "ratio": 6.854995269868319,
+    "bootstrap": 10.217093736083909,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-danger-action@red",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(255, 201, 201)",
+    "ratio": 14.45006692495005,
+    "bootstrap": 11.461814370548794,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-danger-dark@red",
+    "foreground": "rgb(255, 162, 162)",
+    "background": "rgb(70, 8, 9)",
+    "ratio": 8.422671358122042,
+    "bootstrap": 7.151575771344431,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-danger-action-dark@red",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(159, 7, 18)",
+    "ratio": 8.355509544279291,
+    "bootstrap": 9.460607880239326,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-danger@red",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(255, 226, 226)",
+    "ratio": 17.228739899626504,
+    "bootstrap": 15.723858334985927,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-danger-striped@red",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(242, 215, 215)",
+    "ratio": 15.476883909016083,
+    "bootstrap": 14.104718458487188,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-danger-active@red",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(230, 203, 203)",
+    "ratio": 13.769332605446891,
+    "bootstrap": 12.651414132714162,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-danger-hover@red",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(236, 209, 209)",
+    "ratio": 14.607448969579652,
+    "bootstrap": 13.353825856522443,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "invalid@red",
+    "foreground": "rgb(231, 0, 11)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 4.7698900124065196,
+    "bootstrap": 4.527516759217673,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "invalid-dark@red",
+    "foreground": "rgb(255, 162, 162)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 10.490778208860704,
+    "bootstrap": 6.100844499375879,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-warning@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(240, 177, 0)",
+    "ratio": 10.993909205453788,
+    "bootstrap": 12.883053733715979,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-warning-hover@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(242, 189, 38)",
+    "ratio": 12.082475639964908,
+    "bootstrap": 13.736581725812105,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-warning-active@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(243, 193, 51)",
+    "ratio": 12.486726256442006,
+    "bootstrap": 14.043610189169195,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-warning@yellow",
+    "foreground": "rgb(240, 177, 0)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.9101485747746991,
+    "bootstrap": 1.6300483126171652,
+    "group": "prior",
+    "inherited": false,
+    "floor": 1.6300483126171652
+  },
+  {
+    "id": "btn-outline-warning-dark@yellow",
+    "foreground": "rgb(240, 177, 0)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 10.540682470100315,
+    "bootstrap": 9.463698085575269,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "badge-warning@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(240, 177, 0)",
+    "ratio": 10.993909205453788,
+    "bootstrap": 12.883053733715979,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-warning@yellow",
+    "foreground": "rgb(137, 75, 0)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 6.365728407752467,
+    "bootstrap": 7.212738691603507,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-warning-dark@yellow",
+    "foreground": "rgb(255, 223, 32)",
+    "background": "rgb(67, 32, 4)",
+    "ratio": 10.938320418619366,
+    "bootstrap": 10.820597502745763,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-warning@yellow",
+    "foreground": "rgb(137, 75, 0)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 6.365728407752467,
+    "bootstrap": 7.212738691603507,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-warning-action@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(255, 240, 133)",
+    "ratio": 18.054726313660083,
+    "bootstrap": 17.050785757001826,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-warning-dark@yellow",
+    "foreground": "rgb(255, 223, 32)",
+    "background": "rgb(67, 32, 4)",
+    "ratio": 10.938320418619366,
+    "bootstrap": 10.820597502745763,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-warning-action-dark@yellow",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(137, 75, 0)",
+    "ratio": 6.8401595272009335,
+    "bootstrap": 4.325998572105203,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.325998572105203
+  },
+  {
+    "id": "table-warning@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 19.543447200493176,
+    "bootstrap": 18.953792434912064,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-warning-striped@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(241, 237, 184)",
+    "ratio": 17.54596747948166,
+    "bootstrap": 16.993840784010775,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-warning-active@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(229, 224, 175)",
+    "ratio": 15.612893579945556,
+    "bootstrap": 15.197762511305998,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-warning-hover@yellow",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(235, 230, 179)",
+    "ratio": 16.50209392498217,
+    "bootstrap": 16.08019997549034,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-info@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(0, 184, 219)",
+    "ratio": 8.879090525237821,
+    "bootstrap": 10.723579117395904,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-info-hover@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(38, 195, 224)",
+    "ratio": 9.964820172804357,
+    "bootstrap": 11.631391915881455,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-info-active@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(51, 198, 226)",
+    "ratio": 10.316592229813834,
+    "bootstrap": 12.010332808006474,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-info@cyan",
+    "foreground": "rgb(0, 184, 219)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 2.365107095181635,
+    "bootstrap": 1.9583014001298853,
+    "group": "prior",
+    "inherited": false,
+    "floor": 1.9583014001298853
+  },
+  {
+    "id": "btn-outline-info-dark@cyan",
+    "foreground": "rgb(0, 184, 219)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 8.513047734047117,
+    "bootstrap": 7.877380414724264,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "badge-info@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(0, 184, 219)",
+    "ratio": 8.879090525237821,
+    "bootstrap": 10.723579117395904,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-info@cyan",
+    "foreground": "rgb(0, 95, 120)",
+    "background": "rgb(206, 250, 254)",
+    "ratio": 6.440554760667799,
+    "bootstrap": 7.651564373046963,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-info-dark@cyan",
+    "foreground": "rgb(83, 234, 253)",
+    "background": "rgb(5, 51, 69)",
+    "ratio": 9.295058309483602,
+    "bootstrap": 10.035663503569339,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-info@cyan",
+    "foreground": "rgb(0, 95, 120)",
+    "background": "rgb(206, 250, 254)",
+    "ratio": 6.440554760667799,
+    "bootstrap": 7.651564373046963,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-info-action@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(162, 244, 253)",
+    "ratio": 16.894919660811507,
+    "bootstrap": 15.590858204638804,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-info-dark@cyan",
+    "foreground": "rgb(83, 234, 253)",
+    "background": "rgb(5, 51, 69)",
+    "ratio": 9.295058309483602,
+    "bootstrap": 10.035663503569339,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-info-action-dark@cyan",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(0, 95, 120)",
+    "ratio": 7.221217714254156,
+    "bootstrap": 5.06268452007205,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-info@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(206, 250, 254)",
+    "ratio": 18.729756576518515,
+    "bootstrap": 17.999008023228736,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-info-striped@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(196, 238, 241)",
+    "ratio": 16.847141486944093,
+    "bootstrap": 16.163107446653605,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-info-active@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(185, 225, 229)",
+    "ratio": 14.964371584847251,
+    "bootstrap": 14.434310741423095,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-info-hover@cyan",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(191, 231, 235)",
+    "ratio": 15.845270443885621,
+    "bootstrap": 15.270454142420347,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-light@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 20.095197181026958,
+    "bootstrap": 19.921989940926597,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-light-hover@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(212, 213, 213)",
+    "ratio": 14.277928896421434,
+    "bootstrap": 14.147989415393925,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-light-active@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(199, 200, 201)",
+    "ratio": 12.533542630225204,
+    "bootstrap": 12.40454903890332,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-light@gray",
+    "foreground": "rgb(249, 250, 251)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.0450258243709754,
+    "bootstrap": 1.0541115652738484,
+    "group": "prior",
+    "inherited": true,
+    "floor": 1.0541115652738484
+  },
+  {
+    "id": "btn-outline-light-dark@gray",
+    "foreground": "rgb(249, 250, 251)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 19.266767507428863,
+    "bootstrap": 14.634395071362922,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "badge-light@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 20.095197181026958,
+    "bootstrap": 19.921989940926597,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-light@gray",
+    "foreground": "rgb(74, 85, 101)",
+    "background": "rgb(252, 253, 253)",
+    "ratio": 7.416834345765534,
+    "bootstrap": 7.974523391039706,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-light-dark@gray",
+    "foreground": "rgb(249, 250, 251)",
+    "background": "rgb(30, 41, 57)",
+    "ratio": 14.03824634513282,
+    "bootstrap": 10.91455384047198,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-light@gray",
+    "foreground": "rgb(74, 85, 101)",
+    "background": "rgb(252, 253, 253)",
+    "ratio": 7.416834345765534,
+    "bootstrap": 7.974523391039706,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-light-action@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(229, 231, 235)",
+    "ratio": 16.96159995619008,
+    "bootstrap": 17.70930770523013,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-light-dark@gray",
+    "foreground": "rgb(249, 250, 251)",
+    "background": "rgb(30, 41, 57)",
+    "ratio": 14.03824634513282,
+    "bootstrap": 10.91455384047198,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-light-action-dark@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(74, 85, 101)",
+    "ratio": 7.558072756271033,
+    "bootstrap": 8.17635452073249,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-light@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 20.095197181026958,
+    "bootstrap": 19.921989940926597,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-light-striped@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(237, 238, 238)",
+    "ratio": 18.065328573120347,
+    "bootstrap": 17.914857427570027,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-light-active@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(224, 225, 226)",
+    "ratio": 16.037741552481865,
+    "bootstrap": 15.88710543239201,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-light-hover@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(230, 231, 232)",
+    "ratio": 16.96020346692685,
+    "bootstrap": 16.804232781780126,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-dark@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 20.13426959741477,
+    "bootstrap": 15.426285095510265,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-dark-hover@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(41, 44, 54)",
+    "ratio": 13.92734970142022,
+    "bootstrap": 9.52846982898579,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-dark-active@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(53, 57, 65)",
+    "ratio": 11.583276460498958,
+    "bootstrap": 8.013595325074396,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-dark@gray",
+    "foreground": "rgb(3, 7, 18)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 20.13426959741477,
+    "bootstrap": 15.426285095510265,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "btn-outline-dark-dark@gray",
+    "foreground": "rgb(3, 7, 18)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1,
+    "bootstrap": 1,
+    "group": "prior",
+    "inherited": false,
+    "floor": 1
+  },
+  {
+    "id": "badge-dark@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 20.13426959741477,
+    "bootstrap": 15.426285095510265,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-dark@gray",
+    "foreground": "rgb(74, 85, 101)",
+    "background": "rgb(209, 213, 220)",
+    "ratio": 5.1330914712302995,
+    "bootstrap": 5.471985090516559,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "alert-dark-dark@gray",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(15, 21, 29)",
+    "ratio": 12.452615941256335,
+    "bootstrap": 13.000215710936779,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-dark@gray",
+    "foreground": "rgb(74, 85, 101)",
+    "background": "rgb(209, 213, 220)",
+    "ratio": 5.1330914712302995,
+    "bootstrap": 5.471985090516559,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-dark-action@gray",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(153, 161, 175)",
+    "ratio": 8.071437639561946,
+    "bootstrap": 10.121221351617443,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-dark-dark@gray",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(15, 21, 29)",
+    "ratio": 12.452615941256335,
+    "bootstrap": 13.000215710936779,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "list-group-dark-action-dark@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(30, 41, 57)",
+    "ratio": 14.670329959545258,
+    "bootstrap": 11.505157433045612,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-dark@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 20.13426959741477,
+    "bootstrap": 15.426285095510265,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-dark-striped@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(16, 19, 30)",
+    "ratio": 18.519690216894535,
+    "bootstrap": 13.295665085189999,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-dark-active@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(28, 32, 42)",
+    "ratio": 16.286474860623297,
+    "bootstrap": 11.304964572017623,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "table-dark-hover@gray",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(22, 26, 36)",
+    "ratio": 17.39350266371179,
+    "bootstrap": 12.324343733514564,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "body@gray",
+    "foreground": "rgb(3, 7, 18)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 20.13426959741477,
+    "bootstrap": 15.426285095510265,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "body-dark@gray",
+    "foreground": "rgb(229, 231, 235)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 16.262353634353797,
+    "bootstrap": 11.84672274715884,
+    "group": "prior",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "secondary-color-light",
+    "foreground": "rgba(3, 7, 18, 0.75)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 9.585666320837744,
+    "bootstrap": 6.781063018653904,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "tertiary-color-light",
+    "foreground": "rgba(3, 7, 18, 0.5)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 3.7917702408466507,
+    "bootstrap": 3.1226599501097727,
+    "group": "judge",
+    "inherited": false,
+    "floor": 3.1226599501097727
+  },
+  {
+    "id": "code-color-light",
+    "foreground": "rgb(230, 0, 118)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 4.5393627491477275,
+    "bootstrap": 4.500693575059644,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "mark-light",
+    "foreground": "rgb(3, 7, 18)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 18.737763561789077,
+    "bootstrap": 13.92317170200377,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "form-control-border-light",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.4724212102262644,
+    "bootstrap": 1.3021563367987066,
+    "group": "judge",
+    "inherited": false,
+    "floor": 1.3021563367987066
+  },
+  {
+    "id": "header-unpressed-light",
+    "foreground": "rgb(0, 0, 0)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 20.095197181026958,
+    "bootstrap": 19.921989940926597,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "header-pressed-light",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(106, 114, 130)",
+    "ratio": 4.836368464139303,
+    "bootstrap": 4.689301797380369,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "primary-bg-subtle-page-light",
+    "foreground": "rgb(219, 234, 254)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.2200582686022765,
+    "bootstrap": 1.3145028010918474,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "primary-border-subtle-page-light",
+    "foreground": "rgb(190, 219, 255)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.4221825329452034,
+    "bootstrap": 1.7689465234067325,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "secondary-bg-subtle-page-light",
+    "foreground": "rgb(243, 244, 246)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.1005150188899855,
+    "bootstrap": 1.2841827451246026,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "secondary-border-subtle-page-light",
+    "foreground": "rgb(229, 231, 235)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.238090749353873,
+    "bootstrap": 1.6838766232498696,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "success-bg-subtle-page-light",
+    "foreground": "rgb(219, 252, 231)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.1000477963425337,
+    "bootstrap": 1.297456071539847,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "success-border-subtle-page-light",
+    "foreground": "rgb(185, 248, 207)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.2075338373838234,
+    "bootstrap": 1.721310526731486,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "info-bg-subtle-page-light",
+    "foreground": "rgb(206, 250, 254)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.121210514093263,
+    "bootstrap": 1.1667309650008664,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "info-border-subtle-page-light",
+    "foreground": "rgb(162, 244, 253)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.2429772038934523,
+    "bootstrap": 1.3469431717204505,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "warning-bg-subtle-page-light",
+    "foreground": "rgb(254, 249, 194)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.07452896024761,
+    "bootstrap": 1.107957685624905,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "warning-border-subtle-page-light",
+    "foreground": "rgb(255, 240, 133)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.1631303424473147,
+    "bootstrap": 1.2316147947244276,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "danger-bg-subtle-page-light",
+    "foreground": "rgb(255, 226, 226)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.2188935535822472,
+    "bootstrap": 1.3355500636427475,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "danger-border-subtle-page-light",
+    "foreground": "rgb(255, 201, 201)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.4532804663859777,
+    "bootstrap": 1.8321706599925083,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "light-bg-subtle-page-light",
+    "foreground": "rgb(252, 253, 253)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.0190429506607674,
+    "bootstrap": 1.025309491212925,
+    "group": "separation",
+    "inherited": true,
+    "floor": 1.05
+  },
+  {
+    "id": "light-border-subtle-page-light",
+    "foreground": "rgb(229, 231, 235)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.238090749353873,
+    "bootstrap": 1.185817105306608,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "dark-bg-subtle-page-light",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 1.4724212102262644,
+    "bootstrap": 1.4942209062124174,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "dark-border-subtle-page-light",
+    "foreground": "rgb(153, 161, 175)",
+    "background": "rgb(255, 255, 255)",
+    "ratio": 2.601766988456806,
+    "bootstrap": 2.074848407168177,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "secondary-color-dark",
+    "foreground": "rgba(229, 231, 235, 0.75)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 9.168422554036129,
+    "bootstrap": 7.292023601612974,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "tertiary-color-dark",
+    "foreground": "rgba(229, 231, 235, 0.5)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 4.492042839839923,
+    "bootstrap": 4.06683041337756,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.06683041337756
+  },
+  {
+    "id": "code-color-dark",
+    "foreground": "rgb(253, 165, 213)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 11.044511694750625,
+    "bootstrap": 6.160853919992479,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "mark-dark",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(137, 75, 0)",
+    "ratio": 4.6455181979820965,
+    "bootstrap": 6.137058233278464,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "form-control-border-dark",
+    "foreground": "rgb(74, 85, 101)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.6639422835284434,
+    "bootstrap": 1.8866947435307977,
+    "group": "judge",
+    "inherited": false,
+    "floor": 1.8866947435307977
+  },
+  {
+    "id": "header-unpressed-dark",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(17, 24, 38)",
+    "ratio": 17.759348196148323,
+    "bootstrap": 13.3172046203522,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "header-pressed-dark",
+    "foreground": "rgb(255, 255, 255)",
+    "background": "rgb(106, 114, 130)",
+    "ratio": 4.836368464139303,
+    "bootstrap": 4.689301797380369,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "primary-bg-subtle-page-dark",
+    "foreground": "rgb(22, 37, 86)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.374038211980608,
+    "bootstrap": 1.167067497938967,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "primary-border-subtle-page-dark",
+    "foreground": "rgb(25, 60, 184)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.2817078834868743,
+    "bootstrap": 1.647681768317539,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "secondary-bg-subtle-page-dark",
+    "foreground": "rgb(16, 24, 40)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.134542731917629,
+    "bootstrap": 1.1628090930061796,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "secondary-border-subtle-page-dark",
+    "foreground": "rgb(30, 41, 57)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.372448312542173,
+    "bootstrap": 1.617869854465383,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "success-bg-subtle-page-dark",
+    "foreground": "rgb(3, 46, 21)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.3475563922594374,
+    "bootstrap": 1.1622036936489986,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "success-border-subtle-page-dark",
+    "foreground": "rgb(1, 102, 48)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.823130578213753,
+    "bootstrap": 1.647924894300374,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "info-bg-subtle-page-dark",
+    "foreground": "rgb(5, 51, 69)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.501362428749938,
+    "bootstrap": 1.008328656982717,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "info-border-subtle-page-dark",
+    "foreground": "rgb(0, 95, 120)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.788209744413494,
+    "bootstrap": 3.047056365916066,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "warning-bg-subtle-page-dark",
+    "foreground": "rgb(67, 32, 4)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.3873626331578262,
+    "bootstrap": 1.0514903867468577,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "warning-border-subtle-page-dark",
+    "foreground": "rgb(137, 75, 0)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.943538015063507,
+    "bootstrap": 3.565947801042204,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "danger-bg-subtle-page-dark",
+    "foreground": "rgb(70, 8, 9)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.2455404898048612,
+    "bootstrap": 1.1722271846260044,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "danger-border-subtle-page-dark",
+    "foreground": "rgb(159, 7, 18)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.40969979038561,
+    "bootstrap": 1.6305807502847294,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "light-bg-subtle-page-dark",
+    "foreground": "rgb(30, 41, 57)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.372448312542173,
+    "bootstrap": 1.340814776788905,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "light-border-subtle-page-dark",
+    "foreground": "rgb(74, 85, 101)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 2.6639422835284434,
+    "bootstrap": 1.8866947435307977,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "dark-bg-subtle-page-dark",
+    "foreground": "rgb(15, 21, 29)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.0981033607666242,
+    "bootstrap": 1.0973681066398364,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "dark-border-subtle-page-dark",
+    "foreground": "rgb(30, 41, 57)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.372448312542173,
+    "bootstrap": 1.340814776788905,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "text-secondary-dark",
+    "foreground": "rgb(106, 114, 130)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 4.163096700904061,
+    "bootstrap": 3.2896763232701294,
+    "group": "judge",
+    "inherited": false,
+    "floor": 3.2896763232701294
+  },
+  {
+    "id": "dropdown-dark---bs-dropdown-header-color",
+    "foreground": "rgb(153, 161, 175)",
+    "background": "rgb(30, 41, 57)",
+    "ratio": 5.638602543822232,
+    "bootstrap": 5.545059288812448,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "dropdown-dark---bs-dropdown-link-color",
+    "foreground": "rgb(209, 213, 220)",
+    "background": "rgb(30, 41, 57)",
+    "ratio": 9.9634057548593,
+    "bootstrap": 8.835465533524593,
+    "group": "judge",
+    "inherited": false,
+    "floor": 4.5
+  },
+  {
+    "id": "button-hover-separation-primary",
+    "foreground": "rgb(18, 79, 214)",
+    "background": "rgb(21, 93, 252)",
+    "ratio": 1.28511281474517,
+    "bootstrap": 1.2973067983609285,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-primary-striped-separation",
+    "foreground": "rgb(208, 222, 241)",
+    "background": "rgb(219, 234, 254)",
+    "ratio": 1.1176331165975342,
+    "bootstrap": 1.111239414417947,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-primary-hover-separation",
+    "foreground": "rgb(203, 216, 235)",
+    "background": "rgb(219, 234, 254)",
+    "ratio": 1.1820590074742316,
+    "bootstrap": 1.1793012482201295,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-primary-active-separation",
+    "foreground": "rgb(197, 211, 229)",
+    "background": "rgb(219, 234, 254)",
+    "ratio": 1.245174415807417,
+    "bootstrap": 1.2507504621643994,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-secondary",
+    "foreground": "rgb(90, 97, 111)",
+    "background": "rgb(106, 114, 130)",
+    "ratio": 1.2868729178336773,
+    "bootstrap": 1.298834906906337,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-secondary-striped-separation",
+    "foreground": "rgb(231, 232, 234)",
+    "background": "rgb(243, 244, 246)",
+    "ratio": 1.114046101555604,
+    "bootstrap": 1.1106114842130141,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-secondary-hover-separation",
+    "foreground": "rgb(225, 226, 228)",
+    "background": "rgb(243, 244, 246)",
+    "ratio": 1.177874958622566,
+    "bootstrap": 1.1781232236097205,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-secondary-active-separation",
+    "foreground": "rgb(219, 220, 221)",
+    "background": "rgb(243, 244, 246)",
+    "ratio": 1.2477273418013468,
+    "bootstrap": 1.2513923348122444,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-success",
+    "foreground": "rgb(0, 111, 46)",
+    "background": "rgb(0, 130, 54)",
+    "ratio": 1.2816269071593767,
+    "bootstrap": 1.2964272559267336,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-success-striped-separation",
+    "foreground": "rgb(208, 239, 219)",
+    "background": "rgb(219, 252, 231)",
+    "ratio": 1.1195559259387924,
+    "bootstrap": 1.1168852051723992,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-success-hover-separation",
+    "foreground": "rgb(203, 233, 214)",
+    "background": "rgb(219, 252, 231)",
+    "ratio": 1.1808874718583888,
+    "bootstrap": 1.1764403473464113,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-success-active-separation",
+    "foreground": "rgb(197, 227, 208)",
+    "background": "rgb(219, 252, 231)",
+    "ratio": 1.2499634172037632,
+    "bootstrap": 1.246446731099473,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-info",
+    "foreground": "rgb(38, 195, 224)",
+    "background": "rgb(0, 184, 219)",
+    "ratio": 1.1222793758527938,
+    "bootstrap": 1.0846557654442897,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-info-striped-separation",
+    "foreground": "rgb(196, 238, 241)",
+    "background": "rgb(206, 250, 254)",
+    "ratio": 1.1117468557519612,
+    "bootstrap": 1.1135858672371342,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-info-hover-separation",
+    "foreground": "rgb(191, 231, 235)",
+    "background": "rgb(206, 250, 254)",
+    "ratio": 1.1820408268099938,
+    "bootstrap": 1.178681907909251,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-info-active-separation",
+    "foreground": "rgb(185, 225, 229)",
+    "background": "rgb(206, 250, 254)",
+    "ratio": 1.2516233288061391,
+    "bootstrap": 1.246959993148533,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-warning",
+    "foreground": "rgb(242, 189, 38)",
+    "background": "rgb(240, 177, 0)",
+    "ratio": 1.0990154106394758,
+    "bootstrap": 1.0662519934898955,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-warning-striped-separation",
+    "foreground": "rgb(241, 237, 184)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 1.1138426663190488,
+    "bootstrap": 1.1153330595368043,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-warning-hover-separation",
+    "foreground": "rgb(235, 230, 179)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 1.1843010522989914,
+    "bootstrap": 1.1787037763088577,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-warning-active-separation",
+    "foreground": "rgb(229, 224, 175)",
+    "background": "rgb(254, 249, 194)",
+    "ratio": 1.251750490735192,
+    "bootstrap": 1.2471436121476343,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-danger",
+    "foreground": "rgb(196, 0, 9)",
+    "background": "rgb(231, 0, 11)",
+    "ratio": 1.3137838407552207,
+    "bootstrap": 1.3060248935848628,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-danger-striped-separation",
+    "foreground": "rgb(242, 215, 215)",
+    "background": "rgb(255, 226, 226)",
+    "ratio": 1.1131917769047732,
+    "bootstrap": 1.1147942003425426,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-danger-hover-separation",
+    "foreground": "rgb(236, 209, 209)",
+    "background": "rgb(255, 226, 226)",
+    "ratio": 1.1794489192127764,
+    "bootstrap": 1.1774796604304887,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-danger-active-separation",
+    "foreground": "rgb(230, 203, 203)",
+    "background": "rgb(255, 226, 226)",
+    "ratio": 1.2512400123743934,
+    "bootstrap": 1.242853816185418,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-light",
+    "foreground": "rgb(212, 213, 213)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 1.407430820450685,
+    "bootstrap": 1.40811456356125,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-light-striped-separation",
+    "foreground": "rgb(237, 238, 238)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 1.1123626730447007,
+    "bootstrap": 1.112037314361637,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-light-hover-separation",
+    "foreground": "rgb(230, 231, 232)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 1.1848441099314337,
+    "bootstrap": 1.1855340377411863,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-light-active-separation",
+    "foreground": "rgb(224, 225, 226)",
+    "background": "rgb(249, 250, 251)",
+    "ratio": 1.2529942021616625,
+    "bootstrap": 1.2539722875073211,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "button-hover-separation-dark",
+    "foreground": "rgb(41, 44, 54)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.445664109041623,
+    "bootstrap": 1.6189677222446783,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-dark-striped-separation",
+    "foreground": "rgb(16, 19, 30)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.0871817704081972,
+    "bootstrap": 1.1602492238386446,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-dark-hover-separation",
+    "foreground": "rgb(22, 26, 36)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.1575741808129922,
+    "bootstrap": 1.2516922141306677,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  },
+  {
+    "id": "table-dark-active-separation",
+    "foreground": "rgb(28, 32, 42)",
+    "background": "rgb(3, 7, 18)",
+    "ratio": 1.2362570642032857,
+    "bootstrap": 1.3645584643134445,
+    "group": "separation",
+    "inherited": false,
+    "floor": 1.05
+  }
+]

@@ -112,7 +112,7 @@ The mechanism is the mechanism judge's synthesis (`design/judge-mechanism.md` §
 
 ## 5. The proofs
 
-Every case carries the control named beside it (`tests.md`); the baseline of every component case is the tuned sheet adopted alone (`rulings.md` finding 3).
+Every case carries the control named beside it (`tests.md`); the baseline of every component style case is the tuned sheet adopted alone (`rulings.md` finding 3); the paired engine states case reads engine output and keeps the showcase's `bootstrap` face (the Journeys list, amended 2026-10-04).
 
 Node cases:
 
@@ -137,7 +137,7 @@ Chromium cases:
 Journeys:
 
 - The partition case compares a Bootstrap winner against `mapReading` of the same element under the `bootstrap` face, keyed by selector role and longhand; control: an unmapped reading fails on `.btn-primary` `background-color`. M6 records the cost against the flip's 449 to 487 s and the focused 53 s.
-- The witness case and the paired engine states case read the tuned sheet alone as their baseline; the paired case is otherwise unchanged.
+- The witness case reads the tuned sheet alone as its baseline. The paired engine states case keeps the showcase's `bootstrap` face as its baseline and is otherwise unchanged (amended 2026-10-04 after T3's fourth pass): its claim is engine-output equality across the three faces a person can select, and the tuned sheet alone is not a renderable face, because `$withhold` drops the shared utility names Tailwind supplies and the scrollspy container loses `overflow-y: auto`; under that baseline the case times out after four families in T3's fourth pass and in an isolated rerun on 2026-10-04.
 - The four showcase contrast subjects read under the `tailwindcss` face in both color modes, and the header buttons under each face in light mode (`rulings.md` finding 8).
 - `TAILWIND_READINGS` gains token rows whose `unexcluded` column keeps Bootstrap's value, because that face loads `./bootstrap`.
 
@@ -154,6 +154,7 @@ Journeys:
 - Captions take the face form of `units/flip-copy/copy.md` § 3.0 where a token changes: the `Bootstrap` face keeps Bootstrap's values; the two Tailwind faces show the map (`Bootstrap only: … Both Tailwind faces: …` where both load the tuned sheet; `Bootstrap only and without the layer: … With the layer: …` where the `unexcluded` face loads `./bootstrap`).
 - `guides/veneer.md` gains a token table pinned to the record (the guide case of § 5), the consumer story (a consumer `--font-sans`, `--radius-md`, and `--shadow-md` reach Bootstrap's components through the references; a consumer `--color-blue-600` does not reach `.btn-primary`; the optional `@custom-variant dark` sentence beside the Color mode limit; the breakpoint bands 576 to 639, 992 to 1023, 1200 to 1279, and 1400 to 1535 px where Bootstrap's documented layouts move; the gray collapse, where `--bs-gray-400` joins `gray-300`; the wide-gamut residual, where 7 of 10 hue bases are out of sRGB as oklch and the clip moves `yellow-500` by OKLab 0.0225).
 - `ROADMAP.md` names the Sass `$palette` for Sass consumers and the `oklch()` output form as later items.
+- **The chrome under the layer** (ruled 2026-10-04 at T3's first stop): the showcase header is built from Bootstrap's classes and ships no sheet of its own, so under the `tailwindcss` face it reads the map (the body color, the border color, the font stack). R12's face-neutral chrome is re-read under R11 as "the chrome departs between faces only by the token rows": the neutrality case and the P4 probe attribute every chrome departure to a palette row, a scale row, or a text-metric geometry change on an element whose `font-family` departs by a scale row, and refuse anything else; the R12 invariants (five buttons one line box tall, the three face buttons on one row at 390 px, the header at or under 30 % of the viewport height at 390 px, one row from 768 px) are asserted under every face; the header buttons read 4.5:1 or more under each face in light mode.
 
 ## 8. Units
 
