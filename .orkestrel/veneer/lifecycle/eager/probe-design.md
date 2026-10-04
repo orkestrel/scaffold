@@ -1,5 +1,11 @@
 # Probe item 1: design of record (judged, 2026-10-04)
 
+## The user's rulings (2026-10-04)
+
+- **T1 onset:** `initialize` waits for the full arm; U4 measures the Windows onset, and when it exceeds Codex's default startup budget the guide documents `startup_timeout_sec` for Codex.
+- **T2 restarts:** `PROBE_RESTARTS = 1`, as browse.
+- **The critic's eight gaps bind the build:** L-3 re-ruled against the lsp `timeout` rejection (the child confirmed alive); teardown during onset stays `destroyed` with no wrapped refusal, no `error` event, and no stderr line; `TypeStage.resolve` calls `start()` first; the onset refusal unwraps a `PoolError`'s cause; `Probe.start()` calls every pool's `start()` on every call (no kick inside `#lease`); the lint fixture counts spawns; a teardown signal cuts a warm in flight; the deadline path catches `token.destroy()`.
+
 ## Shape
 
 Lane: objective. This lane rules correctness against the code and what pool 0.0.14, mcp 0.0.36, and probe 0.0.20 permit. Base: the mirror proposal. It moves the warm into the pool's `create`, drops the queues, keeps the rejection from `Probe.destroy`, and destroys the pools before it awaits the boot. Grafts from the minimal proposal:
