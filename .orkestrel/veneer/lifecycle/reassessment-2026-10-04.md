@@ -1,5 +1,13 @@
 # Reassessment after the eager build (2026-10-04)
 
+## The user's rulings (2026-10-04)
+
+- **D-2 failover proven:** after the Windows forced-kill proof lands (a Node stand-in executable driving the `SIGKILL` branch), rule failover proven with the POSIX rows named as limits, then open browser item 14's design round, including the strike reset under several holders (D-5).
+- **D-3 Codex onset:** take the two client readings first (Codex with `required = true` for `browse`; both clients against a server that exits during setup), then rule.
+- **D-4 Linux run:** after the Tailwind flip lane lands, in the cloud session.
+- **Next work, in order:** browser 0.0.24 hardening (the cancelled-call ping repair as the critic restated it, the forced-kill proof, the orphan case's timing), probe item 1's eager start (after D-3), browser features (`BROWSE_VIEWPORT`, a screenshot journey tool, a coded `OCCLUDED`), then mcp items 13 and 14.
+- **Taken by recommendation:** D-1 keeps `log` and the class-owned exit code (T-14 is settled by the kind-file law); D-8 is deferred with its trigger recorded; D-9 is ruled veneer-local.
+
 ## Decisions for the user
 
 - **D-1 publish surface (T-12, T-13, T-14) (now):** Before browser 0.0.23 is packed, do the public `log` option, the class setting `process.exitCode`, and the exported `BrowserSlot` and `BrowserSlotWatch` types ship as landed? Options: Keep all three as landed / Make `BrowserSlot` and `BrowserSlotWatch` unexported and keep the other two / Move the exit code to the bin, which needs a public settle signal that no consumer asks for. Recommendation: Keep all three as landed. `log` is the only way to assert the diagnostic lines without spies, and an embedding host is a plausible consumer. The exit code stays in the class because the class owns the end-of-input and signal handlers. A later removal of the slot types costs no more than any other release: every 0.0.x release is breaking under a caret, because `^0.0.23` matches only 0.0.23. The Orchestrator can take this ruling through the subjective lane. It is listed here because the user's publish freezes it. Evidence: Code reading: `this.#log = options?.log ?? process.stderr` at browser src/server/BrowserMCPServer.ts:148. The bin passes no `log` (src/bin/main.ts:35-43). The fixtures consume it (tests/service/browse.test.ts:341). `#endFailure` sets the exit code (BrowserMCPServer.ts:281-284), and the handlers are at :207-209. The types are at src/server/types.ts:363-378, star-exported, and named by no public signature. Review: surface-8 was refuted only as an accepted open call (scaffold .orkestrel/veneer/lifecycle/eager/review-u9-findings.json:348-360). Argument: the npm caret rule for 0.0.x.
