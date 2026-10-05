@@ -125,7 +125,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - The rerun passed every gate.
 - **Probe landed:** probe `main` `0437a29..4428ae1`, pushed 2026-10-05. It pins pool `^0.0.15`, so a fresh install fails the idle-loss cases until the release re-pins to `^0.0.16`.
 
-## Release, in layer order (waiting on the user)
+## Release, in layer order (the user, 2026-10-05: publish up to browser, not browser yet; then research item 15 in depth, upstream included)
+
+- **pool 0.0.16:** READY at `f5c3289` (`tmp/units/layer-pool.log`), waiting for the user's one-time code.
+- **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
+- **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
+
+The layer plan:
 
 1. **pool 0.0.16:** `capacity`, the idle-loss strike, and the `isPoolMax` to `isPoolLimit` rename (breaking; no fleet source imports it).
 2. **browser:** the held 0.0.25 work plus item 16, C1 to C3, the follow-up, and the item 14 close. Re-pin to pool `^0.0.16`. It needs the user's item 15 decision.
