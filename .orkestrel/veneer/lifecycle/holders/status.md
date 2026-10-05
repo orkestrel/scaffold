@@ -57,7 +57,7 @@ Report: browser `tmp/probes/contexts/m1b/report.md` (prose, tables, commands); r
 
 1. ROADMAP item 15 (the document-startup flake), now blocking browser 0.0.25: find the cause without perturbing the run (it vanished under every instrumented run), fix it, then finish 0.0.25 (commit the bump and stamp, push, publish with the user's code, confirm, log for veneer in `lanes.md`).
 2. The contexts campaign: C1, C2, C3, M2, and the release.
-3. Browser `ROADMAP.md` item 16, the service-worker defect candidate (M1 result): its own diagnosis unit, because a browse page that registers a service worker meets it with or without contexts.
+3. Browser `ROADMAP.md` item 16, the service-worker defect candidate (M1 result). Running in parallel with C1b at the user's request (2026-10-05): unit `item16` in the worktree browser `tmp/worktrees/item16` (branch `item16` from `fd362be`, `node_modules` by `npm ci`, pool 0.0.15), brief and journal under that worktree's `tmp/codex/item16*`, cap 3 hours. It owns `src/core/BrowserPage.ts`, `BrowserWorker.ts`, their core tests, one case in `tests/service/browser.test.ts`, and item 16's removal; `BrowserContext.ts` and `src/core/types.ts` are report-only because C1b owns them. Merge the branch into `main` after C1b lands.
 4. The paused ollama store campaign (`ollama/tmp/codex/store-campaign-pause.md`): resume the same Codex session from S2's extension when the host can stay quiet for hours.
 5. `@orkestrel/worker`'s re-pin to pool `^0.0.15` (and later 0.0.16), probe item 1 (brief at probe `tmp/codex/eager-probe-brief.md`), mcp items 13 and 14.
 
