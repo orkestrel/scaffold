@@ -44,7 +44,7 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 - **Contract changes.** When the engine changes a contract the showcase consumes (`createVeneer`, the plugin factories, the event constants, a harness export), it migrates the showcase's call sites on `main` in the same change and logs it here.
 - **Behavior changes.** When an engine change moves what a journey or statechart reads, the engine session logs it here before it lands. The oracle wins: the showcase session updates its expectations to Bootstrap's behavior after it merges `main`.
 - **Gates before landing on `main`.** The engine session runs its projects and `npm run test:journey`. The showcase session runs `npm run test:src:browser` and `npm run test:setup:browser` besides the journeys, because its harness edits reach every `src:browser` suite.
-- **Host-bound failures.** The cloud host's Chromium 141 fails a named set of engine cases that pass on the engine session's host. The showcase session lands on `main` when every failure in `test:src:browser`, `test:setup:browser`, and `test:integration` is in that set and `src/`, `tests/src/`, and `tests/integration.test.ts` equal `main` byte for byte; any other failure blocks the landing. The set is named by test title, because the engine lane moves line numbers; the showcase session keeps it current here. The engine session reads those projects on its host after the landing and logs any difference.
+- **Host-bound failures.** The cloud host's Chromium 141 fails a named set of engine and journey cases, § Host-bound set. A unit lands on `main` when every gate failure is a § Host-bound set title, read with the journey reading of the 2026-10-04 baseline entry (a journey title that fails at the pre-flip `main` on this host, or shares its observer with one that does), and `src/browser/**`, `src/core/**`, and `tests/src/browser/**` equal `main` byte for byte unless the unit is an engine unit; any other failure blocks the landing. The set is named by test title, because the engine lane moves line numbers; the showcase session keeps it current here. This host (the cloud host, Linux, Chromium 141.0.7390.37) is the reading arbiter at the user's word of 2026-10-05 (re-triage § 3 item 26): no Windows reading is taken, and one Chromium 153 reading on this host follows unit J (unit B6).
 - **Landing order after the statecharts land.** An engine unit may land with journey failures confined to statechart rows its § Log entry predicted, by table and row, before it landed; a failure in a row it did not predict blocks it until resolved. The showcase session moves each predicted row to the behavior the engine's oracle case records for Bootstrap. A moved row that shows the engine departing from Bootstrap is an engine defect: the engine session fixes the engine, and the row keeps Bootstrap's behavior.
 - **Scaffold releases.** The desktop session prepares a scaffold release; the user publishes it. One session at a time runs a release visit on veneer; announce it here first.
 - **No veneer release.** Neither session publishes `@orkestrel/veneer` until the user says so (the user's ruling of 2026-10-04): the Tailwind flip, the token units, and the engine's remaining layers (the native browser systems and APIs made deterministic and programmatic, and the Veneer styles over them that Bootstrap lacks) land first. A release visit needs the user's word in `lanes.md` before it starts.
@@ -69,6 +69,40 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 ## Log
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
+
+### 2026-10-05 — cloud session (the user's word: the § 3 batch ruled as recommended)
+
+- **The user's word (2026-10-05)**: "For the 29-item § 3 batch, all is as per your recommendation." Every item of `tailwind-flip/completion-2026-10-05/re-triage.md` § 3 is ruled as that section recommends; `plan.md` § Standing rulings holds the ruling. By item:
+  - 1, the two scaffold law amendments (flip FV-D1): confirmed as built, in the landed wording of scaffold `AGENTS.md:28` and `.claude/rules/styles.md:74-76`.
+  - 2, three faces: report; R12's labels stand.
+  - 3, the 17 shared component names stay Bootstrap's (flip FV-D3): confirmed as built.
+  - 4, Bootstrap's documented markup reads Tailwind's meaning on a shared name (flip FV-D4): confirmed as built.
+  - 5, `[hidden]` withheld from the Tailwind build (flip FV-D5): confirmed as built.
+  - 6, linking `./bootstrap` beside the recipe is unsupported (flip FV-D6): confirmed as built.
+  - 7, curation coverage (flip FV-D7): confirmed as built, with the two deviations `tailwind-flip/design-verdict.md` § 12 records (the probe-4 and fold-2 line).
+  - 8, the chrome replaces five shared names (flip FV-D8): confirmed as built, in R12's narrower form.
+  - 9, the showcase page weight (flip FV-D9): accepted; unit B5 records the figure.
+  - 10, no bundler package, the recipe proved through Tailwind's `compile` API (flip FV-D10): confirmed as built, with the guide's limit sentence that the bundler path is unproven.
+  - 11, record writers under `tmp/units/` with durable copies (flip FV-D11): confirmed as built.
+  - 12, the Vue entry, the browse server, and U6's cost record (flip FV-D12): confirmed as built.
+  - 13, the landing rule (flip FV-D13): confirmed as built, with the host clause of item 26.
+  - 14, percentage shared names read Tailwind's spacing (flip FV-D14): confirmed as built.
+  - 15, font, radius, and shadow references (token D9-1): confirmed as built.
+  - 16, colors pinned as sRGB hex and the Sass `$palette` deferral (token D9-2, token L-1): confirmed as built, both.
+  - 17, container widths equal Tailwind's breakpoints (token D9-3): confirmed as built.
+  - 18, `@custom-variant dark` as an optional guide sentence (token D9-4): confirmed as built.
+  - 19, token defaults 5 and 6: report.
+  - 20, R12's face-neutral chrome re-read under R11 (token D-R12, lanes TW-20): confirmed as built.
+  - 21, the contrast floor (token Q-1): accepted at the lesser of Bootstrap's ratio and 4.5:1, with surfaces at 1.05.
+  - 22, the `oklch()` output form (token L-2): confirmed as built, deferred past stage B.
+  - 23, the landing rule's host clause and the reading arbiter (flip FV-R5, reader half): report; merged into item 26.
+  - 24, the D-4 Linux `browse` run timing (lanes TW-22): ruled: the run follows the completion checklist and unit J, against browser 0.0.25 or the contexts release.
+  - 25, release timing at the Tailwind landing (lanes TW-23, veneer half): report; no veneer release until the user says so.
+  - 26, a Windows reading or this host (lanes TW-21; units host-reading, tree TW-15, flip FV-D13 reading clause, lanes TW-33 residue): ruled: no Windows reading; this host (Linux, Chromium 141.0.7390.37) is the reading arbiter; unit B6 takes one Chromium 153 reading here after unit J lands, and that reading answers the host half of D-10.
+  - 27, the falsify round over the token round: report; unit A8 ran under the user's word of 2026-10-05.
+  - 28, which scaffold release carries the token clause (lanes TW-23, scaffold half): report; the ask to the desktop session stands (the "carry scaffold `4e94add7`" entry).
+  - 29, the token clause wording at scaffold `.claude/rules/styles.md:77-81`: report.
+- **Records this word changes**: `plan.md` § Standing rulings (the ruling bullet) and its flip ruling bullet (the R12 labels and the confirmed defaults); § Rules, Host-bound failures (the landing rule and the host clause: this host is the arbiter); the two asks of the engine session in the 2026-10-04 flip-landing and pre-flip-baseline entries, retired in place; the token landing entry's landing-rule sentence; `tailwind-flip/design-verdict.md` § 12 (the arbiter line for § 9 risk 5 and § 10 item 13); `tailwind-flip/brief.md` § R12 (the confirmation note); unit B6 in `re-triage.md` § 2, adopted. The guide's limit sentence for item 10 lands on veneer `main` separately, with re-triage § 4's veneer prose commit.
 
 ### 2026-10-05 — cloud session (the checkpoint holds on the integrated candidate; the A8 round's two verdicts are in)
 
@@ -151,7 +185,7 @@ Newest first. Each entry: date, from, to, what landed or what is asked. A path a
 ### 2026-10-05 — cloud session (the token units landed on veneer `main` at `4d21de7`; no release)
 
 - **Landed on veneer `main`**: fast-forward from `77c65cf` to `4d21de7`: T1 `6874b79`, T2 `4333d76`, T3 `44b3610`, the re-pin `a036694` and `b242bce` (browser `^0.0.24`, scaffold `^0.0.92`, probe `^0.0.20`), the scaffold 0.0.92 overwrite `07694f8`, T4 `4d21de7`. Under the layer, Bootstrap's design tokens take Tailwind's values from the installed theme (126 palette rows, 26 scale rows, 27 kept, 105 amount rows), `./bootstrap` byte-identical (`7932f7a5…`), the tuned sheet `9a20b966…`, the showcase `1fc7b60e…`.
-- **Landing gates at `4d21de7`** (this host, serial; `units/tokens-landing/gates-4d21de7.txt`): format, lint, check, build, test:setup 156, src:bootstrap 14, src:tailwindcss 10, guides 19, policy 119 (1 skipped), conformance 128, app browser 239, setup browser 156, integration 58, build:showcase; `src:browser` 781 passed with the 6 host-bound titles failing; `test:journey` 88 passed, 6 skipped, 2 host-bound titles failing (accordion motion=false at light-390, collapse motion=false at dark-390), 817 s.
+- **Landing gates at `4d21de7`** (this host, serial; `units/tokens-landing/gates-4d21de7.txt`): format, lint, check, build, test:setup 156, src:bootstrap 14, src:tailwindcss 10, guides 19, policy 119 (1 skipped), conformance 128, app browser 239, setup browser 156, integration 58, build:showcase; `src:browser` 781 passed with the 6 host-bound titles failing; `test:journey` 88 passed, 6 skipped, 2 host-bound titles failing (accordion motion=false at light-390, collapse motion=false at dark-390), 817 s. The landing met § Rules' landing rule: the three engine paths equal `77c65cf` (`git diff --quiet 77c65cf 4d21de7 -- src/browser src/core tests/src/browser` exits 0 in the veneer checkout, read on 2026-10-05), and every failure is a § Host-bound set title (`gates-4d21de7.txt:46-54`).
 - **No veneer release**: the user's word stands; the consumer meets the flip and the token round as one visual change at the next release visit.
 - **Order from here**: the journey tuning unit (plan v3 from the design round, then the Astra check and the verdict), the Tailwind completion checklist from the records audit, then stage B at the user's word.
 
@@ -230,7 +264,7 @@ The user ruled on the questions the remainder-map review raised (`plan.md` § St
 
 - **Landed on `main`** by a fast-forward of `ccr-d15a48b1-yyyll6` (`main` had not moved from `d0603b4`): the structural flip (U1 to U7), the R12 header, fix unit A, the F1 wave (specimens, the second fold, the preservation gate), and U8's whole-file `build:showcase` commit. `showcase/browser.html` is rebuilt from the landed tree (``c67257a1…``); `./bootstrap` keeps `7932f7a5…`; the tuned sheet reads ``b946eefe…``. `src/browser/**`, `src/core/**`, and `tests/src/browser/**` equal the pre-landing `main` byte for byte; `tests/setupBrowser.ts` carries the showcase section's edits (labels, the banner-only chrome reader, the header offset, `TAILWIND_READINGS`, `FACE_LABELS`), and `tests/integration.test.ts` carries the overrides and composition-order cases.
 - **Gates at `77c65cf`** (this host, bare, `tailwind-flip/units/flip-gates/gates-77c65cf.txt`): `format:check`, `lint:check`, `check`, `build`, `build:showcase` (byte-identical rebuild) exit 0; `test:setup` 150, `test:src:bootstrap` 14, `test:src:tailwindcss` 6, `test:guides` 15, `test:policy` 119, `test:conformance` 119, `test:app:browser` 237, `test:setup:browser` 144, `test:integration` 58 (the three preflight titles pass); `test:src:browser` 781 passed, 6 failed (the six § Host-bound set titles in `Placement.test.ts` and `Tip.test.ts`); `test:journey` 87 passed, 3 failed (J8 and accordion motion=false at light-390, collapse motion=false at dark-390), 6 skipped, 537 s. Every failure is a § Host-bound set title.
-- **Asked of the engine session**: read `test:src:browser`, `test:integration`, and `test:journey` on your host at `77c65cf` and log here which § Host-bound set titles fail there; a title that passes there and fails here stays host-bound; one that fails there too is the engine's to read. Merge `main` into your worktree branches before your next landing; the showcase lane's paths are § Paths.
+- **Asked of the engine session**: read `test:src:browser`, `test:integration`, and `test:journey` on your host at `77c65cf` and log here which § Host-bound set titles fail there; a title that passes there and fails here stays host-bound; one that fails there too is the engine's to read. Merge `main` into your worktree branches before your next landing; the showcase lane's paths are § Paths. Retired on 2026-10-05: the user ruled this host the arbiter (re-triage § 3 item 26).
 - **Next in the showcase lane**: the token units T1 to T4 on `ccr-d15a48b1-yyyll6` under `tailwind-flip/tokens/design-verdict.md`; no veneer release between this landing and the token units' landing (verdict § 9).
 
 ### 2026-10-04 — engine session to showcase session (review of the engine remainder map)
@@ -321,7 +355,7 @@ The engine session reviewed `stage-b/remainder-map-2026-10-04.md`; the review is
 
 - **Landing rule, read for the journey:** a journey failure in `tests/app/browser/integration.test.ts` (a path this lane touched) counts as host-bound when the same title fails at the pre-flip `main` on this host or shares its observer with one that does; the flip's own cases (the nine face rows, the partition, the readings, the paired engine states, the header) pass in every run.
 - **Budget ruled:** the 235 s budget (J0c, `43ca8a0`, 225 s) does not hold on this host today even before the flip (313 s at `d0603b4`); the three-face journey reads 449 s and 487 s in two runs with the partition at 67 s of that. The budget is re-recorded as the measured three-face wall time on this host and date; the cost drivers (scrollspy-390 at 60 to 79 s, the paired engine states at 41 to 75 s per variant, the partition at 67 s, the carousel at 59 s) go to `ROADMAP.md` as a tuning chunk, not to this lane.
-- **Ask of the engine session:** after the landing, run `test:journey` on the Windows host and log here which of the five 390px titles fail there; a title that passes there and fails here stays host-bound; one that fails there too is the engine's observer to read.
+- **Ask of the engine session:** after the landing, run `test:journey` on the Windows host and log here which of the five 390px titles fail there; a title that passes there and fails here stays host-bound; one that fails there too is the engine's observer to read. Retired on 2026-10-05: the user ruled this host the arbiter (re-triage § 3 item 26).
 
 ### 2026-10-04 — showcase session (cloud) (flip unit U6 committed at veneer `600f8a1`; U7 launched; the token round's probe read)
 

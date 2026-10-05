@@ -85,7 +85,7 @@ The Host line of each unit means:
 
 1. Unit J runs throughout.
 2. Units A1 to A8 and F run beside it, in this order: A1, A2, A3, A7, A4, A5, A6, A8, then F. Each A unit writes no file that unit J writes or imports.
-3. Units B1 to B5 run after unit J lands on `main`, in that order, then B6 if the user adopts § 3 item 26.
+3. Units B1 to B5 run after unit J lands on `main`, in that order, then B6, which the user adopted on 2026-10-05 with § 3 item 26.
 4. Unit F runs after unit A8. Where F touches a unit J file, it waits for unit J and runs before B1.
 
 ### J. Journey run-cost tuning (in flight, governed by its verdict)
@@ -304,7 +304,7 @@ The Host line of each unit means:
 - **Gate:** `test:guides` and `test:policy`.
 - **Host:** Node.
 
-### B6. Chromium 153 host reading (if § 3 item 26 is adopted)
+### B6. Chromium 153 host reading (adopted on 2026-10-05 with § 3 item 26)
 
 - **Closes:** units host-reading, lanes TW-21, and tree TW-15 (reading half). It feeds D-10 (`RECORDS/lanes.md:149`).
 - **Role:** `verifier`.

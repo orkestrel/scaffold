@@ -160,6 +160,7 @@ GPT-6 Astra (read-only, `codex exec`, 607 s on 2026-10-04) attacked the load-bea
 - § 2 to § 4 after fix unit A (2026-10-04, veneer `527ea39`, reviewer F10): `$shared`, `$curation`, and `$defaults` at `:29`, `:57`, `:58`, and `:67` read `$withhold`, `$curated`, and `$restored`, and the "four switches" at `:12` and `:22` read five, with `$scoped`.
 - § 5 and § 10 item 2 after R12 (2026-10-04, `ca2c90e`): the three compositions stand with the labels `Bootstrap`, `Tailwind, no layer`, and `Tailwind + layer`.
 - § 4 and § 10 item 7 after probe-4 and fold-2 (2026-10-04, `bc35a3e`): `:where(.table) tfoot` and `:where(.table) tr` stay on hazard witnesses although probe-4 did not reproduce them, and 19 derived rows stay out, the description-list margins among them.
+- § 9 risk 5 (`:113`), § 10 item 13 (`:129`), and the reading clause after the user's word of 2026-10-05 (`completion-2026-10-05/re-triage.md` § 3 item 26): this host, the cloud host (Linux, Chromium 141.0.7390.37), is the reading arbiter in place of "the engine session reads … on its host"; one Chromium 153 reading follows unit J (unit B6).
 
 ## 13. U1 readings (2026-10-04, `units/flip-probe/`)
 
