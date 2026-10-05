@@ -37,6 +37,7 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 
 ## Rules
 
+- **Host queue during the journey tuning unit (from 2026-10-05):** on the cloud host, every command that launches Chromium or loads the CPU (build, check, lint, format, install, every Vitest suite) runs through one exclusive serial queue, `flock /home/user/.wave/journey.lock` around the unit's Node runner; nothing runs outside it while the unit is open; lanes pause during price windows. `showcase/journey-cost-2026-10-05/verdict.md` § 6 governs.
 - **The environment boundary.** `tests/setupBrowser.ts` imports no value from `app/`, only types. Every `src:browser` suite imports the harness, and the boundary plugin refuses an application module on that graph ("Published modules cannot depend on private application modules"); pass application values to a helper as arguments, as `buildPairScenarios(FACES, THEMES)` does (veneer `e7b7c2b`).
 - **The built page.** Never hand-merge `showcase/browser.html`. The side that merges rebuilds it with `npm run build:showcase` from the merged tree and commits the result.
 - **Merges.** The engine session merges its worktree branches into veneer `main`. The showcase session merges `main` into `ccr-d15a48b1-yyyll6` before each unit and merges back into `main` when a unit is accepted. The merging side resolves a shared file by union, keeps the other side's section byte for byte, and logs the merge here.
@@ -59,6 +60,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 - `setup:browser`: none.
 
 ## Log
+
+### 2026-10-05 — cloud session (the journey run-cost verdict ruled; Q1 to the user; the host queue rule for the unit)
+
+- **Verdict**: `showcase/journey-cost-2026-10-05/verdict.md` rules the journey tuning unit after three plan drafts, a 21-gap critic, three verifications (38 findings), and the GPT-6 Astra objective check (holds with corrections on proof, figures, feasibility, and the user questions; fails the closure claim and the acceptance floor; every correction adopted). Layer 1 (the measurement instrument, the per-width split with all halves in light-1280, one owner for the selector-major match, the preservation index, the partition memo, the set reader, the scrollspy poll under its whole-document refusal, linear checks, the live Tab bound, the CDP domain cleanup, the longhand cache) lands item by item on equality and a measured gain; layer 2 (placement by measured slack) waits on Q1. Acceptance is non-regression of every proof against J-B0 plus a wall reduction frozen as R before the acceptance runs; no modeled figure enters it.
+- **Q1 to the user**: may the per-width preservation and partition halves run in a project other than light-1280 (each still reading the light-1280 variant at its width), and may the theme header table run outside light-390? Recommended yes to both, with the CDP cleanup landed before any destination that holds a host-bound title.
+- **Rule for this host during the unit (Q2, ruled by the Orchestrator)**: every command that launches Chromium or loads the CPU runs through one exclusive serial queue (`flock /home/user/.wave/journey.lock` around the unit's Node runner); lanes pause during price windows; the stage B readings and the D-4 run wait; evidence is copied before any run that truncates. The unlocked `gates.sh` is retired for the unit's duration.
+- **Order from here**: lane M (tools, evidence, worktrees, precondition gates, J-B0 alone) → lanes 0 and 3 → lanes 1 and 2 → checkpoint → lane 4 if Q1 is yes → falsify → acceptance → landing. The Tailwind completion checklist from the records audit runs beside it as read-only or Node-gated work through the queue.
 
 ### 2026-10-05 — cloud session (the token units landed on veneer `main` at `4d21de7`; no release)
 
