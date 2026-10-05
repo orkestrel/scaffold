@@ -458,6 +458,11 @@ The proposals agree on a pool per stage, `min` 1, `restarts` 1, no `validate`, n
 - Pool.ts:754-760 keeps a rejected record as a survivor; Pool.ts:757-759 deletes a resolved one and refills. Fix: Re-rule L-3 against the full declaration, in two parts.
 - (a) In `#dispose`, branch on the stage's rejection. A lint `destroy()` rejection whose cause is the lsp `timeout` means the child is confirmed alive. Either reject the hook there (a survivor, per reassessment rank 8, and state that the lint floor then refuses until the process ends), or resolve and record in Risks and the guide's § Lifecycle that one live Oxlint can leak per occurrence, with its bound.
 - (b) Delete the 'needs a pid' refusal. The transport rejection is the signal.
+- **Re-ruled by the Orchestrator (2026-10-05), after unit `eager-probe2` stopped on (a):**
+  - Pool retains a record whose destroy hook rejects for the life of the pool instance. It aborts the record's watch before running the hook, ignores the loss of a retained record, and never retries the hook (pool `guides/pool.md` § Warm floor and loss). The unit's instrument showed this against the 0.0.16 build: probe `tmp/codex/eager-probe2-survivor.ts` and `tmp/codex/eager-probe2-last.md`.
+  - So "the lint floor then refuses until the process ends" cannot hold. Keep branch (a) with the corrected consequence: a lint `destroy()` rejection whose cause is the lsp `timeout` rejects the hook, and pool keeps the survivor. The lint floor then refuses with `cleanup` until the server restarts.
+  - The lsp transport's `timeout` already follows its own kill escalation (lsp `close()`: "escalates to a kill and resolves after the child exits", and throws `timeout` when it cannot confirm the child stopped). So that refusal marks an Oxlint child that outlived a kill. Probe never spawns a second Oxlint beside it.
+  - The guide's § Lifecycle and the Risks state that limit.
 - Add a U2 case per branch that the fixture can drive, or mark the branch NOT-EVIDENCED with the reason.
 - Teardown during onset turns into an arm refusal, which contradicts `ProbeInterface.start`'s own contract ('with `destroyed` after teardown begins').
 - Design item 5 destroys the pools before awaiting `#arming`, so the boot's acquires and the pools' `start()` reject with `destroyed`.
