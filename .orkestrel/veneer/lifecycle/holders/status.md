@@ -20,6 +20,8 @@ The design records sit beside this file: `synthesis.md` and `review-h2.md` (the 
 - At a captured failure (`tmp/codex/item15-failure-full-3.json`) the page was hidden and unfocused, two module requests were cancelled within 0.3 ms, and the browser carried Edge's onboarding, sync-confirmation, and extension targets; four unchanged full runs: two passed, one failed the document case, one the renderer-crash case.
 - Running: unit `item15b` (brief browser `tmp/codex/item15b-brief.md`) compares repeated full runs with and without Playwright-style background-suppression flags, narrows the decisive flags, and reports whether they belong in the library's `BROWSER_LAUNCH_ARGS` (today only `--no-first-run`, `--no-default-browser-check`), since `browse` launches the same Edge on fresh profiles.
 
+- The user ruled (2026-10-05): **hold browser 0.0.25 until item 15 is fixed.** Unit `item15b` was inconclusive (controls passed five of five that session; the first flagged run hung; no flags adopted). The Orchestrator's own full runs failed three of three (`tmp/codex/r25-test-service*.log`). Running: unit `item15c` (brief `tmp/codex/item15c-brief.md`), testing whether Edge freezes the hidden document page (sleeping tabs or efficiency mode on this laptop), which would cancel its in-flight module requests.
+
 ## The contexts campaign (ruled, not started)
 
 - The user's rulings (2026-10-05): holders become isolated contexts on pooled browsers; a per-browser bound `BROWSE_CONTEXTS` with total admission `size × contexts`; the shared holder counts; the call-paced relaunch loop is a recorded limit; the default `BROWSE_POOL` stays 1 until contexts land; the default topology is ruled from M1.
