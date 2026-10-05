@@ -61,6 +61,20 @@ Report: browser `tmp/probes/contexts/m1b/report.md` (prose, tables, commands); r
 4. The paused ollama store campaign (`ollama/tmp/codex/store-campaign-pause.md`): resume the same Codex session from S2's extension when the host can stay quiet for hours.
 5. `@orkestrel/worker`'s re-pin to pool `^0.0.15` (and later 0.0.16), probe item 1 (brief at probe `tmp/codex/eager-probe-brief.md`), mcp items 13 and 14.
 
+## Unpublished work across the fleet (read 2026-10-05, scaffold `tmp/units/fleet-status.ts` and `fleet-deps.ts`)
+
+- Material and unpublished:
+  - **pool:** `3ff0c63` and `1f194d7` (capacity, the idle-loss strike) go out as 0.0.16.
+  - **browser:** 0.0.25 is prepared and held for item 15, plus item 16 (`e8aa649`), C1 (`6bedbb1`), and C2 and C3 when they land.
+  - **scaffold:** 64 commits since 0.0.92, including the cloud session's S46 Oxlint rule and both sessions' records; the cloud session's lanes coordinate its release.
+  - **worker:** owes a re-pin to pool 0.0.16, which changes its runtime range.
+- Unpublished by design:
+  - **ollama:** local 0.0.21 with 3 unpushed commits and a dirty manifest, held by the paused store campaign.
+  - **supervisor:** local 0.0.2, dropped from the waves.
+  - **veneer:** never published.
+- Every other package carries only post-release visit commits (scaffold overwrites and devDependency re-pins). Their runtime dependency ranges match their published manifests.
+- `mcp` 0.0.36 and `server` 0.0.22 were published after their last source commits, at 2026-10-04T01:20Z and 2026-10-01T21:01Z.
+
 ## Rules that bind the rest
 
 - Tests pin claims at the least cost; report durations; never weaken a pin; no retries or longer waits to hide a failure.
