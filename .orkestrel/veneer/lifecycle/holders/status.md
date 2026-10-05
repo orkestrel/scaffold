@@ -127,7 +127,11 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 
 ## Release, in layer order (the user, 2026-10-05: publish up to browser, not browser yet; then research item 15 in depth, upstream included)
 
-- **pool 0.0.16:** READY at `f5c3289` (`tmp/units/layer-pool.log`), waiting for the user's one-time code.
+- **pool 0.0.16: published** 2026-10-05 (`window.ts`: accepted, confirmed; log `tmp/units/publish--orkestrel-pool.log`), from `f5c3289`. Running: `layer.ts worker probe`.
+- **Item 15 deep research** (records in `lifecycle/item15/`):
+  - **The leading cause, H1, which the attack confirmed and strengthened:** Edge signs each fresh profile in to the user's Windows Microsoft account and syncs the account's extensions. The second install wave, about 20 to 22 s after launch, brings Claude (`declarativeNetRequest`, `debugger`) and Capital One Shopping (`webRequest`). The first such extension resets the URL loader factories, and a page's import wave in that window gets `net::ERR_ABORTED` before dispatch.
+  - **The user ruled (2026-10-05):** `--disable-sync` goes into `BROWSER_LAUNCH_ARGS` for every browser the library and `browse` launch, and the experiment series may run.
+  - Running: unit `item15e` (browser `tmp/codex/item15e-brief.md`, cap 6 hours). It does the zero-run reads, the extension-reload trigger with its control, and E1 with arms A, B, and the Claude-only split, then the fix and its proof, and closes item 15.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
 
