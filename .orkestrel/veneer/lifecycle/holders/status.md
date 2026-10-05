@@ -128,7 +128,7 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 ## Release, in layer order (the user, 2026-10-05: publish up to browser, not browser yet; then research item 15 in depth, upstream included)
 
 - **pool 0.0.16: published** 2026-10-05 (`window.ts`: accepted, confirmed; log `tmp/units/publish--orkestrel-pool.log`), from `f5c3289`.
-- **worker 0.0.16:** READY at `5c14ed7`, re-pinned to pool `^0.0.16` (`tmp/units/layer-worker.log`), waiting for the user's one-time code.
+- **worker 0.0.16: published** 2026-10-05 from `5c14ed7`. `window.ts` reported accepted and unconfirmed while npm processed it; `npm view` then served 0.0.16 with `@orkestrel/pool` `^0.0.16` (log `tmp/units/publish--orkestrel-worker.log`).
 - **probe:** its visit failed the test gate on one case. The silent-initialize case's `await probe.destroy()` rejected while worker's gates ran alongside.
   - The file alone passes: 37 passed in 481.6 s (`probe/tmp/codex/layer-probe-rerun.log`).
   - Likely cause, unconfirmed: under heavy load the lint kill confirmation overruns its window, and teardown (since U6) reports the slow child as a survivor.
