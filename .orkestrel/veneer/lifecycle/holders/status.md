@@ -47,7 +47,11 @@ Report: browser `tmp/probes/contexts/m1b/report.md` (prose, tables, commands); r
 - `reports a real filesystem refusal while ending several live leases`;
 - `forces a hung stand-in process to exit at the ping deadline and serves its successor`.
 
-Running: unit `contexts-c1svc` (brief browser `tmp/codex/contexts-c1svc-brief.md`, cap 3 hours), which classifies each failure as an obsolete expectation or a C1 defect and repairs it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
+Unit `contexts-c1svc` (report browser `tmp/codex/contexts-c1svc-last.md`) classified the four failures:
+- two obsolete expectations, rewritten at `contexts: 1` with every true claim kept;
+- two C1 defects, fixed with red cases: the forced kill waited on context cleanup, and an expected shutdown disconnect became a teardown fault.
+
+It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls about 30 s, because `BrowserPage.#close()` releases resources before closing the target and the WebMCP registry waits on a crashed renderer. Running: unit `contexts-c1svc2` (brief browser `tmp/codex/contexts-c1svc2-brief.md`, cap 3 hours), with `src/core/BrowserPage.ts` in scope. It must pass the service file alone twice and rerun the server project's `FileBrowserStore` timing case after the probe unit finishes. All of this stays uncommitted, and one Opus review covers it before commit. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
