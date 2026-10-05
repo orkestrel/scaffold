@@ -1,0 +1,30 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/Showcase.test.ts:464:2 > Showcase > keeps the compact sticky header neutral under every face at narrow and wide viewports
+Error: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/Showcase.test.ts:464:1
+    462|  )
+    463|
+    464|  it('keeps the compact sticky header neutral under every face at narro…
+       | ^
+    465|   const original = { width: innerWidth, height: innerHeight }
+    466|   const showcase = new Showcase(document)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/Showcase.test.ts:630:2 > Showcase > lands first and deep contents headings below the sticky header after a viewport resize
+Error: Interactive target "Bootstrap" is ambiguous across 2 elements
+ ❯ resolveRendered node_modules/@orkestrel/test/dist/src/browser/index.js:465:33
+ ❯ clickAccessible node_modules/@orkestrel/test/dist/src/browser/index.js:484:16
+ ❯ tests/app/browser/Showcase.test.ts:647:11
+    645|     )
+    646|     for (const face of ['Bootstrap', 'Tailwind, no layer', 'Tailwind +…
+    647|      await clickAccessible('button', face)
+       |           ^
+    648|      for (const name of ['Tailwind on Bootstrap markup', 'Containers']…
+    649|       await clickAccessible('link', name)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

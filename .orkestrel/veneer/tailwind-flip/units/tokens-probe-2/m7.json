@@ -1,0 +1,144 @@
+{
+	"finding": "holds",
+	"profile": "srgb",
+	"rows": [
+		{
+			"token": "blue-600",
+			"component": "btn btn-primary",
+			"tailwind": "oklch(0.546 0.245 262.881)",
+			"tuned": "rgb(21, 93, 252)",
+			"utility": [
+				21,
+				93,
+				252,
+				255
+			],
+			"componentPixels": [
+				21,
+				93,
+				252,
+				255
+			],
+			"difference": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"token": "yellow-500",
+			"component": "btn btn-warning",
+			"tailwind": "oklch(0.795 0.184 86.047)",
+			"tuned": "rgb(240, 177, 0)",
+			"utility": [
+				240,
+				177,
+				0,
+				255
+			],
+			"componentPixels": [
+				240,
+				177,
+				0,
+				255
+			],
+			"difference": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"token": "cyan-500",
+			"component": "btn btn-info",
+			"tailwind": "oklch(0.715 0.143 215.221)",
+			"tuned": "rgb(0, 184, 219)",
+			"utility": [
+				0,
+				184,
+				219,
+				255
+			],
+			"componentPixels": [
+				0,
+				184,
+				219,
+				255
+			],
+			"difference": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"token": "teal-400",
+			"component": "--bs-teal swatch (Bootstrap has no teal component)",
+			"tailwind": "oklch(0.777 0.152 181.912)",
+			"tuned": "rgb(0, 213, 190)",
+			"utility": [
+				0,
+				213,
+				190,
+				255
+			],
+			"componentPixels": [
+				0,
+				213,
+				190,
+				255
+			],
+			"difference": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"token": "red-600",
+			"component": "btn btn-danger",
+			"tailwind": "oklch(0.577 0.245 27.325)",
+			"tuned": "rgb(231, 0, 11)",
+			"utility": [
+				231,
+				0,
+				11,
+				255
+			],
+			"componentPixels": [
+				231,
+				0,
+				11,
+				255
+			],
+			"difference": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"token": "green-700",
+			"component": "btn btn-success",
+			"tailwind": "oklch(0.527 0.154 150.069)",
+			"tuned": "rgb(0, 130, 54)",
+			"utility": [
+				0,
+				130,
+				54,
+				255
+			],
+			"componentPixels": [
+				0,
+				130,
+				54,
+				255
+			],
+			"difference": [
+				0,
+				0,
+				0
+			]
+		}
+	]
+}
