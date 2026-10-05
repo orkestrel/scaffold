@@ -127,7 +127,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 
 ## Release, in layer order (the user, 2026-10-05: publish up to browser, not browser yet; then research item 15 in depth, upstream included)
 
-- **pool 0.0.16: published** 2026-10-05 (`window.ts`: accepted, confirmed; log `tmp/units/publish--orkestrel-pool.log`), from `f5c3289`. Running: `layer.ts worker probe`.
+- **pool 0.0.16: published** 2026-10-05 (`window.ts`: accepted, confirmed; log `tmp/units/publish--orkestrel-pool.log`), from `f5c3289`.
+- **worker 0.0.16:** READY at `5c14ed7`, re-pinned to pool `^0.0.16` (`tmp/units/layer-worker.log`), waiting for the user's one-time code.
+- **probe:** its visit failed the test gate on one case. The silent-initialize case's `await probe.destroy()` rejected while worker's gates ran alongside.
+  - The file alone passes: 37 passed in 481.6 s (`probe/tmp/codex/layer-probe-rerun.log`).
+  - Likely cause, unconfirmed: under heavy load the lint kill confirmation overruns its window, and teardown (since U6) reports the slow child as a survivor.
+  - The visit also reported 2 self-pin hits. It committed the re-pin (`a550341`) and left the overwrite's files uncommitted.
+  - Reproduce it under load and rule on it after `item15e`, which needs the host.
 - **Item 15 deep research** (records in `lifecycle/item15/`):
   - **The leading cause, H1, which the attack confirmed and strengthened:** Edge signs each fresh profile in to the user's Windows Microsoft account and syncs the account's extensions. The second install wave, about 20 to 22 s after launch, brings Claude (`declarativeNetRequest`, `debugger`) and Capital One Shopping (`webRequest`). The first such extension resets the URL loader factories, and a page's import wave in that window gets `net::ERR_ABORTED` before dispatch.
   - **The user ruled (2026-10-05):** `--disable-sync` goes into `BROWSER_LAUNCH_ARGS` for every browser the library and `browse` launch, and the experiment series may run.
