@@ -1,6 +1,6 @@
 # `@orkestrel/veneer` routing ledger — foundation campaign
 
-Every dispatch of the foundation campaign, its engine, its transport, its duration, and its outcome. Durations are the journal's `durationMs` rounded to seconds. The bench journals under the scaffold checkout's `tmp/cursor/` and `tmp/codex/` were swept on 2026-10-01; each unit's brief and report are archived in git history at the sweep commit's parent.
+Every dispatch of the foundation campaign, its engine, its transport, its duration, and its outcome. Durations are the journal's `durationMs` rounded to seconds. The bench journals under the scaffold checkout's `tmp/cursor/` and `tmp/codex/` were swept on 2026-10-01; each unit's brief and report are archived in git history at the sweep commit's parent. The flip and token lanes of 2026-10-04 and 2026-10-05 are recorded one folder per lane in `tailwind-flip/units/` and in the `lanes.md` § Log entries of those dates; this file holds no row for them.
 
 ## Substitutions and standing readings
 

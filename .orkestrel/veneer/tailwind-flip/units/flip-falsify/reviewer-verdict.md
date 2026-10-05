@@ -38,3 +38,10 @@ VERDICT: FAIL 25, 39, 43, 44, 50, 51; outside the claims: F1, F2, F5, F6, F7, F8
 - **F2 becomes a gate** in the journey project (one variant, per signature), through the existing `attributeDeparture`, failing on `preflight` or `unattributed` after the probe's exclusions; its cost is measured against the partition's 53 s.
 - `src/tailwindcss/_mixins.scss` stays (the reviewer's reading of `AGENTS.md`'s kind-file rule stands over the earlier fix-list entry).
 - F3 to F13 go to the fix units with the analyst's findings; the claims list is updated to the § 12 rulings (50, 51) rather than the code to the stale claims.
+
+## Note (2026-10-05)
+
+- Claims 50 and 51 are superseded by `../../design-verdict.md` § 12 and the preservation gate at veneer `77c65cf`.
+- Claim 54 is superseded by the showcase brief's four permitted longhand kinds and the census fix unit A widened at `527ea39`.
+- The refutation of claim 51 at `:11` ("`DepartureCause` has no `resolved` member") has been false since `77c65cf`.
+- The briefs stay as written.

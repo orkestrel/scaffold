@@ -22,6 +22,8 @@ The critic (`design/critic.md`) holds the verdict until nine measurements run (i
 - **Finding 8 (the showcase contrast cases never read the map):** the four contrast subjects read under the `tailwindcss` face in both color modes and the header buttons under each face in light mode; M6 records the cost.
 - **Findings 10 to 16:** M5 (the `xl` boundary and the down forms at 125% and 150% scale), the captions in the face form, ramp's scale keys and controls in the derivation case, the records list and the units list in the verdict, the gray collapse stated in the guide, M7's pixel reads and the wide-gamut residual sentence.
 
+Closure (2026-10-05): findings 1 to 11 and 13 to 16 are closed by their cases on veneer `main` at `4d21de7`, finding 5 also by `design-verdict.md:139` at scaffold `5ea6cc19`. Finding 12's scale controls stay open under unit A5 (`../completion-2026-10-05/re-triage.md`).
+
 ## Order
 
 T0 (the nine measurements) runs after the header unit, beside fix unit A (tmp only); the verdict follows T0; the token units follow the structural flip's landing on `main`, and no release ships between.

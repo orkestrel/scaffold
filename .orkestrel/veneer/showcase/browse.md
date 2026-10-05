@@ -1,6 +1,6 @@
 # Browse status: the showcase session's browse lane
 
-The cloud session handed this lane to the engine session on 2026-10-03 (`status.md`). `../lanes.md` § Paths puts `browse` and the `@orkestrel/browser` roadmap in the showcase lane.
+The cloud session handed this lane to the engine session on 2026-10-03 (`../lanes.md` § Sessions and § Log). `../lanes.md` § Paths puts `browse` and the `@orkestrel/browser` roadmap in the showcase lane.
 
 ## Status
 
