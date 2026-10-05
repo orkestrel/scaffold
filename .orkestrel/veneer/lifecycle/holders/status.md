@@ -75,7 +75,15 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - the `CDPConnectionError` description.
 - Its results: 15 mutation controls, each failing exactly its case; core 1255 passed; guides 251; policy 119; the service file passed alone a third time. The Orchestrator's server rerun: 390 passed.
 - **The C1 follow-up landed:** browser `main` `708f0dc`, pushed 2026-10-05.
-- Next: probe U4 (running: `eager-probe-u4`, probe `tmp/codex/eager-probe-u4-brief.md`), then M2 on a quiet host. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
+- Probe U4 (`eager-probe-u4`; readings copied to `eager/probe-readings.md`):
+  - The negative control passed.
+  - M-A, spawn to `initialize`: probe 8.55 s; scaffold 13.41 s, so T1 is yes, above Codex's 10 s default; veneer **refused** at about 61 s in 3 runs of 3, `The type stage warm exceeded 30000 ms`.
+  - M-B, Oxlint kill to a working replacement: 3.0 s.
+  - M-C is not a clean comparison: the historical server suite failed one case.
+  - M-D: no persistent handle.
+  - M-E: Codex with `required = true` refuses and prints the cause. Claude Code connects in both the healthy and the refusing case.
+- The veneer refusal blocks U5. Running: unit `eager-probe-veneer` (probe `tmp/codex/eager-probe-veneer-brief.md`), which reads veneer's unbounded type warm and published 0.0.20's first `prove` on veneer, to rule how the onset treats a warm past the deadline.
+- M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
