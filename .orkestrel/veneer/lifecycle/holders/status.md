@@ -113,7 +113,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - The `CDPClient` timer case records only its own request's timer through `node:async_hooks`. It is red under a test-config overlay that skips clearing the timer on abort, and it passed 20 runs in a row.
   - Core: 1255 passed; guides 251; policy 119.
 - **The browser contexts campaign is complete on `main`:** C1 `6bedbb1`, C2 `50e6017`, C3 `b1b1c8f`, the follow-up `708f0dc`, and the item 14 close `10802f3`, plus item 16 `e8aa649`. It is unpublished; the release waits for pool 0.0.16 and the user's item 15 decision.
-- Probe: U6 (`review-u6.md`) ruled FAIL. Running: unit `eager-probe-u6fix` (probe `tmp/codex/eager-probe-u6fix-brief.md`).
+- Probe: U6 (`review-u6.md`) ruled FAIL. Unit `eager-probe-u6fix` committed `0c78588`:
+  - the type refill refusal is consumed by the call that receives it, red on the stale cause;
+  - `LINT_TEARDOWN` (16,000 ms) bounds lint disposal with `deadline`; at `deadline: 500`, live pids read `[1,1]` against `[1,2]` before the fix;
+  - the `arm-` cleanup assertion moved to a case that fails;
+  - the TSDoc drift fixed, and the guide states the reworded survivor ruling.
+
+  Its gates passed: `npm test` with source 269, policy 119, config 227, setup 19, and guides 32. Running: U7, the Orchestrator's independent gate run. Push probe after it.
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
