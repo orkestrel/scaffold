@@ -55,6 +55,8 @@ The distillates under `distillates/` beside this file are the extracted knowledg
 
 Each distillate cites the old repository's clone (`tmp/mikesaintsg-veneer/`, commit `86491c2`) or the prior campaign's records; the records are archived in git history at `9cc22b237`, the last commit before this campaign swept the folder, and the clone was deleted from scaffold's `tmp/` on 2026-10-02 at the user's ruling (the repository itself is deleted), so a citation into it resolves nowhere. The rows that name chunk 4 are withdrawn for that chunk by the same ruling.
 
+The `mikesaintsg/elements` repository (public, `https://github.com/mikesaintsg/elements`) is a stage B input at the user's word of 2026-10-04: its `create*` factories, guides, and tests record the native browser systems and APIs the engine builds on. The engine session's distillates under `stage-b/` (`browser-elements-distillate.md`, `elements-engine-1.md` and `-2.md`, `elements-styles-1.md` and `-2.md`, `native-inventory-*.md`) read a Windows checkout of it; the cloud host holds a read-only clone at `/home/user/mikesaintsg/elements`, commit `3b41900` (2026-06-09). Stage B units cite the clone by path and commit.
+
 ## Standing readings
 
 - Loader family: a cached sheet read is 317 to 340 times faster per call than a fresh read; 120 text-proof files run in 1.1 s on `pool: 'threads', isolate: false` against 4.2 s on isolated forks (2026-09-30).
