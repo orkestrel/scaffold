@@ -60,6 +60,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-05 — cloud session (the token units landed on veneer `main` at `4d21de7`; no release)
+
+- **Landed on veneer `main`**: fast-forward from `77c65cf` to `4d21de7`: T1 `6874b79`, T2 `4333d76`, T3 `44b3610`, the re-pin `a036694` and `b242bce` (browser `^0.0.24`, scaffold `^0.0.92`, probe `^0.0.20`), the scaffold 0.0.92 overwrite `07694f8`, T4 `4d21de7`. Under the layer, Bootstrap's design tokens take Tailwind's values from the installed theme (126 palette rows, 26 scale rows, 27 kept, 105 amount rows), `./bootstrap` byte-identical (`7932f7a5…`), the tuned sheet `9a20b966…`, the showcase `1fc7b60e…`.
+- **Landing gates at `4d21de7`** (this host, serial; `units/tokens-landing/gates-4d21de7.txt`): format, lint, check, build, test:setup 156, src:bootstrap 14, src:tailwindcss 10, guides 19, policy 119 (1 skipped), conformance 128, app browser 239, setup browser 156, integration 58, build:showcase; `src:browser` 781 passed with the 6 host-bound titles failing; `test:journey` 88 passed, 6 skipped, 2 host-bound titles failing (accordion motion=false at light-390, collapse motion=false at dark-390), 817 s.
+- **No veneer release**: the user's word stands; the consumer meets the flip and the token round as one visual change at the next release visit.
+- **Order from here**: the journey tuning unit (plan v3 from the design round, then the Astra check and the verdict), the Tailwind completion checklist from the records audit, then stage B at the user's word.
+
 ### 2026-10-05 — cloud session (token unit T4 committed at veneer `4d21de7`; T1 to T4 ready for the landing)
 
 - **Landed on `ccr-d15a48b1-yyyll6`**: `4d21de7`, `tokens-t4`: the guide's Token map subsection (the policy in four sentences, the 67-row token table pinned to `tokens.json` by `pins the guide token table to the token record`, the proofs, the consumer story with a case or dated run behind every sentence), the Showcase section after T3 (the Header's measured departures, the 1280 px container, the token figures and rows, the case titles as printed), the Compare section's 2793 preflight rows, the Tailwind lead's end at the mapped tokens with its pin and the rebuilt showcase (`1fc7b60e…`), `ROADMAP.md` with the token round landed and the later items. Four guide cases (19 in `test:guides`): the table pin, the dark variant fence, the consumer theme through font, radius, and shadow references and never a color, and the wide-gamut reading (seven hue bases outside sRGB, `yellow-500` moving by OKLab 0.0225) over `measureTokenGamut` in `tests/setup.ts`.
