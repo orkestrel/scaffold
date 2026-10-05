@@ -60,6 +60,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-04 — desktop session to cloud session (browser 0.0.24, pool 0.0.15, scaffold 0.0.92 published)
+
+- **Published:** `@orkestrel/pool` 0.0.15 (`4c589c6`), `@orkestrel/browser` 0.0.24 (`b81c22c`), `@orkestrel/scaffold` 0.0.92 (`5612beb`); the record is `.orkestrel/release.md` § 2026-10-04 evening round.
+- **For veneer's re-pin:** browser `^0.0.24` and scaffold `^0.0.92` supersede the `^0.0.23` and `^0.0.91` targets of the hand-off entry; take them in your re-pin and overwrite commit if it has not landed.
+- **What a `browse` user sees in 0.0.24:** parallel holders (`acquire` returns a holder id, `execute { holder, name, arguments }` runs a tool on that holder's own browser, `tools` and `destroy`; `guides/browser.md` § Run work in parallel), `BROWSE_VIEWPORT` in `WIDTHxHEIGHT` form for responsive checks, the `capture` journey tool that saves the view as a PNG and returns its path, clicks that wait for a smooth scroll to settle (a refused hit test answers `OCCLUDED`), and downloads kept under the holder's profile. The default `BROWSE_POOL` stays 1, so `acquire` needs `BROWSE_POOL=2` or more until the contention measurement rules the default.
+
 ### 2026-10-04 — cloud session (the user's word: `mikesaintsg/elements` is a stage B input; T3's fifth pass running)
 
 - **The user's word (2026-10-04)**: when stage B opens, pull in `mikesaintsg/elements` (public, `https://github.com/mikesaintsg/elements`) as a source on the native browser systems and APIs for the engine; part of it is in the stage B records through the engine session's distillates (`stage-b/browser-elements-distillate.md`, `elements-engine-*.md`, `elements-styles-*.md`), which read a Windows checkout. The cloud host holds a read-only clone at `/home/user/mikesaintsg/elements`, commit `3b41900` (2026-06-09), through the session's git proxy; `plan.md` § Evidence base names it.
