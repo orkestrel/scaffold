@@ -108,7 +108,11 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 - M2 stopped before the loaded series:
   - the host-CPU preflight failed twice (17 to 21%, mostly Cursor);
   - the core loop failed `tests/src/core/CDPClient.test.ts:277` once. That case, written 2026-09-29 (`91ec857`), counts process-wide `Timeout` resources, so an unrelated timer expiring between its two readings fails it under load. A flake candidate, not the session-detach change.
-- **The user confirmed the defaults (2026-10-05):** one browser with 2 contexts, the shared holder counted, from M1's loaded library readings and M2's quiet binary readings. ROADMAP item 14 closes. Running: unit `item14-close` (browser `tmp/codex/item14-close-brief.md`), which deletes item 14, restates the guide's defaults bullet with the two measurements, and re-pins the flaky `CDPClient` timer case deterministically.
+- **The user confirmed the defaults (2026-10-05):** one browser with 2 contexts, the shared holder counted, from M1's loaded library readings and M2's quiet binary readings. ROADMAP item 14 closed: browser `main` `10802f3`, pushed 2026-10-05.
+  - The guide's defaults bullet cites M1 and M2.
+  - The `CDPClient` timer case records only its own request's timer through `node:async_hooks`. It is red under a test-config overlay that skips clearing the timer on abort, and it passed 20 runs in a row.
+  - Core: 1255 passed; guides 251; policy 119.
+- **The browser contexts campaign is complete on `main`:** C1 `6bedbb1`, C2 `50e6017`, C3 `b1b1c8f`, the follow-up `708f0dc`, and the item 14 close `10802f3`, plus item 16 `e8aa649`. It is unpublished; the release waits for pool 0.0.16 and the user's item 15 decision.
 - Probe: U6 (`review-u6.md`) ruled FAIL. Running: unit `eager-probe-u6fix` (probe `tmp/codex/eager-probe-u6fix-brief.md`).
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
