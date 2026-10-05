@@ -2,6 +2,13 @@
 
 Reconciled 2026-10-05 by the Orchestrator from `contexts-proposal-analyst.md` (GPT-6 Astra, objective) and `contexts-proposal-planner.md` (Opus 5.5, subjective), blind to each other over `contexts-design-brief.md`.
 
+## The user's rulings (2026-10-05)
+
+- Q1: a per-browser bound, `BROWSE_CONTEXTS` (`pool.contexts`); total admission is `size × contexts`.
+- Q2: the shared holder counts against it (0.0.24's behavior; `contexts=1` reproduces 0.0.24).
+- Q3: the call-paced relaunch loop is a recorded limit; the 2026-10-04 grant rule stays.
+- Q4 waits for M1. The default `BROWSE_POOL` stays 1 until contexts land (2026-10-05).
+
 ## Where the lanes agree
 
 - A holder becomes an isolated CDP browser context with its page and started toolset on one pooled browser; browsers stay the pool's records; the shared holder is a context with a server-long lifetime.
