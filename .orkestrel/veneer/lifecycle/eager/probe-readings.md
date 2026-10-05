@@ -107,3 +107,13 @@ The exact client argument arrays, including one-line prompts, are in `commands.m
 Preparation attempts remain recorded and are not timing samples: the first temporary control build refused its unused private method; the host filter initially included Claude Desktop and was corrected to the named process population; the initial worker control had no retained parent listener and exposed no active resource; Vitest's default reporter needed initialization, so the resource instrument uses the inert reporter hooks that RuntimeStage uses; the recovery fixture was corrected to declare the probe project and mapped test path. The specified gate-removal negative control passed before the accepted readings.
 
 Final verification passed: the main checkout is clean at `058a946`; the original bin, server, and installed pool hashes are unchanged; the historical worktree directory and registration are absent. No sub-agent was spawned, and no commit was made. All retained instruments, samples, logs, and reports are under `tmp/onset/`.
+
+## After the T1 revision (probe `e8d4715`, 2026-10-05, unit `eager-probe-warm2`)
+
+The type stage warms behind `initialize` under `PROBE_WARM` (90,000 ms). Spawn to `initialize`, 3 runs each: veneer 7.439, 7.107, and 7.939 s; scaffold 3.171, 4.051, and 3.172 s; probe 1.495, 1.744, and 1.489 s.
+
+On veneer, the first type `prove` earned a receipt without a retry in 3 runs of 3: 43.4, 45.0, and 46.2 s from call to receipt (50.8, 52.1, and 54.1 s from spawn).
+
+Host: Windows, i7-10700, about 96 GB free, with CPU snapshots of 3 to 28%. Raw readings: probe `tmp/onset/warm2-evidence.json`.
+
+Earlier comparison (unit `eager-probe-veneer2`): veneer's type warm took 37.2 s at the median (36.4 to 50.0 s). Published 0.0.20 refused its first two `prove` calls on veneer, at 76.7 s and 35.5 s.
