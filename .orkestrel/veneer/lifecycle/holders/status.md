@@ -34,14 +34,14 @@ Report: browser `tmp/probes/contexts/m1b/report.md` (prose, tables, commands); r
 - **Turnover soak:** 30 generations, three repetitions per load: owned context, target, and download-folder counts return to one each batch; private memory rises from about 505 to about 670 MiB by generation 5 and then holds; a longer leak is not excluded.
 - **Blast radius:** 24 cells. A killed browser loses every holder on it (one browser 4/4; two browsers 2/4, holders on the other browser answer); a renderer crash loses only its holder. Rebuilding the first lost holder takes 0.99 to 1.57 s from the loss event, sequential rebuilds stacking to 2.8 s for the fourth.
 - **Recommendation (the writer's, for the user's ruling):** one browser with `BROWSE_CONTEXTS=2`, the shared holder counted; `BROWSE_POOL` stays 1; a second browser is an availability choice at about 1 GiB idle.
-- **Defect candidate, browser library:** `navigator.serviceWorker.register()` never resolves under the library's page setup (`Target.setAutoAttach` with `waitForDebuggerOnStart: true`, `src/core/BrowserContext.ts:510`, `BrowserPage.ts:1347`, `:1490`); the registration exists with no installing, waiting, or active worker; with `waitForDebuggerOnStart: false` set through `page.send()` it activates. The worker attach path (`BrowserPage.ts:2052`) returns early for a target reported by a session other than the page's own, which might leave a service worker paused; unconfirmed.
+- **Defect candidate, browser library (browser `ROADMAP.md` item 16):** `navigator.serviceWorker.register()` never resolves under the library's page setup (`Target.setAutoAttach` with `waitForDebuggerOnStart: true`, `src/core/BrowserContext.ts:510`, `BrowserPage.ts:1347`, `:1490`); the registration exists with no installing, waiting, or active worker; with `waitForDebuggerOnStart: false` set through `page.send()` it activates. The worker attach path (`BrowserPage.ts:2052`) returns early for a target reported by a session other than the page's own, which might leave a service worker paused; unconfirmed.
 - **Headed limit:** a page hidden behind a popup runs timers at 1 to 2 Hz and animation frames at 0 Hz; headed popup clicks succeeded 3/9, timing out in `Runtime.callFunctionOn` because element positioning waits on `requestAnimationFrame` (`src/core/elements/BrowserPageElement.ts`); headless succeeded 9/9.
 - **Unresolved:** one quiet 3-context cell (`final-false-contexts-3-1`) failed a bounded 15-second `read` call; the focused repeat (three context runs, three browser controls) did not reproduce it. The loaded steady CPU calibration passed 2/3, so small CPU differences carry no claim.
 
 ## The contexts campaign (P1 and M1 done, C1 waits on the topology ruling)
 
 - The user's rulings (2026-10-05): holders become isolated contexts on pooled browsers; a per-browser bound `BROWSE_CONTEXTS` with total admission `size × contexts`; the shared holder counts; the call-paced relaunch loop is a recorded limit; the default `BROWSE_POOL` stays 1 until contexts land; the default topology is ruled from M1.
-- Waiting on the user: the default `BROWSE_CONTEXTS` and topology from the M1 result.
+- The user ruled Q4 from M1 (2026-10-05): one browser, default `BROWSE_CONTEXTS` 2, the shared holder counted, `BROWSE_POOL` 1.
 - Units in order (`contexts-synthesis.md` § Units): M1 feasibility and sizing (extend browser `tmp/probes/contexts/`, whose first run `run-swgN81` and report are the pilot), P1 pool shared leases (pool 0.0.16), C1 contexts in browse, C2 real-Chromium proofs, C3 guide and roadmap, M2 confirmation, release (pool 0.0.16, browser, scaffold re-pin).
 
 ## Evidence and instruments
@@ -54,9 +54,10 @@ Report: browser `tmp/probes/contexts/m1b/report.md` (prose, tables, commands); r
 ## Open, in order
 
 1. ROADMAP item 15 (the document-startup flake), now blocking browser 0.0.25: find the cause without perturbing the run (it vanished under every instrumented run), fix it, then finish 0.0.25 (commit the bump and stamp, push, publish with the user's code, confirm, log for veneer in `lanes.md`).
-2. The contexts campaign: the user's topology ruling, then C1, C2, C3, M2, and the release; the service-worker defect candidate (M1 result) gets its own diagnosis unit, because a browse page that registers a service worker meets it with or without contexts.
-3. The paused ollama store campaign (`ollama/tmp/codex/store-campaign-pause.md`): resume the same Codex session from S2's extension when the host can stay quiet for hours.
-4. `@orkestrel/worker`'s re-pin to pool `^0.0.15` (and later 0.0.16), probe item 1 (brief at probe `tmp/codex/eager-probe-brief.md`), mcp items 13 and 14.
+2. The contexts campaign: C1, C2, C3, M2, and the release.
+3. Browser `ROADMAP.md` item 16, the service-worker defect candidate (M1 result): its own diagnosis unit, because a browse page that registers a service worker meets it with or without contexts.
+4. The paused ollama store campaign (`ollama/tmp/codex/store-campaign-pause.md`): resume the same Codex session from S2's extension when the host can stay quiet for hours.
+5. `@orkestrel/worker`'s re-pin to pool `^0.0.15` (and later 0.0.16), probe item 1 (brief at probe `tmp/codex/eager-probe-brief.md`), mcp items 13 and 14.
 
 ## Rules that bind the rest
 

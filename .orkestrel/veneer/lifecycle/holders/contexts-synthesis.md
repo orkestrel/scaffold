@@ -8,6 +8,7 @@ Reconciled 2026-10-05 by the Orchestrator from `contexts-proposal-analyst.md` (G
 - Q2: the shared holder counts against it (0.0.24's behavior; `contexts=1` reproduces 0.0.24).
 - Q3: the call-paced relaunch loop is a recorded limit; the 2026-10-04 grant rule stays.
 - Q4 waits for M1. The default `BROWSE_POOL` stays 1 until contexts land (2026-10-05).
+- Q4, ruled from M1 (2026-10-05, `status.md` § M1 result): one browser with a default `BROWSE_CONTEXTS` of 2, the shared holder counted; `BROWSE_POOL` stays 1; a second browser stays an availability choice.
 
 ## Where the lanes agree
 
