@@ -71,7 +71,14 @@ Lane results:
   - `WorkerOptions.pool` refuses any value that can carry `capacity`.
   - The idle-loss strike case fails on pool 0.0.15.
   - Until the release visit re-pins worker to `^0.0.16`, a fresh install takes pool 0.0.14 and that case fails.
-- **Probe:** unit `eager-probe2` stopped on L-3. A retained survivor refuses for the life of the pool, so the Orchestrator re-ruled L-3 in `eager/probe-design.md`. Running: `eager-probe3` (probe `tmp/codex/eager-probe3-brief.md`). It builds against pool `main` `1f194d7`, installed in browser `node_modules` with `npm install --no-save` from pool `tmp/pack/pool-main-1f194d7.tgz`; `package.json` keeps `^0.0.15` until the release re-pins 0.0.16, and an `npm ci` in the browser checkout restores 0.0.15 and breaks the C1 build until then.
+- **Probe:**
+  - Unit `eager-probe2` stopped on L-3, because a retained survivor refuses for the life of the pool. Unit `eager-probe3` stopped on L-3's failed-warm branch, where `create` retains nothing. The Orchestrator re-ruled and extended L-3 in `eager/probe-design.md`.
+  - Unit `eager-probe4` (report probe `tmp/codex/eager-probe4-last.md`) committed U1 `0437a29`, U2 `65ed2df`, and U3 `08ca166` on probe `main`, unpushed.
+    - Format, lint, check, and build pass; server and bin cases pass.
+    - The idle-loss case shows three spawns on pool 0.0.15 and two on 0.0.16.
+    - Both survivor branches are implemented and NOT-EVIDENCED (the fixture cannot make a child outlive a kill).
+    - `npm test` failed one core audit case: `MCPError` in the handshake. The Orchestrator ruled a named factory plus an explicit audit exception. Running: unit `eager-probe-audit`.
+  - Then U4 readings, U5 docs, U6 Opus review, and U7 gates (`eager/probe-design.md`, § Units). Push probe after U7. It builds against pool `main` `1f194d7`, installed in browser `node_modules` with `npm install --no-save` from pool `tmp/pack/pool-main-1f194d7.tgz`; `package.json` keeps `^0.0.15` until the release re-pins 0.0.16, and an `npm ci` in the browser checkout restores 0.0.15 and breaks the C1 build until then.
 - Pool ROADMAP item 1 (a waiter waits while a release could return capacity above floor 1) names the contexts consumer at `BROWSE_POOL` greater than 1 as its trigger; the default size 1 never reaches it, and the analyst's proposal (§ 7) argues the opposite rule for browse (terminal unavailability rather than waiting on another holder). Rule it before the release, not inside C1.
 - Units in order (`contexts-synthesis.md` § Units): M1 feasibility and sizing (extend browser `tmp/probes/contexts/`, whose first run `run-swgN81` and report are the pilot), P1 pool shared leases (pool 0.0.16), C1 contexts in browse, C2 real-Chromium proofs, C3 guide and roadmap, M2 confirmation, release (pool 0.0.16, browser, scaffold re-pin).
 
