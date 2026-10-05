@@ -1,10 +1,10 @@
 M1 — refuted. 223 union pairings, including the original 142. 37 fall below min(Bootstrap, 4.5): 2 prior, 1 added, 34 adjacent-surface rows. The context split leaves 36 misses and restores dark tertiary text from 3.940169 to 4.492043 against its 4.066830 floor. Node and Chromium disagree on 0 pairings at tolerance 0.001. The full below-floor list, both readings, and the live showcase subjects are in the JSON.
 
-Output: [out/m1.json](out/m1.json).
+Output: [m1.json](m1.json).
 
 M2 — holds. The 3 recipe forms preserve the flattened declaration sequence. The independent static theme still emits 409 variables. The consumer font reaches body and button; radius changes from 6px to 12px; primary stays rgb(21, 93, 252). The prefixed form falls back to the default references. The JSON records every emitted theme variable, resolved scale reference, body/button reading, and rewrite.
 
-Output: [out/m2.json](out/m2.json).
+Output: [m2.json](m2.json).
 
 M3 — refuted. The source rewrite finds {"condition":64,"breakpoint-value":10,"container":5,"token":11}, with 12 RFS conditions kept. Sass refuses the proposed scale(role,value) function at components/_floating-labels.scss:68: "Missing argument $value." Its unqualified CSS scale(0.85) call binds the added Sass function. Rewritten empty-scale digests, compiled tracer reach, and compiled line-count equality were not computed. Expected: both entries compile without a byte change. Found: compile refusal. Done: copy and source-site census; not done: compiled measurements. One hypothesis: the function name collides with the CSS transform function. The whole-shadow scale owns the four shadow color sites; swatch alone still traces them. Type sites stay unwrapped because the adopted type scale has no changed rows.
 
@@ -24,15 +24,15 @@ Output: [out/m6.json](out/m6.json).
 
 M7 — holds. All 6 requested utility/component pairs read per-channel difference [0, 0, 0] on an sRGB canvas under --force-color-profile=srgb. Teal uses a var(--bs-teal) swatch because Bootstrap has no teal component. This run measures sRGB only.
 
-Output: [out/m7.json](out/m7.json).
+Output: [m7.json](m7.json).
 
 M8 — refuted. 97 of 105 amount rows join to Bootstrap's own configured Sass. Maximum difference is 1 channel unit; 0 exceed one unit; 8 are unjoined. Bases, role variables, and table variants are configured independently before Bootstrap's Sass computes the amounts.
 
-Output: [out/m8.json](out/m8.json).
+Output: [m8.json](m8.json).
 
 M9 — refuted. 10 of 288 palette rows disagree with Chromium's color-mix(in srgb, VALUE 100%, transparent) serialization after clipping and rounding. --color-orange-200: #ffd6a7 → #ffd7a8; --color-orange-600: #f54900 → #f54a00; --color-green-100: #dcfce7 → #dbfce7; --color-green-500: #00c950 → #00c951; --color-teal-300: #46ecd5 → #46edd5; --color-cyan-400: #00d3f2 → #00d3f3; --color-sky-900: #024a70 → #024a71; --color-blue-950: #162456 → #162556; --color-fuchsia-400: #ed6aff → #ed6bff; --color-zinc-700: #3f3f46 → #3f3f47.
 
-Output: [out/m9.json](out/m9.json).
+Output: [m9.json](m9.json).
 
 Checks and reproduction
 
