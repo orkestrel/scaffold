@@ -34,6 +34,8 @@ Reconciled 2026-10-05 by the Orchestrator from `contexts-proposal-analyst.md` (G
 6. **Each context generation gets its own folder under the browser's per-launch profile** (`ROOT/.profiles/PID-UUID/contexts/GENERATION-UUID/downloads/`, the profile named by `formatBrowserLockEntry`, `BrowserMCPServer.ts:787`).
 7. **Visibility is measured, not promised** (analyst); a remedy M1 demands (bringing a page forward, focus emulation, a launch flag) lands in C1.
 8. **A browser that answers its ping but fails `Target.createBrowserContext` repeatedly** is retired through the pool with a strike after a creation failure, so `acquire` cannot fail forever on a browser nothing retires.
+
+   **Correction to rulings 4 and 8 (2026-10-05, `native/synthesis.md`):** the strike holds only when no other lease or build sits on the slot (`BrowserMCPServer.ts:864-870`). At size 1 the shared holder always leases the only browser. A named holder's unconfirmed disposal or failed context creation is therefore a leased loss, with a refill credit and no strike. A browser that always fails either step falls under the call-paced relaunch loop of ruling 2 (Q3), not under a strike bound.
 9. **A hung active renderer stays a page failure while the root ping answers**; the holder recovers through `destroy` or the next renderer event (a recorded limit).
 10. **A clean slate means fresh context-scoped web state, fresh automation state, and removal of owned downloads,** not a fresh process or freed memory; the guide states it, and C2 proves each store in the isolation matrix.
 
