@@ -1,0 +1,188 @@
+[
+	{
+		"width": 1280,
+		"face": "bootstrap",
+		"status": "Bootstrap, dark color mode",
+		"figures": 328,
+		"overflows": [],
+		"zindex": {
+			"stage": {
+				"x": 361,
+				"y": 81986.5,
+				"width": 410,
+				"height": 175.703125,
+				"top": 81986.5,
+				"right": 771,
+				"bottom": 82162.203125,
+				"left": 361
+			},
+			"panel": {
+				"x": 361,
+				"y": 81986.5,
+				"width": 205,
+				"height": 87.84375,
+				"top": 81986.5,
+				"right": 566,
+				"bottom": 82074.34375,
+				"left": 361
+			},
+			"width": "205px",
+			"height": "87.8438px"
+		}
+	},
+	{
+		"width": 1280,
+		"face": "unexcluded",
+		"status": "Tailwind, no layer, dark color mode",
+		"figures": 328,
+		"overflows": [],
+		"zindex": {
+			"stage": {
+				"x": 361,
+				"y": 81828.25,
+				"width": 410,
+				"height": 175.703125,
+				"top": 81828.25,
+				"right": 771,
+				"bottom": 82003.953125,
+				"left": 361
+			},
+			"panel": {
+				"x": 361,
+				"y": 81828.25,
+				"width": 205,
+				"height": 87.84375,
+				"top": 81828.25,
+				"right": 566,
+				"bottom": 81916.09375,
+				"left": 361
+			},
+			"width": "205px",
+			"height": "87.8438px"
+		}
+	},
+	{
+		"width": 1280,
+		"face": "tailwindcss",
+		"status": "Tailwind + layer, dark color mode",
+		"figures": 328,
+		"overflows": [],
+		"zindex": {
+			"stage": {
+				"x": 357,
+				"y": 77615.546875,
+				"width": 416,
+				"height": 178.28125,
+				"top": 77615.546875,
+				"right": 773,
+				"bottom": 77793.828125,
+				"left": 357
+			},
+			"panel": {
+				"x": 357,
+				"y": 77615.546875,
+				"width": 208,
+				"height": 89.140625,
+				"top": 77615.546875,
+				"right": 565,
+				"bottom": 77704.6875,
+				"left": 357
+			},
+			"width": "208px",
+			"height": "89.1406px"
+		}
+	},
+	{
+		"width": 390,
+		"face": "bootstrap",
+		"status": "Bootstrap, dark color mode",
+		"figures": 328,
+		"overflows": [],
+		"zindex": {
+			"stage": {
+				"x": 41,
+				"y": 120711.203125,
+				"width": 308,
+				"height": 132,
+				"top": 120711.203125,
+				"right": 349,
+				"bottom": 120843.203125,
+				"left": 41
+			},
+			"panel": {
+				"x": 41,
+				"y": 120711.203125,
+				"width": 154,
+				"height": 66,
+				"top": 120711.203125,
+				"right": 195,
+				"bottom": 120777.203125,
+				"left": 41
+			},
+			"width": "154px",
+			"height": "66px"
+		}
+	},
+	{
+		"width": 390,
+		"face": "unexcluded",
+		"status": "Tailwind, no layer, dark color mode",
+		"figures": 328,
+		"overflows": [],
+		"zindex": {
+			"stage": {
+				"x": 41,
+				"y": 120501.671875,
+				"width": 308,
+				"height": 132,
+				"top": 120501.671875,
+				"right": 349,
+				"bottom": 120633.671875,
+				"left": 41
+			},
+			"panel": {
+				"x": 41,
+				"y": 120501.671875,
+				"width": 154,
+				"height": 66,
+				"top": 120501.671875,
+				"right": 195,
+				"bottom": 120567.671875,
+				"left": 41
+			},
+			"width": "154px",
+			"height": "66px"
+		}
+	},
+	{
+		"width": 390,
+		"face": "tailwindcss",
+		"status": "Tailwind + layer, dark color mode",
+		"figures": 328,
+		"overflows": [],
+		"zindex": {
+			"stage": {
+				"x": 33,
+				"y": 115117.25,
+				"width": 324,
+				"height": 138.84375,
+				"top": 115117.25,
+				"right": 357,
+				"bottom": 115256.09375,
+				"left": 33
+			},
+			"panel": {
+				"x": 33,
+				"y": 115117.25,
+				"width": 162,
+				"height": 69.421875,
+				"top": 115117.25,
+				"right": 195,
+				"bottom": 115186.671875,
+				"left": 33
+			},
+			"width": "162px",
+			"height": "69.4219px"
+		}
+	}
+]
