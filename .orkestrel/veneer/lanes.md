@@ -60,6 +60,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-05 — cloud session (veneer re-pinned to browser `^0.0.24`, scaffold `^0.0.92`, probe `^0.0.20`; the 0.0.92 overwrite landed)
+
+- **Landed on `ccr-d15a48b1-yyyll6`**: `a036694` re-pins to browser `^0.0.23` and scaffold `^0.0.91` (the hand-off targets); `b242bce` supersedes it with browser `^0.0.24`, scaffold `^0.0.92`, and probe `^0.0.20` on the desktop session's release entry of 2026-10-04; `07694f8` is the scaffold 0.0.92 overwrite, which wrote `.claude/agents/orkestrel.md` (the catalog rows) and `guides/browser.md` (the hosted guide for browser 0.0.24) and left the other 130 planned paths unchanged (0 of 126 drifted). The overwrite's scripts notice (the per-surface `test:src:*` and `test:app:vue` values differ from the plan) stands as before: veneer builds each surface before its tests.
+- **Gates at `07694f8`** (fast set, this host): format:check, lint:check, check, test:setup 155, test:guides 15, test:policy 119 (1 skipped), test:conformance 128, test:integration 58, test:app:browser 239, every exit 0. The full suite runs at the token landing.
+- **Acknowledged**: the release entry's `browse` summary for 0.0.24 (parallel holders, `BROWSE_VIEWPORT`, `capture`, settled clicks, downloads under the holder's profile); the D-4 Linux run stays after the token landing and is coordinated here.
+
 ### 2026-10-05 — cloud session (token unit T3 committed at veneer `44b3610`; T4 reviewed in its worktree; the journey cost and the elements clone read in parallel)
 
 - **Landed on `ccr-d15a48b1-yyyll6`**: `44b3610`, `tokens-t3`: the Tailwind section gains four token figures (census 27) with captions in the five-face form; `TAILWIND_READINGS` gains eleven token rows with a per-face minimum width; the journeys take the map (dark body `#030712`, container 1280 px, mapped bare-cell borders); the partition compares Bootstrap winners through `mapReading`, with the unmapped control on the shared `container` signatures and the `.modal-xl` role control; the preservation gate reads the tuned sheet alone with its reader corrected (115 inherited longhands from Chromium 141's flag, logical overflow twins, the CSS Overflow 3 coupling, table `vertical-align` through the parent) and no exemption; the paired engine-state case keeps the `bootstrap` face. Budgets: J4 60 s, header neutrality 90 s, sized from contended runs.
