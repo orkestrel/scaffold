@@ -108,7 +108,7 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 - M2 stopped before the loaded series:
   - the host-CPU preflight failed twice (17 to 21%, mostly Cursor);
   - the core loop failed `tests/src/core/CDPClient.test.ts:277` once. That case, written 2026-09-29 (`91ec857`), counts process-wide `Timeout` resources, so an unrelated timer expiring between its two readings fails it under load. A flake candidate, not the session-detach change.
-- Waiting on the user: confirm the default from M1's loaded library readings and M2's quiet binary readings, or rerun M2's loaded series on a quieter host.
+- **The user confirmed the defaults (2026-10-05):** one browser with 2 contexts, the shared holder counted, from M1's loaded library readings and M2's quiet binary readings. ROADMAP item 14 closes. Running: unit `item14-close` (browser `tmp/codex/item14-close-brief.md`), which deletes item 14, restates the guide's defaults bullet with the two measurements, and re-pins the flaky `CDPClient` timer case deterministically.
 - Probe: U6 (`review-u6.md`) ruled FAIL. Running: unit `eager-probe-u6fix` (probe `tmp/codex/eager-probe-u6fix-brief.md`).
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.

@@ -9,6 +9,7 @@ Reconciled 2026-10-05 by the Orchestrator from `contexts-proposal-analyst.md` (G
 - Q3: the call-paced relaunch loop is a recorded limit; the 2026-10-04 grant rule stays.
 - Q4 waits for M1. The default `BROWSE_POOL` stays 1 until contexts land (2026-10-05).
 - Q4, ruled from M1 (2026-10-05, `status.md` § M1 result): one browser with a default `BROWSE_CONTEXTS` of 2, the shared holder counted; `BROWSE_POOL` stays 1; a second browser stays an availability choice.
+- Q4 confirmed by the user after M2 (2026-10-05, browser `tmp/probes/holders/m2/report.md`): through the built binary on a quiet host, 1×2 ran 40.2% faster than 1×1 with disjoint ranges, and 1×3's 18.1% gain over 1×2 overlapped. The loaded series could not run, because the host-CPU preflight failed twice; M1's loaded library readings stand for load.
 
 ## Where the lanes agree
 
