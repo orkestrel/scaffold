@@ -42,7 +42,13 @@ The Orchestrator verified the facts the conclusions rest on.
 - The C3 brief's limit line names failed disposal and failed context creation under the call-paced loop.
 - Pool `ROADMAP.md` item 1: the false probe sentence is removed.
 
-## Open for the user
+## The user's rulings (2026-10-05)
+
+- **Pool ROADMAP item 1:** leave it unbuilt. It does not block pool 0.0.16.
+- **The call-paced relaunch loop:** keep Q3(a), the recorded limit. Pool 0.0.16 gains no fault verb.
+- **Worker and probe:** start both in parallel with the browse work, building against the local pool 0.0.16 build. Units: worker `tmp/codex/pool16-brief.md`, and probe `tmp/codex/eager-probe2-brief.md`, which amends `eager-probe-brief.md`.
+
+## Open for the user (answered in the preceding section)
 
 - Pool ROADMAP item 1 (a waiter waits while a release could return capacity above floor 1). Recommendation: leave it unbuilt, because size 1 never reaches it.
 - Q3(b): bound the call-paced relaunch loop in pool 0.0.16, with a fault verb that charges a strike plus the reset moved to a proven-healthy event, or keep Q3(a), the recorded limit. Recommendation: keep Q3(a). Contexts already removed the renderer-crash path.
