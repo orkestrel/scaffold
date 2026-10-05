@@ -1,0 +1,3 @@
+# Tailwind completion audit, 2026-10-05
+
+A read-only sweep of every Tailwind-track record (the flip and token verdicts with their defaults and open risks, the tree, lanes, plan, status, ledger, and unit reports) for open items, run while T3's sixth pass and T4 were landing. Five sweeps found 189 candidate items; a verifier per item kept 136 open as of its reading. `checklist.md` is the synthesized checklist; `open-items.json` holds every open item with its source line, state, and proposed disposition. Part of the list closed the same day (T3's commit, the re-pin and overwrite, T4's merge, the landing at veneer `4d21de7`, the law clause at scaffold `4e94add7`); the re-triage against the landed state follows in this folder.
