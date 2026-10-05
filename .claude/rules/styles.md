@@ -74,6 +74,11 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
   for that framework and every `!important` declaration outside every layer. A derived build of that
   recreation for a utility library may place the framework's reset rules in `reset` under a switch
   the guide records, keeping every `!important` declaration outside every layer.
+- A derived build of a recreation for a utility library may substitute the framework's token
+  literals (colors and scale values) with the utility library's theme values under a switch the guide
+  records, when a committed record maps every substituted literal to its source token and resolved
+  value and a proof reads the derived sheet against the framework's own compile from the mapped
+  bases; the substitution changes no selector, declaration order, or declaration count.
 - Declare cascade-layer order once in the consumer entry before `@import 'tailwindcss'`, so utilities win predictably. When a package publishes several sheets, open every published sheet with the same full order statement, so the order holds whichever sheet loads first.
 - Open `themes/index.scss` with `@use '../tokens'`, whose first emitted rule is the order statement, then `@use 'default'`; Sass refuses a `@use` after another rule, so never write the statement there literally.
 

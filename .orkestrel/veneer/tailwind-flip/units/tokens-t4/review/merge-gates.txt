@@ -1,0 +1,20 @@
+build:showcase exit=0 2s
+format:check exit=0 5s
+lint:check exit=0 1s
+check exit=0 72s
+test:setup exit=0 21s
+test:guides exit=0 4s
+test:policy exit=0 4s
+test:conformance exit=0 68s
+test:integration exit=0 66s
+test:app:browser exit=0 156s
+Tests  156 passed (156)
+Tests  19 passed (19)
+Tests  119 passed | 1 skipped (120)
+Tests  128 passed (128)
+Tests  58 passed (58)
+Tests  239 passed (239)
+1fc7b60efb4e6556d9f386ab55c7d3d7a6f58cd6e358ff6032d3c26d6db6dad8  showcase/browser.html
+7932f7a573bbacf39037481c0e0bbc94a0de59c029b4d494fd1956f301c6d49f  dist/src/bootstrap/index.css
+9a20b9662d0ee44abc317e2fbd31d16e1f81e46de9be4166e865c846b659edeb  dist/src/tailwindcss/index.css
+done
