@@ -37,6 +37,7 @@ The user stated on 2026-10-02, in the engine session, that the engine session ho
 
 ## Rules
 
+- **Host queue during the journey tuning unit (from 2026-10-05):** on the cloud host, every command that launches Chromium or loads the CPU (build, check, lint, format, install, every Vitest suite) runs through one exclusive serial queue, `flock /home/user/.wave/journey.lock` around the unit's Node runner; nothing runs outside it while the unit is open; lanes pause during price windows. `showcase/journey-cost-2026-10-05/verdict.md` § 6 governs.
 - **The environment boundary.** `tests/setupBrowser.ts` imports no value from `app/`, only types. Every `src:browser` suite imports the harness, and the boundary plugin refuses an application module on that graph ("Published modules cannot depend on private application modules"); pass application values to a helper as arguments, as `buildPairScenarios(FACES, THEMES)` does (veneer `e7b7c2b`).
 - **The built page.** Never hand-merge `showcase/browser.html`. The side that merges rebuilds it with `npm run build:showcase` from the merged tree and commits the result.
 - **Merges.** The engine session merges its worktree branches into veneer `main`. The showcase session merges `main` into `ccr-d15a48b1-yyyll6` before each unit and merges back into `main` when a unit is accepted. The merging side resolves a shared file by union, keeps the other side's section byte for byte, and logs the merge here.
@@ -59,6 +60,20 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 - `setup:browser`: none.
 
 ## Log
+
+### 2026-10-05 — cloud session (the journey run-cost verdict ruled; Q1 to the user; the host queue rule for the unit)
+
+- **Verdict**: `showcase/journey-cost-2026-10-05/verdict.md` rules the journey tuning unit after three plan drafts, a 21-gap critic, three verifications (38 findings), and the GPT-6 Astra objective check (holds with corrections on proof, figures, feasibility, and the user questions; fails the closure claim and the acceptance floor; every correction adopted). Layer 1 (the measurement instrument, the per-width split with all halves in light-1280, one owner for the selector-major match, the preservation index, the partition memo, the set reader, the scrollspy poll under its whole-document refusal, linear checks, the live Tab bound, the CDP domain cleanup, the longhand cache) lands item by item on equality and a measured gain; layer 2 (placement by measured slack) waits on Q1. Acceptance is non-regression of every proof against J-B0 plus a wall reduction frozen as R before the acceptance runs; no modeled figure enters it.
+- **Q1 to the user**: may the per-width preservation and partition halves run in a project other than light-1280 (each still reading the light-1280 variant at its width), and may the theme header table run outside light-390? Recommended yes to both, with the CDP cleanup landed before any destination that holds a host-bound title.
+- **Rule for this host during the unit (Q2, ruled by the Orchestrator)**: every command that launches Chromium or loads the CPU runs through one exclusive serial queue (`flock /home/user/.wave/journey.lock` around the unit's Node runner); lanes pause during price windows; the stage B readings and the D-4 run wait; evidence is copied before any run that truncates. The unlocked `gates.sh` is retired for the unit's duration.
+- **Order from here**: lane M (tools, evidence, worktrees, precondition gates, J-B0 alone) → lanes 0 and 3 → lanes 1 and 2 → checkpoint → lane 4 if Q1 is yes → falsify → acceptance → landing. The Tailwind completion checklist from the records audit runs beside it as read-only or Node-gated work through the queue.
+
+### 2026-10-05 — cloud session (the token units landed on veneer `main` at `4d21de7`; no release)
+
+- **Landed on veneer `main`**: fast-forward from `77c65cf` to `4d21de7`: T1 `6874b79`, T2 `4333d76`, T3 `44b3610`, the re-pin `a036694` and `b242bce` (browser `^0.0.24`, scaffold `^0.0.92`, probe `^0.0.20`), the scaffold 0.0.92 overwrite `07694f8`, T4 `4d21de7`. Under the layer, Bootstrap's design tokens take Tailwind's values from the installed theme (126 palette rows, 26 scale rows, 27 kept, 105 amount rows), `./bootstrap` byte-identical (`7932f7a5…`), the tuned sheet `9a20b966…`, the showcase `1fc7b60e…`.
+- **Landing gates at `4d21de7`** (this host, serial; `units/tokens-landing/gates-4d21de7.txt`): format, lint, check, build, test:setup 156, src:bootstrap 14, src:tailwindcss 10, guides 19, policy 119 (1 skipped), conformance 128, app browser 239, setup browser 156, integration 58, build:showcase; `src:browser` 781 passed with the 6 host-bound titles failing; `test:journey` 88 passed, 6 skipped, 2 host-bound titles failing (accordion motion=false at light-390, collapse motion=false at dark-390), 817 s.
+- **No veneer release**: the user's word stands; the consumer meets the flip and the token round as one visual change at the next release visit.
+- **Order from here**: the journey tuning unit (plan v3 from the design round, then the Astra check and the verdict), the Tailwind completion checklist from the records audit, then stage B at the user's word.
 
 ### 2026-10-05 — cloud session (token unit T4 committed at veneer `4d21de7`; T1 to T4 ready for the landing)
 

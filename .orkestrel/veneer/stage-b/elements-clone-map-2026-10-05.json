@@ -1,0 +1,451 @@
+{
+ "map": {
+  "groups": [
+   {
+    "key": "dialog-engine",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createDialog.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createDialog.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/elements/interactives.md",
+     "/home/user/mikesaintsg/elements/guides/composables.md",
+     "/home/user/mikesaintsg/elements/guides/components.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/UseDialogPage.vue"
+    ],
+    "why": "Bears on B2 and B3 (stage-b-final-verdict.md:1120-1121). `createDialog.ts:35` gates the host to `<dialog>`, and `createDialog.ts:136-154` tests a backdrop click by bounding rectangle. The spec body for that test is §4.11.5 at `interactives.md:787-821`: a pointer outside the modal's bounds counts as a `::backdrop` hit. The §4.11.4 card at `interactives.md:411-786` carries `closedby`, `requestClose()`, the cancelable `beforetoggle` on `show()`, and the `show-modal`, `close`, and `request-close` commands. B2's capture routes and B3's `closedby=\"none\"` hold depend on that card. `createDialog.ts:160-164` listens to `cancel`, `close`, and `click` only and sets no `closedby`. `createDialog.test.ts:300-338` holds the modal and non-modal statechart tables, the nearest prior art for B3's `modal-native` rows. `components.md:150-165` places `showModal` in the top-layer family and `show` in the in-flow family. `composables.md:144-253` is the open and close lifecycle with its gotchas.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Dialog (:88); browser-elements-slice-1.md § Dialog (:3); elements-engine-1.md § 1, the `<dialog>` row; elements-engine-2.md § 3, the padding-band row and the dialog spec-clause row. native-research-agent-3.md § 2 and native-research-agent-7.md cover the spec and Chromium without citing elements, and native-inventory-2.md § Modal cites elements only through the distillate. Not distilled: the §4.11.5 light-dismiss body (elements-engine-2.md:3 lists it as unopened), createDialog.test.ts, and UseDialogPage.vue."
+   },
+   {
+    "key": "dialog-backdrop-styles",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/styles/elements/_dialog.scss",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_dialog.scss",
+     "/home/user/mikesaintsg/elements/src/styles/surfaces/_backdrop.scss",
+     "/home/user/mikesaintsg/elements/tests/src/styles/elements/_dialog.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/composables/_dialog.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/surfaces/_backdrop.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/renderings.md",
+     "/home/user/mikesaintsg/elements/guides/surfaces.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/DialogElementPage.vue",
+     "/home/user/mikesaintsg/elements/tests/app/browser/pages/DialogElementPage.test.ts"
+    ],
+    "why": "Bears on B3's stylesheet fence, the `dialog.modal` reset and the transparent `::backdrop` (stage-b-final-verdict.md:972-973), and on chunk 3's bare `dialog` chrome and scrim (:984-985). `renderings.md:208-229` is the UA sheet the reset cancels. That sheet makes `dialog` absolute with `border: solid`, `padding: 1em`, and a Canvas fill. It makes `dialog:modal` fixed with `max-width: calc(100% - 6px - 2em)` and paints `dialog::backdrop` at `rgba(0,0,0,0.1)`. `_dialog.scss:1-34` gives three reasons: it restates fixed centering for `:modal`, it sets `position: static` for a non-modal dialog, and top-layer stacking ignores `z-index`. `surfaces.md:155-206` puts the backdrop transition on the bare pseudo. `composables/_dialog.scss:11` defines `.fullscreen` as a size modifier, not a use of the Fullscreen API.",
+    "distilled_where": "Covered: elements-styles-1.md § 2, the `dialog` and `::backdrop` paragraph; elements-styles-2.md § 3 Modal (:23) and § 4 Modal (:65); elements-engine-1.md § 1, the `::backdrop` row; elements-engine-2.md § 3, the backdrop-tail row (surfaces.md:186-190). Not distilled: renderings.md (no distillate cites it), the 4 test files, and DialogElementPage.vue."
+   },
+   {
+    "key": "popover-engine",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createPopover.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createTooltip.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createMenu.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createAside.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createPopover.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createTooltip.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createMenu.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createAside.test.ts"
+    ],
+    "why": "Bears on B5 `topmost` (stage-b-final-verdict.md:693-772, :1123) and on P0. `createPopover.ts:261` writes `popover = 'manual'`. `createPopover.ts:262-268` records that `showPopover({ source })` supplies only the implicit anchor that `position-area` reads, so `anchor()` needs an explicit `anchor-name` and `position-anchor` pair. B5 calls `showPopover({ source })` before `Placement`. `createMenu.ts:61-66` writes an inline `max-block-size` because `@layer surfaces` beats `@layer components`. `createAside.ts:40-45` records the stripped 400 ms dead wait and the removed `inert` and `aria-modal` wiring. That bears on the refused manual-popover offcanvas and on G1. The statechart blocks are at `createPopover.test.ts:361`, `createTooltip.test.ts:324`, `createMenu.test.ts:304`, and `createAside.test.ts:244`.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Aside (:106), § Popover (:134), § Tooltip (:156), and § Menu (:166); browser-elements-slice-1.md § Aside; browser-elements-slice-2.md § Popover, § Tooltip, and § Menu; elements-engine-1.md § 1, the Popover API, `showPopover({ source })`, and anchor rows; elements-engine-2.md § 3, the position-try and `@layer` rows. native-research-agent-1.md and native-research-agent-3.md § 1 cover the spec and Chromium. Not distilled: the 4 test files."
+   },
+   {
+    "key": "popover-anchor-styles",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/styles/surfaces/_popover.scss",
+     "/home/user/mikesaintsg/elements/src/styles/surfaces/_anchor-position.scss",
+     "/home/user/mikesaintsg/elements/src/styles/modifiers/_placements.scss",
+     "/home/user/mikesaintsg/elements/src/styles/components/_menu.scss",
+     "/home/user/mikesaintsg/elements/tests/src/styles/surfaces/_popover.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/surfaces/_anchor-position.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/modifiers/_placements.test.ts",
+     "/home/user/mikesaintsg/elements/guides/surfaces.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/PopoverSurfacesPage.vue",
+     "/home/user/mikesaintsg/elements/app/browser/pages/PlacementsPage.vue"
+    ],
+    "why": "Bears on three items: B5's float reset fence (stage-b-final-verdict.md:975), P0's `position-visibility` seam, and chunk 3's bare-popover look and anchor defaults (:986-987). The fence resets `inset`, `margin`, `border`, `padding`, and `overflow` against the UA `[popover]` sheet at `renderings.md:239-250`. `_anchor-position.scss` sets the following on every non-drawer popover: `position: absolute`, `position-area: block-end`, three flip fallbacks, `position-try-order: normal`, and `position-visibility: anchors-visible`. `surfaces.md:147-153` gives the reasons: absolute positioning lets fallbacks re-evaluate, and Chromium re-evaluates fallbacks only when the popover's own layout changes. `surfaces.md:101-111` records that a `[popover]` rule that sets `display` beats the UA closed-state `display: none`.",
+    "distilled_where": "Covered: elements-styles-1.md § 2, the `[popover]` and Anchor positioning paragraphs; elements-styles-2.md § 3 Dropdown (:19) and Popover and tooltip (:33), plus their § 4 rows; elements-engine-2.md § 3, the rows that cite surfaces.md:92-153. Not distilled: the 3 test files, PopoverSurfacesPage.vue, and PlacementsPage.vue."
+   },
+   {
+    "key": "drawer-toast-top-layer",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createToast.ts",
+     "/home/user/mikesaintsg/elements/src/styles/components/_aside.scss",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_aside.scss",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_toast.scss",
+     "/home/user/mikesaintsg/elements/src/styles/components/_output.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createToast.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/components/_aside.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/composables/_aside.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/composables/_toast.test.ts",
+     "/home/user/mikesaintsg/elements/app/browser/pages/AsidePage.vue"
+    ],
+    "why": "Bears on three items: the offcanvas half of B3 (the `stable` leaf), gate G1 (`<dialog class=\"offcanvas\">`), and the scope refusals of manual-popover offcanvas and toast promotion. Those refusals wait on ruling 5 (remainder-map-2026-10-04.md:192). `components/_aside.scss:473-530` documents `<aside popover>` as the drawer that `popovertarget` drives. The slide comes from `@starting-style` at `:691-698`, and `overscroll-behavior: contain` is set at `:736`. `createToast.ts:27-45` binds `<div role=\"status\">` inside a popover and composes `createPopover`. native-research-agent-6.md tests the same live region inside a manual popover. No Bootstrap selector reaches the drawer or toast chrome, so it is ground the chunk 3 styles cover themselves.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Aside (:106) and § Toast (:260); browser-elements-slice-3.md § Toast; elements-styles-2.md § 3 Offcanvas (:29) and Toast (:39), plus their § 4 rows; elements-engine-2.md § 4, the Toast row, which records the `<output popover>` guide drift. elements-styles-1.md:41 marks the drawer `@starting-style` unverified; it exists at `components/_aside.scss:691-698`. Not distilled: the 4 test files and AsidePage.vue."
+   },
+   {
+    "key": "details-disclosure",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createDetails.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createTabs.ts",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_details.scss",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_summary.scss",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_html.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createDetails.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/elements/_details.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/interactions.md",
+     "/home/user/mikesaintsg/elements/guides/w3c/elements/interactives.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/DetailsPage.vue"
+    ],
+    "why": "Bears on B4 `intrinsic` (stage-b-final-verdict.md:637-691), on gates G2 and G4 (until-found reveal into `.collapse` panels and tab panes), and on chunk 3's details family (:989) and root `interpolate-size` (:1016). `createDetails.ts:59-64` vetoes a toggle through the summary click because `beforetoggle` on `<details>` is unreliable; the comment names no version. `_html.scss:13` sets `interpolate-size: allow-keywords` on `html`, and `_details.scss` tweens `::details-content`. `DetailsPage.vue:8-9` dates `::details-content` to Chromium 131+. `DetailsPage.vue:121-166` demonstrates the `name=` exclusive accordion, which `createDetails` does not use. `interactions.md:59-175` (§6.1) and `:597-612` (§6.9) carry the until-found and `beforematch` clauses that G2 and G4 test. `createTabs.ts:16-26` hides inactive panes with `hidden`.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Details (:198) and § Tabs (:212); browser-elements-slice-3.md § Details and § Tabs; elements-engine-1.md § 1, the details and `::details-content` rows; elements-engine-2.md § 3, the spec-clause rows (interactions.md:91-99, :599-607); elements-styles-1.md § 2, the details paragraph. native-research-agent-2.md § 1-2 covers the spec and Chromium. Not distilled: the 2 test files, DetailsPage.vue, and renderings.md §15.5.5 (`renderings.md:1239-1281`, listed as unopened at elements-engine-2.md:3)."
+   },
+   {
+    "key": "select-customizable",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createSelect.ts",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_select.scss",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_select.scss",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_datalist.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createSelect.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/elements/_select.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/composables/_select.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/elements/forms.md",
+     "/home/user/mikesaintsg/elements/guides/w3c/renderings.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/UseSelectPage.vue"
+    ],
+    "why": "Customizable select lies outside Bootstrap's 12 plugin families, and whether stage B covers it is unruled; it is the user's question 1 (remainder-map-2026-10-04.md:198). It bears on chunk 3 form looks, and on Dropdown only through composition. `createSelect.ts:29-50` composes `createMenu`, adds listbox semantics with `aria-activedescendant`, and mirrors the value into a native `<select>` so the value joins form data and constraint validation. `_select.scss:21-25` calls `appearance: base-select` (Chromium 134+) a planned opt-in, while `guides/elements.md:251` says the cascade already covers it. That is drift inside the clone. The corpus carries the customizable form at `forms.md:715-750` and its UA sheet at `renderings.md:1504-1722`: `::checkmark` at :1631, `::picker(select)` at :1685, and `::picker-icon` at :1704.",
+    "distilled_where": "Covered in part: browser-elements-distillate.md § Select (:184) and browser-elements-slice-2.md § Select (:53) cover composition and the native mirror only, because the brief skipped the filter and IME detail. elements-engine-1.md § 1 has the `base-select` row, and elements-styles-2.md § 3 has Forms. remainder-map-2026-10-04.md:33 records customizable select as not a stage B candidate. Not distilled: forms.md §4.10.7, renderings.md §15.5.16, the 3 test files, and UseSelectPage.vue."
+   },
+   {
+    "key": "form-validation",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createForm.ts",
+     "/home/user/mikesaintsg/elements/src/browser/helpers.ts",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_input.scss",
+     "/home/user/mikesaintsg/elements/src/styles/modifiers/_local.scss",
+     "/home/user/mikesaintsg/elements/src/styles/components/_form.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createForm.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/elements/_input.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/components/_form.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/elements/forms.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/UseFormPage.vue"
+    ],
+    "why": "Form validation lies outside Bootstrap's 12 families, and its scope is unruled (remainder-map-2026-10-04.md:198). Bootstrap 5.3.8 ships no form plugin, so the area bears on chunk 3 form states and on any engine layer after stage B. `createForm.ts:27-45` gates the host to `<form>` and defaults `validate.submit` to true. `createForm.ts:343-345` captures `invalid` because the event does not bubble. `forms.md:1024-1060` maps `checkValidity`, `reportValidity`, `requestSubmit`, `setCustomValidity`, `willValidate`, and the live `ValidityState` to the factory, and `helpers.ts:1794-1866` holds the field readers. `_input.scss:150-160` paints `:user-invalid` with an `:invalid:not(:placeholder-shown)` fallback, and `_form.scss:94-100` gates on `[data-form-validated]`. Drift: `forms.md:1034` names the event `mailbox:form:formdata`, while `constants.ts:455` names it `elements:form:formdata`.",
+    "distilled_where": "Covered: elements-engine-1.md § 1, the constraint-validation row; elements-engine-1.md § 2, the `createForm` row (option defaults and returned members; the `destroy` body was not re-read); elements-engine-2.md § 3, the `invalid` row; elements-styles-2.md § 3 Forms (:41) and § 4 Forms (:79). Not distilled: forms.md §4.10.1.4 and its createForm notes, the `:user-invalid` rules, the 3 test files, and UseFormPage.vue."
+   },
+   {
+    "key": "focus-inert",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createFocus.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createFocus.test.ts",
+     "/home/user/mikesaintsg/elements/src/styles/surfaces/_focus.scss",
+     "/home/user/mikesaintsg/elements/tests/src/styles/surfaces/_focus.test.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createTable.ts",
+     "/home/user/mikesaintsg/elements/src/browser/inspector/rules.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/inspector/interaction.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/interactions.md",
+     "/home/user/mikesaintsg/elements/guides/surfaces.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/FormSurfacesPage.vue"
+    ],
+    "why": "Bears on three items: B3, where `Trap` stays the sole focus wrapper (remainder-map-2026-10-04.md:20); the refusals of `inert` as a trap and of `focusgroup`; and chunk 3's `:focus-visible` and forced-colors rule, whose values I-4 decides (stage-b-final-verdict.md:991). `createTable.ts:1034-1040` puts `inert` on closed panels, because `[hidden]` forces `display: none` and freezes the `block-size` tween. No distillate cites `interactions.md:259-340` (§6.3 inert and modal-dialog inertness) or `:467-518` (§6.6 focus). `rules.ts:1922` (`presentation/focus`) flags an inline outline removal that has no replacement ring. `surfaces.md:228-251` excludes form controls and `table[role=grid]` from the ring and swaps in `Highlight` under forced colors.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Focus (:120); browser-elements-slice-1.md § Focus (:35); elements-styles-1.md § 2, the `:focus-visible` paragraph; elements-engine-1.md § 1, the `inert` and `:focus-visible` rows; elements-engine-2.md § 3, the `inert` rows. native-research-agent-2.md § 8-9 and native-research-agent-5.md § 4 cover the spec and Chromium. native-inventory-2.md § Trap. Not distilled: interactions.md §6.3 and §6.6, `rules.ts`, the 3 test files, and FormSurfacesPage.vue."
+   },
+   {
+    "key": "scroll-lock-gutter",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/helpers.ts",
+     "/home/user/mikesaintsg/elements/src/styles/surfaces/_scrollbar.scss",
+     "/home/user/mikesaintsg/elements/src/styles/components/_body.scss",
+     "/home/user/mikesaintsg/elements/src/styles/components/_main.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/helpers.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/surfaces/_scrollbar.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/components/_body.test.ts",
+     "/home/user/mikesaintsg/elements/guides/surfaces.md",
+     "/home/user/mikesaintsg/elements/guides/composables.md",
+     "/home/user/mikesaintsg/elements/tests/app/browser/pages/ScrollAndTransitionPage.test.ts"
+    ],
+    "why": "Bears on B3's reserved-gutter lock (the `stable` leaf, stage-b-final-verdict.md:556-635), on ruling 1 and D-5 (whether `./styles` declares a root gutter), and on the chunk 3 CSS lock for bare dialogs (:990). `helpers.ts:1672-1684` pads `body` by `innerWidth - clientWidth` under a shared counter. That is the same footprint Bootstrap's scrollbar helper writes and the `stable` leaf zeroes, and `helpers.test.ts:748-780` covers the counter. `_scrollbar.scss` declares `scrollbar-gutter: stable` on every element and drops `html, body` to `auto` at a narrow breakpoint. The verdict warns about exactly this case: a root gutter moves every page that loads the sheet onto the `lock-stable` rows. `composables.md:409` claims that `scrollbar-gutter: auto` on `html, body` keeps fixed descendants anchored to the viewport. `overscroll-behavior: contain` appears at `_body.scss:116-131`, `_main.scss:23-36`, `elements/_dialog.scss:432`, and `components/_aside.scss:736`.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Body-scroll lock (:70); browser-elements-slice-0.md § Body-scroll lock (:68); elements-styles-1.md § 2, the Scrollbar paragraph; elements-engine-2.md § 3, the `scrollbar-gutter` row, which records that the two texts disagree. native-research-agent-8.md and native-research-agent-2.md § 7 cover the spec and Chromium. native-inventory-2.md § Lock and Hold. Not distilled: every `overscroll-behavior` use and the 4 test files."
+   },
+   {
+    "key": "view-transition-motion",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/styles/surfaces/_view-transition.scss",
+     "/home/user/mikesaintsg/elements/tests/src/styles/surfaces/_view-transition.test.ts",
+     "/home/user/mikesaintsg/elements/app/browser/pages/ScrollAndTransitionPage.vue",
+     "/home/user/mikesaintsg/elements/src/browser/tokens.ts",
+     "/home/user/mikesaintsg/elements/src/styles/_mixins.scss",
+     "/home/user/mikesaintsg/elements/src/styles/_tokens.scss",
+     "/home/user/mikesaintsg/elements/src/browser/patterns.ts",
+     "/home/user/mikesaintsg/elements/guides/patterns.md",
+     "/home/user/mikesaintsg/elements/AGENTS.md",
+     "/home/user/mikesaintsg/elements/tests/guides/tokens.test.ts"
+    ],
+    "why": "Bears on chunk 3's `::view-transition-*` reduced-motion rule (stage-b-final-verdict.md:993; engine View Transitions are refused) and on the motion tokens under the reader law (:999-1017). `_view-transition.scss:4-7` claims Chrome 111+ same-document and Chrome 126+ cross-document support and gives no link. `ScrollAndTransitionPage.vue:65-67` checks that `document.startViewTransition` exists before it calls it. `patterns.ts:1423-1446` lists the 5 partials that must read the motion tokens: details, summary, dialog, table expansion, and aside. `AGENTS.md:853-858` pairs every `transition` with a reduced-motion opt-out through one mixin, and `guides/patterns.md:364-369` requires that mixin on every animated surface. `helpers.ts:1586-1655` (`runTransition`, `hasTransitionDuration`, and `waitForFrame`) is the transition wait that parallels veneer's `awaitTransition`.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Transition coordination (:49); browser-elements-slice-0.md § Transition coordination (:47); elements-styles-1.md § 1 Motion and § 2 Other surfaces; elements-engine-1.md § 1, the view-transition row; elements-engine-2.md § 3, the view-transition row. native-research-agent-0.md covers the spec and Chromium. Not distilled: `patterns.ts`, `guides/patterns.md`, `AGENTS.md` § 21.8, `tokens.ts:1238-1245`, the page, and the 2 test files."
+   },
+   {
+    "key": "closewatcher-command-invokers",
+    "paths": [
+     "/home/user/mikesaintsg/elements/guides/w3c/interactions.md",
+     "/home/user/mikesaintsg/elements/guides/w3c/elements/interactives.md",
+     "/home/user/mikesaintsg/elements/guides/w3c/elements/forms.md",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createAside.ts",
+     "/home/user/mikesaintsg/elements/app/browser/pages/AsidePage.vue",
+     "/home/user/mikesaintsg/elements/app/browser/pages/MenuPage.vue",
+     "/home/user/mikesaintsg/elements/tests/app/browser/pages/MenuPage.test.ts"
+    ],
+    "why": "Bears on gate G3 (`CloseWatcher` and Android Back), gate G5 (custom `--` commands), and B2's `command` capture route (stage-b-final-verdict.md:1120, :1128, :1130). No file in `src/`, `app/`, or `tests/` uses `CloseWatcher`, `commandfor`, or `command=` at runtime, and a search of the whole clone finds no `interestfor`. The markup uses `popovertarget` and `popovertargetaction`, which `createAside.ts:22` and `:76` treat as an external toggle. The corpus holds the spec text: `interactions.md:613-636` (§6.10 close watchers); `:341-452` (§6.4 user activation, the condition G3 reads); `:459-465` (`ToggleEvent` and `CommandEvent`); `interactives.md:691-718` (dialog commands); and `forms.md:594-641` (button `command` and `commandfor`, with a custom `--rotate-landscape` command at :627).",
+    "distilled_where": "Covered: elements-engine-1.md § 1, the invoker-command and `CloseWatcher` rows (from the corpus only) and the `interestfor` row, which is marked unverified; elements-engine-2.md § 3, the close-request clause row. native-research-agent-3.md § 3-5, native-research-agent-4.md, native-research-agent-7.md, and native-research-agent-10.md cover the spec and Chromium with no elements citations. Not distilled: interactions.md §6.4 and §6.5, and the forms.md §4.10.6 button card (listed as unopened at elements-engine-2.md:3)."
+   },
+   {
+    "key": "absent-areas-clipboard-fullscreen-scroll",
+    "paths": [
+     "/home/user/mikesaintsg/elements/app/browser/examples/ExamplesShell.vue",
+     "/home/user/mikesaintsg/elements/docs/superpowers/plans/2026-05-20-examples-port-dashboard.md",
+     "/home/user/mikesaintsg/elements/src/styles/_tokens.scss",
+     "/home/user/mikesaintsg/elements/src/styles/elements/_html.scss",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_carousel.scss",
+     "/home/user/mikesaintsg/elements/guides/w3c/interactions.md"
+    ],
+    "why": "Clipboard, the Fullscreen API, scroll snap, and scroll-driven animation have almost no footprint in the clone, so a distillate of the clone cannot carry them; they need first-party research. Clipboard appears only as showcase chrome: `navigator.clipboard.writeText` at `ExamplesShell.vue:152-157`, planned at `2026-05-20-examples-port-dashboard.md:332-337`. The corpus notes `execCommand` as legacy at `interactions.md:567-570`. No file in the clone uses `requestFullscreen`, `fullscreenElement`, or `:fullscreen`. No `src/` file sets `scroll-snap-*`, `animation-timeline`, `scroll-timeline`, `::scroll-marker`, or `scroll-target-group`. `_tokens.scss:213` and `_html.scss:16` only call `scroll-padding` a snap offset, and the carousel slides by transform. These areas map to veneer's refused scroll-driven and CSS carousel rows and to D-9 (stage-b-final-verdict.md:1057).",
+    "distilled_where": "Covered from the platform side only: native-research-agent-2.md § 3-6 (CSS carousels, `scroll-target-group`, scroll-state queries, scroll snap) and native-research-agent-0.md § 7 (scroll-driven animation) cite no elements files. elements-styles-1.md § 2, 'Not in the files read', reports no `scroll-snap-*` and marks the whole-tree absence unverified; this map confirms the absence for `src/`. Clipboard and the Fullscreen API are not distilled anywhere."
+   },
+   {
+    "key": "carousel-pointer-drag",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createCarousel.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createPointer.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createDrop.ts",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_carousel.scss",
+     "/home/user/mikesaintsg/elements/src/styles/composables/_drag.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createCarousel.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createPointer.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createDrag.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createDrop.test.ts"
+    ],
+    "why": "Bears on stage A's `Carousel` and `Swipe`, which are done at `419245d` (remainder-map-2026-10-04.md:15), and on the refused carousel until-found and CSS carousel rows. HTML drag and drop has no Bootstrap counterpart. `createPointer.ts:74-89` holds pointer capture, the cursor, and `user-select: none` for one gesture, and both `createToast` and `createTable` import it. `createDrag.ts:482` and `createDrop.ts:100` return the members elements-engine-1.md left unread. The statechart tables are at `createCarousel.test.ts:421` and `:436`, `createPointer.test.ts:151`, `createDrag.test.ts:207`, and `createDrop.test.ts:127`.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Carousel (:278); browser-elements-slice-3.md § Carousel; elements-engine-1.md § 1, the pointer and drag-and-drop rows, and § 2, rows marked 'Return not re-read'; elements-styles-2.md § 3 Carousel and § 4 Carousel; native-inventory-1.md § Carousel and Swipe. Not distilled: `createDrag` and `createDrop` past their headers, `_drag.scss`, and the 4 test files."
+   },
+   {
+    "key": "scrollspy-tabs-alert-button",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createNav.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createAlert.ts",
+     "/home/user/mikesaintsg/elements/src/browser/factories/createButton.ts",
+     "/home/user/mikesaintsg/elements/src/styles/components/_nav.scss",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createNav.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createTabs.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createAlert.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/browser/factories/createButton.test.ts",
+     "/home/user/mikesaintsg/elements/guides/w3c/aria.md",
+     "/home/user/mikesaintsg/elements/app/browser/pages/UseNavPage.vue"
+    ],
+    "why": "Bears on stage A's Scrollspy, Tab, Alert, and Button subjects, which are done. It also bears on the refusals of `ariaNotify` and the native switch, and on `scroll-target-group`, which is refused for the engine and is a chunk 3 candidate under D-9. `createNav.ts:13-21` drives scroll-spy with `IntersectionObserver` and writes `aria-current=\"location\"` in place of Bootstrap's `.active`. `aria.md:125-152` lists the implicit roles that the alert and toast live regions rely on: `output` is `status`, `details` is `group`, `summary` has no role, and `dialog` is `dialog`. Statechart tables are at `createAlert.test.ts:232`, `createButton.test.ts:178`, and `createTabs.test.ts:192`. `createNav.test.ts` has no statechart block.",
+    "distilled_where": "Covered: browser-elements-distillate.md § Tabs (:212), § Nav (:226), § Alert (:238), and § Button (:250); browser-elements-slice-3.md; elements-engine-2.md § 4, the mapping rows; native-inventory-1.md § Alert and § Button; native-inventory-2.md § Scrollspy and § Tab. native-research-agent-6.md covers the spec and Chromium. Not distilled: the 4 test files, `components/_nav.scss` beyond one citation, and UseNavPage.vue."
+   },
+   {
+    "key": "theme-tokens-surface-contracts",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/factories/createTheme.ts",
+     "/home/user/mikesaintsg/elements/src/browser/theme.ts",
+     "/home/user/mikesaintsg/elements/src/styles/_tokens.scss",
+     "/home/user/mikesaintsg/elements/src/styles/_theme.scss",
+     "/home/user/mikesaintsg/elements/src/styles/themes/_core.scss",
+     "/home/user/mikesaintsg/elements/src/browser/patterns.ts",
+     "/home/user/mikesaintsg/elements/guides/patterns.md",
+     "/home/user/mikesaintsg/elements/AGENTS.md",
+     "/home/user/mikesaintsg/elements/tests/src/styles/tokens.test.ts",
+     "/home/user/mikesaintsg/elements/tests/src/styles/integration.test.ts"
+    ],
+    "why": "Bears on the chunk 3 foundation. At veneer `4333d76`, `src/styles/elements`, `components`, `composables`, and `surfaces` each hold only `_index.scss`. `guides/patterns.md:350-363` names 9 surfaces with their selectors and required tokens, and `patterns.ts:699-830` encodes them. That is a ready shape for the `surfaces/` folder and for the placement rule that waits on D-1 (stage-b-final-verdict.md:944). `AGENTS.md:768-788` fixes 8 cascade layers ahead of `@import 'tailwindcss'`, which bears on veneer's Tailwind flip and reset layer. `integration.test.ts:1-14` fails any framework class that shares a name with a Tailwind utility, which mirrors veneer's naming rule (:1026-1030). `theme.ts` and `createTheme.ts` follow `prefers-color-scheme` through one page-level listener with `data-mode` and `data-theme`, the counterpart of the `color-scheme` token (:1015).",
+    "distilled_where": "Covered: elements-styles-1.md § 1 Token system (factors, motion, roles, and how a theme overrides); elements-engine-1.md § 1, the `matchMedia` row, and § 2, the `createTheme` row; elements-engine-2.md § 4, the Boot scope row. Not distilled: `patterns.ts`, `guides/patterns.md`, `AGENTS.md` § 21.5, and the 2 test files."
+   },
+   {
+    "key": "harness-statecharts-parity",
+    "paths": [
+     "/home/user/mikesaintsg/elements/tests/setupBrowser.ts",
+     "/home/user/mikesaintsg/elements/tests/setupStyles.ts",
+     "/home/user/mikesaintsg/elements/tests/setup.ts",
+     "/home/user/mikesaintsg/elements/app/browser/playgrounds/StatechartHarness.vue",
+     "/home/user/mikesaintsg/elements/app/browser/playgrounds/DialogPlaygroundPage.vue",
+     "/home/user/mikesaintsg/elements/app/browser/playgrounds/PopoverPlaygroundPage.vue",
+     "/home/user/mikesaintsg/elements/tests/app/browser/playgrounds.test.ts",
+     "/home/user/mikesaintsg/elements/tests/guides/composables.test.ts",
+     "/home/user/mikesaintsg/elements/tests/guides/surfaces.test.ts",
+     "/home/user/mikesaintsg/elements/tests/app/browser/parity.test.ts"
+    ],
+    "why": "Bears on B1, which builds readers for `open`, `:modal`, `:popover-open`, inline `interpolate-size`, hit order, and pixels (stage-b-final-verdict.md:1119). It also bears on B6, which puts every landed surface on one page (:1124), on B7's guide fence pin (:1125), and on the statechart rows every landing logs. `setupStyles.ts:86-175` reads resolved style, tokens, pixels, and declared rules, but it has no hit-order reader and no capture-pixel reader. `setupBrowser.ts:315-345` (`assertCleanDispose`) counts listeners, observers, and timers across a double `destroy()`, and `:489-505` runs arrange, act, and assert scenario tables. `playgrounds.test.ts:1-25` drives each factory's statechart table on a mounted page with real top-layer behavior. `composables.test.ts:209` fails on any `data-*` attribute that a factory writes and no style reads.",
+    "distilled_where": "Covered in part: browser-elements-slice-0.md § Instance shape (:21) and browser-elements-distillate.md:27 name `assertCleanDispose`, citing the guide only. Not distilled: every file in this group."
+   },
+   {
+    "key": "inspector-content-model-corpus",
+    "paths": [
+     "/home/user/mikesaintsg/elements/src/browser/inspector/rules.ts",
+     "/home/user/mikesaintsg/elements/src/browser/helpers.ts",
+     "/home/user/mikesaintsg/elements/src/browser/schema.ts",
+     "/home/user/mikesaintsg/elements/src/browser/taxonomy.ts",
+     "/home/user/mikesaintsg/elements/guides/inspector.md",
+     "/home/user/mikesaintsg/elements/guides/w3c.md",
+     "/home/user/mikesaintsg/elements/guides/w3c/renderings.md",
+     "/home/user/mikesaintsg/elements/guides/w3c/categories.md",
+     "/home/user/mikesaintsg/elements/tests/src/browser/inspector/presentation.test.ts",
+     "/home/user/mikesaintsg/elements/tests/guides/w3c.test.ts"
+    ],
+    "why": "Bears on gates G2 and G4 and on the deferred `.collapse[hidden='until-found' i] { display: block !important }` fence (stage-b-final-verdict.md:976). `rules.ts:1764-1767` states the UA rule `[hidden=until-found i]:not(embed) { content-visibility: hidden }`. `rules.ts:1779-1795` flags an until-found box that is forced to `display: none`, `contents`, or `inline`; Bootstrap's closed `.collapse` produces exactly that failure. `helpers.ts:1290-1302` reads the `hidden` keyword case-insensitively, and `:1305-1318` treats an unsupported `:popover-open` as open. `renderings.md:112-138` mirrors §15.3.1. The corpus caches WHATWG pages with their source links (`guides/w3c.md:3`), so a reader lane can cite it and then confirm against the live spec.",
+    "distilled_where": "Not distilled: browser-elements-brief.md:13 excluded the inspector folder, `schema.ts`, and `taxonomy.ts`. elements-engine-2.md § 3 notes only the `w3c.md` drift (`w3c.md:13`, `:46`)."
+   },
+   {
+    "key": "docs-map-roadmap",
+    "paths": [
+     "/home/user/mikesaintsg/elements/docs/superpowers/specs/2026-05-20-examples-port-design.md",
+     "/home/user/mikesaintsg/elements/docs/superpowers/specs/2026-05-21-examples-port-design-revised.md",
+     "/home/user/mikesaintsg/elements/docs/superpowers/specs/2026-05-21-examples-framework-primitives.md",
+     "/home/user/mikesaintsg/elements/docs/superpowers/plans/2026-05-20-examples-port-dashboard.md",
+     "/home/user/mikesaintsg/elements/docs/superpowers/plans/2026-05-21-examples-port-rest.md",
+     "/home/user/mikesaintsg/elements/MAP.md",
+     "/home/user/mikesaintsg/elements/ROADMAP.md",
+     "/home/user/mikesaintsg/elements/guides/components.md",
+     "/home/user/mikesaintsg/elements/guides/elements.md"
+    ],
+    "why": "Bears on the Bootstrap-plugin mapping behind B3, B5, and G1, and on chunk 3's component looks. `2026-05-20-examples-port-design.md:107-123` gives four translations: `.modal` becomes `<dialog>` with `useDialog`; `.dropdown` becomes `<button popovertarget>` with `<menu popover>`; `.offcanvas` becomes `<aside popover>`; and `.fade .show` is dropped in favor of native transitions. `MAP.md:118-139` pairs each mailbox Bootstrap composable with its elements counterpart: Collapse with Details, Modal with Dialog, and Offcanvas with Aside, with Scrollspy folded into Nav. `ROADMAP.md:15-19` and `:57-59` rule signal first and class as the fallback (`[popover]`, `:modal`, `[open]`), which matches veneer's typed opt-in leaf. `guides/elements.md` gives each native tag's treatment.",
+    "distilled_where": "Covered in part: browser-elements-slice-4.md maps Bootstrap plugins to factories from the source, not from these docs. elements-engine-2.md § 3 cites `ROADMAP.md:1-19`. browser-elements-distillate.md § Dialog and § Conventions distill `guides/components.md:150-165` and `:215-241`. Not distilled: the 5 docs files (elements-engine-1.md:3 left their names unlisted), `MAP.md`, and most of `guides/elements.md`."
+   }
+  ],
+  "coverage_summary": "The Windows checkout the distillates read and this clone are the same commit, and no content difference is detectable. What differs is coverage. Of 19 groups, 16 bear on stage B units or chunk 3, and the distillates leave every test, app, and docs file in the clone uncited. Clone paths in this report are relative to /home/user/mikesaintsg/elements. Distillate names are relative to /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/stage-b/.\n\n**The clone.** HEAD is `3b41900`, dated 2026-06-09, in a shallow clone with one commit. It holds:\n- 20 `create*` factories in `src/browser/factories/`;\n- 33 guide files, including the W3C corpus;\n- 5 docs files: 3 specs and 2 plans under `docs/superpowers/`;\n- 198 test files.\n\n**What changed between the Windows checkout and `3b41900`.** No content difference is detectable.\n- Three briefs pin the Windows checkout at `3b41900`, 2026-06-09: browser-elements-brief.md:13, elements-engine-brief.md:13, and elements-styles-brief.md:13.\n- elements-engine-brief.md:15 dates the browser-elements distillate 2026-10-02.\n- `.gitattributes:2` forces LF line endings, so line numbers agree across Windows and Linux.\n- The brief's guide sizes (79 KB, 39 KB, and 68 KB) match the clone's 78,990, 38,855, and 67,909 bytes.\n- The brief's line counts for `types.ts`, `constants.ts`, and `helpers.ts` (2672, 700, and 2278) are each one more than `wc -l` reports. Each file ends in a newline, which accounts for the extra line.\n- A resolver script checked all 1,405 `path:line` citations in the 10 elements-based distillates. Every citation resolves to an existing file and line range. 12 sampled lines match their claims.\n- One caveat: elements-engine-1.md:3 and elements-engine-2.md:3 record that those runs did not re-read `git HEAD`.\n\n**Distillate coverage.** Citations concentrate in a handful of files: `guides/composables.md` (170), `src/browser/types.ts` (170), `src/browser/constants.ts` (103), `createDialog.ts` (101), `createPopover.ts` (99), and `guides/surfaces.md` (87). The distillates cite none of the following:\n- any file under `tests/` (198 files), `app/` (98 files), or `docs/` (5 files);\n- `MAP.md`, `patterns.ts`, `schema.ts`, `taxonomy.ts`, or the inspector;\n- the corpus pages `renderings.md`, `forms.md`, and `categories.md`;\n- `guides/patterns.md`, `styles.md`, `mixins.md`, `modifiers.md`, or `showcase.md`.\n\nThe native-research distillates cite elements at most once each and rest on spec and Chromium sources. The native-inventory files cite elements only through the distillate.\n\nThis map closes 4 items the distillates left unverified:\n- `interestfor` appears nowhere in the clone.\n- `src/styles` has no `scroll-snap-*` and no `inert` rule.\n- The drawer `@starting-style` exists at `components/_aside.scss:691-698`.\n- `createDrag` and `createDrop` return their members at `:482` and `:100`.\n\nIt also records 4 drifts inside the clone:\n- `forms.md:1034` names `mailbox:form:formdata`, while `constants.ts:455` names `elements:form:formdata`.\n- `_select.scss:21-25` calls `base-select` planned, while `guides/elements.md:251` says the cascade covers it.\n- `AGENTS.md:787` names the test file `tests/src/styles/_charters.test.ts`, which is absent at `3b41900`.\n- `patterns.ts:6` names `tests/guides/patterns/contracts.test.ts`, which is also absent.\n\n**What remains.** Every stage B unit is unstarted until the user opens stage B (remainder-map-2026-10-04.md:194):\n- B0 waits on rulings 1, 3, 4, and 5.\n- B1 waits on B0 and ruling 2.\n- B2 waits on B0.\n- B3 waits on B1 and B2.\n- B4 waits on B0's held slice and on B2.\n- B5 waits on B3, ruling 6, and any P0 repair.\n- B6 and then B7 come last.\n- P0 and gates G1 to G5 are read-only probes that are not scheduled.\n- Chunk 3 opens after stage B.\n\nForm validation, customizable select, clipboard, and fullscreen are unruled scope; that is the user's question 1 (remainder-map-2026-10-04.md:198). Clipboard and fullscreen have almost no footprint in the clone, so they need first-party research rather than a distillation of the clone.\n\n**Parallelization.** All 19 groups are read-only and independent, so one reader per group can run in a single wave. Recommendations:\n- One writer merges the readers' reports into the stage B addendum.\n- A group shares a file such as `helpers.ts`, `surfaces.md`, `interactions.md`, or `renderings.md` only for reading, and its `why` names the sections it needs.\n- Weight the wave to the gates in this order:\n  1. `dialog-engine`, `dialog-backdrop-styles`, `scroll-lock-gutter`, and `harness-statecharts-parity` for B1 to B3;\n  2. `popover-engine` and `popover-anchor-styles` for B5 and P0;\n  3. `details-disclosure` and `inspector-content-model-corpus` for B4, G2, and G4;\n  4. `closewatcher-command-invokers` for G3 and G5;\n  5. the remaining groups for chunk 3 and the scope question.\n\n**Left out.** The map leaves out these clone areas because they bear on neither stage B nor chunk 3:\n- the `src/core` package and its tests;\n- the `app/browser/examples` pages, apart from the clipboard call;\n- the per-element baselines for text and table tags;\n- `configs/` and `demo/`."
+ },
+ "groups_read": [
+  {
+   "group": "dialog-engine",
+   "facts": 26,
+   "new": 15,
+   "corrects": 4,
+   "contradicts": 3
+  },
+  {
+   "group": "dialog-backdrop-styles",
+   "facts": 21,
+   "new": 11,
+   "corrects": 5,
+   "contradicts": 1
+  },
+  {
+   "group": "popover-engine",
+   "facts": 29,
+   "new": 18,
+   "corrects": 3,
+   "contradicts": 3
+  },
+  {
+   "group": "popover-anchor-styles",
+   "facts": 25,
+   "new": 19,
+   "corrects": 4,
+   "contradicts": 1
+  },
+  {
+   "group": "drawer-toast-top-layer",
+   "facts": 31,
+   "new": 24,
+   "corrects": 2,
+   "contradicts": 0
+  },
+  {
+   "group": "details-disclosure",
+   "facts": 24,
+   "new": 15,
+   "corrects": 3,
+   "contradicts": 2
+  },
+  {
+   "group": "select-customizable",
+   "facts": 47,
+   "new": 39,
+   "corrects": 2,
+   "contradicts": 2
+  },
+  {
+   "group": "form-validation",
+   "facts": 29,
+   "new": 27,
+   "corrects": 1,
+   "contradicts": 0
+  },
+  {
+   "group": "focus-inert",
+   "facts": 24,
+   "new": 17,
+   "corrects": 1,
+   "contradicts": 0
+  },
+  {
+   "group": "scroll-lock-gutter",
+   "facts": 24,
+   "new": 15,
+   "corrects": 5,
+   "contradicts": 1
+  },
+  {
+   "group": "view-transition-motion",
+   "facts": 18,
+   "new": 13,
+   "corrects": 3,
+   "contradicts": 0
+  },
+  {
+   "group": "closewatcher-command-invokers",
+   "facts": 30,
+   "new": 10,
+   "corrects": 8,
+   "contradicts": 1
+  },
+  {
+   "group": "absent-areas-clipboard-fullscreen-scroll",
+   "facts": 25,
+   "new": 17,
+   "corrects": 3,
+   "contradicts": 0
+  },
+  {
+   "group": "carousel-pointer-drag",
+   "facts": 47,
+   "new": 41,
+   "corrects": 4,
+   "contradicts": 0
+  },
+  {
+   "group": "scrollspy-tabs-alert-button",
+   "facts": 35,
+   "new": 28,
+   "corrects": 1,
+   "contradicts": 2
+  },
+  {
+   "group": "theme-tokens-surface-contracts",
+   "facts": 42,
+   "new": 25,
+   "corrects": 1,
+   "contradicts": 5
+  },
+  {
+   "group": "harness-statecharts-parity",
+   "facts": 25,
+   "new": 19,
+   "corrects": 2,
+   "contradicts": 0
+  },
+  {
+   "group": "inspector-content-model-corpus",
+   "facts": 25,
+   "new": 15,
+   "corrects": 4,
+   "contradicts": 3
+  },
+  {
+   "group": "docs-map-roadmap",
+   "facts": 23,
+   "new": 10,
+   "corrects": 2,
+   "contradicts": 5
+  }
+ ]
+}
