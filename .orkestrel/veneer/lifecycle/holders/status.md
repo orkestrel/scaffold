@@ -82,7 +82,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - M-C is not a clean comparison: the historical server suite failed one case.
   - M-D: no persistent handle.
   - M-E: Codex with `required = true` refuses and prints the cause. Claude Code connects in both the healthy and the refusing case.
-- The veneer refusal blocks U5. Running: unit `eager-probe-veneer` (probe `tmp/codex/eager-probe-veneer-brief.md`), which reads veneer's unbounded type warm and published 0.0.20's first `prove` on veneer, to rule how the onset treats a warm past the deadline.
+- The veneer readings (`eager-probe-veneer2`):
+  - Veneer's type warm takes 37.2 s at the median (36.4 to 50.0 s), whole arm 46.4 s.
+  - Published 0.0.20 also refused its first two `prove` calls on veneer, at 76.7 s and 35.5 s, and recovered only after an idle replacement warm.
+  - Scaffold: warm 7.3 s, arm 14.6 s.
+- **The user ruled (2026-10-05):** `initialize` waits for lint and runtime only, and the type stage warms behind it under its own warm bound, separate from the 30 s inspection deadline (`eager/probe-design.md`, T1 revised).
+- Running: unit `eager-probe-warm` (probe `tmp/codex/eager-probe-warm-brief.md`), which implements the revision and re-measures `initialize` and the first type `prove` on veneer.
+- Then U5, U6, and U7.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
