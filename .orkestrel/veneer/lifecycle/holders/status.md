@@ -87,8 +87,14 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - Published 0.0.20 also refused its first two `prove` calls on veneer, at 76.7 s and 35.5 s, and recovered only after an idle replacement warm.
   - Scaffold: warm 7.3 s, arm 14.6 s.
 - **The user ruled (2026-10-05):** `initialize` waits for lint and runtime only, and the type stage warms behind it under its own warm bound, separate from the 30 s inspection deadline (`eager/probe-design.md`, T1 revised).
-- Running: unit `eager-probe-warm` (probe `tmp/codex/eager-probe-warm-brief.md`), which implements the revision and re-measures `initialize` and the first type `prove` on veneer.
-- Then U5, U6, and U7.
+- Unit `eager-probe-warm` stopped on the Orchestrator's own overreach, "lint keeps working while type is unavailable", which the `Verdict` contract forbids, and the correction withdrew it.
+- Unit `eager-probe-warm2` committed probe `e8d4715`:
+  - `PROBE_WARM` is 90,000 ms, overridable through `ProbeOptions.warm`.
+  - `initialize` takes veneer 7.1 to 7.9 s, scaffold 3.2 to 4.1 s, and probe 1.5 to 1.7 s, all under Codex's 10 s default.
+  - Veneer's first type `prove` succeeds without a retry, 43 to 46 s from the call.
+  - Six cases each fail without their mechanism. Source suite: 268 passed.
+- Running: probe U5 docs (`eager-probe-u5`, probe `tmp/codex/eager-probe-u5-brief.md`). Then U6 (Opus review) and U7 (gates); push probe after U7.
+- M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
