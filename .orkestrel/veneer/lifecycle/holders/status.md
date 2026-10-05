@@ -100,6 +100,9 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 
   The Orchestrator fixed the two TSDoc summaries U5 could not own, in `23ddcea`. Guides: 32 passed. Policy: 119 passed.
 - Running: U6, the Opus review of `dee8845..23ddcea`. Then U7 (gates); push probe after U7.
+- Running alongside (the reviewer only reads): unit `contexts-m2` (browser `tmp/codex/contexts-m2-brief.md`, cap 4 hours).
+  - It confirms ROADMAP item 14 through the built `browse` binary, at (pool 1, contexts 1), (1, 2), (1, 3), and (2, 2).
+  - It reads wall time, latency, refusals, kill recovery, memory, and CPU, quiet and under the core loop.
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
