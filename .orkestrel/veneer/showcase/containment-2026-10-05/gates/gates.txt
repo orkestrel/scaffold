@@ -1,0 +1,100 @@
+containment gates on /home/user/.wave/veneer-containment (7e2792b + markup + proofs, placement through it.each) start 20:05:37
+test:setup exit=0 20:05:57 Tests  186 passed (186)
+test:src:tailwindcss exit=0 20:06:25 Tests  10 passed (10)
+test:integration exit=0 20:07:08 Tests  60 passed (60)
+test:conformance exit=0 20:08:13 Tests  130 passed (130)
+test:src:core exit=0 20:08:20 Tests  14 passed (14)
+test:src:bootstrap exit=0 20:08:36 Tests  14 passed (14)
+test:src:styles exit=0 20:08:58 Tests  15 passed | 1 todo (16)
+test:app:core exit=0 20:09:03 Tests  1 passed (1)
+test:setup:browser exit=0 20:12:15 Tests  174 passed (174)
+test:app:browser exit=0 20:15:03 Tests  241 passed (241)
+test:app:vue exit=0 20:15:19 Tests  1 passed (1)
+build exit=0 20:15:46 
+src:browser exit=1 20:19:30
+src:browser failed 6 of 787 import failures: none
+ - Placement controls records the config-popover-flip transient departure and compares the settled box
+ - Placement controls measures the perpendicular keyword dimension swap warrant for constructed rules
+ - Placement moving geometry 'Popover'-'scroll'
+ - Placement moving geometry 'Popover'-'transform'
+ - consumes every selected departure
+ - Tip initialization: popover projects markup leaves and refuses the tooltip config and sanitizer attributes
+journey exit=1 20:29:04 runner="seconds": 573.797 Tests  3 failed | 91 passed (94)
+   failed:  drives the engine through the component sections and opens nothing on |  drives the 'accordion' table through its controls with motion=false |  drives the 'navbar-390' table through its controls with motion=false
+   memory 5842546688 1607516160 oom 0
+compare exit=67 20:29:05: Different: gates refused.
+11:## Differences
+12-
+13-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): removed 1 × component preservation: {"causes":{"utility":6574,"resolved":75,"preflight":0,"inherited":734,"unattributed":0,"dependent"
+14-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): removed 1 × component preservation: {"causes":{"utility":6583,"resolved":28,"preflight":0,"inherited":734,"unattributed":0,"dependent"
+15-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): removed 2 × signature coverage: [{"key":"[\"a\",[\"d-inline-block\",\"p-2\",\"visually-hidden-focusable\"],\"light\",false]","count":1
+16-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): removed 1 × partition: {"violations":[],"clauses":{"1":14403,"2":186,"3":21946},"skipped":{"1":{"competing":123,"resolved":32,"masked"
+17-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): removed 1 × partition: {"violations":[],"clauses":{"1":14420,"2":188,"3":21963},"skipped":{"1":{"competing":106,"resolved":32,"masked"
+18-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): added 1 × component preservation: {"causes":{"utility":7806,"resolved":99,"preflight":0,"inherited":1028,"unattributed":0,"dependent":
+19-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): added 1 × component preservation: {"causes":{"utility":7814,"resolved":28,"preflight":0,"inherited":1028,"unattributed":0,"dependent":
+20-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): added 2 × signature coverage: [{"key":"[\"a\",[\"d-inline-block\",\"p-2\",\"visually-hidden-focusable\"],\"light\",false]","count":1},
+21-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): added 1 × partition: {"violations":[],"clauses":{"1":14368,"2":1761,"3":21893},"skipped":{"1":{"competing":123,"resolved":40,"masked":
+22-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-1): added 1 × partition: {"violations":[],"clauses":{"1":14385,"2":1763,"3":21910},"skipped":{"1":{"competing":106,"resolved":40,"masked":
+23-- Rows (/home/user/veneer/tmp/units/journey-cost/runs/jb0-2): removed 1 × component preservation: {"causes":{"utility":6574,"resolved":75,"preflight":0,"inherited":734,"unattributed":0,"dependent"
+containment gates done 20:29:05
+final gates after the fix pass start 20:52:06
+format:check exit=0 20:52:10 
+lint:check exit=0 20:52:12 
+check exit=0 20:53:14 
+test:guides exit=0 20:53:19 
+test:policy exit=0 20:53:23 Tests  119 passed | 1 skipped (120)
+test:setup:browser exit=0 20:56:41 Tests  175 passed (175)
+test:app:browser exit=0 20:59:21 Tests  241 passed (241)
+build:showcase exit=0 20:59:23 rebuilt-equal=yes size=1377560
+census exit=0 20:59:29
+   census keys: 0,1,2,3,4,5
+    bootstrap 1280 overflows 0 figures 328
+    unexcluded 1280 overflows 0 figures 328
+    tailwindcss 1280 overflows 0 figures 328
+    bootstrap 390 overflows 0 figures 328
+    unexcluded 390 overflows 0 figures 328
+    tailwindcss 390 overflows 0 figures 328
+journey jb1-1 exit=1 21:08:14 runner="seconds": 525.014 Tests  4 failed | 90 passed (94)
+   failed:  drives the engine through the component sections and opens nothing on |  drives the 'accordion' table through its controls with motion=false |  drives the 'tooltip' table through its controls with motion=true |  drives the 'collapse' table through its controls with motion=false
+    passed 10875 ms keeps every specimen inside its figure under every f
+    passed 8470 ms paints progress bars at their announced fraction und
+   memory 5983338496 1602547712 oom 0
+compare exit=67 21:08:16: Different: gates refused.
+     56 Journal added info
+     28 Journal removed info
+     12 Lines removed Partition population 
+     12 Lines added Partition population 
+      4 Rows removed partition
+      4 Rows removed component preservation
+      4 Rows added partition
+      4 Rows added component preservation
+      4 Lines removed Partition control 
+      4 Lines removed Partition 
+      4 Lines removed Component repaired causes 
+      4 Lines removed Component reader controls 
+      4 Lines removed Component preservation 
+      4 Lines added Partition control 
+      4 Lines added Partition 
+      4 Lines added Component repaired causes 
+      4 Lines added Component reader controls 
+      4 Lines added Component preservation 
+      4 Journal removed measure minimum heading margin
+      4 Journal added measure minimum heading margin
+      2 Rows removed signature coverage
+      2 Rows added signature coverage
+      1 Journal removed drive live components
+      1 - Rows: strip light/dark-WIDTH and width-only prefixes; width-only prefixes mean light-WIDTH. Check untouched or
+      1 - Lines and Journal: sort object keys and remove seconds, milliseconds, and host fields recursively.
+      1 - Lines and Journal: replace sessionId UUIDs with <session> and recorded HTTP(S) URL ports with <port>.
+      1 - Lines and Journal: replace iframeId URL-encoded absolute paths with iframeId=<file>.
+      1 - Lines and Journal: replace census-authored-(mark|token)-digits with census-authored-$1-<random>.
+      1 - Journal: compare without artifact/host key; remove error: Showcase statechart failed entries and every payload
+final gates done 21:08:18
+src:browser (final tree) exit=1 21:12:11
+src:browser failed 6 of 787 import failures: none
+ - Placement controls records the config-popover-flip transient departure and compares the settled box
+ - Placement controls measures the perpendicular keyword dimension swap warrant for constructed rules
+ - Placement moving geometry 'Popover'-'scroll'
+ - Placement moving geometry 'Popover'-'transform'
+ - consumes every selected departure
+ - Tip initialization: popover projects markup leaves and refuses the tooltip config and sanitizer attributes
