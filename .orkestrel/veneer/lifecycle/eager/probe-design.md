@@ -3,6 +3,10 @@
 ## The user's rulings (2026-10-04)
 
 - **T1 onset:** `initialize` waits for the full arm; U4 measures the Windows onset, and when it exceeds Codex's default startup budget the guide documents `startup_timeout_sec` for Codex.
+- **T1 revised by the user (2026-10-05), after U4 and the veneer readings (`probe-readings.md`, and probe `tmp/codex/eager-probe-veneer2-last.md`):**
+  - **The evidence:** veneer's type warm takes 37.2 s at the median (36.4 to 50.0 s), and its whole arm 46.4 s. The eager build refused `initialize` on veneer in 3 runs of 3. Published 0.0.20 refused its first two `prove` calls on veneer and recovered only after an idle replacement warm.
+  - **Ruling 1:** `initialize` waits for the lint and runtime stages only. The type stage starts warming at server start and keeps warming behind the handshake. A `prove` that needs the type stage waits for its warm. A type warm failure is reported at the next call, and its replacement follows the pool's `restarts` bound.
+  - **Ruling 2:** the warm has its own bound, separate from the inspection deadline (`PROBE_DEADLINE`, 30 s). Its default leaves clear room above veneer's slowest measured warm, and it is overridable per instance like `deadline`. Inspections keep their deadline.
 - **T2 restarts:** `PROBE_RESTARTS = 1`, as browse.
 - **The critic's eight gaps bind the build:** L-3 re-ruled against the lsp `timeout` rejection (the child confirmed alive); teardown during onset stays `destroyed` with no wrapped refusal, no `error` event, and no stderr line; `TypeStage.resolve` calls `start()` first; the onset refusal unwraps a `PoolError`'s cause; `Probe.start()` calls every pool's `start()` on every call (no kick inside `#lease`); the lint fixture counts spawns; a teardown signal cuts a warm in flight; the deadline path catches `token.destroy()`.
 
