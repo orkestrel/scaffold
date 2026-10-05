@@ -100,9 +100,16 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 
   The Orchestrator fixed the two TSDoc summaries U5 could not own, in `23ddcea`. Guides: 32 passed. Policy: 119 passed.
 - Running: U6, the Opus review of `dee8845..23ddcea`. Then U7 (gates); push probe after U7.
-- Running alongside (the reviewer only reads): unit `contexts-m2` (browser `tmp/codex/contexts-m2-brief.md`, cap 4 hours).
-  - It confirms ROADMAP item 14 through the built `browse` binary, at (pool 1, contexts 1), (1, 2), (1, 3), and (2, 2).
-  - It reads wall time, latency, refusals, kill recovery, memory, and CPU, quiet and under the core loop.
+- **M2** (unit `contexts-m2`, report browser `tmp/probes/holders/m2/report.md`) completed its quiet series, three repetitions per cell, through the built binary. Body wall time:
+  - 1×1: 49.7 s;
+  - 1×2: 29.7 s, 40.2% less than 1×1, with disjoint ranges;
+  - 1×3: 24.3 s, 18.1% less than 1×2, with overlapping ranges, so not established;
+  - 2×2: 24.6 s, at 87 against 49 browser CPU-seconds and 3,470 against 2,217 MiB idle; the holders on the surviving browser kept working after a kill.
+- M2 stopped before the loaded series:
+  - the host-CPU preflight failed twice (17 to 21%, mostly Cursor);
+  - the core loop failed `tests/src/core/CDPClient.test.ts:277` once. That case, written 2026-09-29 (`91ec857`), counts process-wide `Timeout` resources, so an unrelated timer expiring between its two readings fails it under load. A flake candidate, not the session-detach change.
+- Waiting on the user: confirm the default from M1's loaded library readings and M2's quiet binary readings, or rerun M2's loaded series on a quieter host.
+- Probe: U6 (`review-u6.md`) ruled FAIL. Running: unit `eager-probe-u6fix` (probe `tmp/codex/eager-probe-u6fix-brief.md`).
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
