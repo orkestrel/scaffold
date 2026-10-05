@@ -53,7 +53,14 @@ Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
 - probe unit `eager-probe2` (probe `tmp/codex/eager-probe2-brief.md`): ROADMAP item 1 on pool 0.0.16, with local commits per unit and no push.
 
-Both build against the pool tarball installed without saving. Pool ROADMAP item 1 stays unbuilt, and Q3(a) stands. It builds against pool `main` `1f194d7`, installed in browser `node_modules` with `npm install --no-save` from pool `tmp/pack/pool-main-1f194d7.tgz`; `package.json` keeps `^0.0.15` until the release re-pins 0.0.16, and an `npm ci` in the browser checkout restores 0.0.15 and breaks the C1 build until then.
+Both build against the pool tarball installed without saving. Pool ROADMAP item 1 stays unbuilt, and Q3(a) stands.
+
+Lane results:
+- **Worker landed:** worker `main` `11db32a`, pushed 2026-10-05, after units `pool16`, `pool16b`, and `pool16c` and one Opus review (`native/review-worker.md`, FAIL, then repaired).
+  - `WorkerOptions.pool` refuses any value that can carry `capacity`.
+  - The idle-loss strike case fails on pool 0.0.15.
+  - Until the release visit re-pins worker to `^0.0.16`, a fresh install takes pool 0.0.14 and that case fails.
+- **Probe:** unit `eager-probe2` stopped on L-3. A retained survivor refuses for the life of the pool, so the Orchestrator re-ruled L-3 in `eager/probe-design.md`. Running: `eager-probe3` (probe `tmp/codex/eager-probe3-brief.md`). It builds against pool `main` `1f194d7`, installed in browser `node_modules` with `npm install --no-save` from pool `tmp/pack/pool-main-1f194d7.tgz`; `package.json` keeps `^0.0.15` until the release re-pins 0.0.16, and an `npm ci` in the browser checkout restores 0.0.15 and breaks the C1 build until then.
 - Pool ROADMAP item 1 (a waiter waits while a release could return capacity above floor 1) names the contexts consumer at `BROWSE_POOL` greater than 1 as its trigger; the default size 1 never reaches it, and the analyst's proposal (§ 7) argues the opposite rule for browse (terminal unavailability rather than waiting on another holder). Rule it before the release, not inside C1.
 - Units in order (`contexts-synthesis.md` § Units): M1 feasibility and sizing (extend browser `tmp/probes/contexts/`, whose first run `run-swgN81` and report are the pilot), P1 pool shared leases (pool 0.0.16), C1 contexts in browse, C2 real-Chromium proofs, C3 guide and roadmap, M2 confirmation, release (pool 0.0.16, browser, scaffold re-pin).
 
