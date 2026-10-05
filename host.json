@@ -580,7 +580,7 @@
 			"storage": "claude/rules/styles.md",
 			"destination": ".claude/rules/styles.md",
 			"executable": false,
-			"digest": "ae1c97f23d71c53ef117b2cd661df6258712988ec86de6c60a1cbad4670eb996"
+			"digest": "156572b7c26740411e64726255f76e0f6e6e4e55e800a26262a923210866eb77"
 		},
 		{
 			"storage": "claude/rules/tests.md",
@@ -826,7 +826,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "043a5c3eb0fb52d6cd841590e77c94ce03797b4b6a742fd57127bc9b9242153c"
+			"digest": "c3777d98a2c48a4007397ef90912b2530d7e40bc4d2f85155830e6d1135dc241"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1168,7 +1168,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "ac12462cfc786b77c23e8996c0a050f9719d870db08abe7f3a8994cbbf778e2d"
+			"digest": "6d5079e1eed5b45c74ef788c966527e336444f32dc15afde19b7ae360e046854"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "09b047e9598599db3dca2e26b55b897293e600defd7c35147dbab8a771816c0b"
+	"digest": "896bfe0a0d7ee244383b0f5b4835d3b7295039a99a9240c94e182e18e3427153"
 }
