@@ -62,7 +62,12 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 - Unit `contexts-c1svc3` (`tmp/codex/contexts-c1svc3-last.md`) repaired F1, including a second window where a launched browser defers its loss event, and F2 (no `detach` after `close()` starts). Six mutation controls fail without their fixes. The whole `BrowserMCPServer.test.ts` and `BrowserPage.test.ts` files pass.
 - F3a uncovered a core defect: `CDPClient` never settles a detached session's pending commands.
 - The service file passed once and failed once: the downloads case timed out at 30,445 ms, with three replay cases after it, while the probe unit loaded the host.
-- Running: unit `contexts-c1svc4` (brief browser `tmp/codex/contexts-c1svc4-brief.md`, cap 4 hours). It adds the session-detach settlement in `CDPClient` and confirms the service file on a quiet host, diagnosing the downloads timeout if it recurs. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
+- Unit `contexts-c1svc4` (`tmp/codex/contexts-c1svc4-last.md`):
+  - `CDPClient` rejects a detached session's pending commands with `CDPConnectionError` (`method`, `session`); root and other-session commands resolve.
+  - Eight mutation controls fail without their fixes; core project: 1253 passed.
+  - `tests/service/browse.test.ts` alone passed twice consecutively on a quiet host: 37 passed, 6 skipped, 65.3 s and 68.2 s.
+  - The downloads stall did not recur; its cause stays unestablished.
+- Running: the Orchestrator's `npm run test:src:server`, and an Opus review of the delta since `review-c1svc.md` (F1, F2, and the session-detach settlement). Commit the follow-up after both. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
