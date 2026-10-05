@@ -93,7 +93,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - `initialize` takes veneer 7.1 to 7.9 s, scaffold 3.2 to 4.1 s, and probe 1.5 to 1.7 s, all under Codex's 10 s default.
   - Veneer's first type `prove` succeeds without a retry, 43 to 46 s from the call.
   - Six cases each fail without their mechanism. Source suite: 268 passed.
-- Running: probe U5 docs (`eager-probe-u5`, probe `tmp/codex/eager-probe-u5-brief.md`). Then U6 (Opus review) and U7 (gates); push probe after U7.
+- Probe U5 committed `3e43264`:
+  - the guide's surfaces, § Lifecycle, § Registering the server, and § Cost;
+  - the pool 0.0.15 mirror, refreshed to 0.0.16 at the release visit;
+  - the queue mirror removed and ROADMAP item 1 deleted.
+
+  The Orchestrator fixed the two TSDoc summaries U5 could not own, in `23ddcea`. Guides: 32 passed. Policy: 119 passed.
+- Running: U6, the Opus review of `dee8845..23ddcea`. Then U7 (gates); push probe after U7.
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
