@@ -119,7 +119,18 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - the `arm-` cleanup assertion moved to a case that fails;
   - the TSDoc drift fixed, and the guide states the reworded survivor ruling.
 
-  Its gates passed: `npm test` with source 269, policy 119, config 227, setup 19, and guides 32. Running: U7, the Orchestrator's independent gate run. Push probe after it.
+  Its gates passed: `npm test` with source 269, policy 119, config 227, setup 19, and guides 32.
+- U7, the Orchestrator's independent gate run:
+  - The first run failed `spends silent initializes through the coordinator deadline` under full-suite load. Its 3 s replacement wait predated `0c78588`, which made each replacement follow a lint disposal bounded by `LINT_TEARDOWN`. The wait and the timeout now derive from `LINT_TEARDOWN` (`4428ae1`), and the overlap pin is unchanged.
+  - The rerun passed every gate.
+- **Probe landed:** probe `main` `0437a29..4428ae1`, pushed 2026-10-05. It pins pool `^0.0.15`, so a fresh install fails the idle-loss cases until the release re-pins to `^0.0.16`.
+
+## Release, in layer order (waiting on the user)
+
+1. **pool 0.0.16:** `capacity`, the idle-loss strike, and the `isPoolMax` to `isPoolLimit` rename (breaking; no fleet source imports it).
+2. **browser:** the held 0.0.25 work plus item 16, C1 to C3, the follow-up, and the item 14 close. Re-pin to pool `^0.0.16`. It needs the user's item 15 decision.
+3. **probe and worker:** each re-pinned to pool `^0.0.16`.
+4. **scaffold:** the catalog regenerated, the guide mirrors (pool, worker, browser, probe), and the fixture pins; coordinated with the cloud session's lanes. Then a veneer entry in `lanes.md`.
 - M2 (browse confirmation) runs on a quiet host after U5's test runs.
 - M2 waits for a quiet host after it. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
