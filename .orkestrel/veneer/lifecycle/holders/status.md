@@ -67,7 +67,15 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - Eight mutation controls fail without their fixes; core project: 1253 passed.
   - `tests/service/browse.test.ts` alone passed twice consecutively on a quiet host: 37 passed, 6 skipped, 65.3 s and 68.2 s.
   - The downloads stall did not recur; its cause stays unestablished.
-- Running: the Orchestrator's `npm run test:src:server`, and an Opus review of the delta since `review-c1svc.md` (F1, F2, and the session-detach settlement). Commit the follow-up after both. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
+- The Orchestrator's `npm run test:src:server`: 388 passed, 10 skipped, so the `FileBrowserStore` misses were load from the probe unit.
+- The Opus delta review (`review-c1svc2.md`) ruled FAIL on four items, and unit `contexts-c1svc5` repaired them:
+  - registry guards once a page closes;
+  - healthy-browser and lost-browser cleanup-fault cases;
+  - a child-session detach delivered on its parent;
+  - the `CDPConnectionError` description.
+- Its results: 15 mutation controls, each failing exactly its case; core 1255 passed; guides 251; policy 119; the service file passed alone a third time. The Orchestrator's server rerun: 390 passed.
+- **The C1 follow-up landed:** browser `main` `708f0dc`, pushed 2026-10-05.
+- Next: probe U4 (running: `eager-probe-u4`, probe `tmp/codex/eager-probe-u4-brief.md`), then M2 on a quiet host. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
