@@ -61,6 +61,11 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 ## Log
 
+### 2026-10-05 — cloud session (the user's word: Q1 ruled yes; lane M's instruments on the Astra route)
+
+- **The user's word (2026-10-05)**: the journey tuning's Q1 is ruled as recommended: the per-width preservation and partition halves may run in a project other than light-1280 while each builds its page from the light-1280 variant at its width, and the theme header table may run outside light-390 with its rows unchanged; item 9 (the CDP domain cleanup) lands with P-H green before light-390 or dark-390 is a destination. `showcase/journey-cost-2026-10-05/verdict.md` § 9 records the ruling; lane 4 runs after the checkpoint.
+- **Lane M**: the unit's instruments (`run.ts`, `measure.ts`, `mutations.ts`, `compare.ts` under `tmp/units/journey-cost/`) are being written on the Astra route under `tmp/codex/journey-cost-tools-brief.md`; an Opus review follows; then the evidence copy, the six worktrees, the precondition gates, and J-B0 alone.
+
 ### 2026-10-05 — cloud session (the journey run-cost verdict ruled; Q1 to the user; the host queue rule for the unit)
 
 - **Verdict**: `showcase/journey-cost-2026-10-05/verdict.md` rules the journey tuning unit after three plan drafts, a 21-gap critic, three verifications (38 findings), and the GPT-6 Astra objective check (holds with corrections on proof, figures, feasibility, and the user questions; fails the closure claim and the acceptance floor; every correction adopted). Layer 1 (the measurement instrument, the per-width split with all halves in light-1280, one owner for the selector-major match, the preservation index, the partition memo, the set reader, the scrollspy poll under its whole-document refusal, linear checks, the live Tab bound, the CDP domain cleanup, the longhand cache) lands item by item on equality and a measured gain; layer 2 (placement by measured slack) waits on Q1. Acceptance is non-regression of every proof against J-B0 plus a wall reduction frozen as R before the acceptance runs; no modeled figure enters it.

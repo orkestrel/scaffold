@@ -193,6 +193,8 @@ Item 11 splits the two cases into four per-width halves, and all four stay in li
 
 Item 13 is not part of this question.
 
+**Ruled by the user on 2026-10-05: yes to both (a) and (b), adopting the recommendation.** Item 9 lands with P-H green before light-390 or dark-390 is a destination; lane 4 runs after the checkpoint; acceptance runs on layers 1 and 2.
+
 **Recommendation: yes to both, with item 9 landed and P-H green before any destination that holds a host-bound title** (light-390 and dark-390, `lanes.md:58`). The case already reads 390×800 inside light-1280 (`tests/app/browser/integration.test.ts:1129-1131, 1446-1447`), so the ruling fixes which reading the case takes, and the host project is a scheduling choice. Acceptance refuses any placement that changes the host-bound failures by row and cause. Plan v3 models a further 90 to 126 s beyond layer 1's central figure, or 24 to 42 s with dark-1280 as the only destination (`plan-v3.md:310`). These are models, not readings. Lane 4 waits on the answer. Acceptance waits too, and if the user rules no, acceptance runs on layer 1 alone.
 
 ## 10. Modeled figures
