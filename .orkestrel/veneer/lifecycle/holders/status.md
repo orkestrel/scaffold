@@ -51,7 +51,14 @@ Unit `contexts-c1svc` (report browser `tmp/codex/contexts-c1svc-last.md`) classi
 - two obsolete expectations, rewritten at `contexts: 1` with every true claim kept;
 - two C1 defects, fixed with red cases: the forced kill waited on context cleanup, and an expected shutdown disconnect became a teardown fault.
 
-It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls about 30 s, because `BrowserPage.#close()` releases resources before closing the target and the WebMCP registry waits on a crashed renderer. Running: unit `contexts-c1svc2` (brief browser `tmp/codex/contexts-c1svc2-brief.md`, cap 3 hours), with `src/core/BrowserPage.ts` in scope. It must pass the service file alone twice and rerun the server project's `FileBrowserStore` timing case after the probe unit finishes. All of this stays uncommitted, and one Opus review covers it before commit. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
+It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls about 30 s, because `BrowserPage.#close()` releases resources before closing the target and the WebMCP registry waits on a crashed renderer. Running: unit `contexts-c1svc2` (brief browser `tmp/codex/contexts-c1svc2-brief.md`, cap 3 hours), with `src/core/BrowserPage.ts` in scope. It must pass the service file alone twice and rerun the server project's `FileBrowserStore` timing case after the probe unit finishes. All of this stays uncommitted, and one Opus review covers it before commit.
+
+`contexts-c1svc2` result (`tmp/codex/contexts-c1svc2-last.md`):
+- `BrowserPage.#close()` sends `Target.closeTarget` before `#release()`. A crashed-renderer close takes 21 ms instead of about 30 s, and its core case fails under the old order.
+- Core project: 1250 passed.
+- `tests/service/browse.test.ts` alone: two consecutive passes, 37 passed and 6 skipped, at 76.2 s and 71.8 s.
+- Open: the server project's `FileBrowserStore` race case missed its 5,000 ms deadline only while the probe unit ran. The Orchestrator reruns `npm run test:src:server` after probe finishes.
+- Running: the Opus review of the whole follow-up. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
