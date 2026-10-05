@@ -41,3 +41,8 @@ Objective lane on concurrency, the contract, accounting, and test sufficiency. T
 
 - **The new server types** (`BrowserServerContext`, `BrowserServerLease`, `BrowserServerLoss`, `BrowserServerWatch`) stay in `src/server/types.ts` and are documented. This follows the precedent of `BrowserSlot` and `BrowserServerMirror`, which the barrel exports and the guide documents. Narrowing the server barrel is a separate change.
 - **The private `#size`** in `BrowserMCPServer.ts` holds the admission bound, while `pool.size` counts browsers. Rename it to a single word that names admission.
+- **Change 5, restated** after the first fix attempt stopped on it: no failure can reach `#closeResources` before disposal.
+  - `BrowserPage.close()` catches its target-close and cleanup failures (`BrowserPage.ts:961-994`), and `#settle()` cannot reject (`BrowserContext.ts:397-400`).
+  - The case pins the reachable claim: a refused `Target.closeTarget` still disposes, and the receipt reads confirmed.
+  - The `settleBrowserTeardown` wrapper around `#settle()` goes.
+  - Synthesis ruling 4's premise (a page-close failure after a successful disposal) does not arise with the page's present `close()`. The disposal receipt still separates a refused `Target.disposeBrowserContext`.
