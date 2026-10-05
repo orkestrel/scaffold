@@ -58,7 +58,11 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 - Core project: 1250 passed.
 - `tests/service/browse.test.ts` alone: two consecutive passes, 37 passed and 6 skipped, at 76.2 s and 71.8 s.
 - Open: the server project's `FileBrowserStore` race case missed its 5,000 ms deadline only while the probe unit ran. The Orchestrator reruns `npm run test:src:server` after probe finishes.
-- Running: the Opus review of the whole follow-up. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
+- The Opus review (`review-c1svc.md`) ruled FAIL on F1, F2, F3a, and F3b.
+- Unit `contexts-c1svc3` (`tmp/codex/contexts-c1svc3-last.md`) repaired F1, including a second window where a launched browser defers its loss event, and F2 (no `detach` after `close()` starts). Six mutation controls fail without their fixes. The whole `BrowserMCPServer.test.ts` and `BrowserPage.test.ts` files pass.
+- F3a uncovered a core defect: `CDPClient` never settles a detached session's pending commands.
+- The service file passed once and failed once: the downloads case timed out at 30,445 ms, with three replay cases after it, while the probe unit loaded the host.
+- Running: unit `contexts-c1svc4` (brief browser `tmp/codex/contexts-c1svc4-brief.md`, cap 4 hours). It adds the session-detach settlement in `CDPClient` and confirms the service file on a quiet host, diagnosing the downloads timeout if it recurs. Drafted: `tmp/codex/contexts-c3-brief.md` (Opus, after c1svc), with its limit line amended by the correction to rulings 4 and 8.
 
 Parallel lanes (the user, 2026-10-05; `native/synthesis.md`):
 - worker unit `pool16` (worker `tmp/codex/pool16-brief.md`): narrow `WorkerOptions.pool` to refuse `capacity`, and pin the idle-loss strike;
