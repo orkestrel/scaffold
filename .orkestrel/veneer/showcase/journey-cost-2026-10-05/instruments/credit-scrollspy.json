@@ -1,0 +1,5 @@
+[
+	{ "item": "5 (scrollspy polls)", "patterns": ["drives the 'scrollspy-(?:1280|390)' table"] },
+	{ "item": "5a scrollspy-1280 motion=false", "patterns": ["drives the 'scrollspy-1280' table through its controls with motion=false"] },
+	{ "item": "5b scrollspy-390 motion=true", "patterns": ["drives the 'scrollspy-390' table through its controls with motion=true"] }
+]
