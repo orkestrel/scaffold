@@ -1,0 +1,38 @@
+[
+	{
+		"name": "table",
+		"file": "tests/setupStyles.ts",
+		"search": "options.ancestors.get(element.parentElement)?.has(property)",
+		"replacement": "(options.ancestors.get(element.parentElement)?.has(property) || options.ancestors.get(element.closest('table') ?? element)?.has(property))",
+		"title": "CSSOM instruments attributes enumerated inherited longhands and confines table alignment to the inheriting parent",
+		"project": "setup:browser",
+		"test": "tests/setupStyles.test.ts"
+	},
+	{
+		"name": "inherited",
+		"file": "tests/setupStyles.ts",
+		"search": "\t\t'user-select',\n",
+		"replacement": "",
+		"title": "CSSOM instruments attributes enumerated inherited longhands and confines table alignment to the inheriting parent",
+		"project": "setup:browser",
+		"test": "tests/setupStyles.test.ts"
+	},
+	{
+		"name": "coupling",
+		"file": "tests/setupBrowser.ts",
+		"search": "longhand.startsWith('overflow-')",
+		"replacement": "false",
+		"title": "component preservation readings keeps the declared overflow axis direct and attributes its coupled twin as dependent",
+		"project": "setup:browser",
+		"test": "tests/setupBrowser.test.ts"
+	},
+	{
+		"name": "partition",
+		"file": "tests/setupBrowser.ts",
+		"search": "face === 'tailwindcss' && options.scales !== undefined",
+		"replacement": "face === 'unexcluded' && options.scales !== undefined",
+		"title": "statechart tables maps a Bootstrap component color winner only when scales are supplied to the partition",
+		"project": "setup:browser",
+		"test": "tests/setupBrowser.test.ts"
+	}
+]

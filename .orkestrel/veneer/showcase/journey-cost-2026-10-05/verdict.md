@@ -264,3 +264,13 @@ The verdict adopts every correction of the Astra check, as the following table s
 | Q6.3: a regressing placement is investigated and changed before acceptance repeats | § 4, reruns refused; § 11 |
 | Q6.4: the automatic zero-saving exemptions for items 7 and 10 are removed, and item 9 keeps its state rationale | § 3, items 7, 9, and 10; § 4 |
 | Q6.5: per-lane full runs are kept, with their cost stated as about two historical runs | § 8 |
+
+## 13. Amendments at the layer-1 landing (2026-10-05)
+
+- § 5 Acceptance, the row-and-cause clause: superseded by the compare amendments (`journey-cost-compare-hostbound-brief.md`): a host-bound (row, cause) tuple is information; the title gate refuses only a failing title outside the host-bound file; `failed in no baseline` is a note.
+- § 8 Placement, the tie clause: superseded by lane 4's appended ruling: one objective over both checkpoint runs (the maximum predicted largest end across both runs and both factors), ties by fewest moves, then summed spread, then the dark-1280 preference, then lexicographic order; the chosen assignment moves every preservation and partition half to `dark-390` and keeps the theme table in `light-390`. The compare's moves file lists `component preservation: `, `partition: `, and `signature coverage: `.
+- § 8 Merge order: the landing is one integrated commit per layer; the checkpoints applied the lane patches in the order that applied cleanly (0, 3, 2, 1, then lane 4's placement delta).
+- Price rule: one rule for every lane, a landed item's gain (minimum without minus maximum with) exceeds the larger of its two repeat spreads; the per-lane floors are retired. Item 5 removed at the checkpoint (a loss); item 6 withheld under the rule; item 2's classes and faces caches withheld; item 7 and the matched memo land (`tmp/units/journey-cost/falsify/verdict-2026-10-05.md` records the three-repeat clarification for the memo).
+- `plan-v3.md` byte-for-byte rows and the runner's `git status` check: the verdict's multiset-plus-order rows and the manifest stand.
+- R is read on runner elapsed seconds (`end.json`), never on the report span; the J-B0 readings are 915.489 and 1061.414 s.
+- The instruments as hardened by the falsify round's tools unit are copied under `instruments/` beside this verdict, with the credit cases, the mutation targets, the host-bound snapshot, and the moves file.
