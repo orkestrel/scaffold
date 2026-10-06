@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`astra` implementation unit on `gpt-6-astra` (effort high) through the Codex CLI. You are the sole writer in the checkout `/home/user/.wave/veneer-containment` (a detached veneer worktree at `BASE_COMMIT`, which carries units U3 to U6; `node_modules` installed, `dist` built). Owned files: `tests/setupBrowser.ts`, `tests/setupBrowser.test.ts`. Commit nothing; the Orchestrator lands.
+`astra` implementation unit on `gpt-6-astra` (effort high) through the Codex CLI. You are the sole writer in the checkout `/home/user/.wave/veneer-containment` (a detached veneer worktree at `6a976a0`, which carries units U3 to U6; `node_modules` installed, `dist` built). Owned files: `tests/setupBrowser.ts`, `tests/setupBrowser.test.ts`. Commit nothing; the Orchestrator lands.
 
 ## Objective
 

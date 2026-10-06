@@ -1,0 +1,21 @@
+{
+  "testResults": [
+    {
+      "name": "light-1280",
+      "assertionResults": [
+        {
+          "fullName": "showcase journeys J8 drives the engine through the component sections",
+          "title": "J8 drives the engine through the component sections",
+          "status": "passed",
+          "duration": 500
+        },
+        {
+          "fullName": "showcase matrix J8 drives the engine through the component sections",
+          "title": "J8 drives the engine through the component sections",
+          "status": "passed",
+          "duration": 500
+        }
+      ]
+    }
+  ]
+}

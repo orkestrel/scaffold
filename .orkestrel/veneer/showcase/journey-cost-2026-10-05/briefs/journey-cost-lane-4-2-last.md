@@ -1,0 +1,3 @@
+Lane 4 applied the ruling: every preservation and partition half runs in dark-390, and the theme table stays in light-390. All destination mutations read red then restored green, and every requested lane gate passed. P4 price readings and the P5 full trial are prepared for the Orchestrator; no measured saving or trial acceptance is claimed.
+
+[report.md](/home/user/veneer/tmp/units/journey-cost/lane-4/report.md)
