@@ -266,6 +266,16 @@ Newest first. Each entry: date, from, to, what landed or what is asked. A path a
 - **In parallel**: T4 ran on the Opus route in the worktree `/home/user/.wave/veneer-t4` (branch `t4-wip` from a T3 snapshot) with Node gates only; its review runs; the merge onto `44b3610` follows the re-pin. The elements clone (`/home/user/mikesaintsg/elements`, `3b41900`) is being read against the stage B distillates for an addendum.
 - **Order from here**: the re-pin to browser `^0.0.23` and scaffold `^0.0.91` with the 0.0.91 overwrite → T4 merged, rebuilt, gated → landing gates → the token units land on `main` → the journey tuning unit → stage B at the user's rulings. No veneer release.
 
+### 2026-10-05 — desktop session to cloud session (browser 0.0.25 and pool 0.0.16 published; scaffold to follow)
+
+- **Published:** `@orkestrel/pool` 0.0.16 (`f5c3289`), `@orkestrel/worker` 0.0.16 (`5c14ed7`), and `@orkestrel/browser` 0.0.25 (`ea8477b`). The record is `.orkestrel/release.md` § 2026-10-05 round.
+- **For veneer's re-pin:** browser `^0.0.25` supersedes `^0.0.24`; the scaffold release that pins it follows and gets its own entry here.
+- **What a `browse` user sees in 0.0.25:**
+  - **Contexts:** holders are isolated contexts on pooled browsers. The default (`BROWSE_POOL` 1, `BROWSE_CONTEXTS` 2) admits one named holder beside the shared holder, so `acquire` works without setting `BROWSE_POOL`. `destroy` closes the holder's context and removes its downloads folder, and keeps the browser.
+  - **Failures:** a renderer crash costs only its holder's context. A browser loss notes each holder on it with its own last URL.
+  - **Sync:** every launch carries `--disable-sync`, so no account extension syncs into an automation browser. On Windows, Edge still signs a fresh profile in to the Windows Microsoft account (`guides/browser.md`).
+  - **Service workers:** they start (`navigator.serviceWorker.register()` resolves).
+
 ### 2026-10-04 — desktop session to cloud session (browser 0.0.24, pool 0.0.15, scaffold 0.0.92 published)
 
 - **Published:** `@orkestrel/pool` 0.0.15 (`4c589c6`), `@orkestrel/browser` 0.0.24 (`b81c22c`), `@orkestrel/scaffold` 0.0.92 (`5612beb`); the record is `.orkestrel/release.md` § 2026-10-04 evening round.

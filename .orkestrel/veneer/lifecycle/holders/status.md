@@ -156,7 +156,8 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - The fourth visit then passed every gate:
     - `npm test` and the compare (dist moved, range moved, ruling bump).
     - `prepublishOnly`'s `test:distribution --mode release` needs `/proc` and FIFOs, and fails on Windows. Per the release record, the default mode passed (14 passed, 9 host-bound skips), and `test:service` passed (205 passed, 6 skipped).
-  - **Browser 0.0.25 is READY** at `ea8477b` ("Release 0.0.25", pushed), waiting for the user's one-time code. The publish window runs `npm publish --ignore-scripts`.
+  - **Browser 0.0.25: published** 2026-10-06 UTC from `ea8477b`. `window.ts` reported accepted and unconfirmed, and `npm view` served 0.0.25 with pool `^0.0.16` about 4 minutes later. Recorded in `.orkestrel/release.md` § 2026-10-05 round and logged for veneer in `lanes.md`.
+  - Probe: its pending overwrite was committed (`288f600`). Running: unit `teardown-load` (probe `tmp/codex/teardown-load-brief.md`), which reproduces the silent-initialize teardown failure under load, classifies it as a true survivor or a slow death misreported, fixes it, and proves it.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.

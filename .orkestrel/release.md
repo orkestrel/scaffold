@@ -41,3 +41,16 @@ Release-chain notes:
 | 3 | L3 | `@orkestrel/scaffold` | 0.0.91 | 0.0.92 | bump: generated workspaces pin browser `^0.0.24` and probe `^0.0.20`; the canon's measured-performance rule and figures turned into properties; catalog and the browser and pool guide mirrors refreshed (npm's session expired between codes 2 and 3; one login, then a fresh code) | `5612beb` |
 
 Release-chain notes: browser's `prepublishOnly` ran with the default distribution mode on Windows (14 passed, 9 host-bound skips) and `test:service` green (193 passed); its first visit caught the server case that pinned the old strike reset, rewritten to the ruled behavior with a control against the old rule. `@orkestrel/worker` still pins pool `^0.0.14` and takes the strike rule at its next visit.
+## 2026-10-05 round: holders as contexts, shared leases, the sync fix
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | L2 | `@orkestrel/pool` | 0.0.15 | 0.0.16 | bump: per-record `capacity` (shared leases), the idle-loss strike, and `isPoolMax` renamed to `isPoolLimit` (a breaking public rename; no fleet source imports it) | `f5c3289` |
+| 2 | L4 | `@orkestrel/worker` | 0.0.15 | 0.0.16 | bump: `WorkerOptions.pool` refuses `capacity` (`Omit` plus `capacity?: never`), the idle-loss strike case, pool `^0.0.16` | `5c14ed7` |
+| 3 | L5 | `@orkestrel/browser` | 0.0.24 | 0.0.25 | bump: holders as isolated contexts on pooled browsers (`BROWSE_CONTEXTS`, default 2, limit 4; admission `size × contexts`, the shared holder counted); service-worker start (ROADMAP item 16); `--disable-sync` in `BROWSER_LAUNCH_ARGS` (ROADMAP item 15: the account's synced network-hooking extensions reset the loader factories mid-run); `CDPClient` settles a detached session's pending commands; page close before release; the teardown and crash repairs; concurrent replays; pool `^0.0.16` | `ea8477b` |
+
+Release-chain notes:
+- npm's session expired before pool's code; one login, then a fresh code. Worker and browser each answered "accepted, unconfirmed" while npm processed them, then `npm view` served them (worker after about 75 s, browser after about 4 minutes).
+- Browser's `prepublishOnly` release-mode distribution needs `/proc` and FIFOs. On Windows the default mode ran (14 passed, 9 host-bound skips), and `test:service` passed (205 passed, 6 skipped), as for 0.0.22 and 0.0.24.
+- The browser visit's test gate missed three times on `FileBrowserStore`'s lock-race case, a 512-iteration loop at Vitest's 5 s default under the parallel load. It was sized to 8 iterations from mutation measurements (`75c8fc2`).
+- Probe (L5) is held: its visit failed the silent-initialize teardown case under the host load of worker's gates. Scaffold follows.
