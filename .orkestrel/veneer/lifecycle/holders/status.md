@@ -354,6 +354,18 @@ Lane results:
     - The download is pulled through `ollama pull`. The harness takes the model from `OLLAMA_MODEL` (ollama `tests/setupService.ts:13`), so the unit changes no code.
     - Pulled `qwen3.5:4b-q4_K_M` (digest `d8b0f5e9760c…`, 3.1 GiB). The daemon stays 0.35.1.
     - Unit `store-model4b` launched near 14:35 local (ollama `tmp/codex/store-model4b-brief.md`, journal `tmp/codex/store-model4b.jsonl`), with a cap of 4.5 hours.
+  - **The user (2026-10-06):** "a model as small as the 2b" must run these tests; if the 4B cannot do them all without an issue, the cause lies deeper in the implementation. The tests must also be tuned for time.
+    - `store-model4b` was stopped during setup. Its records are in `model-4b-stopped-setup/`.
+    - Unit `model4b` relaunched it as a quick answer: stop at the first failed run, at most 8 runs, no acceptance, a 75-minute cap.
+  - **4B answer** (ollama `tmp/codex/model4b-last.md`): it completed 1 run and failed 3 of the 5 page tasks.
+    - Shipping passed in 36 s, and cart passed.
+    - **Search and checkout:** both answered correctly, but an unsolicited `record` journey call returned 4,087 and 4,086 characters. That breaks `BROWSER_TOOL_LIMIT` (4,000), which the shared assertion requires of every result (ollama `tests/service/browser.test.ts:130`, `tests/setupStore.ts:1411`). **This is a browser library defect.**
+    - **Paging:** it answered the token correctly through search, without the `read` continuation the case pins.
+    - **Checkout:** it clicked Place order after `type` had already submitted, ignoring the instruction to wait, which created 2 orders per attempt.
+  - **Workflow `store-implementation-investigation` launched** (run `wf_8a2ad37c-d95`), with the 2B as the target.
+    - Map: Grok lanes for the surface, the harness and time, and the transcripts, plus Opus external research.
+    - Design: three Opus designers, one each for the surface, the harness and oracles, and the economics.
+    - Then an Opus synthesis and an Opus review.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
