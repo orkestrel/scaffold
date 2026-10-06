@@ -1,0 +1,575 @@
+{
+  "coverage": "Source reachability to COMPONENT_WAIT, with declaration-only and early-rejection cases excluded by source inspection. One passing setup run, not an R4 sizing population.",
+  "missing": [],
+  "rows": [
+    {
+      "title": "showcase mount prepares every journey mount at its declared viewport and color mode",
+      "line": 303,
+      "timeout": 15000,
+      "duration": 2651.0999999940395,
+      "slack": 12348.90000000596,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "showcase mount declares motion false before mounting the engine page",
+      "line": 329,
+      "timeout": 15000,
+      "duration": 1132.699999988079,
+      "slack": 13867.300000011921,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "showcase mount declares motion true before mounting the engine page",
+      "line": 329,
+      "timeout": 15000,
+      "duration": 1331.1000000089407,
+      "slack": 13668.89999999106,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "showcase mount refuses default motion while a reduced stage holds",
+      "line": 357,
+      "timeout": 15000,
+      "duration": 850.5999999940395,
+      "slack": 14149.40000000596,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "component statechart setup removes the preceding popover before clicking the next specimen",
+      "line": 407,
+      "timeout": 30000,
+      "duration": 2298.3999999910593,
+      "slack": 27701.60000000894,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "component statechart setup fires scrollend for ArrowDown with motion=true",
+      "line": 457,
+      "timeout": 15000,
+      "duration": 2756,
+      "slack": 12244,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "COMPONENT_WAIT"
+      ]
+    },
+    {
+      "title": "component statechart setup fires scrollend for ArrowDown with motion=false",
+      "line": 457,
+      "timeout": 15000,
+      "duration": 2857.1000000089407,
+      "slack": 12142.89999999106,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "COMPONENT_WAIT"
+      ]
+    },
+    {
+      "title": "component statechart setup reads scrollspy selection after the intersection wait with motion=true",
+      "line": 501,
+      "timeout": 15000,
+      "duration": 4278.79999999702,
+      "slack": 10721.20000000298,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "pressScrollKey"
+      ]
+    },
+    {
+      "title": "component statechart setup reads scrollspy selection after the intersection wait with motion=false",
+      "line": 501,
+      "timeout": 15000,
+      "duration": 4039.2999999970198,
+      "slack": 10960.70000000298,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "pressScrollKey"
+      ]
+    },
+    {
+      "title": "component statechart setup settles a boundary End through the outer page and leaves Escape unchanged",
+      "line": 538,
+      "timeout": 15000,
+      "duration": 2596.4000000059605,
+      "slack": 12403.59999999404,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "pressScrollKey",
+        "settleShowcaseScroll"
+      ]
+    },
+    {
+      "title": "component statechart setup refuses an unreachable scrollspy destination at the bottom before input or a scroll wait",
+      "line": 568,
+      "timeout": 15000,
+      "duration": 2143.8999999910593,
+      "slack": 12856.10000000894,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "pressScrollKey"
+      ]
+    },
+    {
+      "title": "component statechart setup records the modal bounce through 'escape:shown' under reduced motion",
+      "line": 605,
+      "timeout": 15000,
+      "duration": 1563.7000000029802,
+      "slack": 13436.29999999702,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "buildComponent",
+        "COMPONENT_WAIT"
+      ]
+    },
+    {
+      "title": "component statechart setup records the modal bounce through 'backdrop:shown' under reduced motion",
+      "line": 605,
+      "timeout": 15000,
+      "duration": 1725.2000000029802,
+      "slack": 13274.79999999702,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "buildComponent",
+        "COMPONENT_WAIT"
+      ]
+    },
+    {
+      "title": "component statechart setup settles the static dialog refusals before guarded acts return under reduced motion",
+      "line": 662,
+      "timeout": 15000,
+      "duration": 2013.9000000059605,
+      "slack": 12986.09999999404,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "component statechart setup settles accepted disclosure bursts and excludes refused clicks and sibling lifecycles",
+      "line": 691,
+      "timeout": 15000,
+      "duration": 3015.5,
+      "slack": 11984.5,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "component statechart setup settles disclosure arrangement at 'hidden' when no CSS animation runs",
+      "line": 778,
+      "timeout": 15000,
+      "duration": 4464.79999999702,
+      "slack": 10535.20000000298,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "component statechart setup settles disclosure arrangement at 'shown' when no CSS animation runs",
+      "line": 778,
+      "timeout": 15000,
+      "duration": 2706.5,
+      "slack": 12293.5,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "component statechart setup waits for a component animation beyond the default condition budget",
+      "line": 816,
+      "timeout": 15000,
+      "duration": 1151.5,
+      "slack": 13848.5,
+      "fits": false,
+      "references": [
+        "COMPONENT_WAIT"
+      ]
+    },
+    {
+      "title": "component statechart setup waits for a component animation beyond the default animation budget",
+      "line": 836,
+      "timeout": 15000,
+      "duration": 1182.9000000059605,
+      "slack": 13817.09999999404,
+      "fits": false,
+      "references": [
+        "COMPONENT_WAIT"
+      ]
+    },
+    {
+      "title": "component statechart setup opens nested controls before reading their names and retains the region inventory",
+      "line": 946,
+      "timeout": 30000,
+      "duration": 1348.2999999970198,
+      "slack": 28651.70000000298,
+      "fits": false,
+      "references": [
+        "BUTTON_SCENARIOS",
+        "buildComponent",
+        "DIALOG_DROPDOWN_SCENARIOS"
+      ]
+    },
+    {
+      "title": "component statechart setup reuses one engine mount and restores a dismissed specimen before the next row",
+      "line": 1000,
+      "timeout": 30000,
+      "duration": 3487.6000000089407,
+      "slack": 26512.39999999106,
+      "fits": false,
+      "references": [
+        "BUTTON_SCENARIOS",
+        "ALERT_SCENARIOS",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "component statechart setup restores a dismissed toast only when the requested specimen has no show door",
+      "line": 1076,
+      "timeout": 30000,
+      "duration": 2799.8999999910593,
+      "slack": 27200.10000000894,
+      "fits": false,
+      "references": [
+        "TOAST_SCENARIOS",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "waitForPaint waits for a running finite animation to finish",
+      "line": 1203,
+      "timeout": 15000,
+      "duration": 97.79999999701977,
+      "slack": 14902.20000000298,
+      "fits": false,
+      "references": [
+        "waitForPaint"
+      ]
+    },
+    {
+      "title": "applyFace and applyTheme select a face and a color mode through the header buttons",
+      "line": 1218,
+      "timeout": 15000,
+      "duration": 4447.29999999702,
+      "slack": 10552.70000000298,
+      "fits": false,
+      "references": [
+        "applyFace",
+        "applyTheme"
+      ]
+    },
+    {
+      "title": "specimen readings maps each token caption reading from its rendered Bootstrap subject through the record in both modes",
+      "line": 1418,
+      "timeout": 15000,
+      "duration": 6318,
+      "slack": 8682,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings documents the dark dropdown color outside the mapReading context prerequisite",
+      "line": 1462,
+      "timeout": 15000,
+      "duration": 1963.8999999910593,
+      "slack": 13036.10000000894,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings documents the dark mark highlight background outside the mapReading context prerequisite",
+      "line": 1479,
+      "timeout": 15000,
+      "duration": 1977.300000011921,
+      "slack": 13022.699999988079,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings maps palette and scale readings while keeping modal width independent of container width",
+      "line": 1501,
+      "timeout": 15000,
+      "duration": 2057.5,
+      "slack": 12942.5,
+      "fits": false,
+      "references": [
+        "applyFace",
+        "applyTheme"
+      ]
+    },
+    {
+      "title": "specimen readings keeps set readings equal to the single reader under every face",
+      "line": 1596,
+      "timeout": 60000,
+      "duration": 9493.70000000298,
+      "slack": 50506.29999999702,
+      "fits": true,
+      "references": [
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings at 1280 px reads every Tailwind reading the caption claims under the three faces in light color mode",
+      "line": 1630,
+      "timeout": 15000,
+      "duration": 11367,
+      "slack": 3633,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings at 1280 px reads every Tailwind reading the caption claims under the three faces in dark color mode",
+      "line": 1630,
+      "timeout": 15000,
+      "duration": 10482.39999999106,
+      "slack": 4517.600000008941,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings at 390 px reads every Tailwind reading the caption claims under the three faces in light color mode",
+      "line": 1630,
+      "timeout": 15000,
+      "duration": 10593.300000011921,
+      "slack": 4406.699999988079,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "specimen readings at 390 px reads every Tailwind reading the caption claims under the three faces in dark color mode",
+      "line": 1630,
+      "timeout": 15000,
+      "duration": 11639.29999999702,
+      "slack": 3360.7000000029802,
+      "fits": false,
+      "references": [
+        "applyTheme",
+        "applyFace"
+      ]
+    },
+    {
+      "title": "statechart tables reads engine attributes while detecting and removing inline and class output changes",
+      "line": 2497,
+      "timeout": 15000,
+      "duration": 3002.1000000089407,
+      "slack": 11997.89999999106,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "buildComponent",
+        "readEngineOutput"
+      ]
+    },
+    {
+      "title": "statechart tables derives unchanged observation windows from computed collapse timing and reduced motion",
+      "line": 3046,
+      "timeout": 15000,
+      "duration": 1438.2000000029802,
+      "slack": 13561.79999999702,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "statechart tables keeps the scrollspy keyboard route visible after a boundary key scrolls the outer page",
+      "line": 3323,
+      "timeout": 30000,
+      "duration": 6441,
+      "slack": 23559,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES"
+      ]
+    },
+    {
+      "title": "statechart tables detects a style departure on an inserted open popover",
+      "line": 3341,
+      "timeout": 15000,
+      "duration": 2429.699999988079,
+      "slack": 12570.300000011921,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "COMPONENT_TABLES",
+        "buildComponent",
+        "readOpenShowcase"
+      ]
+    },
+    {
+      "title": "statechart tables detects chrome changes outside the specimen sections and restores normalization",
+      "line": 3367,
+      "timeout": 15000,
+      "duration": 2336.2000000029802,
+      "slack": 12663.79999999702,
+      "fits": false,
+      "references": [
+        "buildJourney",
+        "readShowcaseChrome"
+      ]
+    },
+    {
+      "title": "statechart tables censuses controls, detects an occluded pointer route, and parks real hover",
+      "line": 3400,
+      "timeout": 120000,
+      "duration": 16927.69999998808,
+      "slack": 103072.30000001192,
+      "fits": true,
+      "references": [
+        "buildJourney",
+        "settleShowcaseScroll"
+      ]
+    },
+    {
+      "title": "statechart tables rejects a delayed collapse reaction during an unchanged row",
+      "line": 3449,
+      "timeout": 30000,
+      "duration": 2572,
+      "slack": 27428,
+      "fits": false,
+      "references": [
+        "COMPONENT_TABLES",
+        "buildJourney",
+        "buildComponent"
+      ]
+    },
+    {
+      "title": "statechart tables detects missing leaves, global duplicate ids, and dangling inserted-tip references",
+      "line": 3492,
+      "timeout": 15000,
+      "duration": 1049.2000000029802,
+      "slack": 13950.79999999702,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "statechart tables includes roleless computed scrollers and static active tabs in its census",
+      "line": 3515,
+      "timeout": 15000,
+      "duration": 1367.5,
+      "slack": 13632.5,
+      "fits": false,
+      "references": [
+        "buildJourney"
+      ]
+    },
+    {
+      "title": "statechart tables retains each failing row name and the error recorded by the harness",
+      "line": 3554,
+      "timeout": 30000,
+      "duration": 2244,
+      "slack": 27756,
+      "fits": false,
+      "references": [
+        "FACE_SCENARIOS"
+      ]
+    },
+    {
+      "title": "statechart tables drives every face and color-mode row through the header buttons",
+      "line": 3585,
+      "timeout": 60000,
+      "duration": 50315.79999999702,
+      "slack": 9684.20000000298,
+      "fits": false,
+      "references": [
+        "FACE_SCENARIOS",
+        "THEME_SCENARIOS",
+        "buildPairScenarios"
+      ]
+    },
+    {
+      "title": "statechart tables names the row whose assertion reads a state the button did not reach",
+      "line": 3622,
+      "timeout": 30000,
+      "duration": 3602.1000000089407,
+      "slack": 26397.89999999106,
+      "fits": false,
+      "references": [
+        "FACE_SCENARIOS"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "title": "component statechart setup chains compatible rows without losing rows or changing the input order",
+      "reason": "Reads scenario declarations without executing their budgeted callbacks"
+    },
+    {
+      "title": "component statechart setup declares distinct doors and an unchanged state in every component table",
+      "reason": "Reads scenario declarations without executing their budgeted callbacks"
+    },
+    {
+      "title": "component statechart setup keeps wide navbar and drawer availability with an unchanged row in each table",
+      "reason": "Reads scenario declarations without executing their budgeted callbacks"
+    },
+    {
+      "title": "applyFace and applyTheme refuses a name that selects no theme and a page that renders no button",
+      "reason": "Both calls reject before reaching waitForPaint"
+    },
+    {
+      "title": "statechart tables observes an engine target outside the refusal figure and excludes an unrelated outside element",
+      "reason": "Reads scenario declarations without executing their budgeted callbacks"
+    }
+  ]
+}

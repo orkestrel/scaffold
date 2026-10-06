@@ -4,6 +4,7 @@ import { basename, join, resolve } from 'node:path'
 
 interface Assertion {
 	readonly title: string
+	readonly leaf: string | undefined
 	readonly status: string
 	readonly duration: number | undefined
 	readonly variant: string | undefined
@@ -54,6 +55,8 @@ interface Probe {
 	readonly description: string
 	readonly readings: Reading[]
 }
+// A per-run slowest reading below the engine's shortest declared transition (150 ms, Bootstrap's `$transition-fade`) did not wait out a transition and does not count.
+const SETTLE_FLOOR = 150
 const USAGE =
 	'node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]'
 
@@ -190,6 +193,7 @@ function readRun(folder: string): Run {
 				throw new Error(`${reportFile}: malformed assertion fullName, status, or duration`)
 			assertions.push({
 				title: assertion.fullName,
+				leaf: typeof assertion.title === 'string' ? assertion.title : undefined,
 				status: assertion.status,
 				duration: isMeasurement(assertion.duration) ? assertion.duration : undefined,
 				variant,
@@ -215,12 +219,26 @@ function readRun(folder: string): Run {
 			)
 		outside = summary.outside.seconds
 	}
+	const { timings, settles } = readEntries(folder)
 	return {
 		folder,
 		seconds: end.seconds,
 		outside,
 		assertions,
-		...readEntries(folder),
+		timings,
+		settles: settles.map((settle) => {
+			if (settle.motion !== undefined) return settle
+			const owners = new Set(
+				assertions
+					.filter((assertion) => assertion.leaf === settle.family)
+					.map((assertion) => assertion.title),
+			)
+			// A refusal, not a read fault: a silent wrong match would size the wrong test.
+			if (owners.size > 1)
+				throw new RangeError(`${folder}: Settle probe family "${settle.family}" matches the leaf of ${owners.size} titles`)
+			const [owner] = owners
+			return owner === undefined ? settle : { ...settle, title: owner }
+		}),
 	}
 }
 function collectRows(runs: readonly Run[], omissions: ReadonlySet<string>): readonly Row[] {
@@ -311,7 +329,7 @@ function renderTable(
 				`| ${escapeCell(run.folder)} | ${run.seconds} | ${run.outside?.toFixed(2) ?? 'unavailable (command)'} | ${run.assertions.filter((assertion) => assertion.status === 'passed').length} | ${run.assertions.filter((assertion) => assertion.status === 'failed').length} | ${selection.excluded.has(run.folder) ? `out of band: ${run.outside?.toFixed(2)} > ${selection.excluded.get(run.folder)?.toFixed(2)}` : run.outside === undefined ? 'command (no R5)' : 'eligible'} |`,
 		),
 		'',
-		'R3 = ceil(max × max(band, ratio) / 100) × 100 ms for settle readings only. R4 = ceil(max × max(band, ratio) / 1000) × 1000 + ceiling ms. Figures need at least two distinct eligible runs and a positive minimum. Slack = supplied timeout minus the title maximum across variants. Out-of-band runs and omitted run/title pairs contribute no readings. Command readings carry no load and take no R5 test.',
+		'R3 = ceil(max × max(band, ratio) / 100) × 100 ms for settle readings only, where a settle ratio is the slowest over the fastest per-run slowest reading among the runs whose slowest reading is at or above the 150 ms settle floor, and needs two such counting runs. The shared margin is the largest of the band and every settle ratio; the shared budget is ceil(ceiling × margin / 100) × 100 ms over the slowest settle reading. R4 = ceil(max × max(band, ratio) / 1000) × 1000 + ceiling ms. Figures need at least two distinct eligible runs and a positive minimum. Slack = supplied timeout minus the title maximum across variants. Out-of-band runs and omitted run/title pairs contribute no readings. Command readings carry no load and take no R5 test.',
 		'',
 		'R5 test: flag when the title ratio exceeds the band and there exists an eligible pair with slow/fast > band but outside(slow) <= outside(fast). The pair is printed as the witness. This conservative inversion test is diagnostic, not proof of a cause; an unmarked title is not cleared of timing defects. R5 figures are provisional and await diagnosis.',
 		'',
@@ -410,6 +428,11 @@ function isEligible(
 	)
 	return peers.length > 0 && peers.every((assertion) => assertion.status === 'passed')
 }
+function renderMotion(probe: Probe): string {
+	return probe.title === renderTitle(probe.family, probe.motion)
+		? String(probe.motion ?? 'header')
+		: 'none'
+}
 function renderProbes(
 	runs: readonly Run[],
 	rows: readonly Row[],
@@ -462,25 +485,45 @@ function renderProbes(
 		'',
 		'## Settle probes',
 		'',
-		'| Family | Motion | Description | Readings | Eligible runs | Min ms | Max ms | Ratio | R3 ms | Slack ms | Slack check | Slowest run |',
-		'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |',
+		'| Family | Motion | Description | Readings | Eligible runs | Counting runs | Fastest run max ms | Max ms | Ratio | R3 ms | Slack ms | Slack check | Slowest run |',
+		'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |',
 	]
+	let largest: { readonly probe: Probe; readonly ratio: number; readonly slow: Reading; readonly fast: Reading } | undefined
+	let slowest: { readonly probe: Probe; readonly reading: Reading } | undefined
 	for (const [, probe] of [...probes].sort(([left], [right]) => left.localeCompare(right))) {
-		const min = Math.min(...probe.readings.map((reading) => reading.duration))
+		const maxima = new Map<string, Reading>()
+		for (const reading of probe.readings) {
+			const current = maxima.get(reading.run.folder)
+			if (current === undefined || reading.duration > current.duration)
+				maxima.set(reading.run.folder, reading)
+		}
+		const counting = [...maxima.values()]
+			.filter((reading) => reading.duration >= SETTLE_FLOOR)
+			.sort((left, right) => left.duration - right.duration)
+		const fast = counting.at(0)
+		const slow = counting.at(-1)
 		const max = Math.max(...probe.readings.map((reading) => reading.duration))
-		const count = new Set(probe.readings.map((reading) => reading.run.folder)).size
-		const ratio = count >= 2 && min > 0 ? max / min : undefined
+		const ratio =
+			counting.length >= 2 && fast !== undefined && slow !== undefined
+				? slow.duration / fast.duration
+				: undefined
+		if (ratio !== undefined && fast !== undefined && slow !== undefined && (largest === undefined || ratio > largest.ratio))
+			largest = { probe, ratio, slow, fast }
+		for (const reading of maxima.values())
+			if (slowest === undefined || reading.duration > slowest.reading.duration)
+				slowest = { probe, reading }
 		const budget =
 			ratio === undefined ? undefined : Math.ceil((max * Math.max(band, ratio)) / 100) * 100
 		const slack = computeSlack(probe.title, rows, timeouts)
 		lines.push(
 			`| ${[
 				probe.family,
-				String(probe.motion ?? 'header'),
+				renderMotion(probe),
 				probe.description,
 				String(probe.readings.length),
-				String(count),
-				min.toFixed(1),
+				String(maxima.size),
+				String(counting.length),
+				fast?.duration.toFixed(1) ?? 'none',
 				max.toFixed(1),
 				ratio?.toFixed(6) ?? 'insufficient',
 				budget === undefined ? 'unavailable' : String(budget),
@@ -497,6 +540,28 @@ function renderProbes(
 			]
 				.map(escapeCell)
 				.join(' | ')} |`,
+		)
+	}
+	lines.push('')
+	if (slowest === undefined) lines.push('Shared budget: unavailable (no settle readings).')
+	else {
+		const margin = Math.max(band, largest?.ratio ?? band)
+		const budget = Math.ceil((slowest.reading.duration * margin) / 100) * 100
+		const ceiling = slowest.reading.duration
+		let failing: { readonly title: string; readonly slack: number } | undefined
+		for (const title of new Set(rows.map((row) => row.title))) {
+			const slack = computeSlack(title, rows, timeouts)
+			if (slack !== undefined && budget >= slack && (failing === undefined || slack < failing.slack))
+				failing = { title, slack }
+		}
+		lines.push(
+			largest === undefined
+				? `Shared margin: ${margin.toFixed(6)} (band ${band.toFixed(6)}; no description has an own ratio).`
+				: `Shared margin: ${margin.toFixed(6)} (band ${band.toFixed(6)}; largest own ratio ${largest.ratio.toFixed(6)} from ${largest.probe.description} [${largest.probe.family}, ${renderMotion(largest.probe)}]: ${largest.slow.duration.toFixed(1)} ms in ${basename(largest.slow.run.folder)} over ${largest.fast.duration.toFixed(1)} ms in ${basename(largest.fast.run.folder)}).`,
+			`Shared budget: ceil(${ceiling.toFixed(1)} × ${margin.toFixed(6)} / 100) × 100 = ${budget} ms (ceiling: ${slowest.probe.description} [${slowest.probe.family}, ${renderMotion(slowest.probe)}], ${ceiling.toFixed(1)} ms in ${basename(slowest.reading.run.folder)}).`,
+			failing === undefined
+				? 'Shared budget slack check: below every available slack.'
+				: `Shared budget slack check: R3 — not below the slack of ${failing.title} (${failing.slack.toFixed(1)} ms).`,
 		)
 	}
 	lines.push(
@@ -642,7 +707,7 @@ function main(): void {
 		runs = [...folders].map(readRun)
 	} catch (error) {
 		console.error(String(error))
-		process.exitCode = 67
+		process.exitCode = error instanceof RangeError ? 64 : 67
 		return
 	}
 	let selection: Band

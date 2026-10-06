@@ -1,0 +1,142 @@
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/runs/jb2-1 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2-2 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2b-1 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2b-2 --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b3-journey-after-4 --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b4-journey --out /home/user/veneer/tmp/units/journey-cost/durations-2026-10-06b.md
+exit 0
+Band ratio: 1.163657. Inner ceiling: 0 ms.
+| showcase statecharts drives the 'popover' table through its controls with motion=true | unspecified | 6 | 60228.0 | 165767.6 | 2.752334 | unavailable | 457000 | R5 — hold | completion-b3-journey-after-4 | completion-b4-journey | jb2-1: 72563.5 ms, seconds=546.807, outside.seconds=62.45 (report.json); jb2-2: 109517.0 ms, seconds=547.652, outside.seconds=55.33 (report.json); jb2b-1: 102631.9 ms, seconds=544.307, outside.seconds=58.14 (report.json); jb2b-2: 69602.4 ms, seconds=550.959, outside.seconds=53.69 (report.json); completion-b3-journey-after-4: 60228.0 ms, seconds=531.623, outside.seconds=55.12 (report.json); completion-b4-journey: 165767.6 ms, seconds=618.627, outside.seconds=57.33 (report.json); R5: jb2-2: 109517.0 ms, seconds=547.652, outside.seconds=55.33 (report.json) / jb2-1: 72563.5 ms, seconds=546.807, outside.seconds=62.45 (report.json) |
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/runs/jb2-1 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2-2 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2b-1 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2b-2 --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b3-journey-after-4 --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b4-journey --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b3-journey-after-3b --out /home/user/veneer/tmp/units/journey-cost/durations-2026-10-06b.md
+exit 0
+Band ratio: 1.163657. Inner ceiling: 0 ms.
+| /home/user/veneer/tmp/units/journey-cost/runs/completion-b3-journey-after-3b | 561.992 | 116.28 | 92 | 2 | out of band: 116.28 > 72.67 |
+| showcase statecharts drives the 'popover' table through its controls with motion=true | unspecified | 6 | 60228.0 | 165767.6 | 2.752334 | unavailable | 457000 | R5 — hold | completion-b3-journey-after-4 | completion-b4-journey | jb2-1: 72563.5 ms, seconds=546.807, outside.seconds=62.45 (report.json); jb2-2: 109517.0 ms, seconds=547.652, outside.seconds=55.33 (report.json); jb2b-1: 102631.9 ms, seconds=544.307, outside.seconds=58.14 (report.json); jb2b-2: 69602.4 ms, seconds=550.959, outside.seconds=53.69 (report.json); completion-b3-journey-after-4: 60228.0 ms, seconds=531.623, outside.seconds=55.12 (report.json); completion-b4-journey: 165767.6 ms, seconds=618.627, outside.seconds=57.33 (report.json); R5: jb2-2: 109517.0 ms, seconds=547.652, outside.seconds=55.33 (report.json) / jb2-1: 72563.5 ms, seconds=546.807, outside.seconds=62.45 (report.json) |
+All title, settle, and row figures equal the six-run output.
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-slow --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-first-poll --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow --timeouts /home/user/veneer/tmp/units/journey-cost/fixtures/durations/timeouts.json --ceiling 250 --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/fixture-table.md
+exit 0
+# Journey durations
+
+Band ratio: 1.200000. Inner ceiling: 250 ms.
+
+Only passed assertions contribute durations. A failed run remains in the header. Repeated --run paths count once. Inputs are caller-selected; this instrument does not verify tree identity or lock ownership.
+
+| Folder | seconds | outside.seconds | Passed | Failed | Band |
+| --- | ---: | ---: | ---: | ---: | --- |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-fast | 100 | 10.00 | 2 | 0 | eligible |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-slow | 120 | 11.00 | 2 | 0 | eligible |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-first-poll | 110 | 10.50 | 1 | 0 | eligible |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast | 1 | unavailable (command) | 1 | 0 | command (no R5) |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow | 2 | unavailable (command) | 1 | 0 | command (no R5) |
+
+R3 = ceil(max × max(band, ratio) / 100) × 100 ms for settle readings only, where a settle ratio is the slowest over the fastest per-run slowest reading among the runs whose slowest reading is at or above the 150 ms settle floor, and needs two such counting runs. The shared margin is the largest of the band and every settle ratio; the shared budget is ceil(ceiling × margin / 100) × 100 ms over the slowest settle reading. R4 = ceil(max × max(band, ratio) / 1000) × 1000 + ceiling ms. Figures need at least two distinct eligible runs and a positive minimum. Slack = supplied timeout minus the title maximum across variants. Out-of-band runs and omitted run/title pairs contribute no readings. Command readings carry no load and take no R5 test.
+
+R5 test: flag when the title ratio exceeds the band and there exists an eligible pair with slow/fast > band but outside(slow) <= outside(fast). The pair is printed as the witness. This conservative inversion test is diagnostic, not proof of a cause; an unmarked title is not cleared of timing defects. R5 figures are provisional and await diagnosis.
+
+Unspecified means no variant key was present. Unattributed means the title repeats without a usable variant key; its pooled range is descriptive and cannot size an individual variant. Timing entries identify unique titles; for repeated all-passed titles their own milliseconds appear in separate variant rows. Report array order is never a variant key.
+
+| Title | Variant | Eligible runs | Min ms | Max ms | Ratio | Slack ms | R4 ms | R5 | Min runs | Max runs | Passed readings and R5 inputs |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |
+| showcase journeys J8 drives the engine through the component sections | light-1280 | 2 | 500.0 | 500.0 | 1.000000 | unavailable | 1250 | — | journey-fast, journey-slow | journey-fast, journey-slow | journey-fast: 500.0 ms, seconds=100, outside.seconds=10.00 (report.json); journey-slow: 500.0 ms, seconds=120, outside.seconds=11.00 (report.json) |
+| showcase statecharts drives the 'face' header table through the header buttons | light-1280 | 2 | 1000.0 | 3000.0 | 3.000000 | 7000.0 | 9250 | not applicable (command) | command-fast | command-slow | command-fast: 1000.0 ms, seconds=1, outside.seconds=unavailable (command) (report.json); command-slow: 3000.0 ms, seconds=2, outside.seconds=unavailable (command) (report.json) |
+| showcase statecharts drives the 'popover' table through its controls with motion=true | light-1280 | 3 | 1000.0 | 1200.0 | 1.200000 | 800.0 | 2250 | — | journey-fast | journey-slow | journey-fast: 1000.0 ms, seconds=100, outside.seconds=10.00 (report.json); journey-slow: 1200.0 ms, seconds=120, outside.seconds=11.00 (report.json); journey-first-poll: 1100.0 ms, seconds=110, outside.seconds=10.50 (report.json) |
+
+## Settle probes
+
+| Family | Motion | Description | Readings | Eligible runs | Counting runs | Fastest run max ms | Max ms | Ratio | R3 ms | Slack ms | Slack check | Slowest run |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| face | header | visible | 2 | 2 | 2 | 200.0 | 300.0 | 1.500000 | 500 | 7000.0 | below slack | command-slow: 300.0 ms, seconds=2, outside.seconds=unavailable (command) (Settle probe (light-1280)) |
+| J8 drives the engine through the component sections | none | the panel closes | 2 | 2 | 2 | 250.0 | 350.0 | 1.400000 | 500 | unavailable | unavailable | journey-slow: 350.0 ms, seconds=120, outside.seconds=11.00 (Settle probe (light-1280)) |
+| popover | true | visible | 3 | 3 | 2 | 200.0 | 400.0 | 2.000000 | 800 | 800.0 | R3 — not below slack | journey-slow: 400.0 ms, seconds=120, outside.seconds=11.00 (Settle probe (light-1280)) |
+
+Shared margin: 2.000000 (band 1.200000; largest own ratio 2.000000 from visible [popover, true]: 400.0 ms in journey-slow over 200.0 ms in journey-fast).
+Shared budget: ceil(400.0 × 2.000000 / 100) × 100 = 800 ms (ceiling: visible [popover, true], 400.0 ms in journey-slow).
+Shared budget slack check: R3 — not below the slack of showcase statecharts drives the 'popover' table through its controls with motion=true (800.0 ms).
+
+## Statechart rows
+
+| Table | Row | Readings | Min ms | Max ms |
+| --- | --- | ---: | ---: | ---: |
+| showcase statecharts drives the 'face' header table through the header buttons | show | 2 | 50.0 | 75.0 |
+| showcase statecharts drives the 'popover' table through its controls with motion=true | show | 3 | 100.0 | 300.0 |
+
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow --band 4/1 --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-table.md
+exit 0
+# Journey durations
+
+Band ratio: 4.000000. Inner ceiling: 0 ms.
+
+Only passed assertions contribute durations. A failed run remains in the header. Repeated --run paths count once. Inputs are caller-selected; this instrument does not verify tree identity or lock ownership.
+
+| Folder | seconds | outside.seconds | Passed | Failed | Band |
+| --- | ---: | ---: | ---: | ---: | --- |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast | 1 | unavailable (command) | 1 | 0 | command (no R5) |
+| /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow | 2 | unavailable (command) | 1 | 0 | command (no R5) |
+
+R3 = ceil(max × max(band, ratio) / 100) × 100 ms for settle readings only, where a settle ratio is the slowest over the fastest per-run slowest reading among the runs whose slowest reading is at or above the 150 ms settle floor, and needs two such counting runs. The shared margin is the largest of the band and every settle ratio; the shared budget is ceil(ceiling × margin / 100) × 100 ms over the slowest settle reading. R4 = ceil(max × max(band, ratio) / 1000) × 1000 + ceiling ms. Figures need at least two distinct eligible runs and a positive minimum. Slack = supplied timeout minus the title maximum across variants. Out-of-band runs and omitted run/title pairs contribute no readings. Command readings carry no load and take no R5 test.
+
+R5 test: flag when the title ratio exceeds the band and there exists an eligible pair with slow/fast > band but outside(slow) <= outside(fast). The pair is printed as the witness. This conservative inversion test is diagnostic, not proof of a cause; an unmarked title is not cleared of timing defects. R5 figures are provisional and await diagnosis.
+
+Unspecified means no variant key was present. Unattributed means the title repeats without a usable variant key; its pooled range is descriptive and cannot size an individual variant. Timing entries identify unique titles; for repeated all-passed titles their own milliseconds appear in separate variant rows. Report array order is never a variant key.
+
+| Title | Variant | Eligible runs | Min ms | Max ms | Ratio | Slack ms | R4 ms | R5 | Min runs | Max runs | Passed readings and R5 inputs |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |
+| showcase statecharts drives the 'face' header table through the header buttons | light-1280 | 2 | 1000.0 | 3000.0 | 3.000000 | unavailable | 12000 | not applicable (command) | command-fast | command-slow | command-fast: 1000.0 ms, seconds=1, outside.seconds=unavailable (command) (report.json); command-slow: 3000.0 ms, seconds=2, outside.seconds=unavailable (command) (report.json) |
+
+## Settle probes
+
+| Family | Motion | Description | Readings | Eligible runs | Counting runs | Fastest run max ms | Max ms | Ratio | R3 ms | Slack ms | Slack check | Slowest run |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| face | header | visible | 2 | 2 | 2 | 200.0 | 300.0 | 1.500000 | 1200 | unavailable | unavailable | command-slow: 300.0 ms, seconds=2, outside.seconds=unavailable (command) (Settle probe (light-1280)) |
+
+Shared margin: 4.000000 (band 4.000000; largest own ratio 1.500000 from visible [face, header]: 300.0 ms in command-slow over 200.0 ms in command-fast).
+Shared budget: ceil(300.0 × 4.000000 / 100) × 100 = 1200 ms (ceiling: visible [face, header], 300.0 ms in command-slow).
+Shared budget slack check: below every available slack.
+
+## Statechart rows
+
+| Table | Row | Readings | Min ms | Max ms |
+| --- | --- | ---: | ---: | ---: |
+| showcase statecharts drives the 'face' header table through the header buttons | show | 2 | 50.0 | 75.0 |
+
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-slow --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-first-poll --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow --timeouts /home/user/veneer/tmp/units/journey-cost/fixtures/durations/timeouts.json --ceiling 250 --omit /home/user/veneer/tmp/units/journey-cost/fixtures/durations/omit-fixture.json --omit /home/user/veneer/tmp/units/journey-cost/fixtures/durations/omit.json --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/omitted-table.md
+exit 0
+Repeated --omit removed the report, settle, and statechart-row readings for journey-slow.
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-slow --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-first-poll --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-fast --timeouts /home/user/veneer/tmp/units/journey-cost/fixtures/durations/timeouts.json --ceiling 250 --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/fixture-table.md
+exit 0
+Duplicate --run leaves every figure unchanged.
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: Require a journey run or --band A/B
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: Require a journey run or --band A/B
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --band 6/5 --omit /home/user/veneer/tmp/units/journey-cost/fixtures/durations/bad-omit.json --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: /home/user/veneer/tmp/units/journey-cost/fixtures/durations/bad-omit.json: expected an array of run/title pairs
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --band 6/5 --timeouts /home/user/veneer/tmp/units/journey-cost/fixtures/durations/bad-timeouts.json --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: /home/user/veneer/tmp/units/journey-cost/fixtures/durations/bad-timeouts.json: expected nonempty titles and finite nonnegative timeouts
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --band 6/5 --omit /home/user/veneer/tmp/units/journey-cost/fixtures/durations/invalid.json --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: /home/user/veneer/tmp/units/journey-cost/fixtures/durations/invalid.json: SyntaxError: Expected property name or '}' in JSON at position 2 (line 2 column 1)
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast --band 6/5 --timeouts /home/user/veneer/tmp/units/journey-cost/fixtures/durations/invalid.json --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: /home/user/veneer/tmp/units/journey-cost/fixtures/durations/invalid.json: SyntaxError: Expected property name or '}' in JSON at position 2 (line 2 column 1)
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/missing-report --band 6/5 --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Error: /home/user/veneer/tmp/units/journey-cost/fixtures/durations/missing-report/report.json: Error: ENOENT: no such file or directory, open '/home/user/veneer/tmp/units/journey-cost/fixtures/durations/missing-report/report.json'
+exit 67
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/ambiguous-leaf --band 6/5 --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+RangeError: /home/user/veneer/tmp/units/journey-cost/fixtures/durations/ambiguous-leaf: Settle probe family "J8 drives the engine through the component sections" matches the leaf of 2 titles
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/fixtures/durations/journey-fast --band 6/5 --out /home/user/veneer/tmp/units/journey-cost/fixtures/durations/refusal-table.md
+Usage: node /home/user/veneer/tmp/units/journey-cost/durations.ts [--run DIR ...] --out FILE [--ceiling MS] [--band A/B] [--omit FILE ...] [--timeouts FILE]
+Error: --band is allowed only without journey runs
+exit 64
+node /home/user/veneer/tmp/units/journey-cost/durations.ts --run /home/user/veneer/tmp/units/journey-cost/runs/jb2-1 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2-2 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2b-1 --run /home/user/veneer/tmp/units/journey-cost/runs/jb2b-2 --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b3-journey-after-4 --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b4-journey --run /home/user/veneer/tmp/units/journey-cost/runs/completion-b3-journey-after-3b --omit /home/user/veneer/tmp/units/journey-cost/fixtures/durations/omit.json --out /home/user/veneer/tmp/units/journey-cost/durations-2026-10-06b.md
+exit 0
+showcase journeys J4 compares the three faces through the Stylesheets buttons: eligible runs=5, min=6847.1, max=8869.3, ratio=1.295337; no completion-b4-journey reading
+showcase matrix reads resolved values, Tailwind readings, the census, and contrast under its declared variant: eligible runs=5, min=7371.6, max=9976.2, ratio=1.353329; no completion-b4-journey reading
+Wrote /home/user/veneer/tmp/units/journey-cost/durations-2026-10-06b.md
+All assertions passed.
