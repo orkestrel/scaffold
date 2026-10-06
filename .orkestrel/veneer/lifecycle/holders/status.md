@@ -399,6 +399,14 @@ Lane results:
     5. Change 5 must slice the view to the room left after the prefix, so its footer offset stays exact.
     - Findings 6 to 11 are low: wording, decision rules for every count, the `vitest list` scope, the time budget (shipping turns take about 5.5 s, and the warmup reloads at 16,384), and a `read` seed lists no references.
     - Outside its claims: change 7 reaches every live tool test, and the 2B's F-21 journey calls caused no 2B failure.
+  - **The user ruled (2026-10-06): unify the reading surface.** Fold `look`, `read`, and `plain` into one line-addressed read: numbered lines with references inline, from and to ranges with a bounded default, and a grep-style search.
+    - All three library changes go in, the double-order trio goes in this round, and confirmation is 16 runs.
+    - **Campaign opened:** `lifecycle/reading/campaign.md`, with the exit criterion.
+    - **Absorb running:**
+      - map: `tmp/units/reading-map.txt`;
+      - Grok lane `reading-absorb` (scaffold `tmp/cursor/`), on the internals and the prior reading design under `showcase/browse/reading-design/`;
+      - research lane on line-addressed reading in coding and browser harnesses.
+    - **Consumers:** only ollama's harness consumes the toolset in code. Six repositories carry the guide as a mirror.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
