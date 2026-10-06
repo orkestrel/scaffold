@@ -165,7 +165,12 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - On Edge 154.0.4258.53, `--disable-features=msImplicitSignin` stops implicit sign-in: no account in 3 of 3 launches plus 3 confirmations, against a control that signed in 3 of 3. The library's drive passes with it.
     - `msIdentityCore` also works. `--guest` breaks CDP with `ECONNRESET`. The `signin.*` preference seeds, `--disable-signin`, and `--allow-browser-signin=false` do not stop it.
     - Candidates came from `msedge.dll` strings; 84 launches, all profiles deleted.
-  - Running: unit `signin-fix` (browser `tmp/codex/signin-fix-brief.md`). It adds the flag, merged into one `--disable-features` switch because Chromium reads only the last; adds a no-account service assertion and a merge unit case, each red without its mechanism; and replaces the guide's limit. It lands for browser 0.0.26.
+  - Unit `signin-fix` committed `fee07dd`, pushed:
+    - Every library launch emits one `--disable-features=` switch containing `msImplicitSignin`, merged with any caller's disabled features.
+    - The service assertion "no account identity or consent after a 2 s settle" is red without the flag (3.3 s) and green with it. The merge case is red with two switches (18 ms).
+    - Server 392, core 1255, guides 251, policy 119, and `test:service` 205 passed.
+    - The guide states that Edge automation profiles carry no Microsoft account, synced extensions, or synced settings.
+  - The 0.0.26 bump and HAR stamp were committed as `7a5ce85`. Running: `layer.ts browser` for 0.0.26. At `prepublishOnly`, run the Windows default-mode distribution plus `test:service`, as for 0.0.25.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
