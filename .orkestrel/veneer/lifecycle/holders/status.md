@@ -143,7 +143,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - No network-change or 4227/4231 events showed in the nine failure windows (H5 and H6 contradicted).
   - It committed no fix: `--disable-sync` leaves Edge's implicit sign-in to the Windows Microsoft account in place. No documented per-launch switch stops it; Edge's `ImplicitSignInEnabled` and `BrowserSignin` are machine-wide policies.
   - **The user ruled (2026-10-05):** land `--disable-sync` and close item 15 on sync off with no account extension, recording the sign-in as a limit. Research a per-launch way to stop implicit sign-in afterward, in its own unit.
-  - Running: unit `item15f` (browser `tmp/codex/item15f-brief.md`), with the fix, the formal E1 series, a regression case, repeated full service runs, and item 15 closed.
+  - **Item 15 closed:** unit `item15f` committed `1ebeca7`, pushed. `--disable-sync` is in `BROWSER_LAUNCH_ARGS`.
+    - The formal E1 series of 8 interleaved pairs, declared beforehand: arm A failed 3 of 8 launches, each right after Claude's install; arm B failed 0 of 8 and installed no account extension. The rate comparison alone reads p = 0.10, against 0.05 declared, so the closure rests on the reproduced trigger and B's zero.
+    - The regression case `tests/service/launch.test.ts` reads Edge's sync diagnostics: red in 1.1 s without the flag, green in 1.2 s with it.
+    - Three full `npm run test:service` runs each passed 205 with 6 skipped, and 0 account installs across 77 profiles per run.
+    - The guide records the implicit sign-in limit.
+  - The bump and HAR stamp were committed as `11da79d`. Running: `layer.ts browser`, preparing 0.0.25.
+  - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
 
