@@ -287,6 +287,14 @@ Lane results:
       - the paging reading goes only into the report.
     - Both attempt-2 candidates apply to `58c08d8` (`git merge-tree`, no conflict).
     - A run whose campaign Edge lacks either disable stops the series.
+  - **Check, 2026-10-06 near 10:15 local** (scaffold `tmp/units/campaign3-status.ts`, `transcript-diff.ts`, `codex-tail.ts`):
+    - S0 completed 8 runs; S1 is on run 6. Each run takes about 5 minutes. The daemon read 0.35.1 throughout, and no stop fired.
+    - In every completed run, the Edge capture identified the campaign browser (Edge 154.0.4258.53, headless) carrying `--disable-sync` and `--disable-features=msImplicitSignin`. The sampler polls every 2 s and costs about 20% of one core, the same in every arm.
+    - **The baseline moved.** In S0, shipping passed 0 of 8 runs (attempt 2: 13 of 16) and search 4 of 8 (13 of 16). Click and checkout passed 8 of 8, and paging 0 of 8.
+      - 23 of 24 shipping attempts repeat `look` searches and never call `read` (F-1, S3's target class).
+      - The system text, the page view, and the task are byte-identical to attempt 2's after masking ports and ids. The model's first reply differs: 0.35.0 wrote prose and called `look` with `shipping`; 0.35.1 writes nothing and calls `look` with `shipping cutoff time`.
+      - Two input changes confound the cause. The daemon moved to 0.35.1, and browser 0.0.26's journey toolset adds `capture` and shortens the `edit` description (browser `192a9ee`, 2026-10-04). Ollama's harness enables journeys, so the model sees both.
+    - **Orphaned Edge processes:** about 166 crash-handler and utility processes from earlier test launches remain, about 2.6 GB of working set. Their browser processes are gone. Most come from browser's `tests/setupGlobal.ts:174` profile (`orkestrel-browser-global-*`); the rest come from library-profile launches. The newest is from 2026-10-05 21:09, and the campaign's runs left none.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
