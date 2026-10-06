@@ -269,7 +269,7 @@ Prove the harness from the browser project, through the object and the markup to
   zero, and the passed tally equals the total.
 - Assert the inventory before the tally. A harness that mounted no row would pass every tally
   assertion, and `createHarness` refuses an empty table with `Statechart harness mounted no
-transition`.
+  transition`.
 - Name the failing rows from `failures`, which lists each row whose rendered `result` reads failed,
   in table order. A red gate says which transition broke.
 - Read the tally off `harness.root` as well as off the object, so the attribute contract a gate

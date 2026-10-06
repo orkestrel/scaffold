@@ -34,7 +34,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"executable": false,
-			"digest": "08336f02280eef5c7266052bc3cbe4d85c4268eb82dbb198b680940dd62d83ed"
+			"digest": "5fe9a1fc675fa566e44816cedf0a8421f387a5276409000ea20c98c876e3ac80"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/color-modes.md",
@@ -70,13 +70,13 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/responsive-layout.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/responsive-layout.md",
 			"executable": false,
-			"digest": "44e709e8df187495e6343048891ca9ff1ff9d3f30d86e00ad8cbd97c8e29bf20"
+			"digest": "f401dd3aa97b1098a6d97c8862bc7be7713a8a98ae1546a918abb66ee25cd8ad"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/utilities.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/utilities.md",
 			"executable": false,
-			"digest": "8cec05a193672bc543439a3aa46cf7b4ffc5573527b3fe047ad575fbe73f4a2c"
+			"digest": "84a7c3eec5d280ba67b103418a69b4643434b9fa9fe39ee8c1b305f1ba4f94c0"
 		},
 		{
 			"storage": "agents/skills/orkestrel-align/SKILL.md",
@@ -322,7 +322,7 @@
 			"storage": "agents/skills/orkestrel-journey/references/statechart.md",
 			"destination": ".agents/skills/orkestrel-journey/references/statechart.md",
 			"executable": false,
-			"digest": "89e53c15a8f02dfa335611b45c39d05cc3509e390156d6e569582227f0487802"
+			"digest": "b5866b5a756e2b42feb24e7ea2bdcb7c2c0ecc8d9863488263aeddffb63a44da"
 		},
 		{
 			"storage": "agents/skills/orkestrel-journey/references/styles.md",
@@ -496,7 +496,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "36afc2242e9becbb7662aeece1b0f81a12162aacfd360a48a07a3ec7eaf7d639"
+			"digest": "7c081ea4deffe54305f4a43685adbde2a5941d4f69c3ed386690ab409372a638"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -862,7 +862,7 @@
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "deec731bfc8733f880021cbf9a8cf450e51a93bc23f2f963fb3e1bf750554ba8"
+			"digest": "dfeb5feef6751bac487cf0205736a6763995b259ef1ee9bee8a606bb12f50e33"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -952,7 +952,7 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "8cc580a9819d11771b585e8a915fcc6b7bd3ff4a575b6c6482cd76c501367664"
+			"digest": "d7363cdbde8cde24503915b0fdc78e30543e3b81e68e105500dfda3ffee7702e"
 		},
 		{
 			"storage": "guides/middleware.md",
@@ -982,13 +982,13 @@
 			"storage": "guides/pool.md",
 			"destination": "guides/pool.md",
 			"executable": false,
-			"digest": "c49d3d2d3d5a2dc4518a8cebb94c82ba2dbcdc03222d5ad3885df13c46dfe8e2"
+			"digest": "a8bbdd91006afeb577d9e43a3f04ffe37cae989db954058b2e67197a3ca62572"
 		},
 		{
 			"storage": "guides/probe.md",
 			"destination": "guides/probe.md",
 			"executable": false,
-			"digest": "8082bfb642ba16d64e06aba0e1c5d0774ecebd77443d500821e4482bb0916cbe"
+			"digest": "11ddbf59ab6dd29e24f25ad1076dd6976b6e3bcdda1d95cb5186871b082ce560"
 		},
 		{
 			"storage": "guides/process.md",
@@ -1036,7 +1036,7 @@
 			"storage": "guides/router.md",
 			"destination": "guides/router.md",
 			"executable": false,
-			"digest": "73c88d2692d756c7f902424e75ba45c09c64c3ba78bdad5e800c6abe18551f26"
+			"digest": "890c46d9749875a48f5ec1981e9a8da90c93ad961b2ed092549172d83546f4e9"
 		},
 		{
 			"storage": "guides/scaffold.md",
@@ -1126,7 +1126,7 @@
 			"storage": "guides/worker.md",
 			"destination": "guides/worker.md",
 			"executable": false,
-			"digest": "b72964712b7187a987e4ba08bec95d72487c4afeb6e4c43c631d14b4c3cbff63"
+			"digest": "441c0c0a3a5b425fb91034d953e2e6a1d05d3dcb29702c600a43e048bac24afd"
 		},
 		{
 			"storage": "guides/workflow.md",
@@ -2144,5 +2144,5 @@
 			]
 		}
 	],
-	"digest": "896bfe0a0d7ee244383b0f5b4835d3b7295039a99a9240c94e182e18e3427153"
+	"digest": "561d787211d1f705e038c6ae37fb2ceaf3d9aa147444ec06d90a129ca9c46966"
 }

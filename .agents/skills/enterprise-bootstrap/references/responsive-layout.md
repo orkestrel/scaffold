@@ -109,7 +109,7 @@ the component's own breakpoint class instead
 Recipes:
 
 - **Table scroller.** `<div class="table-responsive" role="region" aria-label="Invoices"
-tabindex="0">` — the shipped class is `overflow-x: auto` only; the name and `tabindex` make it
+  tabindex="0">` — the shipped class is `overflow-x: auto` only; the name and `tabindex` make it
   keyboard-reachable. `table-responsive-{bp}` scrolls only below the breakpoint.
 - **Menus in a scroller.** A scroller clips its `dropdown-menu`. Add
   `data-bs-popper-config='{"strategy":"fixed"}'` to the toggle, or open row actions in a

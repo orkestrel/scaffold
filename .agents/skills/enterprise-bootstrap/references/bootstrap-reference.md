@@ -294,7 +294,8 @@ $utilities: map-merge(
 			values: auto pointer grab,
 		),
 		// Modify an existing utility: make width responsive.
-		'width': map-merge(
+		'width':
+			map-merge(
 				map-get($utilities, 'width'),
 				(
 					responsive: true,
@@ -889,7 +890,8 @@ Bootstrap has **no** combobox/autocomplete, date picker, multi-select tags input
 $utilities: map-merge(
 	$utilities,
 	(
-		'width': map-merge(
+		'width':
+			map-merge(
 				map-get($utilities, 'width'),
 				(
 					responsive: true,

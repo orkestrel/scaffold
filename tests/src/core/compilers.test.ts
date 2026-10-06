@@ -1551,7 +1551,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in a source workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.59.3')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.59.4')
 	})
 
 	it('omits library publishing tools from an app-only workspace', () => {
@@ -1565,7 +1565,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in an executable workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.59.3')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.59.4')
 	})
 
 	it('keeps the Vue extension toolchain in an app-only workspace', async () => {

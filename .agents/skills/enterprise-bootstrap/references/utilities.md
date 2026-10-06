@@ -362,7 +362,7 @@ Helpers are single-purpose classes that sit alongside utilities.
   Protect titles or marks that must retain height with `flex-shrink-0`. Do not add `overflow-hidden`
   to an ancestor to conceal a layout bug; it can clip menus and focus rings.
 - **Toolbars:** start with `d-grid gap-2` or labelled `row g-2` controls; expand with `d-sm-flex
-flex-sm-wrap` or `col-md-auto` only when the container fits. Do not default to a horizontal
+  flex-sm-wrap` or `col-md-auto` only when the container fits. Do not default to a horizontal
   scroller for search or primary actions. Keep matching control sizes and usable hit areas. Align equal-height
   cards only where their content benefits, not to fill empty space.
 - **Responsive content:** follow [responsive-layout.md](responsive-layout.md); unprefixed utilities define the complete narrow task. A class that resolves can still implement the wrong layout. Reflow and prioritize before truncating. Hide a button caption only when
@@ -397,10 +397,10 @@ flex-sm-wrap` or `col-md-auto` only when the container fits. Do not default to a
   take `object-fit-contain` when the whole asset matters. Guard a user upload against bleeding into
   a same-color surface with `border border-black border-opacity-10` — translucent, so it does not
   clash with the photo. Reduce a photo's dynamics before placing text on it: a `bg-dark
-bg-opacity-50` (or `-75`) overlay layer under `card-img-overlay`, measured at every crop. Keep a
+  bg-opacity-50` (or `-75`) overlay layer under `card-img-overlay`, measured at every crop. Keep a
   small glyph near 16–24 px inside `rounded-circle bg-primary-subtle p-3` rather than scaling it up.
   Keep useful image detail and icon optical size rather than stretching assets to fill a box.
 - **Lists and quotes:** `list-unstyled` with a meaningful glyph per item (`d-flex gap-2
-align-items-baseline`, glyph `aria-hidden="true"`); `.blockquote` with `.blockquote-footer`.
+  align-items-baseline`, glyph `aria-hidden="true"`); `.blockquote` with `.blockquote-footer`.
 - **Print:** mark chrome `d-print-none` and keep results readable; do not hide data merely because
   its interactive controls have no print role.
