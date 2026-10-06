@@ -54,3 +54,18 @@ Release-chain notes:
 - Browser's `prepublishOnly` release-mode distribution needs `/proc` and FIFOs. On Windows the default mode ran (14 passed, 9 host-bound skips), and `test:service` passed (205 passed, 6 skipped), as for 0.0.22 and 0.0.24.
 - The browser visit's test gate missed three times on `FileBrowserStore`'s lock-race case, a 512-iteration loop at Vitest's 5 s default under the parallel load. It was sized to 8 iterations from mutation measurements (`75c8fc2`).
 - Probe (L5) is held: its visit failed the silent-initialize teardown case under the host load of worker's gates. Scaffold follows.
+
+Continued on 2026-10-06 UTC:
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 4 | L5 | `@orkestrel/browser` | 0.0.25 | 0.0.26 | bump: `--disable-features=msImplicitSignin` in every library launch, merged with a caller's disabled features into one switch, so Edge automation profiles carry no Microsoft account (measured on Edge 154.0.4258.53) | `0379087` |
+| 5 | L5 | `@orkestrel/probe` | 0.0.20 | 0.0.21 | bump: the eager start (ROADMAP item 1) on pool `^0.0.16`, with one exclusive pool per stage; `initialize` waits for lint and runtime while the type stage warms behind it under `PROBE_WARM`; `createHandshakeError`; `LINT_TEARDOWN`; queue removed | `0745af2` |
+| 6 | L3 | `@orkestrel/scaffold` | 0.0.92 | 0.0.93 | bump: generated workspaces pin browser `^0.0.26` and probe `^0.0.21`; the catalog regenerated; the pool, worker, browser, and probe mirrors copied from their release heads; Oxfmt 0.72 reformatting | `916820149` |
+
+Release-chain notes, continued:
+- Browser 0.0.26's first visit failed `npm install`: `@microsoft/api-extractor` 7.59.4, published at 01:54 UTC, needed `@rushstack/ts-command-line@5.3.17`, which reached npm about 10 minutes later. The rerun passed.
+- Browser 0.0.26 used the Windows gates again: default-mode distribution, 14 passed with 9 skipped; `test:service`, 205 passed with 6 skipped.
+- Probe's second visit ran alone and passed, after the fixture fix (`140c5bd`: the overlap is recorded with the pid) and the receipt re-quote for Oxlint 1.87.0 (`24b8a27`).
+- Scaffold's first preparation undid the visit's format step, and its second added a trailing newline to the `app-only-toolchain.txt` snapshot. Both were corrected before the passing `prepublishOnly`.
+- Probe and scaffold each answered "accepted, unconfirmed", then `npm view` served them within about 2 minutes.

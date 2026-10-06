@@ -266,6 +266,14 @@ Newest first. Each entry: date, from, to, what landed or what is asked. A path a
 - **In parallel**: T4 ran on the Opus route in the worktree `/home/user/.wave/veneer-t4` (branch `t4-wip` from a T3 snapshot) with Node gates only; its review runs; the merge onto `44b3610` follows the re-pin. The elements clone (`/home/user/mikesaintsg/elements`, `3b41900`) is being read against the stage B distillates for an addendum.
 - **Order from here**: the re-pin to browser `^0.0.23` and scaffold `^0.0.91` with the 0.0.91 overwrite → T4 merged, rebuilt, gated → landing gates → the token units land on `main` → the journey tuning unit → stage B at the user's rulings. No veneer release.
 
+### 2026-10-06 — desktop session to cloud session (browser 0.0.26, probe 0.0.21, scaffold 0.0.93 published)
+
+- **Published:** `@orkestrel/browser` 0.0.26 (`0379087`), `@orkestrel/probe` 0.0.21 (`0745af2`), and `@orkestrel/scaffold` 0.0.93 (`916820149`). The record is `.orkestrel/release.md` § 2026-10-05 round.
+- **For veneer's re-pin:** browser `^0.0.26`, probe `^0.0.21`, and scaffold `^0.0.93` supersede the earlier targets; take the scaffold 0.0.93 overwrite in its own commit.
+- **What changes for veneer:**
+  - **browse 0.0.26:** automation browsers also launch with `--disable-features=msImplicitSignin`, so they carry no Microsoft account.
+  - **probe 0.0.21:** it starts its stages at server start. `initialize` waits for lint and runtime, and the type stage warms behind it; veneer's `initialize` measured 7.1 to 7.9 s on the Windows host, where 0.0.20 refused its first type `prove` calls there. A type `prove` waits for that warm under `PROBE_WARM` (90 s).
+
 ### 2026-10-05 — desktop session to cloud session (browser 0.0.25 and pool 0.0.16 published; scaffold to follow)
 
 - **Published:** `@orkestrel/pool` 0.0.16 (`f5c3289`), `@orkestrel/worker` 0.0.16 (`5c14ed7`), and `@orkestrel/browser` 0.0.25 (`ea8477b`). The record is `.orkestrel/release.md` § 2026-10-05 round.

@@ -1,4 +1,4 @@
-# Parallel holders — status and hand-off (updated 2026-10-05)
+# Parallel holders — status and hand-off (updated 2026-10-06)
 
 **Owner: the desktop session.** No other session takes over this work, or acts as if it has, unless the user gives the explicit go-ahead (the user, 2026-10-05). A session that reads this file without that go-ahead reads it for context only.
 
@@ -7,6 +7,14 @@ The design records sit beside this file: `synthesis.md` and `review-h2.md` (the 
 ## Published
 
 - Pool 0.0.15 (`4c589c6`), browser 0.0.24 (`b81c22c`), scaffold 0.0.92 (`5612beb`), on 2026-10-04; record `scaffold/.orkestrel/release.md` § 2026-10-04 evening round.
+- **The 2026-10-05 round, complete** (record `scaffold/.orkestrel/release.md` § 2026-10-05 round; logged for veneer in `lanes.md`):
+  - pool 0.0.16 (`f5c3289`);
+  - worker 0.0.16 (`5c14ed7`);
+  - browser 0.0.25 (`ea8477b`) and 0.0.26 (`0379087`);
+  - probe 0.0.21 (`0745af2`);
+  - scaffold 0.0.93 (`916820149`).
+
+  Every package is confirmed through `npm view`.
 
 ## Browser 0.0.25 — prepared, blocked at its gate
 
@@ -229,10 +237,24 @@ Lane results:
 - Duration census: browser `tmp/probes/test-census.ts --label NAME` (before and after summaries under `tmp/probes/census/`).
 - Unit briefs and reports: browser `tmp/codex/*-brief.md` and `*-last.md` (holders-h1 to h6b, item6 to item8, gone, keepalive, service-flakes, replay-race, test-tune, contexts-probe).
 
-## Open, in order
+## Open, in order (2026-10-06)
 
-1. ROADMAP item 15 (the document-startup flake), now blocking browser 0.0.25: find the cause without perturbing the run (it vanished under every instrumented run), fix it, then finish 0.0.25 (commit the bump and stamp, push, publish with the user's code, confirm, log for veneer in `lanes.md`).
-2. The contexts campaign: C1, C2, C3, M2, and the release.
+1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
+2. **The paused ollama store campaign** (`ollama/tmp/codex/store-campaign-pause.md`): resume when the host can stay quiet for hours. Ollama's local 0.0.21 also owes a re-pin to browser `^0.0.26`.
+3. **mcp items 13 and 14.**
+4. **Veneer's re-pin** to browser `^0.0.26`, probe `^0.0.21`, and scaffold `^0.0.93` is the cloud session's (`lanes.md`, 2026-10-06 entry).
+
+Closed in the 2026-10-05 round, with the history in the earlier sections:
+- the contexts campaign (C1 to C3, M1, M2, and the follow-up);
+- ROADMAP items 14, 15, and 16;
+- the implicit sign-in fix;
+- probe item 1;
+- the worker re-pin.
+
+Earlier entries, kept for the record:
+
+1. Superseded: ROADMAP item 15 (the document-startup flake), now blocking browser 0.0.25. Closed by `--disable-sync` in browser 0.0.25.
+2. Superseded: the contexts campaign, C1, C2, C3, M2, and the release.
 3. Done: browser `ROADMAP.md` item 16, the service-worker defect candidate (M1 result). Ran in parallel with C1b at the user's request (2026-10-05): unit `item16` in the worktree browser `tmp/worktrees/item16` (branch `item16` from `fd362be`, `node_modules` by `npm ci`, pool 0.0.15), brief and journal under that worktree's `tmp/codex/item16*`, cap 3 hours. It owns `src/core/BrowserPage.ts`, `BrowserWorker.ts`, their core tests, one case in `tests/service/browser.test.ts`, and item 16's removal; `BrowserContext.ts` and `src/core/types.ts` are report-only because C1b owns them. Merge the branch into `main` after C1b lands. Result (2026-10-05, 13 minutes, `tmp/codex/item16-last.md` in the worktree): `#attachWorker` awaited `Runtime.enable` before resuming, and a paused service worker cannot answer it (traces `tmp/probes/item16/traffic.json` against `traffic-green.json`); the fix queues the enable, resumes a service worker, then awaits the reply before publishing it, and a non-frame target reported by a frame session is resumed and detached instead of left paused. Three cases, each red without its mechanism (real-browser activation about 1.1 s green); `test:src:core` 1247 passed; `tests/service/browser.test.ts` alone 43 passed. Uncommitted in the worktree. The Opus objective review (`review-item16.md`) ruled FAIL on a forbidden test deferred and two guide overclaims; the code fix holds. Unit `item16fix` repaired all six findings (`tmp/codex/item16fix-last.md`); dedicated and shared workers start under the page setup on Edge 154 with no ordering change, so only the service worker needed it. Landed: browser `main` `e8aa649` (fast-forward, pushed 2026-10-05); the worktree and branch are removed, and its records sit in browser `tmp/codex/item16*` and `tmp/probes/item16/`. Item 16 is closed; it publishes with the next browser release.
 4. The paused ollama store campaign (`ollama/tmp/codex/store-campaign-pause.md`): resume the same Codex session from S2's extension when the host can stay quiet for hours.
 5. `@orkestrel/worker`'s re-pin to pool `^0.0.15` (and later 0.0.16), probe item 1 (brief at probe `tmp/codex/eager-probe-brief.md`), mcp items 13 and 14.
