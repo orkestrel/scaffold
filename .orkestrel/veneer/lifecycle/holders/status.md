@@ -239,6 +239,11 @@ Lane results:
 
 ## Open, in order (2026-10-06)
 
+**The user (2026-10-06): proceed with what's left.**
+- Running: workflow `remaining-items-analysis`. Three Opus readers cover probe's load-sensitive cases, mcp item 13 (an HTTP legacy `ping` before the `InitializeResult`), and mcp item 14 (the continuation-expiry flake); an adversarial reviewer attacks their proposals.
+- Then codex writers in probe and mcp.
+- The ollama store campaign resumes last, on a quiet host.
+
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
 2. **The paused ollama store campaign** (`ollama/tmp/codex/store-campaign-pause.md`): resume when the host can stay quiet for hours. Ollama's local 0.0.21 also owes a re-pin to browser `^0.0.26`.
 3. **mcp items 13 and 14.**
