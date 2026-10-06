@@ -269,10 +269,15 @@ Lane results:
 - **The ollama store campaign resumed** on 2026-10-06 near 08:06 local, through `scaffold/tmp/codex/codex.resume.ts`.
   - It runs the same Codex session (`01a10821-2df6-71d2-a0ef-7c7e1a4db929`) with the pause note's prompt plus the Orchestrator's notes (ollama `tmp/codex/store-campaign-resume-prompt.md`). The notes say: the arms stay at `3924fbb`, and check whether Edge sync at that build could affect S2 or S3 readings.
   - Journal: ollama `tmp/codex/store-campaign-resume.jsonl`. Cap 12 hours. No other unit runs on the host until it ends.
+  - **Stopped under the preregistration's identity rule** after 12.5 minutes (report ollama `tmp/codex/store-campaign-resume-last.md`). The daemon reads Ollama 0.35.1, against the registered 0.35.0; the Orchestrator read `/api/version` and confirmed 0.35.1. The model digest is unchanged.
+  - Kept candidates: none. S1 (paging fixture) was reverted by its fact-exposure guards at n=16. S2 (task after the seeded view) was reverted at closure without a final ruling. S3 to S6 and acceptance never ran. The discarded S2 run 9 is archived outside the counts.
+  - Edge sync: the arms launch Edge without `--disable-sync` or `msImplicitSignin`, and every store attempt runs in an isolated CDP context. The archives record no executable, sync, or network diagnostics, so sync effects on S2 cannot be excluded.
+  - Branch heads kept, worktrees removed: browser and agent `store-reliability` carry no campaign commits; ollama `store-reliability` is at `2529bb2`. Ollama `main` is unchanged: 3 unpushed commits plus the uncommitted 0.0.21 version bump.
+  - Next: the user's ruling on the campaign and the ollama release.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
-2. **The paused ollama store campaign** (`ollama/tmp/codex/store-campaign-pause.md`): resume when the host can stay quiet for hours. Ollama's local 0.0.21 also owes a re-pin to browser `^0.0.26`.
+2. **The ollama store campaign** stopped on 2026-10-06 when the daemon changed from 0.35.0 to 0.35.1; no candidate was kept. Waiting on the user's ruling. Ollama's local 0.0.21 also owes a re-pin to browser `^0.0.26`.
 3. **mcp items 13 and 14.**
 4. **Veneer's re-pin** to browser `^0.0.26`, probe `^0.0.21`, and scaffold `^0.0.93` is the cloud session's (`lanes.md`, 2026-10-06 entry).
 
