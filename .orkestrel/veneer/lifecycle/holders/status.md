@@ -258,6 +258,17 @@ Lane results:
     - source 1539, guides 202, check passed.
   - mcp ROADMAP item 16 (`44a8002`) records the stdio client transport cases' fixed `waitForDelay(300)` waits: 5 failed under the probe unit's load and passed alone.
   - **mcp `main` pushed** (`c98d82f`, `8f743a8`, `51b4d0a`, `44a8002`), unreleased; mcp 0.0.37 waits for the user's word.
+- **Probe:** `load-cases2` committed `adea0d3`, and **probe `main` is pushed** (`482666c`, `adea0d3`).
+  - P2 to P12 derive their budgets from the lifecycle bounds, with the formulas in comments, and their waits are bounded events; P10 awaits the public refusal.
+  - Each negative control fails 1 case. The quiet whole `npm run test` passed in 554.7 s.
+  - Under the declared load, the 12 targeted cases pass. The full loaded suite failed 3, each on a named product refusal and none on a Vitest timeout:
+    - P1: `The Oxlint language server exited with code 0` during onset, under 85% synthetic load only;
+    - P5: its 3 s type warm, by design;
+    - an unchanged workspace-snapshot case.
+  - Follow-up, unscheduled: why Oxlint exits with code 0 during initialize under extreme load.
+- **The ollama store campaign resumed** on 2026-10-06 near 08:06 local, through `scaffold/tmp/codex/codex.resume.ts`.
+  - It runs the same Codex session (`01a10821-2df6-71d2-a0ef-7c7e1a4db929`) with the pause note's prompt plus the Orchestrator's notes (ollama `tmp/codex/store-campaign-resume-prompt.md`). The notes say: the arms stay at `3924fbb`, and check whether Edge sync at that build could affect S2 or S3 readings.
+  - Journal: ollama `tmp/codex/store-campaign-resume.jsonl`. Cap 12 hours. No other unit runs on the host until it ends.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
