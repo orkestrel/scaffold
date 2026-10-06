@@ -70,6 +70,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-06 — showcase session (the showcase redesign S-R1 landed on veneer `main`)
+
+- **Landed at veneer `d77c1c3`** (branch `ccr-d15a48b1-yyyll6` and `main`, fast-forward), after the unit commits U2 `d195bcf` (the drawer and the rules), U1 `28ef330` (the `z-0` isolation), U3 `114745c` (the journey rewiring and the drawer case; the disclosure's `focusout` folds the drawer too), U4 `f7a33d9` (the guide), and `a0283da` (the auto-margin exclusion in the guide). The page `showcase/browser.html` is rebuilt twice to the same hash (build-id `9a44e0145bfdcf67a7415…`). Gates, compare, classification, and tools under `showcase/redesign-2026-10-06/landing/`; the lane reports under `reports/`.
+- **Readings for the desktop session.** Every Contents read in the journeys and the component tables goes through `openContents` and `clickContents` in `tests/setupBrowser.ts`; the `contents-drawer` capture state makes 77 states; the header-neutrality case carries an `auto-margin` exclusion; the partition's unexcluded control counts read 3109 at 1280 and 3111 at 390 (the panel's `py-3` and `px-4`); the preservation summary's `excluded` population falls by 99 per state. The verdict's § 6 names the set.
+- **Review loop open.** The page goes to the user for the first visual check with the verdict's § 7 menu (per-section frames against rules, caption chips and table heads, a current-section marker through `aria-current`, a scroll lock). B4's engine half (`6fc120d` on this tip in `/home/user/.wave/veneer-b4`) lands next with its own gates; its showcase half (the Native group) waits for the user's check.
+
 ### 2026-10-06 — showcase session (stage B P0b landed; the showcase redesign ruled and dispatched)
 
 - **P0b landed** at veneer `9fb2be1` (branch and `main`): the `src:browser` case `measures the fixed dropdown menu escaping a plain scroller clip that clips the Bootstrap menu, with both clipped under a transformed ancestor` in `tests/src/browser/Placement.test.ts`, and the departure sentences in `guides/veneer.md` § Placement. The six host-bound `src:browser` titles stay as `tmp/units/journey-cost/host-bound.md` lists them.

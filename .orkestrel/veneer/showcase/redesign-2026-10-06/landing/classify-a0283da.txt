@@ -1,0 +1,8 @@
+predicted preservation rows: 168
+predicted signature/partition rows: 18
+predicted row order (dark-390 preservation values): 3
+predicted preservation/partition lines: 228
+predicted J3 heading margin: 12
+predicted preservation/partition journal copies: 228
+predicted J1/J2 journal at 390: 12
+669 differences; 0 outside the predicted set
