@@ -1,0 +1,11 @@
+# Landing gates on /home/user/veneer at 7853d17-2 (2026-10-06T12:30:17.072Z)
+
+## journey: exit 0 in 616.2 s (folder landing-7853d17-2-journey) — Tests  94 passed (94)
+
+## build: exit 0 in 25.1 s (folder landing-7853d17-2-build)
+
+## test-src-tailwindcss: exit 0 in 27.6 s (folder landing-7853d17-2-test-src-tailwindcss) — Tests  11 passed (11)
+
+## test-src-bootstrap: exit 0 in 20.5 s (folder landing-7853d17-2-test-src-bootstrap) — Tests  14 passed (14)
+
+## test-setup-browser: exit 0 in 244.2 s (folder landing-7853d17-2-test-setup-browser) — Tests  202 passed (202)
