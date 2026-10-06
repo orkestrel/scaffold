@@ -516,6 +516,13 @@ Lane results:
       - Capturing a 5,000-paragraph outline takes a median of 917 ms.
       - It closes by mutation, under the skill's rule for fixes that adopt the prescription.
     - **Grok session A, slice 1** (`reading/api/patterns-1.md`, session `5ffd96d4`) covers entities, managers, and vocabulary across agent, database, relation, table, workspace, workflow, form, and tool. Slice 2, on surface hygiene, is running.
+    - **Absorb done:**
+      - `api/patterns-2.md`: surface hygiene;
+      - `api/browser-1.md`: Grok session `09c1dfdb`, browser's entities and a deviations table;
+      - `api/consumers.md` with `api/browser-usage.json`: 721 export declarations, and only ollama's tests import the API in code.
+    - **Design round launched,** blind lanes on `api/design-brief.md`:
+      - Astra `api-analyst`, effort xhigh, cap 1 h (scaffold `tmp/codex/api-analyst*`);
+      - Opus `planner`, native.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
