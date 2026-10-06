@@ -1728,6 +1728,157 @@ describe('emitted browser resolver', () => {
 		}
 	}, 20_000)
 
+	it('merges classic scrollbars into executable and channel overrides', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-scrollbars-' })
+		try {
+			const file = stageResolver(workspace)
+			const browsers = buildBrowsersRoot(workspace, ['chromium'])
+			const [executable, channel, empty, unknown] = driveModule(file, 'resolver', [
+				buildResolveCall(
+					undefined,
+					{
+						PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome',
+						PLAYWRIGHT_CHANNEL: 'msedge',
+						PLAYWRIGHT_SCROLLBARS: 'classic',
+					},
+					browsers,
+				),
+				buildResolveCall(
+					undefined,
+					{
+						PLAYWRIGHT_CHANNEL: 'msedge',
+						PLAYWRIGHT_SCROLLBARS: 'classic',
+						PLAYWRIGHT_WS_ENDPOINT: '',
+					},
+					browsers,
+				),
+				buildResolveCall(
+					undefined,
+					{
+						PLAYWRIGHT_CHANNEL: 'msedge',
+						PLAYWRIGHT_SCROLLBARS: '',
+					},
+					browsers,
+				),
+				buildResolveCall(undefined, { PLAYWRIGHT_CHANNEL: 'unknown' }, browsers),
+			])
+			expect(executable).toStrictEqual({
+				launchOptions: {
+					executablePath: '/operator/chrome',
+					ignoreDefaultArgs: ['--hide-scrollbars'],
+				},
+			})
+			expect(channel).toStrictEqual({
+				launchOptions: { channel: 'msedge', ignoreDefaultArgs: ['--hide-scrollbars'] },
+			})
+			expect(empty).toStrictEqual({ launchOptions: { channel: 'msedge' } })
+			expect(unknown).toStrictEqual({ launchOptions: { channel: 'unknown' } })
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
+	it('merges classic scrollbars into pinned, managed, and bundled launches', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-scrollbars-' })
+		try {
+			const file = stageResolver(workspace)
+			const browsers = buildBrowsersRoot(workspace, ['chromium-1234/chrome-linux64/chrome'])
+			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
+			const missing = join(browsers, 'chromium-9999/chrome-linux64/chrome')
+			const [installed, managed, bundled, plain] = driveModule(file, 'resolver', [
+				buildResolveCall(pinned, { PLAYWRIGHT_SCROLLBARS: 'classic' }, browsers),
+				buildResolveCall(missing, { PLAYWRIGHT_SCROLLBARS: 'classic' }, browsers),
+				buildResolveCall(undefined, { PLAYWRIGHT_SCROLLBARS: 'classic' }, browsers),
+				buildResolveCall(pinned, {}, browsers),
+			])
+			expect(installed).toStrictEqual({
+				launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] },
+			})
+			expect(managed).toStrictEqual({
+				launchOptions: { executablePath: pinned, ignoreDefaultArgs: ['--hide-scrollbars'] },
+			})
+			expect(bundled).toStrictEqual({
+				launchOptions: { executablePath: pinned, ignoreDefaultArgs: ['--hide-scrollbars'] },
+			})
+			expect(plain).toStrictEqual({})
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
+	it('merges classic scrollbars into discovered and fallback system channels', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-scrollbars-' })
+		try {
+			const file = stageResolver(workspace)
+			const browsers = buildBrowsersRoot(workspace, ['Google/Chrome/Application/chrome.exe'])
+			const bare = workspace.ensure('bare')
+			const environment = { LOCALAPPDATA: browsers, PLAYWRIGHT_SCROLLBARS: 'classic' }
+			const [system, fallback, plain, defaulted] = driveModule(file, 'resolver', [
+				`resolver.resolveBrowser(undefined, 'win32', ${JSON.stringify(environment)}, ${JSON.stringify(bare)})`,
+				`resolver.resolveBrowser(undefined, 'freebsd', { PLAYWRIGHT_SCROLLBARS: 'classic' }, ${JSON.stringify(bare)})`,
+				`resolver.resolveBrowser(undefined, 'win32', { LOCALAPPDATA: ${JSON.stringify(browsers)} }, ${JSON.stringify(bare)})`,
+				`resolver.resolveBrowser(undefined, 'freebsd', {}, ${JSON.stringify(bare)})`,
+			])
+			expect(system).toStrictEqual({
+				launchOptions: { channel: 'chrome', ignoreDefaultArgs: ['--hide-scrollbars'] },
+			})
+			expect(fallback).toStrictEqual({
+				launchOptions: { channel: 'chrome', ignoreDefaultArgs: ['--hide-scrollbars'] },
+			})
+			expect(plain).toStrictEqual({ launchOptions: { channel: 'chrome' } })
+			expect(defaulted).toStrictEqual({ launchOptions: { channel: 'chrome' } })
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
+	it('refuses classic scrollbars with an endpoint even when an executable outranks it', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-scrollbars-' })
+		try {
+			const file = stageResolver(workspace)
+			for (const executable of [undefined, '/operator/chrome']) {
+				expect(() =>
+					driveModule(file, 'resolver', [
+						buildResolveCall(
+							undefined,
+							{
+								...(executable === undefined ? {} : { PLAYWRIGHT_EXECUTABLE_PATH: executable }),
+								PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session',
+								PLAYWRIGHT_SCROLLBARS: 'classic',
+							},
+							workspace.path,
+						),
+					]),
+				).toThrow('PLAYWRIGHT_SCROLLBARS=classic cannot be used with PLAYWRIGHT_WS_ENDPOINT')
+			}
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
+	it('refuses unsupported scrollbar values', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-scrollbars-' })
+		try {
+			const file = stageResolver(workspace)
+			for (const scrollbars of ['overlay', 'Classic', ' classic ', 'true']) {
+				expect(() =>
+					driveModule(file, 'resolver', [
+						buildResolveCall(
+							undefined,
+							{
+								PLAYWRIGHT_CHANNEL: 'chrome',
+								PLAYWRIGHT_SCROLLBARS: scrollbars,
+							},
+							workspace.path,
+						),
+					]),
+				).toThrow('PLAYWRIGHT_SCROLLBARS must be classic or empty')
+			}
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
 	it('reads a pinned-revision miss as a fallthrough rather than as absence', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
