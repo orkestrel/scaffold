@@ -28,7 +28,7 @@ Copy that already exists keeps its bytes unless this list changes it.
   - Description: `Shows numbered lines of the page, with references like e4 to act on. Call it to learn a fact or to find an element.`
   - `from` (integer, required): `The first line to show: 1 for the top, or the line a reply's footer names.`
   - `to` (integer): `The last line to show. Default: as many lines as fit.`
-  - `search` (string): `Words to find; the reply starts at the first matching line at or after from.`
+  - `search` (string): `Words to find; the reply opens one line before the first match at or after from.` (amended after the audit, because the window opens one line before the match).
   - Annotations: `pure` and `untrusted`.
 - **Action descriptions** name the flow they absorb, each within 25 words. Take the wording from the analyst's table: for example, `Clicks the referenced element, settles its action, and returns the page.` The `type`, `press`, `navigate`, `wait`, `dialog`, and `switch` descriptions follow the same pattern. `switch` names the tabs `read` lists.
 - **Notes and refusals:** every "call look" note and refusal becomes "call read" (`BROWSER_TOOL_DEADLINE_NOTE`, `BROWSER_TOOL_PENDING_NOTE`, `BROWSER_TOOL_CHANGED_NOTE`, the reference refusals, the capture error, and the busy refusal).

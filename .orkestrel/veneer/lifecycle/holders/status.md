@@ -485,6 +485,17 @@ Lane results:
     - Validation row: the 2B's first call was `read({ from: 47, search: "shipping cutoff time" })`, and its single shipping attempt passed in 4.4 s.
   - **Falsify round running:** workflow `reading-falsify` (run `wf_479b08ad-2cf`), with an objective and a subjective Opus lane on 21 claims.
     - Claim 19 asks whether the paging predicate's refusal of any non-empty `search` narrows the claim.
+  - **The falsify round ruled FAIL:** objective FAIL on 15 claims plus F1 and F2; subjective FAIL on 6 plus F1 to F4.
+    - Rulings: `reading/audit-verdict.md`. Lane reports: `reading/falsify/`.
+    - The Orchestrator reproduced the role-word span, the whitespace secret, and the unchanged journey call allowance.
+    - **Browser fix round** `reading-browser-3`: the resumed browser session, cap 4 h, items B-fix 1 to 14. Each item gets a failing test first and a mutation.
+    - Then the **harness fix:**
+      - paging accepts a non-matching `search`, and "earlier" means any read under the same page until an action or a change note;
+      - `productive` matches the singular `1 line matches`;
+      - M1 runs the page arm only, with interleaved rows that carry their arm;
+      - stale fixtures are fixed;
+      - positions are re-pinned on the fixed pack.
+    - The plan's `read.search` copy is amended.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
