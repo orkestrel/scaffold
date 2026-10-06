@@ -275,14 +275,22 @@ Lane results:
   - Branch heads kept, worktrees removed: browser and agent `store-reliability` carry no campaign commits; ollama `store-reliability` is at `2529bb2`. Ollama `main` is unchanged: 3 unpushed commits plus the uncommitted 0.0.21 version bump.
   - **The user's ruling (2026-10-06):** release ollama 0.0.21 re-pinned to browser `^0.0.26`, then run a fresh campaign on Ollama 0.35.1 and browser 0.0.26 with S0 from run 1. The user holds Ollama's auto-update for the series. Publish mcp 0.0.37 in the same round.
   - Release visits run one at a time: mcp first, then ollama.
-  - Unit `store-campaign3` (ollama `tmp/codex/store-campaign3-brief.md`) launches on the ollama release head after both publishes.
-    - S1's revert stands.
-    - S2 reruns from its first look.
-    - Every run archives the Edge command line, and a launch without both disables stops the series.
+  - **Ollama's visit failed `test:service`** on the shipping and paging store cases (scaffold `tmp/units/layer-ollama.log`). Every other gate passed, 73 of 75 service cases among them. The build equals 0.0.20; only the agent range moved, to `^0.0.26`.
+    - Paging has passed in none of 17 runs since `90901da` (attempt 2's S0 and this visit), against 3 of 8 at `b4a18c3`. The bases also differ in browser build.
+  - **The user ruled (2026-10-06): hold ollama 0.0.21 until campaign 3's acceptance series passes.** Its release head `58c08d8` (re-pin plus overwrite) stays local and unpushed. Campaign 3 launches on it.
+  - Unit `store-campaign3` (ollama `tmp/codex/store-campaign3-brief.md`) launched on `58c08d8` on 2026-10-06, with a 24-hour cap. Its journal is ollama `tmp/codex/store-campaign3.jsonl`.
+    - Two Opus reviews of the brief (preregistration integrity and operations) ruled FAIL. Every finding was repaired before launch:
+      - every arm runs as registered, S1 included;
+      - the in-run capture identifies the campaign Edge by its command line;
+      - attempt 3's scripts take collision-free `store-campaign3-` names;
+      - the 2026-10-04 rulings bind;
+      - the paging reading goes only into the report.
+    - Both attempt-2 candidates apply to `58c08d8` (`git merge-tree`, no conflict).
+    - A run whose campaign Edge lacks either disable stops the series.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
-2. **The ollama store campaign** stopped on 2026-10-06 when the daemon changed from 0.35.0 to 0.35.1, with no candidate kept. The user ruled: release mcp 0.0.37 and ollama 0.0.21 (re-pinned to browser `^0.0.26`), then run `store-campaign3`.
+2. **The ollama store campaign** stopped on 2026-10-06 when the daemon changed from 0.35.0 to 0.35.1, with no candidate kept. mcp 0.0.37 is published. Ollama 0.0.21 is held for campaign 3's acceptance series, and `store-campaign3` runs on its release head.
 3. **mcp items 13 and 14.**
 4. **Veneer's re-pin** to browser `^0.0.26`, probe `^0.0.21`, and scaffold `^0.0.93` is the cloud session's (`lanes.md`, 2026-10-06 entry).
 

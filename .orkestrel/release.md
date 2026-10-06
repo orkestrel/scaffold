@@ -79,3 +79,4 @@ Release-chain notes, continued:
 Release-chain notes:
 - mcp's visit ran alone: source 1539 passed with 2 skipped, guides 202, conformance 47. The publish answered "accepted, confirmed", and `npm view` serves 0.0.37.
 - npm's session had expired; one login link, then the code.
+- Ollama 0.0.21 is held. Its visit failed `test:service` on the live shipping and paging store cases, and the user ruled to release only after the store campaign's acceptance series passes. The release head `58c08d8` stays local.
