@@ -340,6 +340,14 @@ Lane results:
       - Control: campaign 3's S0.
       - Arms: S3, S4, and S5, at 8 runs of the store tasks only, one look, alpha 0.05/3 each.
       - Acceptance runs only after an arm passes every page task in all 8 runs.
+  - **Campaign 4 finished** in 87 minutes, uncapped, and kept no candidate (ollama `tmp/codex/store-campaign4-last.md`, records under `attempt-4/`).
+    - S0's 16-run reclassification reproduced campaign 3's 8 classified runs exactly, and every identity hash matched.
+    - **S3 (rank 1):** target F-1 stayed in 8 of 8 runs (control 16 of 16, p = 1). Search fell from 12/16 to 3/8, and it was reverted (browser `76b6130`).
+    - **S4 (rank 2):** target F-14 stayed in 8 of 8 (control 14/16). Shipping moved from F-1 to F-2 in 8 of 8, click fell to 6/8, and search to 1/8, and it was reverted (browser `322fcd0`, ollama `2fd1082`).
+    - **S5:** skipped. Its target appears in 1 of 16 control runs, so p(0/8) = 0.667.
+    - **Acceptance:** skipped. S0 passed every page task in none of its 16 runs. Its one-sided 95% lower pass bounds are shipping 0%, click 82.9%, search 51.6%, checkout 82.9%, and paging 0%.
+    - Nothing was pushed. Every worktree was removed, and each `store-reliability-4` branch keeps its reverts.
+  - Under the standing constraints, acceptance is out of reach: the same model, no budget or oracle change, and browser 0.0.26's copy. The local daemon also holds `hf.co/sky7350/Mica-v0.1-4B` and `qwen3.8:latest` (27.3B, 16.5 GiB), and the registry serves `qwen3.5:4b-q4_K_M` at 3.10 GiB (read 2026-10-06). Waiting on the user's ruling.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
