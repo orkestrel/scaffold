@@ -1,0 +1,296 @@
+{
+	"rows": [
+		{
+			"face": "all three faces",
+			"section": "checks-radios",
+			"button": "2 buttons: Fragile, Pallet [outline-primary] (btn-check labels)",
+			"rest": "Bootstrap and no layer: rgb(255,255,255) on rgb(13,110,253); + layer: rgb(255,255,255) on rgb(21,93,252)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "checked at rest (.btn-check:checked + .btn), so it already shows the solid text"
+		},
+		{
+			"face": "all three faces",
+			"section": "checks-radios",
+			"button": "3 buttons: Refrigerated, Crate, Loose [outline-primary] (btn-check labels)",
+			"rest": "Bootstrap and no layer: rgb(13,110,253) on transparent; + layer: rgb(21,93,252) on transparent",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "Bootstrap and no layer: rgb(255,255,255) on rgb(13,110,253); + layer: rgb(255,255,255) on rgb(21,93,252)",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on .active/checked only, by Bootstrap design: .btn-check + .btn:hover resets to rest, and neither ':not(.btn-check) + .btn:active' nor '.btn:first-child:active' matches a label that follows its input"
+		},
+		{
+			"face": "all three faces",
+			"section": "input-group, badge, buttons, collapse, modal, offcanvas, tooltips, clearfix, stacks, visually-hidden, engine-states, tailwindcss",
+			"button": "26 buttons: input-group Track, Copy; badge Notifications; buttons Add member, (icon only); collapse Delivery details; modal Open the static / centered / scrollable dialog; offcanvas Open the end / top / bottom panel, Open the sm / md / lg / xl / xxl drawer; tooltips Draft; clearfix Previous page, Next page; stacks Reset; visually-hidden Shipment settings, Download the manifest; engine-states List, Order notes; tailwindcss Subscribe [all carry outline-secondary text-body-emphasis]",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"pressed": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"activeClass": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH: text-body-emphasis (color: var(--bs-emphasis-color) !important) pins the text; only the fill switches"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons, button-group",
+			"button": "4 buttons: buttons Primary, Desktop alerts; button-group Day, Month [outline-primary]",
+			"rest": "Bootstrap and no layer: rgb(13,110,253) on transparent; + layer: rgb(21,93,252) on transparent",
+			"hover": "Bootstrap and no layer: rgb(255,255,255) on rgb(13,110,253); + layer: rgb(255,255,255) on rgb(21,93,252)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on hover, press, and .active"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons, button-group",
+			"button": "17 buttons: buttons Secondary; button-group Copy, Move, Archive (x3 groups), Undo, Redo, Bold, Italic, Inbox, Drafts, Archive [outline-secondary]",
+			"rest": "Bootstrap and no layer: rgb(108,117,125) on transparent; + layer: rgb(106,114,130) on transparent",
+			"hover": "Bootstrap and no layer: rgb(255,255,255) on rgb(108,117,125); + layer: rgb(255,255,255) on rgb(106,114,130)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on hover, press, and .active"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons",
+			"button": "Success [outline-success]",
+			"rest": "Bootstrap and no layer: rgb(25,135,84) on transparent; + layer: rgb(0,130,54) on transparent",
+			"hover": "Bootstrap and no layer: rgb(255,255,255) on rgb(25,135,84); + layer: rgb(255,255,255) on rgb(0,130,54)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on hover, press, and .active"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons",
+			"button": "Danger [outline-danger]",
+			"rest": "Bootstrap and no layer: rgb(220,53,69) on transparent; + layer: rgb(231,0,11) on transparent",
+			"hover": "Bootstrap and no layer: rgb(255,255,255) on rgb(220,53,69); + layer: rgb(255,255,255) on rgb(231,0,11)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on hover, press, and .active"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons",
+			"button": "Warning [outline-warning]",
+			"rest": "Bootstrap and no layer: rgb(255,193,7) on transparent; + layer: rgb(240,177,0) on transparent",
+			"hover": "Bootstrap and no layer: rgb(0,0,0) on rgb(255,193,7); + layer: rgb(0,0,0) on rgb(240,177,0)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(0,0,0) (#000)",
+			"verdict": "switches on hover, press, and .active (to black, as the solid does)"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons",
+			"button": "Info [outline-info]",
+			"rest": "Bootstrap and no layer: rgb(13,202,240) on transparent; + layer: rgb(0,184,219) on transparent",
+			"hover": "Bootstrap and no layer: rgb(0,0,0) on rgb(13,202,240); + layer: rgb(0,0,0) on rgb(0,184,219)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(0,0,0) (#000)",
+			"verdict": "switches on hover, press, and .active (to black, as the solid does)"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons",
+			"button": "Light button [outline-light] on a data-bs-theme=dark surface",
+			"rest": "Bootstrap and no layer: rgb(248,249,250) on transparent; + layer: rgb(249,250,251) on transparent",
+			"hover": "Bootstrap and no layer: rgb(0,0,0) on rgb(248,249,250); + layer: rgb(0,0,0) on rgb(249,250,251)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(0,0,0) (#000)",
+			"verdict": "switches on hover, press, and .active (to black, as the solid does)"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons",
+			"button": "Dark button [outline-dark] on a data-bs-theme=light surface",
+			"rest": "Bootstrap and no layer: rgb(33,37,41) on transparent; + layer: rgb(3,7,18) on transparent",
+			"hover": "Bootstrap and no layer: rgb(255,255,255) on rgb(33,37,41); + layer: rgb(255,255,255) on rgb(3,7,18)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on hover, press, and .active"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons, spinners",
+			"button": "2 buttons: buttons Save draft; spinners Syncing [outline-secondary text-body-emphasis, disabled]",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "n/a (hover refused: Playwright timed out at 3000 ms)",
+			"pressed": "n/a (press refused)",
+			"activeClass": "rgb(0,0,0) on transparent",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH: text-body-emphasis pins the text; disabled (.btn:disabled sets pointer-events: none and the disabled colors), so hover and press cannot reach it"
+		},
+		{
+			"face": "all three faces",
+			"section": "buttons, button-group",
+			"button": "2 buttons: buttons Email updates; button-group Week [outline-primary active]",
+			"rest": "Bootstrap and no layer: rgb(255,255,255) on rgb(13,110,253); + layer: rgb(255,255,255) on rgb(21,93,252) (without .active: the outline color on transparent)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches on hover, press, and .active (carries .active at rest)"
+		},
+		{
+			"face": "all three faces (414)",
+			"section": "navbar",
+			"button": "Search [outline-secondary text-body-emphasis]",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "n/a (not rendered: closed navbar at 414)",
+			"pressed": "n/a",
+			"activeClass": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH: text-body-emphasis pins the text; at 1280 under Bootstrap and + layer it renders and reads the same no-switch pattern"
+		},
+		{
+			"face": "all three faces",
+			"section": "engine-states",
+			"button": "Grid [outline-secondary text-body-emphasis active] (without .active: rgb(0,0,0) on transparent)",
+			"rest": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH: the static .active specimen itself reads black on the gray fill where Bootstrap paints white"
+		},
+		{
+			"face": "Bootstrap",
+			"section": "header",
+			"button": "Bootstrap [outline-secondary active] (without .active: rgb(108,117,125) on transparent)",
+			"rest": "rgb(255,255,255) on rgb(108,117,125)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches: the selected choice; createChoices (app/browser/factories.ts:720-725) renders it with active and without text-body-emphasis"
+		},
+		{
+			"face": "Tailwind, no layer; Tailwind + layer",
+			"section": "header",
+			"button": "Bootstrap [outline-secondary text-body-emphasis] (unselected)",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH on hover or press: createChoices gives every unselected choice text-body-emphasis"
+		},
+		{
+			"face": "Bootstrap; Tailwind + layer",
+			"section": "header",
+			"button": "Tailwind, no layer [outline-secondary text-body-emphasis] (unselected)",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "Bootstrap: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH on hover or press: unselected choice carries text-body-emphasis"
+		},
+		{
+			"face": "Tailwind, no layer",
+			"section": "header",
+			"button": "Tailwind, no layer [outline-secondary active] (without .active: rgb(108,117,125) on transparent)",
+			"rest": "rgb(255,255,255) on rgb(108,117,125)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches: the selected choice (active, no text-body-emphasis)"
+		},
+		{
+			"face": "Bootstrap; Tailwind, no layer",
+			"section": "header",
+			"button": "Tailwind + layer [outline-secondary text-body-emphasis] (unselected)",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "rgb(0,0,0) on rgb(108,117,125)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH on hover or press: unselected choice carries text-body-emphasis"
+		},
+		{
+			"face": "Tailwind + layer",
+			"section": "header",
+			"button": "Tailwind + layer [outline-secondary active] (without .active: rgb(106,114,130) on transparent)",
+			"rest": "rgb(255,255,255) on rgb(106,114,130)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches: the selected choice (active, no text-body-emphasis)"
+		},
+		{
+			"face": "all three faces",
+			"section": "header",
+			"button": "Light [outline-secondary active] (selected color mode)",
+			"rest": "Bootstrap and no layer: rgb(255,255,255) on rgb(108,117,125); + layer: rgb(255,255,255) on rgb(106,114,130)",
+			"hover": "same as rest",
+			"pressed": "same as rest",
+			"activeClass": "same as rest",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "switches: the selected choice (active, no text-body-emphasis)"
+		},
+		{
+			"face": "all three faces",
+			"section": "header",
+			"button": "Dark [outline-secondary text-body-emphasis] (unselected)",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH on hover or press: unselected choice carries text-body-emphasis"
+		},
+		{
+			"face": "all three faces (414; d-lg-none hides it at 1280)",
+			"section": "header",
+			"button": "Contents [btn-sm outline-secondary text-body-emphasis] (summary)",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "Bootstrap and no layer: rgb(0,0,0) on rgb(108,117,125); + layer: rgb(0,0,0) on rgb(106,114,130)",
+			"pressed": "same as hover",
+			"activeClass": "same as hover",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "DOES NOT SWITCH: text-body-emphasis pins the text"
+		},
+		{
+			"face": "Tailwind, no layer (1280 x 800 only)",
+			"section": "navbar",
+			"button": "Search [outline-secondary text-body-emphasis]",
+			"rest": "rgb(0,0,0) on transparent",
+			"hover": "n/a (not rendered)",
+			"pressed": "n/a",
+			"activeClass": "rgb(0,0,0) on rgb(108,117,125)",
+			"solidRest": "rgb(255,255,255) (#fff)",
+			"verdict": "not rendered: checkVisibility is false under this face only. By reading the compile (not isolated by the probe), the unexcluded compile's '@layer utilities { .collapse { visibility: collapse } }' outranks the bootstrap layer on the expanded .navbar-collapse. This is the user's separate collapse report: the content shows while the element is .collapsing and hides when it settles back to .collapse.show"
+		}
+	],
+	"findings": [
+		"ANSWER: this is not a Bootstrap issue. The showcase caused it, and the cause is the same under every face. Every outline button that keeps its text color carries the utility 'text-body-emphasis'. Every outline button without that utility switches its text to the solid button's color. In main there are 64 outline elements. 30 carry text-body-emphasis, and none of them switch under any face at either width. 29 do not carry it and switch on hover, press, and .active. The other 5 are .btn-check labels, which switch only when checked or .active, as Bootstrap intends. In the header there are 6 .btn elements. The 2 selected choices (the current face and Light) switch. The other 4 do not: the two unselected face buttons, Dark, and the Contents summary.",
+		"MECHANISM: dist/src/bootstrap/index.css:8625-8627 emits '.text-body-emphasis { color: var(--bs-emphasis-color) !important; }' outside any layer; the recipe compile has the same rule. An important declaration beats these normal declarations inside '@layer bootstrap': '.btn:hover { color: var(--bs-btn-hover-color) }' at index.css:2912 and the active group ('.btn-check:checked + .btn, :not(.btn-check) + .btn:active, .btn:first-child:active, .btn.active, .btn.show { color: var(--bs-btn-active-color) }') at index.css:2934-2941. The background-color and border still come from --bs-btn-hover-bg and --bs-btn-active-bg, so only the fill switches. The measured result is black text on a gray fill. Under Bootstrap and 'Tailwind, no layer' that is rgb(0,0,0) on rgb(108,117,125). Under 'Tailwind + layer' it is rgb(0,0,0) on rgb(106,114,130). Applying the WCAG formula to those measured values gives 4.48:1 and 4.34:1, both under 4.5:1. The solid button's white text would give 4.69:1 and 4.84:1. These ratios are my arithmetic on the probe's rgb readings, not readContrast readings.",
+		"BOOTSTRAP DECLARES: '.btn-outline-primary' (index.css:3090-3105) sets --bs-btn-color #0d6efd, --bs-btn-hover-color #fff, --bs-btn-hover-bg #0d6efd, --bs-btn-active-color #fff, and --bs-btn-active-bg #0d6efd. Across the outline variants (index.css:3090-3217), the hover and active text is #fff for primary, secondary, success, danger, and dark, and #000 for info, warning, and light. Each matches its solid counterpart's --bs-btn-color. The probe read a scratch 'btn btn-{theme}' element under every face and got the same values: declared #fff or #000, computed rgb(255,255,255) or rgb(0,0,0). '.btn-check + .btn:hover' (index.css:2917-2921) deliberately resets a toggle label to its rest colors.",
+		"ORIGIN: the specimens took text-body-emphasis in 0df5a3b (2026-10-02, 'Polish showcase spacing and specimen contrast across variants'). For example, that commit turned the modal openers from btn-outline-primary into 'btn-outline-secondary text-body-emphasis'. The header took it in 6d1fffc (2026-10-02). That commit's message says btn-outline-secondary labels read under 4.5:1 on the header. createChoices (app/browser/factories.ts:720-725) gives every unselected choice text-body-emphasis and swaps it for 'active' on the selected one. So the header switch you see on a tap is that class swap after the selection, not a hover or press switch. Hovering or pressing an unselected header choice reads black on gray. The utility was added to fix rest contrast, and pinning the hover, press, and active text was a side effect nobody checked.",
+		"SPECIMEN THAT LOOKS WRONG WITH NO INTERACTION: the engine-states 'Grid' button (app/browser/sections/engine-states.html:14) is the static .active demonstration. It carries both 'text-body-emphasis' and 'active', so it reads black on the gray fill where Bootstrap's active outline-secondary paints white. Disabled 'Save draft' (buttons.html:155) and 'Syncing' (spinners.html) refuse hover and press because '.btn:disabled' sets pointer-events: none (index.css:2953-2960). Even with .active added they stay black.",
+		"FACES AND WIDTHS: in run review-outline-2, every element has the same switch pattern under all three faces at 414 x 896 and at 1280 x 800. The only per-face difference is which header choice is selected, which is by design. The visible readings at 414 and 1280 are identical (0 differences across rest, hover, press, and .active). Width changes only which elements render: at 1280 the sm, md, lg, and xl drawer buttons and Contents are hidden. Under 'Tailwind, no layer' at 1280 the navbar 'Search' button is not rendered either; that is the user's separate collapse report, explained in the last row.",
+		"PROBE ARTIFACT, RULED OUT: run review-outline-1 showed 5 per-face differences. They were Month under + layer, Bold and Archive under no layer, and Inbox and the xxl drawer button under Bootstrap; in each, the hover reading equalled rest and two presses missed. The cause was the root's resolved 'scroll-behavior: smooth' (Bootstrap reboot, index.css:193; logged by the probe). It meant scrollIntoView was still animating when Playwright hovered. Run review-outline-2 scrolled with behavior 'instant' and checked :hover and :active at the moment of every read: 0 hovers and 0 presses were lost, and all 5 differences disappeared. Do not cite review-outline-1 for those 5 cells.",
+		"TOUCH: the probe drove a mouse pointer (Playwright hover, then driveHold and releasePointer through CDP Input.dispatchMouseEvent) on Chromium 141.0.7390.37, with no touch emulation. It shows what the cascade paints once :hover, :active, or .active matches. It cannot show which of those states a phone's tap sets, or for how long. Bootstrap 5.3.8 does not put '.btn:hover' inside '@media (hover: hover)'; there is no such query in index.css. So whatever :hover a touch browser applies after a tap uses these rules. This is not measured here, but mobile browsers emulate hover after a tap and usually keep it until the next tap elsewhere, and iOS Safari applies :active only when a touch listener is present. For the 30 text-body-emphasis specimens the input type does not matter: no state (hover, press, or .active) changes their text color under any face.",
+		"RECOMMENDATION (not tested by this probe): keep the emphasis rest color without the !important utility. Set the button's own variable instead (--bs-btn-color: var(--bs-emphasis-color), through a scoped class) and drop text-body-emphasis from outline buttons, including the unselected choices in createChoices. Then '.btn:hover' and '.btn.active' still apply --bs-btn-hover-color and --bs-btn-active-color, which is #fff for secondary.",
+		"RUN CONDITIONS: both runs used the light color mode (applyTheme('light')), project app:browser, and the queue command form from the brief. The host's default browser was Chromium 141.0.7390.37, recorded in each folder's start.json; Chromium 153 was not selected. review-outline-1 ran at 414 only (1 passed, 1 skipped, exit 0, 254.9 s). review-outline-2 ran the corrected file at both 414 and 1280 (2 passed, exit 0, 500.2 s). Both stderr.log files are empty. The scratch file /home/user/veneer/tests/app/browser/outline.probe.test.ts was deleted. 'git -C /home/user/veneer status --porcelain' printed nothing."
+	],
+	"run_folders": [
+		"/home/user/veneer/tmp/units/journey-cost/runs/review-outline-1",
+		"/home/user/veneer/tmp/units/journey-cost/runs/review-outline-2"
+	],
+	"probe_deleted": true
+}
