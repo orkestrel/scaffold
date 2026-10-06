@@ -160,7 +160,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
   - Probe: its pending overwrite was committed (`288f600`).
     - Unit `teardown-load` ran 20 runs at about 85% CPU (14 busy workers). The teardown rejection reproduced 0 times; every `destroy()` resolved, and every pid was gone afterward.
     - Instead, the case failed 20 of 20 because the fixture's `overlaps` record was never written: the observation depends on fixture timing under load.
-    - Running: `teardown-load2` (probe `tmp/codex/teardown-load2-brief.md`). The fixture records the overlap in the same write as its pid, the assertion reads only records the fixture always writes, and the case stays red without the disposal bound. It is proven under the same load, then the whole `npm run test` runs quiet and loaded.
+    - `teardown-load2` committed `140c5bd`:
+      - The fixture wrote `spawns`, then ran `tasklist` before writing `overlaps`, so cleanup could kill it between the two writes. It now records the overlap in its startup write.
+      - Under load: 20 of 20 failed before, 0 of 20 after. With the disposal bound removed, 5 of 5 fail.
+    - The quiet full suite failed only the executed receipt example (Oxlint moved to 1.87.0); the Orchestrator re-quoted it in TSDoc and the guide (`24b8a27`), and guides pass 32.
+    - Under a synthetic 85% CPU load, 12 timing cases across 3 files fail (handshake, warm, deadline). That load is harsher than a release visit, so this is a follow-up, not a blocker.
+    - The release-visit teardown rejection stays unreproduced in 20 runs.
+    - Next: `layer.ts probe` once browser 0.0.26's preparation is done, with visits run one at a time.
   - Unit `signin` (`tmp/codex/signin-last.md`, `tmp/probes/signin/`):
     - On Edge 154.0.4258.53, `--disable-features=msImplicitSignin` stops implicit sign-in: no account in 3 of 3 launches plus 3 confirmations, against a control that signed in 3 of 3. The library's drive passes with it.
     - `msIdentityCore` also works. `--guest` breaks CDP with `ECONNRESET`. The `signin.*` preference seeds, `--disable-signin`, and `--allow-browser-signin=false` do not stop it.
