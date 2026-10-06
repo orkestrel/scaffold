@@ -157,7 +157,11 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - `npm test` and the compare (dist moved, range moved, ruling bump).
     - `prepublishOnly`'s `test:distribution --mode release` needs `/proc` and FIFOs, and fails on Windows. Per the release record, the default mode passed (14 passed, 9 host-bound skips), and `test:service` passed (205 passed, 6 skipped).
   - **Browser 0.0.25: published** 2026-10-06 UTC from `ea8477b`. `window.ts` reported accepted and unconfirmed, and `npm view` served 0.0.25 with pool `^0.0.16` about 4 minutes later. Recorded in `.orkestrel/release.md` § 2026-10-05 round and logged for veneer in `lanes.md`.
-  - Probe: its pending overwrite was committed (`288f600`). Running: unit `teardown-load` (probe `tmp/codex/teardown-load-brief.md`), which reproduces the silent-initialize teardown failure under load, classifies it as a true survivor or a slow death misreported, fixes it, and proves it.
+  - Probe: its pending overwrite was committed (`288f600`).
+    - Unit `teardown-load` ran 20 runs at about 85% CPU (14 busy workers). The teardown rejection reproduced 0 times; every `destroy()` resolved, and every pid was gone afterward.
+    - Instead, the case failed 20 of 20 because the fixture's `overlaps` record was never written: the observation depends on fixture timing under load.
+    - Running: `teardown-load2` (probe `tmp/codex/teardown-load2-brief.md`). The fixture records the overlap in the same write as its pid, the assertion reads only records the fixture always writes, and the case stays red without the disposal bound. It is proven under the same load, then the whole `npm run test` runs quiet and loaded.
+  - Running in parallel: unit `signin` (browser `tmp/codex/signin-brief.md`), the per-launch implicit sign-in research.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
