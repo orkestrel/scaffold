@@ -1,0 +1,3 @@
+Stopped under the brief’s deviation rule: the queued P-H probe exited 1 because error conversion discarded the protocol messages. Domain cleanup remains unproved; all items are withheld.
+
+[Resumed report](/home/user/veneer/tmp/units/journey-cost/lane-3/report.md) records the failure, partial candidate, unfinished work, and prepared commands. The first report is preserved as `report-deviation-1.md`.

@@ -9,7 +9,7 @@ Only passed assertions contribute durations. A failed run remains in the header.
 | /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-fast | 1 | unavailable (command) | 1 | 0 | command (no R5) |
 | /home/user/veneer/tmp/units/journey-cost/fixtures/durations/command-slow | 2 | unavailable (command) | 1 | 0 | command (no R5) |
 
-R3 = ceil(max × max(band, ratio) / 100) × 100 ms for settle readings only. R4 = ceil(max × max(band, ratio) / 1000) × 1000 + ceiling ms. Figures need at least two distinct eligible runs and a positive minimum. Slack = supplied timeout minus the title maximum across variants. Out-of-band runs and omitted run/title pairs contribute no readings. Command readings carry no load and take no R5 test.
+R3 = ceil(max × max(band, ratio) / 100) × 100 ms for settle readings only, where a settle ratio is the slowest over the fastest per-run slowest reading among the runs whose slowest reading is at or above the 150 ms settle floor, and needs two such counting runs. The shared margin is the largest of the band and every settle ratio; the shared budget is ceil(ceiling × margin / 100) × 100 ms over the slowest settle reading. R4 = ceil(max × max(band, ratio) / 1000) × 1000 + ceiling ms. Figures need at least two distinct eligible runs and a positive minimum. Slack = supplied timeout minus the title maximum across variants. Out-of-band runs and omitted run/title pairs contribute no readings. Command readings carry no load and take no R5 test.
 
 R5 test: flag when the title ratio exceeds the band and there exists an eligible pair with slow/fast > band but outside(slow) <= outside(fast). The pair is printed as the witness. This conservative inversion test is diagnostic, not proof of a cause; an unmarked title is not cleared of timing defects. R5 figures are provisional and await diagnosis.
 
@@ -21,9 +21,13 @@ Unspecified means no variant key was present. Unattributed means the title repea
 
 ## Settle probes
 
-| Family | Motion | Description | Readings | Eligible runs | Min ms | Max ms | Ratio | R3 ms | Slack ms | Slack check | Slowest run |
-| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| face | header | visible | 2 | 2 | 100.0 | 150.0 | 1.500000 | 600 | unavailable | unavailable | command-slow: 150.0 ms, seconds=2, outside.seconds=unavailable (command) (Settle probe (light-1280)) |
+| Family | Motion | Description | Readings | Eligible runs | Counting runs | Fastest run max ms | Max ms | Ratio | R3 ms | Slack ms | Slack check | Slowest run |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| face | header | visible | 2 | 2 | 2 | 200.0 | 300.0 | 1.500000 | 1200 | unavailable | unavailable | command-slow: 300.0 ms, seconds=2, outside.seconds=unavailable (command) (Settle probe (light-1280)) |
+
+Shared margin: 4.000000 (band 4.000000; largest own ratio 1.500000 from visible [face, header]: 300.0 ms in command-slow over 200.0 ms in command-fast).
+Shared budget: ceil(300.0 × 4.000000 / 100) × 100 = 1200 ms (ceiling: visible [face, header], 300.0 ms in command-slow).
+Shared budget slack check: below every available slack.
 
 ## Statechart rows
 

@@ -1,0 +1,1 @@
+[Report written](/home/user/veneer/tmp/units/journey-cost/lane-3/report.md). Equality probes, including P-H, passed. As required by the brief, work stopped when `npm run check` found two TypeScript errors. Remaining gates and price runs are unrun; exact commands are prepared.

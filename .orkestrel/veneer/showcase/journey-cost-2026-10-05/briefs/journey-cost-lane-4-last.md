@@ -1,0 +1,3 @@
+Lane 4 stopped under the brief's deviation contract: checkpoint 2 leaves five optimal four-move assignments at contention factor 1.67, and dark-1280 cannot resolve the tie. No placement or guide edit was applied; the integrated candidate is unchanged. Destination mutations, gates, and P4/P5 preparation remain pending the placement ruling.
+
+[Report](/home/user/veneer/tmp/units/journey-cost/lane-4/report.md)

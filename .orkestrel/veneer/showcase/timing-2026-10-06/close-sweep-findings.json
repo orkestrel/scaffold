@@ -1,0 +1,1188 @@
+{
+ "findings": [
+  {
+   "lens": "placeholders",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u7c-brief.md",
+   "line": "5",
+   "finding": "The record copy of the U7c brief still carries the placeholder `BASE_COMMIT` where the launch copy names the base commit. It states a fact, not a fill-in instruction.",
+   "evidence": "diff against /home/user/scaffold/tmp/codex/task75-u7c-brief.md:5 shows `a detached veneer worktree at \\`BASE_COMMIT\\`` in the record and `at \\`6a976a0\\`` in the launch copy.",
+   "severity": "fix",
+   "proposed_fix": "Replace `BASE_COMMIT` with `6a976a0` so the record copy matches the launch copy byte for byte."
+  },
+  {
+   "lens": "run folders",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "146",
+   "finding": "The U5 entry cites the run folder `runs/task75-u5-journey`, which does not exist. The only full-journey folder for U5 is `task75-u5-journey-1`.",
+   "evidence": "`ls runs | grep ^task75-u5-` lists cases-1, file-1, journey-1, scrollend-1, types-1, and types-2; there is no `task75-u5-journey`.",
+   "severity": "fix",
+   "proposed_fix": "Write `runs/task75-u5-journey-1`."
+  },
+  {
+   "lens": "run folders",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "151",
+   "finding": "The U4 entry cites the run folder `runs/task75-u4-journey`, which does not exist. The two full runs are `task75-u4-journey-1` and `task75-u4-journey-2`.",
+   "evidence": "`ls runs | grep ^task75-u4-` lists journey-1 and journey-2; there is no bare `task75-u4-journey`.",
+   "severity": "fix",
+   "proposed_fix": "Write `runs/task75-u4-journey-1` and `-2`."
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "194",
+   "finding": "The fleet entry answers the desktop entries by line number: `lanes.md:272`, `:308`, `:340`, `:324`, and `:226`. Entries prepended since then have moved the file, so none of these lines holds what the entry describes.",
+   "evidence": "lanes.md:226 is the containment gates bullet, :272 is token row 9, and :340 is a 2026-10-05 budget-tight bullet. The 4e94add7 ask is at :359 and the desktop 0.0.25 entry at :410.",
+   "severity": "fix",
+   "proposed_fix": "Cite each target by its entry heading (date, from, to, and title) instead of a line number."
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "191",
+   "finding": "The fleet entry cites `holders/status.md:182-183` as the READY lines. That path does not exist, and the READY lines sit at 190-191 of `lifecycle/holders/status.md`. They were at 190-191 at citing commit 4993419b too.",
+   "evidence": "`find` returns only .orkestrel/veneer/lifecycle/holders/status.md, and `grep -n READY` there gives 190 and 191 both now and at 4993419b.",
+   "severity": "fix",
+   "proposed_fix": "Write `lifecycle/holders/status.md:190-191`."
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "201",
+   "finding": "The B3 entry cites the probe matrix output `tmp/probes/flip-b3/out/`. It exists nowhere on the host; the unit's retired worktree probably took it.",
+   "evidence": "`/home/user/veneer/tmp/probes` holds flip, flip2 to flip5, tokens, and tokens2, with no flip-b3. `find /home/user -maxdepth 7 -name flip-b3` returns nothing.",
+   "severity": "fix",
+   "proposed_fix": "Mark the path as removed with the worktree, or point the reading at `tmp/units/completion-b3/report.md`, which exists."
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "185",
+   "finding": "The B4 entry cites `compare-jb2b.md` in the session scratchpad. The file is gone; the U9b lane's scratchpad wipe recorded at lanes.md:92 probably removed it.",
+   "evidence": "`ls` of /tmp/claude-0/-home-user/4338f304-.../scratchpad shows no compare-jb2b.md.",
+   "severity": "fix",
+   "proposed_fix": "Note that the report no longer exists, or drop the citation and keep the stated outcome (`jb2b-2` against `jb2b-1` reads Equal)."
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "186, 451",
+   "finding": "The verdict cites the B4 entry as `/home/user/scaffold/.orkestrel/veneer/lanes.md:89`. Line 89 is blank in that checkout, and the B4 entry sits at :176 there and at :184 in the record worktree.",
+   "evidence": "`sed -n 89p` on /home/user/scaffold/.orkestrel/veneer/lanes.md prints an empty line; `grep 'read once in six full runs'` finds :176 and :184.",
+   "severity": "fix",
+   "proposed_fix": "Cite the entry heading `2026-10-06 — cloud session (completion unit B4 lands …)` instead of a line number."
+  },
+  {
+   "lens": "commit shas",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "404",
+   "finding": "The probe 0.0.21 commit `0745af2` does not resolve in any local checkout. The only probe checkout is stale, and GitHub access to orkestrel/probe is not enabled for this session.",
+   "evidence": "`git -C /home/user/orkestrel/probe cat-file -t 0745af2` gives a fatal error; that checkout's log shows only 274ef11. `gh api` returned 403.",
+   "severity": "note"
+  },
+  {
+   "lens": "placeholders",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u9b-brief.md",
+   "line": "31-33, 41",
+   "finding": "`SLOWEST_TABLE`, `TABLE_TITLE`, `SLOWEST_HEADER`, `SLOWEST_PRESERVATION`, `FIGURE`, `RUN`, `FAMILY`, and `WIDTH` are fill-in markers the brief tells the lane to replace from the instrument tables. The landed veneer comments carry real figures.",
+   "evidence": "u9b-brief.md:30 says 'with figures you read from the instrument tables', and veneer tests/app/browser/integration.test.ts:1751, :2119, and :2199 carry 101,851.9, 37,215.6, and 73,352.0 ms.",
+   "severity": "note"
+  },
+  {
+   "lens": "placeholders",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u2-brief.md",
+   "line": "15",
+   "finding": "Several briefs use template tokens that are host-rule launch markers: NAME, KIND, and COMMAND in u1 through u9, RUNS, NAME, and WT in u8b, and the output-format tokens DESCRIPTION, FAMILY, MOTION, SLOW, FAST, RUN, and CEILING in u8c. The u2 brief alone uses `FOLDER/stdout.log` without defining FOLDER; its folder is written as `runs/task75-u2-NAME`.",
+   "evidence": "u2-brief.md:15 reads '…/runs/task75-u2-NAME … the command's stdout lands in `FOLDER/stdout.log`'. The FOLDER and NAME tokens in u9-report.md:33-40 and u7c-report.md:131-150 sit inside ```text fences, which exempts them.",
+   "severity": "note"
+  },
+  {
+   "lens": "run folders",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u8b-brief.md",
+   "line": "45",
+   "finding": "The U8b brief names the journey folder `task75-u8b-journey-1`, but no such folder exists; only `-2` does. The record holds no U8b report that explains the gap.",
+   "evidence": "`ls runs | grep ^task75-u8b-` lists journey-2, setup-1, setup-2, showcase-1, showcase-2, and typecheck-1, and lanes.md:112 cites `runs/task75-u8b-journey-2`.",
+   "severity": "note"
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u8c-brief.md",
+   "line": "28",
+   "finding": "The U8c brief cites the Orchestrator's reference computation at `…/scratchpad/settle-shared.out`, which the scratchpad wipe removed. The surviving equivalent is `settle-pools-threshold.out` in the record folder.",
+   "evidence": "`ls …/scratchpad/settle-shared.out` reports no such file, and settle-pools-threshold.out:7 reads 'next 2.8911 animations div.offcanvas'.",
+   "severity": "note"
+  },
+  {
+   "lens": "stale record copies",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u8b-brief.md",
+   "line": "9, 20-21, 36",
+   "finding": "The U8b and U8c brief copies carry the superseded 10 ms-floor figures: `COMPONENT_WAIT` 2,600 ms and margin 2.8911. The constant landed at 1,600 ms under the 150 ms floor, and the record has no brief that carries the revision. Both copies match their /home/user/scaffold/tmp/claude launch copies.",
+   "evidence": "u8b-brief.md:21 has `budget: 2_600`; lanes.md:112 has 'COMPONENT_WAIT is 1,600 ms'; and u8c-brief.md:15 sets the floor at 'the poll interval, 10 ms'.",
+   "severity": "note"
+  },
+  {
+   "lens": "dangling references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/astra-check.md",
+   "line": "127, 143, 147, 149, 167",
+   "finding": "The Astra check cites `lanes.md:73–77`, `:79–85`, `:87–91`, `:89`, and `:107`. These were valid when the lane ran and have drifted since. The file is byte-identical to the lane's output, so it is evidence and stays as returned.",
+   "evidence": "`cmp` of astra-check.md against /home/user/scaffold/tmp/codex/task75-check-last.md reports them identical; lanes.md:73 is the 2026-10-06 probe-registration entry.",
+   "severity": "note"
+  },
+  {
+   "lens": "§ references",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u9b-brief.md",
+   "line": "30",
+   "finding": "`§ Evidence` names the heading `## Evidence for the comments` only by prefix. Every other § in scope resolves; lanes.md:404 `release.md § 2026-10-05 round` also resolves only by prefix.",
+   "evidence": "`grep -n '^## '` on u9b-brief.md gives '37:## Evidence for the comments', and release.md:44 is '## 2026-10-05 round: holders as contexts, shared leases, the sync fix'.",
+   "severity": "note"
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/scaffold/tmp/codex",
+   "line": "",
+   "finding": "The task 75 launch copies are still in place: 79 task75-* files in tmp/codex and 6 in tmp/claude. Lanes entries cite six of the last-message files, which have no record copy, so deleting the launch copies without first copying those six would leave the lanes citations dangling.",
+   "evidence": "`cmp` matching finds no record copy for task75-u1-last.md, u1b, u2, u3, u4, u5, and u6, and lanes.md:137, :146, :151, :156, and :158 cite u6, u5, u4, u1/u1b, and u3. The check, u7a, u7b, u7c, u8, and u9 last files match astra-check.md and the u*-report.md copies.",
+   "severity": "note"
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/scaffold/tmp/claude/task75-design-verdict.md",
+   "line": "192",
+   "finding": "The scratch copy of the verdict predates the clause 3 and clause 4 amendments; the record copy is authoritative. The scratch copies of the brief, the draft, and the u8b, u8c, and u9b briefs are identical to their record copies.",
+   "evidence": "`cmp` reports the files differ at line 192; the scratch copy is 54,689 bytes from 06:44 and the record copy 58,897 bytes from 11:49.",
+   "severity": "note"
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/README.md",
+   "line": "13",
+   "finding": "The folder README indexes only the design round and says that units 'follow in `lanes.md` entries as they land', although task 75 is closed. Fifteen record files are cited nowhere in the record or lanes.md.",
+   "evidence": "The uncited files are omit-b4-titles.json, settle-pools-threshold.ts, u2-brief.md, u2b-probe.txt, u3-brief.md, u4-brief.md, u5-brief.md, u6-brief.md, u7a-brief.md, u7b-brief.md, u7c-report.md, u8-analysis-report.md, u8-brief.md, u8-enclosing-slack.json, and u8-report.md.",
+   "severity": "note"
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/.wave",
+   "line": "",
+   "finding": "The worktrees veneer-u2, veneer-u7, veneer-u7b, and veneer-b5, which the record cites, are gone, and no lanes entry records their retirement. lanes.md:85 records only the lane M and U8/U9 worktrees. Record citations into them now dangle, as expected after retirement.",
+   "evidence": "`git -C /home/user/veneer worktree list` shows only /home/user/veneer, and the record cites /home/user/.wave/veneer-u7 in u7a-report.md:51 and veneer-u7b in u7b-brief.md:5.",
+   "severity": "note"
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/veneer/tmp/units/journey-cost/durations-2026-10-06e.md",
+   "line": "",
+   "finding": "The live instrument folder holds a durations table that the record does not copy or cite. The live -06b table was also regenerated at 10:28 and no longer matches the record copy from 06:58; the -06, -06c, and -06d copies match.",
+   "evidence": "`ls -la` shows the -06e table at 644,643 bytes from 10:16, and `cmp` reports '06b differs'.",
+   "severity": "note"
+  },
+  {
+   "lens": "cross-record figures",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "193",
+   "finding": "The records disagree on the slowest preservation reading. Rule R clause 4 and lanes.md:99 give 100,081.4 ms, while the U9 close entry at lanes.md:90 and the landed comment give 101,851.9 ms, measured in `task75-u9-journey-accept`.",
+   "evidence": "veneer tests/app/browser/integration.test.ts:1751 reads '// Rule R7: slowest 101,851.9 ms (1280 px, task75-u9-journey-accept)'.",
+   "severity": "note"
+  },
+  {
+   "lens": "writing.md § Substitutions (now)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "90",
+   "finding": "This line uses `now` in the banned change-relative sense, and the sentence gives no date.",
+   "evidence": "lanes.md:90 (entry 'task 75 closes: unit U9 lands'): \"the witness case's 15,000 ms (now explicit) carry rule R7 adequacy comments\"",
+   "severity": "fix",
+   "proposed_fix": "\"the witness case's 15,000 ms (made explicit) carry rule R7 adequacy comments\""
+  },
+  {
+   "lens": "writing.md § Substitutions (once, temporal)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "157",
+   "finding": "This line uses `once` in the temporal sense ('as soon as'), which the table bans.",
+   "evidence": "lanes.md:157 (U2 item): \"rests over a tooltip trigger once the 390 px layout puts one under it\"",
+   "severity": "fix",
+   "proposed_fix": "\"rests over a tooltip trigger when the 390 px layout puts one under it\""
+  },
+  {
+   "lens": "writing.md § Substitutions (latest)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "190",
+   "finding": "This line uses `latest` as a relative-time qualifier and does not put it in quotes as the user's verbatim words. `latest` has no date exemption.",
+   "evidence": "lanes.md:190: \"**The user's word of 2026-10-06**: update every checkout to its latest `main`\"",
+   "severity": "fix",
+   "proposed_fix": "\"update every checkout to the head of its `main`\" (the same item names the commits that follow: `91682014`, `0379087`)"
+  },
+  {
+   "lens": "writing.md § Substitutions (new)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "192",
+   "finding": "This line uses `new` for versions in a sentence that gives no date. The table's rule for `new` is to delete it or give the version.",
+   "evidence": "lanes.md:192: \"Both installed servers answered a stdio handshake at the new versions (`tmp/units/fleet-pins/smoke-*.txt`): `browse` 0.0.26 ... `probe` 0.0.21\"",
+   "severity": "fix",
+   "proposed_fix": "\"answered a stdio handshake at 0.0.26 and 0.0.21\""
+  },
+  {
+   "lens": "writing.md § Substitutions (now)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "200",
+   "finding": "This line uses `now` in the banned change-relative sense. The line's two `once` uses are numeric and exempt.",
+   "evidence": "lanes.md:200 (B3 landing): \"(every open-state lookup now binds through the engine's relation or marker)\"",
+   "severity": "fix",
+   "proposed_fix": "\"(every open-state lookup binds through the engine's relation or marker)\""
+  },
+  {
+   "lens": "writing.md § Substitutions (new)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u8c-brief.md",
+   "line": "25",
+   "finding": "This line uses `new` in the change-relative sense ('added by this change').",
+   "evidence": "u8c-brief.md:25: \"Update every assertion the new columns and the extra fixture move\"",
+   "severity": "fix",
+   "proposed_fix": "\"Update every assertion the `Counting runs` and `Fastest run max ms` columns and the extra fixture move\""
+  },
+  {
+   "lens": "writing.md § Claims and time (cite the run behind every number)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "77",
+   "finding": "No cited reading supports the CPU figures. The item cites only `smoke-probe-*.txt`, and those files hold serverInfo, exit, wall, end time, and tools, with no CPU reading.",
+   "evidence": "lanes.md:77: \"holds one core for about 50 s before it spawns `oxlint --lsp`, then runs on at 95 percent for a minute more\"; `cat /home/user/veneer/tmp/units/fleet-pins/smoke-probe-*.txt` shows only `probe-veneer exit=0 wall=101.3 s 13:05:03`-shaped lines",
+   "severity": "fix",
+   "proposed_fix": "Cite the capture that read the CPU (a saved `ps`/`top` output under `tmp/units/fleet-pins/`), or cut the sentence."
+  },
+  {
+   "lens": "writing.md § Claims and time (claim only what the reader can check)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "78",
+   "finding": "A reader cannot check this claim, because it is bounded by what 'this session knows' rather than by a named default.",
+   "evidence": "lanes.md:78: \"on veneer's multi-project configuration that onset alone exceeds every MCP client default this session knows\"",
+   "severity": "fix",
+   "proposed_fix": "\"that onset alone exceeds Claude Code's 30,000 ms connection timeout (the `claude mcp list` reading in the preceding item)\""
+  },
+  {
+   "lens": "writing.md § Claims and time (recommend one path; rule on every option you list)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "78",
+   "finding": "The handoff lists two options for the probe lane and does not recommend either.",
+   "evidence": "lanes.md:78: \"Two readings for the package to rule on: answer `initialize` as soon as the lint stage is up ...; or state in § Registering the server that the client's startup timeout must cover the runtime onset\"",
+   "severity": "fix",
+   "proposed_fix": "Name the recommended reading (for example: \"Recommended: answer `initialize` when the lint stage is up ...; the alternative, a documented client timeout, leaves every default-configured client failing\") and keep the other as the ruled-out option."
+  },
+  {
+   "lens": "writing.md § Claims and time (claim only what the reader can check)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "193",
+   "finding": "The clause-4 amendment cites a range that the file it cites contradicts, and the same paragraph later gives 1.43.",
+   "evidence": "design-verdict.md:193: \"per-title readings on the same tree vary by 1.1 to 1.27 between runs, `u9-hold-report.txt`\"; node parse of the 35 unique rows in u9-hold-report.txt: ratio min 1.045128, max 1.428399; the same paragraph: \"nine titles hold (own ratio 1.17 to 1.43 ...)\"",
+   "severity": "fix",
+   "proposed_fix": "\"per-title own ratios on the same tree read 1.05 to 1.43 between runs (the 35 held titles, `u9-hold-report.txt`)\""
+  },
+  {
+   "lens": "writing.md § Claims and time (cite the run behind every number)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "193",
+   "finding": "The amendment's preservation figure comes from the three-run table, while the same sentence's other figures (73,352.0 and 37,215.6) come from the five-run post-U7c final table. The landed comment carries the final table's figure.",
+   "evidence": "design-verdict.md:193: \"the preservation case's 300,000 ms passes against 100,081.4 ms (1280 px)\"; runs/task75-u9-journey-final/durations-post-u7c.md:33 reads Max 101851.9 (5 runs); runs/task75-u9-journey-2/durations-post-u7c.md:31 reads 100081.4 (3 runs); lanes.md:90 records the landed comment as 101,851.9",
+   "severity": "fix",
+   "proposed_fix": "\"passes against 101,851.9 ms (1280 px, `task75-u9-journey-final/durations-post-u7c.md:33`)\""
+  },
+  {
+   "lens": "writing.md § Claims and time (stale figure against the governing record)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u8b-brief.md",
+   "line": "9",
+   "finding": "The U8b and U8c record copies carry the superseded 10 ms floor, 2.8911 margin, and 2,600 ms budget. They cite the clause-3 amendment as their governing record, and that amendment reads a 150 ms floor, a 1.6915 margin, and 1,600 ms. U8 landed 1,600 ms.",
+   "evidence": "u8b-brief.md:9 \"`COMPONENT_WAIT` is 2,600 ms\" and :19-21 \"2.8911 ... budget: 2_600\"; u8c-brief.md:15 \"at or above the poll interval, 10 ms\" and :28 \"margin 2.891129 ... budget 2600\"; design-verdict.md:192 \"150 ms ... 1,600 ms\"; lanes.md:113 \"margin 1.691500 ... budget 1,600\"",
+   "severity": "note",
+   "proposed_fix": "Add one line to each brief recording that the ruling was revised to the 150 ms floor before the lane ran (lanes.md:120), or keep the briefs as dispatch history and point at lanes.md:120."
+  },
+  {
+   "lens": "writing.md § Claims and time (cite the run behind every number)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "99",
+   "finding": "The U9 ruling entry gives the preservation slowest reading as 100,081.4 ms, while the U9 landing entry gives 101,851.9 ms. Both are accurate for their tables, but neither line names its run set.",
+   "evidence": "lanes.md:99 \"the preservation 300,000 ms (slowest 100,081.4 ms)\" vs lanes.md:90 \"slowest 73,352.0, 37,215.6, 101,851.9, and 6,833.6 ms\"",
+   "severity": "note",
+   "proposed_fix": "Name the table behind each figure (`task75-u9-journey-2` three-run vs `task75-u9-journey-final` five-run)."
+  },
+  {
+   "lens": "writing.md § Claims and time (cite the run behind every number)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "77",
+   "finding": "The three handshake times mix clocks: the scaffold reading gives its end minute, while the two 13:00 and 13:03 veneer readings give their start minutes.",
+   "evidence": "smoke-probe-veneer-registered.txt end 13:02:28 (115.8 s, start 13:00:32); -registered-2.txt end 13:05:03 (101.3 s, start 13:03:22); smoke-probe-scaffold-2.txt end 13:07:47 (63.4 s, start 13:06:44); lanes.md:77 \"115.8 s at 13:00 ... 101.3 s at 13:03 ... scaffold 63.4 s at 13:07\"",
+   "severity": "note",
+   "proposed_fix": "\"scaffold 63.4 s at 13:06 alone\" (start minute, matching the other two)"
+  },
+  {
+   "lens": "writing.md § Claims and time (claim only what the reader can check)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "77",
+   "finding": "The item makes a claim about Claude Code configuration without citing or linking a source. This sweep did not verify it.",
+   "evidence": "lanes.md:77: \"the `MCP_TIMEOUT` environment variable (milliseconds) raises it for a session; no per-server field exists in the registration\"",
+   "severity": "note",
+   "proposed_fix": "Link the Claude Code MCP documentation that states it, or cut the per-server clause."
+  },
+  {
+   "lens": "writing.md § Substitutions (new) — exempt by date",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "188",
+   "finding": "The heading uses `new` for versions. It is exempt under the brief's rule because the heading line gives the date 2026-10-06, but the word adds nothing beside the named versions.",
+   "evidence": "lanes.md:188: \"### 2026-10-06 — cloud session (... re-pinned to browser `^0.0.26` and probe `^0.0.21`; the MCP servers proved at the new versions)\"",
+   "severity": "note",
+   "proposed_fix": "Optional: \"the MCP servers proved at those versions\""
+  },
+  {
+   "lens": "writing.md § Claims and time (present tense; no relative time)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "126",
+   "finding": "`present` and `so far` act as `currently` (relative time) but are outside the substitution table.",
+   "evidence": "lanes.md:126 \"against the present timeouts\"; lanes.md:151 \"(230,296 ms, the slowest reading so far, outside this diff)\"",
+   "severity": "note",
+   "proposed_fix": "lanes.md:126 \"against the timeouts at `6a976a0`\"; lanes.md:151 \"the slowest reading through `task75-u4-*`\" or name the run set"
+  },
+  {
+   "lens": "writing.md § Voice (outside the assigned lens)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "176",
+   "finding": "The line makes a software component the subject of `know` and adds the relative-time word `yet`.",
+   "evidence": "lanes.md:176: \"it follows `color` the way the attribution does not yet know\"",
+   "severity": "note",
+   "proposed_fix": "\"it follows `color`, a dependency the attribution does not model\""
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/veneer/tests/setupBrowser.test.ts",
+   "line": "3588-3625",
+   "finding": "The header-buttons statechart bound of 64,000 ms fails rule R4's adequacy check against a reading taken on the landed tree. The U9 entry's \"50.6 s of 64 s\" leaves that reading out.",
+   "evidence": "runs/task75-u9c-setup-1/report.json gives 54,890.5 ms. This is the Orchestrator's run after the raises (12:13, worktree), which lanes.md:90 itself cites. ceil(54,890.5 × 1.1637 / 1000) × 1000 + 5,000 = 69,000, which is more than 64,000. The adequacy sweep (lanes.md:91) read only task75-u8b-setup-2 and task75-u9b-setup-1 (50,586.4 ms).",
+   "severity": "fix",
+   "proposed_fix": "Raise the bound to 69,000 and cite task75-u9c-setup-1 in the R7 comment. Then change lanes.md:90 and :93 to name 54,890.5 ms, or rule that run ineligible and record why."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/veneer/tests/app/browser/integration.test.ts",
+   "line": "1751-1752, 2119-2120, 2199-2200",
+   "finding": "Three R7 adequacy comments add 1,600 as the inner ceiling. 1,600 ms is the superseded R3 figure, but `COMPONENT_WAIT` is 5,000 ms. The setup comments in the same commit (7853d17) add 5,000.",
+   "evidence": "The comments read \"plus 1,600 is 120,600 / 45,600 / 87,600 ms\", but setupBrowser.ts:3205 is `budget: 5_000`. setupBrowser.test.ts:1678 and :3589 say \"plus the 5,000 ms ceiling\". With 5,000 the sums are 124,000, 49,000, and 91,000; all three bounds still pass.",
+   "severity": "fix",
+   "proposed_fix": "Change the three comments to \"plus the 5,000 ms ceiling is 124,000 / 49,000 / 91,000 ms\"."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "112",
+   "finding": "The U8 entry says ee10c3c landed on ccr and `main` by a fast-forward from d050da2. In fact ee10c3c reached main only later, with 7853d17. The entry's \"`COMPONENT_WAIT` is 1,600 ms\" also reads as the present state, which U9 reversed.",
+   "evidence": "In the origin/main reflog, main goes from d481d24 (2026-10-05 14:37) to 7853d17 (2026-10-06 12:46:24). ee10c3c was pushed only to origin/ccr (10:41:29). lanes.md:84 itself says main fast-forwarded from d481d24.",
+   "severity": "fix",
+   "proposed_fix": "Change the wording to \"Landed on `ccr-d15a48b1-yyyll6` (d050da2 → ee10c3c; main took it at 7853d17)\" and \"set `COMPONENT_WAIT` to 1,600 ms (returned to 5,000 by U9)\"."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "84",
+   "finding": "The commit count of 19 is correct, but the list of what those commits are is wrong. It leaves out five commits and names B6, which has no commit.",
+   "evidence": "`git rev-list --count d481d24..7853d17` gives 19. The range includes 737a2f4 (fix unit F), 7e2792b (run-cost), 96065a7 (containment), 2ba68b9 (B1), and ec37454 (B2). B6 was a reading only (lanes.md:176).",
+   "severity": "fix",
+   "proposed_fix": "Change the parenthetical to: fix unit F, the run-cost unit, containment, B1 to B5, the re-pin and rows fix, U3 to U9, the 0.0.93 re-pin and overwrite."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "193",
+   "finding": "The R4 amendment gives the preservation case's slowest reading as 100,081.4 ms. The landed R7 comment and the U9 landing entry give 101,851.9 ms, which is the slowest in the same run population.",
+   "evidence": "The report.json files read 100,081.4 in task75-u9-journey-2 and 101,851.9 in task75-u9-journey-accept. The verdict's own header figure (37,215.6) comes from the -accept run. integration.test.ts:1751 cites 101,851.9. lanes.md:99 repeats 100,081.4.",
+   "severity": "fix",
+   "proposed_fix": "Change the verdict's figure to 101,851.9 ms (task75-u9-journey-accept)."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "192",
+   "finding": "The R3 amendment says \"`COMPONENT_WAIT` is ceil(888.3 × 1.6915 / 100) × 100 = 1,600 ms\", as if that were the constant's value. The tree and the R4 amendment keep 5,000 ms.",
+   "evidence": "setupBrowser.ts:3205 is `budget: 5_000`. verdict:193 says \"the earlier 5,000 ms `COMPONENT_WAIT` passes against the 1,600 ms rule R3 figure and stays\".",
+   "severity": "fix",
+   "proposed_fix": "Change the wording to \"the rule R3 figure is ... = 1,600 ms; `COMPONENT_WAIT` keeps 5,000 ms under clause 4\"."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "144",
+   "finding": "Ruling 5 says in the present tense that the 5,000 ms constant has no measurement behind it. After U9, the constant carries the R3 reading and the adequacy comment.",
+   "evidence": "verdict:144 says \"The `COMPONENT_WAIT` constant's 5_000 ms has no measurement behind it\". setupBrowser.ts:3199-3204 gives the R3 reading of 1,600 ms and says 5,000 ms is 5.6 times the 888.3 ms settle.",
+   "severity": "fix",
+   "proposed_fix": "Add after the sentence: \"(superseded by clause 4's amendment of 2026-10-06: 5,000 ms stays, 5.6 times the 888.3 ms settle)\"."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "3, 468",
+   "finding": "§ Open still lists \"Stage B: popover cost\" as pending. The opening paragraph still holds the popover table until U7's diagnosis. U7a ruled no stage B row, and U7c fixed the arrangement.",
+   "evidence": "lanes.md:142 says \"Ruling: the popover table's cost is the arrangement's ... Stage B gets no row\". The popover table reads 18.0 to 19.8 s in every run after U7c (report.json).",
+   "severity": "fix",
+   "proposed_fix": "Close the § Open item with a pointer to the U7a ruling, and state in the opening paragraph that U7 found no engine cause."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/design-verdict.md",
+   "line": "186, 451",
+   "finding": "Two pointers to `/home/user/scaffold/.orkestrel/veneer/lanes.md:89` for the B4 entry are stale. New entries are added at the top of lanes.md, so line numbers drift.",
+   "evidence": "The B4 entry \"Unit B4 landed on veneer at `638435a`\" is at line 184 of the record worktree's lanes.md and line 176 of /home/user/scaffold's. Line 89 of the record copy is the U9 entry.",
+   "severity": "fix",
+   "proposed_fix": "Name the entry by its heading (\"2026-10-06 — completion unit B4 lands\") instead of a line number."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/veneer/ROADMAP.md",
+   "line": "166",
+   "finding": "The roadmap says the § Host-bound set names \"two journey titles\". The set names no journey title.",
+   "evidence": "lanes.md:69 says \"`journey` ...: none. The J8, accordion, tooltip, collapse, and navbar-390 titles left the set at veneer `2ba68b9`\".",
+   "severity": "fix",
+   "proposed_fix": "Change the wording to \"... the six `Placement` and `Tip` titles of `src:browser`; the journey titles left that set at `2ba68b9` and the three `preflight.json` integration cases at `1b15a22`\"."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/veneer/ROADMAP.md",
+   "line": "164",
+   "finding": "Item 12 stops at \"no release through `0.0.92` carries it\". Scaffold 0.0.93 carries 4e94add7 and veneer adopted 0.0.93 on 2026-10-06, but the item records neither the carrier release nor the adoption, unlike items 8 to 11.",
+   "evidence": "`merge-base --is-ancestor 4e94add7 91682014` (Release 0.0.93) is true. veneer package.json:139 is `^0.0.93`. node_modules/@orkestrel/scaffold/dist/host/claude/rules/styles.md:77 carries the clause. The adoption commits are 8b85d24 and ad2e7cc.",
+   "severity": "fix",
+   "proposed_fix": "Append: \"Carried by scaffold `0.0.93`; adopted on 2026-10-06 at `8b85d24` and `ad2e7cc`.\""
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/veneer/tests/setupBrowser.test.ts",
+   "line": "1677-1679",
+   "finding": "For the orchestrator: the 18,000 ms specimen bound is below the adequacy figure for the 11,639.3 ms dark 390 px reading that the U8 entry and the R3 amendment cite. The adequacy sweep left that run out.",
+   "evidence": "runs/task75-u8-analysis-1/setup-slack.json gives a duration of 11639.3. ceil(11,639.3 × 1.1637 / 1000) × 1000 + 5,000 = 19,000, which is more than 18,000. lanes.md:91 swept only u8b-setup-2 and u9b-setup-1.",
+   "severity": "note",
+   "proposed_fix": "Rule whether the U8 lane's setup run is eligible. If it is, raise the bound to 19,000."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/veneer/tests/app/browser/integration.test.ts",
+   "line": "1751",
+   "finding": "For the orchestrator: the landing journey's preservation reading is above the R7 comment's \"slowest 101,851.9 ms\". The bound still passes.",
+   "evidence": "runs/landing-7853d17-2-journey/report.json gives 107,064.9 ms for the matrix attribution title. The adequacy figure is 130,000, below the 300,000 ms bound.",
+   "severity": "note"
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "192",
+   "finding": "The fleet entry's probe handshake figure of \"5.5 s ... the first Linux reading\" has no evidence file. The smoke files from the same hour read 8.2 s for scaffold and 53.9 s for veneer, and line 77 later records the 53.9 s.",
+   "evidence": "tmp/units/fleet-pins/smoke-probe-scaffold.txt gives wall=8.2 s at 03:54:02, and smoke-probe-veneer.txt gives wall=53.9 s at 03:54:56. A grep for 5.5 s in fleet-pins finds nothing.",
+   "severity": "note",
+   "proposed_fix": "Name the workspace and file behind the 5.5 s figure, or replace it with the 8.2 s and 53.9 s readings."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "191-192",
+   "finding": "Two statements in the fleet entry read as the present state, and later entries changed both.",
+   "evidence": "\"Scaffold stays at `^0.0.92`\" was superseded by lanes.md:105 (8b85d24 `^0.0.93`). \"Veneer registers no `probe` server ... waits for the user's word\" was superseded by lanes.md:76 (registered; /root/.claude.json lists `probe` for /home/user/veneer).",
+   "severity": "note"
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "90, 107",
+   "finding": "Two lines use `main` for the main checkout rather than the main branch. At 12:17 the main branch did not yet hold 7853d17.",
+   "evidence": "lanes.md:90 says \"format and lint re-read exit 0 on `main`\". 7853d17 was committed at 12:17:50, and origin/main took it at 12:46:24. lanes.md:107 says \"re-run on `main` ... before the fast-forward\".",
+   "severity": "note",
+   "proposed_fix": "Change `main` to \"the main checkout (`ccr-d15a48b1-yyyll6`)\"."
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/veneer",
+   "line": "",
+   "finding": "For cleanup: the local `main` branch in the veneer checkout is stale. origin/main and the session branch are at 269e8a6.",
+   "evidence": "`git rev-parse main` gives d481d24 (last reflog entry 2026-10-05 14:37), and origin/main gives 269e8a6.",
+   "severity": "note",
+   "proposed_fix": "Fast-forward local main to origin/main, or delete the local branch."
+  },
+  {
+   "lens": "cleanup",
+   "path": "/home/user/.wave/journey-cost",
+   "line": "",
+   "finding": "For cleanup: the parent directory of the retired lane M worktrees is still on disk, empty.",
+   "evidence": "`ls /home/user/.wave/journey-cost` prints nothing, while lanes.md:85 says the worktrees were retired. `git -C /home/user/veneer worktree list` shows only the main checkout.",
+   "severity": "note",
+   "proposed_fix": "Remove the empty directory."
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/scaffold",
+   "line": "",
+   "finding": "For the orchestrator: the scaffold session checkout and origin/ccr-d15a48b1-yyyll6 lag the record. Their lanes.md lacks the newest entry, and the verdict's absolute pointers name that lagging copy.",
+   "evidence": "In /home/user/scaffold, HEAD and origin/ccr are 47e00a67 while origin/main is 1ee0090e. A grep -c for 'the probe server registered for veneer' gives 0 in /home/user/scaffold and 1 in scaffold-main-wt.",
+   "severity": "note"
+  },
+  {
+   "lens": "record-vs-tree",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/README.md",
+   "line": "last line",
+   "finding": "The README still describes U1b and U2 to U9 as units that will follow, but task 75 closed at 7853d17. It indexes neither the unit briefs and reports nor setup-adequacy.ts and landing-7853d17-gates.txt that the folder holds.",
+   "evidence": "The README says \"Units U1b and U2 to U9 follow in `lanes.md` entries as they land\". The folder holds u1b-brief.md through u9b-brief.md, setup-adequacy.ts, and landing-7853d17-gates.txt.",
+   "severity": "note"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/app/browser/integration.test.ts",
+   "line": "881",
+   "finding": "This comment cites a unit's brief and a claim number from that brief instead of giving the reason. Per writing.md § Code comments, that counts as process narration.",
+   "evidence": "`// The default action route is the explicit claim-11 ruling in this unit's brief.` (blame 3807993b, 2026-10-03)",
+   "proposed_fix": "Delete the line. Line 880 already gives the reason: Bootstrap removes these tabs from pointer hit testing and from keyboard order.",
+   "severity": "fix"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/app/browser/Showcase.test.ts",
+   "line": "611",
+   "finding": "This comment cites the scratch unit brief flip-header-2. The brief exists only in the gitignored scaffold tmp folder, so no reader of the repository can open it.",
+   "evidence": "`// flip-header-2 § The neutrality ruling excludes only these invisible classes.`; source is /home/user/scaffold/tmp/codex/flip-header-2-brief.md:1 `# Unit flip-header-2 — finish the header after the neutrality ruling`, which is ignored by scaffold .gitignore:11",
+   "proposed_fix": "`// Excludes only the classes that change no visible longhand of the header.`",
+   "severity": "fix"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/setupBrowser.ts",
+   "line": "3202-3204",
+   "finding": "The COMPONENT_WAIT comment names the session ('hosts this session cannot measure') and a process ruling. Both are process narration.",
+   "evidence": "`// keeps 5,000 ms, 5.6 times that settle, under the adequacy ruling: a measured ... because the suites // also run on hosts this session cannot measure.` (blame 7853d17a)",
+   "proposed_fix": "Change to: `The budget keeps 5,000 ms, 5.6 times that settle: a measured figure raises a bound and never lowers one that passes, because the suites also run on hosts no reading covers.`",
+   "severity": "fix"
+  },
+  {
+   "lens": "console",
+   "path": "tests/setupBrowser.test.ts",
+   "line": "481",
+   "finding": "The console.info 'Scrollend keyboard case' print was added only to feed task 75 unit U5's report. It is neither a Journal entry nor a duration entry, and neither the guide nor any scaffold record documents it.",
+   "evidence": "Added by 1f6c1f7 (task 75 unit U5); the verdict at timing-2026-10-06/design-verdict.md:358 says 'U5 stops and reports with the case's output'; `git grep -F 'Scrollend keyboard case'` finds it only in this file, with 0 hits in guides/veneer.md and 0 in scaffold .orkestrel",
+   "proposed_fix": "Delete the console.info block at lines 481-492. The expects that follow it carry the proof.",
+   "severity": "fix"
+  },
+  {
+   "lens": "console",
+   "path": "tests/setupBrowser.test.ts",
+   "line": "632",
+   "finding": "The console.info 'Modal bounce mutations' print was added only to feed task 75 unit U4's report. It is neither a Journal entry nor a duration entry, and it is documented nowhere.",
+   "evidence": "Added by 8e4f38c (task 75 unit U4); the verdict at timing-2026-10-06/design-verdict.md:331 says 'Each case prints the record list for the report'; no hit in guides/veneer.md or in scaffold .orkestrel",
+   "proposed_fix": "Delete the console.info in the finally block at lines 632-642. The class-state expects that follow it carry the proof.",
+   "severity": "fix"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/app/browser/integration.test.ts",
+   "line": "1751, 2119, 2199-2200",
+   "finding": "The Rule R7 timeout comments name task75 run folders. This is intended evidence: every named folder exists under tmp/units/journey-cost/runs, but tmp is gitignored, so only this host holds the evidence.",
+   "evidence": "`// Rule R7: slowest 101,851.9 ms (1280 px, task75-u9-journey-accept) ...`; `ls` finds task75-u9-journey-accept and task75-u9-journey-final; .gitignore:11 `tmp`",
+   "severity": "note"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/integration.test.ts",
+   "line": "698",
+   "finding": "This Rule R7 comment names run folder task75-u9-integration-2, which exists under tmp/units/journey-cost/runs. It is intended evidence.",
+   "evidence": "`// Rule R7: slowest 6,833.6 ms (task75-u9-integration-2) times 1.1637, rounded up to a second,`",
+   "severity": "note"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/setupBrowser.test.ts",
+   "line": "1677, 3588",
+   "finding": "These Rule R7 comments name run folder task75-u9b-setup-1, which exists under tmp/units/journey-cost/runs. They are intended evidence.",
+   "evidence": "`// Rule R7: slowest 50,586.4 ms (task75-u9b-setup-1) times 1.1637, rounded up to a second, plus`",
+   "severity": "note"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/setupBrowser.ts",
+   "line": "3199-3201",
+   "finding": "The COMPONENT_WAIT Rule R3 comment names four run folders, the R3 counterpart of the R7 evidence. All four exist: task75-u7-probe-1, task75-u7-probe-2, task75-u7b-header-1, and task75-u7b-header-2. Only the session clause on lines 3202-3204 is a defect.",
+   "evidence": "`// Rule R3 reads 1,600 ms over task75-u7-probe-1, -2, task75-u7b-header-1, and // -2: ...`",
+   "severity": "note"
+  },
+  {
+   "lens": "docs",
+   "path": "ROADMAP.md",
+   "line": "176",
+   "finding": "The closed journey-tuning item names a session task label ('by task 75') and 'the showcase lane', next to the commit range that already identifies the work. ROADMAP.md is a history record, not a code comment or an instruction file, so this is a judgment call.",
+   "evidence": "`... and on 2026-10-06 by task 75 (`bec0a38` to `7853d17`: every settle ends on a signal ...`",
+   "proposed_fix": "Replace 'by task 75' with 'by the timing verdict's units'.",
+   "severity": "note"
+  },
+  {
+   "lens": "docs",
+   "path": "ROADMAP.md",
+   "line": "144",
+   "finding": "The showcase item cites the gitignored scratch path tmp/units/journey-cost/runs/accept4-* as evidence. The 4 folders exist on this host only: accept4-compare-1, accept4-compare-2, accept4-journey-1, and accept4-journey-2.",
+   "evidence": "`... 496.2 s runner elapsed against 915.5 and 1061.4 s (`tmp/units/journey-cost/runs/accept4-*`)`",
+   "severity": "note"
+  },
+  {
+   "lens": "size",
+   "path": "tests/fixtures/tailwindcss/oracle.min.json",
+   "line": "-",
+   "finding": "This is the only tracked file over 2 MB. It is the intended committed Tailwind inventory record, not a leftover.",
+   "evidence": "stat reports 16719637 bytes; the next largest file is showcase/browser.html at 1377560 bytes; it was added in 3b95ac1, and ROADMAP.md:15 calls it 'the committed record `tests/fixtures/tailwindcss/oracle.min.json`'",
+   "severity": "note"
+  },
+  {
+   "lens": "console",
+   "path": "tests/app/browser/integration.test.ts",
+   "line": "239-2183",
+   "finding": "The 33 console calls in this file are intended journey readings, not leftovers. They are parsed by the journey-cost compare instrument and named in the timing verdict. guides/veneer.md names none of their labels and mentions only 'the page's console output' in general terms (guides/veneer.md:2632). That gap is in the guide, not stray instrumentation.",
+   "evidence": "Labels: Containment, Progress, Progress control, 390 header, Face journey duration, Collapse exclusion control, Engine equality, Paired engine duration, Journey Tailwind readings, Face census, Component preservation (+ state duration, repaired causes, reader controls, three control labels, duration), Partition population, Partition, Partition unmapped control, Primary map demonstration, Partition role control, Partition control x3, Partition duration, Showcase statechart failed x2, Header statechart, Statechart duration x2. Each label has 0 hits in guides/veneer.md. Each has hits in scaffold .orkestrel/veneer/showcase/journey-cost-2026-10-05/instruments/compare.ts or in timing-2026-10-06 records; design-verdict.md:376 specifies 'Statechart duration'",
+   "severity": "note"
+  },
+  {
+   "lens": "console",
+   "path": "tests/setupBrowser.ts",
+   "line": "3651",
+   "finding": "The console.error 'Statechart row failed' entry is specified by the timing verdict. It is intended. Line 6369 of the same file is a property label string, not a console call.",
+   "evidence": "design-verdict.md:377 says 'call `console.error('Statechart row failed', JSON.stringify({ row, cause }))` for each name in `harness.failures`'",
+   "severity": "note"
+  },
+  {
+   "lens": "comments",
+   "path": "tests/setup.ts",
+   "line": "3186, 3194",
+   "finding": "These TSDoc comments name 'the token design verdict'. That is a tracked scaffold record (.orkestrel/veneer/tailwind-flip/tokens/design-verdict.md), cited as the authority for the exemptions. It is not a scratch path or a session.",
+   "evidence": "`/** Lists the inherited pairing failures exempted by the token design verdict. */`; `git -C scaffold ls-files` lists .orkestrel/veneer/tailwind-flip/tokens/design-verdict.md",
+   "severity": "note"
+  },
+  {
+   "lens": "tree",
+   "path": "/home/user/veneer",
+   "line": "-",
+   "finding": "The tracked tree and the refs are clean. Nothing is tracked under tmp/, and no .tgz, .patch, .log, or .jsonl file is tracked. The working tree has no changes, no untracked files, and no stash. HEAD, origin/main, and origin/ccr-d15a48b1-yyyll6 all point to 269e8a6, and the live remote agrees.",
+   "evidence": "The ls-files grep for `(^|/)tmp/|\\.tgz$|\\.patch$|\\.log$|\\.jsonl$` exits 1 over 373 files; `status --porcelain` prints only `## ccr-d15a48b1-yyyll6...origin/ccr-d15a48b1-yyyll6`; `ls-remote` shows refs/heads/main and refs/heads/ccr-d15a48b1-yyyll6 both at 269e8a692be705555610dab8409749a93ab36944",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "85",
+   "finding": "An orphaned Chromium tree from a test run is still alive: parent pid 2728 (PPID 1), 13 processes, about 1083 MB RSS. It has no node or vitest parent, and its cwd /tmp/orkestrel-test-Srd0TX is marked deleted.",
+   "evidence": "ps shows pid 2728 started Tue Oct 6 04:05:23 2026 running /opt/pw-browsers/chromium (chromium-1194) with --user-data-dir=/tmp/orkestrel-test-Srd0TX/tmp/browsers/.profiles/ec35fa68-...; readlink /proc/2728/cwd gives '/tmp/orkestrel-test-Srd0TX (deleted)'",
+   "severity": "fix",
+   "proposed_fix": "Kill pid 2728 by pid (never by pattern), confirm that pids 2730 to 2983 exit, then delete /tmp/orkestrel-test-Srd0TX (41 MB)."
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp",
+   "finding": "/home/user/veneer/tmp holds 6819 MB and is gitignored. Its children: units 4358 MB, probes 2368 MB, captures 84 MB, codex 5 MB, browsers 5 MB. Each loose j0*/j0b*/u*-gates/npm-install/build log is under 1 MB.",
+   "evidence": "du -sm /home/user/veneer/tmp/*; git check-ignore -v tmp prints .gitignore:11:tmp",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/fixtures",
+   "finding": "The fixtures/session-* and fixtures/selection-* folders hold 1966 MB of mkdtemp scratch from the proof scripts. No session or selection folder name is cited anywhere in .orkestrel/veneer. Deletable. Largest: session-rAXDBw 681 MB, session-QOHZtb 645 MB, session-RQOOvJ 468 MB, session-HcmIsN 105 MB, session-xOffVu and session-5YEIKZ 22 MB each.",
+   "evidence": "prove.ts:95 runs mkdtempSync(join(ROOT, 'fixtures/session-')); mutations-selection.ts:12 makes the selection-${PHASE}- folders; report.ts:95 calls them 'scratch sessions under fixtures/session-*'; du -smc gives a total of 1966",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/fixtures/compare-hostbound",
+   "finding": "compare-hostbound (402 MB) must stay while the records cite it. fixtures/durations (1 MB) must also stay: the timing briefs cite it 14 or more times.",
+   "evidence": "grep -rlF compare-hostbound hits showcase/journey-cost-2026-10-05/verdict.md and lanes.md; grep -o 'journey-cost/fixtures/durations/...' finds 14 hits for command-fast",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/runs",
+   "finding": "runs/ holds 1204 folders (1117 MB). 151 are cited in lanes.md or showcase/ (474.5 MB); 1053 are uncited (642.3 MB). The largest uncited folders are all deletable: completion-b3-journey-after 82.6, completion-b3-preservation-5 79.2, candidate4-destination-mutations 29.7, falsify-destination-mutations 29.7, completion-b1-trace-full-1 21.5, completion-b1-journey-2 20.2, lane2-gate-journey 19.3, lane1-gate-journey 19.0, checkpoint-journey-2 18.7, accept3-journey-1 18.3, checkpoint2-journey-2 18.3, candidate3-journey-1 18.3, accept3-journey-2 18.0, accept4-journey-2 18.0, accept4-journey-1 17.9, completion-b3-preservation-4 11.4, lane4-mutation-p1280-2 10.9, lane4-mutation-p390-2 10.8, and lane0-p-a-1/-2 plus 8 lane3-orchestrator-price-p-{h,i}-with(out)-{1,2} at 4.9 MB each. The remaining 999 uncited folders are each under 1 MB (66.9 MB in all).",
+   "evidence": "node script: each folder name matched against lanes.md and every file under showcase/ with boundary regex (^|[^A-Za-z0-9_-])NAME($|[^A-Za-z0-9_-]); result 'total 1204 cited 151 474.5MB uncited 1053 642.3MB'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/runs",
+   "finding": "Uncited runs by first name token (count, MB): completion 256/232.6, lane1 52/57.8, lane3 78/42.8, accept3 4/36.4, accept4 4/35.9, lane4 19/35.3, candidate4 21/32.1, falsify 1/29.7, lane2 58/21.8, candidate3 24/20.8, checkpoint 8/20.3, lane0 35/20.3, checkpoint2 11/19.9. Every other prefix is under 6 MB.",
+   "evidence": "same node script, 'uncited by first token' block",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/runs",
+   "finding": "8 runs are absent from lanes.md and showcase/ but cited elsewhere in .orkestrel/veneer (0.7 MB). Keep them with the cited set: a8-t3-mutations and a8-writer-2 (tokens-falsify-audit-verdict.md), and overwrite-093-{check,test-app-browser,test-conformance,test-integration,test-policy,test-setup} (tailwind-flip/units/tokens-landing/overwrite-0.0.93-gates.txt).",
+   "evidence": "node script 'uncited-but-cited-elsewhere-in-veneer: 8 0.7MB'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/runs",
+   "finding": "The largest cited runs must stay while records cite them: completion-b1-trace-full-2 21.5 (critic.json), jb0-2 21.2, containment-gates-journey-1 20.9, jb1-2 20.5, jb1-1 20.4, completion-b3-journey-before 20.3, jb0-1 20.2, completion-b2-fix-journey-1, completion-b1-journey-1, completion-b2-journey-1 20.2, completion-b1-journey-3 20.1, lane3-orchestrator-full 19.7, lane0-gate-journey-2 19.2, checkpoint-journey-1 and checkpoint2-journey-1 19.0, land4d-journey-1 17.9, task75-u7-probe-1/-2 7.9. landing-7853d17-journey also stays: lanes.md:82 says 'its folder stays as evidence'.",
+   "evidence": "node script top-40 list with CITED: paths; lanes.md:82",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/README.md",
+   "line": "10",
+   "finding": "The journey-cost instruments must stay because the journey command runs through them: run.ts, measure.ts, mutations.ts, compare.ts, README.md, and fixtures/*.ts. worktrees/ (0.5 MB, lane-0..4 and lane-M .patch/.status files) must also stay: it holds the uncommitted state of the retired lane worktrees.",
+   "evidence": "README.md:10 runs 'flock /home/user/.wave/journey.lock node tmp/units/journey-cost/run.ts ...'; lanes.md:85 says the worktrees' 'uncommitted state was saved as patches under veneer tmp/units/journey-cost/worktrees/'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/units/journey-cost/lane-compare",
+   "finding": "lane-compare (196 MB: regression-before 84 MB, regression-after 84 MB, live-check.md 10 MB) and lane-mutations (1 MB) are uncited and deletable. evidence (56), integrated, integrated-2, integrated-3, integrated-4 (20/20/30/30), lane-0..4 (7 to 11 each), compare (11), gates (4), falsify (2), and review (1) are each cited at least once and stay with the record.",
+   "evidence": "grep -rlE 'journey-cost/NAME(/|\\b)' over .orkestrel/veneer: lane-compare cites=0, lane-mutations cites=0, evidence cites=5, compare cites=8",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp/probes",
+   "finding": "probes/flip2 (1638 MB: out/ 1501 MB of p*.json runs, curation.json 121 MB) and probes/flip4 (470 MB) are cited only by finished Tailwind flip unit briefs. lanes.md never cites flip2 and cites flip4 once. Deletable after the flip archive is accepted, at the cost of path resolution in those briefs. flip, flip3, flip5, tokens2, and tokens (81/67/73/36/6 MB) follow the same rule.",
+   "evidence": "grep -rlF probes/flip2 hits tailwind-flip/design/objective-check.md and tailwind-flip/units/flip-journeys/brief.md (13 files, lanes.md 0); probes/flip4 hits 27 files, lanes.md 1",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/veneer/tmp",
+   "finding": "These loose veneer tmp files have 0 citations in .orkestrel/veneer and are deletable (under 1 MB in all): u2-gates.log, u2b-gates.log, u3-gates.log, u4-gates.log, u5b-gates.log, u8-gates.log, u6-commit-and-base.log, npm-install-2026-10-04.log, npm-install-d0603b4.log, j0-statechart-before.json, j0b-statechart.json, j0b-j2.json, j0b-j2-green.json, probes/flip-sheet-* (12 files), probes/tokens2-lost-1, type/ (empty), units/flip-fold-2.",
+   "evidence": "citation loop: 'cites=0 lanes=0' for each named entry",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp",
+   "finding": "/home/user/scaffold/tmp holds 442 MB: type 242, codex 198 (792 files), cursor 2.4, claude 0.2, units 0.01 (two publish logs), ollama-service.log 0.15, and probes (empty).",
+   "evidence": "du -sm /home/user/scaffold/tmp/*; node listing '== /home/user/scaffold/tmp/codex 792 entries 195.2MB'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp/type/11343-72f67221-b873-4e47-87b3-664288a3daee",
+   "finding": "tmp/type/11343-72f67221-... (242 MB) is an orphaned @orkestrel/probe 0.0.21 TypeStage mirror. It was written at 13:06 to 13:07, and its pid 11343 is not running. Deletable.",
+   "evidence": "node_modules/@orkestrel/probe/dist/src/server/index.js:2044 sets '#revision = `${process.pid}-${randomUUID()}`' under TYPE_MIRROR; ps lists no pid 11343",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/node_modules/@orkestrel/probe/dist/src/server/index.js",
+   "line": "771",
+   "finding": "The probe TypeStage mirror walk copies the workspace's tmp/ tree, so every type stage in scaffold carries the 201 MB of launch journals. That tmp/ copy is 201 MB of this 242 MB mirror.",
+   "evidence": "collectWorkspaceFiles skips only '.git', 'dist', 'node_modules' and the TYPE_MIRROR folder (index.js:761-775); du shows .../11343-.../tmp at 201 MB holding claude, codex, cursor, units, ollama-service.log",
+   "severity": "note",
+   "proposed_fix": "In @orkestrel/probe, skip the workspace tmp/ directory (or honor .gitignore) in collectWorkspaceFiles, and have TypeStage.destroy run on process exit."
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp/codex",
+   "finding": "These launch copies have a campaign copy and are deletable under the dispatch skill's acceptance step: flip-* (239 files, 50.4 MB; copies in tailwind-flip/units/<unit>/), tokens-* (90 files, 21.7 MB; copies in tailwind-flip/units/tokens-*/ and tailwind-flip/tokens/probe-*), task75-* except task75-u7-brief.md (79 files, 19.7 MB; copies in showcase/timing-2026-10-06/uN-*), containment-* and showcase-containment-* (40 files, 15.0 MB; copies in showcase/containment-2026-10-05/), documented-markup.md, flip-copy.md, and header-390-capture.jpg (cited by flip-header/brief.md). Spot checks are byte-identical: task75-u9-brief.md, flip-journeys-8-brief.md, documented-markup.md, flip-copy.md, tokens-scout-distillate.md.",
+   "evidence": ".agents/skills/orkestrel-dispatch/SKILL.md:54 'Run sweep.ts --unit <unit> --delete to remove the unit's brief, report, claims, journal, errors, status, pid, and last-message files'; cmp -s reports 'same' for the five files",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp/codex",
+   "finding": "These launch files have no copy in .orkestrel/veneer: completion-* (167 files, 47.0 MB; units A2 to A8, B1 to B4, F), journey-cost-* (156 files, 39.4 MB; lane-0..4, tools, tools-fix, compare-*, falsify, mutations-selection, check), scaffold-s46* (13 files, 1.9 MB), bench* (6 files), and task75-u7-brief.md. Their units landed, so the journals (.jsonl, .err, .pid, .launch.log, .status-*) are deletable. The *-brief.md and *-last.md files are the only copy. lanes.md:227 cites scaffold/tmp/codex/completion-b{1,2,3,4}-brief.md by path.",
+   "evidence": "node stem map prints copy=NONE for every completion-*, journey-cost-*, and scaffold-s46* stem; lanes.md:184-232 and :309 record B1-B4, F, and A5 landed; lanes.md:84 records the run-cost unit and task 75 landed",
+   "severity": "note",
+   "proposed_fix": "Copy the completion, journey-cost, and scaffold-s46 *-brief.md and final *-last.md into .orkestrel/veneer before sweep.ts --unit UNIT --delete if the records must keep resolving."
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp/claude",
+   "finding": "tmp/claude holds 9 files (0.2 MB). Seven are deletable: task75-design-brief.md, task75-design-verdict-draft.md, showcase-containment-brief.md, and task75-u9b-brief.md are byte-identical to campaign copies; task75-u8b-brief.md and task75-u8c-brief.md have copies; task75-design-verdict.md (54689 B, 06:44) is superseded by showcase/timing-2026-10-06/design-verdict.md (58897 B, 11:49, which adds the U8 and U9 amendments). completion-b5-brief.md and completion-b6-brief.md have no copy, and lanes.md:170 and :176 cite them by path.",
+   "evidence": "cmp -s reports 'same' for 4 files; diff on design-verdict shows that only the showcase copy carries 'Amendment of 2026-10-06 (unit U8)' and '(unit U9)'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp/cursor",
+   "finding": "tmp/cursor (2.4 MB) holds tokens-scout journals plus bench files. The result is copied to tailwind-flip/tokens/scout-distillate.md (byte-identical to codex/tokens-scout-distillate.md). Deletable.",
+   "evidence": "cmp -s tmp/codex/tokens-scout-distillate.md tailwind-flip/tokens/scout-distillate.md reports same",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/scaffold/tmp/codex",
+   "finding": "No lane is running, so sweep.ts --tmp will not refuse over a journal that changed in the last 2 minutes. The newest journal is task75-u9.jsonl at 11:41, and no recorded launch pid is alive.",
+   "evidence": "ls -lt shows task75-u9.err/.launch.log/.jsonl at Oct 6 11:41 (date 13:24 UTC); /proc/<pid> exists for none of the pids in scaffold tmp/codex/*.pid, tmp/cursor/*.pid, veneer tmp/probes/*.pid, or flip4/*.pid",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/tmp/claude-0/-home-user/4338f304-4fe6-5169-89e8-36562d885cad/scratchpad",
+   "finding": "The scratchpad holds 1170 MB across 46 entries. The 2026-10-05 journey-cost review probes are compare.ts outputs headed '# Journey comparison', and the run-cost unit has landed, so all of them are deletable: real 153, r2 148, verify-tools 132 (lane M tools under verification), jc 108, r1 102, ref1 62, rawcheck 62, rows 52, ref2 46, ref11 46, refute2-ctl, refute1-journal, refute1, ref-census, rawB, rawA (31 each), refute2-timing 26, refute2 21, and the small reg, regref, mut, mut-refute2, refute-*, refute1-*, refute2-*, r1-retitle, r2mut, r2spawn, tools, work, names, hb, and hosts folders.",
+   "evidence": "du -sm per subfolder; head of real/FF.md, r2/same.md, r1/self11.md, rows/*.md, reg/c92.md, and regref/cand96.md is '# Journey comparison'; verify-tools/run.ts is the run.ts usage header",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/tmp/claude-0/-home-user/4338f304-4fe6-5169-89e8-36562d885cad/scratchpad/journey-cost",
+   "finding": "scratchpad/journey-cost (16 MB) holds the journey-cost plan drafts, which are already in showcase/journey-cost-2026-10-05/. Deletable.",
+   "evidence": "cmp -s reports same for plan-v3.md, critic.md, judge.md, and measure.md against showcase/journey-cost-2026-10-05/",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/tmp/claude-0/-home-user/4338f304-4fe6-5169-89e8-36562d885cad/scratchpad/pkgs",
+   "finding": "scratchpad/pkgs (15 MB) holds the unpacked and .tgz tarballs of browser 0.0.24 and 0.0.26 and probe 0.0.20 and 0.0.21. No package.json or lockfile under /home/user references them. Deletable.",
+   "evidence": "grep -l 'scratchpad|file:/tmp' over /home/user/*/package.json, package-lock.json, and .wave/*/package.json returns nothing",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/tmp/claude-0/-home-user/4338f304-4fe6-5169-89e8-36562d885cad/scratchpad",
+   "finding": "Today's probe-registration files must stay until that registration is accepted: claude.json.before-probe (12:56, a backup of the Claude config), commit-probe-registration.txt and lanes-entry-probe-registration.md (13:08), mcp-smoke.ts and ps-sample.ts (13:03). The 12:11 to 12:47 drafts (commit-u9*.txt, commit-landing-record.txt, commit-roadmap-close.txt, lanes-entry-*landing.md, gates-landing.ts, insert-lanes.ts, apply-roadmap-close.ts, compare-u9b.*) back records that lanes.md:82-85 shows landed, so they are deletable. Also deletable: containment-preview (5 PNG/HTML), form-probe (cjs probes), patch, verify (copies of veneer configs and tests from 2026-10-05), setup-adequacy.ts, and the .seen-* markers from 2026-10-04.",
+   "evidence": "ls -la scratchpad timestamps; lanes.md:84-86",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/pw-153",
+   "finding": ".wave/pw-153 (658 MB: chromium-1243 393, chromium_headless_shell-1243 261, ffmpeg 5) must stay. It is the Chromium 153 store kept for re-reads until the user rules the floor.",
+   "evidence": "lanes.md:179: 'until then this host reads at 141, and /home/user/.wave/pw-153 keeps 153 for re-reads through PLAYWRIGHT_EXECUTABLE_PATH'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/npm11",
+   "finding": ".wave/npm11 (20 MB, npm 11.21.0) must stay because lane briefs prepend it to PATH. It is not on this shell's default PATH: npm resolves to /opt/node22/bin/npm 10.9.7, and /usr/local/bin/npm points to /opt/node20/bin/npm.",
+   "evidence": "tailwind-flip/units/flip-fix-a/brief.md:21 'with /home/user/.wave/npm11/node_modules/.bin first on PATH (npm 11)'; npm --version prints 10.9.7; the PATH split shows no .wave entry",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/journey.lock",
+   "finding": ".wave/journey.lock (0 B) and .wave/scaffold-main-wt (42 MB) must stay. The journey queue flocks the lock file. scaffold-main-wt is a registered scaffold worktree (detached 1ee0090e) that holds the live .orkestrel/veneer records; lanes.md was written at 13:08.",
+   "evidence": "journey-cost/README.md:10 'flock /home/user/.wave/journey.lock'; git -C /home/user/scaffold worktree list shows '/home/user/.wave/scaffold-main-wt 1ee0090e (detached HEAD)'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/scaffold-release",
+   "finding": ".wave/scaffold-release (329 MB: node_modules 303, dist 12, orkestrel-scaffold-0.0.88.tgz 3) is a leftover scaffold worktree from the 0.0.88 release on 2026-10-03. scaffold has since released 0.0.93. Remove it as a worktree, not with rm.",
+   "evidence": "git worktree list shows '/home/user/.wave/scaffold-release a8dcfb8e (detached HEAD)'; git status --short is empty; lanes.md:84 records the 0.0.93 overwrite",
+   "severity": "note",
+   "proposed_fix": "git -C /home/user/scaffold worktree remove --force /home/user/.wave/scaffold-release"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/veneer-ro",
+   "finding": ".wave/veneer-ro (25 MB) is a leftover: a read-only veneer snapshot from 2026-10-02 that is not a git repository. Its node_modules is a symlink to /home/user/veneer/node_modules, so delete the snapshot without following that symlink.",
+   "evidence": "git -C /home/user/.wave/veneer-ro rev-parse prints 'fatal: not a git repository'; ls -la shows 'node_modules -> /home/user/veneer/node_modules'",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave/codex",
+   "finding": ".wave/codex (13 MB) holds the j0, j0b, j0c, j0c2-4, b2, br1, p1, r1, and s1 launch copies, whose campaign copies exist; deletable. .wave/cursor (3.8 MB) holds the g1 to g3 Grok journals and results from 2026-10-02. Those results are not byte-identical to any record (g2 was distilled into showcase/g2-statechart-distillate.md), so they are deletable after the orchestrator accepts the distillates.",
+   "evidence": "cmp -s reports same for j0b-brief, j0c-brief, j0c-scope, b2-brief, j0b-last→j0b-report, j0c2-last→j0c2-report, b2-last→b2-report, br1-last→br1-report; cmp of g2-result.md against g2-statechart-distillate.md differs",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/.wave",
+   "finding": "About 45 MB of loose .wave files from 2026-10-02 and 2026-10-03 are leftovers. The largest are veneer-ow.json 6, scaffold-catalog85.json and scaffold-catalog86.json 5 each, scaffold85-prepublish.log, scaffold86-prepublish.log, and sr-prepublish2.log 4 each, and scaffold-0.0.88-registry.tgz 2.6. The rest are about 150 gate logs (m-*, m2-*, v-*, vl-*, vmc-*, br-*, ol-*, merge-*, sc-*), the prop-*/visit-* launch files, wave.ts.orig, statecharts-partial.patch, the showcase-*.png/json files, the login.fifo/login.sh/login.log/login.out files, and the empty browse-check/.profiles and journey-cost/ folders. journey-cost/ is empty because lanes.md:85 retired the lane M worktrees.",
+   "evidence": "ls -la /home/user/.wave; du -sm per child; ls /home/user/.wave/journey-cost shows no entries",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user/orkestrel",
+   "finding": "/home/user/orkestrel/{agent,ollama,probe,toolbox} (203 MB; ollama 187, of which node_modules is 183) are stale clones at 'Overwrite with scaffold 0.0.81' from 2026-09-29. No .orkestrel record or .mcp.json references them, and ollama duplicates /home/user/ollama (b4a18c3).",
+   "evidence": "git log -1 shows agent 3a875eb, probe 274ef11, toolbox 8976582 dated 2026-09-29 and ollama 017c504; grep -rlE '/home/user/orkestrel/(agent|probe|toolbox|ollama)' over .orkestrel and */.mcp.json returns nothing",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/home/user",
+   "finding": "No node_modules/.vite or other cache under /home/user/*/ reaches 200 MB: the largest .vite is veneer's at 75 MB, then mcp's at 11 MB. Each repository's node_modules (233 to 366 MB) is in use. Outside /home/user, five caches exceed or approach the threshold: /tmp/node-compile-cache 1139 MB (Node compile cache since 2026-09-29, regenerable); /tmp/orkestrel-* at 933 MB across 210 test temp folders from 2026-09-30 to 2026-10-06 (146 orkestrel-browser-test-*, 33 orkestrel-test-*, 17 orkestrel-browser-global-* of 86 MB each, 10 orkestrel-scaffold-*), of which only orkestrel-test-Srd0TX is held by the orphaned Chromium; /root/.npm/_cacache 905 MB; /root/.cache/uv 224 MB; /tmp/p-xVu2By 88 MB (a Chromium profile from 2026-09-30).",
+   "evidence": "du -sm on each repository's node_modules/.vite, .cache, tmp, and dist; du -smc /tmp/orkestrel-* gives a total of 933; the /proc/*/cwd scan finds only pid 2728's tree in /tmp/orkestrel-test-Srd0TX",
+   "severity": "note"
+  },
+  {
+   "lens": "host cleanup inventory",
+   "path": "/proc",
+   "finding": "No vitest, codex, probe, tsc, oxlint, cursor, or flock process is running. Two defunct [sh] zombies (pids 82 and 21241) are reparented to init and hold no memory. Disk free is 6213 MB.",
+   "evidence": "ps -eo args filtered for vitest|codex|probe|cursor|node|tsc|oxlint|flock returns nothing; ps lists 82 and 21241 as '[sh] <defunct>' with PPID 1; df -m / shows 6213 MB available",
+   "severity": "note"
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/README.md",
+   "line": "11",
+   "finding": "The README labels `instruments/durations.ts` as unit U1's instrument, but the copy is unit U8c's revision; the U1 table `durations-2026-10-06.md` came from an earlier revision.",
+   "evidence": "instruments/durations.ts:59 `const SETTLE_FLOOR = 150` (a U8c feature, lanes.md:113); last commit on the file is 51e1ae8e 'the instrument revision'; cmp against /home/user/veneer/tmp/units/journey-cost/durations.ts shows the files are identical.",
+   "severity": "fix",
+   "proposed_fix": "Split line 11 into a U1 line and a U8c line: '- `u1-brief.md` and `durations-2026-10-06.md`: unit U1, the duration table instrument, and its table over the seven runs of 2026-10-06 (the six eligible runs and the out-of-band `completion-b3-journey-after-3b` run).' Then describe `instruments/` under U8c (see the README-coverage finding)."
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/README.md",
+   "line": "13",
+   "finding": "Line 13 says units U1b and U2 to U9 'follow in `lanes.md` entries as they land', but task 75 closed. It also leaves 40 of the folder's 52 data files and the `instruments/fixtures-durations/` folder undescribed.",
+   "evidence": "A grep of ls -p against the README's backticked names gives 12 DESCRIBED and 41 UNDESCRIBED (the 41 include README.md itself). Commit 3cfa308e reads 'Record task 75 unit U9 landed (veneer 7853d17) and the task's close'.",
+   "severity": "fix",
+   "proposed_fix": "Replace line 13 with: 'The `lanes.md` entries for units U1 to U9 cite these files; the instrument and the run folders stay in veneer `tmp/units/journey-cost/`.' Put the unit lines from the README-coverage finding before it."
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/README.md",
+   "line": "5-12",
+   "finding": "README coverage. Every described file exists (all 12, plus `../../lanes.md`), so nothing is missing. These 40 files and 1 folder are undescribed: u1b-brief.md, durations-2026-10-06b.md, u2-brief.md, u2b-probe.txt, u3-brief.md, u4-brief.md, u5-brief.md, u6-brief.md, u7a-brief.md, u7a-report.md, u7a-settle-analysis.md, u7b-brief.md, u7b-report.md, durations-2026-10-06c.md, timeouts-6a976a0.json, omit-b4-titles.json, u7b-click-probe.txt, u7c-hit-probe.txt, u7c-brief.md, u7c-report.md, u8-brief.md, u8-report.md, u8-analysis-report.md, u8-enclosing-slack.json, u8-setup-slack.json, settle-pools-threshold.ts, settle-pools-threshold.out, u8b-brief.md, compare-u8b.md, u8c-brief.md, verify-u8c.out, durations-2026-10-06d.md, u9-brief.md, u9-report.md, u9-hold-report.txt, compare-u9-final.md, u9b-brief.md, setup-adequacy.ts, compare-u9b.md, landing-7853d17-gates.txt, and instruments/fixtures-durations/.",
+   "evidence": "The proposed descriptions come from each file's heading line and these citations: lanes.md:83, 90, 91, 98, 112, 113, 114, 126, 142, 157, and design-verdict.md:192 (settle-pools-threshold.out); the 10 entries in omit-b4-titles.json match durations-2026-10-06c.md:2539 'the ten pre-B4 run/title pairs'.",
+   "severity": "fix",
+   "proposed_fix": "Insert after line 10 (after the line for `design-verdict.md`), replacing line 11:\n- `u1-brief.md` and `durations-2026-10-06.md`: unit U1, the duration table instrument, and its table over the seven runs of 2026-10-06 (the six eligible runs and the out-of-band `completion-b3-journey-after-3b` run).\n- `u1b-brief.md` and `durations-2026-10-06b.md`: unit U1b, the slack and omission inputs, and its table over the seven runs with the two `--omit` pairs; unit U8c's `verify.ts` run rewrites the veneer copy, so this copy is the table unit U7a's brief reads.\n- `u2-brief.md` and `u2b-probe.txt`: unit U2, the probe that names the preservation stray, and the Orchestrator's unfiltered dark-390 hover probe.\n- `u3-brief.md`, `u4-brief.md`, `u5-brief.md`, and `u6-brief.md`: units U3 (settle stray tip panels before the preservation count), U4 (settle the modal bounce inside the refused act), U5 (end each scrollspy press on its signal), and U6 (statechart timing entries and the per-row failure log).\n- `u7a-brief.md`, `u7a-report.md`, and `u7a-settle-analysis.md`: unit U7a, the popover probe over runs `task75-u7-probe-1` and `-2`, its report, and its settle tables.\n- `u7b-click-probe.txt` and `u7c-hit-probe.txt`: the Orchestrator's two filtered probes of the slow `Billing status` clicks, one reading the scroll movement and one reading the popover panel that covers the trigger.\n- `u7b-brief.md`, `u7b-report.md`, `durations-2026-10-06c.md`, `timeouts-6a976a0.json`, and `omit-b4-titles.json`: unit U7b, the header settle readings and the slack table over thirteen journey runs, the source timeouts at `6a976a0`, and the ten pre-B4 run and title pairs that the instrument commands omit.\n- `u7c-brief.md` and `u7c-report.md`: unit U7c, which dismisses the other popover before it arranges a popover specimen.\n- `u8-brief.md`, `u8-report.md`, `u8-analysis-report.md`, `u8-enclosing-slack.json`, and `u8-setup-slack.json`: unit U8, the derived `COMPONENT_WAIT` constant, and the analysis lane's report and slack tables from `runs/task75-u8-analysis-1`.\n- `settle-pools-threshold.ts` and `settle-pools-threshold.out`: the sweep of each pool's own ratio by reading floor, which the verdict's rule R3 amendment cites.\n- `u8b-brief.md` and `compare-u8b.md`: unit U8b, the `COMPONENT_WAIT` constant at the ruled figure, and its journey comparison against the U3 pair.\n- `u8c-brief.md`, `instruments/durations.ts`, `instruments/fixtures-durations/`, `verify-u8c.out`, and `durations-2026-10-06d.md`: unit U8c, the instrument at its final revision with the fixtures its `verify.ts` script seeds, that script's passing run, and the fifteen-run table with the shared margin and budget (lines 1197 to 1199).\n- `u9-brief.md`, `u9-report.md`, `u9-hold-report.txt`, and `compare-u9-final.md`: unit U9, the measured test timeouts, the 35 titles that rule R5 holds with the instrument and comparison commands, and the final journey comparison.\n- `u9b-brief.md`, `setup-adequacy.ts`, and `compare-u9b.md`: unit U9b, the bounds landed by the adequacy ruling, the setup suite's adequacy sweep, and its journey comparison.\n- `landing-7853d17-gates.txt`: the landing gates on veneer at `7853d17`."
+  },
+  {
+   "lens": "record-size",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/durations-2026-10-06d.md",
+   "line": "1-115, 1197-1199",
+   "finding": "durations-2026-10-06d.md is 778,479 B, over 300 KB. An excerpt carries the cited evidence: the run and title tables (lines 1-115), the three shared lines (1197-1199), the `animations div.offcanvas` and `showcase scroll settles` rows that u8c-brief.md:36 names, and the command from u8c-brief.md:27. Its § Statechart rows section (lines 1201-2227) duplicates the same section in durations-2026-10-06c.md. The full § Settle probes table, about 492 KB, is needed only to recheck the 'below every available slack' line pool by pool.",
+   "evidence": "du -b: 778479. Section sizes: head 128,783, § Settle probes 492,442, and § Statechart rows 157,254 B. lanes.md:113 cites only `durations-2026-10-06d.md:1197-1199`. The extracted § Statechart rows sections of the c and d tables match except c's trailing blank line (cmp: EOF on d after byte 157254; diff shows only '1028d1027 <').",
+   "severity": "note",
+   "proposed_fix": "If you excerpt, keep lines 1-115, the cited rows, 1197-1199, and the command, and point to veneer `tmp/units/journey-cost/durations-2026-10-06d.md` (identical by cmp) for the full table while that folder exists. The file is already in history at 51e1ae8e on origin/main, so excerpting shrinks the checkout but not the clone."
+  },
+  {
+   "lens": "record-size",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/durations-2026-10-06c.md",
+   "line": "1-115, 1963-2028, 2298-2541",
+   "finding": "durations-2026-10-06c.md is 760,787 B, over 300 KB. An excerpt of about 172 KB carries U7b's cited evidence: the title table with the slack column (lines 1-115, u7b-brief.md:28 criterion 2), § U7b run and header readings, § Slack findings, § Timeout provenance, § Instrument commands, and § Deviations. The excerpt drops § Settle probes (about 354 KB), § Supplemental non-statechart settle rows (about 77 KB), and § Statechart rows (157 KB, a duplicate of the d table's).",
+   "evidence": "du -b: 760787. Section starts: Settle probes 116, Statechart rows 935, U7b readings 1963, Slack findings 2002, Supplemental 2029, Timeout provenance 2298, Commands 2474, Deviations 2529. u7b-report.md:42, :67, and :69 cite lines 2298, 2474, and 2529 by their veneer tmp path.",
+   "severity": "note",
+   "proposed_fix": "If you excerpt, keep the sections that the evidence field lists. An excerpt shifts line numbers, and u7b-report.md cites lines 2298, 2474, and 2529, but those citations target the veneer tmp copy (identical by cmp), so they still resolve there. The file is already in history at 9f3536e7."
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/durations-2026-10-06b.md",
+   "line": "17",
+   "finding": "The record copy of the b table (63,367 B, 06:58) differs from the live veneer copy (63,803 B, 10:28), because unit U8c's `verify.ts` run rewrites the live table. The record copy is the U1b-era table that u7a-brief.md:32 cites, so the README must name it as unit U1b's.",
+   "evidence": "instruments/fixtures-durations/verify.ts:10 `const TABLE = join(ROOT, 'durations-2026-10-06b.md')`; verify-u8c.out:141 'Wrote /home/user/veneer/tmp/units/journey-cost/durations-2026-10-06b.md'; diff at line 17 shows the R3 sentence without the settle-floor clause in the record copy.",
+   "severity": "note"
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/instruments/fixtures-durations/command-fast/stdout.log",
+   "line": "",
+   "finding": "Git ignores the two fixture logs `command-fast/stdout.log` and `command-slow/stdout.log`, so they exist only on disk. The `verify.ts` run rewrites them and also creates the `ambiguous-leaf` and `journey-first-poll` fixtures, which the live folder has and the record does not. A clone therefore loses nothing that the verify run needs.",
+   "evidence": "git check-ignore -v gives `.gitignore:3:*.log`; ls-files lists 77 tracked files against 79 on disk, and the 2 untracked files are these logs; verify.ts:76 writes stdout.log; verify.ts:35 and :95 create journey-first-poll and ambiguous-leaf.",
+   "severity": "note"
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/u9-hold-report.txt",
+   "line": "1-5",
+   "finding": "u9-hold-report.txt opens with an orphan diff hunk that has no `diff --git` or `@@` header. The held-title report starts at line 7 and is intact.",
+   "evidence": "line 1 `+export const WITNESS_LONGHAND_BUDGET = 8_000`; grep -c '^diff --git\\|^@@' gives 0; lines 8-42 hold 35 `{\"title\"` rows, which matches lanes.md:98 '35 titles held by rule R5'.",
+   "severity": "note",
+   "proposed_fix": "Leave the verbatim evidence as it is; the README line for unit U9 can say that the held-title report starts at line 7."
+  },
+  {
+   "lens": "repo-gates",
+   "path": "/home/user/.wave/scaffold-main-wt/tests/setupPolicy.ts",
+   "line": "375-381",
+   "finding": "The scaffold repo's gates do not cover `.orkestrel` Markdown. The prose sweep runs under `npm run test:policy` (the vitest project `policy` runs tests/policy.test.ts, and tests/policy.test.ts:769 calls `inspectPolicyWorkspace(process.cwd())`, which includes `inspectPolicyProse`), and its walk skips any directory named `.orkestrel`. Oxlint and oxfmt also ignore `.orkestrel/`. The README edits therefore need a manual term sweep. My sweep of README.md matched only `once` at line 3 ('failed once each'), which is the numeric sense and not banned.",
+   "evidence": "setupPolicy.ts:375-381 `POLICY_PROSE_EXCLUSIONS` lists '.orkestrel'; policy.test.ts:716 asserts no path starts with '.orkestrel/'; .oxlintrc.json ignorePatterns is [\".orkestrel/\"]; .prettierignore (which oxfmt reads) lists `.orkestrel/`.",
+   "severity": "note",
+   "proposed_fix": "Do not rely on `npm run test:policy` for this folder. The worktree has no node_modules folder (ls fails), so that script cannot run there without an install anyway. Rerun the manual grep of the writing.md Substitutions rows over the edited README. I did not verify whether `tsc --project tsconfig.json` reaches the record's 4 .ts files: tsconfig.json has no `include` and its `exclude` lists only node_modules, dist, and tmp."
+  },
+  {
+   "lens": "repo-gates",
+   "path": "/home/user/.wave/scaffold-main-wt",
+   "line": "",
+   "finding": "The worktree is clean. HEAD is detached at 1ee0090e and equals both origin/main and the remote's refs/heads/main (0 ahead, 0 behind). The local `main` branch is stale at bb57e60d, 543 behind origin/main. The checkout /home/user/scaffold (47e00a67, ccr-d15a48b1-yyyll6) is 3 commits behind HEAD.",
+   "evidence": "status --short prints nothing; log -1 shows '1ee0090e 2026-10-06 13:08:19 +0000 Record the probe registration for veneer and the handshake readings for the probe lane'; ls-remote origin refs/heads/main returns 1ee0090e; rev-list --left-right --count HEAD...origin/main returns '0 0'.",
+   "severity": "note"
+  },
+  {
+   "lens": "record-shape",
+   "path": "/home/user/veneer/tmp/units/journey-cost/durations-2026-10-06e.md",
+   "line": "",
+   "finding": "The live instrument folder holds a fifth table, durations-2026-10-06e.md (644,643 B, 10:16), that the record folder does not copy. No `.orkestrel` file cites it.",
+   "evidence": "ls -la of the live folder lists the e table; `grep -rn durations-2026-10-06e /home/user/.wave/scaffold-main-wt/.orkestrel` returns nothing.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: host",
+   "path": "host process PID 2728 (/opt/pw-browsers/chromium)",
+   "line": "n/a",
+   "finding": "An orphaned headless Chromium tree started inside the D-4 run window and still runs, parented to PID 1. No lanes entry records it, and every task 75 run and every probe handshake reading after 04:05 shared the host with it.",
+   "evidence": "`ps -o lstart -p 2728` reads 'Tue Oct 6 04:05:23 2026 /opt/pw-browsers/chromium --headless=new --user-data-dir=/tmp/orkestrel-test-Srd0TX/tmp/browsers/.profiles/ec35fa68-…'; 13 processes, summed RSS 1,092,640 KB; veneer tmp/units/fleet-pins/d4.txt spans 03:58:42 to 04:16:58.",
+   "severity": "fix",
+   "proposed_fix": "Record the PID, start time, and profile path as a browser-lane D-4 reading (a leaked browse or test browser) in the lanes answer, then stop the tree and remove /tmp/orkestrel-test-Srd0TX."
+  },
+  {
+   "lens": "completeness: veneer records",
+   "path": "/home/user/veneer/ROADMAP.md",
+   "line": "151, 164",
+   "finding": "§ Scaffold propagation does not record the 0.0.93 adoption. The adoption sentence ends at 0.0.92, and item 12 reads 'no release through `0.0.92` carries it', although 0.0.93 carries 4e94add7 and veneer adopted 0.0.93 at 8b85d24 and ad2e7cc. completion-2026-10-05/re-triage.md:619 orders the release to be named after the desktop session publishes.",
+   "evidence": "`git merge-base --is-ancestor 4e94add7 91682014` (Release 0.0.93) is true; veneer node_modules/@orkestrel/scaffold 0.0.93 dist/host/claude/rules/styles.md:77-81 carries the clause.",
+   "severity": "fix",
+   "proposed_fix": "Append '`0.0.93` on 2026-10-06 (pinned at `8b85d24`, overwritten at `ad2e7cc`)' to :151, and end item 12 with 'carried by scaffold `0.0.93` (`91682014`); adopted on 2026-10-06 at `8b85d24` and `ad2e7cc`', the form item 11 uses."
+  },
+  {
+   "lens": "completeness: veneer guides",
+   "path": "/home/user/veneer/guides/veneer.md",
+   "line": "1570",
+   "finding": "The guide says the token-substitution clause landed at 4e94add7 and that 'the 0.0.92 release and every earlier one lack it', but it never names 0.0.93, the release veneer is pinned to and that carries the clause. The re-triage step at re-triage.md:619 was left undone.",
+   "evidence": "guides/veneer.md:1570 reads '…at commit `4e94add7` on 2026-10-05; the 0.0.92 release and every earlier one lack it.'; package.json pins scaffold ^0.0.93 (8b85d24).",
+   "severity": "fix",
+   "proposed_fix": "Name scaffold 0.0.93 as the first release that carries the clause, in the same veneer unit as the ROADMAP fix."
+  },
+  {
+   "lens": "completeness: scaffold record",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "194, 357-359",
+   "finding": "The 2026-10-05 ask to carry 4e94add7 has no closing entry. The fleet entry still reads 'outstanding for 0.0.93, with the user at publication', although the 0.0.93 release commit contains 4e94add7.",
+   "evidence": "lanes.md:194 '`lanes.md:226` (`4e94add7` in the next scaffold release): outstanding for 0.0.93'; `merge-base --is-ancestor 4e94add7 91682014` is true; grep finds no later 4e94add7 line.",
+   "severity": "fix",
+   "proposed_fix": "In the close entry, state that scaffold 0.0.93 (91682014) carries 4e94add7, and retire the :357 ask."
+  },
+  {
+   "lens": "completeness: lens contradiction (commits)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "112",
+   "finding": "The U8 entry says U8 landed on `ccr-d15a48b1-yyyll6` and `main` by fast-forward d050da2 → ee10c3c, but main did not move between 2026-10-05 14:37 and 2026-10-06 12:46. That contradicts lanes.md:84, which fast-forwards main from d481d24. The commits lens read this reflog and did not flag the line.",
+   "evidence": "`git reflog origin/main` reads d481d24 at 2026-10-05 14:37:55, then 7853d17 at 2026-10-06 12:46:24; origin/ccr took ee10c3c at 2026-10-06 10:41:29.",
+   "severity": "fix",
+   "proposed_fix": "Change ':112' to 'Landed on `ccr-d15a48b1-yyyll6`' and drop 'and `main`'."
+  },
+  {
+   "lens": "completeness: lens gap (commits)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "84",
+   "finding": "The parenthetical that enumerates the 19 fast-forwarded commits names only 14 of them. It omits 737a2f4 (fix unit F), 7e2792b (the run-cost unit), 96065a7 (containment), 2ba68b9 (B1), and ec37454 (B2), and it names B6, which has no commit.",
+   "evidence": "`git log --reverse d481d24..7853d17` lists 19 commits: 737a2f4, 7e2792b, 96065a7, 2ba68b9, ec37454, ae7d545 (B3), 47c0765, 9bc0003, 638435a (B4), 90b96bb (B5), then U3 to U9 and the 0.0.93 pair.",
+   "severity": "fix",
+   "proposed_fix": "Read '(19 commits: fix unit F, the journey run-cost unit, showcase containment, B1 to B5, the re-pin and rows fix, U3 to U9, the 0.0.93 re-pin and overwrite)'."
+  },
+  {
+   "lens": "completeness: record instruments",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/instruments/fixtures-durations/verify.ts",
+   "line": "7-8, 35, 95, 178, 309",
+   "finding": "The record holds U8c's verify.ts beside the fixture copy from U1b at 06:58. verify.ts needs the `journey-first-poll` and `ambiguous-leaf` fixtures, which the record lacks, and it hard-codes the live veneer tmp root. lanes.md:113's 'record copies under `instruments/`' therefore cannot reproduce verify-u8c.out after veneer tmp is cleaned.",
+   "evidence": "`diff -rq` shows 'Only in …/fixtures/durations: ambiguous-leaf' and 'journey-first-poll', and 8 files differ (the three tables are 06:58 in the record, 10:28 live); verify.ts:7 sets `const ROOT = '/home/user/veneer/tmp/units/journey-cost'`.",
+   "severity": "fix",
+   "proposed_fix": "Re-copy the live fixtures/durations folder over instruments/fixtures-durations before any veneer tmp cleanup."
+  },
+  {
+   "lens": "completeness: code comments (no lens swept veneer comments)",
+   "path": "/home/user/veneer/tests/setupBrowser.ts",
+   "line": "3204",
+   "finding": "A comment landed in 7853d17 narrates the agent session ('hosts this session cannot measure'). This breaks writing.md § Voice and § Code comments, because a later reader cannot check the claim. The prose lens's targets were record files only.",
+   "evidence": "`git blame -L 3204,3204` gives 7853d17; the line reads '// also run on hosts this session cannot measure.'; a sweep of the comment lines that 90b96bb..7853d17 adds found no other hit except numeric 'below'.",
+   "severity": "fix",
+   "proposed_fix": "Reword it as a statement about the hosts, for example 'because the suites also run on hosts with no recorded readings'."
+  },
+  {
+   "lens": "completeness: campaign plan",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/plan.md",
+   "line": "36",
+   "finding": "The plan still says 'The journey tuning unit and the Tailwind completion checklist follow before stage B', although both are closed and stage B waits only on the user's word.",
+   "evidence": "plan.md last changed at 59493299 (2026-10-05); veneer ROADMAP.md:184 reads 'The journey tuning unit (2026-10-05) and the Tailwind completion re-triage (… closed 2026-10-06) are landed; stage B opens at the user's word.'",
+   "severity": "fix",
+   "proposed_fix": "State that both landed (7e2792b; the re-triage closed on 2026-10-06), and that task 75 closed at 7853d17 with stage B held at the user's word of 2026-10-06."
+  },
+  {
+   "lens": "completeness: standing rules",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "40",
+   "finding": "The host-queue clause is scoped to 'the journey tuning unit … while the unit is open'. That unit closed, yet task 75 and the landing kept the queue ('through the queue', lanes.md:83). The clause needs a ruling: restate the queue as a standing host rule, or retire the clause.",
+   "evidence": "lanes.md:40 reads 'Host queue during the journey tuning unit (from 2026-10-05) … nothing runs outside it while the unit is open'; ROADMAP.md:176 closes the item.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: lens evidence (commits)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "404",
+   "finding": "The probe 0.0.21 commit 0745af2, which the commit lens reported as unresolvable, is verified by the registry: the published package's gitHead matches. Only the local checkout and GitHub access lack the object.",
+   "evidence": "`npm view @orkestrel/probe@0.0.21 gitHead` returns '0745af2f4271b71cdccda14e41cee8800ead3b9a'.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: lens evidence (dangling references)",
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md",
+   "line": "185",
+   "finding": "The missing compare-jb2b.md can be regenerated, because both input runs survive. The dangling-references lens gave only a guessed cause.",
+   "evidence": "`find / -name 'compare-jb2b*'` returns nothing; runs/jb2b-1 and runs/jb2b-2 exist, with report.json, journey/, and measure.jsonl.",
+   "severity": "note",
+   "proposed_fix": "Rerun compare.ts over jb2b-1 and jb2b-2 into the record folder and repoint the citation, or keep the existing note that the report stays out of the record."
+  },
+  {
+   "lens": "completeness: cleanup guard",
+   "path": "/home/user/veneer/tests/setupBrowser.ts",
+   "line": "3199",
+   "finding": "Committed rule R3 and R7 comments cite seven run folders under the gitignored tmp folder, and the record copies none of them. Any veneer tmp cleanup must keep or archive these folders, or every citation dangles. Other citing comments: tests/setupBrowser.test.ts:1677 and :3588, tests/app/browser/integration.test.ts:1751, :2119, and :2199, and tests/integration.test.ts:698.",
+   "evidence": "`git check-ignore -v` reports '.gitignore:11:tmp'; `git grep task75-` in tests yields u7-probe-1, u7-probe-2, u7b-header-1, u9-integration-2, u9-journey-accept, u9-journey-final, and u9b-setup-1; the cited runs total 28M of a 1.1G runs folder.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: host cleanup",
+   "path": "/home/user/.wave/journey-cost",
+   "line": "n/a",
+   "finding": "The parent folder of the six retired lane M worktrees remains, empty, after the retirement that lanes.md:85 records.",
+   "evidence": "`ls -la /home/user/.wave/journey-cost` lists only . and .. (mtime 2026-10-06 12:21).",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: host cleanup",
+   "path": "/tmp/claude-0/-home-user/4338f304-4fe6-5169-89e8-36562d885cad/scratchpad/claude.json.before-probe",
+   "line": "n/a",
+   "finding": "The scratchpad keeps a full backup of /root/.claude.json from before the probe registration, including the account block. The scratchpad also holds 1.2G of scratch from before 2026-10-06.",
+   "evidence": "The file is 54,637 bytes, mode 600, and its top-level keys include 'oauthAccount'; `du -sh` of the scratchpad reads 1.2G, with 47 top-level entries older than 2026-10-06.",
+   "severity": "note",
+   "proposed_fix": "Delete the backup after the registration is confirmed to stay; prune the pre-task-75 probe folders (real, r1, r2, verify-tools, jc, and similar)."
+  },
+  {
+   "lens": "completeness: host cleanup",
+   "path": "/tmp",
+   "line": "n/a",
+   "finding": "No lens covered /tmp. It holds 3.8G of test and browser debris on a disk with 6.1G free.",
+   "evidence": "10,745 entries: 10,322 .org.chromium.Chromium.* folders (77M; 7,058 dated 2026-09-30); 1.2G across orkestrel-browser-*, orkestrel-test-*, playwright*, and p-*; 1.2G in node-compile-cache; `df /` reads 84% used with 6.1G available.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: checkouts",
+   "path": "/home/user/scaffold",
+   "line": "n/a",
+   "finding": "The scaffold checkout cited by design-verdict.md:186 and :451 sits 3 commits behind origin/main, so its lanes.md lacks the 13:08 entry. A session that reads this checkout reads stale records.",
+   "evidence": "`git rev-list --left-right --count HEAD...1ee0090e` reads '0 3'; its lanes.md has 932 lines against 940 in scaffold-main-wt.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: checkouts",
+   "path": "/home/user/veneer",
+   "line": "n/a",
+   "finding": "Two stale local branches linger in veneer: `main` sits 20 commits behind origin/main, and `sc/statecharts` is already merged into origin/main.",
+   "evidence": "for-each-ref lists 'main d481d24', 'origin/main 269e8a6', and 'sc/statecharts d5814a8'; `merge-base --is-ancestor d5814a8 origin/main` is true.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: MCP registrations",
+   "path": "/root/.claude.json",
+   "line": "n/a",
+   "finding": "The probe registration persists for /home/user/veneer, but no settings file sets MCP_TIMEOUT. The 'starts with MCP_TIMEOUT=180000' instruction at lanes.md:78 is manual, so the next veneer session reads probe as timed out unless someone sets it.",
+   "evidence": "In projects['/home/user/veneer'].mcpServers, probe is node node_modules/@orkestrel/probe/dist/bin/main.js with env {}; `env` is {} in /root/.claude/settings.json and /home/user/veneer/.claude/settings.json; grep finds MCP_TIMEOUT only in lanes.md.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: orchestrator task list",
+   "path": "session task list (this session's TaskList reminder)",
+   "line": "#40, #62, #68",
+   "finding": "The task list is stale against the close. #40 (the veneer showcase) is still in_progress, and #62 still reads 'open stage B and the journey tuning chunk' although the chunk closed. No task tracks the probe-lane handoff at lanes.md:78 or this sweep and cleanup.",
+   "evidence": "The reminder lists '#40. [in_progress] VS veneer showcase…', '#62. [pending] Stage B handover: … open stage B and the journey tuning chunk', and '#68. [pending] Stage B prerequisites…'.",
+   "severity": "note"
+  },
+  {
+   "lens": "completeness: tool docs",
+   "path": "/home/user/veneer/tmp/units/journey-cost/README.md",
+   "line": "n/a",
+   "finding": "The journey-cost tools README documents run.ts, measure.ts, mutations.ts, and compare.ts, but never names durations.ts, the instrument that task 75 added and that its rulings depend on.",
+   "evidence": "`grep -c -i durations README.md` returns 0.",
+   "severity": "note"
+  }
+ ],
+ "swept": [
+  "Scope: every file under /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06/ (53 top-level files plus instruments/ and instruments/fixtures-durations/), and the 2026-10-06 entries in /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md. The lanes.md checkout reads 940 lines at HEAD 1ee0090e. Another session prepended an entry at lines 73-80 during the sweep, so the cited ranges are lines 73-205 and 402-409, and every lanes line number in these findings uses the 940-line file.\n\n(1) Placeholders. I grepped for BASE_COMMIT, WORKTREE, GATES_B5, FOLDER, NAME, RUN, SLOWEST_*, FIGURE, and TABLE_TITLE. I also ran a census of every all-caps token outside ``` fences in the .md, .txt, and .out files, plus TODO, TBD, XXX, FIXME, ???, and <UPPER> forms. I then ruled each hit as a code identifier, a defined placeholder, or a leftover. The landed veneer tests contain no SLOWEST_, TABLE_TITLE, or FIGURE token.\n\n(2) Cited file names. I extracted every backticked or bare *.md, *.txt, *.json, *.out, *.ts, and *.log name and every absolute /home/user path, and tested each with fs.existsSync against the record folder, instruments/, veneer tmp, scaffold tmp/codex and tmp/claude, and the session scratchpad. I listed record files that nothing cites. I compared the record copies with the launch copies under /home/user/scaffold/tmp/{codex,claude} using cmp.\n\n(3) § references. Every § in the record and the in-scope lanes lines was checked against the headings of design-verdict.md, design-verdict-draft.md, design-brief.md, u9b-brief.md, astra-check.md, task75-check-last.md, instruments/durations.ts output, veneer guides/probe.md, ROADMAP.md, guides/veneer.md, and .orkestrel/release.md. All of them resolve; `§ Evidence` and `release.md § 2026-10-05 round` resolve only by prefix.\n\n(4) Run folders. I matched runs/NAME and backticked task75-, jb2-, completion-, landing-, fleet-, and rows-fix- names, wildcards included, against `ls /home/user/veneer/tmp/units/journey-cost/runs` (1,204 folders). I also checked the per-run evidence files that the U8 and U9 reports cite.\n\n(5) Commits. I ran `git cat-file -t` on every 7- to 40-character hex token against veneer, scaffold-main-wt, browser, and orkestrel/probe. Only 0745af2 failed. ec931b2a resolves as a tree, which is how it is cited.\n\n(6) Line references. lanes.md:N, status.md:N, durations-2026-10-06d.md:1197-1199, and guides/veneer.md:2695 were read at the cited line, and at citing commit 4993419b where that applies.",
+  "Targets, all read on 2026-10-06 at 13:08 UTC after lanes.md was rewritten at 13:08:27. lanes.md: every entry dated 2026-10-06, lines 73-205 (19 entries, including the 13:08 entry at 73-79 'stage B held; the probe server registered') plus the desktop entry at 402-409. design-verdict.md: lines 192 and 193, the only paragraphs that contain 'Amendment of 2026-10-06' (grep -n -i 'amendment'). u8b-brief.md: 55 lines. u8c-brief.md: 36 lines. u9b-brief.md: 63 lines. Pattern 1, grep -i -E across inflections with word boundaries: should, simply, easy/easier/easiest/easily, just, currently, now, new/newer/newest/newly, latest, utili[sz]*, leverag*, via, in order to, performant, robust*, allows/allow you to, allowing you to, please, sanity, dummy/dummies, blacklist*, whitelist*, master*, slave*, ensur*, guarantee*, since, once, above, below, we, our, ours, us, let's, soon, plus the literals e.g., i.e., etc., and/or. The pattern had no hits for should, simply, easy, just, currently, utilize, leverage, via, in order to, e.g., i.e., etc., performant, robust, allows you to, and/or, since, please, sanity check, dummy, blacklist/whitelist, master/slave, ensure, guarantee, or we/our/us/let's in any target. Hits ruled exempt: every above/below hit is a numeric or spatial comparison, never a cross-reference (lanes.md 99, 113, 120, 126; u8b-brief.md:20 inside a ts fence; u8c-brief.md 15, 23, 25, 28; u9b-brief.md 9, 30-33; design-verdict.md 192-193); lanes.md:126 is a backticked test title. Numeric 'once' is exempt at lanes.md 164, 184, 200 (x2), 201, and 202. 'as soon as' at lanes.md:78 is a conjunction, not the banned 'soon'. Pattern 2, superlatives and effort adjectives (best, worst, optimal, perfect, ideal, seamless, comprehensive, thorough, careful, rigorous, extensive, exhaustive, complete(ly), fully, entirely, obvious, clearly, trivial, straightforward, most, least, greatest, highest, lowest, \\\\w+est): every hit is a measured slowest/fastest/largest/smallest/shortest reading with its run, or 'at least'. No effort adjective appears. Pattern 3, relative-time words outside the table (present, current, recent, today, yet, still, so far, from here, at the moment): reported as notes at lanes.md 126, 151, and 176. 'Order from here' lines are not ruled, because the entry heading gives the date. Claims were checked against evidence: `/home/user/veneer/tmp/units/fleet-pins/smoke-probe-*.txt` (5 files), `u9-hold-report.txt` (35 unique held rows, parsed with node), `settle-pools-threshold.out` (the amendment's 9.47/3.31/2.18/1.91/1.69/1.23 sweep matches), and the `durations-post-u7c.md` tables in runs `task75-u9-journey-2` and `task75-u9-journey-final`. Nothing was edited or written.",
+  "Commits: I checked 22 commit IDs in /home/user/veneer with `rev-parse --verify` and `branch -r --contains`. They are 7853d17, 269e8a6, d481d24, ad2e7cc, 8b85d24, ee10c3c, d050da2, 6a976a0, 1f6c1f7, 8e4f38c, bec0a38, 90b96bb, 638435a, 9bc0003, 47c0765, ae7d545, ec37454, 2ba68b9, 7e2792b, 4d21de7, 1b15a22, and d0603b4. All exist and all sit on origin/main and origin/ccr-d15a48b1-yyyll6. Every \"over X\" parent claim matches `git log -1 --format=%p`. I also read the reflogs of origin/main, local main, and origin/ccr, and counted `rev-list d481d24..7853d17`.\n\nlanes.md: I read every 2026-10-06 entry in /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md, lines 73-202 and 402-410.\n\ndesign-verdict.md: I read Rule R clauses 1-7 and the amendments to R3 and R4 (lines 181-201), plus rulings 4-7, units U8 and U9, § Records to amend, § Open, and § Check. I grepped it for 1,600, 5,000, 5_000, lanes.md:N, U7a, and \"no row\".\n\nCode values I confirmed:\n- `COMPONENT_WAIT` is 5_000 in tests/setupBrowser.ts:3205.\n- Grep for 1,600 / 1_600 / 1600 across setupBrowser.ts, setupBrowser.test.ts, integration.test.ts (both), Showcase.test.ts, guides/veneer.md, and ROADMAP.md.\n- The R7 comments read in tests/app/browser/integration.test.ts:1751, :2119, :2199; tests/integration.test.ts:698; and tests/setupBrowser.test.ts:1677 and :3588.\n- The bounds: 300_000, 120_000, the shared expression (88 rows, confirmed from Statechart duration entries in task75-u9-journey-final, so 230,000), 15_000, 18_000, and 64_000.\n- A grep found no `waitForAnimations` call without a budget. 7853d17 adds 15 `COMPONENT_WAIT` uses to integration.test.ts.\n\nRuns: I read report.json, end.json, and measure.jsonl from the task75-u3 to u9, u9b, u9c, u8-analysis, and landing-7853d17 folders under /home/user/veneer/tmp/units/journey-cost/runs. These confirm the slowest readings 73,352.0, 37,215.6, 101,851.9 (with 100,081.4 in -2 and 107,064.9 at landing), 6,833.6, 10,979.7, 50,586.4 (with 54,890.5 in u9c), and 11,639.3 in the U8 analysis. They also confirm the wall times, outside loads, and pass counts 94, 147, 22, 60, 202, 11, and 14. Separately, I confirmed the overwrite log counts and the probe smoke files.\n\nGuide: I grepped guides/veneer.md for COMPONENT_WAIT, 5000 ms, timeout, and budget. Lines 2695-2696 match the code. Line 2787 matches the literal `budget: 5000` at integration.test.ts:460.\n\nROADMAP: I ran `grep -n -i 'running|waits|runs first|at the user'` on ROADMAP.md and also read lines 160-200. I found no \"running\" or \"waits\" claim about landed work. The defects are lines 164 and 166.\n\nHost: I checked `git worktree list`, `ls /home/user/.wave`, `df`, the `mcpServers` entries for /home/user/veneer in /root/.claude.json, and the HEAD and origin of the /home/user/scaffold and scaffold-main-wt checkouts.",
+  "Repo /home/user/veneer at HEAD 269e8a6, read-only. Tree: ran `git ls-files` (373 files) through the grep `(^|/)tmp/|\\.tgz$|\\.patch$|\\.log$|\\.jsonl$` and a second pass for .orig, .rej, .bak, .swp, .tmp, .diff, .tar, .gz, .zip, .out, .err, .DS_Store, scratch/probe/runs/out folders, and report/brief names. Ran stat over every tracked file for size, with a 2 MiB threshold. Refs and status: ran `git status --porcelain` (with and without ignored files), `git stash list`, `rev-parse` on HEAD, origin/main, and origin/ccr-d15a48b1-yyyll6, and `git ls-remote origin` for both branches. Comments: ran the brief's grep `lane [0-9A-Z]|unit U[0-9]|task75|task 75|Orchestrator|scratchpad|tmp/units` over src, tests, app, configs, guides, README.md, and ROADMAP.md. Broader comment sweeps, case-insensitive, over src, tests, app, and configs (.ts, .vue, .js, .mjs, .scss): `this session|the session|brief|lanes?|ruling|scratch|tmp/|worktree|orchestrat|subagent|astra|grok|opus|sonnet`; `claim[- ][0-9]|U[0-9]+|u[0-9]+-|task ?[0-9]+|flip-header|tokens-t[0-9]|containment-|verdict|falsif|round [0-9]|wave|stage [AB]`; and `this unit|the unit|unit.s brief|previously|used to|no longer|was (changed|replaced|removed|added)|we (tried|found)|first run|second run|probe found|after the fix|before the fix|reverted|TODO|FIXME|XXX|HACK`. Ruled every 'scratch' hit in tests/setupServer.ts, tests/setupPolicy.ts, tests/distribution.test.ts, tests/config.test.ts, tests/setupStyles.ts, and configs/helpers.ts as domain vocabulary for test-owned scratch directories, so not leftovers. src/styles/themes/_default.scss:3 is a template TODO from the initial commit da3bf40, outside this lens. Checked each run folder cited by a Rule R3 or R7 comment, and the accept4-* folders, for existence under /home/user/veneer/tmp/units/journey-cost/runs; all exist. Console: grepped `console\\.` in tests/setupBrowser.ts and tests/app/browser/integration.test.ts and extracted every label with node. Counted each label in guides/veneer.md, in tracked veneer .md and .ts files, and in scaffold .orkestrel records through `git grep`. Diffed bec0a38^..HEAD for added console calls, which found the two task-75 prints in tests/setupBrowser.test.ts. Also listed `console.(log|debug|warn)` calls across tests: the tests/src/** console.log measurement readings (Lock, Placement, helpers, tailwindcss) and the console.log calls inside fixture strings in config.test.ts and distribution.test.ts are outside the brief's console scope and were not ruled.",
+  "(1) Measured du -sm for every child of /home/user/veneer/tmp, units/*, units/journey-cost/*, fixtures/*, probes/*, captures/*, browsers/*, and all 1204 folders under units/journey-cost/runs (du -sk). Matched each run folder name with a boundary regex against /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/lanes.md and every file under its showcase/ folder, then rechecked the uncited ones against the rest of .orkestrel/veneer. Grepped the records for citations of each veneer tmp child, each journey-cost subfolder, and the fixtures paths. Read journey-cost/README.md, fixtures/prove.ts:95, mutations-selection.ts:12, report.ts:95, and lanes.md:82-85 and :179. (2) Listed every file under /home/user/scaffold/tmp/{codex,claude,cursor,units,probes} with sizes. Derived a unit stem per file and mapped it to its copy under .orkestrel/veneer (tailwind-flip/units, tailwind-flip/tokens, showcase/timing-2026-10-06, showcase/containment-2026-10-05), with cmp -s spot checks. Read the dispatch skill (.agents/skills/orkestrel-dispatch/SKILL.md, references/bench.md, scripts/sweep.ts header). Checked every *.pid against /proc. Traced scaffold/tmp/type to @orkestrel/probe 0.0.21 dist (index.js:761-775, :2044). (3) Measured du -sm and listed contents for every scratchpad subfolder, read the head of a representative file in each, and ran cmp on the journey-cost drafts against the showcase copies. (4) Measured du -sm for every /home/user/.wave child. Checked git worktree list and prune --dry-run for veneer, scaffold, and browser; checked PATH and which -a npm; grepped the records for npm11, pw-153, and journey.lock. Compared .wave/codex and .wave/cursor files against the showcase copies. (5) Measured du -sm for node_modules/.vite, .cache, .vitest, tmp, and dist in every /home/user/*/ repository, every top-level child of 100 MB or more, /tmp/*, /tmp/orkestrel-* by prefix, /root/.npm, /root/.cache, and /home/user/orkestrel/*. (6) Took the full ps listing, PPID-1 processes, the /proc/*/cwd and cmdline scan for orkestrel temp folders, the Chromium RSS sum, and df -m. Read-only throughout: nothing was edited, deleted, or killed.",
+  "Swept the record folder /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/showcase/timing-2026-10-06: ls -la of the folder; find -type f of instruments/; du -b of every file; a comparison of each top-level name against the README's backticked tokens; git ls-files compared with find, plus check-ignore; git log for the folder, README, durations.ts, and the c and d tables. Read the head of every undescribed file. Found section offsets in the c and d tables with awk over '^#' lines. Compared the extracted statechart sections and heads of c and d (scratchpad copies under /tmp/claude-0/.../scratchpad, the only writes). Ran cmp and diff -rq of the record copies against /home/user/veneer/tmp/units/journey-cost. Parsed every JSON file with node (invalid.json is the intentional fixture). Grepped .orkestrel for citations of durations-2026-10-06[bcde], each undescribed file name, and settle-pools-threshold, and read the citing lines in lanes.md (83, 90, 91, 98, 112-114, 126, 142, 156-157) and design-verdict.md:192. Ran a case-insensitive grep of README.md for the writing.md Substitutions terms plus ensure and guarantee. Gates: package.json scripts (node -e), vite.config.ts project definitions, tests/setupPolicy.ts (POLICY_PROSE_EXCLUSIONS, readPolicyProse, inspectPolicyProse, inspectPolicyWorkspace), tests/policy.test.ts:670-720 and :769, .oxlintrc.json ignorePatterns, .oxfmtrc.json, .prettierignore, .oxlintignore, tsconfig.json, .gitignore. Git: status --short, log -1, rev-parse HEAD and origin/main, rev-list --left-right --count, branch -vv, ls-remote origin refs/heads/main, worktree list. I did not run the policy script, tsc, or any writing command in the repo.",
+  "Completeness pass beyond the six lenses, read-only, on 2026-10-06 between 13:30 and 13:50 UTC. (a) Host processes and scheduling: `ps -eo` across all processes, `ps -o lstart` on PID 2728, liveness of every PID in /home/user/scaffold/tmp/codex/task75-*.pid (`kill -0`; none alive), the crontab (no binary present), /etc/cron.d, and `list_triggers` (none enabled). (b) MCP registrations: the `mcpServers` of every project in /root/.claude.json; .mcp.json in veneer, scaffold, and scaffold-main-wt; `env` in /root/.claude/settings.json and /home/user/veneer/.claude/settings.json; a grep for MCP_TIMEOUT across veneer .claude and guides. (c) Disk debris: a prefix census, du, and df of /tmp; the age split and du of the session scratchpad; `ls` and du of every /home/user/.wave folder; .git/worktrees and `git worktree list` for veneer and scaffold; local branches and the stash in veneer. (d) Veneer surfaces outside the record: ROADMAP.md § Next and § Scaffold propagation, and guides/veneer.md, grepped for COMPONENT_WAIT, the task 75 figures (1,600, 2,600, 5,000, 15,000, 18,000, 60,000, 64,000, 120,000, 230,000, 300,000, 2.8911, 1.6915, 100,081, 101,851), the task 75 mechanism names, 0.0.92, 0.0.93, and 4e94add7. I also checked `git grep` over tests, src, and app for citations of rule R and task75-* runs, ran `git check-ignore` on the cited runs, and swept the comment lines that 90b96bb..7853d17 adds for the banned-term pattern plus session, host, and the know, see, and want verbs. (e) Scaffold instruction files: AGENTS.md, .agents, .claude, .codex, .cursor, guides, src, and templates, grepped for task 75, timing-2026-10-06, COMPONENT_WAIT, journey-cost/runs, and /home/user/ (no hits). I also checked .orkestrel/veneer/plan.md (§ Chunks and :36) and ledger.md for task 75 and journey tuning, and read the lanes.md preamble (lines 1-72). (f) Commit-history claims: the reflogs of origin/main, origin/ccr-d15a48b1-yyyll6, and local main in veneer; `git log d481d24..7853d17`; `merge-base --is-ancestor 4e94add7 91682014`; the scaffold 0.0.93 package's dist/host/claude/rules/styles.md; and `npm view @orkestrel/probe@0.0.21 gitHead`. (g) Instrument copies: `diff -rq` of the record instruments/fixtures-durations folder against the live fixtures/durations folder, and verify.ts lines 1-8 and its fixture references. (h) Lens evidence re-checks: the u7c brief copies (cmp), find for compare-jb2b* and flip-b3 across /, a CPU grep over smoke-probe-*.txt, the landing gates copy against the fleet-pins copies, and the session task list as it appears in this session's reminders."
+ ]
+}
