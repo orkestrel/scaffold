@@ -1,0 +1,16 @@
+Hit probe run: popover table in light-1280, start 08:44:15
+run exit=0 08:45:10 "seconds": 54.794 Tests  2 passed | 18 skipped (20)
+clicks 40
+clicks with the panel shown: 16 hit in panel: 0 hit is trigger: 14
+{"ms":285,"hit":"button.btn.btn-secondary","inPanel":false,"trigger":{"top":409,"bottom":447,"left":361,"right":511},"panel":{"top":268,"bottom":401,"left":298,"right":574,"placement":"top"},"style":"position-anchor: --vn-placement-1; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: ","scroll":[39576,39576],"sb":"smooth"}
+{"ms":224,"hit":"button.btn.btn-secondary","inPanel":false,"trigger":{"top":409,"bottom":447,"left":361,"right":511},"panel":{"top":268,"bottom":401,"left":298,"right":574,"placement":"top"},"style":"position-anchor: --vn-placement-2; position: fixed; translate: 0px; position-area: block-start; position-try-fallbacks: ","scroll":[39576,39576],"sb":"smooth"}
+{"ms":245,"hit":"button.btn.btn-secondary","inPanel":false,"trigger":{"top":409,"bottom":447,"left":519,"right":666},"panel":{"top":372,"bottom":484,"left":674,"right":950,"placement":"right"},"style":"position-anchor: --vn-placement-6; position: fixed; translate: 0px -39576px; position-area: inline-end; position-try-fal","scroll":[39576,39576],"sb":"smooth"}
+{"ms":259,"hit":"button.btn.btn-secondary","inPanel":false,"trigger":{"top":409,"bottom":447,"left":519,"right":666},"panel":{"top":372,"bottom":484,"left":674,"right":950,"placement":"right"},"style":"position-anchor: --vn-placement-7; position: fixed; translate: 0px -39576px; position-area: inline-end; position-try-fal","scroll":[39576,39576],"sb":"smooth"}
+{"ms":2452,"hit":"div.popover-body","inPanel":false,"trigger":{"top":456,"bottom":494,"left":674,"right":803},"panel":{"top":502,"bottom":614,"left":600,"right":876,"placement":"top"},"style":"position-anchor: --vn-placement-9; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: fl","scroll":[39529,39325],"sb":"smooth"}
+{"ms":7207,"hit":"div.popover-body","inPanel":false,"trigger":{"top":409,"bottom":447,"left":674,"right":803},"panel":{"top":455,"bottom":567,"left":600,"right":876,"placement":"top"},"style":"position-anchor: --vn-placement-10; position: fixed; translate: 0px; position-area: block-end; position-try-fallbacks: f","scroll":[39576,39275],"sb":"smooth"}
+SLOW {"ms":2359,"phaseBefore":"hidden","hit":"div.popover-body","inPanel":false,"scroll":[39576,39355]}
+SLOW {"ms":2452,"phaseBefore":"shown","hit":"div.popover-body","inPanel":false,"scroll":[39529,39325]}
+SLOW {"ms":2132,"phaseBefore":"hidden","hit":"button.btn.btn-secondary","inPanel":false,"scroll":[39506,39241]}
+SLOW {"ms":7207,"phaseBefore":"shown","hit":"div.popover-body","inPanel":false,"scroll":[39576,39275]}
+SLOW {"ms":4422,"phaseBefore":"hidden","hit":"div.popover-body","inPanel":false,"scroll":[39576,39387]}
+probe reverted; clean=0

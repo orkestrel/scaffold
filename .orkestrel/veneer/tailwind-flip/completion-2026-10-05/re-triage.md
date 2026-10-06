@@ -235,6 +235,7 @@ The Host line of each unit means:
 
 ### B1. Journey observer repair
 
+- **Landed:** veneer `2ba68b9` on 2026-10-05 (`RECORDS/lanes.md`, the B1 entry); the journey host-bound set emptied.
 - **Closes:** units journey-observers.
 - **Role:** `astra`.
 - **Owned files:** the engine section of `VENEER/tests/setupBrowser.ts` (`actOnDisclosureControl`, `observeShowcaseStability`), the J8 toast read in `VENEER/tests/app/browser/integration.test.ts`, and `RECORDS/lanes.md:59`.
@@ -248,6 +249,7 @@ The Host line of each unit means:
 
 ### B2. Nested-aware reader and two TSDoc fixes
 
+- **Landed:** veneer `ec37454` on 2026-10-05 (the B2 entry).
 - **Closes:** flip FV-X14, lanes TW-16, units nested-reader, tree TW-19, and tree TW-20 (remark half).
 - **Role:** `astra`.
 - **Owned files:** `VENEER/tests/setupStyles.ts` (`:713`, `:1251-1284`), `VENEER/tests/setupStyles.test.ts`, and `VENEER/tests/setupBrowser.ts` (`:284-298`, `:1769`).
@@ -264,6 +266,7 @@ The Host line of each unit means:
 
 ### B3. `flip-preservation-modes`: dark mode, open states, and a `curated` cause
 
+- **Landed:** veneer `ae7d545` on 2026-10-06 after seven launches (the B3 entry), followed by the re-pin `47c0765` and the rows fix `9bc0003`, which moved the per-state elapsed time out of the preservation rows.
 - **Closes:** flip FV-R2 and units resolved-copies.
 - **Role:** `astra`.
 - **Owned files:** `VENEER/tests/setupStyles.ts` (`attributeDeparture` at `:574`, `DepartureCause`), `setupStyles.test.ts`, the preservation halves in `VENEER/tests/app/browser/integration.test.ts`, `collectComponentPreservation` in `VENEER/tests/setupBrowser.ts`, and the witness baseline in `VENEER/tests/src/tailwindcss/index.test.ts`.
@@ -279,6 +282,7 @@ The Host line of each unit means:
 
 ### B4. `TAILWIND_READINGS` rows for the containers and tables captions
 
+- **Landed:** veneer `638435a` on 2026-10-06 (the B4 entry); the rows half of TW-22 closed, the table half with B5.
 - **Closes:** tree TW-22 (rows half).
 - **Role:** `astra`.
 - **Owned files:** `TAILWIND_READINGS` in `VENEER/tests/setupBrowser.ts` (after `:843-859`).
@@ -291,6 +295,7 @@ The Host line of each unit means:
 
 ### B5. `showcase-guide`, carrying every § Showcase fix
 
+- **Landed:** veneer `90b96bb` on 2026-10-06 (the B5 entry); fourteen fixes, `ROADMAP.md:144` and `:188` read closed.
 - **Closes:** flip FV-X17, flip FV-X5, token A-1, token S7-10 (rest), token X-8, lanes TW-13, tree TW-08, tree TW-05, flip FV-D8 (guide half), and flip FV-D9 (guide half).
 - **Role:** `opus`.
 - **Owned files:** § Showcase of `VENEER/guides/veneer.md` (`:2049-2701`) and `VENEER/ROADMAP.md:182`.
@@ -306,6 +311,7 @@ The Host line of each unit means:
 
 ### B6. Chromium 153 host reading (adopted on 2026-10-05 with § 3 item 26)
 
+- **Read:** on veneer `638435a` on 2026-10-06 under Chromium 153.0.8010.12 from `/home/user/.wave/pw-153`, no veneer change (the B6 entry); four readings move against 141 and feed D-10; the host keeps 141.
 - **Closes:** units host-reading, lanes TW-21, and tree TW-15 (reading half). It feeds D-10 (`RECORDS/lanes.md:149`).
 - **Role:** `verifier`.
 - **Why it waits for unit J:**

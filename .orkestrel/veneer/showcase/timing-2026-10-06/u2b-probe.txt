@@ -1,0 +1,11 @@
+U2b: unfiltered dark-390 project with the hover probe, start 06:48:16
+run exit=0 06:56:27 "seconds": 490.957 Tests  24 passed (24)
+tooltip 1280-light excluded=10763
+tooltip 1280-dark excluded=10763
+tooltip 390-light excluded=10766
+tooltip 390-dark excluded=10763
+--- probe entries at the tooltip state
+Preservation stray probe {"width":1280,"theme":"light","state":"tooltip","strays":[],"hover":["html#.","body#.","div#.","div#.container-xxl.px-4.py-5","div#.row.g-5","section#.col-lg-3","div#.d-none.d-lg-block.sticky-lg-top.vh-100.overflow-y-auto.py-3","nav#.","div#.row.row-cols-2.row-cols-md-3.row-cols-lg-1.g-3.gx-lg-0","div#.col","p#.small.fw-semibold.text-uppercase.text-body-secondary.mb-2"],"active":"button#","bodyChildren":2}
+Preservation stray probe {"width":1280,"theme":"dark","state":"tooltip","strays":[],"hover":["html#.","body#.modal-open","div#.","div#.container-xxl.px-4.py-5","div#.row.g-5","section#.col-lg-3","div#.d-none.d-lg-block.sticky-lg-top.vh-100.overflow-y-auto.py-3","nav#.","div#.row.row-cols-2.row-cols-md-3.row-cols-lg-1.g-3.gx-lg-0","div#.col","p#.small.fw-semibold.text-uppercase.text-body-secondary.mb-2"],"active":"button#","bodyChildren":2}
+Preservation stray probe {"width":390,"theme":"light","state":"tooltip","strays":[{"id":"tooltip11","classes":["tooltip","bs-tooltip-auto","fade","show"],"describedBy":"","connected":true}],"hover":["html#.","body#.modal-open","div#.","div#.container-xxl.px-4.py-5","div#.row.g-5","main#content.col-lg-9","div#.","section#tooltips.mb-5","div#.row.row-cols-1.row-cols-xl-2.g-4","div#.col-xl-12.d-flex","figure#.card.flex-fill.mb-0","div#.card-body.d-flex.flex-wrap.align-content-start.align-items-start.gap-2","button#.btn.btn-secondary"],"active":"button#","bodyChildren":3}
+Preservation stray probe {"width":390,"theme":"dark","state":"tooltip","strays":[],"hover":["html#.","body#.modal-open","div#.","div#.container-xxl.px-4.py-5","div#.row.g-5","main#content.col-lg-9","div#."],"active":"button#","bodyChildren":2}

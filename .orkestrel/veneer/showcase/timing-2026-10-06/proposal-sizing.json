@@ -1,0 +1,200 @@
+{
+  "rulings": [
+    {
+      "reading": "1. Witness longhands (integration project), tests/integration.test.ts:678",
+      "kind": "read cost",
+      "property": "The synchronous reads of both raw composition orders and the planted control finish inside the case's bound. Nothing waits, so the bound is a cost ceiling: it trips only when the read set grows (more shared names or widths), which is a finding about the reader.",
+      "signal": "None. The case ends when the nested readClassLonghands calls return (tests/integration.test.ts:679-694). No wait helper is involved.",
+      "sizing": "Give the case an explicit timeout equal to the slowest queued reading × max(band spread 618.6/494.0 = 1.252, the case's own slowest/fastest spread), rounded up to a whole second. Take the readings from two queued `--kind command` runs of the integration project. The 14.1 s lane-M reading (2026-10-05) was taken outside the host queue, so it is evidence of risk and not an input. The implicit 15 s Vitest browser default is a figure nobody measured for this case.",
+      "owner": "veneer tests",
+      "evidence": "tests/integration.test.ts:678-695 (no third argument); vite.config.ts:157-177 sheetProject sets no testTimeout; a grep for 'witness longhands' over /home/user/veneer/tmp/units/journey-cost/runs returns no file, so no queued reading exists"
+    },
+    {
+      "reading": "2. Header statechart, tests/app/browser/integration.test.ts:1977-2052 (timeout 120_000 at :2052); Showcase.test.ts:416",
+      "kind": "budget",
+      "property": "The timeout backs up a harness whose rows carry their own budgets. It must exceed the family's slowest queued duration, so it trips only on a hang. It must also leave every inner wait room to report its own condition first. The Showcase.test.ts:416 wait exists so that the contrast reads see settled paint.",
+      "signal": "The harness resolves execute after writing its terminal status (setupBrowser.ts:3619-3641; @orkestrel/test/browser dist index.js:3847-3893). The rows end on their own predicates. Showcase.test.ts:416-420 polls getAnimations().length === 0 under the 1,000 ms default. Rule: use the parking door waitForAnimations(header, COMPONENT_WAIT) (index.js:1329-1371), which ends on each animation's finished promise.",
+      "sizing": "Size one bound per family from report.json durations over the seven queued band runs, using rule R: bound = slowest × max(1.252, own spread), rounded up. Readings: face 22.7-32.7 s gives 47.1 s; pair 25.7-32.5 s gives 41.2 s; theme 9.4-11.5 s gives 14.4 s at margin 1.252. The 60 s lane-M reading came from outside the queue. Replace the 120_000 figure, which has no measurement behind it.",
+      "owner": "veneer tests",
+      "evidence": "integration.test.ts:1977-2053; Showcase.test.ts:407-420; runs/{completion-b3-journey-before,jb2-1,jb2-2,jb2b-1,jb2b-2,completion-b3-journey-after-3b,completion-b4-journey}/report.json:1 ('drives the ... header table' durations)"
+    },
+    {
+      "reading": "3. Popover table, motion=true, light-1280: shared timeout integration.test.ts:2112, row setupBrowser.ts:5859-5865, COMPONENT_WAIT :3200, assertTipVisibility :4428-4454",
+      "kind": "budget",
+      "property": "The table timeout backs up rows that carry their own budgets, so it must exceed this table's slowest queued duration. The tip waits exist so that the description is read at settled paint, after the engine's phase and the trigger's described state agree.",
+      "signal": "Per row: the predicate phase === state && described (:4435-4439), then each running animation's finished promise (:4445; index.js:1350-1370), then the paint predicate (:4446-4451). Per table: the harness reaches its terminal status (index.js:3890-3892).",
+      "sizing": "Size each table from its own report.json durations by rule R; the shared 10_000 + max(scenarios) × 2500 formula is unmeasured. Popover motion=true read 62.1-165.8 s across the seven queued runs. That spread (2.67) does not track wall time: 106.3 s in the fastest run (494.0 s) and 62.1 s in a 562.0 s run. Rule R would give 443 s, against 230 s that is incidental because it comes from the largest table's scenario count. Popover motion=false read 10.8-13.3 s. Unit U4's row timing must locate the motion=true spread before its figure lands. The tip animation wait takes the re-derived COMPONENT_WAIT.",
+      "owner": "veneer tests",
+      "evidence": "integration.test.ts:2055-2113; setupBrowser.ts:3188-3200, :4428-4454, :5859-5865; runs/*/report.json:1 popover durations (jb2b-1 102.6 s, jb2b-2 69.6 s, b4 165.8 s, b3-before 106.3 s, jb2-1 72.6 s, jb2-2 109.5 s, after-3b 62.1 s)"
+    },
+    {
+      "reading": "4. Offcanvas table, motion=true: assertOverlayVisibility setupBrowser.ts:5065-5090 (:5078), actOnOverlayControl :5180",
+      "kind": "budget",
+      "property": "After the engine announces shown or hidden, the overlay host's transitions have finished before backdrop, focus, and announcement reads. The engine resolves its completion on a padded timer that can fire before the CSS transition ends under load (helpers.ts:935-949), so this wait must outlast that lag.",
+      "signal": "Each running finite animation's finished promise on the host subtree, re-read after each completion (index.js:1308-1310, 1348-1371).",
+      "sizing": "Pass COMPONENT_WAIT, re-derived by rule R from the U5 per-wait probe readings. The library default (1,000 ms, index.js:1330) was never measured for this host. The after-3b failure waited 1000.5 ms on a `transform` transition that was still running ('Open the start panel through 0:{Enter}'), so the settle exceeded 1,000 ms at least once in a 562.0 s run. The 774.5 ms reading at :3199 cannot size this wait (see answer 5).",
+      "owner": "veneer tests",
+      "evidence": "setupBrowser.ts:5065-5090, :5164-5181; src/browser/helpers.ts:917-954; node_modules/@orkestrel/test/dist/src/browser/index.js:1329-1371; runs/completion-b3-journey-after-3b/report.json:1 failureMessages"
+    },
+    {
+      "reading": "5. Scrollspy table, 390 px, motion=false: scrollComponentTo setupBrowser.ts:5625-5644, waitForComponentScroll :5609-5623",
+      "kind": "budget",
+      "property": "Each key press's scroll has ended, and the engine has processed the resulting intersections, before the selection is read. The loop terminates because every press moves scrollTop toward the key's boundary or the loop refuses.",
+      "signal": "The browser's `scrollend` event on the region, through waitForEvent (core index.js:429-461) armed before pressKeys. It is armed only when the region can move in the key's direction (Up/Home: scrollTop > 0; Down/End: ceil(scrollTop + clientHeight) < scrollHeight). Two waitForFrame calls follow, so the IntersectionObserver notification (Scrollspy.ts:52, :114-130) is delivered before the read. The 8-poll stillness is a clock: 8 × the 10 ms default interval (core index.js:241).",
+      "sizing": "The per-press wait takes COMPONENT_WAIT. The 100-press figure (:5633) has no measurement behind it; drop it. Termination becomes structural: throw `cannot reach` when the region cannot move in the key's direction, or when a press leaves scrollTop unchanged.",
+      "owner": "veneer tests",
+      "evidence": "setupBrowser.ts:5609-5644, :5666-5728; after-3b report.json:1 'Scrolling {ArrowDown} cannot reach Disclosure: active=Feedback, top=160, height=255, extent=1378' (160 + 255 < 1378: the region could still move, so the predicate ended before the scroll); scrollspy-390 motion=false read 62.2-75.1 s across the seven runs"
+    },
+    {
+      "reading": "6. Modal table, motion=false, static-dialog escape refusal: observeShowcaseStability setupBrowser.ts:3478-3534",
+      "kind": "window",
+      "property": "The window proves that the refused escape changes no class, ARIA attribute, or connection after the act has settled. It must be at least as long as the longest transition the refusal could start. Under reduced motion that is 0 ms of transition plus the engine's 5 ms completion pad.",
+      "signal": "The act's settle must end on a predicate: hidePrevented is recorded and the host lacks `modal-static`. That predicate holds only after Modal.ts:251. The window itself stays a clock, AbortSignal.timeout(window) then one frame (:3515-3516), because an absence has no signal. The engine emits no bounce-completion event (Modal.ts:232-257).",
+      "sizing": "Keep readShowcaseWindow (:3434-3471). Its 5 ms is the engine's pad contract (helpers.ts:935-939; doc at :3432), not a comfort figure. Any state change the refusal started under reduced motion is queued on that same pad before the observer's timer, so timer order puts it inside the window.",
+      "owner": "veneer tests",
+      "evidence": "setupBrowser.ts:3427-3534, :5164-5183; src/browser/Modal.ts:55-61, :232-257; src/browser/Trap.ts (no setAttribute or classList write); runs/jb2b-1/report.json:1 'Open the static dialog through escape:shown: Refusal changed state: delayed class, ARIA, or connection mutation'"
+    },
+    {
+      "reading": "7. Preservation reader, open-state count: tests/app/browser/integration.test.ts:1225-1487",
+      "kind": "row shape",
+      "property": "`excluded` counts the document elements outside the bound population (:1335-1337). It is deterministic only when the document holds no engine-inserted floating element that the state does not own. A leaked panel changes it, which makes it a leak detector worth keeping in the row.",
+      "signal": "A settle predicate: no connected tip panel (`.tooltip`, `.popover`) or backdrop other than the bound panel and backdrops. It is read after parkShowcasePointer (setupBrowser.ts:3256-3260) and before collectComponentSignatures (:1317). Tips emit `hidden.bs.<profile>` after disposal (Tip.ts:322-324; constants.ts:155, :162). If the tip is re-hovered, though, the panel stays connected (Tip.ts:322), so connection is the predicate and the event is not.",
+      "sizing": "The predicate wait takes COMPONENT_WAIT. Expect the row value at 390 px to match 1280 px: 10763 for light and dark. Measured: the 390 tooltip rows read 10766 in 15 of 18 rows across nine runs, and 10763 in jb2b-1 light, jb2b-2 light, and after-4 dark. Every 1280 tooltip row reads 10763.",
+      "owner": "veneer tests",
+      "evidence": "integration.test.ts:1247-1337, :1442-1477, :1484-1487; setupBrowser.ts:1398-1404, :1494-1500 (buildJourney destroys journeyVeneer, so Tip.destroy removes the panel synchronously, Tip.ts:267-292); runs/jb2b-1/journey/dark-390.txt:370,:377; runs/jb2b-2/journey/dark-390.txt:370,:377; runs/completion-b4-journey/journey/dark-390.txt:376,:383"
+    },
+    {
+      "reading": "8. Journey wall time, 494.0 to 618.6 s",
+      "kind": "read cost",
+      "property": "No bound. The band is the sizing input: it supplies the slow-end reference (completion-b4-journey, 618.6 s) and the margin floor 618.6/494.0 = 1.252. The margin admits a run as far above the slowest reading as the band's own spread.",
+      "signal": "None. run.ts writes the wall to end.json `seconds` (tmp/units/journey-cost/run.ts:196-230).",
+      "sizing": "Rule R for every bound: bound = slowest queued reading × max(1.252, the reading's own slowest/fastest spread across the band runs), rounded up (100 ms for a wait, 1 s for a test timeout). Scale a reading from a run with a shorter wall than the band's slow end by 618.6 / that run's seconds. A per-wait budget must stay below its test's slack (timeout minus slowest duration). Record each figure as a constant whose comment names the runs, the slowest reading, and the margin. Re-derive the figure when a recorded timing entry exceeds bound ÷ margin.",
+      "owner": "veneer tests",
+      "evidence": "/home/user/veneer/tmp/units/journey-cost/run.ts:196-230; compare.ts:50-62, :101-108, :220-229 (timing entries excluded and listed); brief §8 run list"
+    }
+  ],
+  "units": [
+    {
+      "name": "U1 Preservation reader: settle unowned panels before the count, then re-baseline (reading 7)",
+      "files": [
+        "tests/setupBrowser.ts",
+        "tests/app/browser/integration.test.ts",
+        "tests/setupBrowser.test.ts"
+      ],
+      "change": "Role: executor (astra). No dependency. In setupBrowser.ts, export `collectStrayPanels(owned: readonly Element[]): readonly Element[]`. It returns the connected elements matching the tooltip and popover base classes and the modal and offcanvas backdrop classes, taken from CLASS_NAMES (no string literals), that are not in `owned`. In the preservation reader, after the backdrops binding (integration.test.ts:1300-1308) and before the sheets and the count (:1312-1317), call `await parkShowcasePointer()`. Then call waitForCondition with COMPONENT_WAIT until `collectStrayPanels([panel, ...backdrops])` is empty; drop `panel` when it is undefined. When the wait is exhausted, throw an Error that lists each stray element's id and classes.",
+      "criteria": [
+        "Run the file test for tests/setupBrowser.test.ts. It must pass and must include a case where `collectStrayPanels` returns a planted, unowned `.tooltip` element appended to the body and omits an owned one.",
+        "Make two queued full journey runs, each in a fresh folder (`flock /home/user/.wave/journey.lock node tmp/units/journey-cost/run.ts --kind journey ...`). Each must read `\"excluded\":10763` on all four tooltip rows (1280 and 390, light and dark) of journey/dark-390.txt, and compare.ts between the two must report Equal with --registration 94/0.",
+        "Run compare.ts with each run as the candidate against jb2b-1 and jb2b-2. It must report differences only on the dark `390 tooltip component preservation` row, in rows, lines, and the Journal. Record the pair as the baseline that replaces J-B2.",
+        "If either run still reads 10766, stop. Report the classes of the extra elements and land nothing."
+      ],
+      "excluded": "Summary keys and key order; the `excluded` field itself (it stays in the row); the theme and state loops; scenario selection (:1249-1261); buildJourney and buildComponent; every other row; no engine file; no change to compare.ts."
+    },
+    {
+      "name": "U2 Modal refusal: settle the static bounce inside the act (reading 6)",
+      "files": [
+        "tests/setupBrowser.ts",
+        "tests/setupBrowser.test.ts"
+      ],
+      "change": "Role: executor (astra). Depends on U1 for its baseline. In actOnOverlayControl, when `refused` is true, add a wait after the event-count wait (setupBrowser.ts:5175-5179) and before waitForAnimations(host) (:5180). It is a waitForCondition under COMPONENT_WAIT until the host lacks CLASS_NAMES.bootstrap.components.modal.static. This covers both the escape and the static-backdrop doors (Modal.ts:60, :71). For offcanvas the predicate holds at once.",
+      "criteria": [
+        "Add a file-test case under stageMedia({ motion: false }) on the mounted showcase's static dialog. A MutationObserver attached before the Escape press must record the `modal-static` add and its removal, which proves the reduced-motion bounce writes a class.",
+        "In the same file, drive the static-dialog escape row from the modal entry of COMPONENT_TABLES through guardShowcaseScenarios (:3584). It must resolve, and the host must lack `modal-static` when the act returns.",
+        "Make a queued full journey run. compare.ts against the U1 pair must report Equal with --registration 94/0, and the modal motion=false table must pass."
+      ],
+      "excluded": "readShowcaseWindow, the 5 ms window, the REFUSAL_ATTRIBUTES and mutation filter (:3519-3529), observeShowcaseStability's order, src/browser/Modal.ts, and every motion=true path."
+    },
+    {
+      "name": "U3 Scrollspy: end each press on scrollend, with structural termination (reading 5)",
+      "files": [
+        "tests/setupBrowser.ts",
+        "tests/setupBrowser.test.ts"
+      ],
+      "change": "Role: executor (astra). Depends on U1. Replace waitForComponentScroll (:5609-5623) with an exported `pressComponentKey(context, key)`. It reads whether the region can move in the key's direction (Up/Home: scrollTop > 0; Down/End: Math.ceil(scrollTop + clientHeight) < scrollHeight). If the region can move, it awaits Promise.all([waitForEvent(subscribe to the region's `scrollend`, 'the scroll container ends its scroll', COMPONENT_WAIT), pressKeys(key)]). Otherwise it calls pressKeys(key) and then settleShowcaseScroll() (:3410), because the outer page can scroll instead. Both paths end with two waitForFrame calls. In scrollComponentTo, drop `attempt < 100`. Loop while the selection differs from the destination. Throw the existing `cannot reach` message (:5640-5642) when the region cannot move in the key's direction, or when a press leaves scrollTop unchanged. Route the presses at :5680-5683 and :5710-5711 through pressComponentKey. Delete the waitForComponentScroll call in revealScrollspy (:5672), which follows no key press.",
+      "criteria": [
+        "The file test proves that an ArrowDown press on a movable scrollspy region resolves on `scrollend` at both motion settings. This shows Chromium 141 emits scrollend for keyboard scrolls on this host.",
+        "The file test proves that scrollComponentTo, with the region at its bottom and a destination that needs ArrowDown, throws `cannot reach` without arming a scrollend wait.",
+        "Make a queued full journey run. compare.ts against the U1 pair must report Equal with --registration 94/0, and both scrollspy tables must pass at both motions."
+      ],
+      "excluded": "SCROLLSPY_SCENARIOS, readScrollspySelection, the arrange's boundary key choice (:5680-5682), and the act's activation and Escape assertions (:5712-5724); src/browser/Scrollspy.ts."
+    },
+    {
+      "name": "U4 Statechart timing entries (measurement for readings 2 and 3)",
+      "files": [
+        "tests/app/browser/integration.test.ts"
+      ],
+      "change": "Role: executor (astra). Depends on U2 and U3 landing, so the readings reflect the final waits. In the header test (:1998-2052) and the component-table test (:2059-2111), record performance.now() at test start and at each harness `build` call. In `finally`, emit console.info('Statechart duration', JSON.stringify({ variant: VARIANT, family, motion, seconds, rows: [{ name, milliseconds }] })), with each row's elapsed taken between consecutive build calls and the test end.",
+      "criteria": [
+        "A queued full journey run compared against the U1 pair reports Equal with --registration 94/0, because the entries carry `seconds` and `milliseconds` and fall into the timing list (compare.ts:101-108, :226-228).",
+        "Each header and component-table test leaves one entry in its artifact's Journal.",
+        "Two queued full runs are recorded as the readings for U7, with their folders and end.json seconds."
+      ],
+      "excluded": "The 'Header statechart' entry, every row and gated line, and the GATED list. The entry name must not start with any GATED name (compare.ts:29-49, :147-149)."
+    },
+    {
+      "name": "U5 Per-wait settle probe (measurement for COMPONENT_WAIT and the animation budget; lands nothing)",
+      "files": [
+        "scratch worktree copy of tests/setupBrowser.ts (not the landing tree)"
+      ],
+      "change": "Role: executor (astra). Depends on U2 and U3. In a scratch worktree, replace the setupBrowser.ts imports of waitForCondition and waitForAnimations with local timing functions of the same signature. They record the maximum elapsed milliseconds per wait description for each table, and print console.info('Settle probe', JSON.stringify({ family, motion, variant, waits: [{ description, milliseconds }] })) at the end of each table.",
+      "criteria": [
+        "Make two queued full journey runs with `--kind command` in fresh folders. Their stdout.log must carry one 'Settle probe' line per component table.",
+        "Report the slowest settle per wait kind (condition, animation, scroll) with the run folder and end.json seconds."
+      ],
+      "excluded": "Any commit to the landing tree; any change to predicates or budgets."
+    },
+    {
+      "name": "U6 Derive the component wait budget and budget every animation settle (readings 3 and 4)",
+      "files": [
+        "tests/setupBrowser.ts",
+        "tests/setupBrowser.test.ts",
+        "tests/app/browser/integration.test.ts",
+        "tests/app/browser/Showcase.test.ts"
+      ],
+      "change": "Role: executor (astra). Depends on U5. Set COMPONENT_WAIT.budget by rule R from the U5 readings. Replace the comment at :3199 with the U5 run folders, the slowest reading, and the margin. Pass COMPONENT_WAIT to every waitForAnimations call in setupBrowser.ts (:1594, :1949, :1971, :3905, :4058, :4163, :4445, :4623, :4671, :4799, :4828, :4838, :4896, :5078, :5180, :5353) and in integration.test.ts (:837, :1001). Replace the literal { budget: 5_000 } in settleShowcaseScroll (:3422) with COMPONENT_WAIT. Replace the polling wait at Showcase.test.ts:416-420 with waitForAnimations(the header element, COMPONENT_WAIT).",
+      "criteria": [
+        "A grep for a single-argument `waitForAnimations(` call in the four files returns no match.",
+        "The control at setupBrowser.test.ts:501-519 keeps an animation longer than the library's 1,000 ms default and shorter than COMPONENT_WAIT.budget, with the duration derived from those two values.",
+        "The file and project tests pass, and a queued full journey run compared against the U1 pair reports Equal with --registration 94/0."
+      ],
+      "excluded": "The @orkestrel/test default; every predicate; readShowcaseWindow; the table timeouts (U7)."
+    },
+    {
+      "name": "U7 Measured test timeouts per table, header family, and read-cost case (readings 1, 2, and 3)",
+      "files": [
+        "tests/setupBrowser.ts",
+        "tests/app/browser/integration.test.ts",
+        "tests/integration.test.ts"
+      ],
+      "change": "Role: executor (astra). Depends on U4 and U6. Add `readonly timeout: number` to ComponentTable (:3189-3196) and set it on every COMPONENT_TABLES row. Size it by rule R from report.json durations over the seven band runs and the two U4 runs, bounding the table's slower motion run. Put one comment above COMPONENT_TABLES naming the runs and the rule. Register each table with `it.each([row])('drives the $family table through its controls with motion=$motion', fn, row.timeout)` so the titles stay byte-identical, and delete the formula at :2112. Give the header tables a `timeout` per family registered the same way, replacing the 120_000 at :2052. Re-derive the preservation case's 300_000 (:1707) from its own durations after U1. Give the witness case (tests/integration.test.ts:678) an explicit timeout from two queued `--kind command` runs of the integration project, named in its comment.",
+      "criteria": [
+        "The registration stays 94/0. compare.ts reports no 'Host-bound title absent' and Equal against the U1 pair in a queued full run.",
+        "Each figure can be reproduced from the named report.json durations by rule R.",
+        "Popover motion=true lands its figure only after the Orchestrator has ruled on the U4 per-row reading of its 62.1-165.8 s spread."
+      ],
+      "excluded": "Scenario lists and order; the harness; the inner budgets (U6); compare.ts."
+    }
+  ],
+  "answers": [
+    "Lane: objective (measurement and sizing). Classification of readings 1 to 6:\n- Reading 1 is a read cost.\n- Readings 2, 3, 4, and 5 are budgets.\n- Reading 6 is a window.\nReading 2 is a test timeout that backs up budgeted rows. Reading 3 is a table timeout plus the tip settle budgets. Reading 4 is an animation settle budget. Reading 5 is a per-press scroll settle with structural termination.\n\nThe ruling entries give each reading's property, signal, and sizing. Every figure follows rule R: slowest queued reading × max(618.6/494.0 = 1.252, the reading's own spread), rounded up. It is recorded as a constant whose comment names the runs, and is re-derived when a timing entry exceeds bound ÷ margin.\n\nAlternative rejected: a budget computed at run time from a calibration settle. It would scale with the very regression it has to catch.",
+    "Yes: 5 ms plus one frame is the right refusal window when motion is off. The 5 ms is the engine's completion pad (helpers.ts:935-945; documented at setupBrowser.ts:3432). Any state change a refusal starts under reduced motion runs on that same pad, and that pad was queued before the observer's AbortSignal.timeout (:3515).\n\nThe late mutation comes from the static bounce:\n- `modal-static` is added synchronously (Modal.ts:244) and removed after the first pad (Modal.ts:247-251). That removal is a class record.\n- The overflowY writes (:243, :254) touch `style`, which the filter at :3519-3527 ignores.\n- `element.focus()` (:248) writes no attribute.\n- Trap.ts writes no attribute or class.\n- #prevent writes no aria-* attribute.\n\nThe defect is in the act. actOnOverlayControl treats hidePrevented as completion (:5164-5179). Under reduced motion nothing animates, so waitForAnimations(host) (:5180) returns at once. One frame (:5181) can then elapse before the 5 ms pad fires, which leaves the removal inside the observation. Motion=true passes because waitForAnimations re-reads after each finish and so covers both bounce transitions (index.js:1308-1310).\n\nThe observer cannot wait for an engine completion signal: the bounce emits none (Modal.ts:232-257). The act must instead settle on the predicate 'hidePrevented recorded and host lacks modal-static'.\n\nAlternatives rejected:\n- Filtering `modal-static` out of the observer would hide a stuck class.\n- Widening the window is a clock under load.",
+    "The previous state's panel is not the source. buildJourney (integration.test.ts:1248) calls buildShowcase, then destroyShowcase (setupBrowser.ts:1398-1404, :1494-1500), which destroys journeyVeneer. Tip.destroy then removes the panel synchronously (Tip.ts:267-292).\n\nThe stray, three elements the size of a tooltip panel, arises inside the tooltip state's own act. The act clicks a Contents link and tabs to the trigger, so it might come from a focus pass or from a hover after the jump.\n\nIt is the usual case, not a rare one:\n- The 390 tooltip rows read 10766 in 15 of 18 rows across nine runs.\n- They read 10763 only in jb2b-1 light, jb2b-2 light, and after-4 dark.\n- Every 1280 tooltip row reads 10763.\nThe J-B2 pair itself holds a race outcome: light 10763 and dark 10766 in both runs.\n\nWhere to wait: after the open (:1265-1267) and the binding (:1278-1308), and before the count (:1317). Park the pointer (setupBrowser.ts:3256), then wait until no connected tip panel or backdrop outside the bound set remains. Waiting before buildJourney cannot see a stray that the act itself creates.\n\nWhy a connection predicate: `hidden.bs.tooltip` fires after disposal (Tip.ts:322-324). A re-hovered tip keeps its panel connected through that event, so the event does not prove the panel left.\n\nKeep `excluded` in the row. It is a count, and with the predicate it is deterministic: 10763 at both widths. A leaked engine panel changes it, which is a defect the row exists to catch. Moving it to the Journal changes nothing, because the Journal is compared too (compare.ts:536-547). Giving it a timing key would hide a leak. Counting only the owned elements already exists: that is `signatures`.",
+    "Yes: each table carries its own bound, as a `timeout` property on its COMPONENT_TABLES row.\n\nThe shared formula at integration.test.ts:2112 gives every table the bound implied by the largest scenario count (230 s). Popover's margin is therefore incidental. Scenario count alone cannot size a table, because per-row cost depends on family and motion. Measured across the seven queued runs:\n- popover motion=true: 62.1-165.8 s\n- popover motion=false: 10.8-13.3 s\n- scrollspy-390 motion=false: 62.2-75.1 s\n- modal motion=true: 37.8-42.7 s\n\nThe bound is a measured property: rule R applied to that table's report.json durations, bounding its slower motion run.\n\nVitest applies one timeout to a whole it.each. Register each row with it.each([row]) and the same title template, so titles and the host-bound gate stay byte-identical.\n\nPopover motion=true has a spread of 2.67 that does not track wall time. U4's per-row entries must locate that spread before its figure lands.",
+    "Yes: waitForAnimations must take a budget, and the library already accepts one (options.budget, index.js:1329-1331).\n\nThe 774.5 ms reading at :3199 cannot size it:\n- It was a scroll settle, not an animation settle.\n- It came from the j0c2 diagnostic runs (305.69 and 319.32 s walls, 66 tests; /home/user/veneer/tmp/codex/j0c4-history.md:26), outside this band and this suite.\n- The comment names no run.\nThe 5,000 ms built on it is a comfort figure (tmp/units/journey-cost/evidence/design-folder/measure.md:219).\n\nThe after-3b failure shows a `transform` transition still running at 1000.5 ms in a 562.0 s run. Re-derive one COMPONENT_WAIT from the U5 per-wait probe by rule R; the property and the load are the same for conditions and animations. The margin property: the larger of the band spread (1.252) and the settle's own spread, so the budget admits a run as far above the slowest settle as the band itself spreads. The budget must also stay below each table's slack, so an exhausted wait names its condition before Vitest's timeout.",
+    "Neither. The 8-poll settle is a clock in disguise: 8 × the 10 ms default interval of unchanged scrollTop (core index.js:241). A press whose scroll starts late passes it.\n\nThe after-3b failure shows this. The message reads top=160, height=255, extent=1378, so the region could still move; the predicate ended before the scroll did.\n\nThe press must instead end on the browser's `scrollend` event on the region, armed before the press and only when the region can move in the key's direction. Two frames follow so the IntersectionObserver notification lands (Scrollspy.ts:52, :114-130).\n\nThe activation event is not a per-press signal. It fires only when the selection changes (Scrollspy.ts:167), and the act already asserts it (setupBrowser.ts:5701, :5719).\n\nThe 100-press bound has no measurement behind it. Replace it with structural termination: each press must move scrollTop toward the key's boundary, or the loop throws `cannot reach`.",
+    "Every reading is a veneer test-layer change: tests/setupBrowser.ts, tests/setupBrowser.test.ts, tests/app/browser/integration.test.ts, tests/app/browser/Showcase.test.ts, and tests/integration.test.ts.\n\n@orkestrel/test/browser: no change. waitForAnimations accepts a budget (index.js:1329-1331), and waitForEvent exists for scrollend (core index.js:429-461). Changing the 1,000 ms default would change every consumer's contract to suit one host's load, so refuse it.\n\nEngine (stage B): no change.\n- Tips already emit `hidden.bs.<profile>` after the panel is disposed (Tip.ts:322-324; constants.ts:155, :162). The brief's 'phase getter only' premise omits that event, and the reader needs a connection predicate either way.\n- The modal bounce has no completion event (Modal.ts:232-257), but its class removal is an observable settle predicate. Adding an event would be product surface with no consumer that needs it.\n\nTwo items outside the code: the records to amend are listed under risks, and the units follow in order U1 to U7."
+  ],
+  "risks": [
+    "Records to amend:\n- Replace the J-B2 baseline pair (jb2b-1, jb2b-2) in the landing gate with the two U1 runs. Both J-B2 runs carry the 390 tooltip race outcome (light 10763, dark 10766), so roughly 14% of correct candidates would match them by chance (3/18 × 15/18).\n- Correct brief reading 7: 10766 is the majority reading (15 of 18 rows), not a single occurrence.\n- Replace the comment at setupBrowser.ts:3199: its 774.5 ms reading comes from j0c2 diagnostic runs outside this band.\n- Re-rule the host-bound entries for modal motion=false, offcanvas motion=true, and scrollspy-390 motion=false after U2, U3, and U6 pass in queued runs.",
+    "Measurements missing:\n- Queued readings of the witness case (no report.json in the runs carries it).\n- Per-wait settles at the band's slow end (U5).\n- Per-row costs inside the popover motion=true table, whose 62.1-165.8 s spread does not track wall time (U4).\n- Which variant (light-390 or dark-1280) each of the two 'face' header durations belongs to; the reports list two face entries per run.\n- The lane-M runs (60 s header, 130-230 s popover, 14.1 s witness), which do not sit under tmp/units/journey-cost/runs.",
+    "Tension (Orchestrator): rule R from seven queued runs gives tight bounds (theme header 14.4 s, pair 41.2 s, face 47.1 s). Lane-load readings outside the host queue (60 s header) would exceed them. If lane load must pass too, the band has to include lane-load runs; otherwise the queue rule keeps them out.",
+    "Tension (Orchestrator): popover motion=true would get 443 s under rule R because of its own spread of 2.67. Landing that before U4 explains the spread could tolerate a slow row that is a real defect. U7 holds that figure for a ruling.",
+    "Tension (Orchestrator): U5 is a scratch probe that shadows the third-party wait imports with timing functions. The no-mocks law covers project-owned behavior, so the probe lands nothing. The alternative is a permanent per-wait recorder at about 55 call sites, which keeps the readings in every run at the cost of a wide diff.",
+    "Tension (subjective lane): the names `timeout` on ComponentTable, `collectStrayPanels`, `pressComponentKey`, and the 'Statechart duration' entry; also the one-element it.each([row]) registration used to keep titles byte-identical.",
+    "Tension (Orchestrator): reading 1 could instead lower the read cost (for example, by reading both composition orders in one pass). This design sizes a timeout and leaves the reader unchanged.",
+    "Risk: U3 assumes Chromium 141 dispatches `scrollend` for keyboard scrolls on an element scroller, and that two frames deliver the IntersectionObserver notification. U3's file cases must prove the first claim. An undelivered notification costs at most one extra press, as it does in the existing code.",
+    "Risk: U1 parks the pointer before the count. A toast whose autohide pauses on hover might resume. The existing re-assert at integration.test.ts:1485 refuses a closed state. U1 also stops if the extra elements are not tip panels or backdrops.",
+    "Risk: re-deriving COMPONENT_WAIT below 5,000 ms can surface settles slower than the measured envelope. Such a failure is a defect finding about the component, not a reason to widen the budget. The setupBrowser.test.ts:501-519 control must keep an animation between the library's 1,000 ms default and the derived budget.",
+    "Risk: the related settleShowcaseScroll predicate (4 stable frames, :3410-3424) is also a frame-count clock. This design budgets it and leaves its predicate unchanged; a window `scrollend` signal is out of scope."
+  ]
+}

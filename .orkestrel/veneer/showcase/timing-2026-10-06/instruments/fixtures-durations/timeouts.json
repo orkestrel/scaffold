@@ -1,0 +1,4 @@
+{
+  "showcase statecharts drives the 'popover' table through its controls with motion=true": 2000,
+  "showcase statecharts drives the 'face' header table through the header buttons": 10000
+}
