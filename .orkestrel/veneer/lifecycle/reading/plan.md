@@ -59,7 +59,10 @@ Copy that already exists keeps its bytes unless this list changes it.
 - **Images:** a named image renders as `image "ALT"`. Decorative images are omitted.
 - **Table rows:** the cells joined by ` | `.
 - **Lists:** a list item starts with `- `.
-- **Form controls:** a control prints its reference, role, name, state, and safe value. A password field prints no value.
+- **Form controls:** a control prints its reference, role, name, state, and the value the accessibility tree exposes.
+  - Chromium masks a password field's value, and the accessibility tree carries no discriminator a captured source supplies. So the projection carries the mask and never the secret, as `look` did in 0.0.26 (amended 2026-10-06 after the unit's deviation report: browser `tmp/codex/reading-source.json`, `reading-source-raw.json`).
+  - A text line equal to its parent control's value is omitted.
+  - Every existing redaction of text typed with `secret: true` stays in force in every rendered result.
 - **Exclusions:** hidden content and registered secrets stay out.
 - **Wrapping:**
   - Wrap at whitespace, so that no line exceeds the window room and a typical paragraph of the store fixtures stays one line. The projection unit picks the width from that property and reports it.
