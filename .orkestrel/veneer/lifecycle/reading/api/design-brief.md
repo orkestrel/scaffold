@@ -17,7 +17,9 @@ Propose the improved API: what changes, what stays, and why. The proposal must b
 All paths are relative to C:/Users/mikes/WebstormProjects/scaffold unless absolute.
 
 - **The ecosystem's patterns,** read first: `.orkestrel/veneer/lifecycle/reading/api/patterns-1.md` (entities, managers, vocabulary) and `patterns-2.md` (surface hygiene).
-- **The browser inventory against them:** `.orkestrel/veneer/lifecycle/reading/api/browser-*.md`.
+- **The browser inventory against them:**
+  - `.orkestrel/veneer/lifecycle/reading/api/browser-1.md`: entities, managers, options, lifecycle, and a deviations table;
+  - `api/consumers.md` and `api/browser-usage.json`: where each export is referenced, and which checkouts import the API. Only ollama's tests import it in code.
 - **The guides themselves:** `guides/agent.md`, `database.md`, `relation.md`, `table.md`, `workspace.md`, `workflow.md`, `form.md`, `tool.md`, and any other guide under `guides/` you find useful. Read the Surface, Methods, and Contract sections where a pattern needs confirming.
 - **The browser:** C:/Users/mikes/WebstormProjects/browser at `51cf268`: `src/**`, `guides/browser.md`, `README.md`.
 - **The reading campaign,** whose model-facing tool vocabulary of 8 page tools is ruled and stays: `.orkestrel/veneer/lifecycle/reading/campaign.md` and `plan.md`.
