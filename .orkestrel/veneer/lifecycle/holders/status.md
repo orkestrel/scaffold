@@ -257,7 +257,7 @@ Lane results:
     - the `clock` TSDoc states the trust;
     - source 1539, guides 202, check passed.
   - mcp ROADMAP item 16 (`44a8002`) records the stdio client transport cases' fixed `waitForDelay(300)` waits: 5 failed under the probe unit's load and passed alone.
-  - **mcp `main` pushed** (`c98d82f`, `8f743a8`, `51b4d0a`, `44a8002`), unreleased; mcp 0.0.37 waits for the user's word.
+  - **mcp `main` pushed** (`c98d82f`, `8f743a8`, `51b4d0a`, `44a8002`). **mcp 0.0.37 published** on 2026-10-06 at `9e374f2` (`.orkestrel/release.md` § 2026-10-06 round).
 - **Probe:** `load-cases2` committed `adea0d3`, and **probe `main` is pushed** (`482666c`, `adea0d3`).
   - P2 to P12 derive their budgets from the lifecycle bounds, with the formulas in comments, and their waits are bounded events; P10 awaits the public refusal.
   - Each negative control fails 1 case. The quiet whole `npm run test` passed in 554.7 s.
@@ -273,11 +273,16 @@ Lane results:
   - Kept candidates: none. S1 (paging fixture) was reverted by its fact-exposure guards at n=16. S2 (task after the seeded view) was reverted at closure without a final ruling. S3 to S6 and acceptance never ran. The discarded S2 run 9 is archived outside the counts.
   - Edge sync: the arms launch Edge without `--disable-sync` or `msImplicitSignin`, and every store attempt runs in an isolated CDP context. The archives record no executable, sync, or network diagnostics, so sync effects on S2 cannot be excluded.
   - Branch heads kept, worktrees removed: browser and agent `store-reliability` carry no campaign commits; ollama `store-reliability` is at `2529bb2`. Ollama `main` is unchanged: 3 unpushed commits plus the uncommitted 0.0.21 version bump.
-  - Next: the user's ruling on the campaign and the ollama release.
+  - **The user's ruling (2026-10-06):** release ollama 0.0.21 re-pinned to browser `^0.0.26`, then run a fresh campaign on Ollama 0.35.1 and browser 0.0.26 with S0 from run 1. The user holds Ollama's auto-update for the series. Publish mcp 0.0.37 in the same round.
+  - Release visits run one at a time: mcp first, then ollama.
+  - Unit `store-campaign3` (ollama `tmp/codex/store-campaign3-brief.md`) launches on the ollama release head after both publishes.
+    - S1's revert stands.
+    - S2 reruns from its first look.
+    - Every run archives the Edge command line, and a launch without both disables stops the series.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
-2. **The ollama store campaign** stopped on 2026-10-06 when the daemon changed from 0.35.0 to 0.35.1; no candidate was kept. Waiting on the user's ruling. Ollama's local 0.0.21 also owes a re-pin to browser `^0.0.26`.
+2. **The ollama store campaign** stopped on 2026-10-06 when the daemon changed from 0.35.0 to 0.35.1, with no candidate kept. The user ruled: release mcp 0.0.37 and ollama 0.0.21 (re-pinned to browser `^0.0.26`), then run `store-campaign3`.
 3. **mcp items 13 and 14.**
 4. **Veneer's re-pin** to browser `^0.0.26`, probe `^0.0.21`, and scaffold `^0.0.93` is the cloud session's (`lanes.md`, 2026-10-06 entry).
 

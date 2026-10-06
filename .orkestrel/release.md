@@ -69,3 +69,13 @@ Release-chain notes, continued:
 - Probe's second visit ran alone and passed, after the fixture fix (`140c5bd`: the overlap is recorded with the pid) and the receipt re-quote for Oxlint 1.87.0 (`24b8a27`).
 - Scaffold's first preparation undid the visit's format step, and its second added a trailing newline to the `app-only-toolchain.txt` snapshot. Both were corrected before the passing `prepublishOnly`.
 - Probe and scaffold each answered "accepted, unconfirmed", then `npm view` served them within about 2 minutes.
+
+## 2026-10-06 round: mcp items 13 and 14, the ollama re-pin
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | L5 | `@orkestrel/mcp` | 0.0.36 | 0.0.37 | bump: `MCPInputOptions.clock` reads every expiry (ROADMAP item 14); `isPingRequest` lets a headerless legacy pre-initialize `ping` pass the session middleware (ROADMAP item 13, a recorded departure from the transport page's 400 recommendation); scaffold 0.0.93 | `9e374f2` |
+
+Release-chain notes:
+- mcp's visit ran alone: source 1539 passed with 2 skipped, guides 202, conformance 47. The publish answered "accepted, confirmed", and `npm view` serves 0.0.37.
+- npm's session had expired; one login link, then the code.
