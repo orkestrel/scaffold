@@ -250,7 +250,14 @@ Lane results:
 - The ollama store campaign resumes last, on a quiet host.
 - **mcp:**
   - `items13-14` committed `c98d82f` (item 14: `MCPInputOptions.clock`; the expiry reads use it; the cases run on `createManualClock`) and `8f743a8` (item 13: `isPingRequest`; a headerless legacy `ping` passes the session middleware while initialization is pending; the guide records the departure). `ROADMAP.md` item 15 covers 404 versus 400.
-  - Gates green: source 1537, guides 202, conformance 47, integration 4. Unpushed. Running: the Opus review.
+  - Gates green: source 1537, guides 202, conformance 47, integration 4.
+  - The Opus review (`remaining/review-mcp.md`) ruled FAIL on two test gaps, and `items13-14fix` repaired them (`51b4d0a`):
+    - the expiry cases start their manual clock at `2 * Date.now()`, with added admission and pre-seal cases, so each of the six expiry reads goes red when reverted to `Date.now()`;
+    - the guard pins a wrong `jsonrpc`, array `params`, and a batch;
+    - the `clock` TSDoc states the trust;
+    - source 1539, guides 202, check passed.
+  - mcp ROADMAP item 16 (`44a8002`) records the stdio client transport cases' fixed `waitForDelay(300)` waits: 5 failed under the probe unit's load and passed alone.
+  - **mcp `main` pushed** (`c98d82f`, `8f743a8`, `51b4d0a`, `44a8002`), unreleased; mcp 0.0.37 waits for the user's word.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
