@@ -475,6 +475,8 @@ Lane results:
   - **Running in parallel:**
     - **`reading-guide`** (browser `tmp/codex/reading-guide-brief.md`): Astra, cap 2 h. It is routed to Astra rather than Opus because guide parity needs a shell to iterate; Opus reviews the guide's voice in the falsify round.
     - **`reading-harness`** (ollama `tmp/codex/reading-harness-brief.md`): Astra, cap 3 h, covering O1 and O2.
+  - **R5 landed:** browser `74ba389`, pushed. `test:guides` went from 10 failed to 255 passed; its `src` changes are doc comments only. Browser `main` is pushed at `74ba389`, unreleased.
+  - **Falsify claims drafted:** scaffold `tmp/units/reading-claims.md`, 17 claims on browser and agent, with the harness claims added when it lands. Both lanes are Opus, because Astra wrote all the code: one objective, one subjective.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
