@@ -59,7 +59,10 @@ Copy that already exists keeps its bytes unless this list changes it.
 - **Images:** a named image renders as `image "ALT"`. Decorative images are omitted.
 - **Table rows:** the cells joined by ` | `.
 - **Lists:** a list item starts with `- `.
-- **Form controls:** a control prints its reference, role, name, state, and safe value. A password field prints no value.
+- **Form controls:** a control prints its reference, role, name, state, and the value the accessibility tree exposes.
+  - Chromium masks a password field's value, and the accessibility tree carries no discriminator a captured source supplies. So the projection carries the mask and never the secret, as `look` did in 0.0.26 (amended 2026-10-06 after the unit's deviation report: browser `tmp/codex/reading-source.json`, `reading-source-raw.json`).
+  - A text line equal to its parent control's value is omitted.
+  - Every existing redaction of text typed with `secret: true` stays in force in every rendered result.
 - **Exclusions:** hidden content and registered secrets stay out.
 - **Wrapping:**
   - Wrap at whitespace, so that no line exceeds the window room and a typical paragraph of the store fixtures stays one line. The projection unit picks the width from that property and reports it.
@@ -227,7 +230,7 @@ The browser writing units run in series in one checkout. The agent unit runs in 
 | F audit | Opus on Astra-written mechanisms, Astra on Opus-written contracts and copy | read-only | R1–R5, A1, O1 | One `orkestrel-falsify` round |
 | V gates | an Astra command runner | read-only | F | Tree-wide gates once per repository |
 | M measurement | Astra, edits no source | ollama `tmp/codex/store-campaign5/` | V | M1–M5 |
-| P releases | the Orchestrator, with the user's codes | manifests | M | browser 0.0.27, agent 0.0.27, then the ollama re-pin and release |
+| P releases | the Orchestrator, with the user's codes | manifests | M | browser 0.0.27, agent 0.0.27, then the ollama re-pin and release. At mcp's agent re-pin, update `mcp/tests/distribution.test.ts:1596` and `:1732` from `['"receipt-1"']` to `['receipt-1']` |
 
 ## Rulings on the lanes' differences
 

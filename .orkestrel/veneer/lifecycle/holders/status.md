@@ -422,6 +422,25 @@ Lane results:
     - The plan's table rules on each difference between the lanes.
     - Units: R1 to R5 for browser in series, A1 for the agent in parallel, O1 and O2 for ollama, then F (falsify), V (gates), M (measurement), and P (releases).
     - Waiting on the user before R1.
+  - **The user approved the plan (2026-10-06).**
+  - **Implementation running:**
+    - **`reading-browser`** (browser `tmp/codex/reading-browser-brief.md`): Astra, effort high, cap 4 h.
+      - The browser units R1 to R4 run as one unit, because one breaking change cannot compile in parts.
+      - It owns `src/**` and `tests/**`; the guide is left for R5 (Opus).
+    - **`reading-agent`** (agent `tmp/codex/reading-agent-brief.md`): Astra, effort high, cap 1 h, in parallel.
+  - **A1 landed:** agent `65c706a`, pushed, unreleased.
+    - A string tool result reaches the model unchanged.
+    - The new cases went from 2 failed to 134 passed. `test:src:core` 766, check, guides, and lint pass.
+    - Sweep: no reader decodes tool content.
+    - **mcp follow-up at its agent re-pin:** `mcp/tests/distribution.test.ts:1596` and `:1732` expect `['"receipt-1"']`, which becomes `['receipt-1']`.
+  - **`reading-browser` stopped after 12 minutes under its deviation contract** (browser `tmp/codex/reading-browser-last.md`).
+    - The cause: Chromium's accessibility tree shows a password input as a `textbox` whose value is the mask `••••••`, indistinguishable from a text field holding bullets, and no captured source discriminates the two.
+    - It left a draft over 7 files; the copy measures 6,037 and 3,360, within bounds.
+  - **The Orchestrator ruled:** print the accessibility value (the mask, never the secret, as `look` in 0.0.26 did), drop the duplicate text line, and keep every `secret` redaction, pinned by a test.
+    - The unit's provisional choices are accepted: 800-unit wrap, `↳` hard-token marker, header and tabs caps, context never crossing `from`, and heading levels clamped to 6.
+    - Its fixed receipt reserve and its required journey `search` are refused.
+    - The plan is amended.
+  - **The same Codex session resumed** (session `01a112f5`, scaffold `tmp/codex/codex.resume.ts`, cap 4 h).
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
