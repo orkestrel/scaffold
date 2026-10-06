@@ -70,6 +70,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-06 — showcase session (stage B unit B4, engine half, landed on veneer `main`)
+
+- **Prediction, logged per the stage B verdict before the landing:** the `collapse`, `accordion`, `navbar-390`, and `navbar-1280` statechart rows are regression-sensitive to B4; the showcase passes no `intrinsic` leaf, so no row moves.
+- **Landed at veneer `6b99552`** (branch and `main`, fast-forward on the redesign landing `d77c1c3`): `CollapseOptions.intrinsic` (default `false`), `CollapsePluginOptions`, `createCollapsePlugin(options?)`, a `Hold` dedicated to the transition, the `collapse-intrinsic` departure rows, the `CollapsePluginOptions` Surface row, the `data-bs-intrinsic` refusal case. Gates in `stage-b/b4-landing/gates-6b99552.txt`: format and lint clean, `check` 0, `src:browser` 793 passed with exactly the six host-bound failures, guides 20 passed, policy 119 passed, the journey 94 passed; the compare against `landing-a0283da-journey` reads no difference (`compare-6b99552.md`), so the prediction held.
+- **Open:** the showcase half of B4 (the Native group with Default and Opt-in pairs, the nested `createVeneer` scope at both boot sites, the census set, the `#interactions` exemption) waits for the user's first visual check of the redesign; the Chromium floor D-10 and the B3 fence question stay with the user.
+
 ### 2026-10-06 — showcase session (the showcase redesign S-R1 landed on veneer `main`)
 
 - **Landed at veneer `d77c1c3`** (branch `ccr-d15a48b1-yyyll6` and `main`, fast-forward), after the unit commits U2 `d195bcf` (the drawer and the rules), U1 `28ef330` (the `z-0` isolation), U3 `114745c` (the journey rewiring and the drawer case; the disclosure's `focusout` folds the drawer too), U4 `f7a33d9` (the guide), and `a0283da` (the auto-margin exclusion in the guide). The page `showcase/browser.html` is rebuilt twice to the same hash (build-id `9a44e0145bfdcf67a7415…`). Gates, compare, classification, and tools under `showcase/redesign-2026-10-06/landing/`; the lane reports under `reports/`.
