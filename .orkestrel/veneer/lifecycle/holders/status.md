@@ -150,7 +150,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - The guide records the implicit sign-in limit.
   - The bump and HAR stamp were committed as `11da79d`. The browser 0.0.25 visit committed the re-pin to pool `^0.0.16` (`1000f05`), and the Orchestrator committed the first visit's overwrite output (`6330805`, scaffold 0.0.92).
   - The visit's test gate then failed three times on `FileBrowserStore > preserves committed results when an empty lock removal races another writer`, which timed out at Vitest's 5,000 ms under the whole `src:server` load. The case loops 512 real-filesystem lock races and passes alone; it is the same case that missed earlier under the probe unit's load.
-  - Running: unit `store-race-tune` (browser `tmp/codex/store-race-tune-brief.md`), which sizes the iteration count from the measured per-iteration detection rate with the mechanism disabled. Then rerun `layer.ts browser`.
+  - Unit `store-race-tune` committed `75c8fc2`:
+    - The case drops from 512 iterations to 8. With the mechanism disabled, 59.96 to 68.55% of iterations fail, so 8 gives a 0.07% chance of missing the defect, under the declared 0.1%.
+    - It is red with the mechanism disabled (4 of 8) and green at about 30 ms. Five whole `src:server` runs passed 390 each.
+  - The fourth visit then passed every gate:
+    - `npm test` and the compare (dist moved, range moved, ruling bump).
+    - `prepublishOnly`'s `test:distribution --mode release` needs `/proc` and FIFOs, and fails on Windows. Per the release record, the default mode passed (14 passed, 9 host-bound skips), and `test:service` passed (205 passed, 6 skipped).
+  - **Browser 0.0.25 is READY** at `ea8477b` ("Release 0.0.25", pushed), waiting for the user's one-time code. The publish window runs `npm publish --ignore-scripts`.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
