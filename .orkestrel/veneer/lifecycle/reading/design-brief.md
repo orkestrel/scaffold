@@ -34,7 +34,7 @@ All paths are absolute or relative to C:/Users/mikes/WebstormProjects/scaffold.
 - **This campaign:**
   - `.orkestrel/veneer/lifecycle/reading/campaign.md`: the user's rulings and the exit criterion;
   - `.orkestrel/veneer/lifecycle/reading/research.md`: line-addressed reading in agent harnesses;
-  - `tmp/cursor/reading-absorb-result.md`: the Grok distillate of the reading internals and the prior reading design.
+  - `.orkestrel/veneer/lifecycle/reading/absorb.md`: the Grok distillate of the reading internals and the prior reading design (journal `tmp/cursor/reading-absorb.jsonl`, session `e78524be-5fed-487d-88b6-090fa7b5a85b`).
 - **The earlier investigation,** under `.orkestrel/veneer/lifecycle/store-design/`:
   - `synthesize.md` and its review `review.md`, which are binding where they record a fact;
   - `design-surface.md`, `design-harness.md`, `design-economics.md`, and `map-research.md`.
