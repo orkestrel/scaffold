@@ -407,6 +407,21 @@ Lane results:
       - Grok lane `reading-absorb` (scaffold `tmp/cursor/`), on the internals and the prior reading design under `showcase/browse/reading-design/`;
       - research lane on line-addressed reading in coding and browser harnesses.
     - **Consumers:** only ollama's harness consumes the toolset in code. Six repositories carry the guide as a mirror.
+  - **The user's principle (2026-10-06): fewer, more capable tools.** Each tool covers one intent and completes its own flow, and options are preferred over extra tools. It is recorded in `reading/campaign.md`, and the design brief widens to the whole page vocabulary, with the journey tools as a proposal.
+  - **Absorb done:**
+    - `reading/research.md`: SWE-agent's 100-line window beat 30 lines and the whole file; capped search with a narrow-it fallback; continuation by line, never by character position.
+    - `reading/absorb.md`: Grok 4.7, 450 s, session `e78524be`.
+      - The prior design never weighed a numbered-line tool.
+      - `look` is the accessibility outline with references, while `read` and `plain` are Markdown and text projections of one inert HTML capture, with no references.
+  - The Workflow and Agent `grok` driver has no shell here, so the Orchestrator drove the Cursor bench directly. This is recorded in memory.
+  - **Design round launched,** blind lanes on `reading/design-brief.md`:
+    - Astra `reading-analyst`, effort xhigh, cap 3600 s (scaffold `tmp/codex/reading-analyst*`);
+    - Opus `planner`, native.
+  - **Design round done:** `reading/proposal-planner.md` and `reading/proposal-analyst.md`, reconciled into `reading/plan.md`.
+    - The page vocabulary falls from 11 tools to 8: `read`, `click`, `type`, `press`, `navigate`, `wait`, `dialog`, and `switch`.
+    - The plan's table rules on each difference between the lanes.
+    - Units: R1 to R5 for browser in series, A1 for the agent in parallel, O1 and O2 for ollama, then F (falsify), V (gates), M (measurement), and P (releases).
+    - Waiting on the user before R1.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
