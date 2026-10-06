@@ -176,7 +176,11 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - The service assertion "no account identity or consent after a 2 s settle" is red without the flag (3.3 s) and green with it. The merge case is red with two switches (18 ms).
     - Server 392, core 1255, guides 251, policy 119, and `test:service` 205 passed.
     - The guide states that Edge automation profiles carry no Microsoft account, synced extensions, or synced settings.
-  - The 0.0.26 bump and HAR stamp were committed as `7a5ce85`. Running: `layer.ts browser` for 0.0.26. At `prepublishOnly`, run the Windows default-mode distribution plus `test:service`, as for 0.0.25.
+  - The 0.0.26 bump and HAR stamp were committed as `7a5ce85`.
+    - The first 0.0.26 visit failed `npm install`: `@microsoft/api-extractor` 7.59.4, published at 01:54 UTC, needed `@rushstack/ts-command-line@5.3.17`, which reached npm about 10 minutes later.
+    - The rerun passed every visit gate. The Windows `prepublishOnly` ran with the default-mode distribution (14 passed, 9 skipped) and `test:service` (205 passed, 6 skipped).
+    - **Browser 0.0.26 READY** at `0379087`, waiting for the user's code.
+  - **Probe 0.0.21 READY** at `0745af2`: `npm test` 514 s, `prepublishOnly` passed, and the compare shows pool `^0.0.16` added and queue removed. Waiting for the user's code.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
