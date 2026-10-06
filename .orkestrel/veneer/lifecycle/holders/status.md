@@ -148,7 +148,9 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - The regression case `tests/service/launch.test.ts` reads Edge's sync diagnostics: red in 1.1 s without the flag, green in 1.2 s with it.
     - Three full `npm run test:service` runs each passed 205 with 6 skipped, and 0 account installs across 77 profiles per run.
     - The guide records the implicit sign-in limit.
-  - The bump and HAR stamp were committed as `11da79d`. Running: `layer.ts browser`, preparing 0.0.25.
+  - The bump and HAR stamp were committed as `11da79d`. The browser 0.0.25 visit committed the re-pin to pool `^0.0.16` (`1000f05`), and the Orchestrator committed the first visit's overwrite output (`6330805`, scaffold 0.0.92).
+  - The visit's test gate then failed three times on `FileBrowserStore > preserves committed results when an empty lock removal races another writer`, which timed out at Vitest's 5,000 ms under the whole `src:server` load. The case loops 512 real-filesystem lock races and passes alone; it is the same case that missed earlier under the probe unit's load.
+  - Running: unit `store-race-tune` (browser `tmp/codex/store-race-tune-brief.md`), which sizes the iteration count from the measured per-iteration detection rate with the mechanism disabled. Then rerun `layer.ts browser`.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
