@@ -161,7 +161,11 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
     - Unit `teardown-load` ran 20 runs at about 85% CPU (14 busy workers). The teardown rejection reproduced 0 times; every `destroy()` resolved, and every pid was gone afterward.
     - Instead, the case failed 20 of 20 because the fixture's `overlaps` record was never written: the observation depends on fixture timing under load.
     - Running: `teardown-load2` (probe `tmp/codex/teardown-load2-brief.md`). The fixture records the overlap in the same write as its pid, the assertion reads only records the fixture always writes, and the case stays red without the disposal bound. It is proven under the same load, then the whole `npm run test` runs quiet and loaded.
-  - Running in parallel: unit `signin` (browser `tmp/codex/signin-brief.md`), the per-launch implicit sign-in research.
+  - Unit `signin` (`tmp/codex/signin-last.md`, `tmp/probes/signin/`):
+    - On Edge 154.0.4258.53, `--disable-features=msImplicitSignin` stops implicit sign-in: no account in 3 of 3 launches plus 3 confirmations, against a control that signed in 3 of 3. The library's drive passes with it.
+    - `msIdentityCore` also works. `--guest` breaks CDP with `ECONNRESET`. The `signin.*` preference seeds, `--disable-signin`, and `--allow-browser-signin=false` do not stop it.
+    - Candidates came from `msedge.dll` strings; 84 launches, all profiles deleted.
+  - Running: unit `signin-fix` (browser `tmp/codex/signin-fix-brief.md`). It adds the flag, merged into one `--disable-features` switch because Chromium reads only the last; adds a no-account service assertion and a merge unit case, each red without its mechanism; and replaces the guide's limit. It lands for browser 0.0.26.
   - Follow-up, its own unit after the browser release: a per-launch way to stop Edge's implicit sign-in (an internal `--disable-features` name, or guest mode) without touching the user's Edge.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
