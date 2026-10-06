@@ -366,6 +366,39 @@ Lane results:
     - Map: Grok lanes for the surface, the harness and time, and the transcripts, plus Opus external research.
     - Design: three Opus designers, one each for the surface, the harness and oracles, and the economics.
     - Then an Opus synthesis and an Opus review.
+  - **Investigation finished** (44 minutes; outputs in `lifecycle/store-design/`).
+    - The Grok map lanes returned briefs, not distillates, because the workflow's `grok` driver had no shell. The designers and the synthesis read the sources themselves.
+    - **The plan** (`store-design/synthesize.md`) separates three kinds of cause:
+      - **Library defects:**
+        - L2: journey results are unbounded;
+        - L1: a `look` search reaches only referenced elements, never page text;
+        - L3: the agent JSON-encodes string tool results.
+      - **Harness and oracle defects:**
+        - H1: page tasks advertise 7 unneeded journey tools;
+        - H2: paging seeds a `look` view yet counts only `read` footers, and its token line shares search words with the prompt;
+        - H3: search retries on a weaker predicate than it asserts;
+        - H4: an unread meter costs about 6 s per attempt;
+        - H5: checkout accepts a double order that the journey oracle depends on.
+      - **Surface:** the model follows the last footer, not the system prompt.
+    - **Ranked changes:**
+      1. ollama: page tasks advertise only page tools.
+      2. ollama: paging seeds with `read`, the oracle counts the seed's footer, and the token section shares no search word.
+      3. ollama: the search predicate equals its assertion.
+      4. ollama: drop the unread meter.
+      5. browser: bound every journey result.
+      6. browser: `look` and `read` searches reach page text and carry a matched heading's section.
+      7. agent: string tool results reach the model unchanged.
+      - Deferred: the checkout single order (R1).
+    - **Experiments:** E1 to E5, about an hour of daemon time.
+    - **Per-case budgets:** the five store tasks at 75 s or less in total, against 173.5 s.
+  - **The review ruled FAIL** (`store-design/review.md`):
+    1. The guards cannot detect a material fall at the planned counts. They need preregistered non-inferiority margins.
+    2. Change 2 widens the paging oracle and needs the user's ruling.
+    3. `secret` stays on `type` without journeys.
+    4. The section carry cannot work for `plain`.
+    5. Change 5 must slice the view to the room left after the prefix, so its footer offset stays exact.
+    - Findings 6 to 11 are low: wording, decision rules for every count, the `vitest list` scope, the time budget (shipping turns take about 5.5 s, and the warmup reloads at 16,384), and a `read` seed lists no references.
+    - Outside its claims: change 7 reaches every live tool test, and the 2B's F-21 journey calls caused no 2B failure.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
