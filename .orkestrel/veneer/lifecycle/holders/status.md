@@ -428,6 +428,11 @@ Lane results:
       - The browser units R1 to R4 run as one unit, because one breaking change cannot compile in parts.
       - It owns `src/**` and `tests/**`; the guide is left for R5 (Opus).
     - **`reading-agent`** (agent `tmp/codex/reading-agent-brief.md`): Astra, effort high, cap 1 h, in parallel.
+  - **A1 landed:** agent `65c706a`, pushed, unreleased.
+    - A string tool result reaches the model unchanged.
+    - The new cases went from 2 failed to 134 passed. `test:src:core` 766, check, guides, and lint pass.
+    - Sweep: no reader decodes tool content.
+    - **mcp follow-up at its agent re-pin:** `mcp/tests/distribution.test.ts:1596` and `:1732` expect `['"receipt-1"']`, which becomes `['receipt-1']`.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.

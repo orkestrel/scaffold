@@ -227,7 +227,7 @@ The browser writing units run in series in one checkout. The agent unit runs in 
 | F audit | Opus on Astra-written mechanisms, Astra on Opus-written contracts and copy | read-only | R1–R5, A1, O1 | One `orkestrel-falsify` round |
 | V gates | an Astra command runner | read-only | F | Tree-wide gates once per repository |
 | M measurement | Astra, edits no source | ollama `tmp/codex/store-campaign5/` | V | M1–M5 |
-| P releases | the Orchestrator, with the user's codes | manifests | M | browser 0.0.27, agent 0.0.27, then the ollama re-pin and release |
+| P releases | the Orchestrator, with the user's codes | manifests | M | browser 0.0.27, agent 0.0.27, then the ollama re-pin and release. At mcp's agent re-pin, update `mcp/tests/distribution.test.ts:1596` and `:1732` from `['"receipt-1"']` to `['receipt-1']` |
 
 ## Rulings on the lanes' differences
 
