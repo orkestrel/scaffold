@@ -347,7 +347,13 @@ Lane results:
     - **S5:** skipped. Its target appears in 1 of 16 control runs, so p(0/8) = 0.667.
     - **Acceptance:** skipped. S0 passed every page task in none of its 16 runs. Its one-sided 95% lower pass bounds are shipping 0%, click 82.9%, search 51.6%, checkout 82.9%, and paging 0%.
     - Nothing was pushed. Every worktree was removed, and each `store-reliability-4` branch keeps its reverts.
-  - Under the standing constraints, acceptance is out of reach: the same model, no budget or oracle change, and browser 0.0.26's copy. The local daemon also holds `hf.co/sky7350/Mica-v0.1-4B` and `qwen3.8:latest` (27.3B, 16.5 GiB), and the registry serves `qwen3.5:4b-q4_K_M` at 3.10 GiB (read 2026-10-06). Waiting on the user's ruling.
+  - Under the standing constraints, acceptance is out of reach: the same model, no budget or oracle change, and browser 0.0.26's copy. The local daemon also holds `hf.co/sky7350/Mica-v0.1-4B` and `qwen3.8:latest` (27.3B, 16.5 GiB), and the registry serves `qwen3.5:4b-q4_K_M` at 3.10 GiB (read 2026-10-06).
+  - **The user ruled (2026-10-06): try qwen3.5 4B.** The ruling approves the download.
+    - Measure the store tasks 8 times on browser 0.0.26, unchanged.
+    - If every page task passes in all 8 runs, run the 29-run acceptance with it and propose moving the live cases to it. Otherwise stop and report.
+    - The download is pulled through `ollama pull`. The harness takes the model from `OLLAMA_MODEL` (ollama `tests/setupService.ts:13`), so the unit changes no code.
+    - Pulled `qwen3.5:4b-q4_K_M` (digest `d8b0f5e9760c…`, 3.1 GiB). The daemon stays 0.35.1.
+    - Unit `store-model4b` launched near 14:35 local (ollama `tmp/codex/store-model4b-brief.md`, journal `tmp/codex/store-model4b.jsonl`), with a cap of 4.5 hours.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
