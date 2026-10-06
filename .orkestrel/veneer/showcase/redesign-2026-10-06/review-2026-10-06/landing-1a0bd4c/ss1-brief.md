@@ -1,0 +1,23 @@
+# Unit SS1 — prove observer delivery in the Scrollspy oracle cases
+
+## Role and engine
+
+`astra` implementation unit on `gpt-6-astra` (effort high) through the Codex CLI. You are the sole writer in `/home/user/.wave/veneer-ss` (a detached veneer worktree at `1a0bd4c`; `node_modules` copied; `dist` built). Owned files: `tests/src/browser/Scrollspy.test.ts`, and the Scrollspy section of `tests/setupBrowser.ts` (`buildScrollspy` near :6797 and any settle helper you add beside it, with its case in `tests/setupBrowser.test.ts` if you add an exported helper). Nothing else; `src/` is not yours. Commit nothing. Never touch `/home/user/veneer`.
+
+## Objective
+
+The full `src:browser` project on veneer `66f80b5` read 798 of 799 (`/home/user/veneer/tmp/units/journey-cost/runs/landing-66f80b5-src-browser`, read `stderr.log` whole): `Scrollspy oracle > skips the hidden section until refresh admits it` (`Scrollspy.test.ts:170`, scenario `hidden`) failed at checkpoint `scrollspy:excluded`. The Bootstrap oracle's transcript carried an `activate.bs.scrollspy` event (relatedTarget the first link) and six class writes over links 1 to 3; the engine's transcript carried one write. The same file passes 26 of 26 alone three times (`runs/landing-66f80b5-scrollspy-1` to `-3`), and two earlier full runs on the same `src/` read 799 (`runs/hb1-project-141`, `runs/hb1-project-153`). The case settles with two `waitForFrame()` calls on the main window before each checkpoint and before recording; the file holds 50 such calls. Two main-window frames are not a bound on IntersectionObserver delivery: the oracle runs in an iframe styled `visibility:hidden`, whose rendering Chromium can throttle, and the full project loads the host.
+
+Make every Scrollspy case that reads an observer outcome wait for proof of delivery, not a frame count, so the file passes in the full project under load on Chromium 141 and 153 with no assertion weakened and no test skipped:
+
+1. Read how each case reaches its checkpoints (the oracle via `createOracle`, the engine via `createScrollspy` or a scope) and classify every `waitForFrame()` pair: an observer-delivery wait, a layout wait, or a smooth-scroll wait.
+2. Replace each observer-delivery wait with a settle that proves the delivery for that root's realm. Two shapes are admissible; pick the one that holds for both realms and justify it from the specification or Chromium's behavior (cite): (a) a test-side `IntersectionObserver` created in the same realm after the spy's observer, observing the same targets with the same root, root margin, and thresholds, whose callback for the scroll's update marks that the delivery task for that update has run; (b) a per-checkpoint predicate on the root's expected state (the active link the scroll position selects, computed from the fixture's geometry), polled with `waitForCondition` from `@orkestrel/test` under a deadline. A shape that cannot prove delivery for a case where no class changes (the scroll keeps the same active link) must use the other shape or a documented reading for that case.
+3. Prove the protocol bites: a mutation control that restores the two-frame wait in one case and fails under induced delay (for example, the oracle frame's rendering held back, or a busy loop between scroll and checkpoint), and passes with the protocol.
+
+## Gates
+
+`WT` is `/home/user/.wave/veneer-ss`. Direct: oxfmt `--check` and oxlint `--deny-warnings` on the owned files; `git -C WT diff --check`; `git -C WT status --porcelain` lists only owned files. Through the host queue, a fresh folder each (`flock -w 7200 /home/user/.wave/journey.lock node /home/user/veneer/tmp/units/journey-cost/run.ts --folder /home/user/veneer/tmp/units/journey-cost/runs/ss1-NAME --kind command --cwd WT -- env PATH=/home/user/.wave/npm11/node_modules/.bin:$PATH COMMAND`): typecheck `WT/node_modules/.bin/tsc --noEmit -p WT/tsconfig.json`; `Scrollspy.test.ts` alone under 141 (the default) and under 153 (`PLAYWRIGHT_EXECUTABLE_PATH=/home/user/.wave/pw-153/chromium-1243/chrome-linux64/chrome`); the whole `src:browser` project three times under 141 and once under 153, every case green in each; if you touch `tests/setupBrowser.ts`, the `setup:browser` project once. Never `cd`; never run vitest outside the queue; one re-run for a Vite optimizer import failure before any test body.
+
+## Output
+
+Final message: the diff; the classification of the 50 waits (counts per kind, with the cases); the chosen shape and its cited justification; the mutation control's two readings; `git status --porcelain`; each gate's command, folder, exit, and bare result; every deviation (expected, found, evidence, done or not, one hypothesis). No process diary.

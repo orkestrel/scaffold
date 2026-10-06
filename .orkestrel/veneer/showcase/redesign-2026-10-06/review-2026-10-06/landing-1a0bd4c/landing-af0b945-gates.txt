@@ -1,0 +1,35 @@
+# Landing gates on /home/user/veneer at af0b945 (2026-10-06T21:10:31.562Z)
+
+## format: exit 0 in 1.8 s (folder landing-af0b945-format)
+
+## lint: exit 0 in 1.8 s (folder landing-af0b945-lint)
+
+## check: exit 0 in 66.6 s (folder landing-af0b945-check)
+
+## test-app: exit 0 in 262.1 s (folder landing-af0b945-test-app) — Tests  246 passed (246)
+
+## test-setup-browser: exit 0 in 252.0 s (folder landing-af0b945-test-setup-browser) — Tests  204 passed (204)
+
+## test-policy-config-setup: exit 0 in 25.2 s (folder landing-af0b945-test-policy-config-setup) — Tests  532 passed | 2 skipped (534)
+
+## test-integration: exit 0 in 53.6 s (folder landing-af0b945-test-integration) — Tests  60 passed (60)
+
+## test-guides: exit 0 in 4.5 s (folder landing-af0b945-test-guides)
+
+## journey: exit 1 in 576.9 s (folder landing-af0b945-journey) — Tests  2 failed | 92 passed (94)
+[2m    "[0,92,\"a\",[\"dropdown-item\"],null,null,null]",[22m
+[2m    "[0,93,\"li\",[],null,null,null]",[22m
+[2m    "[0,94,\"a\",[\"dropdown-item\"],null,null,null]",[22m
+[2m    "[0,95,\"li\",[],null,null,null]",[22m
+
+ ❯ tests/app/browser/integration.test.ts:1188:12
+    1186|     }
+    1187|     for (const reading of readings.slice(1))
+    1188|      assert.deepEqual(reading, readings[0], table.family)
+       |            ^
+    1189|     rows.push(`${VARIANT} engine ${table.family}: three equal faces`)
+    1190|     console.info(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+## build: exit 0 in 23.5 s (folder landing-af0b945-build)

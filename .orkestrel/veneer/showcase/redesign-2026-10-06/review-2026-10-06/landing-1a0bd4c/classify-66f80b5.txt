@@ -1,0 +1,6 @@
+predicted preservation rows: 16
+predicted signature/partition rows: 4
+predicted row order (dark-390 preservation values): 2
+predicted preservation/partition lines: 16
+predicted preservation/partition journal copies: 16
+54 differences; 0 outside the predicted set

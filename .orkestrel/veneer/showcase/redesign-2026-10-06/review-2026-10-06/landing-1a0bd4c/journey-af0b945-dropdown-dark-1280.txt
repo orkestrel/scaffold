@@ -1,0 +1,3 @@
+AssertionError: dropdown: expected [ …(251) ] to deeply equal [ …(251) ]
+    at http://localhost:63315/home/user/veneer/tests/app/browser/integration.test.ts?import&browserv=1791321713221:851:53
+    at async http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=07b32896:1903:20

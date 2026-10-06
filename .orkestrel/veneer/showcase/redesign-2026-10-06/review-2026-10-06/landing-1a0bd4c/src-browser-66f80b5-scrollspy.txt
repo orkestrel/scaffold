@@ -1,0 +1,154 @@
+ FAIL  |src:browser (chromium)| tests/src/browser/Scrollspy.test.ts:171:2 > Scrollspy oracle > skips the hidden section until refresh admits it
+AssertionError: expected { …(2) } to deeply equal { differences: [], unused: [] }
+
+- Expected
++ Received
+
+  {
+-   "differences": [],
++   "differences": [
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"flex-column\",\"nav\"]",
++       "path": "$/nav[1]",
++       "property": "writes[1].class.before",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"flex-column\",\"nav\"]",
++       "path": "$/nav[1]",
++       "property": "writes[1].class.after",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"nav-link\"]",
++       "path": "$/nav[1]/a[1]",
++       "property": "writes[2].class.before",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"active\",\"nav-link\"]",
++       "path": "$/nav[1]/a[1]",
++       "property": "writes[2].class.after",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"active\",\"nav-link\"]",
++       "path": "$/nav[1]/a[1]",
++       "property": "writes[3].class.before",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"nav-link\"]",
++       "path": "$/nav[1]/a[1]",
++       "property": "writes[3].class.after",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"nav-link\"]",
++       "path": "$/nav[1]/a[2]",
++       "property": "writes[4].class.before",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"nav-link\"]",
++       "path": "$/nav[1]/a[2]",
++       "property": "writes[4].class.after",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"nav-link\"]",
++       "path": "$/nav[1]/a[3]",
++       "property": "writes[5].class.before",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "[\"nav-link\"]",
++       "path": "$/nav[1]/a[3]",
++       "property": "writes[5].class.after",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "activate.bs.scrollspy",
++       "path": "$/div[1]",
++       "property": "events[0].name",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "true",
++       "path": "$/div[1]",
++       "property": "events[0].cancelable",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "false",
++       "path": "$/div[1]",
++       "property": "events[0].defaultPrevented",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "$/nav[1]/a[1]",
++       "path": "$/div[1]",
++       "property": "events[0].relatedTarget",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": "false",
++       "path": "$/div[1]",
++       "property": "events[0].clickEvent",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": undefined,
++       "path": "$/div[1]",
++       "property": "events[0].direction",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": undefined,
++       "path": "$/div[1]",
++       "property": "events[0].from",
++     },
++     {
++       "actual": undefined,
++       "checkpoint": "scrollspy:excluded",
++       "expected": undefined,
++       "path": "$/div[1]",
++       "property": "events[0].to",
++     },
++     {
++       "actual": "[\"active\",\"nav-link\"]",
++       "checkpoint": "scrollspy:excluded",
++       "expected": undefined,
++       "path": "$/nav[1]/a[1]",
++       "property": "writes[1].class.before",
++     },
++     {
++       "actual": "[\"nav-link\"]",
++       "checkpoint": "scrollspy:excluded",
++       "expected": undefined,
++       "path": "$/nav[1]/a[1]",
++       "property": "writes[1].class.after",
++     },
++   ],
+    "unused": [],
+  }
+
+ ❯ tests/src/browser/Scrollspy.test.ts:209:6
