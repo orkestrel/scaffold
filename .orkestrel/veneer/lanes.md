@@ -70,6 +70,11 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-06 — showcase session (unit SS1 landed on veneer `main` at `11f01e9`)
+
+- **Landed** (fast-forward `1a0bd4c..11f01e9`, branch and `main`; tests only, the page is unchanged): `settleScrollspy` in `tests/setupBrowser.ts` creates a fresh IntersectionObserver in the spy's realm after the spy's own, with the same targets, root, margin, and thresholds; a document notifies its observers in one task in creation order, so the fresh observer's initial delivery proves the spy's update for that rendering step has run, including an update that writes no class. All 50 fixed `waitForFrame()` calls in `tests/src/browser/Scrollspy.test.ts` (25 pairs) were observer waits and take the settle. The hidden-section case keeps user-blocking task pressure as a standing control: the two-frame wait fails it (`ss1-mutation-priority`) and the settle passes (`ss1-mutation-protocol`).
+- **Readings** (Astra, one launch of 26.0 min; report `landing-1a0bd4c/ss1-report.md`): `src:browser` 799 of 799 three times under Chromium 141 and once under 153 (`ss1-full141-1` to `-3`, `ss1-full153`), the file 26 of 26 under each, `setup:browser` 205. In the checkout (`ss1-land-*`): format, lint, check, `setup:browser` 205, `src:browser` 799, each exit 0.
+
 ### 2026-10-06 — showcase session (the review batch landed on veneer `main` at `1a0bd4c`)
 
 - **Prediction, logged before the landing:** no statechart row moves; the journey differences are S-R2's set (the preservation summary, the signature-coverage rows, the dark-390 row order, and their line and journal copies); HB1, the dialog body, and the 0.0.94 adoption add none.
