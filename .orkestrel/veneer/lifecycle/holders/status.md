@@ -295,6 +295,14 @@ Lane results:
       - The system text, the page view, and the task are byte-identical to attempt 2's after masking ports and ids. The model's first reply differs: 0.35.0 wrote prose and called `look` with `shipping`; 0.35.1 writes nothing and calls `look` with `shipping cutoff time`.
       - Two input changes confound the cause. The daemon moved to 0.35.1, and browser 0.0.26's journey toolset adds `capture` and shortens the `edit` description (browser `192a9ee`, 2026-10-04). Ollama's harness enables journeys, so the model sees both.
     - **Orphaned Edge processes:** about 166 crash-handler and utility processes from earlier test launches remain, about 2.6 GB of working set. Their browser processes are gone. Most come from browser's `tests/setupGlobal.ts:174` profile (`orkestrel-browser-global-*`); the rest come from library-profile launches. The newest is from 2026-10-05 21:09, and the campaign's runs left none.
+  - **The user ruled (2026-10-06): all three recommendations.**
+    - Let campaign 3 run.
+    - When it ends, terminate the orphans: `node tmp/units/edge-orphans.ts --kill` from scaffold, after a dry run.
+      - The script lists only `msedge.exe` helpers that have an `orkestrel-browser-` profile, a `--type=` switch, and a dead parent. Its dry run listed exactly the 166.
+    - Then launch unit `toolset-probe` (ollama `tmp/codex/toolset-probe-brief.md`).
+      - It measures the first reply on 0.35.1 under four toolset arms: attempt 3's definitions, without `capture`, attempt 2's with `capture`, and attempt 2's. That separates the toolset from the daemon.
+      - When a toolset change is named, it runs full shipping and search attempts without that change.
+  - Unscheduled follow-up: why Edge helpers outlive their browser on Windows after a test launch's teardown (browser `tests/setupGlobal.ts:174` and library-profile launches through 2026-10-05).
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
