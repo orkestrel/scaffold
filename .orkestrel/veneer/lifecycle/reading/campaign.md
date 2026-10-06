@@ -10,6 +10,10 @@ The user ruled this campaign on 2026-10-06. It follows the store implementation 
   - `from` and `to` ranges, with a bounded default window;
   - a footer naming the next line;
   - a search that returns line-numbered matches with context.
+- **Fewer, more capable tools** (the user's principle, 2026-10-06):
+  - each tool covers one distinct intent, and the steps that serve that intent happen inside one call;
+  - options are preferred over extra tools, and kept few and clear;
+  - the curation covers the whole page vocabulary, and is proposed for the journey tools.
 - **Also in this round:**
   - journey results stay within `BROWSER_TOOL_LIMIT`;
   - search reaches page text;
@@ -30,7 +34,7 @@ The user ruled this campaign on 2026-10-06. It follows the store implementation 
 The campaign ends when all of the following hold.
 
 1. **Browser:**
-   - One line-addressed reading tool replaces `look`, `read`, and `plain` in the page toolset and in the browse MCP server.
+   - The page vocabulary is curated under the user's principle, in the page toolset and in the browse MCP server. One line-addressed reading tool replaces `look`, `read`, and `plain`, and each action completes its flow.
    - Its search returns line-numbered matches that reach page text.
    - Every journey result fits `BROWSER_TOOL_LIMIT`.
    - A handled submission settles before its receipt.
