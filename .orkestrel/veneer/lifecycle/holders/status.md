@@ -316,6 +316,12 @@ Lane results:
     - The 166 orphaned Edge helpers are terminated (`edge-orphans.ts --kill`: 166 terminated, 0 failed), and a recount finds 0.
     - **Unit `toolset-probe` launched**, with a cap of 90 minutes (ollama `tmp/codex/toolset-probe-brief.md`, journal `tmp/codex/toolset-probe.jsonl`).
     - The lean rerun's brief follows the probe's ruling.
+  - **The toolset probe ruled: the toolset causes the divergence** (45 minutes; ollama `tmp/codex/toolset-probe-last.md`, evidence under `tmp/codex/toolset-probe/`).
+    - On Ollama 0.35.1, attempt 2's definitions reproduced attempt 2's archived first replies exactly in 40 of 40 literal replays, across all five page tasks.
+    - Full runs with attempt 2's definitions on 0.35.1: shipping passed 14 of 16 (campaign 3's S0: 0 of 16) and search 14 of 16 (12 of 16).
+    - Both browser edits are needed. Removing `capture` alone does not restore the archived reply, and neither does restoring the older `edit` description alone. Together they do.
+    - The first reply is repeatable for fixed input bytes, yet a different loopback port in the seed changes it. This model's tool choice at temperature 0 is sensitive to input bytes that carry no meaning for the task.
+    - The daemon upgrade is not needed to produce the divergence. Whether it contributes to other outcomes is not established.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
