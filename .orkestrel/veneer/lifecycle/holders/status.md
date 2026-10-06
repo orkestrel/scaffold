@@ -477,6 +477,14 @@ Lane results:
     - **`reading-harness`** (ollama `tmp/codex/reading-harness-brief.md`): Astra, cap 3 h, covering O1 and O2.
   - **R5 landed:** browser `74ba389`, pushed. `test:guides` went from 10 failed to 255 passed; its `src` changes are doc comments only. Browser `main` is pushed at `74ba389`, unreleased.
   - **Falsify claims drafted:** scaffold `tmp/units/reading-claims.md`, 17 claims on browser and agent, with the harness claims added when it lands. Both lanes are Opus, because Astra wrote all the code: one objective, one subjective.
+  - **O1 and O2 landed:** ollama `e8f29f1`, local, on top of the held release head. Report: ollama `tmp/codex/reading-harness-report.md`.
+    - setup 238 + 1 skipped; check and lint pass; each instrument wrote one validation row.
+    - Positions:
+      - shipping fact on line 52, past the seed's 1–46;
+      - paging token on line 80, past the seed's 1–34 and the next window's 35–63.
+    - Validation row: the 2B's first call was `read({ from: 47, search: "shipping cutoff time" })`, and its single shipping attempt passed in 4.4 s.
+  - **Falsify round running:** workflow `reading-falsify` (run `wf_479b08ad-2cf`), with an objective and a subjective Opus lane on 21 claims.
+    - Claim 19 asks whether the paging predicate's refusal of any non-empty `search` narrows the claim.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
