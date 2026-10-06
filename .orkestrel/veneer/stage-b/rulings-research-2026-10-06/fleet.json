@@ -1,0 +1,965 @@
+{
+	"rows": [
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/browser/package.json:105)",
+			"installed": "0.0.19 (/home/user/browser/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/emitter",
+			"pinned": "^0.0.11 dep (/home/user/browser/package.json:106)",
+			"installed": "0.0.11 (/home/user/browser/node_modules/@orkestrel/emitter/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-09-29T15:23:32.442Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/html",
+			"pinned": "^0.0.12 dep (/home/user/browser/package.json:107)",
+			"installed": "0.0.12 (/home/user/browser/node_modules/@orkestrel/html/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-10-01T16:53:01.695Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/markdown",
+			"pinned": "^0.0.17 dep (/home/user/browser/package.json:108)",
+			"installed": "0.0.17 (/home/user/browser/node_modules/@orkestrel/markdown/package.json:3)",
+			"latest": "0.0.17",
+			"latest_published": "2026-10-01T17:04:13.934Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/mcp",
+			"pinned": "^0.0.36 dep (/home/user/browser/package.json:109)",
+			"installed": "0.0.36 (/home/user/browser/node_modules/@orkestrel/mcp/package.json:3)",
+			"latest": "0.0.37",
+			"latest_published": "2026-10-06T12:35:09.728Z",
+			"behind": true
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/pool",
+			"pinned": "^0.0.16 dep (/home/user/browser/package.json:110)",
+			"installed": "0.0.16 (/home/user/browser/node_modules/@orkestrel/pool/package.json:3)",
+			"latest": "0.0.16",
+			"latest_published": "2026-10-05T23:09:48.629Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/router",
+			"pinned": "^0.0.16 dep (/home/user/browser/package.json:111)",
+			"installed": "0.0.16 (/home/user/browser/node_modules/@orkestrel/router/package.json:3)",
+			"latest": "0.0.16",
+			"latest_published": "2026-09-29T15:41:58.568Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/server",
+			"pinned": "^0.0.22 dep (/home/user/browser/package.json:112)",
+			"installed": "0.0.22 (/home/user/browser/node_modules/@orkestrel/server/package.json:3)",
+			"latest": "0.0.22",
+			"latest_published": "2026-10-01T21:01:07.026Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/tool",
+			"pinned": "^0.0.18 dep (/home/user/browser/package.json:113)",
+			"installed": "0.0.18 (/home/user/browser/node_modules/@orkestrel/tool/package.json:3)",
+			"latest": "0.0.18",
+			"latest_published": "2026-10-01T16:53:44.496Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/websocket",
+			"pinned": "^0.0.14 dep (/home/user/browser/package.json:114)",
+			"installed": "0.0.14 (/home/user/browser/node_modules/@orkestrel/websocket/package.json:3)",
+			"latest": "0.0.14",
+			"latest_published": "2026-09-29T15:41:36.739Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.24 devDep (/home/user/browser/package.json:118)",
+			"installed": "0.0.24 (/home/user/browser/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": false
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.20 devDep (/home/user/browser/package.json:119)",
+			"installed": "0.0.20 (/home/user/browser/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.92 devDep (/home/user/browser/package.json:120)",
+			"installed": "0.0.92 (/home/user/browser/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "browser",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/browser/package.json:121)",
+			"installed": "0.0.24 (/home/user/browser/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "contract",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.22 devDep (/home/user/contract/package.json:75)",
+			"installed": "0.0.22 (/home/user/contract/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "contract",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/contract/package.json:76)",
+			"installed": "0.0.19 (/home/user/contract/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "contract",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.86 devDep (/home/user/contract/package.json:77)",
+			"installed": "0.0.86 (/home/user/contract/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "contract",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/contract/package.json:78)",
+			"installed": "0.0.24 (/home/user/contract/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "html",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/html/package.json:76)",
+			"installed": "0.0.19 (/home/user/html/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "html",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.22 devDep (/home/user/html/package.json:80)",
+			"installed": "0.0.22 (/home/user/html/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "html",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/html/package.json:81)",
+			"installed": "0.0.19 (/home/user/html/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "html",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.86 devDep (/home/user/html/package.json:82)",
+			"installed": "0.0.86 (/home/user/html/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "html",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/html/package.json:83)",
+			"installed": "0.0.24 (/home/user/html/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "markdown",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/markdown/package.json:75)",
+			"installed": "0.0.19 (/home/user/markdown/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "markdown",
+			"package": "@orkestrel/html",
+			"pinned": "^0.0.12 dep (/home/user/markdown/package.json:76)",
+			"installed": "0.0.12 (/home/user/markdown/node_modules/@orkestrel/html/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-10-01T16:53:01.695Z",
+			"behind": false
+		},
+		{
+			"checkout": "markdown",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.22 devDep (/home/user/markdown/package.json:80)",
+			"installed": "0.0.22 (/home/user/markdown/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "markdown",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/markdown/package.json:81)",
+			"installed": "0.0.19 (/home/user/markdown/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "markdown",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.86 devDep (/home/user/markdown/package.json:82)",
+			"installed": "0.0.86 (/home/user/markdown/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "markdown",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/markdown/package.json:83)",
+			"installed": "0.0.24 (/home/user/markdown/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/codec",
+			"pinned": "^0.0.5 dep (/home/user/mcp/package.json:99)",
+			"installed": "0.0.5 (/home/user/mcp/node_modules/@orkestrel/codec/package.json:3)",
+			"latest": "0.0.5",
+			"latest_published": "2026-09-29T15:24:19.554Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/mcp/package.json:100)",
+			"installed": "0.0.19 (/home/user/mcp/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/emitter",
+			"pinned": "^0.0.11 dep (/home/user/mcp/package.json:101)",
+			"installed": "0.0.11 (/home/user/mcp/node_modules/@orkestrel/emitter/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-09-29T15:23:32.442Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/process",
+			"pinned": "^0.0.14 dep (/home/user/mcp/package.json:102)",
+			"installed": "0.0.14 (/home/user/mcp/node_modules/@orkestrel/process/package.json:3)",
+			"latest": "0.0.14",
+			"latest_published": "2026-09-29T15:41:09.833Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/sse",
+			"pinned": "^0.0.9 dep (/home/user/mcp/package.json:103)",
+			"installed": "0.0.9 (/home/user/mcp/node_modules/@orkestrel/sse/package.json:3)",
+			"latest": "0.0.9",
+			"latest_published": "2026-09-29T15:23:24.652Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/tool",
+			"pinned": "^0.0.18 dep (/home/user/mcp/package.json:104)",
+			"installed": "0.0.18 (/home/user/mcp/node_modules/@orkestrel/tool/package.json:3)",
+			"latest": "0.0.18",
+			"latest_published": "2026-10-01T16:53:44.496Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/websocket",
+			"pinned": "^0.0.14 dep (/home/user/mcp/package.json:105)",
+			"installed": "0.0.14 (/home/user/mcp/node_modules/@orkestrel/websocket/package.json:3)",
+			"latest": "0.0.14",
+			"latest_published": "2026-09-29T15:41:36.739Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.24 devDep (/home/user/mcp/package.json:110)",
+			"installed": "0.0.22 (/home/user/mcp/node_modules/@orkestrel/guide/package.json:3); install below its own range, lockfile has 0.0.24",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/mcp/package.json:111)",
+			"installed": "0.0.19 (/home/user/mcp/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/router",
+			"pinned": "^0.0.16 devDep (/home/user/mcp/package.json:112)",
+			"installed": "0.0.16 (/home/user/mcp/node_modules/@orkestrel/router/package.json:3)",
+			"latest": "0.0.16",
+			"latest_published": "2026-09-29T15:41:58.568Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.89 devDep (/home/user/mcp/package.json:113)",
+			"installed": "0.0.86 (/home/user/mcp/node_modules/@orkestrel/scaffold/package.json:3); install below its own range, lockfile has 0.0.89",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/server",
+			"pinned": "^0.0.22 devDep (/home/user/mcp/package.json:114)",
+			"installed": "0.0.22 (/home/user/mcp/node_modules/@orkestrel/server/package.json:3)",
+			"latest": "0.0.22",
+			"latest_published": "2026-10-01T21:01:07.026Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/mcp/package.json:115)",
+			"installed": "0.0.24 (/home/user/mcp/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/router",
+			"pinned": "^0.0.16 peer (/home/user/mcp/package.json:126)",
+			"installed": "0.0.16 (/home/user/mcp/node_modules/@orkestrel/router/package.json:3)",
+			"latest": "0.0.16",
+			"latest_published": "2026-09-29T15:41:58.568Z",
+			"behind": false
+		},
+		{
+			"checkout": "mcp",
+			"package": "@orkestrel/server",
+			"pinned": "^0.0.22 peer (/home/user/mcp/package.json:127)",
+			"installed": "0.0.22 (/home/user/mcp/node_modules/@orkestrel/server/package.json:3)",
+			"latest": "0.0.22",
+			"latest_published": "2026-10-01T21:01:07.026Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/agent",
+			"pinned": "^0.0.25 dep (/home/user/ollama/package.json:75)",
+			"installed": "0.0.25 (/home/user/ollama/node_modules/@orkestrel/agent/package.json:3)",
+			"latest": "0.0.26",
+			"latest_published": "2026-10-04T15:42:39.042Z",
+			"behind": true
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/budget",
+			"pinned": "^0.0.12 dep (/home/user/ollama/package.json:76)",
+			"installed": "0.0.12 (/home/user/ollama/node_modules/@orkestrel/budget/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-09-29T15:23:02.535Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/ollama/package.json:77)",
+			"installed": "0.0.19 (/home/user/ollama/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/ndjson",
+			"pinned": "^0.0.11 dep (/home/user/ollama/package.json:78)",
+			"installed": "0.0.11 (/home/user/ollama/node_modules/@orkestrel/ndjson/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-09-29T15:24:33.355Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/tool",
+			"pinned": "^0.0.18 dep (/home/user/ollama/package.json:79)",
+			"installed": "0.0.18 (/home/user/ollama/node_modules/@orkestrel/tool/package.json:3)",
+			"latest": "0.0.18",
+			"latest_published": "2026-10-01T16:53:44.496Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/abort",
+			"pinned": "^0.0.12 devDep (/home/user/ollama/package.json:83)",
+			"installed": "0.0.12 (/home/user/ollama/node_modules/@orkestrel/abort/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-09-29T15:24:12.234Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/browser",
+			"pinned": "^0.0.22 devDep (/home/user/ollama/package.json:84)",
+			"installed": "0.0.21 (/home/user/ollama/node_modules/@orkestrel/browser/package.json:3); install below its own range, lockfile has 0.0.22",
+			"latest": "0.0.26",
+			"latest_published": "2026-10-06T02:44:56.683Z",
+			"behind": true
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.24 devDep (/home/user/ollama/package.json:85)",
+			"installed": "0.0.22 (/home/user/ollama/node_modules/@orkestrel/guide/package.json:3); install below its own range, lockfile has 0.0.24",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/ollama/package.json:86)",
+			"installed": "0.0.19 (/home/user/ollama/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/router",
+			"pinned": "^0.0.16 devDep (/home/user/ollama/package.json:87)",
+			"installed": "0.0.16 (/home/user/ollama/node_modules/@orkestrel/router/package.json:3)",
+			"latest": "0.0.16",
+			"latest_published": "2026-09-29T15:41:58.568Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.90 devDep (/home/user/ollama/package.json:88)",
+			"installed": "0.0.86 (/home/user/ollama/node_modules/@orkestrel/scaffold/package.json:3); install below its own range, lockfile has 0.0.90",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/server",
+			"pinned": "^0.0.22 devDep (/home/user/ollama/package.json:89)",
+			"installed": "0.0.22 (/home/user/ollama/node_modules/@orkestrel/server/package.json:3)",
+			"latest": "0.0.22",
+			"latest_published": "2026-10-01T21:01:07.026Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/ollama/package.json:90)",
+			"installed": "0.0.24 (/home/user/ollama/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/timeout",
+			"pinned": "^0.0.12 devDep (/home/user/ollama/package.json:91)",
+			"installed": "0.0.12 (/home/user/ollama/node_modules/@orkestrel/timeout/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-09-29T15:23:27.828Z",
+			"behind": false
+		},
+		{
+			"checkout": "ollama",
+			"package": "@orkestrel/workspace",
+			"pinned": "^0.0.10 devDep (/home/user/ollama/package.json:92)",
+			"installed": "0.0.10 (/home/user/ollama/node_modules/@orkestrel/workspace/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-10-04T14:34:22.094Z",
+			"behind": true
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/console",
+			"pinned": "^0.0.15 dep (/home/user/scaffold/package.json:101)",
+			"installed": "0.0.15 (/home/user/scaffold/node_modules/@orkestrel/console/package.json:3)",
+			"latest": "0.0.15",
+			"latest_published": "2026-09-29T15:44:40.676Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/scaffold/package.json:102)",
+			"installed": "0.0.19 (/home/user/scaffold/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/emitter",
+			"pinned": "^0.0.11 dep (/home/user/scaffold/package.json:103)",
+			"installed": "0.0.11 (/home/user/scaffold/node_modules/@orkestrel/emitter/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-09-29T15:23:32.442Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/markdown",
+			"pinned": "^0.0.17 dep (/home/user/scaffold/package.json:104)",
+			"installed": "0.0.17 (/home/user/scaffold/node_modules/@orkestrel/markdown/package.json:3)",
+			"latest": "0.0.17",
+			"latest_published": "2026-10-01T17:04:13.934Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/process",
+			"pinned": "^0.0.14 dep (/home/user/scaffold/package.json:105)",
+			"installed": "0.0.14 (/home/user/scaffold/node_modules/@orkestrel/process/package.json:3)",
+			"latest": "0.0.14",
+			"latest_published": "2026-09-29T15:41:09.833Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/template",
+			"pinned": "^0.0.9 dep (/home/user/scaffold/package.json:106)",
+			"installed": "0.0.9 (/home/user/scaffold/node_modules/@orkestrel/template/package.json:3)",
+			"latest": "0.0.9",
+			"latest_published": "2026-09-29T15:41:15.476Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/browser",
+			"pinned": "^0.0.26 devDep (/home/user/scaffold/package.json:110)",
+			"installed": "0.0.26 (/home/user/scaffold/node_modules/@orkestrel/browser/package.json:3)",
+			"latest": "0.0.26",
+			"latest_published": "2026-10-06T02:44:56.683Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.24 devDep (/home/user/scaffold/package.json:111)",
+			"installed": "0.0.24 (/home/user/scaffold/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/html",
+			"pinned": "^0.0.12 devDep (/home/user/scaffold/package.json:112)",
+			"installed": "0.0.12 (/home/user/scaffold/node_modules/@orkestrel/html/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-10-01T16:53:01.695Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.21 devDep (/home/user/scaffold/package.json:113)",
+			"installed": "0.0.21 (/home/user/scaffold/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": false
+		},
+		{
+			"checkout": "scaffold",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/scaffold/package.json:114)",
+			"installed": "0.0.24 (/home/user/scaffold/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/abort",
+			"pinned": "^0.0.12 dep (/home/user/server/package.json:73)",
+			"installed": "0.0.12 (/home/user/server/node_modules/@orkestrel/abort/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-09-29T15:24:12.234Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/codec",
+			"pinned": "^0.0.5 dep (/home/user/server/package.json:74)",
+			"installed": "0.0.5 (/home/user/server/node_modules/@orkestrel/codec/package.json:3)",
+			"latest": "0.0.5",
+			"latest_published": "2026-09-29T15:24:19.554Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/server/package.json:75)",
+			"installed": "0.0.19 (/home/user/server/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/emitter",
+			"pinned": "^0.0.11 dep (/home/user/server/package.json:76)",
+			"installed": "0.0.11 (/home/user/server/node_modules/@orkestrel/emitter/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-09-29T15:23:32.442Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/router",
+			"pinned": "^0.0.16 dep (/home/user/server/package.json:77)",
+			"installed": "0.0.16 (/home/user/server/node_modules/@orkestrel/router/package.json:3)",
+			"latest": "0.0.16",
+			"latest_published": "2026-09-29T15:41:58.568Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/timeout",
+			"pinned": "^0.0.12 dep (/home/user/server/package.json:78)",
+			"installed": "0.0.12 (/home/user/server/node_modules/@orkestrel/timeout/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-09-29T15:23:27.828Z",
+			"behind": false
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.22 devDep (/home/user/server/package.json:82)",
+			"installed": "0.0.22 (/home/user/server/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/server/package.json:83)",
+			"installed": "0.0.19 (/home/user/server/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.86 devDep (/home/user/server/package.json:84)",
+			"installed": "0.0.86 (/home/user/server/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "server",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/server/package.json:85)",
+			"installed": "0.0.24 (/home/user/server/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "tool",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/tool/package.json:72)",
+			"installed": "0.0.19 (/home/user/tool/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "tool",
+			"package": "@orkestrel/emitter",
+			"pinned": "^0.0.11 dep (/home/user/tool/package.json:73)",
+			"installed": "0.0.11 (/home/user/tool/node_modules/@orkestrel/emitter/package.json:3)",
+			"latest": "0.0.11",
+			"latest_published": "2026-09-29T15:23:32.442Z",
+			"behind": false
+		},
+		{
+			"checkout": "tool",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.22 devDep (/home/user/tool/package.json:77)",
+			"installed": "0.0.22 (/home/user/tool/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": true
+		},
+		{
+			"checkout": "tool",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.19 devDep (/home/user/tool/package.json:78)",
+			"installed": "0.0.19 (/home/user/tool/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": true
+		},
+		{
+			"checkout": "tool",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.86 devDep (/home/user/tool/package.json:79)",
+			"installed": "0.0.86 (/home/user/tool/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": true
+		},
+		{
+			"checkout": "tool",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/tool/package.json:80)",
+			"installed": "0.0.24 (/home/user/tool/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/contract",
+			"pinned": "^0.0.19 dep (/home/user/veneer/package.json:131)",
+			"installed": "0.0.19 (/home/user/veneer/node_modules/@orkestrel/contract/package.json:3)",
+			"latest": "0.0.19",
+			"latest_published": "2026-10-01T16:45:24.755Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/browser",
+			"pinned": "^0.0.26 devDep (/home/user/veneer/package.json:135)",
+			"installed": "0.0.26 (/home/user/veneer/node_modules/@orkestrel/browser/package.json:3)",
+			"latest": "0.0.26",
+			"latest_published": "2026-10-06T02:44:56.683Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/guide",
+			"pinned": "^0.0.24 devDep (/home/user/veneer/package.json:136)",
+			"installed": "0.0.24 (/home/user/veneer/node_modules/@orkestrel/guide/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-10-02T18:58:25.832Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/html",
+			"pinned": "^0.0.12 devDep (/home/user/veneer/package.json:137)",
+			"installed": "0.0.12 (/home/user/veneer/node_modules/@orkestrel/html/package.json:3)",
+			"latest": "0.0.12",
+			"latest_published": "2026-10-01T16:53:01.695Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/probe",
+			"pinned": "^0.0.21 devDep (/home/user/veneer/package.json:138)",
+			"installed": "0.0.21 (/home/user/veneer/node_modules/@orkestrel/probe/package.json:3)",
+			"latest": "0.0.21",
+			"latest_published": "2026-10-06T03:15:39.682Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/scaffold",
+			"pinned": "^0.0.93 devDep (/home/user/veneer/package.json:139)",
+			"installed": "0.0.93 (/home/user/veneer/node_modules/@orkestrel/scaffold/package.json:3)",
+			"latest": "0.0.93",
+			"latest_published": "2026-10-06T03:51:16.430Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@orkestrel/test",
+			"pinned": "^0.0.24 devDep (/home/user/veneer/package.json:140)",
+			"installed": "0.0.24 (/home/user/veneer/node_modules/@orkestrel/test/package.json:3)",
+			"latest": "0.0.24",
+			"latest_published": "2026-09-24T20:44:20.790Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "bootstrap",
+			"pinned": "5.3.8 devDep, exact (/home/user/veneer/package.json:144)",
+			"installed": "5.3.8 (/home/user/veneer/node_modules/bootstrap/package.json:4)",
+			"latest": "5.3.8",
+			"latest_published": "2025-08-26T14:39:00.539Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "tailwindcss",
+			"pinned": "4.3.3 devDep, exact (/home/user/veneer/package.json:150)",
+			"installed": "4.3.3 (/home/user/veneer/node_modules/tailwindcss/package.json:3)",
+			"latest": "4.3.3",
+			"latest_published": "2026-07-16T12:03:35.267Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "vite",
+			"pinned": "^8.3.3 devDep (/home/user/veneer/package.json:152)",
+			"installed": "8.3.3 (/home/user/veneer/node_modules/vite/package.json:3)",
+			"latest": "8.3.3",
+			"latest_published": "2026-10-06T04:10:19.326Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "vitest",
+			"pinned": "^4.1.11 devDep (/home/user/veneer/package.json:154)",
+			"installed": "4.1.11 (/home/user/veneer/node_modules/vitest/package.json:4)",
+			"latest": "5.0.3",
+			"latest_published": "2026-09-30T11:30:42.429Z",
+			"behind": true
+		},
+		{
+			"checkout": "veneer",
+			"package": "playwright",
+			"pinned": "^1.63.0 devDep (/home/user/veneer/package.json:148)",
+			"installed": "1.63.0 (/home/user/veneer/node_modules/playwright/package.json:3)",
+			"latest": "1.63.0",
+			"latest_published": "2026-09-04T22:45:21.732Z",
+			"behind": false
+		},
+		{
+			"checkout": "veneer",
+			"package": "@vitest/browser-playwright",
+			"pinned": "^4.1.11 devDep (/home/user/veneer/package.json:143)",
+			"installed": "4.1.11 (/home/user/veneer/node_modules/@vitest/browser-playwright/package.json:4)",
+			"latest": "5.0.3",
+			"latest_published": "2026-09-30T11:29:36.232Z",
+			"behind": true
+		},
+		{
+			"checkout": "veneer",
+			"package": "@vitest/browser",
+			"pinned": "not declared in /home/user/veneer/package.json; transitive through @vitest/browser-playwright",
+			"installed": "4.1.11 (/home/user/veneer/node_modules/@vitest/browser/package.json:4)",
+			"latest": "5.0.3",
+			"latest_published": "2026-09-30T11:29:55.750Z",
+			"behind": true
+		},
+		{
+			"checkout": "veneer",
+			"package": "bootstrap-icons",
+			"pinned": "1.13.1 devDep, exact (/home/user/veneer/package.json:145)",
+			"installed": "1.13.1 (/home/user/veneer/node_modules/bootstrap-icons/package.json:3)",
+			"latest": "1.13.1",
+			"latest_published": "2025-05-09T23:04:43.163Z",
+			"behind": false
+		}
+	],
+	"behind_summary": [
+		"browser, @orkestrel/mcp, 0.0.36, 0.0.37",
+		"browser, @orkestrel/probe, 0.0.20, 0.0.21",
+		"browser, @orkestrel/scaffold, 0.0.92, 0.0.93",
+		"contract, @orkestrel/guide, 0.0.22, 0.0.24",
+		"contract, @orkestrel/probe, 0.0.19, 0.0.21",
+		"contract, @orkestrel/scaffold, 0.0.86, 0.0.93",
+		"html, @orkestrel/guide, 0.0.22, 0.0.24",
+		"html, @orkestrel/probe, 0.0.19, 0.0.21",
+		"html, @orkestrel/scaffold, 0.0.86, 0.0.93",
+		"markdown, @orkestrel/guide, 0.0.22, 0.0.24",
+		"markdown, @orkestrel/probe, 0.0.19, 0.0.21",
+		"markdown, @orkestrel/scaffold, 0.0.86, 0.0.93",
+		"mcp, @orkestrel/guide, 0.0.22 (pinned ^0.0.24), 0.0.24",
+		"mcp, @orkestrel/probe, 0.0.19, 0.0.21",
+		"mcp, @orkestrel/scaffold, 0.0.86 (pinned ^0.0.89), 0.0.93",
+		"ollama, @orkestrel/agent, 0.0.25, 0.0.26",
+		"ollama, @orkestrel/browser, 0.0.21 (pinned ^0.0.22), 0.0.26",
+		"ollama, @orkestrel/guide, 0.0.22 (pinned ^0.0.24), 0.0.24",
+		"ollama, @orkestrel/probe, 0.0.19, 0.0.21",
+		"ollama, @orkestrel/scaffold, 0.0.86 (pinned ^0.0.90), 0.0.93",
+		"ollama, @orkestrel/workspace, 0.0.10, 0.0.11",
+		"server, @orkestrel/guide, 0.0.22, 0.0.24",
+		"server, @orkestrel/probe, 0.0.19, 0.0.21",
+		"server, @orkestrel/scaffold, 0.0.86, 0.0.93",
+		"tool, @orkestrel/guide, 0.0.22, 0.0.24",
+		"tool, @orkestrel/probe, 0.0.19, 0.0.21",
+		"tool, @orkestrel/scaffold, 0.0.86, 0.0.93",
+		"veneer, vitest, 4.1.11, 5.0.3 (major; newest 4.x is 4.1.11)",
+		"veneer, @vitest/browser-playwright, 4.1.11, 5.0.3 (major; newest 4.x is 4.1.11)",
+		"veneer, @vitest/browser (transitive), 4.1.11, 5.0.3 (major; newest 4.x is 4.1.11)"
+	],
+	"notes": [
+		"Totals: 30 of 101 rows are behind: 27 @orkestrel rows across 8 checkouts, plus 3 vitest-family rows in veneer. scaffold and veneer have no @orkestrel row behind. The registry figures come from `npm view <name> version` and `npm view <name> time --json`, run on 2026-10-06 through the configured proxy.",
+		"Failed registry queries: on its first try, `npm view @orkestrel/abort version` printed only an npm notice line; the retry returned 0.0.12 (published 2026-09-29T15:24:12.234Z). `npm view @orkestrel/veneer` returns E404 Not Found, so veneer is not published. Every other query succeeded.",
+		"Missing checkout: /home/user/orkestrel is an empty directory with no package.json and no node_modules, so it has no rows. The other 10 checkouts all have node_modules.",
+		"Caret ranges: every @orkestrel range has the form `^0.0.N`, and npm resolves that range to exactly 0.0.N. No @orkestrel range admits a newer version, so every behind @orkestrel row needs a package.json re-pin; a reinstall alone moves nothing. No row is in the 'caret admits the newest version but the install is older' case. The only range with headroom is veneer's vite `^8.3.3` (/home/user/veneer/package.json:152), and its install already equals the registry version, 8.3.3.",
+		"Stale installs: in 5 rows the installed version is below the floor of its own range. These are mcp guide (/home/user/mcp/package.json:110, installed 0.0.22), mcp scaffold (:113, installed 0.0.86), ollama browser (/home/user/ollama/package.json:84, installed 0.0.21), ollama guide (:85, installed 0.0.22), and ollama scaffold (:88, installed 0.0.86). Each lockfile matches its package.json (/home/user/mcp/package-lock.json:23 and :26; /home/user/ollama/package-lock.json:21, :22, and :25). node_modules/.package-lock.json is dated 2026-10-02 11:47 in mcp and 2026-10-03 00:15 in ollama, which predates the re-pin commits 424463b and e19fa38 (both 2026-10-03), so node_modules was not reinstalled after the re-pin.",
+		"@orkestrel/browser, named in the user's ruling: the registry version is 0.0.26 (2026-10-06T02:44:56.683Z). Only ollama trails it: pinned `^0.0.22`, installed 0.0.21. scaffold (/home/user/scaffold/package.json:110) and veneer (/home/user/veneer/package.json:135) are at 0.0.26.",
+		"@orkestrel/probe, named in the user's ruling: the registry version is 0.0.21 (2026-10-06T03:15:39.682Z). scaffold (:113) and veneer (:138) are at 0.0.21. browser is at 0.0.20. contract, html, markdown, mcp, ollama, server, and tool are at 0.0.19.",
+		"Blocker for vitest 5: the peerDependencies of @orkestrel/test@0.0.24 and @orkestrel/probe@0.0.21 both declare `vitest: ^4.1.11` (npm view, 2026-10-06). Moving veneer to vitest 5.0.3 conflicts with both peers until test and probe publish a vitest 5 range. The `V4` dist-tag is 4.1.11, and 4.1.11 is the newest 4.x of @vitest/browser-playwright and of @vitest/browser, so veneer is at the newest version of the 4 line. scaffold (/home/user/scaffold/package.json:116, :119, :122) and browser (/home/user/browser/package.json:123, :126, :129) pin the same `^4.1.11` vitest and `^1.63.0` playwright.",
+		"veneer third-party packages: bootstrap 5.3.8, tailwindcss 4.3.3, vite 8.3.3, playwright 1.63.0, and bootstrap-icons 1.13.1 are installed at the registry's `latest` dist-tag. playwright also has prereleases on the `next` tag (1.64.0-alpha-2026-10-06) and the `beta` tag; no stable 1.64 exists.",
+		"mcp 0.0.37: its dependencies and peer dependencies (npm view @orkestrel/mcp@0.0.37) equal the ranges in /home/user/mcp/package.json:99-105 and :126-127, so browser can move `^0.0.36` to `^0.0.37` without other re-pins. probe 0.0.21 depends on `@orkestrel/mcp: ^0.0.36`, so after that move the tree keeps a second copy of mcp, 0.0.36, under probe until probe re-pins.",
+		"ollama agent and workspace: @orkestrel/agent@0.0.26 depends on `@orkestrel/workspace: ^0.0.11`. Re-pin ollama's agent `^0.0.25` (/home/user/ollama/package.json:75) and workspace `^0.0.10` (:92) together, or the tree carries two copies of workspace.",
+		"Duplicate contract: @orkestrel/test@0.0.24 depends on `@orkestrel/contract: ^0.0.18`. browser, scaffold, and veneer each carry a nested node_modules/@orkestrel/test/node_modules/@orkestrel/contract at 0.0.18 beside the top-level 0.0.19. test 0.0.24 (published 2026-09-24T20:44:20.790Z) is the newest test on the registry, so no fleet re-pin removes this copy; it disappears only when test publishes a version that depends on contract 0.0.19.",
+		"Checkout vs registry, browser: the local version 0.0.26 (/home/user/browser/package.json:3) equals the registry version. The published gitHead 0379087 equals the local HEAD and the remote main.",
+		"Checkout vs registry, contract, html, markdown, tool, and server: the local versions 0.0.19, 0.0.12, 0.0.17, 0.0.18, and 0.0.22 (package.json:3 in each) equal the registry versions. The published gitHeads are 8bd3382, f3dfc68, 5a61e00, a212f30, and 154b119. In each checkout the local HEAD equals the remote main and sits 8 commits after the published commit. Every one of those commits is titled 'Re-pin the @orkestrel ranges for the release visit' or 'Overwrite with scaffold 0.0.83' through '0.0.86'. I read only the subjects, not the diffs.",
+		"Checkout vs registry, mcp: the local checkout is BEHIND the registry. The local version is 0.0.36 (/home/user/mcp/package.json:3), while the registry serves 0.0.37 (published 2026-10-06T12:35:09.728Z, gitHead 9e374f2). Remote main (read through `gh api`) is at 9e374f2 'Release 0.0.37'. The local HEAD 50afe56 (2026-10-03) and the local origin/main ref both lack that commit, so the mcp checkout must be fetched and fast-forwarded before any work there.",
+		"Checkout vs registry, ollama: the local version 0.0.20 equals the registry version (gitHead f2efe02). Main carries 15 unpublished commits after it, including 0bad967, b0d2e1c, and 33166b9; going by their subjects, these change test proofs.",
+		"Checkout vs registry, scaffold: the local version 0.0.93 (/home/user/scaffold/package.json:3) equals the registry version (gitHead 91682014), and the local branch carries 59 commits after it. The local clone is BEHIND its remote. Remote main b9236e1f (2026-10-06T19:33:31Z) is not in the local clone, and the local origin/main ref 4725e958 is 1 commit ahead of the local HEAD 8bec17f5.",
+		"Checkout vs registry, veneer: the local version is 0.0.1 (/home/user/veneer/package.json:3), and veneer has never been published (E404). The local HEAD 6b99552 equals the remote main."
+	]
+}
