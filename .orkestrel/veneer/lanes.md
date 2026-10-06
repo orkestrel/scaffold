@@ -70,6 +70,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-06 — showcase session (the second-round rulings, HB1, S47, S-R2, and the fleet re-pins)
+
+- **Rulings (second round), recorded in `stage-b/user-rulings-2026-10-06.md` § Second round:** the outline buttons follow the session's recommendation (unit S-R2, running: solid `btn-secondary` for the 30 action specimens, per-mode `btn-outline-dark` and `btn-outline-light` for the header controls, no `text-body-emphasis` on any button); the native surfaces separate from the Bootstrap drop-in engine as an opt-in layer, and a design round (three blind planners, a judge, a critic) rules the shape before B0, B2, and B3 open.
+- **HB1 landed on the veneer branch at `7b128a5`** (not on `main` until the next showcase landing): the six host-bound `src:browser` titles are retired, 799 passed under Chromium 141 and 153; `tmp/units/journey-cost/host-bound.md` keeps no `src:browser` title. Report in `showcase/redesign-2026-10-06/review-2026-10-06/hb1-report.md`.
+- **S47 landed on scaffold `main` at `b23d5351`**: `PLAYWRIGHT_SCROLLBARS=classic` in the generated `configs/browsers.ts` resolver, for the lock and gutter proofs; it reaches veneer with the next scaffold release (0.0.94, at the user's OTP) through `scaffold overwrite`. Report in `stage-b/rulings-research-2026-10-06/s47-report.md`.
+- **Fleet re-pins running** (workflow of five lanes) for browser, tool, markdown, html, and mcp: the behind `@orkestrel` ranges to the registry latest, scaffold 0.0.93 through the overwrite, each repository's gates, a commit, and a push of its `ccr-d15a48b1-yyyll6` branch restarted from `main`. Contract, server, and ollama are behind as well (`stage-b/rulings-research-2026-10-06/fleet.json`) and stay with the desktop session.
+
 ### 2026-10-06 — showcase session (stage B unit B4, engine half, landed on veneer `main`)
 
 - **Prediction, logged per the stage B verdict before the landing:** the `collapse`, `accordion`, `navbar-390`, and `navbar-1280` statechart rows are regression-sensitive to B4; the showcase passes no `intrinsic` leaf, so no row moves.
