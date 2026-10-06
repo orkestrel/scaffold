@@ -1,0 +1,10 @@
+Click probe run: popover table in light-1280 (both motion values), start 08:34:41
+run exit=0 08:43:06 "seconds": 50.2 Tests  2 passed | 18 skipped (20)
+--- click probe entries over 1000 ms
+clicks 40 over 1 s: 5 sum ms 27851
+{"control":"Billing status","ms":4856,"sb":"smooth","scroll":[39576,39480],"top":409,"bottom":447,"vh":800,"phase":"shown"}
+{"control":"Billing status","ms":5390,"sb":"smooth","scroll":[39560,39387],"top":425,"bottom":463,"vh":800,"phase":"shown"}
+{"control":"Billing status","ms":2343,"sb":"smooth","scroll":[39570,39298],"top":415,"bottom":453,"vh":800,"phase":"shown"}
+{"control":"Billing status","ms":2601,"sb":"smooth","scroll":[39576,39298],"top":409,"bottom":447,"vh":800,"phase":"shown"}
+{"control":"Billing status","ms":2221,"sb":"smooth","scroll":[39576,39298],"top":409,"bottom":447,"vh":800,"phase":"shown"}
+probe reverted; worktree clean=0
