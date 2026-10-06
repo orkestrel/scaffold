@@ -248,6 +248,10 @@ Lane results:
   - unit `load-cases` (probe `tmp/codex/load-cases-brief.md`): the handshake diagnostic, the event-wait fixes, and the derived budgets;
   - unit `items13-14` (mcp `tmp/codex/items13-14-brief.md`).
 - The ollama store campaign resumes last, on a quiet host.
+- **mcp:**
+  - `items13-14` committed `c98d82f` (item 14: `MCPInputOptions.clock`; the expiry reads use it; the cases run on `createManualClock`) and `8f743a8` (item 13: `isPingRequest`; a headerless legacy `ping` passes the session middleware while initialization is pending; the guide records the departure). `ROADMAP.md` item 15 covers 404 versus 400.
+  - Gates green: source 1537, guides 202, conformance 47, integration 4. Unpushed. Running: the Opus review.
+- **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
 2. **The paused ollama store campaign** (`ollama/tmp/codex/store-campaign-pause.md`): resume when the host can stay quiet for hours. Ollama's local 0.0.21 also owes a re-pin to browser `^0.0.26`.
