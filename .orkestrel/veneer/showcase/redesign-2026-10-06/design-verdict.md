@@ -58,10 +58,11 @@ U1 and U2 run in parallel on disjoint files; U1's commit is cherry-picked into `
 
 U5 runs, inside the host queue: the gates (`format:check`, `lint:check`, `check`, `test:app:browser`, `test:setup:browser`, `test:policy`, `test:guides`, the full journey with `CAPTURE=0`); a candidate journey compared against the three baselines `task75-u3-journey-1`, `task75-u3-journey-2`, and `landing-7853d17-2-journey` (no journey evidence moved between `7853d17` and `9fb2be1`: those commits touch comments, timeouts, a `src:browser` case, the guide, and the roadmap); `CAPTURE=1` once, with one read of `arrival`, `contents-drawer`, `contents-index`, `group-rhythm`, `tooltips`, and `popovers` at 390 and 1280; `npm run build`, then `npm run build:showcase` twice with equal hashes.
 
-The compare exits 67 by design. The landing accepts a difference only in this set, and refuses any other:
+The compare exits 67 by design. The landing accepts a difference only in this set, and refuses any other. The set names a reading wherever the evidence carries it: a `Resolved values` row (the compare strips the variant prefix from a row), a gated stdout line, and the Journal copy of that line with its `info:` prefix all count as the same reading (amended 2026-10-06 at the landing, where the literal reading of the first draft left 246 journal copies and prefix-stripped rows outside the set; `landing/classify-compare.ts` beside this file is the classifier):
 
 - the `signature coverage` rows and the `partition:` rows at light-1280 and light-390, and the gated `Partition population` and `Partition` lines (every element that gains a shared name moves the counts: `z-0`, `pb-4`, `px-4`, `ms-auto`);
-- the `Component preservation` line (`card-body` signatures split by `z-0`; the `excluded` field);
+- the `Component preservation` summary wherever it appears: the gated line, its journal copy, and the `STATE component preservation` rows per state, width, and color mode (`card-body` signatures split by `z-0`; the `excluded` population falls by 99 per state because the second navigation copy is gone); the `Row order` flag of `dark-390`, which hosts those rows, follows from their values alone;
+- the `Partition control` counts of the unexcluded face (3107 to 3109 at 1280 and 3111 at 390: the panel's `py-3` and `px-4` join the shared-name population; the tuned face keeps zero violations);
 - the J1 and J2 Journal entries at 390 (the open step; `Contents` in the path);
 - J3's `minimum heading margin` in every variant (the rules lengthen sections);
 - the banner and Contents trees in `tmp/journey/VARIANT.txt`, and the `Focus order of the banner` section at 390;
