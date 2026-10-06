@@ -498,8 +498,26 @@ Lane results:
     - The plan's `read.search` copy is amended.
   - **The user (2026-10-06): improve browser's API from the ecosystem's patterns,** naming agent, database, relation, table, workspace, workflow, and form (scaffold `guides/`) as examples. It is recorded in `reading/campaign.md`, and the design goes to the user before implementation.
     - **Census:** browser `src/core` exports 557 symbols: 181 functions, 203 interfaces, 52 classes, 67 constants, and 54 types.
+    - **The browser fix round landed:** browser `51cf268`, pushed.
+      - All 14 items fixed, each with a failing test first; all 17 reverting mutations caught.
+      - Results:
+
+        | Gate | Result |
+        | --- | --- |
+        | core | 1,145 |
+        | browser placement | 478 |
+        | service (toolset, document, journey, browse) | 204 |
+        | server | 392 |
+        | guides | 258 |
+        | check, lint, format, build | pass |
+
+      - Copy 6,041 and 3,360, both bounds unmoved.
+      - A 0.0.26 journey file loads and replays.
+      - Capturing a 5,000-paragraph outline takes a median of 917 ms.
+      - It closes by mutation, under the skill's rule for fixes that adopt the prescription.
+    - **Grok session A, slice 1** (`reading/api/patterns-1.md`, session `5ffd96d4`) covers entities, managers, and vocabulary across agent, database, relation, table, workspace, workflow, form, and tool. Slice 2, on surface hygiene, is running.
     - **Order:**
-      1. the browser fix round, running;
+      1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
       3. a blind design round (Opus planner and Astra analyst);
       4. the user's approval;
