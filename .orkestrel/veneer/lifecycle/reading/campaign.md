@@ -14,6 +14,10 @@ The user ruled this campaign on 2026-10-06. It follows the store implementation 
   - each tool covers one distinct intent, and the steps that serve that intent happen inside one call;
   - options are preferred over extra tools, and kept few and clear;
   - the curation covers the whole page vocabulary, and is proposed for the journey tools.
+- **Improve the API** (the user, 2026-10-06, during the browser fix round):
+  - Improve `@orkestrel/browser`'s public API using what the ecosystem's other packages do well.
+  - The user named `agent`, `database`, `relation`, `table`, `workspace`, `workflow`, and `form` (scaffold `guides/`) as examples of what they look for, and invited reading further guides.
+  - The API design goes to the user for approval before implementation.
 - **Also in this round:**
   - journey results stay within `BROWSER_TOOL_LIMIT`;
   - search reaches page text;
@@ -38,6 +42,7 @@ The campaign ends when all of the following hold.
    - Its search returns line-numbered matches that reach page text.
    - Every journey result fits `BROWSER_TOOL_LIMIT`.
    - A handled submission settles before its receipt.
+   - The public API follows the API design the user approved, drawn from the ecosystem's patterns.
    - Guide parity holds, and the tree-wide gates pass.
 2. **Agent:** a string tool result reaches the model unchanged, and every live tool test that reads tool content passes.
 3. **Ollama's harness:**

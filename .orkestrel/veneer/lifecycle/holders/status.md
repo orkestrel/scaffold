@@ -496,6 +496,16 @@ Lane results:
       - stale fixtures are fixed;
       - positions are re-pinned on the fixed pack.
     - The plan's `read.search` copy is amended.
+  - **The user (2026-10-06): improve browser's API from the ecosystem's patterns,** naming agent, database, relation, table, workspace, workflow, and form (scaffold `guides/`) as examples. It is recorded in `reading/campaign.md`, and the design goes to the user before implementation.
+    - **Census:** browser `src/core` exports 557 symbols: 181 functions, 203 interfaces, 52 classes, 67 constants, and 54 types.
+    - **Order:**
+      1. the browser fix round, running;
+      2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
+      3. a blind design round (Opus planner and Astra analyst);
+      4. the user's approval;
+      5. the API implementation;
+      6. the harness fix;
+      7. the gates, M1 to M5, and the releases.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
