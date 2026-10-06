@@ -137,7 +137,13 @@ It stopped at a core defect C1 exposed. Closing a crashed-renderer page stalls a
 - **Item 15 deep research** (records in `lifecycle/item15/`):
   - **The leading cause, H1, which the attack confirmed and strengthened:** Edge signs each fresh profile in to the user's Windows Microsoft account and syncs the account's extensions. The second install wave, about 20 to 22 s after launch, brings Claude (`declarativeNetRequest`, `debugger`) and Capital One Shopping (`webRequest`). The first such extension resets the URL loader factories, and a page's import wave in that window gets `net::ERR_ABORTED` before dispatch.
   - **The user ruled (2026-10-05):** `--disable-sync` goes into `BROWSER_LAUNCH_ARGS` for every browser the library and `browse` launch, and the experiment series may run.
-  - Running: unit `item15e` (browser `tmp/codex/item15e-brief.md`, cap 6 hours). It does the zero-run reads, the extension-reload trigger with its control, and E1 with arms A, B, and the Claude-only split, then the fix and its proof, and closes item 15.
+  - Unit `item15e` (`tmp/codex/item15e-last.md`, `tmp/probes/item15/`) confirmed H1's behavior:
+    - Reloading Capital One alone reproduced the signature (1 of 3 reloads, 0 of 1 controls), and so did Claude alone (1 of 2), so H7 is not needed.
+    - E1 calibration: arm A failed at +20.779 s, beside Claude's install at +20.748 s; arm B (`--disable-sync`) installed neither extension and failed nothing.
+    - No network-change or 4227/4231 events showed in the nine failure windows (H5 and H6 contradicted).
+  - It committed no fix: `--disable-sync` leaves Edge's implicit sign-in to the Windows Microsoft account in place. No documented per-launch switch stops it; Edge's `ImplicitSignInEnabled` and `BrowserSignin` are machine-wide policies.
+  - **The user ruled (2026-10-05):** land `--disable-sync` and close item 15 on sync off with no account extension, recording the sign-in as a limit. Research a per-launch way to stop implicit sign-in afterward, in its own unit.
+  - Running: unit `item15f` (browser `tmp/codex/item15f-brief.md`), with the fix, the formal E1 series, a regression case, repeated full service runs, and item 15 closed.
 - **worker** (L4): after pool publishes. **probe** sits in browser's layer (L5) and does not depend on browser.
 - **Item 15 deep research:** running as the workflow `item15-deep-research` (evidence reader, code reader, upstream researcher, a synthesis with decisive experiments, an adversarial critic). Its experiments run after it returns.
 
