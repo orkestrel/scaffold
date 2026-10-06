@@ -240,8 +240,13 @@ Lane results:
 ## Open, in order (2026-10-06)
 
 **The user (2026-10-06): proceed with what's left.**
-- Running: workflow `remaining-items-analysis`. Three Opus readers cover probe's load-sensitive cases, mcp item 13 (an HTTP legacy `ping` before the `InitializeResult`), and mcp item 14 (the continuation-expiry flake); an adversarial reviewer attacks their proposals.
-- Then codex writers in probe and mcp.
+- Workflow `remaining-items-analysis` finished; records in `lifecycle/remaining/` (three analyses and the attack).
+  - **Probe:** 11 of the 12 loaded failures come from quiet-host test budgets; the twelfth misreads its handshake frame.
+  - **mcp item 14:** inject the clock (the existing `clock` seam pattern and `createManualClock`).
+  - **mcp item 13:** answer a legacy pre-initialize `ping` without a session. The Orchestrator ruled to admit only that request and to record the departure from the transport page's 400 recommendation in the guide.
+- Running in parallel:
+  - unit `load-cases` (probe `tmp/codex/load-cases-brief.md`): the handshake diagnostic, the event-wait fixes, and the derived budgets;
+  - unit `items13-14` (mcp `tmp/codex/items13-14-brief.md`).
 - The ollama store campaign resumes last, on a quiet host.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
