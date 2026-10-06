@@ -303,6 +303,19 @@ Lane results:
       - It measures the first reply on 0.35.1 under four toolset arms: attempt 3's definitions, without `capture`, attempt 2's with `capture`, and attempt 2's. That separates the toolset from the daemon.
       - When a toolset change is named, it runs full shipping and search attempts without that change.
   - Unscheduled follow-up: why Edge helpers outlive their browser on Windows after a test launch's teardown (browser `tests/setupGlobal.ts:174` and library-profile launches through 2026-10-05).
+  - **The user ruled (2026-10-06 near 11:15): 24 hours is too long.** Stop, run the probe, then a lean rerun. The rerun runs without journey, 8 runs per arm with no extensions, S3 to S5, then acceptance, in about 4 to 5 hours in total.
+    - **Campaign 3 stopped** near 11:20 by a process-tree kill. The interrupted S1 run 15 sits outside the counts in attempt-3 `discarded-stop/`. No ruling was taken. Pass counts:
+
+      | Arm | Runs | Shipping | Click | Search | Checkout | Paging | Journey |
+      | --- | --- | --- | --- | --- | --- | --- | --- |
+      | S0 | 16 | 0 | 16 | 12 | 16 | 0 | 4 |
+      | S1 | 14 | 1 | 14 | 12 | 14 | 0 | 3 |
+
+    - S1's first look at 8 runs: paging F-15 fell from 5 of 8 to 0 of 8 (p = 0.013 against 0.0042), so its registered extension ran until the stop.
+    - The attempt-3 worktrees are removed. Each repository keeps its `store-reliability-3` branch: ollama `c486c53` carries the S1 cherry-pick, and browser and agent sit at their bases.
+    - The 166 orphaned Edge helpers are terminated (`edge-orphans.ts --kill`: 166 terminated, 0 failed), and a recount finds 0.
+    - **Unit `toolset-probe` launched**, with a cap of 90 minutes (ollama `tmp/codex/toolset-probe-brief.md`, journal `tmp/codex/toolset-probe.jsonl`).
+    - The lean rerun's brief follows the probe's ruling.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
