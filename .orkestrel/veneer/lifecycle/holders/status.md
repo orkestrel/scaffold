@@ -441,6 +441,19 @@ Lane results:
     - Its fixed receipt reserve and its required journey `search` are refused.
     - The plan is amended.
   - **The same Codex session resumed** (session `01a112f5`, scaffold `tmp/codex/codex.resume.ts`, cap 4 h).
+  - **The resume stopped after 17 minutes under the no-mock rule** (browser `tmp/codex/reading-browser-resume-last.md`, report `tmp/codex/reading-browser-report.md`).
+    - The cause: the existing submission tests run the compiler inside the handwritten `BrowserSubmitWindow` (browser `tests/setup.ts:1284`), which lacks the DOM query API and the mutation observation the new observer needs.
+    - Done and tested:
+      - password masks, the duplicate-value drop, and `secret` redaction;
+      - windows, exact continuation, search past the first window, the change note, and refusals;
+      - the journey bound, 7,729 characters before the fix and green after;
+      - copy at 6,035 and 3,358.
+    - Open: 142 core assertions to migrate, 7 stale test accesses, the settle proofs, and DOM parity.
+  - **The Orchestrator ruled:**
+    - move the submission and settle proofs to real pages and delete the fake;
+    - the same applies to any substitute the new behavior outgrows;
+    - the deviation contract narrows to a plan rule or the whole-result bound.
+    - Resumed as unit `reading-browser-2` on the same session (cap 4 h).
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
