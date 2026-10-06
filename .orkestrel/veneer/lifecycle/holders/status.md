@@ -454,6 +454,27 @@ Lane results:
     - the same applies to any substitute the new behavior outgrows;
     - the deviation contract narrows to a plan rule or the whole-result bound.
     - Resumed as unit `reading-browser-2` on the same session (cap 4 h).
+  - **R1 to R4 complete** (browser `tmp/codex/reading-browser-report.md`, 46 minutes).
+    - Results:
+
+      | Gate | Result |
+      | --- | --- |
+      | core | 1,140 |
+      | browser placement | 478 + 1 skipped |
+      | service (toolset, document, journey, browse) | 189 + 6 skipped |
+      | server | 392 + 10 skipped |
+      | distribution (default mode) | 14 + 9 skipped |
+      | `check`, lint, format, build | pass |
+
+    - Journey bound: 7,729 characters before the fix, green after.
+    - Copy: 6,024 and 3,347.
+    - The `BrowserSubmitWindow` fake was deleted, and the submission proofs run on real Chromium pages.
+    - The guide check fails 10 of 251; R5 owns that drift.
+    - **Committed locally as browser `9b7a06f`, unpushed** until the guide is green.
+  - Packs built by the Orchestrator into ollama `tmp/codex/store-campaign5/packs/`: browser `31D1D891…` from `9b7a06f`, and agent `17F8A491…` from `65c706a`.
+  - **Running in parallel:**
+    - **`reading-guide`** (browser `tmp/codex/reading-guide-brief.md`): Astra, cap 2 h. It is routed to Astra rather than Opus because guide parity needs a shell to iterate; Opus reviews the guide's voice in the falsify round.
+    - **`reading-harness`** (ollama `tmp/codex/reading-harness-brief.md`): Astra, cap 3 h, covering O1 and O2.
 - **Probe:** `load-cases` committed P1 (`482666c`, the handshake diagnostic; its loaded rerun passed and named no bound). It stopped at P10, where no public event marks a failed idle refill. The Orchestrator ruled to observe the spent floor's refusal through `prove`, since pool refuses only after pending refills settle. Running: `load-cases2`.
 
 1. **Probe under heavy load:** probe's whole `npm run test` under a synthetic 85% CPU load (14 busy workers) fails 12 timing cases across 3 files: handshake, warm, and deadline (probe `tmp/codex/teardown-load2-last.md`, `teardown-load2-suite-loaded.err`). Release visits run alone and pass. Rule whether to size those cases to the load a release host sees, after reading which bound each one holds.
