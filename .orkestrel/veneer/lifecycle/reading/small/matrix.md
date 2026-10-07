@@ -19,7 +19,11 @@ Ollama `tmp/codex/census.md` (230 attempts): the 2B's cart and checkout runs all
 | JA | combined | JP, V4, TB2 | same | done | 0 of 8, all by JP's `record` order. The `type!` detour remained on 4 of 8 ports. |
 | JB | combined | JA and V1c | same | done | 0 of 8, all by JP's `record` order. **The `type!` detour vanished on 8 of 8 ports** (`click>click>type` every time): V1c works. |
 | JC | combined | JB, JS, and limit 12 | same | done | 0 of 8, the same; one port 500 after its first `click`. |
-| S4 | empty recording | with a recording that holds no step, `save` is refused ("nothing is recorded") and `record` is refused ("a journey is recording; call save first"); the 2B alternated between the two for 36 calls. Rule whether `record` restarts an empty recording, or the refusal names the one way out | browser design, planner | design | |
+| S4 | empty recording | with a recording that holds no step, `save` is refused ("nothing is recorded") and `record` is refused ("a journey is recording; call save first"); the 2B alternated between the two for 36 calls | the planner ruled (`rulings-planner.md` §4): keep both refusals, each names one exit and never the other tool; a restart or a discard would reset the refusal cap | ruled | |
+| X6 | ollama 500 | a past-the-end `read` returns the last window headed by `Line 6 is past the end; the page has 5 lines, shown here.` instead of refusing (`rulings-planner.md` §5) | store-live, 2B, journey, 8 ports, then the five page tasks | queued | |
+| X2 | ollama 500 | capture the raw malformed call with `OLLAMA_DEBUG=1` on a failing port | daemon restart; after the live series | queued | |
+| X4 | ollama 500 | a provider-level retry of the turn | refused by the ruling: deterministic, and it hides a failure | closed | |
+| X5 | ollama 500 | a derived model with a JSON tool-call template | attribution only, one run, never a harness default | queued | |
 | JE | combined | JP2, V1c, V4, TB2 | store-live, 2B, journey, 8 ports | queued | |
 | JF | combined | JE and limit 12 | same | queued | |
 | JG | combined, original wording | V1c, V4, TB2 | same | queued | |
