@@ -36,7 +36,9 @@ Every change keeps the user's rulings in `campaign.md`:
 
 ### Ollama harness
 
-6. **The framing.** The seed turn reads `The browser's first read of the page:`, replacing "The browser shows this page:".
+6. **The framing and the type sentence.**
+   - The seed turn reads `The browser's first read of the page:`, replacing "The browser shows this page:".
+   - The system prompt's type sentence reads `To fill a field or use the site's search box, call type with its reference, the text, and submit true.` It names a procedure that the 0.0.26 prompt carried, and no answer. The user rules whether it counts as task copy.
 7. **Rule R, which needs the user's ruling.** The exposed reference set accumulates across reads of one unchanged page. It resets on a page change, a change note, a tab change, or an action; an action's own reference is checked before its reset. A reference refused as not in view counts as unlisted.
    - **What it keeps:** the claim the oracle names, "the model never invents a reference". An invented reference, a stale reference after a page change, and a refused reference all still fail.
    - **What it drops:** the stricter rule that a reference must appear in the latest window. The tool does not make that rule, and it failed every completed 2B checkout.
@@ -53,15 +55,19 @@ Every figure is out of 8 draws, one per port, at temperature 0. Each row names i
 | 2 + 6, the partial line and framing | 4B paging first call 0 | 8; 2B paging stays 8 | `store-validate-2-report.md`, C2; paging re-judge `scaffold/tmp/units/paging-rejudge.ts` |
 | 3, the best-match line | 2B cart completion 0 (M2diag) | 8 | `store-validate-3-report.md`, control C2 |
 | 5, the `type` description | 2B search completion 0 | 6 | `store-validate-3-report.md`, arm T1 |
+| 5 + 6, the `type` description and the type sentence | 2B search completion 0 | 8; cart stays 8 | `store-validate-4-report.md`, arm T1+P1 |
 | 7, rule R | 2B checkout 0 | 8, re-judged from the M2diag transcripts | `store-validate-report.md`, Stage 0 |
 
-**The guard.** Every cell at 8 of 8 on the shipped bytes stays at 8 under C2 + T1:
-- 2B shipping and paging;
-- 4B shipping, search, and checkout.
+**The guard.** The guard covers the first calls of every cell at 8 of 8 on the shipped bytes. Under the full set:
+- 2B shipping and paging stay at 8;
+- 4B shipping, cart, search, and paging are at 8;
+- 4B checkout is at 7: one port reads from line 46 before acting, which costs one turn and is not a failure.
 
-The 4B's first calls are productive on all five tasks.
+The plan's guard threshold is 7. The unit applied 8 and reported a fail.
 
-**Open.** 2B search completes on 6 of 8, and M2's gate is 7 of 8. Unit `store-validate-4` tests whether the analyst's `read` copy or the search-box prompt sentence stacks on T1.
+**Rejected:** the analyst's `read` copy (D1) took 2B search to 0 with T1, and to 2 with T1 and P1.
+
+**The first-call figures are transforms, not the package.** The completion figures ran every tool result through the transform. The implementation must reproduce those bytes, and M2 to M5 measure the real package.
 
 ## Units
 

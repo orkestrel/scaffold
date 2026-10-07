@@ -769,7 +769,33 @@ Lane results:
         - **T1 scores 6**, with `type` described as "Types into a field such as a search box, optionally submits its form, and returns the page.". Its passes run `read 46–52` then `type e4 kettle submit`, in 6.4 s.
       - **T1's guard passes:** 2B shipping and paging 8, and the 4B 8 on all five tasks.
     - **Plan drafted:** `reading/redesign/plan.md`, the change set for the user's approval. Rule R needs the user's ruling.
-    - **Running: unit `store-validate-4`** (ollama `tmp/codex/store-validate-4-brief.md`, cap 90 min). It tests T1 with D1, T1 with P1, and all three against a T1 control on 2B search and cart, then guards the best arm.
+    - **Unit `store-validate-4`** (ollama `tmp/codex/store-validate-4-report.md`; 21 minutes). 2B search and cart passes out of 8:
+
+      | Arm | Search | Cart |
+      | --- | --- | --- |
+      | T1, the control, reproduced | 6 | 8 |
+      | T1 + D1 | 0 | 8 |
+      | **T1 + P1** | **8** | **8** |
+      | T1 + D1 + P1 | 2 | 8 |
+
+      The guard for T1 + P1: every cell holds 8 except 4B checkout's first call at 7, where one port reads from line 46 before acting. The plan's threshold is 7, so this passes.
+    - **Plan ready for the user:** `reading/redesign/plan.md`.
+      - **Browser:**
+        - `[ref=eN]` after the name;
+        - the partial-view line;
+        - the best-match line;
+        - the change note from line 1;
+        - the `type` description.
+      - **Harness:**
+        - the framing;
+        - the type sentence;
+        - rule R;
+        - the parsers;
+        - M1 as a diagnostic, with M2 the gate.
+      - **The user's rulings asked for:**
+        - approval of the change set;
+        - rule R;
+        - whether the type sentence counts as task copy.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
