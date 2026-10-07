@@ -70,6 +70,11 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-07 — showcase session (the user's six audit rulings, as recommended; the ruling-dependent units open)
+
+- **The user's words**: "Go with all six as recommended." Recorded in `stage-b/user-rulings-2026-10-06.md` § Sixth round; `tailwind-flip/design-verdict.md` § 15 (R5's break test widened to every class acting through a reboot declaration; the bare-element rule's `a` exception; § 10 item 14 reversed); `tailwind-flip/tokens/design-verdict.md` § Amendments of 2026-10-07 (spacer steps 3 to 5 map; subtle borders by role).
+- **Open now**, two more Astra lanes on worktrees at `867f3b4`: `audit-spacing` (AS3: U3, the spacer maps through `measure` and `$scale`, the token table, the conformance ladder case) and `audit-links` (AS5: the element-wide reboot link form for the `a` tag; the 16 percentage names leave `$withhold`; the carousel slides, the percentage-offset specimen, and the Sizing section return to Bootstrap's spelling; the 2026-10-05 readings move). The first AS1 launch stopped on the recipe-sequence pin in `tests/integration.test.ts`, which strips every `base` layer block and so the object-fit restoration; the brief now owns that case and the lane relaunched. Landing order after the Copier 1 page commit: AS1, then AS3 and AS5 rebased with the recipe records regenerated, then AS2, then Drag 1; the captions unit (R4, R5, R6: C2 to C6, U4.7, E4, the Borders collision note) opens on an Opus lane after AS2; the E1 to E13 readings run on the fixed page.
+
 ### 2026-10-07 — showcase session (the whole-showcase audit under the Tailwind + layer face; six rulings asked)
 
 - **The user's order**: go through the whole showcase, not the containers alone, and confirm each section applies the intent (Bootstrap adopts Tailwind's scale and theme and keeps working) under the Tailwind + layer face.
