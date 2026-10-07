@@ -111,3 +111,12 @@ Release-chain notes:
 - The first whole `test:service` run failed 3 of 263: two editable-region cases and the measured cart refusal still pinned the pre-`2098194` `type` refusal (`call click for a button`, `call click for a link`), the suite having last run before that commit; they pin the shipped field-aware text in `36cde8f` (the two files alone: 132 passed).
 - Windows gates: default-mode distribution 14 passed with 9 host-bound skips; the second whole `test:service` run 256 passed with 6 skipped and one timing miss (`codegen.test.ts` claim 12, `outline is gone because the page changed`), which passed alone (2 of 2, 3.3 s), the file-by-file reading the Windows releases take.
 - **Browser 0.0.27: published** 2026-10-07 from `36cde8f`. `window.ts --publish` answered accepted and unconfirmed; `--confirm` served it within the wait, and `npm view` reads `gitHead` `36cde8f1…`.
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2 | L6 | `@orkestrel/ollama` | 0.0.20 | 0.0.21 | bump: dist moved (the judge wire for Mica's raw logprob readout, the store harness and its conformance, the 2B's thinking run); runtime range agent `^0.0.25` to `^0.0.28`; dev re-pins browser `^0.0.27`, scaffold `^0.0.94`; 0 self-pin hits | `058e770` |
+
+Release-chain notes, ollama:
+- The visit passed every gate (`npm test` 26.4 s) and ruled the bump; `prepublishOnly` failed `test:service` twice over: 8 page cases could not resolve `@orkestrel/queue` in the page (the lockfile placed queue 0.0.16 under agent and workflow with no top-level copy, which the derived import map never sees; `npm dedupe` hoisted it, `058e770`), and `tests/service/judge.test.ts` refuses at its load gate because the daemon holds no `tev1:0.8b` (the judge wire's decision model, `OLLAMA_JUDGE_CONFIG.decision`).
+- The whole `test:service` after the dedupe: 75 passed with 1 skipped, the judge file alone red on the missing model; every live store case passed on the 2B with thinking.
+- Ollama `main` is pushed at `058e770` (28 commits: the harness conformance, the wire audit's changes, the re-pin, the overwrite, the dedupe). The publish waits on the user's one-time code and the user's ruling on the judge model.
