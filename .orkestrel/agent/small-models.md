@@ -23,7 +23,7 @@ Hand-off record, written 2026-10-07 at the close of the small-model campaign, fo
 
 ## The instruments, all under the ollama checkout's `tmp/`
 
-Read before tuning; replay before rerunning. Each is a TypeScript file run by Node.
+Read before tuning; replay before rerunning. Each is a TypeScript file run by Node. The ollama `tmp/` folder is ignored by git, so tracked copies of these instruments sit under `instruments/` beside this file, in the same `probes/` and `codex/` layout; copy them into an ollama checkout's `tmp/` to run them (`census.ts` and `tsconfig.json` belong with `store-live.test.ts`).
 
 - `tmp/probes/wire-dump.test.ts` runs one live attempt per task through the real harness and writes every `/api/chat` body beside its parsed result (`tmp/codex/wire/<task>-<port>/turn-NN.json`). Env: `WIRE_DUMP_TASKS`, `WIRE_DUMP_PORT`, `WIRE_DUMP_DIR`.
 - `tmp/codex/wire-replay.ts FILE [--port P] [--log LOG --turn N] [--think true] [--presence X] [--repeat X] [--predict N] [--raw]` re-sends one dumped turn, or the conversation before the N-th assistant turn of an attempt log under the dump's system message and tools, and prints thinking, content, calls, the stop reason, and the token counts. `--port` rewrites every loopback port, so another port's decision can be re-sent byte for byte.
