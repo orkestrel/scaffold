@@ -1,0 +1,1628 @@
+commit 565ab1051cb878e189aff2e5a159fd76e101f6b3
+Author: Claude <noreply@anthropic.com>
+Date:   Wed Oct 7 17:07:53 2026 +0000
+
+    Add the sortable list by pointer and keyboard, the second native module (unit Drag 1)
+    
+    src/browser/drags/ (Drag, createDrag, createDragPlugin, DRAG_EVENTS with
+    start, move, and end, each cancelable where the brief says) routes the
+    native drag events and keydown from [data-vn-drag] > * to the parent
+    host; the move uses Element.moveBefore with insertBefore as the fallback,
+    so an item keeps its state and focus; a drop from outside the host, a
+    grab outside the handle, and a grab on a control are refused; a live
+    region reads the position. The module writes the state attributes
+    data-vn-dragging and data-vn-insert and renders nothing; the showcase's
+    Native group renders them through Bootstrap utility classes from a
+    MutationObserver in Showcase.start. Proofs under Chromium 141 and 153;
+    the Escape-during-native-drag reading is a recorded departure.
+    
+    Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_017fwYCgxCd9JhL43kVBLBJV
+
+diff --git a/ROADMAP.md b/ROADMAP.md
+index 5dce704..310d1ef 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -142,7 +142,7 @@ Work each chunk in its own tree. A change to a contract another tree consumes mi
+ - Bootstrap cascade in `src/bootstrap`, in two stages. First the drop-in, landed 2026-10-01: the partials hold the exported CSS of `bootstrap.css` region by region in the file order of `scss/bootstrap.scss`, `_utilities.scss` holds the utilities as a map and a schedule, and the `$layered: false` compile is byte-equal to `bootstrap.css` after the round trip (link 1 green with its controls). Then the lift, landed 2026-10-01: every `!important` moves through `unlayer`, link 3 is green with its controls, no declaration stays inside the layer under the "unless pivotal" clause (importance precedes layer order and Bootstrap declares no `revert-layer`, `@property`, or `@font-face`, so no resolution among its own rules changes, as link 3 and the collision witnesses pin; the conformance precondition reads no rule with one property at both priorities, so CSSOM's duplicate collapse cannot differ between the forms), and the guide's departure table is empty and read by the placement proof in both directions. The drop-in stage also grew the registry to every `--bs-*` name `bootstrap.css` declares and pinned it against the inventory and the built sheet in both directions. Then the class registry, landed 2026-10-01: `CLASS_NAMES.bootstrap` holds the 2025 names under the category law of § Published faces, generated once from the inventory and the engine fixture `tests/fixtures/bootstrap/engine.json` by a temporary instrument, and pinned both ways to the inventory, the built sheet, and the bundled sheet.
+ - Tailwind map and compatibility sheet in `src/tailwindcss`, landed 2026-10-01: map Tailwind; do not recreate it. The chunk pins the compiler at `4.3.3` as a `devDependency` because `conformance` drives it, commits the lossless record and the comparison (209 shared names, 295 correspondences, 2598 preflight rows, 139 similar pairs, 2326 incompatible rows, measured 2026-10-01), withheld every Bootstrap class name from real Tailwind through the sheet's exclusion statement and reverted each normal preflight declaration inside `base` until the flip, derives the relationships in Chromium, and proves the recipe from a packed install; unit A7 read the whole suite on 2026-10-05 at `3f8a870` on the cloud host (src:core, app:core, src:styles, src:vue, app:vue, journey:vue, config, and distribution, every case passing, both packed `./tailwindcss/scss` cases among them; scaffold `.orkestrel/veneer/tailwind-flip/units/tokens-landing/gates-3f8a870-a7.txt`), the `properties` placement rule of § Cascade contract, and the layer disjointness. One falsify round with two lanes and its fix unit closed the chunk. The Tailwind flip of 2026-10-04 reverses the authority at the user's ruling of that date: Tailwind wins at every conflict, `./tailwindcss` is Bootstrap for Tailwind built from the `src/bootstrap` partials under the `$withhold`, `$reset`, `$curated`, `$restored`, and `$scoped` switches, the exclusion names the 1833 Bootstrap names outside the 192 shared utility names, the reboot's element rules move to `reset`, the guide's curation table replaces the reverted preflight, `preflight.json` regenerates to 2595 rows with its `chromium` field, and `incompatible.json` re-derives to 1870 rows over 22 names under the raw composition, both measured 2026-10-04 in Chromium 141. The token round, landed 2026-10-05 in the units T1 to T4 under the user's ruling of 2026-10-04, gives Bootstrap's design tokens Tailwind's values under `./tailwindcss`: the `$palette` and `$scale` switches carry the `tests/fixtures/tailwindcss/tokens.json` record (126 palette rows, 26 scale rows, 27 kept rows, and 105 amount rows) into the `swatch` and `measure` functions of the `src/bootstrap` partials, colors are the sRGB hex `palette.json` records as Chromium 141 serializes the installed theme, the font stacks, radii, and shadows are `var()` references to Tailwind's theme, and the breakpoints and container widths take Tailwind's `40rem` to `96rem` while the fluid type cap and the modal widths stay. The `./bootstrap` sheet keeps SHA-256 `7932f7a573bbacf39037481c0e0bbc94a0de59c029b4d494fd1956f301c6d49f`, the tuned sheet reads `9a20b9662d0ee44abc317e2fbd31d16e1f81e46de9be4166e865c846b659edeb` with the map on, `preflight.json` regenerates to 2793 rows against the tuned sheet alone, and the guide's Token map subsection carries the token table its guide case pins to the record.
+ - Showcase in `app/browser` and `tests/app/browser`, landed 2026-10-02, with its statecharts and tuned journeys on 2026-10-03 at `43ca8a0`: `showcase/browser.html` shows every `CLASS_NAMES.bootstrap` name, routed by the ordered `OWNERSHIP` table to a generated utility matrix or a section fragment, on Bootstrap's own classes with no extra stylesheet, under two faces over the same markup until the flip: Bootstrap only, and a Tailwind face that inserted the committed compile `app/browser/recipe.json` of the exact three-line recipe before the same Bootstrap sheet. The authored page carries no `style` attribute at rest; the engine's placement writes inline styles on the reference, the panel, and the arrow while a placed component is open, as Popper does. The `conformance` project pins that record to live compiles, so app code imports neither `tailwindcss` nor `bootstrap`; `bootstrap-icons` is pinned at `1.13.1` as a `devDependency` for the icons components carry. Every specimen is interactive: native controls work with no script, the `Showcase` entity keeps a placeholder link and a specimen form from navigating, `app/browser/main.ts` runs `createVeneer` over the whole document with `createBootstrapPlugins()` and both tip boot opt-ins, the component sections carry Bootstrap's `data-bs-*` attributes, the live carousels carry `slide`, a focusable `.disabled` trigger for each refusing family sits on the engine's routes, the specimens that show a frozen engine state stay static and off the engine's routes, and the Live components section of the Interactions group gathers one example of each plugin. The header statecharts drive the face and the color mode, and the tables the `COMPONENT_TABLES` constant lists drive the engine families through their controls; the page uses no `dark:` utility, and browse runs stay exploratory. The showcase falsify round of 2026-10-03 ruled `FAIL` at `419245d`: its `showcase-page` unit landed at `7593cfe`, `showcase-proofs` landed on 2026-10-03 at `3807993`, `608d646`, and `4929856`, and `showcase-guide` closed on 2026-10-06 with unit B5 of the Tailwind completion re-triage. The guide's Showcase section states the faces, the pins, and the limits. The Tailwind flip of 2026-10-04 gives the page three faces, Bootstrap only, Tailwind without the layer, and Tailwind with the layer, with nine face statechart rows; the Tailwind group holds 27 specimens read under each face, four of them the token round's, a partition of the shared names replaces the face-invariance proof, and the chrome replaces `h-100`, the card-body `w-100`, `gap-3`, `rounded`, and `border` with Bootstrap-only names. The journey run-cost unit of 2026-10-05, layer 1 of the run-cost verdict in scaffold `.orkestrel/veneer/showcase/journey-cost-2026-10-05/`, cuts the four journey variants' run time without changing their rows, lines, or Journal: the preservation and partition halves run per width in `dark-390` behind a selector-major match, a recorder-proved selector cache, a preservation index, and a signature scan, the matched-map memo is keyed by rules map, element, and Bootstrap reading, and the engine cases read paired states through one set reader; measured on the cloud host against the J-B0 baselines of that date, the slower of two acceptance runs reads 496.2 s runner elapsed against 915.5 and 1061.4 s (`tmp/units/journey-cost/runs/accept4-*`), and the scrollspy polls stay as they were because their candidate read a loss. Showcase containment, landed 2026-10-05: specimen markup keeps one geometry under the three faces; the 16 percentage names stay in the Sizing matrix and the Position utilities section, whose frames clip; the containment, z-index, progress, and section proofs pin it. The showcase redesign of 2026-10-06 (scaffold `.orkestrel/veneer/showcase/redesign-2026-10-06/`) folds the Contents index into an overlay drawer under `lg` from a header disclosure with no engine, isolates the specimen layers with `z-0`, and rules sections and chapters.
+-- Browser engine in `src/browser`: interactive contracts without Bootstrap JavaScript. Stage A closed on 2026-10-03 at `419245d`: `createVeneer` creates a blank scope over a document or a subtree and routes exactly the plugins its options list; `createBootstrapPlugins()` explicitly selects Bootstrap's data API, and tip boot requires `createTooltipPlugin({ boot: true })` or `createPopoverPlugin({ boot: true })`; one factory per plugin serves the alert, button, carousel, collapse, dropdown, modal, offcanvas, popover, scrollspy, tab, toast, and tooltip on Bootstrap's markup, classes, and `data-bs-*` attributes; `Placement` replaces Popper with anchor positioning in the ordinary layer; and `@orkestrel/contract` is the one runtime dependency, by the user's ruling of 2026-10-02 that the package uses it throughout. Each family proof drives Bootstrap 5.3.8's own engine as the oracle in a same-origin child frame on identical markup, and every transcript difference a family proof records matches a row of the departure table in `guides/veneer.md` § Browser entry, read in both directions; the composition proof drives every plugin on one page without an oracle, and the distribution proof finds no Bootstrap, Popper, or Vue in the packed browser graph. The browser proofs run in Chromium 153.0.8010.12 through Playwright 1.63.0. Measured on 2026-10-03 on the `veneer-boot` branch that `419245d` merges: `npm test` exits 0 with 1,897 passed, 2 skipped, and 1 todo, and distribution passes 17 with 7 skipped. The carousel fix of 2026-10-03 at `8f6c998` keeps a slide in flight through `pause`, as Bootstrap 5.3.8 does; on Windows its gates pass `src:browser` 783, `app:browser` 226, and the journey 60 of 60. The native track follows the user’s ruling of 2026-10-07: build only concepts with no Bootstrap counterpart, from scratch in separate modules behind explicit composition. The copy button opens the track in `src/browser/copiers`, with `createCopierPlugin()` composed by the showcase for its Tailwind recipe. The Bootstrap root files remain unchanged except for the module barrel export. The module proofs cover native command routing, clipboard writes and real paste, prevention, rejection, teardown, and purity; the showcase journey reads the recipe copy under every face. See `guides/veneer.md` § Native surfaces.
++- Browser engine in `src/browser`: interactive contracts without Bootstrap JavaScript. Stage A closed on 2026-10-03 at `419245d`: `createVeneer` creates a blank scope over a document or a subtree and routes exactly the plugins its options list; `createBootstrapPlugins()` explicitly selects Bootstrap's data API, and tip boot requires `createTooltipPlugin({ boot: true })` or `createPopoverPlugin({ boot: true })`; one factory per plugin serves the alert, button, carousel, collapse, dropdown, modal, offcanvas, popover, scrollspy, tab, toast, and tooltip on Bootstrap's markup, classes, and `data-bs-*` attributes; `Placement` replaces Popper with anchor positioning in the ordinary layer; and `@orkestrel/contract` is the one runtime dependency, by the user's ruling of 2026-10-02 that the package uses it throughout. Each family proof drives Bootstrap 5.3.8's own engine as the oracle in a same-origin child frame on identical markup, and every transcript difference a family proof records matches a row of the departure table in `guides/veneer.md` § Browser entry, read in both directions; the composition proof drives every plugin on one page without an oracle, and the distribution proof finds no Bootstrap, Popper, or Vue in the packed browser graph. The browser proofs run in Chromium 153.0.8010.12 through Playwright 1.63.0. Measured on 2026-10-03 on the `veneer-boot` branch that `419245d` merges: `npm test` exits 0 with 1,897 passed, 2 skipped, and 1 todo, and distribution passes 17 with 7 skipped. The carousel fix of 2026-10-03 at `8f6c998` keeps a slide in flight through `pause`, as Bootstrap 5.3.8 does; on Windows its gates pass `src:browser` 783, `app:browser` 226, and the journey 60 of 60. The native track follows the user’s ruling of 2026-10-07: build only concepts with no Bootstrap counterpart, from scratch in separate modules behind explicit composition. The copy button opens the track in `src/browser/copiers`, with `createCopierPlugin()` composed by the showcase for its Tailwind recipe. The Bootstrap root files remain unchanged except for the module barrel export. The module proofs cover native command routing, clipboard writes and real paste, prevention, rejection, teardown, and purity; the showcase journey reads the recipe copy under every face. The sortable list follows in `src/browser/drags`, composed through `createDragPlugin()` for the Native group’s dispatch-priority specimen. It reorders within one host by native pointer drag or Alt+Arrow keys, preserves state through `moveBefore`, and announces the position in an owned polite output. Its proofs cover move prevention, handle and control refusals, external and cross-host refusal, nested-child boundaries, Escape, focus, and purity. Group transfer remains Drag 2. See `guides/veneer.md` § Native surfaces.
+ - Veneer styles in `src/styles`: tokens and Veneer rules only. Do not copy the Bootstrap cascade or the Tailwind map. The chunk declares the first `--vn-*` token, adds the `veneer` token group and the `veneer` class groups with two-way pins, fills the default theme pack. The styles chunk opens after the browser engine's stage B. Its open decisions D-1 to D-7, D-9, D-10, and D-11 and the identity values I-1 to I-4 sit in the stage B verdict's W4, and the user rules them when the chunk opens.
+ - Vue composables in `src/vue`: wrap that engine. The consumer supplies Vue. The chunk declares the optional peer, externalizes `vue`, keeps `@vue/*` refused, and proves a packed consumer under npm, pnpm strict, and Yarn Plug'n'Play, plus `.` and `./browser` without Vue.
+ 
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 223d1a6..65042bd 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -51,6 +51,7 @@ export class Showcase {
+ 	#page: HTMLElement | undefined
+ 	#controller: AbortController | undefined
+ 	#observer: ResizeObserver | undefined
++	readonly #dragObservers = new Set<MutationObserver>()
+ 	readonly #toasts = new Set<ToastInterface>()
+ 	#title = ''
+ 	#attribute: string | undefined
+@@ -86,6 +87,8 @@ export class Showcase {
+ 	 * the mount. Observes the header's height to reserve its space for anchor scrolling and to place
+ 	 * the contents panel under it. The title and the root element's `data-bs-theme` and inline
+ 	 * style in place before the first start are what `destroy` restores.
++	 * Observes each native sortable host's state attributes and renders them with admitted
++	 * Bootstrap border and opacity utilities, without adding a sheet or inline style.
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -149,6 +152,25 @@ export class Showcase {
+ 		document.body.append(page)
+ 		this.#page = page
+ 		this.#controller = controller
++		for (const host of page.querySelectorAll('[data-vn-drag]')) {
++			const observer = new MutationObserver((records) => {
++				for (const item of new Set(records.map((record) => record.target))) {
++					if (!(item instanceof Element) || item.parentElement !== host) continue
++					const side = item.getAttribute('data-vn-insert')
++					item.classList.toggle('opacity-50', item.hasAttribute('data-vn-dragging'))
++					item.classList.toggle('border-top', side === 'before')
++					item.classList.toggle('border-bottom', side === 'after')
++					item.classList.toggle('border-primary', side === 'before' || side === 'after')
++					item.classList.toggle('border-2', side === 'before' || side === 'after')
++				}
++			})
++			observer.observe(host, {
++				attributes: true,
++				subtree: true,
++				attributeFilter: ['data-vn-dragging', 'data-vn-insert'],
++			})
++			this.#dragObservers.add(observer)
++		}
+ 		const header = page.querySelector('header')
+ 		if (header !== null) {
+ 			this.#observer = new ResizeObserver(() => this.#offset())
+@@ -161,7 +183,7 @@ export class Showcase {
+ 	 * Removes the page and every face's sheets, and restores the title, root theme, and inline style.
+ 	 *
+ 	 * @remarks
+-	 * Disconnects the header observer. Does nothing when the showcase is not mounted.
++	 * Disconnects the header and sortable-state observers. Does nothing when the showcase is not mounted.
+ 	 * A later `start` mounts the page again.
+ 	 *
+ 	 * @example
+@@ -179,6 +201,8 @@ export class Showcase {
+ 		this.#controller = undefined
+ 		this.#observer?.disconnect()
+ 		this.#observer = undefined
++		for (const observer of this.#dragObservers) observer.disconnect()
++		this.#dragObservers.clear()
+ 		// A factory-created component belongs to its creator, so the showcase releases the toast it made.
+ 		for (const toast of this.#toasts) toast.destroy()
+ 		this.#toasts.clear()
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 54c9a2a..8709c05 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -64,9 +64,12 @@ export const BREAKPOINTS: readonly Breakpoint[] = Object.freeze([
+ 	'print',
+ ])
+ 
++/** Names the group whose surfaces have no Bootstrap registry ownership. */
++export const NATIVE_GROUP = 'native'
++
+ /**
+  * Lists the page groups in Bootstrap's documentation order, then the engine-state, interaction, and
+- * Tailwind groups.
++ * native and Tailwind groups.
+  *
+  * @example
+  * ```ts
+@@ -82,6 +85,7 @@ export const GROUPS: readonly Group[] = Object.freeze([
+ 	Object.freeze({ id: 'utilities', title: 'Utilities' }),
+ 	Object.freeze({ id: 'engine', title: 'Engine states' }),
+ 	Object.freeze({ id: 'interactions', title: 'Interactions' }),
++	Object.freeze({ id: NATIVE_GROUP, title: 'Native' }),
+ 	Object.freeze({ id: 'tailwindcss', title: 'Tailwind' }),
+ ])
+ 
+@@ -527,6 +531,12 @@ export const SECTIONS: readonly Section[] = Object.freeze([
+ 		group: 'interactions',
+ 		lead: 'Feedback, disclosure, overlays, and motion on Bootstrap markup, driven by the Veneer engine.',
+ 	}),
++	Object.freeze({
++		id: 'sortable-list',
++		title: 'Sortable list',
++		group: NATIVE_GROUP,
++		lead: 'Reorder dispatch priorities with a grip, or focus a grip and press Alt + Arrow Up or Down.',
++	}),
+ 	Object.freeze({
+ 		id: 'tailwindcss',
+ 		title: 'Tailwind on Bootstrap markup',
+diff --git a/app/browser/main.ts b/app/browser/main.ts
+index 819e4f5..5479b01 100644
+--- a/app/browser/main.ts
++++ b/app/browser/main.ts
+@@ -4,6 +4,7 @@ import {
+ 	createTooltipPlugin,
+ 	createPopoverPlugin,
+ 	createCopierPlugin,
++	createDragPlugin,
+ } from '@src/browser'
+ import { Showcase } from './Showcase.js'
+ 
+@@ -14,6 +15,7 @@ createVeneer(document, {
+ 		createTooltipPlugin({ boot: true }),
+ 		createPopoverPlugin({ boot: true }),
+ 		createCopierPlugin(),
++		createDragPlugin(),
+ 	],
+ })
+ window.addEventListener('pagehide', () => createVeneer(document).destroy(), { once: true })
+diff --git a/app/browser/sections/sortable-list.html b/app/browser/sections/sortable-list.html
+new file mode 100644
+index 0000000..1818ece
+--- /dev/null
++++ b/app/browser/sections/sortable-list.html
+@@ -0,0 +1,92 @@
++<div class="row row-cols-1 g-3">
++	<div class="col d-flex">
++		<figure class="card flex-fill mb-0" aria-labelledby="native-priorities-title">
++			<div class="card-body">
++				<div class="list-group" data-vn-drag role="list" aria-label="Dispatch priorities">
++					<div
++						class="list-group-item d-flex align-items-center column-gap-3"
++						role="listitem"
++						aria-label="Review orders"
++					>
++						<button
++							type="button"
++							class="btn btn-link text-body"
++							draggable="true"
++							aria-label="Move Review orders"
++						>
++							<span aria-hidden="true">⠿</span>
++						</button>
++						<span>Review orders</span>
++					</div>
++					<div
++						class="list-group-item d-flex align-items-center column-gap-3"
++						role="listitem"
++						aria-label="Prepare labels"
++					>
++						<button
++							type="button"
++							class="btn btn-link text-body"
++							draggable="true"
++							aria-label="Move Prepare labels"
++						>
++							<span aria-hidden="true">⠿</span>
++						</button>
++						<span>Prepare labels</span>
++					</div>
++					<div
++						class="list-group-item d-flex align-items-center column-gap-3"
++						role="listitem"
++						aria-label="Pack parcels"
++					>
++						<button
++							type="button"
++							class="btn btn-link text-body"
++							draggable="true"
++							aria-label="Move Pack parcels"
++						>
++							<span aria-hidden="true">⠿</span>
++						</button>
++						<span>Pack parcels</span>
++					</div>
++					<div
++						class="list-group-item d-flex align-items-center column-gap-3"
++						role="listitem"
++						aria-label="Book collection"
++					>
++						<button
++							type="button"
++							class="btn btn-link text-body"
++							draggable="true"
++							aria-label="Move Book collection"
++						>
++							<span aria-hidden="true">⠿</span>
++						</button>
++						<span>Book collection</span>
++					</div>
++					<div
++						class="list-group-item d-flex align-items-center column-gap-3"
++						role="listitem"
++						aria-label="Confirm dispatch"
++					>
++						<button
++							type="button"
++							class="btn btn-link text-body"
++							draggable="true"
++							aria-label="Move Confirm dispatch"
++						>
++							<span aria-hidden="true">⠿</span>
++						</button>
++						<span>Confirm dispatch</span>
++					</div>
++				</div>
++			</div>
++			<figcaption class="card-footer bg-transparent small">
++				<span id="native-priorities-title" class="d-block fw-semibold">Dispatch priorities</span>
++				<span class="d-block text-body-secondary"
++					>Drag a grip to reorder. Focus a grip and use Alt + Arrow Up or Down; the position is
++					announced after each move.</span
++				>
++			</figcaption>
++		</figure>
++	</div>
++</div>
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7f2bc2d..b7af228 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -297,19 +297,35 @@ The browser surface publishes the engine's typed contracts, the plugin families,
+ 
+ Import native surfaces from `@orkestrel/veneer/browser`; compose each plugin explicitly.
+ 
+-| Name                 | Kind      | Summary                                                              |
+-| -------------------- | --------- | -------------------------------------------------------------------- |
+-| `Copier`             | class     | Owns a host's cancelable clipboard writes and result notifications.  |
+-| `CopierInterface`    | interface | Describes a host whose text can be copied to the clipboard.          |
+-| `CopierOptions`      | interface | Configures the initial copy and result hooks.                        |
+-| `CopierEventMap`     | interface | Maps copy notifications to their payloads.                           |
+-| `COPIER_EVENTS`      | const     | Maps copy hooks to their wire events.                                |
+-| `COPIER_DEFAULTS`    | const     | Supplies copy options with no initial hooks.                         |
+-| `createCopier`       | function  | Creates or returns the registered copy controller for a text host.   |
+-| `createCopierPlugin` | function  | Creates the copy plugin without registering components or listeners. |
++| Name                 | Kind      | Summary                                                                         |
++| -------------------- | --------- | ------------------------------------------------------------------------------- |
++| `Copier`             | class     | Owns a host's cancelable clipboard writes and result notifications.             |
++| `CopierInterface`    | interface | Describes a host whose text can be copied to the clipboard.                     |
++| `CopierOptions`      | interface | Configures the initial copy and result hooks.                                   |
++| `CopierEventMap`     | interface | Maps copy notifications to their payloads.                                      |
++| `COPIER_EVENTS`      | const     | Maps copy hooks to their wire events.                                           |
++| `COPIER_DEFAULTS`    | const     | Supplies copy options with no initial hooks.                                    |
++| `createCopier`       | function  | Creates or returns the registered copy controller for a text host.              |
++| `createCopierPlugin` | function  | Creates the copy plugin without registering components or listeners.            |
++| `Drag`               | class     | Owns a list's native drag session, cancelable moves, and position announcement. |
++| `DragInterface`      | interface | Describes a list controller that receives native pointer and keyboard input.    |
++| `DragOptions`        | interface | Configures the initial sortable-list hooks.                                     |
++| `DragEventMap`       | interface | Maps sortable-list notifications to their payloads.                             |
++| `DRAG_EVENTS`        | const     | Maps sortable-list hooks to their wire events.                                  |
++| `DRAG_DEFAULTS`      | const     | Supplies sortable-list options with no initial hooks.                           |
++| `createDrag`         | function  | Creates or returns the registered sortable-list controller for a host.          |
++| `createDragPlugin`   | function  | Creates the sortable-list plugin without registering components or listeners.   |
+ 
+ ## Methods
+ 
++#### `DragInterface`
++
++| Method    | Returns | Summary                                                       |
++| --------- | ------- | ------------------------------------------------------------- |
++| `receive` | `void`  | Routes native input for a direct child of the list.           |
++| `end`     | `void`  | Ends an outstanding drag without moving its item.             |
++| `destroy` | `void`  | Tears the component down and releases every resource it owns. |
++
+ #### `CopierInterface`
+ 
+ | Method    | Returns         | Summary                                                                                     |
+@@ -1011,12 +1027,89 @@ The [purity proof](../tests/src/browser/copiers/index.test.ts) reads the root so
+ Bootstrap plugin order. The [factory proof](../tests/src/browser/copiers/factories.test.ts) checks
+ configured identity and replacement after destruction.
+ 
++### Sortable list
++
++Compose `createDragPlugin()` to boot each `[data-vn-drag]` host. Its direct children are the
++items; the controller appends one `output[aria-live="polite"]` with the accessible name
++`Sort status`, which it excludes from item indexes and removes on teardown. Use a `div`
++host with `role="list"` and children with `role="listitem"` when the output shares the host.
++The `data-vn-drag` value is reserved for a later group-transfer unit. Drag 1 reads only its
++presence and exchanges nothing between hosts, including hosts whose values match.
++
++Write `draggable="true"` on each item or on its grip handle. The module never adds or removes
++that attribute. A handle limits the grab to that handle and uses the whole item's drag image
++at the grab offset. An `input`, `textarea`, `select`, `button`, `a[href]`, or `contenteditable`
++descendant refuses a grab unless it is the handle. Give an item `tabindex="0"`, or use a
++focusable handle such as a button. This markup supplies a handle and a keyboard focus stop.
++
++```text
++<div data-vn-drag class="list-group" role="list" aria-label="Priorities">
++	<div class="list-group-item" role="listitem">
++		<button type="button" draggable="true" aria-label="Move Review orders">⠿</button>
++		Review orders
++	</div>
++	<div class="list-group-item" role="listitem">
++		<button type="button" draggable="true" aria-label="Move Prepare labels">⠿</button>
++		Prepare labels
++	</div>
++</div>
++```
++
++Alt+ArrowUp and Alt+ArrowDown move the focused item one place without wrapping. A row axis
++uses Alt+ArrowLeft and Alt+ArrowRight. The host's computed flex direction, writing mode, and
++direction determine the axis and its orientation. Other modifiers and composing input leave
++the list alone. Each completed move keeps focus and announces `Moved to position N of M`,
++where `N` is the item's one-based position and `M` counts the authored items.
++
++The pointer path accepts only a session that started in the same host. It sets both transfer
++effects to `move`, writes no payload, and refuses external text and files. The target's midpoint
++chooses the insertion side; `data-vn-insert="before"` or `"after"` changes only when the target
++or side changes. A leave across a nested child keeps the insertion state. A leave out of the host
++clears it. A drop outside, Escape, or a refused move ends without a DOM move.
++
++The host receives these events through the shared `emitEvent` dispatcher.
++
++| Event           | Detail                     | Behavior                                                                                                                                                                                                                                                                                            |
++| --------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `start.vn.drag` | `item`                     | Fires before a pointer or keyboard grab. Prevention refuses the grab.                                                                                                                                                                                                                               |
++| `move.vn.drag`  | `item`, `from`, `to`, `by` | Fires before each DOM move. The indexes are zero-based; `from` is the old index and `to` is the insertion index after removing the item from its old slot. `by` is `pointer` or `keyboard`. Prevention leaves the DOM unchanged, so a data-owning application can prevent and render its own order. |
++| `end.vn.drag`   | `item`, `moved`            | Fires after an admitted session ends, including a refused drop or native `dragend`. `moved` reports whether the controller moved the item.                                                                                                                                                          |
++
++The move uses the platform's state-preserving `moveBefore` method, with `insertBefore` and
++focus restoration when that method is absent. See the [DOM move contract](https://dom.spec.whatwg.org/#dom-parentnode-movebefore).
++The fallback preserves the node's value and restores focus but cannot promise every state
++preserved by an atomic move. The controller holds no listeners itself: its plugin routes
++`pointerdown`, the native drag events, and `keydown` through the scope. `receive(event, item)`
++is the same input boundary for an explicit `createDrag(host)` consumer that owns routing.
++
++The module writes `data-vn-dragging` on the source and `data-vn-insert` on the target;
++it does not paint those states. A consumer renders them. The showcase's
++`Showcase.start` in `app/browser/Showcase.ts` observes those two attributes on each host
++and toggles Bootstrap utilities on direct-child items: `opacity-50` for the source,
++`border-top border-primary border-2` for `before`, and
++`border-bottom border-primary border-2` for `after`. Removing a state attribute removes
++its utilities. Teardown disconnects each observer. These utility classes already belong to
++the Bootstrap registry admitted by the section proof; the Native group owns no new class family.
++The grip button supplies the affordance. The showcase adds no stylesheet, cursor rule,
++touch-action rule, or style attribute for dragging.
++
++The [module proofs](../tests/src/browser/drags/Drag.test.ts) drive real pointer input and keys,
++read prevention and grab refusals, verify event indexes and position text, and retain an edited
++input's value and focus through `moveBefore`. The [routing proofs](../tests/src/browser/drags/plugins.test.ts)
++read native listener acquisition and release, external and cross-host refusals, a real nested-child
++crossing, and Escape during a native drag. The [purity proof](../tests/src/browser/drags/index.test.ts)
++reads every Bootstrap root source file and pins the Bootstrap plugin order. The
++[factory proof](../tests/src/browser/drags/factories.test.ts) covers configured identity and owned-output
++cleanup. Touch dragging on Android is not established by these desktop Chromium proofs.
++
+ ### Native departures
+ 
+-The copy button has no Bootstrap counterpart and no departure from a Bootstrap contract.
++The copy button and sortable list have no Bootstrap counterparts. The sortable list has this
++platform-input departure in the desktop proof.
+ 
+-| Scenario | Path | Bootstrap | Engine | Reason | Proof |
+-| -------- | ---- | --------- | ------ | ------ | ----- |
++| Scenario                                            | Path                         | Bootstrap      | Engine                                                                            | Reason                                                                                                                                                                                                                | Proof                                                                                                                                                                                  |
++| --------------------------------------------------- | ---------------------------- | -------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| Escape during native dragging, Chromium 141 and 153 | CDP mouse and raw Escape key | No counterpart | No document `keydown`; native cancellation ends on `dragend` with `moved: false`. | The injected key reaches no document listener and does not cancel this session. The proof then explicitly sends the browser protocol’s `dragCancel`; physical Escape cancellation is not established by that reading. | `keeps the indicator across a real nested-child crossing and reads swallowed Escape before native cancellation`; see the [routing proofs](../tests/src/browser/drags/plugins.test.ts). |
+ 
+ ## Vue entry
+ 
+@@ -2172,7 +2265,7 @@ case pins; the later Contents subsection states the drawer. The showcase writes
+ from the header's measured height, which the later Header subsection states.
+ 
+ The `GROUPS` constant in the `app/browser/constants.ts` file orders the page in these groups: Layout,
+-Content, Forms, Components, Helpers, Utilities, Engine states, Interactions, and Tailwind. The
++Content, Forms, Components, Helpers, Utilities, Engine states, Interactions, Native, and Tailwind. The
+ `SECTIONS` constant lists every section of those groups in page order, and the
+ `reads resolved values, Tailwind readings, the census, and contrast under its declared variant`
+ case reads the rendered groups that precede the Tailwind group, and their sections, in that order.
+@@ -2640,9 +2733,10 @@ directory out, so the published package carries none of that weight.
+ 
+ ### Interaction
+ 
+-| Specimen        | Control                                                                         | Result                                                                                        | Case                                                                  |
+-| --------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+-| Tailwind recipe | `Copy recipe`, composed through `createCopierPlugin()` in `app/browser/main.ts` | A polite `Copy status` output reads `Copied` after success and `Copy failed` after rejection. | `copies the Tailwind recipe through the copy button under every face` |
++| Specimen             | Control                                                                                        | Result                                                                                                                                                                                                  | Case                                                                         |
++| -------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
++| Tailwind recipe      | `Copy recipe`, composed through `createCopierPlugin()` in `app/browser/main.ts`                | A polite `Copy status` output reads `Copied` after success and `Copy failed` after rejection.                                                                                                           | `copies the Tailwind recipe through the copy button under every face`        |
++| Native sortable list | The `Dispatch priorities` list, composed through `createDragPlugin()` in `app/browser/main.ts` | A grip moves a row by pointer or Alt+ArrowUp/Down; the owned `Sort status` output announces its position. The showcase adapter renders the module's state attributes with admitted Bootstrap utilities. | `reorders the native sortable list by pointer and keyboard under every face` |
+ 
+ The [browser journey](../tests/app/browser/integration.test.ts) clicks the recipe's copy button
+ under each face, reads the live status, and pastes into a temporary textarea with Control+V to
+diff --git a/src/browser/drags/Drag.ts b/src/browser/drags/Drag.ts
+new file mode 100644
+index 0000000..aca5a09
+--- /dev/null
++++ b/src/browser/drags/Drag.ts
+@@ -0,0 +1,286 @@
++import type { ComponentContext } from '../types.js'
++import type { DragInterface, DragOptions } from './types.js'
++import { bindEventMap, emitEvent } from '../helpers.js'
++import { DRAG_DEFAULTS, DRAG_EVENTS } from './constants.js'
++
++/** Owns a list's native drag session, cancelable moves, and position announcement. */
++export class Drag implements DragInterface {
++	#element: HTMLElement
++	#context: ComponentContext<Drag>
++	#lifetime = new AbortController()
++	#unbind: () => void
++	#output: HTMLOutputElement
++	#item: HTMLElement | undefined
++	#indicator: HTMLElement | undefined
++	#pressed: Element | undefined
++	#receiving = false
++
++	/**
++	 * Registers a list and appends its owned polite position output.
++	 * @param element - List whose direct children are sortable items.
++	 * @param context - Registry ownership for this component kind.
++	 * @param options - Initial lifecycle hooks.
++	 */
++	constructor(
++		element: HTMLElement,
++		context: ComponentContext<Drag>,
++		options: DragOptions = DRAG_DEFAULTS,
++	) {
++		this.#element = element
++		this.#context = context
++		context.own(this)
++		this.#unbind = bindEventMap(element, DRAG_EVENTS, options.on)
++		this.#output = element.ownerDocument.createElement('output')
++		this.#output.setAttribute('aria-live', 'polite')
++		this.#output.setAttribute('aria-atomic', 'true')
++		this.#output.setAttribute('aria-label', 'Sort status')
++		element.append(this.#output)
++	}
++
++	/** Returns the sortable-list host. */
++	get element(): HTMLElement {
++		return this.#element
++	}
++
++	/** Reports whether teardown ran. */
++	get destroyed(): boolean {
++		return this.#lifetime.signal.aborted
++	}
++
++	/**
++	 * Routes native input for a direct child of the list.
++	 * @param event - Pointer, drag, or keyboard input.
++	 * @param item - Direct child the router matched.
++	 */
++	receive(event: Event, item: HTMLElement): void {
++		if (
++			this.destroyed ||
++			this.#receiving ||
++			item.parentElement !== this.#element ||
++			item === this.#output
++		)
++			return
++		this.#receiving = true
++		try {
++			const realm = this.#element.ownerDocument.defaultView ?? window
++			if (event instanceof realm.PointerEvent && event.type === 'pointerdown') {
++				this.#pressed = event.target instanceof realm.Element ? event.target : undefined
++			} else if (event instanceof realm.KeyboardEvent) {
++				this.#keyboard(event, item)
++			} else if (event instanceof realm.DragEvent) {
++				if (event.type === 'dragstart') this.#start(event, item)
++				else if (event.type === 'dragend') this.end()
++				else if (this.#item?.parentElement === this.#element) {
++					if (event.type === 'dragleave') {
++						if (
++							!(event.relatedTarget instanceof realm.Node) ||
++							!this.#element.contains(event.relatedTarget)
++						)
++							this.#clearIndicator()
++					} else if (event.type === 'drop') {
++						event.preventDefault()
++						this.#finish(this.#move(item, event))
++					} else if (event.type === 'dragenter' || event.type === 'dragover') {
++						event.preventDefault()
++						if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
++						this.#indicate(item, event)
++					}
++				}
++			}
++		} finally {
++			this.#receiving = false
++		}
++	}
++
++	/** Ends an outstanding drag without moving its item. */
++	end(): void {
++		this.#pressed = undefined
++		this.#finish(false)
++	}
++
++	/** Releases hooks, the live output, drag state, and registry ownership. */
++	destroy(): void {
++		if (this.destroyed) return
++		this.#lifetime.abort()
++		this.end()
++		this.#output.remove()
++		this.#unbind()
++		this.#context.release(this)
++	}
++
++	#children(): readonly HTMLElement[] {
++		const realm = this.#element.ownerDocument.defaultView ?? window
++		return Array.from(this.#element.children).filter(
++			(child): child is HTMLElement => child instanceof realm.HTMLElement && child !== this.#output,
++		)
++	}
++
++	#axis(): { readonly horizontal: boolean; readonly reversed: boolean } {
++		const style = (this.#element.ownerDocument.defaultView ?? window).getComputedStyle(
++			this.#element,
++		)
++		const flex = style.display === 'flex' || style.display === 'inline-flex'
++		const row = flex && style.flexDirection.startsWith('row')
++		const vertical =
++			style.writingMode.startsWith('vertical') || style.writingMode.startsWith('sideways')
++		return {
++			horizontal: row !== vertical,
++			reversed:
++				(flex && style.flexDirection.endsWith('reverse')) !==
++				(row ? style.direction === 'rtl' : vertical && style.writingMode.endsWith('-rl')),
++		}
++	}
++
++	#start(event: DragEvent, item: HTMLElement): void {
++		this.#finish(false)
++		const realm = this.#element.ownerDocument.defaultView ?? window
++		const target =
++			this.#pressed ?? (event.target instanceof realm.Element ? event.target : undefined)
++		this.#pressed = undefined
++		const handle = target?.closest('[draggable="true"]')
++		const control = target?.closest(
++			'input, textarea, select, button, a[href], [contenteditable]:not([contenteditable="false"])',
++		)
++		if (
++			!handle ||
++			(handle !== item && !item.contains(handle)) ||
++			(handle === item && item.querySelector('[draggable="true"]')) ||
++			(control && control !== item && control !== handle)
++		) {
++			event.preventDefault()
++			return
++		}
++		if (
++			emitEvent(this.#element, DRAG_EVENTS.start, { item }).defaultPrevented ||
++			this.destroyed ||
++			item.parentElement !== this.#element
++		) {
++			event.preventDefault()
++			return
++		}
++		this.#item = item
++		if (event.dataTransfer) {
++			event.dataTransfer.effectAllowed = 'move'
++			event.dataTransfer.dropEffect = 'move'
++			const box = item.getBoundingClientRect()
++			event.dataTransfer.setDragImage(item, event.clientX - box.left, event.clientY - box.top)
++		}
++		item.setAttribute('data-vn-dragging', '')
++	}
++
++	#side(item: HTMLElement, event: DragEvent): 'before' | 'after' {
++		const { horizontal, reversed } = this.#axis()
++		const box = item.getBoundingClientRect()
++		const before = horizontal
++			? event.clientX < box.left + box.width / 2
++			: event.clientY < box.top + box.height / 2
++		return before !== reversed ? 'before' : 'after'
++	}
++
++	#indicate(item: HTMLElement, event: DragEvent): void {
++		if (item === this.#item) {
++			this.#clearIndicator()
++			return
++		}
++		const side = this.#side(item, event)
++		if (this.#indicator === item && item.getAttribute('data-vn-insert') === side) return
++		this.#clearIndicator()
++		this.#indicator = item
++		item.setAttribute('data-vn-insert', side)
++	}
++
++	#move(target: HTMLElement, event: DragEvent): boolean {
++		const item = this.#item
++		if (!item || item === target) return false
++		const remaining = this.#children().filter((child) => child !== item)
++		const index = remaining.indexOf(target)
++		return (
++			index !== -1 &&
++			this.#relocate(item, index + (this.#side(target, event) === 'after' ? 1 : 0), 'pointer')
++		)
++	}
++
++	#keyboard(event: KeyboardEvent, item: HTMLElement): void {
++		if (event.key === 'Escape') {
++			this.end()
++			return
++		}
++		if (
++			!event.altKey ||
++			event.ctrlKey ||
++			event.metaKey ||
++			event.shiftKey ||
++			event.isComposing ||
++			this.#item
++		)
++			return
++		const target = event.target
++		const realm = this.#element.ownerDocument.defaultView ?? window
++		if (
++			!(target instanceof realm.HTMLElement) ||
++			(target !== item && target.getAttribute('draggable') !== 'true')
++		)
++			return
++		if (item.getAttribute('draggable') !== 'true' && !item.querySelector('[draggable="true"]'))
++			return
++		const { horizontal, reversed } = this.#axis()
++		const previous = horizontal ? 'ArrowLeft' : 'ArrowUp'
++		const next = horizontal ? 'ArrowRight' : 'ArrowDown'
++		if (event.key !== previous && event.key !== next) return
++		event.preventDefault()
++		const children = this.#children()
++		const to = children.indexOf(item) + ((event.key === next) !== reversed ? 1 : -1)
++		if (to < 0 || to >= children.length) return
++		if (
++			emitEvent(this.#element, DRAG_EVENTS.start, { item }).defaultPrevented ||
++			this.destroyed ||
++			item.parentElement !== this.#element
++		)
++			return
++		this.#item = item
++		this.#finish(this.#relocate(item, to, 'keyboard'))
++	}
++
++	#relocate(item: HTMLElement, to: number, by: 'pointer' | 'keyboard'): boolean {
++		const children = this.#children()
++		const from = children.indexOf(item)
++		if (from < 0 || from === to) return false
++		if (
++			emitEvent(this.#element, DRAG_EVENTS.move, { item, from, to, by }).defaultPrevented ||
++			this.destroyed ||
++			this.#item !== item
++		)
++			return false
++		// An observer that renders synchronously owns the changed order.
++		const current = this.#children()
++		if (
++			current.length !== children.length ||
++			current.some((child, index) => child !== children[index])
++		)
++			return false
++		const reference = children.filter((child) => child !== item)[to] ?? this.#output
++		const focus = this.#element.ownerDocument.activeElement
++		if (typeof this.#element.moveBefore === 'function') this.#element.moveBefore(item, reference)
++		else {
++			this.#element.insertBefore(item, reference)
++			const realm = this.#element.ownerDocument.defaultView ?? window
++			if (focus instanceof realm.HTMLElement && item.contains(focus))
++				focus.focus({ preventScroll: true })
++		}
++		this.#output.value = `Moved to position ${to + 1} of ${children.length}`
++		return true
++	}
++
++	#clearIndicator(): void {
++		this.#indicator?.removeAttribute('data-vn-insert')
++		this.#indicator = undefined
++	}
++
++	#finish(moved: boolean): void {
++		const item = this.#item
++		this.#item = undefined
++		this.#clearIndicator()
++		item?.removeAttribute('data-vn-dragging')
++		if (item && !this.destroyed) emitEvent(this.#element, DRAG_EVENTS.end, { item, moved })
++	}
++}
+diff --git a/src/browser/drags/constants.ts b/src/browser/drags/constants.ts
+new file mode 100644
+index 0000000..d8820db
+--- /dev/null
++++ b/src/browser/drags/constants.ts
+@@ -0,0 +1,11 @@
++import type { DragEventMap, DragOptions } from './types.js'
++
++/** Maps sortable-list hooks to their wire events. */
++export const DRAG_EVENTS: Readonly<Record<keyof DragEventMap, string>> = Object.freeze({
++	start: 'start.vn.drag',
++	move: 'move.vn.drag',
++	end: 'end.vn.drag',
++})
++
++/** Supplies sortable-list options with no initial hooks. */
++export const DRAG_DEFAULTS: DragOptions = Object.freeze({})
+diff --git a/src/browser/drags/factories.ts b/src/browser/drags/factories.ts
+new file mode 100644
+index 0000000..60f6853
+--- /dev/null
++++ b/src/browser/drags/factories.ts
+@@ -0,0 +1,27 @@
++import type { DragInterface, DragOptions } from './types.js'
++import { Registry } from '../Registry.js'
++import { Drag } from './Drag.js'
++import { DRAG_DEFAULTS } from './constants.js'
++import { createDragPlugin } from './plugins.js'
++
++/**
++ * Creates or returns the registered sortable-list controller for a host.
++ * @param element - List whose direct children are sortable items.
++ * @param options - Initial hooks, applied when configuring the lifetime.
++ * @returns The host's live sortable-list controller.
++ * @example
++ * const drag = createDrag(document.createElement('div'))
++ * drag.end()
++ */
++export function createDrag(
++	element: HTMLElement,
++	options: DragOptions = DRAG_DEFAULTS,
++): DragInterface {
++	const registry = new Registry(element.ownerDocument)
++	return registry.settle(
++		createDragPlugin(),
++		element,
++		options,
++		(context) => new Drag(element, context, options),
++	)
++}
+diff --git a/src/browser/drags/index.ts b/src/browser/drags/index.ts
+new file mode 100644
+index 0000000..f85ed43
+--- /dev/null
++++ b/src/browser/drags/index.ts
+@@ -0,0 +1,5 @@
++export * from './types.js'
++export * from './constants.js'
++export * from './Drag.js'
++export * from './factories.js'
++export * from './plugins.js'
+diff --git a/src/browser/drags/plugins.ts b/src/browser/drags/plugins.ts
+new file mode 100644
+index 0000000..1608a8c
+--- /dev/null
++++ b/src/browser/drags/plugins.ts
+@@ -0,0 +1,53 @@
++import type { PluginInterface } from '../types.js'
++import { isInstance } from '@orkestrel/contract'
++import { buildPlugin } from '../helpers.js'
++import { Drag } from './Drag.js'
++
++/**
++ * Creates the sortable-list plugin without registering components or listeners.
++ * @returns The frozen sortable-list plugin.
++ * @example
++ * createDragPlugin()
++ */
++export function createDragPlugin(): PluginInterface<Drag> {
++	return buildPlugin<Drag>({
++		name: 'drag',
++		is: (value): value is Drag => isInstance(value, Drag),
++		create: (element, context) => new Drag(element, context),
++		boot: { selector: '[data-vn-drag]' },
++		routes: [
++			'pointerdown',
++			'dragstart',
++			'dragenter',
++			'dragover',
++			'dragleave',
++			'drop',
++			'dragend',
++			'keydown',
++		].map((event) => ({
++			event,
++			selector: '[data-vn-drag] > *',
++			hosts: (trigger) => (trigger.parentElement ? [trigger.parentElement] : []),
++			execute: (component, interaction) => {
++				if (interaction.event) component.receive(interaction.event, interaction.trigger)
++			},
++		})),
++		clear: {
++			events: ['drop', 'dragend', 'keydown'],
++			execute: (event, context) => {
++				if (
++					event.type === 'keydown' &&
++					(!(event instanceof KeyboardEvent) || event.key !== 'Escape')
++				)
++					return
++				const target = event.target
++				const document =
++					target instanceof Node
++						? (target.ownerDocument ?? (target instanceof Document ? target : undefined))
++						: undefined
++				for (const host of document?.querySelectorAll<HTMLElement>('[data-vn-drag]') ?? [])
++					context.component(host)?.end()
++			},
++		},
++	})
++}
+diff --git a/src/browser/drags/types.ts b/src/browser/drags/types.ts
+new file mode 100644
+index 0000000..d8d4e5e
+--- /dev/null
++++ b/src/browser/drags/types.ts
+@@ -0,0 +1,30 @@
++import type { ComponentEvent, ComponentHooks, ComponentInterface } from '../types.js'
++
++/** Describes a list controller that receives native pointer and keyboard input. */
++export interface DragInterface extends ComponentInterface {
++	/** Routes native input for a direct child of the list. */
++	receive(event: Event, item: HTMLElement): void
++	/** Ends an outstanding drag without moving its item. */
++	end(): void
++}
++
++/** Maps sortable-list notifications to their payloads. */
++export interface DragEventMap {
++	/** Carries the item before a grab; prevention refuses the grab. */
++	readonly start: ComponentEvent<{ readonly item: HTMLElement }>
++	/** Carries zero-based indexes before and after a move; prevention leaves the DOM unchanged. */
++	readonly move: ComponentEvent<{
++		readonly item: HTMLElement
++		readonly from: number
++		readonly to: number
++		readonly by: 'pointer' | 'keyboard'
++	}>
++	/** Carries the item and whether the controller moved it. */
++	readonly end: ComponentEvent<{ readonly item: HTMLElement; readonly moved: boolean }>
++}
++
++/** Configures the initial sortable-list hooks. */
++export interface DragOptions {
++	/** Supplies hooks for this component lifetime. Default: none. */
++	readonly on?: ComponentHooks<DragEventMap>
++}
+diff --git a/src/browser/index.ts b/src/browser/index.ts
+index 3a7caf3..3c63767 100644
+--- a/src/browser/index.ts
++++ b/src/browser/index.ts
+@@ -26,3 +26,4 @@ export * from './Registry.js'
+ export * from './plugins.js'
+ export * from './Hold.js'
+ export * from './copiers/index.js'
++export * from './drags/index.js'
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index dcc8d4b..2d7a2ce 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -955,7 +955,7 @@ describe('Showcase', () => {
+ 			const navigations = [...panel.querySelectorAll('nav')].filter(isRendered)
+ 			expect(navigations).toHaveLength(1)
+ 			const links = [...requireValue(navigations[0]).querySelectorAll('a')]
+-			expect(links).toHaveLength(72)
++			expect(links).toHaveLength(73)
+ 			expect(links.every((link) => isRendered(link) && isReachable(link))).toBe(true)
+ 			expect(countDialogs()).toBe(0)
+ 			expect(collectOverlays()).toEqual([])
+diff --git a/tests/app/browser/constants.test.ts b/tests/app/browser/constants.test.ts
+index 5d19476..8b77f66 100644
+--- a/tests/app/browser/constants.test.ts
++++ b/tests/app/browser/constants.test.ts
+@@ -205,6 +205,7 @@ describe('SECTIONS', () => {
+ 			'Utilities',
+ 			'Engine states',
+ 			'Interactions',
++			'Native',
+ 			'Tailwind',
+ 		])
+ 		const titles = new Set(SECTIONS.map((section) => section.title))
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 7cea3ae..b9160d7 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -14,6 +14,7 @@ describe('app browser entry', () => {
+ 			'GROUPS',
+ 			'ICONS',
+ 			'NAMED_TEMPLATES',
++			'NATIVE_GROUP',
+ 			'OWNERSHIP',
+ 			'SECTIONS',
+ 			'SPECIMEN_IMAGE',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 84f2f81..74ded50 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -58,10 +58,11 @@ import {
+ 	UNDECLARED_CLASS_NAMES,
+ 	createBootstrapPlugins,
+ 	createCopierPlugin,
++	createDragPlugin,
+ 	createVeneer,
+ } from '@src/browser'
+ import { CLASS_NAMES } from '@src/core'
+-import { commands, page } from 'vitest/browser'
++import { commands, page, userEvent } from 'vitest/browser'
+ import { afterAll, afterEach, assert, beforeAll, describe, expect, inject, it } from 'vitest'
+ import {
+ 	FACES,
+@@ -234,6 +235,92 @@ afterEach(async () => {
+ })
+ 
+ describe('showcase journeys', () => {
++	it('reorders the native sortable list by pointer and keyboard under every face', async () => {
++		await buildJourney(OWN, CAPTURE)
++		const scope = createVeneer(document, {
++			plugins: [...createBootstrapPlugins(), createDragPlugin()],
++		})
++		const list = page.getByRole('list', { name: 'Dispatch priorities', exact: true }).element()
++		const painted: string[] = []
++		const observer = new MutationObserver((records) => {
++			for (const record of records) painted.push(record.oldValue ?? '')
++		})
++		observer.observe(list, {
++			attributes: true,
++			subtree: true,
++			attributeFilter: ['class'],
++			attributeOldValue: true,
++		})
++		try {
++			for (const { value: face } of FACES) {
++				await applyFace(face)
++				painted.length = 0
++				await userEvent.dragAndDrop(
++					resolveRendered('button', 'Move Review orders'),
++					resolveRendered('button', 'Move Prepare labels'),
++					{
++						targetPosition: {
++							x: 10,
++							y:
++								resolveRendered('button', 'Move Prepare labels').getBoundingClientRect().height *
++								0.75,
++						},
++					},
++				)
++				expect(painted.some((classes) => classes.split(' ').includes('opacity-50'))).toBe(true)
++				expect(
++					painted.some((classes) =>
++						['border-bottom', 'border-primary', 'border-2'].every((name) =>
++							classes.split(' ').includes(name),
++						),
++					),
++				).toBe(true)
++				const liveClasses = painted.flatMap((classes) => classes.split(' ')).filter(Boolean)
++				expect(liveClasses.filter((name) => !REGISTRY.includes(name))).toEqual([])
++				expect(
++					Array.from(list.children).filter((item) =>
++						item.matches('.opacity-50, .border-top, .border-bottom, .border-primary, .border-2'),
++					),
++				).toEqual([])
++				expect(
++					Array.from(
++						page.getByRole('list', { name: 'Dispatch priorities', exact: true }).element().children,
++					)
++						.filter((child) => readRole(child) === 'listitem')
++						.map((child) => readName(child)),
++				).toEqual([
++					'Prepare labels',
++					'Review orders',
++					'Pack parcels',
++					'Book collection',
++					'Confirm dispatch',
++				])
++				expect(readPerception('Sort status')).toBe('Moved to position 2 of 5')
++				await clickAccessible('button', 'Move Review orders')
++				await pressKeys('{Alt>}{ArrowDown}{/Alt}')
++				expect(
++					Array.from(
++						page.getByRole('list', { name: 'Dispatch priorities', exact: true }).element().children,
++					)
++						.filter((child) => readRole(child) === 'listitem')
++						.map((child) => readName(child)),
++				).toEqual([
++					'Prepare labels',
++					'Pack parcels',
++					'Review orders',
++					'Book collection',
++					'Confirm dispatch',
++				])
++				expect(document.activeElement).toBe(resolveAccessible('button', 'Move Review orders'))
++				expect(readPerception('Sort status')).toBe('Moved to position 3 of 5')
++				await pressKeys('{Alt>}{ArrowUp}{ArrowUp}{/Alt}')
++			}
++		} finally {
++			observer.disconnect()
++			scope.destroy()
++		}
++	}, 60_000)
++
+ 	it('copies the Tailwind recipe through the copy button under every face', async () => {
+ 		await buildJourney(OWN, CAPTURE)
+ 		const scope = createVeneer(document, {
+diff --git a/tests/app/browser/sections/integration.test.ts b/tests/app/browser/sections/integration.test.ts
+index 972c0df..c145243 100644
+--- a/tests/app/browser/sections/integration.test.ts
++++ b/tests/app/browser/sections/integration.test.ts
+@@ -111,7 +111,16 @@ describe('section census', () => {
+ 				.filter(([owner]) => owner.section === section.id)
+ 				.flatMap(([, names]) => names)
+ 			const required = section.id === TAILWIND_SECTION ? [...owned, ...TAILWIND_CLASSES] : owned
+-			expect(required.length > 0).toBe(section.group !== LIVE_GROUP)
++			expect(required.length > 0).toBe(
++				section.group !== LIVE_GROUP &&
++					section.group !==
++						Object.values(
++							import.meta.glob<string>('../../../../app/browser/constants.ts', {
++								eager: true,
++								import: 'NATIVE_GROUP',
++							}),
++						)[0],
++			)
+ 			const matrix = OWNERSHIP.some(
+ 				(owner) => owner.section === section.id && owner.template !== undefined,
+ 			)
+diff --git a/tests/src/browser/drags/Drag.test.ts b/tests/src/browser/drags/Drag.test.ts
+new file mode 100644
+index 0000000..395029e
+--- /dev/null
++++ b/tests/src/browser/drags/Drag.test.ts
+@@ -0,0 +1,210 @@
++import type { DragEventMap } from '@src/browser'
++import { createRecorder, requireValue } from '@orkestrel/test'
++import { createDragEvent, render } from '@orkestrel/test/browser'
++import { DRAG_EVENTS, createDrag, createDragPlugin, createVeneer } from '@src/browser'
++import { userEvent } from 'vitest/browser'
++import { expect, it } from 'vitest'
++
++it('moves one place by a real pointer drag and by Alt+ArrowDown with matching indexes and retained focus', async () => {
++	const root = render(
++		'<div data-vn-drag><div draggable="true" tabindex="0" style="padding:20px">First</div><div draggable="true" tabindex="0" style="padding:20px">Second</div><div draggable="true" tabindex="0" style="padding:20px">Third</div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const first = requireValue(host.querySelector<HTMLElement>('[draggable]'))
++	const second = requireValue(first.nextElementSibling)
++	const order = createRecorder<readonly [string]>()
++	const moves = createRecorder<readonly [DragEventMap['move']]>()
++	const ends = createRecorder<readonly [DragEventMap['end']]>()
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	const drag = createDrag(host, {
++		on: {
++			start: () => order.handler('start'),
++			move: (event) => {
++				order.handler('move')
++				moves.handler(event)
++			},
++			end: (event) => {
++				order.handler('end')
++				ends.handler(event)
++			},
++		},
++	})
++	try {
++		await userEvent.dragAndDrop(first, second, {
++			targetPosition: { x: 10, y: second.getBoundingClientRect().height * 0.75 },
++		})
++		expect(
++			Array.from(host.children)
++				.slice(0, 3)
++				.map((child) => child.textContent),
++		).toEqual(['Second', 'First', 'Third'])
++		expect(order.calls).toEqual([['start'], ['move'], ['end']])
++		expect(moves.calls[0]?.[0].detail).toEqual({ item: first, from: 0, to: 1, by: 'pointer' })
++		expect(ends.calls[0]?.[0].detail).toEqual({ item: first, moved: true })
++		expect(host.querySelector('output')?.value).toBe('Moved to position 2 of 3')
++		await userEvent.click(first)
++		await userEvent.keyboard('{Alt>}{ArrowUp}{/Alt}')
++		moves.clear()
++		order.clear()
++		await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}')
++		expect(moves.calls[0]?.[0].detail).toEqual({ item: first, from: 0, to: 1, by: 'keyboard' })
++		expect(order.calls).toEqual([['start'], ['move'], ['end']])
++		expect(document.activeElement).toBe(first)
++		expect(host.querySelector('output')?.value).toBe('Moved to position 2 of 3')
++		expect(first.hasAttribute('data-vn-dragging')).toBe(false)
++	} finally {
++		drag.destroy()
++		scope.destroy()
++		root.remove()
++	}
++})
++
++it('leaves order unchanged when a pointer or keyboard move is prevented', async () => {
++	const root = render(
++		'<div data-vn-drag><div draggable="true" tabindex="0" style="padding:20px">First</div><div draggable="true" style="padding:20px">Second</div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const first = requireValue(host.querySelector<HTMLElement>('[draggable]'))
++	const second = requireValue(first.nextElementSibling)
++	const ends = createRecorder<readonly [DragEventMap['end']]>()
++	const moves = createRecorder<readonly [DragEventMap['move']]>()
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	const drag = createDrag(host, {
++		on: {
++			move: (event) => {
++				event.preventDefault()
++				moves.handler(event)
++			},
++			end: ends.handler,
++		},
++	})
++	try {
++		await userEvent.dragAndDrop(first, second, {
++			targetPosition: { x: 10, y: second.getBoundingClientRect().height * 0.75 },
++		})
++		await userEvent.click(first)
++		await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}')
++		expect(moves.calls.map(([event]) => event.detail.by)).toEqual(['pointer', 'keyboard'])
++		expect(host.firstElementChild).toBe(first)
++		expect(ends.calls.map(([event]) => event.detail.moved)).toEqual([false, false])
++		expect(host.querySelector('output')?.value).toBe('')
++	} finally {
++		drag.destroy()
++		scope.destroy()
++		root.remove()
++	}
++})
++
++it('refuses grabs outside a handle, input descendants, and prevented starts', async () => {
++	const root = render(
++		'<div data-vn-drag><div draggable="true" style="padding:20px"><button draggable="true">Grip</button><span style="display:inline-block;padding:20px">Outside grip</span></div><div draggable="true" style="padding:20px"><input draggable="false" value="Input text"></div><div style="padding:20px">Target</div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const handle = requireValue(host.querySelector('button'))
++	const outside = requireValue(host.querySelector('span'))
++	const input = requireValue(host.querySelector('input'))
++	const target = requireValue(host.lastElementChild)
++	const starts = createRecorder<readonly [DragEventMap['start']]>()
++	const ends = createRecorder<readonly [DragEventMap['end']]>()
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	const drag = createDrag(host, { on: { start: starts.handler, end: ends.handler } })
++	try {
++		await userEvent.dragAndDrop(outside, target)
++		await userEvent.dragAndDrop(input, target)
++		expect(starts.count).toBe(0)
++		const inputStart = createDragEvent('dragstart')
++		input.dispatchEvent(inputStart)
++		expect(inputStart.defaultPrevented).toBe(true)
++		expect(starts.count).toBe(0)
++		host.addEventListener(DRAG_EVENTS.start, (event) => event.preventDefault(), { once: true })
++		await userEvent.dragAndDrop(handle, target)
++		expect(starts.count).toBe(1)
++		expect(ends.count).toBe(0)
++		expect(host.firstElementChild).toBe(handle.parentElement)
++		expect(handle.getAttribute('draggable')).toBe('true')
++	} finally {
++		drag.destroy()
++		scope.destroy()
++		root.remove()
++	}
++})
++
++it('ends a real drop outside its host without moving or exporting a text payload', async () => {
++	const root = render(
++		'<div data-vn-drag><div draggable="true" style="padding:20px">First</div><div style="padding:20px">Second</div></div><textarea aria-label="Outside"></textarea>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const first = requireValue(host.firstElementChild)
++	const outside = requireValue(root.querySelector('textarea'))
++	const ends = createRecorder<readonly [DragEventMap['end']]>()
++	const types: string[][] = []
++	root.addEventListener('dragstart', (event) => {
++		types.push(Array.from(event.dataTransfer?.types ?? []))
++	})
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	const drag = createDrag(host, { on: { end: ends.handler } })
++	try {
++		await userEvent.dragAndDrop(first, outside)
++		expect(types).toEqual([[]])
++		expect(outside.value).toBe('')
++		expect(host.firstElementChild).toBe(first)
++		expect(ends.calls[0]?.[0].detail).toEqual({ item: first, moved: false })
++		expect(ends.count).toBe(1)
++	} finally {
++		drag.destroy()
++		scope.destroy()
++		root.remove()
++	}
++})
++
++it('keeps an input value and focus through moveBefore and refuses unrelated keyboard input', async () => {
++	const root = render(
++		'<div data-vn-drag><div><input draggable="true" value="Original"></div><div>Second</div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const input = requireValue(host.querySelector('input'))
++	const first = requireValue(input.parentElement)
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	try {
++		expect(typeof host.moveBefore).toBe('function')
++		await userEvent.fill(input, 'Retained edit')
++		await userEvent.keyboard('{ArrowDown}')
++		expect(host.firstElementChild).toBe(first)
++		await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}')
++		expect(host.children[1]).toBe(first)
++		expect(document.activeElement).toBe(input)
++		expect(input.value).toBe('Retained edit')
++		await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}')
++		expect(host.children[1]).toBe(first)
++		expect(host.querySelector('output')?.value).toBe('Moved to position 2 of 2')
++	} finally {
++		scope.destroy()
++		root.remove()
++	}
++})
++
++it('uses row-axis keys and stops at either end without wrapping', async () => {
++	const root = render(
++		'<div data-vn-drag style="display:flex;flex-direction:row"><div draggable="true" tabindex="0">First</div><div>Second</div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const first = requireValue(host.querySelector<HTMLElement>('[draggable]'))
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	try {
++		await userEvent.click(first)
++		await userEvent.keyboard('{Alt>}{ArrowLeft}{ArrowDown}{/Alt}')
++		expect(host.firstElementChild).toBe(first)
++		await userEvent.keyboard('{Alt>}{ArrowRight}{ArrowRight}{/Alt}')
++		expect(host.children[1]).toBe(first)
++		expect(document.activeElement).toBe(first)
++	} finally {
++		scope.destroy()
++		root.remove()
++	}
++})
+diff --git a/tests/src/browser/drags/factories.test.ts b/tests/src/browser/drags/factories.test.ts
+new file mode 100644
+index 0000000..a4b056e
+--- /dev/null
++++ b/tests/src/browser/drags/factories.test.ts
+@@ -0,0 +1,31 @@
++import { createRecorder } from '@orkestrel/test'
++import { DRAG_EVENTS, Drag, createDrag, createDragPlugin, Registry } from '@src/browser'
++import { expect, it } from 'vitest'
++
++it('settles one configured lifetime and removes only its owned output on destruction', () => {
++	const host = document.createElement('div')
++	host.innerHTML = '<div draggable="true" tabindex="0">First</div><output>Authored</output>'
++	const automatic = createDragPlugin().create(host, new Registry(document))
++	const first = createRecorder<readonly [Event]>()
++	const second = createRecorder<readonly [Event]>()
++	const configured = createDrag(host, { on: { start: first.handler } })
++	try {
++		expect(automatic.destroyed).toBe(true)
++		expect(configured).toBeInstanceOf(Drag)
++		expect(createDrag(host)).toBe(configured)
++		expect(createDrag(host, { on: { start: second.handler } })).toBe(configured)
++		expect(host.querySelectorAll('output')).toHaveLength(2)
++		host.dispatchEvent(new Event(DRAG_EVENTS.start))
++		expect(first.count).toBe(1)
++		expect(second.count).toBe(0)
++	} finally {
++		configured.destroy()
++	}
++	configured.destroy()
++	expect(host.querySelectorAll('output')).toHaveLength(1)
++	expect(host.querySelector('[draggable]')?.getAttribute('draggable')).toBe('true')
++	expect(new Registry(document).component(createDragPlugin(), host)).toBeUndefined()
++	const replacement = createDrag(host)
++	expect(replacement).not.toBe(configured)
++	replacement.destroy()
++})
+diff --git a/tests/src/browser/drags/index.test.ts b/tests/src/browser/drags/index.test.ts
+new file mode 100644
+index 0000000..ec3f92f
+--- /dev/null
++++ b/tests/src/browser/drags/index.test.ts
+@@ -0,0 +1,37 @@
++import { createBootstrapPlugins } from '@src/browser'
++import * as entry from '../../../../src/browser/drags/index.js'
++import { expect, it } from 'vitest'
++
++it('keeps native sorting out of every Bootstrap root file and plugin list', () => {
++	const sources = import.meta.glob<string>('../../../../src/browser/*.ts', {
++		query: '?raw',
++		import: 'default',
++		eager: true,
++	})
++	expect(Object.keys(sources).length).toBeGreaterThan(20)
++	for (const [path, source] of Object.entries(sources)) {
++		if (path.endsWith('/index.ts')) continue
++		expect(source).not.toMatch(/\.\/drags\/|moveBefore|dataTransfer|data-vn-drag/u)
++	}
++	expect(createBootstrapPlugins().map(({ name }) => name)).toEqual([
++		'alert',
++		'button',
++		'carousel',
++		'collapse',
++		'dropdown',
++		'modal',
++		'offcanvas',
++		'popover',
++		'scrollspy',
++		'tab',
++		'toast',
++		'tooltip',
++	])
++	expect(Object.keys(entry).sort()).toEqual([
++		'DRAG_DEFAULTS',
++		'DRAG_EVENTS',
++		'Drag',
++		'createDrag',
++		'createDragPlugin',
++	])
++})
+diff --git a/tests/src/browser/drags/plugins.test.ts b/tests/src/browser/drags/plugins.test.ts
+new file mode 100644
+index 0000000..037ff2f
+--- /dev/null
++++ b/tests/src/browser/drags/plugins.test.ts
+@@ -0,0 +1,262 @@
++import { createRecorder, requireValue, waitForCondition, waitForDelay } from '@orkestrel/test'
++import { createDragEvent, render } from '@orkestrel/test/browser'
++import { createDragPlugin, createVeneer, DRAG_EVENTS, Registry } from '@src/browser'
++import { cdp, userEvent } from 'vitest/browser'
++import { expect, it } from 'vitest'
++import { countCDPListeners, isCDPSender, readCDPField } from '../../../setupBrowser.js'
++
++it('adds no native listeners or output without composition and releases composed listeners', async () => {
++	const root = render(
++		'<div data-vn-drag><div draggable="true" tabindex="0">First</div><div>Second</div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const marker = crypto.randomUUID()
++	host.id = marker
++	const session: unknown = cdp()
++	if (!isCDPSender(session)) throw new Error('Missing CDP sender')
++	await session.send('DOM.getDocument', { depth: -1, pierce: true })
++	const search = await session.send('DOM.performSearch', {
++		query: `[id="${marker}"]`,
++		includeUserAgentShadowDOM: true,
++	})
++	const searchId = readCDPField(search, ['searchId'])
++	if (typeof searchId !== 'string') throw new Error('Missing search id')
++	const nodes = await session.send('DOM.getSearchResults', { searchId, fromIndex: 0, toIndex: 1 })
++	const ids = readCDPField(nodes, ['nodeIds'])
++	const nodeId: unknown = Array.isArray(ids) ? ids[0] : undefined
++	if (typeof nodeId !== 'number') throw new Error('Missing node id')
++	const resolved = await session.send('DOM.resolveNode', { nodeId })
++	const hostId = readCDPField(resolved, ['object', 'objectId'])
++	if (typeof hostId !== 'string') throw new Error('Missing host object')
++	const owner = await session.send('Runtime.callFunctionOn', {
++		objectId: hostId,
++		functionDeclaration: 'function () { return this.ownerDocument }',
++	})
++	const objectId = readCDPField(owner, ['result', 'objectId'])
++	if (typeof objectId !== 'string') throw new Error('Missing document object')
++	const before = await session.send('DOMDebugger.getEventListeners', { objectId })
++	const blank = createVeneer(root)
++	try {
++		const idle = await session.send('DOMDebugger.getEventListeners', { objectId })
++		expect(countCDPListeners(idle, 'dragstart')).toBe(countCDPListeners(before, 'dragstart'))
++		expect(host.querySelector('output')).toBeNull()
++		expect(new Registry(document).component(createDragPlugin(), host)).toBeUndefined()
++		blank.destroy()
++		const composed = createVeneer(root, { plugins: [createDragPlugin()] })
++		try {
++			const active = await session.send('DOMDebugger.getEventListeners', { objectId })
++			expect(countCDPListeners(active, 'dragstart')).toBe(
++				countCDPListeners(before, 'dragstart') + 1,
++			)
++			expect(host.querySelectorAll('output')).toHaveLength(1)
++		} finally {
++			composed.destroy()
++		}
++		const after = await session.send('DOMDebugger.getEventListeners', { objectId })
++		expect(countCDPListeners(after, 'dragstart')).toBe(countCDPListeners(before, 'dragstart'))
++	} finally {
++		blank.destroy()
++		await session.send('Runtime.releaseObject', { objectId })
++		await session.send('Runtime.releaseObject', { objectId: hostId })
++		await session.send('DOM.discardSearchResults', { searchId })
++		root.remove()
++	}
++})
++
++it('refuses external text and files and never exchanges between hosts even with matching group values', async () => {
++	const root = render(
++		'<div data-vn-drag="shared"><div draggable="true" style="padding:20px">First</div></div><div data-vn-drag="shared"><div style="padding:20px">Second</div></div>',
++	)
++	document.body.append(root)
++	const hosts = root.querySelectorAll<HTMLElement>('[data-vn-drag]')
++	const source = requireValue(hosts[0])
++	const destination = requireValue(hosts[1])
++	const first = requireValue(source.firstElementChild)
++	const second = requireValue(destination.firstElementChild)
++	const ends = createRecorder<readonly [Event]>()
++	source.addEventListener(DRAG_EVENTS.end, ends.handler)
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	try {
++		const transfer = new DataTransfer()
++		transfer.setData('text/plain', 'foreign')
++		transfer.items.add(new File(['foreign'], 'foreign.txt'))
++		for (const name of ['dragenter', 'dragover', 'drop']) {
++			const event = createDragEvent(name, { dataTransfer: transfer })
++			second.dispatchEvent(event)
++			expect(event.defaultPrevented).toBe(false)
++		}
++		await userEvent.dragAndDrop(first, second)
++		expect(source.firstElementChild).toBe(first)
++		expect(destination.firstElementChild).toBe(second)
++		expect(ends.count).toBe(1)
++	} finally {
++		scope.destroy()
++		root.remove()
++	}
++})
++
++it('keeps the indicator across a real nested-child crossing and reads swallowed Escape before native cancellation', async () => {
++	const root = render(
++		'<div data-vn-drag style="position:fixed;left:20px;top:20px;width:300px"><div draggable="true" tabindex="0" style="height:60px">First</div><div style="height:100px"><span style="display:block;height:40px">Nested target</span><span style="display:block;height:60px">Other child</span></div></div>',
++	)
++	document.body.append(root)
++	const host = requireValue(root.querySelector<HTMLElement>('[data-vn-drag]'))
++	const first = requireValue(host.querySelector<HTMLElement>('[draggable]'))
++	const second = requireValue(first.nextElementSibling)
++	const nested = requireValue(second.firstElementChild)
++	const keys = createRecorder<readonly [KeyboardEvent]>()
++	const ends = createRecorder<readonly [Event]>()
++	const leaves: Array<{ readonly retained: string | null; readonly related: EventTarget | null }> =
++		[]
++	const lifetime = new AbortController()
++	const trace: unknown[] = []
++	for (const name of [
++		'pointerdown',
++		'dragstart',
++		'dragenter',
++		'dragover',
++		'dragleave',
++		'drop',
++		'dragend',
++	]) {
++		host.addEventListener(
++			name,
++			(event) => {
++				trace.push({
++					name,
++					target: event.target instanceof Element ? event.target.textContent : null,
++					prevented: event.defaultPrevented,
++					source: first.hasAttribute('data-vn-dragging'),
++					insert: second.getAttribute('data-vn-insert'),
++					point: event instanceof MouseEvent ? [event.clientX, event.clientY] : [],
++				})
++			},
++			{ signal: lifetime.signal },
++		)
++	}
++	document.addEventListener('keydown', keys.handler, { signal: lifetime.signal })
++	host.addEventListener(DRAG_EVENTS.end, ends.handler)
++	host.addEventListener('dragleave', (event) => {
++		leaves.push({ retained: second.getAttribute('data-vn-insert'), related: event.relatedTarget })
++	})
++	const scope = createVeneer(root, { plugins: [createDragPlugin()] })
++	const session: unknown = cdp()
++	if (!isCDPSender(session)) throw new Error('Missing CDP sender')
++	const browser = await session.send('Browser.getVersion')
++	let escapeEnds = 0
++	try {
++		await userEvent.click(first)
++		await userEvent.keyboard('{Escape}')
++		expect(keys.calls.filter(([event]) => event.key === 'Escape')).toHaveLength(1)
++		keys.clear()
++		const points = [first, second, nested].map((element) => {
++			const box = element.getBoundingClientRect()
++			let x = box.x + 10
++			let y = box.y + (element === second ? 45 : 10)
++			for (
++				let frame = element.ownerDocument.defaultView?.frameElement;
++				frame;
++				frame = frame.ownerDocument.defaultView?.frameElement
++			) {
++				const bounds = frame.getBoundingClientRect()
++				x = bounds.x + (x * bounds.width) / frame.clientWidth
++				y = bounds.y + (y * bounds.height) / frame.clientHeight
++			}
++			return { x, y }
++		})
++		const origin = requireValue(points[0])
++		await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...origin })
++		await session.send('Input.dispatchMouseEvent', {
++			type: 'mousePressed',
++			...origin,
++			button: 'left',
++			buttons: 1,
++			clickCount: 1,
++		})
++		await session.send('Input.dispatchMouseEvent', {
++			type: 'mouseMoved',
++			x: origin.x + 10,
++			y: origin.y + 10,
++			button: 'left',
++			buttons: 1,
++		})
++		await session.send('Input.dispatchMouseEvent', {
++			type: 'mouseMoved',
++			...requireValue(points[1]),
++			button: 'left',
++			buttons: 1,
++		})
++		await session.send('Input.dispatchMouseEvent', {
++			type: 'mouseMoved',
++			...requireValue(points[1]),
++			button: 'left',
++			buttons: 1,
++		})
++		await waitForCondition('native drag reaches target', () =>
++			second.hasAttribute('data-vn-insert'),
++		)
++		leaves.length = 0
++		await session.send('Input.dispatchMouseEvent', {
++			type: 'mouseMoved',
++			...requireValue(points[2]),
++			button: 'left',
++			buttons: 1,
++		})
++		await waitForCondition('native drag crosses nested child', () =>
++			leaves.some((entry) => entry.related === nested),
++		)
++		expect(
++			leaves.filter((entry) => entry.related === nested).map((entry) => entry.retained),
++		).toEqual(['before'])
++		expect(second.getAttribute('data-vn-insert')).toBe('before')
++		await session.send('Input.dispatchKeyEvent', {
++			type: 'rawKeyDown',
++			key: 'Escape',
++			code: 'Escape',
++			windowsVirtualKeyCode: 27,
++		})
++		await session.send('Input.dispatchKeyEvent', {
++			type: 'keyUp',
++			key: 'Escape',
++			code: 'Escape',
++			windowsVirtualKeyCode: 27,
++		})
++		await waitForDelay(100)
++		escapeEnds = ends.count
++		expect(keys.calls.filter(([event]) => event.key === 'Escape')).toHaveLength(0)
++		expect(escapeEnds).toBe(0)
++		await session.send('Input.dispatchDragEvent', {
++			type: 'dragCancel',
++			...requireValue(points[2]),
++			data: { items: [], dragOperationsMask: 65535 },
++		})
++		await waitForCondition('native cancellation ends the drag', () => ends.count === 1)
++		expect(host.firstElementChild).toBe(first)
++		expect(ends.calls[0]?.[0]).toMatchObject({ detail: { item: first, moved: false } })
++		expect(second.hasAttribute('data-vn-insert')).toBe(false)
++	} finally {
++		await session.send('Input.dispatchMouseEvent', {
++			type: 'mouseReleased',
++			x: -1,
++			y: -1,
++			button: 'left',
++			buttons: 0,
++			clickCount: 1,
++		})
++		await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: -1, y: -1 })
++		console.info(
++			'Native drag Escape reading',
++			JSON.stringify({
++				browser: readCDPField(browser, ['product']),
++				trace,
++				escapeKeys: keys.calls.filter(([event]) => event.key === 'Escape').length,
++				escapeEnds,
++				ends: ends.count,
++			}),
++		)
++		lifetime.abort()
++		scope.destroy()
++		root.remove()
++	}
++})
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 4c8bed6..5030d65 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -10,6 +10,11 @@ describe('src browser entry', () => {
+ 	it('exports the shared browser mechanics and their contracts at runtime', () => {
+ 		expect(Object.keys(entry).sort()).toStrictEqual(
+ 			[
++				'DRAG_DEFAULTS',
++				'DRAG_EVENTS',
++				'Drag',
++				'createDrag',
++				'createDragPlugin',
+ 				'COPIER_DEFAULTS',
+ 				'COPIER_EVENTS',
+ 				'Copier',

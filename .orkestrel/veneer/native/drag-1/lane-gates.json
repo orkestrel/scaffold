@@ -1,0 +1,1228 @@
+[
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-module-141-r2",
+    "command": "npm run test:src:browser -- tests/src/browser/drags",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-check-r2",
+    "command": "npm run check",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-r2",
+    "command": "npm run lint:check",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-guides-r2",
+    "command": "npm run test:guides",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-build-r3",
+    "command": "npm run build",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-format-r3",
+    "command": "npm run format:check",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-141-r3",
+    "command": "npm run test:src:browser",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-153-r3",
+    "command": "PLAYWRIGHT_EXECUTABLE_PATH=/home/user/.wave/pw-153/chromium-1243/chrome-linux64/chrome npm run test:src:browser",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-setup-browser-r3",
+    "command": "npm run test:setup:browser",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r3",
+    "command": "npm run test:app:browser",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-integration-r3",
+    "command": "npm run test:integration",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-policy-r3",
+    "command": "npm run test:policy",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-config-r3",
+    "command": "npm run test:config",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-setup-r3",
+    "command": "npm run test:setup",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-conformance-r3",
+    "command": "npm run test:conformance",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-module-141-r4",
+    "command": "npm run test:src:browser -- tests/src/browser/drags",
+    "exit": null,
+    "result": [],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-module-141-r5",
+    "command": "npm run test:src:browser -- tests/src/browser/drags",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  2 failed | 2 passed (4)",
+      "Tests  3 failed | 8 passed (11)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:38:49.562Z",
+      "seconds": 16.87,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-check-r6",
+    "command": "npm run check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:40:14.793Z",
+      "seconds": 85.094,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-r6",
+    "command": "npm run lint:check",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "failed; see stdout.log and stderr.log"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:40:17.366Z",
+      "seconds": 2.438,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-guides-r6",
+    "command": "npm run test:guides",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  20 passed (20)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:40:23.029Z",
+      "seconds": 5.518,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-build-r6",
+    "command": "npm run build",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:40:49.719Z",
+      "seconds": 26.552,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-format-r6",
+    "command": "npm run format:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "All matched files use the correct format."
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:40:51.175Z",
+      "seconds": 1.329,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-141-r6",
+    "command": "npm run test:src:browser",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  1 failed | 33 passed (34)",
+      "Tests  1 failed | 811 passed (812)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:44:03.695Z",
+      "seconds": 192.381,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-153-r6",
+    "command": "PLAYWRIGHT_EXECUTABLE_PATH=/home/user/.wave/pw-153/chromium-1243/chrome-linux64/chrome npm run test:src:browser",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  1 failed | 33 passed (34)",
+      "Tests  1 failed | 811 passed (812)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:47:24.734Z",
+      "seconds": 200.899,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-setup-browser-r6",
+    "command": "npm run test:setup:browser",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  2 passed (2)",
+      "Tests  205 passed (205)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:52:00.869Z",
+      "seconds": 276.007,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r6",
+    "command": "npm run test:app:browser",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  2 failed | 6 passed (8)",
+      "Tests  2 failed | 244 passed (246)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:56:36.929Z",
+      "seconds": 275.935,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-integration-r6",
+    "command": "npm run test:integration",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  60 passed (60)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:57:37.364Z",
+      "seconds": 60.273,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-policy-r6",
+    "command": "npm run test:policy",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  119 passed | 1 skipped (120)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:57:41.933Z",
+      "seconds": 4.448,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-config-r6",
+    "command": "npm run test:config",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  227 passed | 1 skipped (228)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:57:52.377Z",
+      "seconds": 10.316,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-setup-r6",
+    "command": "npm run test:setup",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  2 passed (2)",
+      "Tests  186 passed (186)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:58:16.710Z",
+      "seconds": 24.189,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-conformance-r6",
+    "command": "npm run test:conformance",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  130 passed (130)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:59:36.873Z",
+      "seconds": 80.032,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r6",
+    "command": "npm run test:journey -- --reporter=json --outputFile=/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r6/report.json",
+    "kind": "command",
+    "exit": 65,
+    "result": [
+      "Test Files  4 failed (4)",
+      "Tests  16 failed | 86 passed (102)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:15:09.036Z",
+      "seconds": 823.715,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 65,
+      "errors": [
+        "Error: ENOENT: no such file or directory, scandir '/home/user/.wave/veneer-drag/tmp/journey'"
+      ]
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-a-r6",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "0aef9bbf24a02500d3bb941e5080cb9b2efef62eda6a0b898386fd3b108f1904  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:15:41.079Z",
+      "seconds": 2.344,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-b-r6",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "0aef9bbf24a02500d3bb941e5080cb9b2efef62eda6a0b898386fd3b108f1904  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:15:43.051Z",
+      "seconds": 1.811,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-module-141-r7",
+    "command": "npm run test:src:browser -- tests/src/browser/drags",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  1 failed | 3 passed (4)",
+      "Tests  1 failed | 10 passed (11)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:24:34.954Z",
+      "seconds": 21.007,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-r7",
+    "command": "npm run lint:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:24:37.284Z",
+      "seconds": 2.183,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-module-153-r8",
+    "command": "PLAYWRIGHT_EXECUTABLE_PATH=/home/user/.wave/pw-153/chromium-1243/chrome-linux64/chrome npm run test:src:browser -- tests/src/browser/drags",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  1 failed | 3 passed (4)",
+      "Tests  1 failed | 10 passed (11)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:27:46.408Z",
+      "seconds": 21.347,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-141-r8",
+    "command": "npm run test:src:browser",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  34 passed (34)",
+      "Tests  812 passed (812)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:31:00.512Z",
+      "seconds": 193.947,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-153-r8",
+    "command": "PLAYWRIGHT_EXECUTABLE_PATH=/home/user/.wave/pw-153/chromium-1243/chrome-linux64/chrome npm run test:src:browser",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  34 passed (34)",
+      "Tests  812 passed (812)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T12:34:22.794Z",
+      "seconds": 202.136,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r9",
+    "command": "npm run test:journey -- --reporter=json --outputFile=/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r9/report.json",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  4 failed (4)",
+      "Tests  4 failed | 98 passed (102)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:21:28.582Z",
+      "seconds": 929.591,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-build-r10",
+    "command": "npm run build",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:22:02.775Z",
+      "seconds": 29.735,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-format-r10",
+    "command": "npm run format:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "All matched files use the correct format."
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:22:05.017Z",
+      "seconds": 2.079,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-r10",
+    "command": "npm run lint:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:22:07.502Z",
+      "seconds": 2.329,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-check-r10",
+    "command": "npm run check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:23:46.631Z",
+      "seconds": 98.99,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-guides-r10",
+    "command": "npm run test:guides",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  20 passed (20)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:23:52.994Z",
+      "seconds": 6.233,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-a-r10",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "14bfb517790f64208ec806ae0ded0e3801ee385684cff3d87d3a02a81acd3e04  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:23:55.095Z",
+      "seconds": 1.955,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-b-r10",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "14bfb517790f64208ec806ae0ded0e3801ee385684cff3d87d3a02a81acd3e04  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T13:23:57.507Z",
+      "seconds": 2.255,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r10",
+    "command": "npm run test:app:browser",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  2 failed | 6 passed (8)",
+      "Tests  3 failed | 243 passed (246)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T14:09:08.785Z",
+      "seconds": 301.804,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-types",
+    "command": "npm run check:src:browser",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T11:20:39.891Z",
+      "seconds": 3.295,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-wt-build",
+    "command": "npm run build",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T10:55:53.409Z",
+      "seconds": 27.435,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-module-141",
+    "command": "npm run test:src:browser -- tests/src/browser/drags",
+    "exit": 143,
+    "exitSource": "shell tool, as identified by the user; no runner end.json",
+    "result": [
+      "Killed while waiting for the lock; no test ran"
+    ],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-check-initial",
+    "command": "npm run check",
+    "exit": 143,
+    "exitSource": "shell tool, as identified by the user; no runner end.json",
+    "result": [
+      "Killed while waiting for the lock; no test ran"
+    ],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-initial",
+    "command": "npm run lint:check",
+    "exit": 143,
+    "exitSource": "shell tool, as identified by the user; no runner end.json",
+    "result": [
+      "Killed while waiting for the lock; no test ran"
+    ],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser",
+    "command": "npm run test:app:browser",
+    "exit": 143,
+    "exitSource": "shell tool, as identified by the user; no runner end.json",
+    "result": [
+      "Killed while waiting for the lock; no test ran"
+    ],
+    "end": null
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-compare-r10",
+    "command": "node /home/user/veneer/tmp/units/journey-cost/compare.ts --baseline /home/user/veneer/tmp/units/journey-cost/runs/landing-867f3b4-journey --candidate /home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r9 --host-bound /home/user/veneer/tmp/units/journey-cost/host-bound.json --registration 102/0 --moves /home/user/veneer/tmp/units/journey-cost/redesign-moves.json --out /home/user/.wave/veneer-drag/tmp/units/drag-compare-r10.md",
+    "kind": "command",
+    "exit": 67,
+    "result": [
+      "Different: 211 differences; see /home/user/.wave/veneer-drag/tmp/units/drag-compare-r10.md"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T14:25:54.415Z",
+      "seconds": 0.267,
+      "child": {
+        "code": 67,
+        "signal": null
+      },
+      "exit": 67,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r11",
+    "command": "npm run test:app:browser -- --reporter=json --outputFile=/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r11/report.json",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  8 passed (8)",
+      "Tests  246 passed (246)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:11:56.743Z",
+      "seconds": 297.071,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-setup-browser-r11",
+    "command": "npm run test:setup:browser",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  2 passed (2)",
+      "Tests  205 passed (205)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:17:01.588Z",
+      "seconds": 304.687,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r11",
+    "command": "npm run test:journey -- --reporter=json --outputFile=/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r11/report.json",
+    "kind": "journey",
+    "exit": 0,
+    "result": [
+      "Test Files  4 passed (4)",
+      "Tests  102 passed (102)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:31:59.690Z",
+      "seconds": 897.964,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-a-r11",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "46011e55a86252984169afb3ec7971546ea0431acc431b64b48d3e6441e0ec48  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:32:01.800Z",
+      "seconds": 1.943,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-b-r11",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "46011e55a86252984169afb3ec7971546ea0431acc431b64b48d3e6441e0ec48  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:32:03.850Z",
+      "seconds": 1.897,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-format-r11",
+    "command": "npm run format:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "All matched files use the correct format."
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:32:05.662Z",
+      "seconds": 1.662,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-r11",
+    "command": "npm run lint:check",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "failed; see stdout.log and stderr.log"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:32:08.483Z",
+      "seconds": 2.675,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-check-r11",
+    "command": "npm run check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:33:46.327Z",
+      "seconds": 97.706,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-guides-r11",
+    "command": "npm run test:guides",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  1 failed (1)",
+      "Tests  1 failed | 19 passed (20)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T15:33:52.743Z",
+      "seconds": 6.279,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-compare-r11",
+    "command": "node /home/user/veneer/tmp/units/journey-cost/compare.ts --baseline /home/user/veneer/tmp/units/journey-cost/runs/landing-867f3b4-journey --candidate /home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r11 --host-bound /home/user/veneer/tmp/units/journey-cost/host-bound.json --registration 102/0 --moves /home/user/veneer/tmp/units/journey-cost/redesign-moves.json --out /home/user/.wave/veneer-drag/tmp/units/drag-compare-r11.md",
+    "kind": "command",
+    "exit": 67,
+    "result": [
+      "Different: 196 differences; see /home/user/.wave/veneer-drag/tmp/units/drag-compare-r11.md"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:15:49.503Z",
+      "seconds": 0.235,
+      "child": {
+        "code": 67,
+        "signal": null
+      },
+      "exit": 67,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-format-r12",
+    "command": "npm run format:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "All matched files use the correct format."
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:15:51.204Z",
+      "seconds": 1.565,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-lint-r12",
+    "command": "npm run lint:check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:15:53.510Z",
+      "seconds": 2.164,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-check-r12",
+    "command": "npm run check",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "completed"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:17:27.122Z",
+      "seconds": 93.478,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-guides-r12",
+    "command": "npm run test:guides",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  1 passed (1)",
+      "Tests  20 passed (20)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:17:34.163Z",
+      "seconds": 6.847,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r12",
+    "command": "npm run test:app:browser -- --reporter=json --outputFile=/home/user/veneer/tmp/units/journey-cost/runs/drag-app-browser-r12/report.json",
+    "kind": "command",
+    "exit": 1,
+    "result": [
+      "Test Files  1 failed | 7 passed (8)",
+      "Tests  2 failed | 244 passed (246)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:21:30.199Z",
+      "seconds": 235.886,
+      "child": {
+        "code": 1,
+        "signal": null
+      },
+      "exit": 1,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-setup-browser-r12",
+    "command": "npm run test:setup:browser",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "Test Files  2 passed (2)",
+      "Tests  205 passed (205)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:26:43.698Z",
+      "seconds": 313.332,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r12",
+    "command": "npm run test:journey -- --reporter=json --outputFile=/home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r12/report.json",
+    "kind": "journey",
+    "exit": 0,
+    "result": [
+      "Test Files  4 passed (4)",
+      "Tests  102 passed (102)"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:40:45.280Z",
+      "seconds": 841.449,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-a-r12",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "1378bea975ced7c05d77c5f4a8cf1c2e662302c7de86f18584722643ffa1c1a9  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:40:48.054Z",
+      "seconds": 2.548,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-showcase-b-r12",
+    "command": "bash -c 'npm run build:showcase && sha256sum showcase/browser.html'",
+    "kind": "command",
+    "exit": 0,
+    "result": [
+      "1378bea975ced7c05d77c5f4a8cf1c2e662302c7de86f18584722643ffa1c1a9  showcase/browser.html"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:40:50.234Z",
+      "seconds": 2.039,
+      "child": {
+        "code": 0,
+        "signal": null
+      },
+      "exit": 0,
+      "errors": []
+    }
+  },
+  {
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-compare-r12",
+    "command": "node /home/user/veneer/tmp/units/journey-cost/compare.ts --baseline /home/user/veneer/tmp/units/journey-cost/runs/landing-867f3b4-journey --candidate /home/user/veneer/tmp/units/journey-cost/runs/drag-journey-r12 --host-bound /home/user/veneer/tmp/units/journey-cost/host-bound.json --registration 102/0 --moves /home/user/veneer/tmp/units/journey-cost/redesign-moves.json --out /home/user/.wave/veneer-drag/tmp/units/drag-compare-r12.md",
+    "kind": "command",
+    "exit": 67,
+    "result": [
+      "Different: 196 differences; see /home/user/.wave/veneer-drag/tmp/units/drag-compare-r12.md"
+    ],
+    "end": {
+      "timestamp": "2026-10-07T16:59:06.373Z",
+      "seconds": 0.214,
+      "child": {
+        "code": 67,
+        "signal": null
+      },
+      "exit": 67,
+      "errors": []
+    }
+  }
+]

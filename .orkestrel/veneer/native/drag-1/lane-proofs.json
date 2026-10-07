@@ -1,0 +1,270 @@
+[
+  {
+    "version": 141,
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-141-r8",
+    "exit": 0,
+    "reading": {
+      "browser": "Chrome/141.0.7390.37",
+      "trace": [
+        {
+          "name": "pointerdown",
+          "target": "First",
+          "prevented": false,
+          "source": false,
+          "insert": null,
+          "point": [
+            169.97048950195312,
+            49.981903076171875
+          ]
+        },
+        {
+          "name": "pointerdown",
+          "target": "First",
+          "prevented": false,
+          "source": false,
+          "insert": null,
+          "point": [
+            29.999967575073242,
+            30.00000762939453
+          ]
+        },
+        {
+          "name": "dragstart",
+          "target": "First",
+          "prevented": false,
+          "source": true,
+          "insert": null,
+          "point": [
+            29,
+            30
+          ]
+        },
+        {
+          "name": "dragenter",
+          "target": "First",
+          "prevented": true,
+          "source": true,
+          "insert": null,
+          "point": [
+            56,
+            56
+          ]
+        },
+        {
+          "name": "dragover",
+          "target": "First",
+          "prevented": true,
+          "source": true,
+          "insert": null,
+          "point": [
+            56,
+            56
+          ]
+        },
+        {
+          "name": "dragenter",
+          "target": "Other child",
+          "prevented": true,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            124
+          ]
+        },
+        {
+          "name": "dragleave",
+          "target": "First",
+          "prevented": false,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            124
+          ]
+        },
+        {
+          "name": "dragover",
+          "target": "Other child",
+          "prevented": true,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            124
+          ]
+        },
+        {
+          "name": "dragenter",
+          "target": "Nested target",
+          "prevented": true,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            89
+          ]
+        },
+        {
+          "name": "dragleave",
+          "target": "Other child",
+          "prevented": false,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            89
+          ]
+        },
+        {
+          "name": "dragend",
+          "target": "First",
+          "prevented": false,
+          "source": false,
+          "insert": null,
+          "point": [
+            29,
+            89
+          ]
+        }
+      ],
+      "escapeKeys": 0,
+      "escapeEnds": 0,
+      "ends": 1
+    }
+  },
+  {
+    "version": 153,
+    "folder": "/home/user/veneer/tmp/units/journey-cost/runs/drag-src-153-r8",
+    "exit": 0,
+    "reading": {
+      "browser": "Chrome/153.0.8010.12",
+      "trace": [
+        {
+          "name": "pointerdown",
+          "target": "First",
+          "prevented": false,
+          "source": false,
+          "insert": null,
+          "point": [
+            169.97048950195312,
+            49.981903076171875
+          ]
+        },
+        {
+          "name": "pointerdown",
+          "target": "First",
+          "prevented": false,
+          "source": false,
+          "insert": null,
+          "point": [
+            29.999967575073242,
+            30.00000762939453
+          ]
+        },
+        {
+          "name": "dragstart",
+          "target": "First",
+          "prevented": false,
+          "source": true,
+          "insert": null,
+          "point": [
+            29,
+            30
+          ]
+        },
+        {
+          "name": "dragenter",
+          "target": "First",
+          "prevented": true,
+          "source": true,
+          "insert": null,
+          "point": [
+            56,
+            56
+          ]
+        },
+        {
+          "name": "dragover",
+          "target": "First",
+          "prevented": true,
+          "source": true,
+          "insert": null,
+          "point": [
+            56,
+            56
+          ]
+        },
+        {
+          "name": "dragenter",
+          "target": "Other child",
+          "prevented": true,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            124
+          ]
+        },
+        {
+          "name": "dragleave",
+          "target": "First",
+          "prevented": false,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            124
+          ]
+        },
+        {
+          "name": "dragover",
+          "target": "Other child",
+          "prevented": true,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            124
+          ]
+        },
+        {
+          "name": "dragenter",
+          "target": "Nested target",
+          "prevented": true,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            89
+          ]
+        },
+        {
+          "name": "dragleave",
+          "target": "Other child",
+          "prevented": false,
+          "source": true,
+          "insert": "before",
+          "point": [
+            29,
+            89
+          ]
+        },
+        {
+          "name": "dragend",
+          "target": "First",
+          "prevented": false,
+          "source": false,
+          "insert": null,
+          "point": [
+            29,
+            89
+          ]
+        }
+      ],
+      "escapeKeys": 0,
+      "escapeEnds": 0,
+      "ends": 1
+    }
+  }
+]

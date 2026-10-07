@@ -1,0 +1,941 @@
+diff --git a/app/browser/sections/tailwindcss.html b/app/browser/sections/tailwindcss.html
+index c21ce1e..557f404 100644
+--- a/app/browser/sections/tailwindcss.html
++++ b/app/browser/sections/tailwindcss.html
+@@ -90,9 +90,11 @@
+ 					>Bare heading beside a heading class</span
+ 				><code class="text-body-secondary">h5 p.h5</code
+ 				><span class="d-block text-body-secondary mt-1"
+-					>Bootstrap only and without the layer: both read 20 px. With the layer: the bare
+-					<code>h5</code> element reads preflight's 16 px, and the <code>h5</code> class keeps
+-					Bootstrap's 20 px.</span
++					>Bootstrap only and without the layer: both read 20 px at weight 500, with an 8 px bottom
++					margin and 24 px line height. With the layer: the bare <code>h5</code> element reads
++					preflight's 16 px at weight 400 with no bottom margin and a 19.2 px line height, and the
++					<code>h5</code> class keeps Bootstrap's 20 px at weight 500, 8 px bottom margin, and 24 px
++					line height.</span
+ 				>
+ 			</figcaption>
+ 		</figure>
+@@ -121,9 +123,30 @@
+ 				<span id="tailwindcss-bare-title" class="d-block fw-semibold">Bare image and list</span>
+ 				<code class="text-body-secondary">img ul</code>
+ 				<span class="d-block text-body-secondary mt-1"
+-					>Bootstrap only: the image sits inline and the list shows bullets. Both Tailwind faces:
+-					preflight makes the image a block and removes the bullets, because the reboot declares
+-					neither property.</span
++					>Bootstrap only: the image sits inline and the list shows bullets, a 32 px indent, and a
++					16 px bottom margin. Without the layer: preflight makes the image a block and removes the
++					bullets; the indent and bottom margin stay. With the layer: preflight also removes the
++					bare list's indent and bottom margin. The reboot declares neither the image display nor
++					the list style.</span
++				>
++			</figcaption>
++		</figure>
++	</div>
++	<div class="col d-flex">
++		<figure class="card flex-fill mb-0" aria-labelledby="tailwindcss-inline-title">
++			<div class="card-body">
++				<p>Track <code>harbor-route</code> <small>on weekdays</small>.</p>
++			</div>
++			<figcaption class="card-footer bg-transparent small">
++				<span id="tailwindcss-inline-title" class="d-block fw-semibold"
++					>Bare inline code and small text</span
++				>
++				<span>Track <code>harbor-route</code> <small>on weekdays</small>.</span>
++				<span class="d-block text-body-secondary mt-1"
++					>Bootstrap only and without the layer: a bare <code>code</code> element reads the reboot's
++					0.875em, 14 px in 16 px text, and a bare <code>small</code> element reads 0.875em. With
++					the layer: preflight sets <code>code</code> to 1em, 16 px, and <code>small</code> to 80%,
++					because the reboot's rules sit in the reset layer under preflight.</span
+ 				>
+ 			</figcaption>
+ 		</figure>
+@@ -538,7 +561,10 @@
+ 				<code class="text-body-secondary">divide-y space-y-2</code>
+ 				<span class="d-block text-body-secondary mt-1"
+ 					>Bootstrap only: no lines between the invoices and no space between the steps. Both
+-					Tailwind faces: dividing lines between the invoices and space between the steps.</span
++					Tailwind faces: dividing lines between the invoices and space between the steps. The lines
++					take the text color, #030712 in light mode and #e5e7eb in dark mode with the layer,
++					because the <code>divide-y</code> class sets a width and no color, and preflight's default
++					border color is the text color.</span
+ 				>
+ 			</figcaption>
+ 		</figure>
+@@ -562,9 +588,12 @@
+ 				<span class="d-block text-body-secondary mt-1"
+ 					>Bootstrap only and without the layer: the <code>mt-3</code> class reads 16 px, the
+ 					<code>gap-4</code> class 24 px, the <code>rounded</code> class 6 px, and the
+-					<code>border</code> class draws in Bootstrap's border color. With the layer: 12 px, 16 px,
+-					and 4 px, and the border takes the text color, because Tailwind owns every utility name
+-					both systems declare.</span
++					<code>border</code> class draws in Bootstrap's border color, #dee2e6 in light mode and
++					#495057 in dark mode. With the layer: 12 px, 16 px, and 4 px, because Tailwind owns every
++					utility name both systems declare. With the layer, the <code>border</code> class keeps
++					Bootstrap's border color in the mapped theme, #d1d5dc in light mode and #4a5565 in dark
++					mode, because the layer supplies the color that Tailwind's rule for the class leaves
++					unset.</span
+ 				>
+ 			</figcaption>
+ 		</figure>
+@@ -582,8 +611,9 @@
+ 				><code class="text-body-secondary">border-1</code
+ 				><span class="d-block text-body-secondary mt-1"
+ 					>Bootstrap only: no line, because the <code>border-1</code> class sets a width and no
+-					style. Both Tailwind faces: a 1 px line, because preflight gives every element a solid
+-					border style.</span
++					style. Both Tailwind faces: a 1 px line in the text color, because preflight gives every
++					element a solid border style in the text color, and Bootstrap's <code>border-1</code> rule
++					sets no color for the layer to supply.</span
+ 				>
+ 			</figcaption>
+ 		</figure>
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7f2bc2d..6c40c5f 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1271,12 +1271,12 @@ Bootstrap's components keep their look through the curation this section records
+ Tailwind's colors and scales through the token map the later Token map subsection records. Veneer
+ ships no Tailwind: you supply Tailwind, and the sheet recreates no Tailwind rule. The sheet compiles
+ the same `src/bootstrap` partials as the `./bootstrap` sheet, configured through the `$withhold`,
+-`$reset`, `$curated`, `$restored`, `$scoped`, `$palette`, and `$scale` switches of their
++`$reset`, `$curated`, `$restored`, `$reverted`, `$supplied`, `$scoped`, `$palette`, and `$scale` switches of their
+ `_tokens.scss` partial, which the `src/tailwindcss/_tokens.scss` partial sets. It carries the order
+ statement, one exclusion statement, Bootstrap's normal declarations in the `reset` and `bootstrap`
+-layers, and Bootstrap's important declarations outside every layer. The
++layers, a targeted restoration in the `base` layer, and Bootstrap's important declarations outside every layer. The
+ `ships its declared order with reset and bootstrap ownership and unlayered importance` case pins the
+-order statement as the first rule, the `reset` and `bootstrap` layers as the only layer blocks and
++order statement as the first rule, the `reset`, `base`, and `bootstrap` layers as the only layer blocks and
+ the home of every normal declaration, and every important declaration outside every layer; see the
+ [Tailwind compatibility proofs](../tests/src/tailwindcss/index.test.ts). The
+ `recreates the tuned built sheet from its Sass barrel after one round trip` case reads the built
+@@ -1363,6 +1363,16 @@ Each composition resolves a reading as the following table states. The `bootstra
+ | `max-width` of `container` in a 1280 px viewport                                                 | `1140px`               | `1280px`               | `1280px`                  | `reads every Tailwind reading the caption claims under the three faces in %s color mode`                                     |
+ | `font-size` and `font-weight` of `h1.modal-title.fs-5`                                           | `20px`, `500`          | `20px`, `500`          | `20px`, `500`             | `reads every Tailwind reading the caption claims under the three faces in %s color mode`                                     |
+ | `width` of `w-100`, `top` of `top-50`, and `inset-inline-start` of `start-100` at 640 px         | `640px`, `50%`, `100%` | `640px`, `50%`, `100%` | `400px`, `200px`, `400px` | `partitions shared names, pins raw-composition incompatibility, and gives utilities to Tailwind and components to Bootstrap` |
++| `font-size` of bare `code` and `small` in 16 px body text                                        | `14px`, `14px`         | `14px`, `14px`         | `16px`, `12.8px`          | `reads every Tailwind reading the caption claims under the three faces in %s color mode`                                     |
++| `font-size` of bare `code` and `small` in a `small` caption                                      | `12.25px`, `12.25px`   | `12.25px`, `12.25px`   | `14px`, `11.2px`          | `reads every Tailwind reading the caption claims under the three faces in %s color mode`                                     |
++| `font-weight`, `margin-bottom`, and `line-height` of bare `h5`                                   | `500`, `8px`, `24px`   | `500`, `8px`, `24px`   | `400`, `0px`, `19.2px`    | `reads every Tailwind reading the caption claims under the three faces in %s color mode`                                     |
++| `padding-left` and `margin-bottom` of bare `ul`                                                  | `32px`, `16px`         | `32px`, `16px`         | `0px`, `0px`              | `reads every Tailwind reading the caption claims under the three faces in %s color mode`                                     |
++
++The recipe also preserves lone-class link helpers: `link-offset-2` reads an underline at `0.25em`
++(`4px` in 16 px text), `link-opacity-10` reads `rgba(21, 93, 252, 0.1)`, and
++`link-underline-danger` reads `rgb(231, 0, 11)` for its decoration color in light mode.
++The `restores lone-class link helpers under the recipe compile` case pins those readings; see the
++[Tailwind face proofs](../tests/src/tailwindcss/index.test.ts).
+ 
+ The two compositions that skip the recipe compile read as follows; the `./tailwindcss` sheet linked alone is unsupported, and the sheet linked beside a separately compiled Tailwind sheet hides a `.collapse.show` element:
+ 
+@@ -1428,10 +1438,10 @@ The sheet derives from the lifted sheet by these steps and nothing else: it subs
+ the token record maps, in one pass per occurrence; it withholds every rule whose selector is exactly
+ `.NAME` for a shared utility name, and the `[hidden]` rule; it moves the reboot's rules to the
+ `reset` layer; it copies into the `bootstrap` layer each reboot rule whose selector it can restrict
+-to the curated classes; it appends the restore rows; and it adds the scoped copies. The
++to the curated classes; it appends the restore rows, the base-layer reversions, and the supplied longhands; and it adds the scoped copies. The
+ `derives the tuned sequences by substituting tokens, withholding, moving, copying, restoring, and nothing else`
+ case reads the sheet's normal and important sequences equal to the lifted sheet's transformed by
+-those steps, with 73 reboot rules moved, 72 curated copies, and 8 scoped copies. It refuses an
++those steps, with 73 reboot rules moved, 72 curated copies, 11 restore rules, one base-layer reversion with 3 declarations, and 8 scoped copies. It refuses an
+ unrecorded `#0d6efe` literal, a record without the `#0d6efd` row, a recorded white read as
+ `#fffffe`, a planted rule, an unwithheld `.mt-3` rule, and a copy missing the `modal-title` class,
+ and it substitutes `#f8f9fa` and `#f9fafb` in one declaration exactly once each. The
+@@ -1464,13 +1474,13 @@ class, and the same input without the Veneer import emits all three, as the
+ Two cases pin the recipe compile to the sheet, and a third pins the compile without the Veneer
+ import. The
+ `pins the tuned-sheet statement sequence to the measured syntactic rewrites` case reads the
+-recipe's 8582 statements equal to the built sheet's after the rewrites Tailwind makes when it
++recipe's 8588 statements equal to the built sheet's after the rewrites Tailwind makes when it
+ inlines the sheet: the empty `reset` block and 215 empty `bootstrap` blocks written as statements,
+-the exclusion directive consumed, 47 adjacent `bootstrap` blocks joined, the adjacent
++the exclusion directive consumed, 46 adjacent `bootstrap` blocks joined, the adjacent
+ `:where(.table) th` and `.dropstart .dropdown-toggle::after` rules joined, and adjacent media
+ blocks joined; see the [conformance proofs](../tests/conformance.test.ts). In Chromium, the
+ `pins the recipe CSSOM declaration sequence to the tuned sheet with the measured merge` case reads
+-the recipe's declarations, with Tailwind's own layers and `@property` rules removed, equal to the
++the recipe's declarations, with Tailwind's preflight blocks, other owned layers, and `@property` rules removed and Veneer's `base` restoration retained, equal to the
+ sheet's except the one `display: inline-block` declaration of the joined
+ `.dropstart .dropdown-toggle::after` rule; see the
+ [composition proofs](../tests/integration.test.ts). The
+@@ -1481,14 +1491,14 @@ Tailwind inventory accepts with a matching selector; see the
+ version that wrote it, and the later Compare Bootstrap and Tailwind section states the version gate
+ its case applies.
+ 
+-Curation keeps a Bootstrap component's look where preflight would move it. A component element
++Curation keeps a Bootstrap component's look and the link helpers' reboot-dependent foreground and underline where preflight would move them. A component element
+ carries a `CLASS_NAMES.bootstrap.components` name, or a lifted-sheet rule matches it through a
+ selector whose earlier compound names a component class, such as a bare `td` under `.table`; every
+ other bare element is Tailwind's, inside a component too, except the description-list margins and
+ the `.card > hr` residual, which stay yours. The curation table records each repair
+ in one of three forms:
+ 
+-- A `reboot` row names a component class. The sheet copies each reboot rule into the `bootstrap`
++- A `reboot` row names a component class or a Bootstrap helper whose rule acts through a reboot declaration. The sheet copies each reboot rule into the `bootstrap`
+   layer with every element compound restricted to `TAG:where(.CLASS)`, so an element carrying the
+   class keeps the reboot's declarations.
+ - A `restore` row names a `TAG:where(.CLASS)` selector and the longhands that read `revert` in the
+@@ -1496,6 +1506,28 @@ in one of three forms:
+ - A `scoped` row names a `:where(.ROOT) TAG` selector, a copy of each reboot rule for that tag
+   inside the root component, for a component element that carries no class.
+ 
++### Base-layer restoration
++
++The `$reverted` map names selectors and longhands to roll back inside preflight's own `base` layer.
++It applies to an attribute-sized replaced element whose box a `base`-layer preflight rule changes.
++The `revert` mixin, called by the `restore` mixin, emits one rule per entry after preflight under the recipe.
++Both Bootstrap partials default the map to empty; only the Tailwind token partial configures it.
++The object-fit entry selects `:is(img, video):is(.NAME, ...)` across
++`object-fit-{,sm-,md-,lg-,xl-,xxl-}{contain,cover,fill,none,scale}` and writes
++`display: revert-layer; max-width: revert-layer; height: revert-layer`.
++The selector wins over preflight by specificity and rolls those properties back to the preceding layers and the element's attributes.
++A reversion from the `bootstrap` layer cannot remove declarations in `base`.
++
++The `restores attribute-sized boxes for all object-fit names and leaves a bare image on preflight`
++case reads a 64×64 border box for every one of the 30 names on a 160×80 SVG with
++`width="64" height="64"`, with computed fits `contain`, `cover`, `fill`, `none`, and `scale-down`.
++Its bare control reads 64×32, `display: block`, and `max-width: 100%`.
++The `places the object-fit restoration in base with exactly its names and longhands` case pins the rule's selector, layer, and declarations;
++see the [Tailwind face proofs](../tests/src/tailwindcss/index.test.ts).
++The ordinary `$restored` map retains its 11 `revert` rules; `$reverted` adds one rule with 3 declarations.
++
++### Curation witnesses
++
+ The description-list margins and the `.card > hr` residual stay yours. The documented `dl.row`
+ element and its `dd` elements read bottom margins of 16 px and 8 px under the `bootstrap` face,
+ and 0 px under the `tailwindcss` face, as the
+@@ -1525,66 +1557,103 @@ specificity and a copy placed after the component rules as controls; see the
+ `restricts reboot compounds without raising specificity or copying impossible selectors` and
+ `scopes only exact final tag compounds from reboot rules` cases prove the selector instruments; see
+ the [browser setup proofs](../tests/setupStyles.test.ts). The table records the curation for
+-Tailwind 4.3.3:
+-
+-| Form    | Class or selector                 | Longhands                                                                                        | Witness                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Reading                                       |
+-| ------- | --------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+-| reboot  | `modal-title`                     | `font-size, font-weight`                                                                         | `<h5 class="modal-title">Archive details</h5>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps heading size and weight                 |
+-| reboot  | `offcanvas-title`                 | `font-size, font-weight`                                                                         | `<h5 class="offcanvas-title">Archive filters</h5>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps heading size and weight                 |
+-| reboot  | `popover-header`                  | `font-weight`                                                                                    | `<h3 class="popover-header">Archive note</h3>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps heading weight                          |
+-| reboot  | `card-title`                      | `font-size, font-weight`                                                                         | `<h5 class="card-title">Coastal archive</h5>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps heading size and weight                 |
+-| reboot  | `card-text`                       | `margin-block-end, margin-bottom`                                                                | `<p class="card-text">Archive description</p><span>Archive status</span>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Keeps paragraph bottom margin                 |
+-| reboot  | `accordion-header`                | `font-size, font-weight`                                                                         | `<h4 class="accordion-header">Archive access</h4>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps heading size and weight                 |
+-| reboot  | `pagination`                      | `margin-block-end, margin-bottom`                                                                | `<ul class="pagination"><li>Archive page</li></ul>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps list bottom margin                      |
+-| reboot  | `placeholder-glow`                | `margin-block-end, margin-bottom`                                                                | `<p class="placeholder-glow">Archive loading</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Keeps paragraph bottom margin                 |
+-| reboot  | `stretched-link`                  | `color, text-decoration-color, text-decoration-line`                                             | `<a class="stretched-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps link foreground and decoration          |
+-| reboot  | `visually-hidden-focusable`       | `color, text-decoration-color, text-decoration-line`                                             | `<a class="visually-hidden-focusable" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and decoration          |
+-| reboot  | `alert-link`                      | `text-decoration-line`                                                                           | `<a class="alert-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Keeps link underline                          |
+-| reboot  | `card-link`                       | `color, text-decoration-color, text-decoration-line`                                             | `<a class="card-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and decoration          |
+-| reboot  | `icon-link`                       | `color, text-decoration-line`                                                                    | `<a class="icon-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and decoration          |
+-| reboot  | `link-primary`                    | `text-decoration-line`                                                                           | `<a class="link-primary" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps link underline                          |
+-| reboot  | `link-secondary`                  | `text-decoration-line`                                                                           | `<a class="link-secondary" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps link underline                          |
+-| reboot  | `link-success`                    | `text-decoration-line`                                                                           | `<a class="link-success" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps link underline                          |
+-| reboot  | `link-danger`                     | `text-decoration-line`                                                                           | `<a class="link-danger" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Keeps link underline                          |
+-| reboot  | `link-warning`                    | `text-decoration-line`                                                                           | `<a class="link-warning" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps link underline                          |
+-| reboot  | `link-info`                       | `text-decoration-line`                                                                           | `<a class="link-info" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link underline                          |
+-| reboot  | `link-light`                      | `text-decoration-line`                                                                           | `<a class="link-light" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Keeps link underline                          |
+-| reboot  | `link-dark`                       | `text-decoration-line`                                                                           | `<a class="link-dark" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link underline                          |
+-| reboot  | `link-body-emphasis`              | `text-decoration-line`                                                                           | `<a class="link-body-emphasis" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps link underline                          |
+-| reboot  | `lead`                            | `margin-block-end, margin-bottom`                                                                | `<p class="lead">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps bottom margin                           |
+-| reboot  | `display-1`                       | `margin-block-end, margin-bottom`                                                                | `<p class="display-1">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
+-| reboot  | `display-2`                       | `margin-block-end, margin-bottom`                                                                | `<p class="display-2">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
+-| reboot  | `display-3`                       | `margin-block-end, margin-bottom`                                                                | `<p class="display-3">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
+-| reboot  | `display-4`                       | `margin-block-end, margin-bottom`                                                                | `<p class="display-4">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
+-| reboot  | `display-5`                       | `margin-block-end, margin-bottom`                                                                | `<p class="display-5">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
+-| reboot  | `list-unstyled`                   | `margin-block-end, margin-bottom`                                                                | `<ul class="list-unstyled"><li>Archive entry</li></ul>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps bottom margin                           |
+-| reboot  | `focus-ring`                      | `color`                                                                                          | `<a class="focus-ring" href="#archive">Archive entry</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Keeps link foreground                         |
+-| reboot  | `alert-heading`                   | `font-size, font-weight, margin-bottom, margin-block-end`                                        | `<div class="alert alert-success" role="alert"> <h4 class="alert-heading">Harbor survey filed</h4> <p> The dive team logged 38 corroded pilings along the east quay and sent the report to the port engineer for review. </p> <hr /> <p class="mb-0">Repairs on the east quay start after the spring tides.</p> </div>`                                                                                                                                                                                                                                                                                                        | Keeps heading size, weight, and bottom margin |
+-| reboot  | `card-subtitle`                   | `font-weight`                                                                                    | `<div class="card"> <div class="card-body"> <h5 class="card-title">Lighthouse keeper's log</h5> <h6 class="card-subtitle mb-2 text-body-secondary">North point station</h6> <p class="card-text"> The lamp ran for 11 hours on the night of the storm and burned 4 liters of oil. </p> <a href="#" class="card-link">Open the log</a> <a href="#" class="card-link">Print the log</a> </div> </div>`                                                                                                                                                                                                                           | Keeps heading weight                          |
+-| reboot  | `card-header`                     | `font-size, font-weight`                                                                         | `<div class="card"> <h5 class="card-header">Featured route</h5> <div class="card-body"> <h5 class="card-title">Coastal ferry, Lisbon to Porto</h5> <p class="card-text">The morning crossing takes 5 hours and calls at 2 ports.</p> <a href="#" class="btn btn-primary">See the timetable</a> </div> </div>`                                                                                                                                                                                                                                                                                                                  | Keeps heading size and weight                 |
+-| reboot  | `dropdown-header`                 | `font-weight`                                                                                    | `<ul class="dropdown-menu show position-static"> <li><h6 class="dropdown-header">Shipping options</h6></li> <li><a class="dropdown-item" href="#">Standard freight</a></li> <li><a class="dropdown-item" href="#">Express freight</a></li> </ul>`                                                                                                                                                                                                                                                                                                                                                                              | Keeps heading weight                          |
+-| reboot  | `display-6`                       | `margin-bottom, margin-block-end`                                                                | `<h1 class="display-6">Display 6</h1>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps heading bottom margin                   |
+-| reboot  | `list-inline`                     | `margin-bottom, margin-block-end`                                                                | `<ul class="list-inline"> <li class="list-inline-item">Customs cleared.</li> <li class="list-inline-item">Pallets weighed.</li> <li class="list-inline-item">Crane booked for berth 3.</li> </ul>`                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps list bottom margin                      |
+-| reboot  | `figure`                          | `margin-bottom, margin-block-end`                                                                | `<figure class="figure"> <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='280' viewBox='0 0 480 280'%3E%3Crect width='480' height='280' fill='%23e2e3e5'/%3E%3Crect y='200' width='480' height='80' fill='%230aa2c0'/%3E%3Crect x='60' y='160' width='110' height='40' fill='%23dc3545'/%3E%3Crect x='220' y='110' width='200' height='90' fill='%23495057'/%3E%3C/svg%3E" class="figure-img img-fluid rounded" alt="Illustration of a red tugboat beside a gray container ship" /> <figcaption class="figure-caption">Tug assist at berth 2, morning shift.</figcaption> </figure>` | Keeps figure bottom margin                    |
+-| reboot  | `placeholder-wave`                | `margin-bottom, margin-block-end`                                                                | `<p class="placeholder-glow"> <span class="placeholder col-12"></span> </p> <p class="placeholder-wave"> <span class="placeholder col-12"></span> </p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps paragraph bottom margin                 |
+-| restore | `svg:where(.bi)`                  | `display`                                                                                        | `<button class="btn"><svg class="bi" aria-label="Archive icon"></svg></button>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps inline display                          |
+-| restore | `img:where(.figure-img)`          | `display`                                                                                        | `<img class="figure-img" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps inline display                          |
+-| restore | `img:where(.img-fluid)`           | `display`                                                                                        | `<img class="img-fluid" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps inline display                          |
+-| restore | `img:where(.card-img)`            | `max-width`                                                                                      | `<img class="card-img" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps unrestricted maximum width              |
+-| restore | `img:where(.card-img-top)`        | `max-width`                                                                                      | `<img class="card-img-top" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps unrestricted maximum width              |
+-| restore | `img:where(.card-img-bottom)`     | `max-width`                                                                                      | `<img class="card-img-bottom" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Keeps unrestricted maximum width              |
+-| restore | `input:where(.form-check-input)`  | `color`                                                                                          | `<input class="form-check-input" type="checkbox" aria-label="Include archived records">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps user-agent foreground                   |
+-| restore | `input:where(.btn-check)`         | `color`                                                                                          | `<input class="btn-check" type="checkbox" aria-label="Select archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps user-agent foreground                   |
+-| restore | `input:where(.form-range)`        | `color`                                                                                          | `<input class="form-range" type="range" aria-label="Archive range">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps user-agent foreground                   |
+-| restore | `button:where(.accordion-button)` | `font-weight`                                                                                    | `<h4 class="accordion-header"><button class="accordion-button" type="button">Archive access</button></h4>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps button weight within the heading        |
+-| restore | `img:where(.img-thumbnail)`       | `display`                                                                                        | `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23e9ecef'/%3E%3Ccircle cx='100' cy='82' r='38' fill='%236c757d'/%3E%3Cpath d='M32 200 C32 150 64 130 100 130 C136 130 168 150 168 200Z' fill='%236c757d'/%3E%3C/svg%3E" class="img-thumbnail" alt="Gray silhouette of a harbor pilot" />`                                                                                                                                                                                                                     | Keeps inline display                          |
+-| scoped  | `:where(.table) thead`            | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><thead><tr><th>Archive row</th></tr></thead></table><table class="table"><thead class="table-light"><tr><th>Archive variant</th></tr></thead></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Keeps table border color                      |
+-| scoped  | `:where(.table) tbody`            | `border-top-color, border-right-color, border-bottom-color, border-left-color, border-top-width` | `<table class="table"><tbody><tr><td>Archive row</td></tr></tbody><tbody class="table-group-divider"><tr><td>Archive divider</td></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps divider border width and color          |
+-| scoped  | `:where(.table) tfoot`            | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tfoot><tr><td>Archive row</td></tr></tfoot></table><table class="table"><tfoot class="table-group-divider"><tr><td>Archive divider</td></tr></tfoot></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps table border color                      |
+-| scoped  | `:where(.table) tr`               | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tbody><tr><td>Archive row</td></tr><tr class="table-primary"><td>Archive variant</td></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps plain and variant border colors         |
+-| scoped  | `:where(.table) th`               | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tbody><tr><th>Archive row</th></tr><tr class="table-primary"><th>Archive variant</th></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps plain and variant border colors         |
+-| scoped  | `:where(.table) td`               | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tbody><tr><td>Archive row</td></tr><tr class="table-primary"><td>Archive variant</td></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps plain and variant border colors         |
+-| scoped  | `:where(.navbar-text) a`          | `text-decoration-line`                                                                           | `<span class="navbar-text">Signed in as <a href="#">Ines Duarte</a></span><nav class="navbar bg-body-tertiary"> <div class="container-fluid"> <span class="navbar-text">Signed in as <a href="#">Ines Duarte</a></span> </div> </nav>`                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link underline                          |
++Tailwind 4.3.3, with 93 rows: 75 reboot rows (38 existing rows and 37 added link-helper rows), 11 restore rows, and 7 scoped rows:
++
++| Form    | Class or selector                  | Longhands                                                                                        | Witness                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Reading                                       |
++| ------- | ---------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
++| reboot  | `modal-title`                      | `font-size, font-weight`                                                                         | `<h5 class="modal-title">Archive details</h5>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps heading size and weight                 |
++| reboot  | `offcanvas-title`                  | `font-size, font-weight`                                                                         | `<h5 class="offcanvas-title">Archive filters</h5>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps heading size and weight                 |
++| reboot  | `popover-header`                   | `font-weight`                                                                                    | `<h3 class="popover-header">Archive note</h3>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps heading weight                          |
++| reboot  | `card-title`                       | `font-size, font-weight`                                                                         | `<h5 class="card-title">Coastal archive</h5>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps heading size and weight                 |
++| reboot  | `card-text`                        | `margin-block-end, margin-bottom`                                                                | `<p class="card-text">Archive description</p><span>Archive status</span>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Keeps paragraph bottom margin                 |
++| reboot  | `accordion-header`                 | `font-size, font-weight`                                                                         | `<h4 class="accordion-header">Archive access</h4>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps heading size and weight                 |
++| reboot  | `pagination`                       | `margin-block-end, margin-bottom`                                                                | `<ul class="pagination"><li>Archive page</li></ul>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps list bottom margin                      |
++| reboot  | `placeholder-glow`                 | `margin-block-end, margin-bottom`                                                                | `<p class="placeholder-glow">Archive loading</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Keeps paragraph bottom margin                 |
++| reboot  | `stretched-link`                   | `color, text-decoration-color, text-decoration-line`                                             | `<a class="stretched-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps link foreground and decoration          |
++| reboot  | `visually-hidden-focusable`        | `color, text-decoration-color, text-decoration-line`                                             | `<a class="visually-hidden-focusable" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and decoration          |
++| reboot  | `alert-link`                       | `text-decoration-line`                                                                           | `<a class="alert-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Keeps link underline                          |
++| reboot  | `card-link`                        | `color, text-decoration-color, text-decoration-line`                                             | `<a class="card-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and decoration          |
++| reboot  | `icon-link`                        | `color, text-decoration-line`                                                                    | `<a class="icon-link" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and decoration          |
++| reboot  | `link-primary`                     | `text-decoration-line`                                                                           | `<a class="link-primary" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps link underline                          |
++| reboot  | `link-secondary`                   | `text-decoration-line`                                                                           | `<a class="link-secondary" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps link underline                          |
++| reboot  | `link-success`                     | `text-decoration-line`                                                                           | `<a class="link-success" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps link underline                          |
++| reboot  | `link-danger`                      | `text-decoration-line`                                                                           | `<a class="link-danger" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Keeps link underline                          |
++| reboot  | `link-warning`                     | `text-decoration-line`                                                                           | `<a class="link-warning" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Keeps link underline                          |
++| reboot  | `link-info`                        | `text-decoration-line`                                                                           | `<a class="link-info" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link underline                          |
++| reboot  | `link-light`                       | `text-decoration-line`                                                                           | `<a class="link-light" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Keeps link underline                          |
++| reboot  | `link-dark`                        | `text-decoration-line`                                                                           | `<a class="link-dark" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link underline                          |
++| reboot  | `link-body-emphasis`               | `text-decoration-line`                                                                           | `<a class="link-body-emphasis" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps link underline                          |
++| reboot  | `link-underline`                   | `color, text-decoration-line`                                                                    | `<a class="link-underline" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps link foreground and underline           |
++| reboot  | `link-underline-primary`           | `color, text-decoration-line`                                                                    | `<a class="link-underline-primary" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps link foreground and underline           |
++| reboot  | `link-underline-secondary`         | `color, text-decoration-line`                                                                    | `<a class="link-underline-secondary" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Keeps link foreground and underline           |
++| reboot  | `link-underline-success`           | `color, text-decoration-line`                                                                    | `<a class="link-underline-success" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps link foreground and underline           |
++| reboot  | `link-underline-danger`            | `color, text-decoration-line`                                                                    | `<a class="link-underline-danger" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link foreground and underline           |
++| reboot  | `link-underline-warning`           | `color, text-decoration-line`                                                                    | `<a class="link-underline-warning" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps link foreground and underline           |
++| reboot  | `link-underline-info`              | `color, text-decoration-line`                                                                    | `<a class="link-underline-info" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps link foreground and underline           |
++| reboot  | `link-underline-light`             | `color, text-decoration-line`                                                                    | `<a class="link-underline-light" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Keeps link foreground and underline           |
++| reboot  | `link-underline-dark`              | `color, text-decoration-line`                                                                    | `<a class="link-underline-dark" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-0`         | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-0" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-0-hover`   | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-0-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-10`        | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-10" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-10-hover`  | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-10-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-25`        | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-25" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-25-hover`  | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-25-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-50`        | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-50" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-50-hover`  | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-50-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-75`        | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-75" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-75-hover`  | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-75-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-100`       | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-100" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Keeps link foreground and underline           |
++| reboot  | `link-underline-opacity-100-hover` | `color, text-decoration-line`                                                                    | `<a class="link-underline-opacity-100-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Keeps link foreground and underline           |
++| reboot  | `link-opacity-10`                  | `color, text-decoration-line`                                                                    | `<a class="link-opacity-10" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-opacity-10-hover`            | `color, text-decoration-line`                                                                    | `<a class="link-opacity-10-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link foreground and underline           |
++| reboot  | `link-opacity-25`                  | `color, text-decoration-line`                                                                    | `<a class="link-opacity-25" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-opacity-25-hover`            | `color, text-decoration-line`                                                                    | `<a class="link-opacity-25-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link foreground and underline           |
++| reboot  | `link-opacity-50`                  | `color, text-decoration-line`                                                                    | `<a class="link-opacity-50" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-opacity-50-hover`            | `color, text-decoration-line`                                                                    | `<a class="link-opacity-50-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link foreground and underline           |
++| reboot  | `link-opacity-75`                  | `color, text-decoration-line`                                                                    | `<a class="link-opacity-75" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps link foreground and underline           |
++| reboot  | `link-opacity-75-hover`            | `color, text-decoration-line`                                                                    | `<a class="link-opacity-75-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link foreground and underline           |
++| reboot  | `link-opacity-100`                 | `color, text-decoration-line`                                                                    | `<a class="link-opacity-100" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Keeps link foreground and underline           |
++| reboot  | `link-opacity-100-hover`           | `color, text-decoration-line`                                                                    | `<a class="link-opacity-100-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps link foreground and underline           |
++| reboot  | `link-offset-1`                    | `color, text-decoration-line`                                                                    | `<a class="link-offset-1" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps link foreground and underline           |
++| reboot  | `link-offset-1-hover`              | `color, text-decoration-line`                                                                    | `<a class="link-offset-1-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps link foreground and underline           |
++| reboot  | `link-offset-2`                    | `color, text-decoration-line`                                                                    | `<a class="link-offset-2" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps link foreground and underline           |
++| reboot  | `link-offset-2-hover`              | `color, text-decoration-line`                                                                    | `<a class="link-offset-2-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps link foreground and underline           |
++| reboot  | `link-offset-3`                    | `color, text-decoration-line`                                                                    | `<a class="link-offset-3" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps link foreground and underline           |
++| reboot  | `link-offset-3-hover`              | `color, text-decoration-line`                                                                    | `<a class="link-offset-3-hover" href="#archive">Archive details</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps link foreground and underline           |
++| reboot  | `lead`                             | `margin-block-end, margin-bottom`                                                                | `<p class="lead">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps bottom margin                           |
++| reboot  | `display-1`                        | `margin-block-end, margin-bottom`                                                                | `<p class="display-1">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
++| reboot  | `display-2`                        | `margin-block-end, margin-bottom`                                                                | `<p class="display-2">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
++| reboot  | `display-3`                        | `margin-block-end, margin-bottom`                                                                | `<p class="display-3">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
++| reboot  | `display-4`                        | `margin-block-end, margin-bottom`                                                                | `<p class="display-4">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
++| reboot  | `display-5`                        | `margin-block-end, margin-bottom`                                                                | `<p class="display-5">Archive entry</p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps bottom margin                           |
++| reboot  | `list-unstyled`                    | `margin-block-end, margin-bottom`                                                                | `<ul class="list-unstyled"><li>Archive entry</li></ul>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps bottom margin                           |
++| reboot  | `focus-ring`                       | `color`                                                                                          | `<a class="focus-ring" href="#archive">Archive entry</a>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Keeps link foreground                         |
++| reboot  | `alert-heading`                    | `font-size, font-weight, margin-bottom, margin-block-end`                                        | `<div class="alert alert-success" role="alert"> <h4 class="alert-heading">Harbor survey filed</h4> <p> The dive team logged 38 corroded pilings along the east quay and sent the report to the port engineer for review. </p> <hr /> <p class="mb-0">Repairs on the east quay start after the spring tides.</p> </div>`                                                                                                                                                                                                                                                                                                        | Keeps heading size, weight, and bottom margin |
++| reboot  | `card-subtitle`                    | `font-weight`                                                                                    | `<div class="card"> <div class="card-body"> <h5 class="card-title">Lighthouse keeper's log</h5> <h6 class="card-subtitle mb-2 text-body-secondary">North point station</h6> <p class="card-text"> The lamp ran for 11 hours on the night of the storm and burned 4 liters of oil. </p> <a href="#" class="card-link">Open the log</a> <a href="#" class="card-link">Print the log</a> </div> </div>`                                                                                                                                                                                                                           | Keeps heading weight                          |
++| reboot  | `card-header`                      | `font-size, font-weight`                                                                         | `<div class="card"> <h5 class="card-header">Featured route</h5> <div class="card-body"> <h5 class="card-title">Coastal ferry, Lisbon to Porto</h5> <p class="card-text">The morning crossing takes 5 hours and calls at 2 ports.</p> <a href="#" class="btn btn-primary">See the timetable</a> </div> </div>`                                                                                                                                                                                                                                                                                                                  | Keeps heading size and weight                 |
++| reboot  | `dropdown-header`                  | `font-weight`                                                                                    | `<ul class="dropdown-menu show position-static"> <li><h6 class="dropdown-header">Shipping options</h6></li> <li><a class="dropdown-item" href="#">Standard freight</a></li> <li><a class="dropdown-item" href="#">Express freight</a></li> </ul>`                                                                                                                                                                                                                                                                                                                                                                              | Keeps heading weight                          |
++| reboot  | `display-6`                        | `margin-bottom, margin-block-end`                                                                | `<h1 class="display-6">Display 6</h1>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Keeps heading bottom margin                   |
++| reboot  | `list-inline`                      | `margin-bottom, margin-block-end`                                                                | `<ul class="list-inline"> <li class="list-inline-item">Customs cleared.</li> <li class="list-inline-item">Pallets weighed.</li> <li class="list-inline-item">Crane booked for berth 3.</li> </ul>`                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps list bottom margin                      |
++| reboot  | `figure`                           | `margin-bottom, margin-block-end`                                                                | `<figure class="figure"> <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='280' viewBox='0 0 480 280'%3E%3Crect width='480' height='280' fill='%23e2e3e5'/%3E%3Crect y='200' width='480' height='80' fill='%230aa2c0'/%3E%3Crect x='60' y='160' width='110' height='40' fill='%23dc3545'/%3E%3Crect x='220' y='110' width='200' height='90' fill='%23495057'/%3E%3C/svg%3E" class="figure-img img-fluid rounded" alt="Illustration of a red tugboat beside a gray container ship" /> <figcaption class="figure-caption">Tug assist at berth 2, morning shift.</figcaption> </figure>` | Keeps figure bottom margin                    |
++| reboot  | `placeholder-wave`                 | `margin-bottom, margin-block-end`                                                                | `<p class="placeholder-glow"> <span class="placeholder col-12"></span> </p> <p class="placeholder-wave"> <span class="placeholder col-12"></span> </p>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps paragraph bottom margin                 |
++| restore | `svg:where(.bi)`                   | `display`                                                                                        | `<button class="btn"><svg class="bi" aria-label="Archive icon"></svg></button>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps inline display                          |
++| restore | `img:where(.figure-img)`           | `display`                                                                                        | `<img class="figure-img" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Keeps inline display                          |
++| restore | `img:where(.img-fluid)`            | `display`                                                                                        | `<img class="img-fluid" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Keeps inline display                          |
++| restore | `img:where(.card-img)`             | `max-width`                                                                                      | `<img class="card-img" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Keeps unrestricted maximum width              |
++| restore | `img:where(.card-img-top)`         | `max-width`                                                                                      | `<img class="card-img-top" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps unrestricted maximum width              |
++| restore | `img:where(.card-img-bottom)`      | `max-width`                                                                                      | `<img class="card-img-bottom" alt="Coastal archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Keeps unrestricted maximum width              |
++| restore | `input:where(.form-check-input)`   | `color`                                                                                          | `<input class="form-check-input" type="checkbox" aria-label="Include archived records">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Keeps user-agent foreground                   |
++| restore | `input:where(.btn-check)`          | `color`                                                                                          | `<input class="btn-check" type="checkbox" aria-label="Select archive">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps user-agent foreground                   |
++| restore | `input:where(.form-range)`         | `color`                                                                                          | `<input class="form-range" type="range" aria-label="Archive range">`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps user-agent foreground                   |
++| restore | `button:where(.accordion-button)`  | `font-weight`                                                                                    | `<h4 class="accordion-header"><button class="accordion-button" type="button">Archive access</button></h4>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Keeps button weight within the heading        |
++| restore | `img:where(.img-thumbnail)`        | `display`                                                                                        | `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23e9ecef'/%3E%3Ccircle cx='100' cy='82' r='38' fill='%236c757d'/%3E%3Cpath d='M32 200 C32 150 64 130 100 130 C136 130 168 150 168 200Z' fill='%236c757d'/%3E%3C/svg%3E" class="img-thumbnail" alt="Gray silhouette of a harbor pilot" />`                                                                                                                                                                                                                     | Keeps inline display                          |
++| scoped  | `:where(.table) thead`             | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><thead><tr><th>Archive row</th></tr></thead></table><table class="table"><thead class="table-light"><tr><th>Archive variant</th></tr></thead></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Keeps table border color                      |
++| scoped  | `:where(.table) tbody`             | `border-top-color, border-right-color, border-bottom-color, border-left-color, border-top-width` | `<table class="table"><tbody><tr><td>Archive row</td></tr></tbody><tbody class="table-group-divider"><tr><td>Archive divider</td></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Keeps divider border width and color          |
++| scoped  | `:where(.table) tfoot`             | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tfoot><tr><td>Archive row</td></tr></tfoot></table><table class="table"><tfoot class="table-group-divider"><tr><td>Archive divider</td></tr></tfoot></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps table border color                      |
++| scoped  | `:where(.table) tr`                | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tbody><tr><td>Archive row</td></tr><tr class="table-primary"><td>Archive variant</td></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps plain and variant border colors         |
++| scoped  | `:where(.table) th`                | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tbody><tr><th>Archive row</th></tr><tr class="table-primary"><th>Archive variant</th></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps plain and variant border colors         |
++| scoped  | `:where(.table) td`                | `border-top-color, border-right-color, border-bottom-color, border-left-color`                   | `<table class="table"><tbody><tr><td>Archive row</td></tr><tr class="table-primary"><td>Archive variant</td></tr></tbody></table>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Keeps plain and variant border colors         |
++| scoped  | `:where(.navbar-text) a`           | `text-decoration-line`                                                                           | `<span class="navbar-text">Signed in as <a href="#">Ines Duarte</a></span><nav class="navbar bg-body-tertiary"> <div class="container-fluid"> <span class="navbar-text">Signed in as <a href="#">Ines Duarte</a></span> </div> </nav>`                                                                                                                                                                                                                                                                                                                                                                                         | Keeps link underline                          |
+ 
+ The `pins the curation table and shared literals to their sources with planted and removed controls`
+ case reads the table's `reboot` rows equal to the `$curated` list, its `restore` rows equal to the
+@@ -2423,8 +2492,9 @@ link's 4 px focus halo in its face's color after Tab and `none` after the next T
+ | Specimen                                  | Reading                                                                                                                                   | Bootstrap                                                                                  | Tailwind, no layer                                                                         | Tailwind + layer                                                                                    |
+ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+ | Bootstrap card on Tailwind's reset        | `font-weight` of `card-title`, `margin-bottom` of `card-text` and of a bare `p`                                                           | `500`, `16px`, `16px`                                                                      | `500`, `16px`, `16px`                                                                      | `500`, `16px`, `0px`                                                                                |
+-| Bare heading beside a heading class       | `font-size` of a bare `h5` and of `p.h5`                                                                                                  | `20px`, `20px`                                                                             | `20px`, `20px`                                                                             | `16px`, `20px`                                                                                      |
+-| Bare image and list                       | `display` of `img`, `list-style-type` of `ul`                                                                                             | `inline`, `disc`                                                                           | `block`, `none`                                                                            | `block`, `none`                                                                                     |
++| Bare heading beside a heading class       | `font-size`, `font-weight`, `margin-bottom`, and `line-height` of a bare `h5`, then `p.h5`                                                | `20px, 500, 8px, 24px` for both                                                            | `20px, 500, 8px, 24px` for both                                                            | `16px, 400, 0px, 19.2px`; `20px, 500, 8px, 24px`                                                    |
++| Bare inline code and small text           | `font-size` of bare `code` and `small` in body text, then a `small` caption                                                               | `14px, 14px`; `12.25px, 12.25px`                                                           | `14px, 14px`; `12.25px, 12.25px`                                                           | `16px, 12.8px`; `14px, 11.2px`                                                                      |
++| Bare image and list                       | `display` of `img`; `list-style-type`, `padding-left`, and `margin-bottom` of `ul`                                                        | `inline`; `disc, 32px, 16px`                                                               | `block`; `none, 32px, 16px`                                                                | `block`; `none, 0px, 0px`                                                                           |
+ | Hidden attribute with a display utility   | `display` of `<div hidden class="d-flex">`                                                                                                | `flex`                                                                                     | `none`                                                                                     | `none`                                                                                              |
+ | Icon in a Bootstrap button                | `display` of `svg.bi`                                                                                                                     | `inline`                                                                                   | `block`                                                                                    | `inline`                                                                                            |
+ | Image in a Bootstrap figure               | `display` of `img.figure-img`                                                                                                             | `inline`                                                                                   | `block`                                                                                    | `inline`                                                                                            |
+@@ -2438,9 +2508,9 @@ link's 4 px focus halo in its face's color after Tab and `none` after the next T
+ | Tailwind variant at the md breakpoint     | `display` of `md:flex` at 1280 px and 390 px                                                                                              | `block`, `block`                                                                           | `flex`, `block`                                                                            | `flex`, `block`                                                                                     |
+ | Arbitrary margin value                    | `margin-top` of `mt-[1rem]`                                                                                                               | `0px`                                                                                      | `16px`                                                                                     | `16px`                                                                                              |
+ | Tailwind color, ring, shadow, and size    | `width`, `height`, and `border-top-left-radius` of `size-12`, `background-color` of `bg-sky-500`, and `letter-spacing` of `tracking-wide` | `0px`, `0px`, `0px`, `rgba(0, 0, 0, 0)`, `normal`                                          | `48px`, `48px`, `3.35544e+07px`, `oklch(0.685 0.169 237.323)`, `0.4px`                     | `48px`, `48px`, `3.35544e+07px`, `oklch(0.685 0.169 237.323)`, `0.4px`                              |
+-| Tailwind dividers and vertical spacing    | `border-bottom-width` of an `li` in a `divide-y` list, and `margin-bottom` of a `div` in a `space-y-2` stack                              | `0px`, `0px`                                                                               | `1px`, `8px`                                                                               | `1px`, `8px`                                                                                        |
+-| Shared spacing, border, and radius        | `margin-top` of `mt-3`, `column-gap` of `gap-4`, `border-top-left-radius` of `rounded`                                                    | `16px`, `24px`, `6px`                                                                      | `16px`, `24px`, `6px`                                                                      | `12px`, `16px`, `4px`                                                                               |
+-| Border width without a border style       | `border-top-width` of `border-1`                                                                                                          | `0px`                                                                                      | `1px`                                                                                      | `1px`                                                                                               |
++| Tailwind dividers and vertical spacing    | Invoice divider width and color in light / dark mode; step spacing                                                                        | No divider; `#212529 / #dee2e6`; no space                                                  | `1px`, text color `#212529 / #dee2e6`; `8px`                                               | `1px`, text color `#030712 / #e5e7eb`; `8px`                                                        |
++| Shared spacing, border, and radius        | `margin-top` of `mt-3`, `column-gap` of `gap-4`, radius of `rounded`, and `border-top-color` of `border` in light / dark mode             | `16px, 24px, 6px`; `#dee2e6 / #495057`                                                     | `16px, 24px, 6px`; `#dee2e6 / #495057`                                                     | `12px, 16px, 4px`; `#d1d5dc / #4a5565`                                                              |
++| Border width without a border style       | `border-top-width` and `border-top-color` of `border-1` in light / dark mode                                                              | `0px`, `#212529 / #dee2e6`                                                                 | `1px`, text color `#212529 / #dee2e6`                                                      | `1px`, text color `#030712 / #e5e7eb`                                                               |
+ | Pill radius beside rounded-full           | `border-top-left-radius` of `rounded-pill rounded-full`                                                                                   | `800px`                                                                                    | `800px`                                                                                    | `800px`                                                                                             |
+ | Responsive alignment at the md breakpoint | `text-align` of `text-center text-md-start` at 1280 px and 390 px                                                                         | `left`, `center`                                                                           | `left`, `center`                                                                           | `left`, `center`                                                                                    |
+ | Link in a Bootstrap alert                 | `color` and `background-color` of `alert` in light mode, then in dark mode                                                                | `rgb(5, 81, 96)`, `rgb(207, 244, 252)`, `rgb(110, 223, 246)`, `rgb(3, 40, 48)`             | `rgb(5, 81, 96)`, `rgb(207, 244, 252)`, `rgb(110, 223, 246)`, `rgb(3, 40, 48)`             | `rgb(0, 95, 120)`, `rgb(206, 250, 254)`, `rgb(83, 234, 253)`, `rgb(5, 51, 69)`                      |
+@@ -2460,6 +2530,8 @@ shadow scales, and Mapped sm breakpoint rows read the token map: the `unexcluded
+ Bootstrap's values there, because it loads the `./bootstrap` sheet, and the `tailwindcss` face
+ reads the mapped values the Token map subsection lists.
+ 
++The 73 readings cover 28 named specimen cards in the Tailwind section and three specimens elsewhere. The section has 29 figure elements because one specimen contains a nested figure. They include the bare inline font sizes, heading weight, margin and line height, list indent and margin, invoice divider color, width-only border color, and the shared border's mapped color in both modes.
++
+ The Tailwind color, ring, shadow, and size specimen also reads the `box-shadow` of `shadow-xl` as
+ `none` under the `bootstrap` face and as
+ `rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.1) 0px 8px 10px -6px`
+diff --git a/src/bootstrap/_mixins.scss b/src/bootstrap/_mixins.scss
+index 450f1da..91fb372 100644
+--- a/src/bootstrap/_mixins.scss
++++ b/src/bootstrap/_mixins.scss
+@@ -10,6 +10,7 @@ $withhold: () !default;
+ $reset: false !default;
+ $curated: () !default;
+ $restored: () !default;
++$reverted: () !default;
+ $supplied: () !default;
+ $scoped: () !default;
+ $palette: () !default;
+@@ -133,6 +134,7 @@ $-tag: null;
+ 			}
+ 		}
+ 	}
++	@include revert;
+ 	@if list.length($supplied) > 0 {
+ 		@layer bootstrap {
+ 			@each $name, $properties in $supplied {
+@@ -148,6 +150,20 @@ $-tag: null;
+ 	}
+ }
+ 
++@mixin revert {
++	@if $reset and list.length($reverted) > 0 {
++		@layer base {
++			@each $selector, $properties in $reverted {
++				#{$selector} {
++					@each $property in $properties {
++						#{$property}: revert-layer;
++					}
++				}
++			}
++		}
++	}
++}
++
+ @mixin layer {
+ 	@if $layered {
+ 		@layer bootstrap {
+diff --git a/src/bootstrap/_tokens.scss b/src/bootstrap/_tokens.scss
+index 8fbf2d9..b1a61a5 100644
+--- a/src/bootstrap/_tokens.scss
++++ b/src/bootstrap/_tokens.scss
+@@ -4,6 +4,7 @@ $withhold: () !default;
+ $reset: false !default;
+ $curated: () !default;
+ $restored: () !default;
++$reverted: () !default;
+ $supplied: () !default;
+ $scoped: () !default;
+ $palette: () !default;
+@@ -14,6 +15,7 @@ $scale: () !default;
+ 	$reset: $reset,
+ 	$curated: $curated,
+ 	$restored: $restored,
++	$reverted: $reverted,
+ 	$supplied: $supplied,
+ 	$scoped: $scoped,
+ 	$palette: $palette,
+diff --git a/src/tailwindcss/_tokens.scss b/src/tailwindcss/_tokens.scss
+index 6f01e30..415eb4a 100644
+--- a/src/tailwindcss/_tokens.scss
++++ b/src/tailwindcss/_tokens.scss
+@@ -375,6 +375,43 @@ $curated: (
+ 	'link-light',
+ 	'link-dark',
+ 	'link-body-emphasis',
++	'link-underline',
++	'link-underline-primary',
++	'link-underline-secondary',
++	'link-underline-success',
++	'link-underline-danger',
++	'link-underline-warning',
++	'link-underline-info',
++	'link-underline-light',
++	'link-underline-dark',
++	'link-underline-opacity-0',
++	'link-underline-opacity-0-hover',
++	'link-underline-opacity-10',
++	'link-underline-opacity-10-hover',
++	'link-underline-opacity-25',
++	'link-underline-opacity-25-hover',
++	'link-underline-opacity-50',
++	'link-underline-opacity-50-hover',
++	'link-underline-opacity-75',
++	'link-underline-opacity-75-hover',
++	'link-underline-opacity-100',
++	'link-underline-opacity-100-hover',
++	'link-opacity-10',
++	'link-opacity-10-hover',
++	'link-opacity-25',
++	'link-opacity-25-hover',
++	'link-opacity-50',
++	'link-opacity-50-hover',
++	'link-opacity-75',
++	'link-opacity-75-hover',
++	'link-opacity-100',
++	'link-opacity-100-hover',
++	'link-offset-1',
++	'link-offset-1-hover',
++	'link-offset-2',
++	'link-offset-2-hover',
++	'link-offset-3',
++	'link-offset-3-hover',
+ 	'lead',
+ 	'display-1',
+ 	'display-2',
+@@ -407,6 +444,14 @@ $restored: (
+ 	'img:where(.img-thumbnail)': (display,),
+ );
+ 
++$reverted: (
++	':is(img, video):is(.object-fit-contain, .object-fit-cover, .object-fit-fill, .object-fit-none, .object-fit-scale, .object-fit-sm-contain, .object-fit-sm-cover, .object-fit-sm-fill, .object-fit-sm-none, .object-fit-sm-scale, .object-fit-md-contain, .object-fit-md-cover, .object-fit-md-fill, .object-fit-md-none, .object-fit-md-scale, .object-fit-lg-contain, .object-fit-lg-cover, .object-fit-lg-fill, .object-fit-lg-none, .object-fit-lg-scale, .object-fit-xl-contain, .object-fit-xl-cover, .object-fit-xl-fill, .object-fit-xl-none, .object-fit-xl-scale, .object-fit-xxl-contain, .object-fit-xxl-cover, .object-fit-xxl-fill, .object-fit-xxl-none, .object-fit-xxl-scale)': (
++		display,
++		max-width,
++		height,
++	),
++);
++
+ $supplied: (
+ 	'border': (
+ 		border-top-color: var(--bs-border-color),
+@@ -439,6 +484,7 @@ $scoped: (
+ 	$reset: true,
+ 	$curated: $curated,
+ 	$restored: $restored,
++	$reverted: $reverted,
+ 	$supplied: $supplied,
+ 	$scoped: $scoped,
+ 	$palette: $palette,
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index d548767..db94d78 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -1187,7 +1187,7 @@ describe('Tailwind compatibility recipe', () => {
+ 			.sort()
+ 		console.info(JSON.stringify(admitted))
+ 		expect(admitted).toEqual([
+-			'src/tailwindcss/_tokens.scss:437 -> ../bootstrap/tokens',
++			'src/tailwindcss/_tokens.scss:482 -> ../bootstrap/tokens',
+ 			'src/tailwindcss/index.scss:2 -> ../bootstrap/reset',
+ 			'src/tailwindcss/index.scss:3 -> ../bootstrap/elements',
+ 			'src/tailwindcss/index.scss:4 -> ../bootstrap/components',
+@@ -1946,7 +1946,7 @@ describe('Tailwind compatibility recipe', () => {
+ 		const names = [...curation.matchAll(/'([^']+)'/gu)].map((match) => match[1])
+ 		const reboot = rows.filter((row) => row.form === 'reboot').map((row) => row.selector)
+ 		expect(reboot).toEqual(names)
+-		expect(names).toHaveLength(38)
++		expect(names).toHaveLength(75)
+ 		expect([...names, 'planted']).not.toEqual(reboot)
+ 		expect(reboot.slice(1)).not.toEqual(names)
+ 		expect([...reboot, 'planted']).not.toEqual(names)
+@@ -1963,6 +1963,26 @@ describe('Tailwind compatibility recipe', () => {
+ 			.map(({ selector, longhands }) => ({ selector, longhands }))
+ 		expect(restores).toEqual(restored)
+ 		expect(restored).toHaveLength(11)
++		const reverted = requireValue(/\$reverted:\s*\(([\s\S]*?)\n\);/u.exec(configuration)?.[1])
++		const namesInBase = ['', 'sm-', 'md-', 'lg-', 'xl-', 'xxl-'].flatMap((infix) =>
++			['contain', 'cover', 'fill', 'none', 'scale'].map((fit) => `.object-fit-${infix}${fit}`),
++		)
++		expect(
++			[...reverted.matchAll(/'([^']+)':\s*\(\s*([a-z,\s-]+)\)/gu)].map((match) => ({
++				selector: match[1],
++				longhands: requireValue(match[2])
++					.split(',')
++					.map((value) => value.trim())
++					.filter(Boolean),
++			})),
++		).toEqual([
++			{
++				selector: `:is(img, video):is(${namesInBase.join(', ')})`,
++				longhands: ['display', 'max-width', 'height'],
++			},
++		])
++		expect(guide).toContain('`$reverted` map')
++		expect(guide).toContain('`revert` mixin')
+ 		expect(restored.slice(1)).not.toEqual(restores)
+ 		expect(restores.slice(1)).not.toEqual(restored)
+ 		expect([...restores, { selector: 'div:where(.planted)', longhands: ['display'] }]).not.toEqual(
+@@ -1977,7 +1997,7 @@ describe('Tailwind compatibility recipe', () => {
+ 		const documented = rows.filter((row) => row.form === 'scoped').map((row) => row.selector)
+ 		expect(selectors).toEqual(documented)
+ 		expect(selectors).toHaveLength(7)
+-		expect(rows).toHaveLength(56)
++		expect(rows).toHaveLength(93)
+ 		expect(selectors.slice(1)).not.toEqual(documented)
+ 		expect([...selectors, ':where(.table) caption']).not.toEqual(documented)
+ 		expect(documented.slice(1)).not.toEqual(selectors)
+@@ -2053,7 +2073,7 @@ describe('Tailwind compatibility recipe', () => {
+ 		expect([...counts]).toEqual([
+ 			['empty reset', 1],
+ 			['empty bootstrap', 215],
+-			['@layer bootstrap {', 47],
++			['@layer bootstrap {', 46],
+ 			[':where(.table) th {', 1],
+ 			['.dropstart .dropdown-toggle::after {', 1],
+ 			['@media (min-width: 40rem) {', 175],
+@@ -2089,7 +2109,7 @@ describe('Tailwind compatibility recipe', () => {
+ 				return roundTrip(css.slice(start, end))
+ 			})
+ 			const actual = requireValue(outputs[0])
+-			expect(collectStatements(actual)).toHaveLength(8582)
++			expect(collectStatements(actual)).toHaveLength(8588)
+ 			expect(collectStatements(actual)).toEqual(collectStatements(normalized))
+ 			expect(actual.replace(/\/\*[\s\S]*?\*\//gu, '')).toBe(
+ 				normalized.replace(/\/\*[\s\S]*?\*\//gu, ''),
+@@ -2287,7 +2307,16 @@ describe('Tailwind compatibility recipe', () => {
+ 		const firstBase = reversed.indexOf('@layer base {')
+ 		const reversedTuned = reversed.indexOf(LAYER_STATEMENT, 2)
+ 		expect(reversedTuned).toBeLessThan(firstBase)
+-		expect(reversed.slice(firstBase + 1, firstBase + 1 + preflight.length)).toEqual(preflight)
++		const restoration = statements.indexOf('@layer base {', base + 1)
++		expect(restoration).toBeGreaterThan(tuned)
++		expect(reversed.slice(firstBase, firstBase + 5)).toEqual(
++			statements.slice(restoration, restoration + 5),
++		)
++		const reversedPreflight = reversed.indexOf('@layer base {', firstBase + 1)
++		expect(reversedPreflight).toBeGreaterThan(firstBase)
++		expect(reversed.slice(reversedPreflight + 1, reversedPreflight + 1 + preflight.length)).toEqual(
++			preflight,
++		)
+ 		expect(reversed[reversedTuned + 1]).toBe('@layer bootstrap {')
+ 	})
+ 	it('pins the recipe record to live compiles, candidate membership, and the built-sheet digest', async () => {
+diff --git a/tests/integration.test.ts b/tests/integration.test.ts
+index 3e0cb94..44e7497 100644
+--- a/tests/integration.test.ts
++++ b/tests/integration.test.ts
+@@ -1101,10 +1101,22 @@ describe('computed Tailwind class relationships', () => {
+ 		expected.replaceSync(tuned)
+ 		const recipe = new CSSStyleSheet()
+ 		recipe.replaceSync(recipeRecord.recipe)
+-		for (const layer of ['properties', 'theme', 'base', 'components', 'utilities'])
++		for (const layer of ['properties', 'theme', 'components', 'utilities'])
+ 			removeLayerBlocks(recipe, layer)
+ 		for (let index = recipe.cssRules.length - 1; index >= 0; index -= 1)
+ 			if (recipe.cssRules[index] instanceof CSSPropertyRule) recipe.deleteRule(index)
++		// Match Tailwind's own blocks so Veneer's base restoration stays in sequence.
++		const unexcluded = new CSSStyleSheet()
++		unexcluded.replaceSync(recipeRecord.unexcluded)
++		const preflightBlocks = Array.from(unexcluded.cssRules).filter(
++			(rule) => rule instanceof CSSLayerBlockRule && rule.name === 'base',
++		)
++		expect(preflightBlocks.length).toBeGreaterThan(0)
++		for (const block of preflightBlocks) {
++			const index = Array.from(recipe.cssRules).findIndex((rule) => rule.cssText === block.cssText)
++			expect(index).toBeGreaterThanOrEqual(0)
++			recipe.deleteRule(index)
++		}
+ 		const rewrites = [
+ 			{
+ 				context: '',
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 178442d..cdfbc4a 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -791,6 +791,123 @@ export const TAILWIND_READINGS: readonly TailwindReading[] = Object.freeze([
+ 		property: 'padding-left',
+ 		values: Object.freeze({ bootstrap: '12px', unexcluded: '32px', tailwindcss: '32px' }),
+ 	}),
++	Object.freeze({
++		specimen: 'Bare inline code and small text',
++		subject: '.card-body code',
++		property: 'font-size',
++		values: Object.freeze({ bootstrap: '14px', unexcluded: '14px', tailwindcss: '16px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare inline code and small text',
++		subject: '.card-body small',
++		property: 'font-size',
++		values: Object.freeze({ bootstrap: '14px', unexcluded: '14px', tailwindcss: '12.8px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare inline code and small text',
++		subject: 'figcaption code',
++		property: 'font-size',
++		values: Object.freeze({ bootstrap: '12.25px', unexcluded: '12.25px', tailwindcss: '14px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare inline code and small text',
++		subject: 'figcaption small',
++		property: 'font-size',
++		values: Object.freeze({ bootstrap: '12.25px', unexcluded: '12.25px', tailwindcss: '11.2px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare heading beside a heading class',
++		subject: 'h5:not([class])',
++		property: 'font-weight',
++		values: Object.freeze({ bootstrap: '500', unexcluded: '500', tailwindcss: '400' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare heading beside a heading class',
++		subject: 'h5:not([class])',
++		property: 'margin-bottom',
++		values: Object.freeze({ bootstrap: '8px', unexcluded: '8px', tailwindcss: '0px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare heading beside a heading class',
++		subject: 'h5:not([class])',
++		property: 'line-height',
++		values: Object.freeze({ bootstrap: '24px', unexcluded: '24px', tailwindcss: '19.2px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare heading beside a heading class',
++		subject: '.h5',
++		property: 'font-weight',
++		values: Object.freeze({ bootstrap: '500', unexcluded: '500', tailwindcss: '500' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare heading beside a heading class',
++		subject: '.h5',
++		property: 'margin-bottom',
++		values: Object.freeze({ bootstrap: '8px', unexcluded: '8px', tailwindcss: '8px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare heading beside a heading class',
++		subject: '.h5',
++		property: 'line-height',
++		values: Object.freeze({ bootstrap: '24px', unexcluded: '24px', tailwindcss: '24px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare image and list',
++		subject: 'ul',
++		property: 'padding-left',
++		values: Object.freeze({ bootstrap: '32px', unexcluded: '32px', tailwindcss: '0px' }),
++	}),
++	Object.freeze({
++		specimen: 'Bare image and list',
++		subject: 'ul',
++		property: 'margin-bottom',
++		values: Object.freeze({ bootstrap: '16px', unexcluded: '16px', tailwindcss: '0px' }),
++	}),
++	Object.freeze({
++		specimen: 'Shared spacing, border, and radius',
++		subject: '.border',
++		property: 'border-top-color',
++		values: Object.freeze({
++			bootstrap: 'rgb(222, 226, 230)',
++			unexcluded: 'rgb(222, 226, 230)',
++			tailwindcss: 'rgb(209, 213, 220)',
++		}),
++		dark: Object.freeze({
++			bootstrap: 'rgb(73, 80, 87)',
++			unexcluded: 'rgb(73, 80, 87)',
++			tailwindcss: 'rgb(74, 85, 101)',
++		}),
++	}),
++	Object.freeze({
++		specimen: 'Tailwind dividers and vertical spacing',
++		subject: 'li',
++		property: 'border-bottom-color',
++		values: Object.freeze({
++			bootstrap: 'rgb(33, 37, 41)',
++			unexcluded: 'rgb(33, 37, 41)',
++			tailwindcss: 'rgb(3, 7, 18)',
++		}),
++		dark: Object.freeze({
++			bootstrap: 'rgb(222, 226, 230)',
++			unexcluded: 'rgb(222, 226, 230)',
++			tailwindcss: 'rgb(229, 231, 235)',
++		}),
++	}),
++	Object.freeze({
++		specimen: 'Border width without a border style',
++		subject: '.border-1',
++		property: 'border-top-color',
++		values: Object.freeze({
++			bootstrap: 'rgb(33, 37, 41)',
++			unexcluded: 'rgb(33, 37, 41)',
++			tailwindcss: 'rgb(3, 7, 18)',
++		}),
++		dark: Object.freeze({
++			bootstrap: 'rgb(222, 226, 230)',
++			unexcluded: 'rgb(222, 226, 230)',
++			tailwindcss: 'rgb(229, 231, 235)',
++		}),
++	}),
+ 	Object.freeze({
+ 		specimen: 'Shared spacing, border, and radius',
+ 		subject: '.mt-3',
+diff --git a/tests/src/tailwindcss/index.test.ts b/tests/src/tailwindcss/index.test.ts
+index f4b4b2e..3c66a1e 100644
+--- a/tests/src/tailwindcss/index.test.ts
++++ b/tests/src/tailwindcss/index.test.ts
+@@ -14,6 +14,7 @@ import { requireValue } from '@orkestrel/test'
+ import { compile } from 'tailwindcss'
+ import { describe, expect, it } from 'vitest'
+ import { CLASS_NAMES } from '../../../src/core/constants.js'
++import { readStyle } from '@orkestrel/test/browser'
+ import {
+ 	collectLeaves,
+ 	collectSelectorClasses,
+@@ -48,6 +49,90 @@ import {
+ } from '../../setupStyles.js'
+ 
+ describe('tailwindcss entry', () => {
++	it('restores lone-class link helpers under the recipe compile', () => {
++		const frame = createPreflightFrame(recipeRecord.recipe)
++		try {
++			frame.document.body.innerHTML =
++				'<a class="link-offset-2" href="#archive">Archive offset</a><a class="link-opacity-10" href="#archive">Archive opacity</a><a class="link-underline-danger" href="#archive">Archive danger</a>'
++			const offset = readLonghands(requireValue(frame.document.querySelector('.link-offset-2')))
++			expect(offset.get('text-decoration-line')).toBe('underline')
++			expect(
++				readStyle(
++					requireValue(frame.document.querySelector('.link-offset-2')),
++					'text-underline-offset',
++				),
++			).toBe('4px')
++			expect(
++				readLonghands(requireValue(frame.document.querySelector('.link-opacity-10'))).get('color'),
++			).toBe('rgba(21, 93, 252, 0.1)')
++			expect(
++				readLonghands(requireValue(frame.document.querySelector('.link-underline-danger'))).get(
++					'text-decoration-color',
++				),
++			).toBe('rgb(231, 0, 11)')
++		} finally {
++			frame.release()
++		}
++	})
++	it('restores attribute-sized boxes for all object-fit names and leaves a bare image on preflight', async () => {
++		const names = ['', 'sm-', 'md-', 'lg-', 'xl-', 'xxl-'].flatMap((infix) =>
++			['contain', 'cover', 'fill', 'none', 'scale'].map((fit) => ({
++				name: `object-fit-${infix}${fit}`,
++				fit: fit === 'scale' ? 'scale-down' : fit,
++			})),
++		)
++		expect(names).toHaveLength(30)
++		const frame = createPreflightFrame(recipeRecord.recipe)
++		const host = requireValue(frame.document.defaultView?.frameElement)
++		if (!(host instanceof HTMLIFrameElement)) throw new Error('Missing specimen frame')
++		host.style.width = '1600px'
++		try {
++			for (const { name, fit } of [...names, { name: '', fit: 'fill' }]) {
++				const element = frame.document.createElement('img')
++				element.src =
++					"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80'%3E%3Crect width='160' height='80' fill='blue'/%3E%3C/svg%3E"
++				element.width = 64
++				element.height = 64
++				element.className = name
++				frame.document.body.append(element)
++				await element.decode()
++				const box = element.getBoundingClientRect()
++				const values = readLonghands(element)
++				expect([box.width, box.height]).toEqual([64, name ? 64 : 32])
++				expect(values.get('object-fit')).toBe(fit)
++				expect(values.get('display')).toBe(name ? 'inline' : 'block')
++				expect(values.get('max-width')).toBe(name ? 'none' : '100%')
++			}
++		} finally {
++			frame.release()
++		}
++	})
++	it('places the object-fit restoration in base with exactly its names and longhands', () => {
++		const css = new CSSStyleSheet()
++		css.replaceSync(sheet)
++		const names = ['', 'sm-', 'md-', 'lg-', 'xl-', 'xxl-'].flatMap((infix) =>
++			['contain', 'cover', 'fill', 'none', 'scale'].map((fit) => `.object-fit-${infix}${fit}`),
++		)
++		const selector = `:is(img, video):is(${names.join(', ')})`
++		const rows = readPlacement(css).filter((entry) => entry.layer === 'base')
++		expect(rows).toEqual(
++			['display', 'max-width', 'height'].map((property) => ({
++				selector,
++				property,
++				layer: 'base',
++				layered: true,
++				important: false,
++			})),
++		)
++		expect(readSequences(css).normal.filter((entry) => entry.selector === selector)).toEqual(
++			['display', 'max-width', 'height'].map((property) => ({
++				selector,
++				context: '',
++				property,
++				value: 'revert-layer',
++			})),
++		)
++	})
+ 	it('derives supplied longhands from every shared utility and rejects missing, extra, and newly dropped declarations', () => {
+ 		const utilityNames = new Set(
+ 			collectLeaves(CLASS_NAMES.bootstrap.utilities).map(([, name]) => name),
+@@ -415,7 +500,7 @@ describe('tailwindcss entry', () => {
+ 		expect(control.map((row) => row.values.get('display'))).toEqual(['block', 'none'])
+ 	})
+ 	it('ships its declared order with reset and bootstrap ownership and unlayered importance', () => {
+-		const owned = ['reset', 'bootstrap']
++		const owned = ['reset', 'base', 'bootstrap']
+ 		for (const text of [
+ 			sheet,
+ 			sheet + '\n@layer base { .planted { color: red } }',
+@@ -431,7 +516,9 @@ describe('tailwindcss entry', () => {
+ 					placement.every((entry) =>
+ 						entry.important
+ 							? !entry.layered
+-							: entry.layer !== undefined && owned.includes(entry.layer),
++							: entry.layer !== undefined &&
++								owned.includes(entry.layer) &&
++								(entry.layer !== 'base' || entry.selector.startsWith(':is(img, video):is(')),
+ 					),
+ 				).toBe(text === sheet)
+ 				expect(
+@@ -607,6 +694,31 @@ describe('tailwindcss entry', () => {
+ 							})
+ 						}
+ 					}
++					const revertedSelector =
++						':is(img, video):is(' +
++						['', 'sm-', 'md-', 'lg-', 'xl-', 'xxl-']
++							.flatMap((infix) =>
++								['contain', 'cover', 'fill', 'none', 'scale'].map((fit) =>
++									` .object-fit-${infix}${fit}`.trim(),
++								),
++							)
++							.join(', ') +
++						')'
++					for (const property of ['display', 'max-width', 'height']) {
++						expected.push({
++							selector: revertedSelector,
++							context: '',
++							property,
++							value: 'revert-layer',
++						})
++						locations.push({
++							selector: revertedSelector,
++							property,
++							layer: 'base',
++							layered: true,
++							important: false,
++						})
++					}
+ 					for (const [name, properties, value] of [
+ 						[
+ 							'border',
