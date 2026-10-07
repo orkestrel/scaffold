@@ -817,8 +817,25 @@ Lane results:
         - the positions hold: the fact on line 52 is past lines 1–45, and the token on line 80 is past lines 1–33 and 34–61;
         - setup 261 passed; check, lint, format, and the instrument typecheck pass;
         - store-first and store-series at count 1 pass.
-    - **Running: the falsify workflow `redesign-falsify`** (run `wf_ec521808-cf5`): two blind Opus lanes on 16 claims. The verdicts go to `reading/redesign/falsify/`.
-    - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5, and launches after the audit closes.
+    - **The falsify round ruled FAIL in both lanes.** Rulings are in `reading/redesign/audit-verdict.md`; lane reports are in `falsify/`.
+      - **The defect that would fail the measurement:** claim 11. The harness clears the exposed set on every action call, refused ones included, so the measured 2B cart path (a refused `type e7`, then `click e7`) would be flagged unlisted.
+      - **Browser fixes:**
+        - refusal subjects in the `ROLE "NAME" [ref=eN]` form;
+        - the best-match note quotes the 120-unit query and never cuts a numbered row;
+        - the click hint restored to the measured `call type with e4`;
+        - the guide's receipts table and framing;
+        - `to` in miss sentences, only when it ends before the last line;
+        - a wrap that keeps a reference on its line;
+        - a boolean switch for the partial line;
+        - no evidence writes from the committed test.
+      - **Harness fixes:**
+        - only a successful action resets the set;
+        - the bytes probe compares the full user turn, with a real control;
+        - the legacy reference parser is dropped.
+    - **Running in parallel:**
+      - `redesign-fix`, which resumes the API session in browser (cap 4 h);
+      - `redesign-harness-fix`, which resumes the harness session in ollama (cap 2 h).
+    - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
