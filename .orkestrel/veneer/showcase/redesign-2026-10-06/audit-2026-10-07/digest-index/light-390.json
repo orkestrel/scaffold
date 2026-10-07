@@ -1,0 +1,578 @@
+[
+ {
+  "section": "accordion",
+  "elements": 83,
+  "differing": 83,
+  "structuralElements": 0,
+  "groups": 30,
+  "structuralGroups": 0
+ },
+ {
+  "section": "alerts",
+  "elements": 141,
+  "differing": 141,
+  "structuralElements": 0,
+  "groups": 54,
+  "structuralGroups": 0
+ },
+ {
+  "section": "background",
+  "elements": 172,
+  "differing": 172,
+  "structuralElements": 0,
+  "groups": 49,
+  "structuralGroups": 0
+ },
+ {
+  "section": "badge",
+  "elements": 77,
+  "differing": 77,
+  "structuralElements": 0,
+  "groups": 43,
+  "structuralGroups": 0
+ },
+ {
+  "section": "borders",
+  "elements": 563,
+  "differing": 563,
+  "structuralElements": 0,
+  "groups": 106,
+  "structuralGroups": 0
+ },
+ {
+  "section": "breadcrumb",
+  "elements": 49,
+  "differing": 49,
+  "structuralElements": 3,
+  "groups": 25,
+  "structuralGroups": 1
+ },
+ {
+  "section": "button-group",
+  "elements": 68,
+  "differing": 68,
+  "structuralElements": 0,
+  "groups": 23,
+  "structuralGroups": 0
+ },
+ {
+  "section": "buttons",
+  "elements": 108,
+  "differing": 108,
+  "structuralElements": 0,
+  "groups": 49,
+  "structuralGroups": 0
+ },
+ {
+  "section": "card",
+  "elements": 169,
+  "differing": 169,
+  "structuralElements": 0,
+  "groups": 57,
+  "structuralGroups": 0
+ },
+ {
+  "section": "carousel",
+  "elements": 125,
+  "differing": 125,
+  "structuralElements": 0,
+  "groups": 41,
+  "structuralGroups": 0
+ },
+ {
+  "section": "checks-radios",
+  "elements": 123,
+  "differing": 123,
+  "structuralElements": 0,
+  "groups": 28,
+  "structuralGroups": 0
+ },
+ {
+  "section": "clearfix",
+  "elements": 17,
+  "differing": 17,
+  "structuralElements": 0,
+  "groups": 15,
+  "structuralGroups": 0
+ },
+ {
+  "section": "close-button",
+  "elements": 30,
+  "differing": 30,
+  "structuralElements": 0,
+  "groups": 18,
+  "structuralGroups": 0
+ },
+ {
+  "section": "collapse",
+  "elements": 44,
+  "differing": 44,
+  "structuralElements": 0,
+  "groups": 23,
+  "structuralGroups": 0
+ },
+ {
+  "section": "color-background",
+  "elements": 50,
+  "differing": 50,
+  "structuralElements": 0,
+  "groups": 26,
+  "structuralGroups": 0
+ },
+ {
+  "section": "colored-links",
+  "elements": 49,
+  "differing": 49,
+  "structuralElements": 0,
+  "groups": 26,
+  "structuralGroups": 0
+ },
+ {
+  "section": "columns",
+  "elements": 1225,
+  "differing": 1225,
+  "structuralElements": 0,
+  "groups": 184,
+  "structuralGroups": 0
+ },
+ {
+  "section": "containers",
+  "elements": 48,
+  "differing": 48,
+  "structuralElements": 0,
+  "groups": 25,
+  "structuralGroups": 0
+ },
+ {
+  "section": "display",
+  "elements": 214,
+  "differing": 214,
+  "structuralElements": 0,
+  "groups": 101,
+  "structuralGroups": 0
+ },
+ {
+  "section": "dropdowns",
+  "elements": 250,
+  "differing": 250,
+  "structuralElements": 0,
+  "groups": 57,
+  "structuralGroups": 0
+ },
+ {
+  "section": "engine-states",
+  "elements": 260,
+  "differing": 260,
+  "structuralElements": 0,
+  "groups": 62,
+  "structuralGroups": 0
+ },
+ {
+  "section": "figures",
+  "elements": 45,
+  "differing": 45,
+  "structuralElements": 1,
+  "groups": 19,
+  "structuralGroups": 1
+ },
+ {
+  "section": "flex",
+  "elements": 1617,
+  "differing": 1617,
+  "structuralElements": 1,
+  "groups": 296,
+  "structuralGroups": 1
+ },
+ {
+  "section": "float",
+  "elements": 89,
+  "differing": 89,
+  "structuralElements": 0,
+  "groups": 44,
+  "structuralGroups": 0
+ },
+ {
+  "section": "floating-labels",
+  "elements": 60,
+  "differing": 60,
+  "structuralElements": 0,
+  "groups": 21,
+  "structuralGroups": 0
+ },
+ {
+  "section": "focus-ring",
+  "elements": 36,
+  "differing": 36,
+  "structuralElements": 0,
+  "groups": 23,
+  "structuralGroups": 0
+ },
+ {
+  "section": "form-controls",
+  "elements": 77,
+  "differing": 77,
+  "structuralElements": 0,
+  "groups": 25,
+  "structuralGroups": 0
+ },
+ {
+  "section": "form-layout",
+  "elements": 83,
+  "differing": 83,
+  "structuralElements": 0,
+  "groups": 40,
+  "structuralGroups": 0
+ },
+ {
+  "section": "grid",
+  "elements": 494,
+  "differing": 494,
+  "structuralElements": 0,
+  "groups": 73,
+  "structuralGroups": 0
+ },
+ {
+  "section": "gutters",
+  "elements": 1312,
+  "differing": 1312,
+  "structuralElements": 0,
+  "groups": 135,
+  "structuralGroups": 0
+ },
+ {
+  "section": "icon-link",
+  "elements": 44,
+  "differing": 44,
+  "structuralElements": 0,
+  "groups": 20,
+  "structuralGroups": 0
+ },
+ {
+  "section": "images",
+  "elements": 31,
+  "differing": 31,
+  "structuralElements": 0,
+  "groups": 18,
+  "structuralGroups": 0
+ },
+ {
+  "section": "input-group",
+  "elements": 80,
+  "differing": 80,
+  "structuralElements": 0,
+  "groups": 23,
+  "structuralGroups": 0
+ },
+ {
+  "section": "interactions",
+  "elements": 37,
+  "differing": 37,
+  "structuralElements": 2,
+  "groups": 21,
+  "structuralGroups": 2
+ },
+ {
+  "section": "link-utilities",
+  "elements": 257,
+  "differing": 257,
+  "structuralElements": 37,
+  "groups": 67,
+  "structuralGroups": 37
+ },
+ {
+  "section": "list-group",
+  "elements": 203,
+  "differing": 203,
+  "structuralElements": 54,
+  "groups": 81,
+  "structuralGroups": 29
+ },
+ {
+  "section": "live-components",
+  "elements": 112,
+  "differing": 112,
+  "structuralElements": 0,
+  "groups": 66,
+  "structuralGroups": 0
+ },
+ {
+  "section": "modal",
+  "elements": 243,
+  "differing": 243,
+  "structuralElements": 0,
+  "groups": 73,
+  "structuralGroups": 0
+ },
+ {
+  "section": "navbar",
+  "elements": 188,
+  "differing": 188,
+  "structuralElements": 0,
+  "groups": 63,
+  "structuralGroups": 0
+ },
+ {
+  "section": "navs-tabs",
+  "elements": 185,
+  "differing": 185,
+  "structuralElements": 0,
+  "groups": 59,
+  "structuralGroups": 0
+ },
+ {
+  "section": "object-fit",
+  "elements": 101,
+  "differing": 101,
+  "structuralElements": 30,
+  "groups": 54,
+  "structuralGroups": 30
+ },
+ {
+  "section": "offcanvas",
+  "elements": 261,
+  "differing": 261,
+  "structuralElements": 0,
+  "groups": 76,
+  "structuralGroups": 0
+ },
+ {
+  "section": "opacity",
+  "elements": 43,
+  "differing": 43,
+  "structuralElements": 0,
+  "groups": 26,
+  "structuralGroups": 0
+ },
+ {
+  "section": "overflow",
+  "elements": 201,
+  "differing": 201,
+  "structuralElements": 0,
+  "groups": 44,
+  "structuralGroups": 0
+ },
+ {
+  "section": "pagination",
+  "elements": 103,
+  "differing": 103,
+  "structuralElements": 0,
+  "groups": 27,
+  "structuralGroups": 0
+ },
+ {
+  "section": "placeholders",
+  "elements": 84,
+  "differing": 84,
+  "structuralElements": 8,
+  "groups": 38,
+  "structuralGroups": 5
+ },
+ {
+  "section": "popovers",
+  "elements": 99,
+  "differing": 99,
+  "structuralElements": 0,
+  "groups": 29,
+  "structuralGroups": 0
+ },
+ {
+  "section": "position-helpers",
+  "elements": 119,
+  "differing": 119,
+  "structuralElements": 0,
+  "groups": 40,
+  "structuralGroups": 0
+ },
+ {
+  "section": "position-utilities",
+  "elements": 177,
+  "differing": 177,
+  "structuralElements": 0,
+  "groups": 58,
+  "structuralGroups": 0
+ },
+ {
+  "section": "progress",
+  "elements": 90,
+  "differing": 90,
+  "structuralElements": 0,
+  "groups": 35,
+  "structuralGroups": 0
+ },
+ {
+  "section": "range",
+  "elements": 26,
+  "differing": 26,
+  "structuralElements": 0,
+  "groups": 18,
+  "structuralGroups": 0
+ },
+ {
+  "section": "ratio",
+  "elements": 28,
+  "differing": 28,
+  "structuralElements": 0,
+  "groups": 18,
+  "structuralGroups": 0
+ },
+ {
+  "section": "select",
+  "elements": 61,
+  "differing": 61,
+  "structuralElements": 0,
+  "groups": 25,
+  "structuralGroups": 0
+ },
+ {
+  "section": "shadows",
+  "elements": 38,
+  "differing": 38,
+  "structuralElements": 0,
+  "groups": 26,
+  "structuralGroups": 0
+ },
+ {
+  "section": "sizing",
+  "elements": 214,
+  "differing": 214,
+  "structuralElements": 0,
+  "groups": 40,
+  "structuralGroups": 0
+ },
+ {
+  "section": "spacing",
+  "elements": 2811,
+  "differing": 2811,
+  "structuralElements": 0,
+  "groups": 694,
+  "structuralGroups": 0
+ },
+ {
+  "section": "spinners",
+  "elements": 83,
+  "differing": 83,
+  "structuralElements": 10,
+  "groups": 38,
+  "structuralGroups": 10
+ },
+ {
+  "section": "stacks",
+  "elements": 44,
+  "differing": 44,
+  "structuralElements": 0,
+  "groups": 21,
+  "structuralGroups": 0
+ },
+ {
+  "section": "stretched-link",
+  "elements": 33,
+  "differing": 33,
+  "structuralElements": 0,
+  "groups": 24,
+  "structuralGroups": 0
+ },
+ {
+  "section": "tables",
+  "elements": 266,
+  "differing": 266,
+  "structuralElements": 21,
+  "groups": 66,
+  "structuralGroups": 5
+ },
+ {
+  "section": "tailwindcss",
+  "elements": 425,
+  "differing": 425,
+  "structuralElements": 12,
+  "groups": 107,
+  "structuralGroups": 10
+ },
+ {
+  "section": "text-truncation",
+  "elements": 24,
+  "differing": 24,
+  "structuralElements": 0,
+  "groups": 15,
+  "structuralGroups": 0
+ },
+ {
+  "section": "text",
+  "elements": 530,
+  "differing": 530,
+  "structuralElements": 2,
+  "groups": 113,
+  "structuralGroups": 2
+ },
+ {
+  "section": "toasts",
+  "elements": 108,
+  "differing": 108,
+  "structuralElements": 0,
+  "groups": 46,
+  "structuralGroups": 0
+ },
+ {
+  "section": "tooltips",
+  "elements": 75,
+  "differing": 75,
+  "structuralElements": 0,
+  "groups": 30,
+  "structuralGroups": 0
+ },
+ {
+  "section": "typography",
+  "elements": 157,
+  "differing": 157,
+  "structuralElements": 3,
+  "groups": 67,
+  "structuralGroups": 2
+ },
+ {
+  "section": "validation",
+  "elements": 73,
+  "differing": 73,
+  "structuralElements": 0,
+  "groups": 29,
+  "structuralGroups": 0
+ },
+ {
+  "section": "vertical-align",
+  "elements": 54,
+  "differing": 54,
+  "structuralElements": 0,
+  "groups": 28,
+  "structuralGroups": 0
+ },
+ {
+  "section": "vertical-rule",
+  "elements": 30,
+  "differing": 30,
+  "structuralElements": 0,
+  "groups": 19,
+  "structuralGroups": 0
+ },
+ {
+  "section": "visibility",
+  "elements": 28,
+  "differing": 28,
+  "structuralElements": 0,
+  "groups": 17,
+  "structuralGroups": 0
+ },
+ {
+  "section": "visually-hidden",
+  "elements": 36,
+  "differing": 36,
+  "structuralElements": 0,
+  "groups": 22,
+  "structuralGroups": 0
+ },
+ {
+  "section": "z-index",
+  "elements": 40,
+  "differing": 40,
+  "structuralElements": 0,
+  "groups": 26,
+  "structuralGroups": 0
+ }
+]
