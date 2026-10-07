@@ -24,9 +24,10 @@ Ollama `tmp/codex/census.md` (230 attempts): the 2B's cart and checkout runs all
 | X2 | ollama 500 | capture the raw malformed call with `OLLAMA_DEBUG=1` on a failing port | daemon restart; after the live series | queued | |
 | X4 | ollama 500 | a provider-level retry of the turn | refused by the ruling: deterministic, and it hides a failure | closed | |
 | X5 | ollama 500 | a derived model with a JSON tool-call template | attribution only, one run, never a harness default | queued | |
-| JE | combined | JP2, V1c, V4, TB2 | store-live, 2B, journey, 8 ports | queued | |
-| JF | combined | JE and limit 12 | same | queued | |
-| JG | combined, original wording | V1c, V4, TB2 | same | queued | |
+| JE | combined | JP2, V1c, V4, TB2 | store-live, 2B, journey, 8 ports | done | **0 of 8, but 5 ports complete the whole journey** (record, the flow, save, journeys, edit, replay, both orders) and fail on one behavior: after `Save the journey.` and after each later success the 2B calls `save` with a description narrating the turn, 7 times to the budget (`loops` 25, `ended` 4); the V4 wording changes nothing. 2 ports fail on a malformed `edit`, 1 on the stale `e3`. Transcripts: `tmp/codex/store-live/journey-arms2-logs/JE-*.json`. |
+| JF | combined | JE and limit 12 | same | running | |
+| JG | combined, original wording | V1c, V4, TB2 | same | done | 0 of 8: with `then open the cart`, 5 ports type into a stale product link `e6` 15–16 times; 2 type into the stale `e2`. The literal `then click the Cart link` (JP2) is the test wording to adopt. |
+| JSV, JEV, JEW | save loop | a repeat `save` answers success-shaped, `Saved "place-order"; nothing changed.` (JSV alone; JEV = JE with it; JEW = JEV with the deferred-save sentence) | store-live, 2B, journey, 8 ports | queued | |
 | X3 | ollama 500 | the past-the-end refusal gains `, all in the latest result` | same | queued | The 500 followed a refused `read{"from":6}` on 9 of 10 occurrences; the tenth followed a first `click`. |
 | V1a, V1b, V1c | type on links and buttons | the planner's `click` and `type` copy (a), the prompt order (b), both (c) | store-live, 2B, all five tasks, 16 ports | queued | |
 | V5 | tool count | journey advertises no `capture`, `forget`, `dialog`, `switch`, `navigate`, `press` | store-live, 2B, journey, 8 ports | queued | |
