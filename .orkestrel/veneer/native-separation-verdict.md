@@ -476,3 +476,7 @@ Every critic gap, unverified item, and breach maps to the ruling or unit that re
 | Breach 2, leaves threaded through Bootstrap classes (`critic:28`) | Q1; R2 withdraws tier 2 under (a) |
 | Breach 3, N1 changing drop-in source (`critic:29`) | R8 |
 | Breach 4, raw-text enforcement (`critic:30`) | R1; S48 |
+
+## Amendment of 2026-10-07: the user's ruling on the native track
+
+The user ruled on 2026-10-07 (`rulings` § Fourth round) that the native track builds only surfaces with no Bootstrap counterpart, from scratch, and never against the drop-in engine. Under that ruling: Q1 resolves to (a) with no `stable` leaf anywhere (N6 withdraws `intrinsic` with `git revert 6b99552`; N5 is cut); Q2 stands as (a), the drop-in engine's documented stage A behavior; Q3 is moot, because no native dialog over `modal` is built (N0, N1, N3, N4, N7, N8, N9 are cut); Q4 is confirmed, and the re-home list is replaced by the catalog round's shortlist. The separation rule (§ The separation rule), R1's boundary enforcement (S48), R12's naming, and the serial-applier, classic-row, and prediction rules stay in force for every native module the catalog round opens. The first native module's folder name follows its entity, not `dialogs`.
