@@ -797,9 +797,19 @@ Lane results:
         - rule R;
         - whether the type sentence counts as task copy.
     - **The user approved all three (2026-10-07):** the change set, rule R, and the type sentence as procedure. They are recorded in `reading/campaign.md`.
-    - **Running: unit `redesign-impl`.** It resumes the API Codex session `01a113b2-9555-79b0-8a4e-6c24e67a0ff6` in browser (prompt `tmp/codex/redesign-impl-resume-prompt.md`, cap 4 h).
-      - **Scope:** the five browser changes, byte-equal to the measured renders. It also owns the guide passages the change makes stale, because `test:guides` runs the fences; this folds unit U3 into U2.
-      - **Next:** the pack, then the harness unit O1 (rule R, the framing, the type sentence, and the parsers), then one falsify round, V, and M1 to M5.
+    - **Unit `redesign-impl` landed:** browser `d921838`, pushed. Its report is in browser `tmp/codex/api-impl-report.md` § Line-view redesign; it took 66 minutes.
+      - **Red then green** for each of the five rules.
+      - **Byte equality:** the real catalogue and policy renders equal the measured records, port-masked.
+      - **The audit script** confirms the 8 page tools and their parameters are unchanged.
+      - **Acceptance:** check, core 1,207, browser 478, server 395, bin 19, guides 274, policy 119, setup 181, lint, format, build, and the touched service, distribution, and conformance files.
+    - **Pack:** browser `3175EDE4…` from `d921838`, at ollama `tmp/codex/store-campaign5/packs-redesign/`.
+    - **Running: unit `redesign-harness`** (ollama `tmp/codex/redesign-harness-brief.md`, cap 3 h, from `b3083aa`):
+      - the framing and the type sentence;
+      - rule R;
+      - the `[ref=eN]` parsers, with the paging window parsed explicitly so a quoted best-match row earns no credit;
+      - the M1 judge;
+      - byte equality with the measured seeds and the cart range-miss reply.
+    - **The falsify claims** for the integrated round are drafted at scaffold `tmp/units/redesign-claims.md`: ten browser claims, with the harness claims added when the harness lands. One round runs on the integrated result, with two blind Opus lanes, because Astra wrote both halves.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
