@@ -854,7 +854,36 @@ Lane results:
       - **The 4B's M2, M3, M4, and M5 did not run.**
       - **The Edge readings:** 25 Edge processes whose parents had exited, none with an `orkestrel-browser-` profile, so they may be the user's own. Left alone.
     - **Ruling:** narrow the best-match line to a best match that carries an element reference, the planner's original condition. That reverses the Orchestrator's reconciliation ruling; `reconcile.md` and `plan.md` are amended.
-    - **Running: `redesign-narrow`**, which resumes the API session in browser (cap 2 h). Then a pack rebuild, then the measurement restarts from M2 on both models.
+    - **`redesign-narrow` landed:** browser `7e45703`, pushed. It quotes a best match only when the line carries a reference.
+      - The touched helper and toolset tests pass (229), and `check` and `test:guides` (278) pass.
+      - The Orchestrator stopped the unit before its full gates, at the user's direction.
+    - **The user's direction, 2026-10-07:**
+      - Kill the orphaned processes. 25 orphaned `msedge.exe` were killed.
+      - Run the 2B and 4B store tasks directly, without the full suites, because the issues are known.
+      - Live runs now go straight through `tests/service/browser.test.ts -t "(shipping|cart|search|checkout|paging)"`. The case names quote the task key (`'shipping'`), so the earlier filter `… satisfies its complete predicate` with a bare key matched nothing.
+    - **Live run, 4B, on `a204d97`:** all five pass on the first attempt, each under its target.
+
+      | Task | Time | Target |
+      | --- | --- | --- |
+      | shipping | 21.9 s | 35 s |
+      | cart | 12.5 s | 25 s |
+      | search | 12.9 s | 27 s |
+      | checkout | 13.4 s | 20 s |
+      | paging | 17.0 s | 31 s |
+
+      The run took 84 s in all.
+    - **Live run, 2B, on `7e45703`:**
+      - shipping 9.8 s, cart 7.2 s, search 6.7 s, and checkout 7.8 s pass;
+      - paging fails all 3 attempts. After reading lines 34–61, the 2B answers "the token is on line 61 or 62" instead of following the footer to 62.
+    - **Paging second-turn replays** (`ollama tmp/probes/paging-turn.test.ts`; 8 ports, from the recorded attempt): ports that follow the footer, out of 8.
+      - As shipped: 4.
+      - Prompt-side reverts: old framing 2, old `type` description 6, old type sentence 3, old reference form 2, all reverts 5.
+      - Partial-line rewordings: 0.
+      - **Window never ends on a heading: 7.**
+      - System-prompt closers: S1 (only text shown) 0, S2 (follow the footer if not shown yet) 6, S1 and S2 together 3.
+
+      An earlier R8 run was invalid: a PowerShell rewrite turned the probe's en dashes into mojibake. The file was rewritten clean, and R8 was measured again.
+    - **Running: `heading-boundary`** (browser, resumes the API session, cap 1 h). A window never ends on a heading while rows follow. It runs only the touched files, `check`, and `test:guides`. Then a pack, then live runs on the 2B and 4B.
     - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
