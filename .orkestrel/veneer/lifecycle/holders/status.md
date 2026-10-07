@@ -883,7 +883,23 @@ Lane results:
       - System-prompt closers: S1 (only text shown) 0, S2 (follow the footer if not shown yet) 6, S1 and S2 together 3.
 
       An earlier R8 run was invalid: a PowerShell rewrite turned the probe's en dashes into mojibake. The file was rewritten clean, and R8 was measured again.
-    - **Running: `heading-boundary`** (browser, resumes the API session, cap 1 h). A window never ends on a heading while rows follow. It runs only the touched files, `check`, and `test:guides`. Then a pack, then live runs on the 2B and 4B.
+    - **`heading-boundary` landed:** browser `07a906e`, pushed, pack `B6DEE567…`. A window never ends on a heading while rows follow.
+      - The touched tests (232), `check`, and guides (278) pass.
+      - Ollama `debc48c`, local, pins the policy windows at 33 and 61.
+    - **Live confirmation on `07a906e`** (ollama `tmp/codex/confirm.ts`; records in `tmp/codex/confirm/`):
+      - **2B: 11 of 12 runs clean.**
+        - Shipping, cart, search, and checkout passed on the first attempt in all 12 runs: 9.5–9.8 s, 7.3–7.4 s, 6.2–6.3 s, and 7.8–8.0 s.
+        - Paging took 22 attempts for 11 passes, so about 50% per attempt; it ran 7.7–16.9 s.
+        - Run 12 failed paging on all 3 attempts: after the window 33–60, the 2B answered "line 54" instead of following the footer.
+      - **S4, reworded footer sentence in the system prompt, rejected:**
+        - in replay, the failing turn followed the footer on 8 of 8 ports;
+        - live, paging passed every run (17 attempts for 10 passes);
+        - but search regressed: it needed retries in 4 runs, and run 10 failed all 3 attempts. The sentence is reverted.
+      - **4B: 2 of 2 runs clean,** each task under target: shipping 17 s, cart 12.7 s, search 13.2 s, checkout 13.7 s, paging 17–18 s.
+      - **Journey:**
+        - 2B fails all 3 attempts in 107 s: repeated `save` after saving, a stale-reference loop, and an invented tool;
+        - 4B passes in 83 s, on attempt 2.
+    - **Asked the user:** how to proceed on 2B paging (about 50% per attempt, rescued by retries in 11 of 12 runs) and the 2B journey, against releasing on what holds.
     - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
