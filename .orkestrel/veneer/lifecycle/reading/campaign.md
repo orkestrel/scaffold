@@ -25,6 +25,12 @@ The user ruled this campaign on 2026-10-06. It follows the store implementation 
   - the double-order trio: checkout pins one order, a handled submission settles before its receipt, and the journey case stops depending on a second submission.
 - **Confirmation:** 16 clean store-task runs on the 2B, plus 2 runs on the 4B.
 - **Tests:** tune them for time. Each case pins a needed claim at the least cost.
+- **The line-view redesign** (the user, 2026-10-07; `redesign/plan.md`):
+  - The user approved the change set:
+    - in browser, `[ref=eN]` after the name, the partial-view line, the best-match line on a range miss, the change note from line 1, and the `type` description;
+    - in the harness, the framing, the type sentence, rule R, the parsers, and M1 as a diagnostic with M2 the gate.
+  - **Rule R is adopted.** A reference counts as shown when any read of the same unchanged page listed it. An invented, stale, or refused reference still fails.
+  - **The system prompt's search-box sentence is allowed** as procedure, not task copy.
 - **Binding rulings from 2026-10-04:**
   - no raised budget, attempt count, iteration limit, predict, or temperature;
   - never weaken an oracle's claim;

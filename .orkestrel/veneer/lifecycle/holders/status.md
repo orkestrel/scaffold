@@ -796,6 +796,10 @@ Lane results:
         - approval of the change set;
         - rule R;
         - whether the type sentence counts as task copy.
+    - **The user approved all three (2026-10-07):** the change set, rule R, and the type sentence as procedure. They are recorded in `reading/campaign.md`.
+    - **Running: unit `redesign-impl`.** It resumes the API Codex session `01a113b2-9555-79b0-8a4e-6c24e67a0ff6` in browser (prompt `tmp/codex/redesign-impl-resume-prompt.md`, cap 4 h).
+      - **Scope:** the five browser changes, byte-equal to the measured renders. It also owns the guide passages the change makes stale, because `test:guides` runs the fences; this folds unit U3 into U2.
+      - **Next:** the pack, then the harness unit O1 (rule R, the framing, the type sentence, and the parsers), then one falsify round, V, and M1 to M5.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
