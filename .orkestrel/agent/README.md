@@ -18,3 +18,4 @@ TypeSafe pages were fetched from the index at [https://docs.typesafe.ai/llms.txt
 - [How the other packages fit](packages.md) records each package boundary in the guide's own terms, then the desk fixtures as use cases.
 - [What would improve the agent](agent.md) records recommendations. None of them are implemented in `@orkestrel/agent`.
 - [Refactor the agent, and stage the living context by consumer](context.md) rules, on 2026-10-07, that the agent package is refactored in place rather than split into a context package, and stages the living-context capability by consumer.
+- [The judge and the selection seam](refine.md) rules, on 2026-10-07, how the System One decision model enters the agent as a judge contract with an Ollama logprob wire, how a conversation records judgments with provenance, and how a selection seam and a stock selection refine the context without a toggle or a package; it records the Mica probes, the two blind design lanes, and the plan.
