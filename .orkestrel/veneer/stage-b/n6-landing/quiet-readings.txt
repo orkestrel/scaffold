@@ -1,0 +1,12 @@
+== N6 at 7de4387 (checkout)
+landing-7de4387-3-test-app exit 0       Tests  246 passed (246) load 3.91
+landing-7de4387-3-test-setup-browser exit 0       Tests  205 passed (205) load 2.28
+landing-7de4387-3-test-policy-config-setup exit 0       Tests  532 passed | 2 skipped (534) load 2.65
+landing-7de4387-3-journey exit 0       Tests  94 passed (94) load 5.36
+compare exit 67 lines 106
+== Copier worktree
+copier-q-setup-browser exit 0       Tests  205 passed (205) load 2.45
+copier-q-app-browser exit 0       Tests  246 passed (246) load 1.19
+copier-q-setup exit 0       Tests  532 passed | 2 skipped (534) load 1.71
+copier-q-journey exit 1       Tests  1 failed | 97 passed (98) load 4.32
+copier compare exit 67 lines 305
