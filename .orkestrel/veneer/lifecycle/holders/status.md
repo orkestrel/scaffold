@@ -552,6 +552,30 @@ Lane results:
 
       - Guide drift: 6 checks, reserved for slice 5.
       - Session `01a113b2`. Slice 2 resumed (journal `tmp/codex/api-impl-resume.jsonl`).
+    - **Slice 2 landed locally:** browser `2d0ad52`, unpushed.
+      - `createBrowserContext`;
+      - seven owner-built classes made internal;
+      - `createWebSocketCDPTransport` and `createFileBrowserWriter`;
+      - one `createBrowserToolset(view)` with `isBrowserPage`, and `createDocumentToolset` gone;
+      - `execute`, with `notes` off the contract;
+      - the MCP option groups;
+      - one `engine`;
+      - `BrowserNavigationCondition`.
+      - Results:
+
+        | Gate | Result |
+        | --- | --- |
+        | core | 1,149 |
+        | browser | 478 |
+        | server | 389 |
+        | service | 250 |
+        | setup | 180 |
+        | conformance | 69 |
+        | bin | 19 |
+        | distribution | 14 |
+
+      - Guide drift: 10 checks.
+    - **Slice 3 resumed** (browser `tmp/codex/api-impl-3-resume*`).
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
