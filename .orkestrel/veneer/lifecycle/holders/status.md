@@ -629,7 +629,7 @@ Lane results:
       - `test:guides` 269 passed; 670 exports documented; 55 method tables match; 9 fences execute from the Markdown.
       - **Browser `main` pushed at `ae1c9a1`**, with all five API slices. Unreleased.
       - Observation: the browse renderer-crash recovery case failed once beside a concurrent discovery scan, and passed alone and on a rerun. It is carried into the audit's claim 1.
-    - **Packs** (ollama `tmp/codex/store-campaign5/packs-api/`): browser `AC3A5B97…` from `ae1c9a1`, and agent `17F8A491…` from `65c706a`.
+    - **Packs** (ollama `tmp/codex/store-campaign5/packs-api/`): browser `AC3A5B97…` from `ae1c9a1` (superseded), and agent `17F8A491…` from `65c706a`.
     - **Running in parallel:**
       - the API falsify workflow `api-falsify` (run `wf_92b6692e-f17`), with two Opus lanes;
       - unit `harness-fix` (ollama `tmp/codex/harness-fix-brief.md`): the reading audit's harness items (H1 paging, H2 instruments, A6 fixtures), the API migration, and re-pinned positions.
@@ -645,12 +645,20 @@ Lane results:
       - Stale docs are fixed, and the Surface is reordered entity-first.
       - A crash-flake probe compares 20 runs at `51cf268` with 20 at HEAD.
       - `depth`/`breadth` and `listed`/`found` are kept.
-      - **Fix round `api-fix`** resumed the API session (cap 4 h).
+      - **Fix round `api-fix` landed:** browser `b6dda22`, pushed (report: browser `tmp/codex/api-fix-resume-last.md`, appended to `api-impl-report.md`; 73 minutes).
+        - Every ruled item is fixed; 60 reverting mutations each fail their tests, one per required guard key.
+        - Acceptance passes: check, build, lint, format, guides 274, policy 119, setup 181, core 1,203, browser 478, server 395, service 250, bin 19, distribution 14.
+        - The page-tool audit against `51cf268` passes: 8 handlers, their copy, and the reading code are unchanged.
+        - **Crash probe:** `51cf268` failed 13/20 and `ae1c9a1` 14/20 beside discovery. The cause was in the test: it crashed `launcher.browsers[0]`, which served the session only in launch order. The case finds its lease by URL and runs in both inventory orders. The unit raised the crash event's wait from 1 s to 5 s after 1/20 lease-only failures; final stress 0/20.
+        - **The 5 s wait is kept.** The Orchestrator measured the event latency at `b6dda22`, from the crash request, across 20 invocations with a 30 s budget and discovery beside (`scaffold/tmp/units/crash-latency.ts`; logs in browser `tmp/codex/api-fix-crash-latency/`). All 80 events arrived: median 708 ms, p90 1,050 ms, max 4,428 ms; 2 over 2 s, none over 5 s. The events are late under load, not lost, and a missing event still fails at any budget. The worktree is removed.
+        - Advisory: the shared store's `STORE_LOCKED` message still reads "Journey is locked".
+    - **Packs rebuilt:** browser `A0A54AAA…` from `b6dda22`; agent unchanged (`17F8A491…`).
     - **Harness fix landed locally:** ollama `b3083aa`, unpushed, on top of the held release head.
       - Each finding red then green.
       - Positions held: fact on line 52, token on line 80.
       - setup 256; check and lint pass.
-      - It gets a recheck on the post-fix browser pack.
+      - **Recheck on the `b6dda22` pack passed** (ollama `tmp/codex/harness-recheck.log`): setup 255 passed and 1 skipped (`TIMER_LEAD`'s host-conditional case); check, lint, and the instrument typecheck pass; store-first and store-series at count 1 pass (shipping in 4.9 s, 1 call). Ollama's source and tests use none of the renamed or collapsed names; only its browser guide mirror does, refreshed at the re-pin.
+    - **Running: unit `store-measure`** (ollama `tmp/codex/store-measure-brief.md`, cap 3 h, records in `tmp/codex/store-campaign5/`): V for agent and ollama (browser's V is the fix round's acceptance), then M0 to M5 per `reading/plan.md` § Measurement, with the per-case time targets. It stops at the first rule that says stop; the fix and restart are the Orchestrator's. Twenty orphaned Edge helpers (17:06 to 23:31) were cleared before launch.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
