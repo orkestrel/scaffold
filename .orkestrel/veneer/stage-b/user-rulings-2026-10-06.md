@@ -42,3 +42,7 @@ The user's answers to the seven questions the stage B verdict leaves to the user
 ## Seventh round, 2026-10-07, after the audit batch landing
 
 - **The user's words:** "Keep the class and caption, go ahead with task 96 and also make sure to generate the showcase and push to main so I can see." Resolution: U4.1 (the matrix column floor) closes with the padding class and its caption as landed at veneer `433cc3e`; no `style` attribute enters the showcase, and the nine probed registry spellings stay recorded in `../showcase/redesign-2026-10-06/audit-2026-10-07/as2/lane-FLOOR.md`. Task 96 (the tooltip preservation row's `placement` count, which read 1 at light-390 and dark-1280 in the L1 landing against 0 in the runs before and after) opens as the next unit; the page is rebuilt and lands on `main` with it.
+
+## Eighth round, 2026-10-07, the direction change
+
+- **The user's words:** "Forget it, at this point, let's tear out tailwindcss completely, there's no real use or need for it and I want to make sure bootstrap is impeccable and the engine for it is perfect." Resolution: the Tailwind track ends. Veneer removes the Tailwind sheet, the showcase faces, the recipe records, the Tailwind readings and claims, the guide sections, and the dependency; the records under `../tailwind-flip/` and the audit stay as history. The campaign's object is Bootstrap alone and its engine. Task 96 (the tooltip preservation row, a Tailwind-face reading) is withdrawn with its lane; the U4.1 ruling of the seventh round stands for the Bootstrap page.
