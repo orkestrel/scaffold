@@ -624,6 +624,15 @@ Lane results:
       - Guide drift: 39 checks.
     - **Slice 5, the guide, resumed** (browser `tmp/codex/api-impl-5-resume*`).
     - **API falsify claims drafted:** scaffold `tmp/units/api-claims.md`, 12 claims.
+    - **Slice 5 landed:** browser `ae1c9a1`.
+      - The entity-led guide, with the tagline and README equal.
+      - `test:guides` 269 passed; 670 exports documented; 55 method tables match; 9 fences execute from the Markdown.
+      - **Browser `main` pushed at `ae1c9a1`**, with all five API slices. Unreleased.
+      - Observation: the browse renderer-crash recovery case failed once beside a concurrent discovery scan, and passed alone and on a rerun. It is carried into the audit's claim 1.
+    - **Packs** (ollama `tmp/codex/store-campaign5/packs-api/`): browser `AC3A5B97…` from `ae1c9a1`, and agent `17F8A491…` from `65c706a`.
+    - **Running in parallel:**
+      - the API falsify workflow `api-falsify` (run `wf_92b6692e-f17`), with two Opus lanes;
+      - unit `harness-fix` (ollama `tmp/codex/harness-fix-brief.md`): the reading audit's harness items (H1 paging, H2 instruments, A6 fixtures), the API migration, and re-pinned positions.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
