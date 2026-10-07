@@ -754,9 +754,22 @@ Lane results:
         - **4B paging 8 of 8 under H1 with G1,** where the 4B reads from line 34 instead of claiming the whole page;
         - 4B paging at most 2 under every other arm.
       - **The unit's chosen C1 (L1 + G1) is superseded** by C2 = L1 + H1 + G1.
-    - **Running: unit `store-validate-2`** (ollama `tmp/codex/store-validate-2-brief.md`, cap 2 h, records `tmp/codex/store-campaign5/validate-2/`).
-      - **Stage 1:** first replies for C2 and C2R on both models, with the paging judge reading the seen footer. C2R adds the prompt wording "click a reference shown on this unchanged page".
-      - **Stage 2:** the 2B's second turn on cart, search, and checkout after a first read. The read's result is transformed into the arm's form, with the ruled best-match line on a range miss.
+    - **Unit `store-validate-2`** (ollama `tmp/codex/store-validate-2-report.md`; 34 minutes).
+      - **C2 first calls:** the 4B is 8 of 8 on every task. The 2B is unchanged: shipping and paging 8; cart, search, and checkout read from 46. The guard passes, and C2R matches C2.
+      - **The 2B's second turn under C2:**
+        - checkout `click e3`, 8 of 8;
+        - cart `type e7` on the tray link, 8 of 8, so the best-match line reaches the tray, but the 2B types instead of clicking;
+        - search `read {"from":1,"search":"kettle"}`, 8 of 8, with no `type` on `e4`.
+      - The unchanged-page wording (C2R) moves nothing.
+    - **Running: unit `store-validate-3`** (ollama `tmp/codex/store-validate-3-brief.md`, cap 2 h, records `tmp/codex/store-campaign5/validate-3/`). It runs the 2B's search and cart to the end of each attempt under C2, transforming every result, with the arms:
+      - C2, the control;
+      - P1, the search-box sentence;
+      - D1, the analyst's `read` copy;
+      - X6, `search` renamed `find`;
+      - T1, `type` naming a search box;
+      - P1 with X6.
+
+      It ends with the guards for any arm that passes search on 6 or more of 8.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
