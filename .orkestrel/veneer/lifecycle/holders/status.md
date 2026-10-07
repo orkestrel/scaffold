@@ -666,13 +666,31 @@ Lane results:
         - the footer's imperative, the last text before the reply;
         - the system prompt's "For more text, follow the footer" sentence;
         - the task placed before the seed.
-    - **Running: unit `store-ablate`** (ollama `tmp/codex/store-ablate-brief.md`, cap 90 min). First replies, 5 tasks × 8 ports per variant, transformed inside the probe with the judge fixed:
-      - A0: as shipped;
-      - A1: a declarative footer;
-      - A2: no footer sentence in the system prompt;
-      - A3: A1 and A2;
-      - A4: the seed first, the task last;
-      - then A0 and the best variant on the 4B.
+    - **Unit `store-ablate`** (ollama `tmp/codex/store-ablate-report.md`, records `tmp/codex/store-campaign5/ablate/`; 35 minutes). First replies, 5 tasks × 8 ports per variant, judged against the untransformed seed. Productive first calls out of 8 (shipping, cart, search, checkout, paging):
+
+      | Model, variant | Counts |
+      | --- | --- |
+      | 2B A0, as shipped | 8, 0, 0, 0, 8 |
+      | 2B A1, declarative footer | 6, 1, 0, 1, 5 |
+      | 2B A2, no footer sentence in the system prompt | 8, 0, 0, 0, 8 |
+      | 2B A3, A1 and A2 | 8, 0, 0, 1, 5 |
+      | 2B A4, seed first, task last | 8, 2, 0, 3, 0 |
+      | 2B A3 and A4 | 8, 0, 0, 0, 0 |
+      | 4B A0 | 8, 0, 8, 8, 0 |
+
+      - **No copy variant fixes the 2B.** Search is 0 of 8 under every variant: the first call is `read` with `search: "kettle"`.
+      - **The 4B's cart first call is `click e11` on every port.** The tray is `e7` on line `11`, so the line number is read as the reference.
+      - **The 4B answers paging with text and no call.**
+      - The 2B's malformed tool-call XML (Ollama HTTP 500) appears under A1, A3, and A3 with A4 on checkout.
+    - **Running: unit `store-ablate-2`** (ollama `tmp/codex/store-ablate-2-brief.md`, cap 2 h, records `tmp/codex/store-campaign5/ablate-2/`). Single factors on both models:
+      - X1: no line numbers;
+      - X2: no footer;
+      - X3: neither, close to 0.0.26's outline;
+      - X4: no read sentences in the system prompt;
+      - X5: X3 and X4;
+      - X6: `read`'s `search` renamed `find`.
+
+      Rows now keep the reply text. The design round follows from which factor moves each failing task.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
