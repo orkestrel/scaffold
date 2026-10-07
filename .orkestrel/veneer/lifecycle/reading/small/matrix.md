@@ -23,8 +23,9 @@ Ollama `tmp/codex/census.md` (230 attempts): the 2B's cart and checkout runs all
 | V5 | tool count | journey advertises no `capture`, `forget`, `dialog`, `switch`, `navigate`, `press` | store-live, 2B, journey, 8 ports | queued | |
 | V6 | plain-read early answer | a numbered row `61–80: not shown yet; call read with from 61.` replaces the partial-view header line | store-live, 2B, paging, 16 ports | queued | |
 | S2 | stale reference | a link with the same name and resolved `href` keeps its reference across page changes; a gone element is refused by name | browser design, planner §2 | design | |
-| S3 | replay start | a journey records where it starts, and a replay navigates there first; today a replay from the checkout page stops at a catalogue-only link | browser design | design | |
+| S3 | replay start | a journey records where it starts, and a replay navigates there first; today a replay from the checkout page stops at a catalogue-only link | browser design; the planner ruled adopt (`rulings-planner.md` §1): optional `start` on the journey, format stays 1 | ruled | |
 | R1 | missing `from` | `journeys` and `read` default `from` to 1 and accept digit strings | browser design, planner §3; the prompt form landed in ollama `5cfa5ed` | design | |
-| O1 | oracle strictness | a refused stale reference the model recovers from no longer fails the attempt; a successful unlisted action still does | oracle ruling for the user, analyst hypothesis 4 | ruling | |
+| O1 | oracle strictness | a refused stale reference the model recovers from no longer fails the attempt; a successful unlisted action still does; the refused-unlisted count is reported beside the pass rate | the planner and the analyst both rule relax (`rulings-planner.md` §2); the user decides | ruled | |
+| B1 | opening-turn budget | per-turn budgets: the shortest correct sequence plus one correction per call (8 for the opening turn, 1 per follow-up), passed to the agent per user turn in one unit, with the oracle cap derived | the planner's ruling (`rulings-planner.md` §3); JL raises every turn and is evidence only | ruled | |
 | X1 | ollama 500 | `num_predict` 512 on the journey | store-live, 2B, journey, 8 ports | queued | |
 | M4 | 4B journey | the `from 1` prompt | confirm.ts, 4B, journey, 2 runs | queued | |
