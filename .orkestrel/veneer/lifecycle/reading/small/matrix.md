@@ -11,14 +11,19 @@ Ollama `tmp/codex/census.md` (230 attempts): the 2B's cart and checkout runs all
 | Row | Class | Variant | Instrument | Status | Result |
 | --- | --- | --- | --- | --- | --- |
 | T0 | baseline | the `from 1` prompt, limit 8 | store-live, 2B, journey, 8 ports | done | **0 of 8.** Every port `partial`: the opening turn spends its 8 calls before the model answers (the analyst's finding), and `converseStore` carries the flag. Also: stale `e4` on 4 ports (the buyer's name typed into the seed's search box), the ollama 500 on 2, `save` loops after every follow-up on 5 (`ended` 2–3), an extra submission or a replay stopped at a product link on 3. Record `tmp/codex/store-live/journey-T0.md`. |
-| JL | opening-turn budget | per-turn call limit 12 (harness option `limit`, uncommitted) | store-live, 2B, journey, 8 ports | queued | |
-| JS | save conflict | journey sentence `Call save only when the user asks … after save, edit, or replay succeeds, answer without saving again.` | same | queued | |
-| V4 | save after saved | refusal `Nothing is recording, so there is nothing to save; "…" is already saved. Answer the user.` | same | queued | |
-| JP | task wording | `click the Cart link, then complete checkout` in place of `then open the cart before you complete checkout` | same | queued | |
-| TB, TB2 | type refusal advice | the `type` refusal names the fields in view (`to type, use textbox "Full name" [ref=e23]`) instead of `call click for a link`; TB2 keeps the click advice when no field is in view | same | queued | |
-| JA | combined | JP, V4, TB2 | same | queued | |
-| JB | combined | JA and V1c | same | queued | |
-| JC | combined | JB, JS, and limit 12 | same | queued | |
+| JL | opening-turn budget | per-turn call limit 12 (ollama `3c6345d`, local) | store-live, 2B, journey, 8 ports | done | **0 of 8.** The loops run longer (stale `e4` 26 times, `save` loops 33) and 6 ports exceed the oracle's 40-call cap; the 500 on the same 2 ports. The budget absorbs detours, as the planner predicted. |
+| JS | save conflict | journey sentence `Call save only when the user asks … after save, edit, or replay succeeds, answer without saving again.` | same | done | **0 of 8.** The byte shift moved the deterministic 500 onto 5 ports (each right after a refused `read{"from":6}` on a 5-line page); the other 3 still loop on `save`. |
+| V4 | save after saved | refusal `Nothing is recording, so there is nothing to save; "…" is already saved. Answer the user.` | same | in JA–JG | |
+| JP | task wording | `click the Cart link, then complete checkout` in place of `then open the cart before you complete checkout` | same | rejected | The 2B did the flow first and called `record` last on 8 of 8 ports, so the recording was empty; the original wording's `then` after `Record` put `record` first every time. Replaced by JP2: `then click the Cart link and complete checkout`. |
+| TB, TB2 | type refusal advice | the `type` refusal names the fields in view (`to type, use textbox "Full name" [ref=e23]`) instead of `call click for a link`; TB2 keeps the click advice when no field is in view | same | in JA–JG | |
+| JA | combined | JP, V4, TB2 | same | done | 0 of 8, all by JP's `record` order. The `type!` detour remained on 4 of 8 ports. |
+| JB | combined | JA and V1c | same | done | 0 of 8, all by JP's `record` order. **The `type!` detour vanished on 8 of 8 ports** (`click>click>type` every time): V1c works. |
+| JC | combined | JB, JS, and limit 12 | same | done | 0 of 8, the same; one port 500 after its first `click`. |
+| S4 | empty recording | with a recording that holds no step, `save` is refused ("nothing is recorded") and `record` is refused ("a journey is recording; call save first"); the 2B alternated between the two for 36 calls. Rule whether `record` restarts an empty recording, or the refusal names the one way out | browser design, planner | design | |
+| JE | combined | JP2, V1c, V4, TB2 | store-live, 2B, journey, 8 ports | queued | |
+| JF | combined | JE and limit 12 | same | queued | |
+| JG | combined, original wording | V1c, V4, TB2 | same | queued | |
+| X3 | ollama 500 | the past-the-end refusal gains `, all in the latest result` | same | queued | The 500 followed a refused `read{"from":6}` on 9 of 10 occurrences; the tenth followed a first `click`. |
 | V1a, V1b, V1c | type on links and buttons | the planner's `click` and `type` copy (a), the prompt order (b), both (c) | store-live, 2B, all five tasks, 16 ports | queued | |
 | V5 | tool count | journey advertises no `capture`, `forget`, `dialog`, `switch`, `navigate`, `press` | store-live, 2B, journey, 8 ports | queued | |
 | V6 | plain-read early answer | a numbered row `61–80: not shown yet; call read with from 61.` replaces the partial-view header line | store-live, 2B, paging, 16 ports | queued | |
