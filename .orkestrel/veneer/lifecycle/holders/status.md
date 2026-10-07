@@ -633,6 +633,24 @@ Lane results:
     - **Running in parallel:**
       - the API falsify workflow `api-falsify` (run `wf_92b6692e-f17`), with two Opus lanes;
       - unit `harness-fix` (ollama `tmp/codex/harness-fix-brief.md`): the reading audit's harness items (H1 paging, H2 instruments, A6 fixtures), the API migration, and re-pinned positions.
+    - **API falsify: both lanes FAIL.** Rulings: `api/audit-verdict.md`. Lane reports: `api/falsify/`.
+      - Closed pages fail `isBrowserPage`.
+      - The code synonyms collapse to `CLOSED`, `TIMEOUT`, and `ARGUMENT`, with `STORE_*` codes for the shared file store.
+      - The manager classes are made internal.
+      - Context and isolate options are split.
+      - An empty cookie filter is refused.
+      - `network.clear()` replaces clearing by `undefined`.
+      - The in-process lock race is fixed in code.
+      - Renames: `started` → `active`; `buildBrowserHAREntry`; `validateBrowserPageOpen`; `BrowserTraversalOptions`.
+      - Stale docs are fixed, and the Surface is reordered entity-first.
+      - A crash-flake probe compares 20 runs at `51cf268` with 20 at HEAD.
+      - `depth`/`breadth` and `listed`/`found` are kept.
+      - **Fix round `api-fix`** resumed the API session (cap 4 h).
+    - **Harness fix landed locally:** ollama `b3083aa`, unpushed, on top of the held release head.
+      - Each finding red then green.
+      - Positions held: fact on line 52, token on line 80.
+      - setup 256; check and lint pass.
+      - It gets a recheck on the post-fix browser pack.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
