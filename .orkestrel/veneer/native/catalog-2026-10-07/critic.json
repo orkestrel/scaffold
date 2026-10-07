@@ -1,0 +1,24 @@
+{
+ "missed": [
+  {
+   "name": "Combobox / autocomplete with ARIA listbox pattern",
+   "why": "No Bootstrap 5.3 component implements combobox or autocomplete behavior. The judge excluded only `<datalist>` and never listed a scripted combobox. Whether it counts as overlap with the datalist and dropdown concepts is unread.",
+   "source": "Absence from the judge output. No Bootstrap source was read for this row."
+  },
+  {
+   "name": "Tree view, steppers, tags input, split-pane resizing, virtualized list, and relative time with Intl",
+   "why": "Each was named in the critic brief and none appears in the shortlist, excluded, or longlist. I did not prove whether Bootstrap has a counterpart for each one.",
+   "source": "Judge output, all three lists."
+  }
+ ],
+ "misjudged": [
+  {
+   "name": "Skip links (not listed, but relevant to the brief)",
+   "judged": "Absent",
+   "correction": "Overlap. Bootstrap ships `.visually-hidden-focusable`, the helper its docs use for skip links.",
+   "evidence": "/home/user/veneer/node_modules/bootstrap/scss/helpers/_visually-hidden.scss:6 `.visually-hidden-focusable:not(:focus):not(:focus-within)`"
+  }
+ ],
+ "statusErrors": [],
+ "summary": "This critique is partial and short of what the brief asked for. I ran two greps and nothing else: no web fetches, no probes, and no check of the judge's Baseline or version numbers.\n\nWhat the greps confirmed:\n- The judge's citation `_reboot.scss:582` (`output { display: inline-block }`) is correct.\n- Bootstrap 5.3 has a skip-link helper, `.visually-hidden-focusable` (/home/user/veneer/node_modules/bootstrap/scss/helpers/_visually-hidden.scss:6). Skip links are therefore overlap and cannot be a native candidate. The judge did not list them.\n\nWhat the judge left out, from the brief's own list:\n- Combobox and autocomplete are absent from all three lists. Bootstrap has no combobox component, but I did not read enough to rule on whether it overlaps with Bootstrap's datalist or dropdown.\n- Tree view, steppers, tags input, split-pane resizing, virtualized lists, and relative time with Intl are also absent from all three lists. I did not check whether Bootstrap has a counterpart for any of them.\n\nNothing else is proven:\n- No overlap verdict is shown wrong with Bootstrap documentation or source.\n- No support claim is shown contradicted."
+}
