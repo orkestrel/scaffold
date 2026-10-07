@@ -899,7 +899,14 @@ Lane results:
       - **Journey:**
         - 2B fails all 3 attempts in 107 s: repeated `save` after saving, a stale-reference loop, and an invented tool;
         - 4B passes in 83 s, on attempt 2.
-    - **Asked the user:** how to proceed on 2B paging (about 50% per attempt, rescued by retries in 11 of 12 runs) and the 2B journey, against releasing on what holds.
+    - **The user's answer (2026-10-07): push until 16 clean,** paging then the journey, before any release.
+    - **`miss-placement` landed:** browser `06d1975`, pushed; pack `1A60AB50…` installed in ollama. An unquoted miss sits immediately before the footer; the touched tests (234), `check`, and guides (278) pass.
+    - **2B confirmation on `06d1975`: 16 of 16 runs clean** (`tmp/codex/confirm/2b-c2/`), every task on its first attempt: shipping 9.5–10.1 s, cart 7.3–7.4 s, search 6.2–6.3 s, checkout 7.8–7.9 s, paging 7.8–8.4 s.
+    - **The user's directive (2026-10-07):** drill into every issue the 2B meets until it uses the tools reliably; where the 4B also stumbles, the implementation is at fault; try every sensible idea and get the evidence.
+    - **Census** (ollama `tmp/probes/census.test.ts`, `tmp/probes/census.ts`, report `tmp/codex/census.md`, 230 attempts against the real oracles): every 2B cart and checkout run first calls `type` on a link or button and recovers (33 of 33 each; the 4B never); every failed paging attempt is a single `read` (18 of 18) and every `read>read` passes (34 of 34); the 2B journey fails on `journeys{}` (refused: `from` required) followed by 7 plain reads to the turn limit, repeated `save` after its own save, a stale `e4` loop, and an ollama 500 on malformed tool-call XML (ollama `server.log`, qwen35 parser); the 4B's journey attempt 1 clicked the seed's `e3` right after the page changed.
+    - **Ollama `5cfa5ed`, local:** the journey prompt says `call journeys with from 1`.
+    - **Live variant probe:** ollama `tmp/probes/store-live.test.ts` wraps the provider boundary (system prompt, advertised definitions, tool-result text) and runs whole attempts through the real harness over fixed ports; records in `tmp/codex/store-live/<label>.{json,md}`. Running: the 2B journey baseline `journey-T0` over 8 ports. Port 49171: the 2B typed the buyer's name into the seed's search box `e4` after the page changed, 17 times.
+    - **Lanes:** Opus planner on the tool surface for small models (returns text; the `planner`, `researcher`, and `analyst` roles have no write tool here), Astra analyst on the harness and oracle (ollama `tmp/codex/small-analyst-brief.md`, journal `small-analyst.jsonl`), prior art filed at `reading/small/research-prior-art.md`. The matrix: `reading/small/matrix.md`.
     - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
