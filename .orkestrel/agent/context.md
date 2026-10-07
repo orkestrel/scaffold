@@ -97,6 +97,22 @@ Each proposal from the ChatGPT conversation, ruled on.
 
 The order, acceptance, and status of these units live in [plan.md](plan.md) § Units, which supersedes the table this section carried. That table's rows 7 to 10 named `release 0.0.27` and the ollama, toolbox, and mirror visits against it; the registry serves 0.0.27 as the judge release and 0.0.28 as the scope-dispatch fix, so the release after this refactor is above 0.0.28 and lands after the selection round. Units in one checkout run one after another; units in different checkouts run side by side; `hygiene`, `framing`, `correlate`, `carve`, and `consolidate` keep the acceptance this record's measurements imply, restated in plan.md with the dispatch invariants added.
 
+### The framing ruling and the carve layout
+
+The `framing` deletion is the one design opinion the medium row of `AGENTS.md` § Work loop admits, not a law reading: the one-term law bars a second term for one concept, and `.claude/rules/names.md` requires the wire body to keep the external word `format`, so the homonym can close only on the framing side; the design reason is that a wire provider is the wrong owner of prompt framing, and the manager option and the item override express every rendering the provider level can. One thing is lost: a provider-level default selects framing per provider, while a manager option selects it per manager, so two agents sharing one `InstructionManager` with providers that prefer different framings need two managers after the deletion.
+
+The module layout `carve` produces, with each module's imports:
+
+| Module | Owns | Imports |
+| --- | --- | --- |
+| root `src/core/*.ts` | `MessageRole`, `Message`, `MessageInput`, the message shape and contract, `isMessage`, `filterAllowList`, `joinThinking` | `contract`, `tool` |
+| `providers/` | `ProviderInterface` and its result, delta, and option types, `AgentProvider`, `ThinkSplitter`, the request and result shapes and contracts, the provider errors, `readText`, `readChunks`, `buildProviderResult`, the relay (`createRelay`, `RelayStream`, `RelayProvider`, the relay frame shape and constants) | root, `timeout`, `tool`, `contract` |
+| `conversations/` | `MessageManagerInterface`, `Conversation`, `ConversationManager`, `Section`, compaction, snapshots, `ConversationError`, the `stores/` folder, the recap helpers and constants | root, `emitter`, `contract`, `database` |
+| `contexts/` | `AgentContext`, `ContextSectionFormat`, the `instructions/` and `scopes/` folders, the workspace render helpers, `intersectKeys`, `WORKSPACE_SECTION_HEADER` | root, `conversations/`, `workspace`, `tool`, `emitter` |
+| `agents/` | `Agent`, `Channel`, `Authority`, `AgentRegistry`, the job handlers and factories, `estimateTokens`, `estimateMessages`, the usage and result helpers, `AgentError`, `AgentJobError` | every module, `abort`, `budget`, `timeout`, `queue`, `workflow` |
+
+The `providers/` and `conversations/` folders exist today as entity folders holding class files; `carve` turns each into a module with its own kind files and keeps `stores/`, `instructions/`, and `scopes/` as class-only entity folders inside their modules, per `.claude/rules/architecture.md` § Entity subfolders. The guide scope is a ruling `carve` records, not a default it inherits: `.claude/rules/documentation.md` § Parity scopes a guide to one module directory and admits one guide over several only for a layer concept, and the agent `guides/README.md` mapping of `src/core` and `src/core/providers` to `agent.md` is one module and its entity folder, not a precedent for four modules. The ruling is that the four modules are one layer concept, the conversation runtime, with the scaffold's own `guides/README.md` mapping `src/core`, `src/server`, and `src/bin` to one `scaffold.md` as the fleet precedent, and the barrel's export set does not change, so `npm run test:guides` passes on that layout.
+
 ## The living context, staged by consumer
 
 The user's goal stands: a context that stays fresh, brings in what the next action needs, keeps a record to look back on, and marks what is stale, superseded, or wrong. The route to it runs through consumers, each step small enough to prove.
