@@ -39,3 +39,6 @@ The user's answers to the seven questions the stage B verdict leaves to the user
   - R5, subtle borders: subtle border tokens map by role (step 200 in light, step 800 in dark), confirmed in the tokens verdict (§ Amendments of 2026-10-07); the Borders section states the two collisions.
   - R6, bare elements in component markup: bare paragraphs, dividers, nested lists, legends, captions, and headings inside Bootstrap's own component examples keep preflight under the layer; each specimen states it (C2 to C7, U4.7).
 
+## Seventh round, 2026-10-07, after the audit batch landing
+
+- **The user's words:** "Keep the class and caption, go ahead with task 96 and also make sure to generate the showcase and push to main so I can see." Resolution: U4.1 (the matrix column floor) closes with the padding class and its caption as landed at veneer `433cc3e`; no `style` attribute enters the showcase, and the nine probed registry spellings stay recorded in `../showcase/redesign-2026-10-06/audit-2026-10-07/as2/lane-FLOOR.md`. Task 96 (the tooltip preservation row's `placement` count, which read 1 at light-390 and dark-1280 in the L1 landing against 0 in the runs before and after) opens as the next unit; the page is rebuilt and lands on `main` with it.
