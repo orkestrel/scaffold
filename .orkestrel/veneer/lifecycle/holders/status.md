@@ -728,6 +728,27 @@ Lane results:
       7. probe validation before implementation.
 
       Next: reconcile both proposals, validate the change set by probe transforms on both models, then take the plan to the user. Numbered lines with inline references are the user's ruling, so any change that leaves it goes to the user.
+    - **Both proposals landed:** `redesign/proposal-planner.md` and `redesign/proposal-analyst.md`. The reconciliation is in `redesign/reconcile.md`.
+      - **Agreed:**
+        - rule R, references accumulate per unchanged page;
+        - outside-range matches without moving the window;
+        - the footer stays;
+        - every line stays numbered, while the bare number beside a bare reference goes;
+        - a partial-view header line.
+      - **Splits, to be measured:**
+        - the line form, `[ref=e7]` after the name or `[line N]` at the end;
+        - the partial-view wording;
+        - the framing;
+        - 2B search, a prompt sentence or control cues and `read` copy;
+        - a purpose-qualified footer.
+      - **Ruled:**
+        - search past `from` quotes the best page-wide match line under the header;
+        - M1 becomes a diagnostic, with M2 the gate;
+        - rule R goes to the user.
+    - **Running: unit `store-validate`** (ollama `tmp/codex/store-validate-brief.md`, cap 3 h, records `tmp/codex/store-campaign5/validate/`).
+      - **Stage 0:** rescore the M2diag transcripts under rule R.
+      - **Stage 1:** ten presentation arms (L1, N1, H1, H2, G1, G2, P1, K1, D1, F1) on both models.
+      - **Stage 2:** the combined candidate, chosen by rules stated before the run.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
