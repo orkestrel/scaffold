@@ -1,0 +1,15 @@
+landing a1db33f
+build exit 0 
+format exit 0 
+lint exit 0 
+check exit 0 
+guides exit 0       Tests  20 passed (20)
+integration exit 0       Tests  60 passed (60)
+app exit 0       Tests  249 passed (249)
+setup-browser exit 0       Tests  206 passed (206)
+policy-config-setup exit 0       Tests  186 passed (186)
+journey exit 0       Tests  109 passed (109)
+showcase-1 exit 0 sha256 07d5276c39d373ab
+showcase-2 exit 0 sha256 07d5276c39d373ab
+Different: 498 differences; see /home/user/veneer/tmp/units/fleet-pins/compare-a1db33f.md
+[exited with code 0]
