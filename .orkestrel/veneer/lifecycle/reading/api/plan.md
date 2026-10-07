@@ -131,6 +131,25 @@ The 8 model tools, their copy, and the reading behavior stay as the reading camp
 | Private-state types | Inline them | Keep | **Inline** (`AGENTS.md`: only reusable and public types live in `types.ts`) |
 | Release | Separate 0.0.28 | Not raised | **In 0.0.27,** before the harness fix and the measurement, as the campaign's order states |
 
+## The user's rulings (2026-10-06)
+
+- **The plan is approved.**
+- **E: bare codes.** `BrowserErrorCode` drops the `BROWSER_` prefix. MCP and command-line error text changes with it; page tool results carry the message only.
+- **B: reuse `@orkestrel/codec`.**
+  - Browser declares `@orkestrel/codec` as a dependency, which is the user's explicit approval of the dependency, and imports its base64 functions.
+  - Browser's own `encodeBase64`, `decodeBase64`, `BASE64_CHARS`, and `BASE64_LOOKUP` are removed.
+  - Codec's decoder returns `undefined` on refusal where browser's was tolerant, so each call site handles that refusal.
+  - The Orchestrator installs the dependency; no unit installs.
+
+**Routing change:** the approved plan fixes the API shape, so the contract types are mechanical-precision work and go to Astra with each slice. The units run as vertical slices, each types-first within itself and green at its end:
+1. errors;
+2. construction and the toolset;
+3. plumbing, the recorder, the managers, and the stores;
+4. hygiene, with codec;
+5. the guide.
+
+The Orchestrator commits each slice. Opus reviews the names and voice in F.
+
 ## Units
 
 The browser units run in series in one checkout, starting at `51cf268`. The Astra units run their own commands. The Orchestrator commits each green checkpoint.

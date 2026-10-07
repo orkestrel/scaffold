@@ -523,6 +523,17 @@ Lane results:
     - **Design round launched,** blind lanes on `api/design-brief.md`:
       - Astra `api-analyst`, effort xhigh, cap 1 h (scaffold `tmp/codex/api-analyst*`);
       - Opus `planner`, native.
+    - **Design round done:** `api/proposal-planner.md` and `api/proposal-analyst.md`, reconciled into `api/plan.md`.
+    - **The user approved it (2026-10-06):**
+      - E: bare error codes;
+      - B: reuse `@orkestrel/codec`, a dependency the user approved explicitly.
+    - The Orchestrator rerouted the contract types to Astra, as vertical slices that each end green:
+      1. errors;
+      2. construction and the toolset;
+      3. plumbing, the recorder, the managers, and the stores;
+      4. hygiene, with codec;
+      5. the guide.
+    - **Unit `api-impl`** (browser `tmp/codex/api-impl-brief.md`, cap 3 h per launch) runs slice 1, errors. Each later slice resumes the same session, and the Orchestrator commits each green slice.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
