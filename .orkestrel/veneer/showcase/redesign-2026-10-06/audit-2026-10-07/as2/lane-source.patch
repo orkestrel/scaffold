@@ -1,0 +1,1142 @@
+commit 10abe701330500d518ee13247792a2e07394bd2a
+Author: Claude <noreply@anthropic.com>
+Date:   Wed Oct 7 17:59:42 2026 +0000
+
+    Fix the showcase specimens the audit found broken under the layer and re-seat the scrollspy on a face switch (unit AS2)
+    
+    The flex nowrap specimen carries one wrap name; the validation fields
+    clear their tooltips with mb-4 and a pb-4 wrapper; each overflow frame
+    sits in a ratio-1x1 box that holds its visible spill; the pinned badge's
+    frame reads pt-2 with a label row; the stretched-link thumbnail keeps
+    its 64 px square through align-self-start; the live dialog paragraph
+    takes mb-3; the Underline colors specimens drop link-underline, the
+    Scrolling table outgrows its card at 1280, and the position-helpers
+    lists hold 13 rows. Showcase#select destroys and recreates the Scrollspy
+    on every face change, with three journey cases reading Feedback after
+    the settle. A census case refuses the 25 opposite-order shared pairs;
+    the shadow, color-background, and gutters captions state their readings.
+    U4.1, the matrix column floor, is stopped: no registry spelling meets
+    the floor's properties (the probe is recorded). J3's hint lookup reads
+    the outer ratio wrapper the overflow fix adds.
+    
+    Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_017fwYCgxCd9JhL43kVBLBJV
+
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 223d1a6..ce0c806 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -1,6 +1,14 @@
+-import type { ToastInterface } from '@src/browser'
++import type { ScrollspyInterface, ToastInterface } from '@src/browser'
+ import sheet from '../../dist/src/bootstrap/index.css?raw'
+-import { COPIER_EVENTS, MODAL_EVENTS, Registry, createToast, createToastPlugin } from '@src/browser'
++import {
++	COPIER_EVENTS,
++	MODAL_EVENTS,
++	Registry,
++	createScrollspy,
++	createScrollspyPlugin,
++	createToast,
++	createToastPlugin,
++} from '@src/browser'
+ import { CLASS_NAMES } from '@src/core'
+ import { DIALOG_STATUS, FACES, THEMES, TITLE } from './constants.js'
+ import { createShell } from './factories.js'
+@@ -15,6 +23,7 @@ import { recipe, unexcluded } from './recipe.json'
+  * `unexcluded` face holds `style#veneer-unexcluded`, the compile without the Veneer import, directly
+  * before that sheet. The `tailwindcss` face holds `style#veneer-tailwindcss`, the whole recipe
+  * compile alone. Each face occupies the Bootstrap sheet's original position in the head.
++ * A face change re-creates the live example's Scrollspy so its observation starts from that face's geometry.
+  * The Stylesheets and Color mode buttons
+  * select the face and the `data-bs-theme` value of the root element. Inside the main region, a
+  * click on a link whose `href` is exactly `#` and the submission of a form do not navigate, as on
+@@ -52,6 +61,7 @@ export class Showcase {
+ 	#controller: AbortController | undefined
+ 	#observer: ResizeObserver | undefined
+ 	readonly #toasts = new Set<ToastInterface>()
++	#scrollspy: ScrollspyInterface | undefined
+ 	#title = ''
+ 	#attribute: string | undefined
+ 	#style: string | undefined
+@@ -161,7 +171,8 @@ export class Showcase {
+ 	 * Removes the page and every face's sheets, and restores the title, root theme, and inline style.
+ 	 *
+ 	 * @remarks
+-	 * Disconnects the header observer. Does nothing when the showcase is not mounted.
++	 * Disconnects the header observer and destroys its factory-created toasts and Scrollspy.
++	 * Does nothing when the showcase is not mounted.
+ 	 * A later `start` mounts the page again.
+ 	 *
+ 	 * @example
+@@ -179,9 +190,11 @@ export class Showcase {
+ 		this.#controller = undefined
+ 		this.#observer?.disconnect()
+ 		this.#observer = undefined
+-		// A factory-created component belongs to its creator, so the showcase releases the toast it made.
++		// Factory-created components belong to their creator rather than the boot scope.
+ 		for (const toast of this.#toasts) toast.destroy()
+ 		this.#toasts.clear()
++		this.#scrollspy?.destroy()
++		this.#scrollspy = undefined
+ 		page.remove()
+ 		this.#page = undefined
+ 		this.#tailwindcss.remove()
+@@ -347,6 +360,13 @@ export class Showcase {
+ 			if (face === 'unexcluded') this.#bootstrap.before(this.#unexcluded)
+ 			else this.#unexcluded.remove()
+ 		}
++		if (face !== undefined) {
++			const demo = page.querySelector<HTMLElement>('#engine-demo')
++			if (demo !== null) {
++				new Registry(this.#document).component(createScrollspyPlugin(), demo)?.destroy()
++				this.#scrollspy = createScrollspy(demo)
++			}
++		}
+ 		if (theme !== undefined) this.#document.documentElement.setAttribute('data-bs-theme', theme)
+ 		const selected = this.#tailwindcss.isConnected
+ 			? 'tailwindcss'
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 54c9a2a..5edd58c 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -9,6 +9,8 @@ import type {
+ 	Template,
+ 	Theme,
+ } from './types.js'
++import gutters from './sections/gutters.html?raw'
++import shadows from './sections/shadows.html?raw'
+ 
+ /**
+  * Holds the document title the showcase sets.
+@@ -124,6 +126,7 @@ export const SECTIONS: readonly Section[] = Object.freeze([
+ 		title: 'Gutters',
+ 		group: 'layout',
+ 		lead: 'Horizontal and vertical gutters between the columns of a row.',
++		caption: gutters,
+ 	}),
+ 	Object.freeze({
+ 		id: 'typography',
+@@ -478,6 +481,7 @@ export const SECTIONS: readonly Section[] = Object.freeze([
+ 		title: 'Shadows',
+ 		group: 'utilities',
+ 		lead: 'Box shadows from none to large.',
++		caption: shadows,
+ 	}),
+ 	Object.freeze({
+ 		id: 'sizing',
+@@ -1345,11 +1349,14 @@ export const ENGINE_ROWS: readonly EngineRow[] = Object.freeze([
+ export const FRAGMENTS: Readonly<Record<string, string>> = Object.freeze(
+ 	Object.fromEntries(
+ 		Object.entries(
+-			import.meta.glob<string>('./sections/*.html', {
+-				eager: true,
+-				query: '?raw',
+-				import: 'default',
+-			}),
++			import.meta.glob<string>(
++				['./sections/*.html', '!./sections/gutters.html', '!./sections/shadows.html'],
++				{
++					eager: true,
++					query: '?raw',
++					import: 'default',
++				},
++			),
+ 		).map(([path, markup]): readonly [string, string] => [
+ 			path.slice('./sections/'.length, -'.html'.length),
+ 			markup,
+diff --git a/app/browser/factories.ts b/app/browser/factories.ts
+index 57bf5a7..ac9977c 100644
+--- a/app/browser/factories.ts
++++ b/app/browser/factories.ts
+@@ -107,6 +107,8 @@ export function createSpecimen(document: Document, template: Template, name: str
+  * places it on the returned element. The `edge` shape draws a side class such as `border-top` on
+  * its own, and every other border class beside `border`, which supplies the style a width, color,
+  * or removal class needs.
++ * The `scroll` shape reserves a square around its wide frame so visible vertical overflow clears
++ * the next matrix row.
+  *
+  * @example
+  * ```ts
+@@ -163,7 +165,9 @@ export function createShape(document: Document, template: Template, name: string
+ 			const container = buildElement(
+ 				document,
+ 				'div',
+-				`d-flex flex-wrap border rounded ${name.startsWith('flex-') ? 'align-content-start' : ''} ${name}`,
++				/^flex-(?:nowrap|wrap|wrap-reverse)$/u.test(name)
++					? `d-flex border rounded align-content-start ${name}`
++					: `d-flex flex-wrap border rounded ${name.startsWith('flex-') ? 'align-content-start' : ''} ${name}`,
+ 			)
+ 			for (const label of ['1', '2', '3', '4'])
+ 				container.append(
+@@ -202,7 +206,14 @@ export function createShape(document: Document, template: Template, name: string
+ 			return frame
+ 		}
+ 		case 'link': {
+-			const link = buildElement(document, 'a', `link-underline ${name}`, name)
++			const link = buildElement(
++				document,
++				'a',
++				/^link-underline-(?:primary|secondary|success|danger|warning|info|light|dark)$/u.test(name)
++					? name
++					: `link-underline ${name}`,
++				name,
++			)
+ 			link.href = '#'
+ 			return link
+ 		}
+@@ -216,6 +227,8 @@ export function createShape(document: Document, template: Template, name: string
+ 		}
+ 		case 'scroll': {
+ 			const specimen = buildElement(document, 'div', 'col-12 col-sm-6 text-wrap')
++			const reservation = buildElement(document, 'div', 'ratio ratio-1x1')
++			const area = buildElement(document, 'div')
+ 			specimen.append(
+ 				buildElement(
+ 					document,
+@@ -224,7 +237,7 @@ export function createShape(document: Document, template: Template, name: string
+ 					'Scroll sideways where the content exceeds the frame.',
+ 				),
+ 			)
+-			const scroller = buildElement(document, 'div', `ratio ratio-21x9 border rounded mb-5 ${name}`)
++			const scroller = buildElement(document, 'div', `ratio ratio-21x9 border rounded ${name}`)
+ 			const content = buildElement(document, 'div', 'p-2 small text-nowrap')
+ 			scroller.tabIndex = 0
+ 			scroller.setAttribute('role', 'region')
+@@ -244,7 +257,9 @@ export function createShape(document: Document, template: Template, name: string
+ 				buildElement(document, 'p', 'mb-0', 'The last line sits below the bottom edge.'),
+ 			)
+ 			scroller.append(content)
+-			specimen.append(scroller)
++			area.append(scroller)
++			reservation.append(area)
++			specimen.append(reservation)
+ 			return specimen
+ 		}
+ 		case 'size': {
+@@ -544,7 +559,8 @@ export function createEngineTable(document: Document, rows: readonly EngineRow[]
+  * Background and overflow matrices also span the grid to keep swatches and labels clear.
+  * The section's fragment markup from `FRAGMENTS` follows when it exists, each class list a figure
+  * caption holds rendered through `createClassList`; a fragment section whose file is absent renders
+- * its heading and lead alone.
++ * its heading and lead alone. A generated section's `caption` follows its matrices; the Shadows
++ * section appends it to the Shadow sizes figure's caption.
+  *
+  * @example
+  * ```ts
+@@ -620,16 +636,19 @@ export function createSection(
+ 		grid.append(cell)
+ 	}
+ 	if (grid.childElementCount > 0) element.append(grid)
+-	const markup = FRAGMENTS[section.id]
++	const markup = FRAGMENTS[section.id] ?? section.caption
+ 	if (markup !== undefined) {
+ 		const template = document.createElement('template')
+ 		template.innerHTML = markup
+ 		for (const code of template.content.querySelectorAll('figcaption.card-footer > code')) {
+ 			code.replaceWith(createClassList(document, code.textContent))
+ 		}
+-		for (const code of template.content.querySelectorAll('figcaption code'))
++		for (const code of template.content.querySelectorAll(
++			section.caption === undefined ? 'figcaption code' : 'code',
++		))
+ 			code.classList.add('text-body-secondary', 'text-nowrap')
+-		element.append(template.content)
++		const destination = section.id === 'shadows' ? element.querySelector('figcaption') : element
++		destination?.append(template.content)
+ 	}
+ 	return element
+ }
+diff --git a/app/browser/sections/color-background.html b/app/browser/sections/color-background.html
+index a543fc2..fbcb4e0 100644
+--- a/app/browser/sections/color-background.html
++++ b/app/browser/sections/color-background.html
+@@ -50,6 +50,10 @@
+ 					>On a card and a badge</span
+ 				>
+ 				<code class="text-body-secondary">card text-bg-dark badge text-bg-warning</code>
++				<span class="d-block text-body-secondary mt-1"
++					>With the layer: the header divider on <code>text-bg-dark</code> reads 1.01:1 against
++					Tailwind's gray-950 fill, where Bootstrap's reads 1.10:1.</span
++				>
+ 			</figcaption>
+ 		</figure>
+ 	</div>
+diff --git a/app/browser/sections/gutters.html b/app/browser/sections/gutters.html
+new file mode 100644
+index 0000000..b5dcff1
+--- /dev/null
++++ b/app/browser/sections/gutters.html
+@@ -0,0 +1,4 @@
++<p class="text-body-secondary mt-3 mb-0">
++	With the layer: gutters keep Bootstrap's spacer steps, so <code>g-5</code> is 48 px while the
++	<code>gap-5</code> class is 20 px.
++</p>
+diff --git a/app/browser/sections/live-components.html b/app/browser/sections/live-components.html
+index ced8b6a..c32080d 100644
+--- a/app/browser/sections/live-components.html
++++ b/app/browser/sections/live-components.html
+@@ -249,7 +249,7 @@
+ 						></button>
+ 					</div>
+ 					<div class="modal-body">
+-						<p>The menu and hint share this dialog.</p>
++						<p class="mb-3">The menu and hint share this dialog.</p>
+ 						<div class="d-flex flex-wrap gap-2">
+ 							<div class="dropdown">
+ 								<button
+diff --git a/app/browser/sections/position-helpers.html b/app/browser/sections/position-helpers.html
+index 0395327..9148bef 100644
+--- a/app/browser/sections/position-helpers.html
++++ b/app/browser/sections/position-helpers.html
+@@ -92,9 +92,16 @@
+ 									<li class="py-1">Dock 4 open</li>
+ 									<li class="py-1">Dock 5 open</li>
+ 									<li class="py-1">Dock 6 closed</li>
++									<li class="py-1">Dock 7 closed</li>
++									<li class="py-1">Dock 8 open</li>
++									<li class="py-1">Dock 9 open</li>
++									<li class="py-1">Dock 10 closed</li>
++									<li class="py-1">Dock 11 open</li>
++									<li class="py-1">Dock 12 open</li>
++									<li class="py-1">Dock 13 closed</li>
+ 								</ul>
+ 								<div class="sticky-sm-bottom bg-body-tertiary border-top px-3 py-2 small">
+-									6 docks
++									13 docks
+ 								</div>
+ 							</div>
+ 						</div>
+@@ -114,9 +121,16 @@
+ 									<li class="py-1">Dock 4 open</li>
+ 									<li class="py-1">Dock 5 open</li>
+ 									<li class="py-1">Dock 6 closed</li>
++									<li class="py-1">Dock 7 closed</li>
++									<li class="py-1">Dock 8 open</li>
++									<li class="py-1">Dock 9 open</li>
++									<li class="py-1">Dock 10 closed</li>
++									<li class="py-1">Dock 11 open</li>
++									<li class="py-1">Dock 12 open</li>
++									<li class="py-1">Dock 13 closed</li>
+ 								</ul>
+ 								<div class="sticky-md-bottom bg-body-tertiary border-top px-3 py-2 small">
+-									6 docks
++									13 docks
+ 								</div>
+ 							</div>
+ 						</div>
+@@ -136,9 +150,16 @@
+ 									<li class="py-1">Dock 4 open</li>
+ 									<li class="py-1">Dock 5 open</li>
+ 									<li class="py-1">Dock 6 closed</li>
++									<li class="py-1">Dock 7 closed</li>
++									<li class="py-1">Dock 8 open</li>
++									<li class="py-1">Dock 9 open</li>
++									<li class="py-1">Dock 10 closed</li>
++									<li class="py-1">Dock 11 open</li>
++									<li class="py-1">Dock 12 open</li>
++									<li class="py-1">Dock 13 closed</li>
+ 								</ul>
+ 								<div class="sticky-lg-bottom bg-body-tertiary border-top px-3 py-2 small">
+-									6 docks
++									13 docks
+ 								</div>
+ 							</div>
+ 						</div>
+@@ -158,9 +179,16 @@
+ 									<li class="py-1">Dock 4 open</li>
+ 									<li class="py-1">Dock 5 open</li>
+ 									<li class="py-1">Dock 6 closed</li>
++									<li class="py-1">Dock 7 closed</li>
++									<li class="py-1">Dock 8 open</li>
++									<li class="py-1">Dock 9 open</li>
++									<li class="py-1">Dock 10 closed</li>
++									<li class="py-1">Dock 11 open</li>
++									<li class="py-1">Dock 12 open</li>
++									<li class="py-1">Dock 13 closed</li>
+ 								</ul>
+ 								<div class="sticky-xl-bottom bg-body-tertiary border-top px-3 py-2 small">
+-									6 docks
++									13 docks
+ 								</div>
+ 							</div>
+ 						</div>
+@@ -180,9 +208,16 @@
+ 									<li class="py-1">Dock 4 open</li>
+ 									<li class="py-1">Dock 5 open</li>
+ 									<li class="py-1">Dock 6 closed</li>
++									<li class="py-1">Dock 7 closed</li>
++									<li class="py-1">Dock 8 open</li>
++									<li class="py-1">Dock 9 open</li>
++									<li class="py-1">Dock 10 closed</li>
++									<li class="py-1">Dock 11 open</li>
++									<li class="py-1">Dock 12 open</li>
++									<li class="py-1">Dock 13 closed</li>
+ 								</ul>
+ 								<div class="sticky-xxl-bottom bg-body-tertiary border-top px-3 py-2 small">
+-									6 docks
++									13 docks
+ 								</div>
+ 							</div>
+ 						</div>
+diff --git a/app/browser/sections/position-utilities.html b/app/browser/sections/position-utilities.html
+index 7c08f64..8c3d18d 100644
+--- a/app/browser/sections/position-utilities.html
++++ b/app/browser/sections/position-utilities.html
+@@ -214,9 +214,10 @@
+ 			aria-labelledby="position-utilities-static-title"
+ 		>
+ 			<div class="card-body vstack row-gap-3">
+-				<div class="position-relative border rounded bg-body-tertiary pt-5 px-3 pb-3">
++				<div class="position-relative border rounded bg-body-tertiary pt-2 px-3 pb-3">
++					<div class="small text-body-secondary mb-2">Pier 4</div>
+ 					<div class="position-static border rounded bg-body p-3">
+-						Shift roster for Pier 4
++						Shift roster
+ 						<span class="position-absolute top-0 end-0 badge text-bg-secondary m-2"
+ 							>Pinned to the outer frame</span
+ 						>
+diff --git a/app/browser/sections/shadows.html b/app/browser/sections/shadows.html
+new file mode 100644
+index 0000000..e711a0a
+--- /dev/null
++++ b/app/browser/sections/shadows.html
+@@ -0,0 +1,5 @@
++<span class="d-block text-body-secondary mt-1"
++	>With the layer, <code>shadow</code> and <code>shadow-sm</code> both read Tailwind's
++	<code>shadow-sm</code> value and <code>shadow-lg</code> reads Tailwind's <code>shadow-lg</code>;
++	components that read <code>--bs-box-shadow</code> take Tailwind's <code>shadow-md</code>.</span
++>
+diff --git a/app/browser/sections/stretched-link.html b/app/browser/sections/stretched-link.html
+index fa6fbd7..413455d 100644
+--- a/app/browser/sections/stretched-link.html
++++ b/app/browser/sections/stretched-link.html
+@@ -39,7 +39,7 @@
+ 			<div class="card-body vstack row-gap-3">
+ 				<div class="d-flex position-relative gap-3">
+ 					<img
+-						class="flex-shrink-0 rounded"
++						class="flex-shrink-0 rounded align-self-start"
+ 						src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23d1e7dd'/%3E%3Cpath d='M12 40 L52 40 L46 50 L18 50Z' fill='%23198754'/%3E%3Crect x='26' y='28' width='14' height='12' fill='%23146c43'/%3E%3C/svg%3E"
+ 						width="64"
+ 						height="64"
+@@ -56,7 +56,14 @@
+ 				<span id="stretched-link-media-title" class="d-block fw-semibold"
+ 					>Media row with a stretched link</span
+ 				>
+-				<code class="text-body-secondary">position-relative stretched-link</code>
++				<code class="text-body-secondary">position-relative stretched-link align-self-start</code>
++				<span class="d-block text-body-secondary mt-1"
++					>Bootstrap only: the <code>align-self-start</code> class changes nothing. Without the
++					layer and with it: preflight's <code>height:</code> <code>auto</code> rule overrides the
++					image's <code>height</code> attribute, so the flex row stretches the image to the height
++					of the text and the corners of the <code>rounded</code> class fall outside the visible
++					tile; the <code>align-self-start</code> class keeps the image a 64 px square.</span
++				>
+ 			</figcaption>
+ 		</figure>
+ 	</div>
+diff --git a/app/browser/sections/tables.html b/app/browser/sections/tables.html
+index f922dd6..dd4197a 100644
+--- a/app/browser/sections/tables.html
++++ b/app/browser/sections/tables.html
+@@ -344,6 +344,8 @@
+ 								<th scope="col">Departs</th>
+ 								<th scope="col">Arrives</th>
+ 								<th scope="col">Status</th>
++								<th scope="col">Consignee</th>
++								<th scope="col">Customs reference</th>
+ 							</tr>
+ 						</thead>
+ 						<tbody>
+@@ -357,6 +359,8 @@
+ 								<td>2026-10-05</td>
+ 								<td>2026-10-07</td>
+ 								<td>Booked</td>
++								<td>Willow Quay Supplies</td>
++								<td>NL-2026-48127</td>
+ 							</tr>
+ 							<tr>
+ 								<th scope="row">LF-2042</th>
+@@ -368,6 +372,8 @@
+ 								<td>2026-10-06</td>
+ 								<td>2026-10-10</td>
+ 								<td>In transit</td>
++								<td>Amber Coast Markets</td>
++								<td>PL-2026-59238</td>
+ 							</tr>
+ 							<tr>
+ 								<th scope="row">LF-2043</th>
+@@ -379,6 +385,8 @@
+ 								<td>2026-10-06</td>
+ 								<td>2026-10-09</td>
+ 								<td>Delayed</td>
++								<td>Harbour Lantern Goods</td>
++								<td>PT-2026-60349</td>
+ 							</tr>
+ 						</tbody>
+ 					</table>
+diff --git a/app/browser/sections/validation.html b/app/browser/sections/validation.html
+index a1ec0d9..b311370 100644
+--- a/app/browser/sections/validation.html
++++ b/app/browser/sections/validation.html
+@@ -72,25 +72,29 @@
+ 		>
+ 			<div class="card-body vstack row-gap-3 z-0">
+ 				<div>
+-					<div class="position-relative mb-5">
+-						<label for="validation-seal" class="form-label">Seal number</label>
+-						<input
+-							type="text"
+-							class="form-control is-valid"
+-							id="validation-seal"
+-							value="SL-55021"
+-						/>
+-						<div class="valid-tooltip">Seal matches the manifest.</div>
++					<div class="pb-4">
++						<div class="position-relative mb-4">
++							<label for="validation-seal" class="form-label">Seal number</label>
++							<input
++								type="text"
++								class="form-control is-valid"
++								id="validation-seal"
++								value="SL-55021"
++							/>
++							<div class="valid-tooltip">Seal matches the manifest.</div>
++						</div>
+ 					</div>
+-					<div class="position-relative mb-5">
+-						<label for="validation-vessel" class="form-label">Vessel name</label>
+-						<input
+-							type="text"
+-							class="form-control is-invalid"
+-							id="validation-vessel"
+-							aria-invalid="true"
+-						/>
+-						<div class="invalid-tooltip">Enter the vessel name.</div>
++					<div class="pb-4">
++						<div class="position-relative mb-4">
++							<label for="validation-vessel" class="form-label">Vessel name</label>
++							<input
++								type="text"
++								class="form-control is-invalid"
++								id="validation-vessel"
++								aria-invalid="true"
++							/>
++							<div class="invalid-tooltip">Enter the vessel name.</div>
++						</div>
+ 					</div>
+ 				</div>
+ 			</div>
+diff --git a/app/browser/types.ts b/app/browser/types.ts
+index ad94f57..0da7dcf 100644
+--- a/app/browser/types.ts
++++ b/app/browser/types.ts
+@@ -115,6 +115,9 @@ export interface Group {
+ /**
+  * Describes one page section: its anchor, its unique title, its group, and its one-sentence lead.
+  *
++ * @remarks
++ * `caption`, when present, holds the HTML caption for a section of generated matrix specimens.
++ *
+  * @example
+  * ```ts
+  * const section: Section = {
+@@ -130,6 +133,7 @@ export interface Section {
+ 	readonly title: string
+ 	readonly group: string
+ 	readonly lead: string
++	readonly caption?: string
+ }
+ 
+ /**
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7f2bc2d..c85630c 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1398,6 +1398,8 @@ see the [composition proofs](../tests/integration.test.ts). The
+ case derives the supplement from the compiled sheets; see the
+ [Tailwind face proofs](../tests/src/tailwindcss/index.test.ts).
+ 
++Under the recipe, two shared utility names that set one property on one element resolve by Tailwind's emission order, so write one value per property.
++
+ Under the recipe, the `w-25` class reads a `100px` width (`6.25rem` conversion), the `top-50` class a `200px` top offset (`12.5rem` conversion), and the `start-100` class a `400px` inline-start offset (`25rem` conversion) at 640 px, Tailwind's spacing multiples, where Bootstrap reads a `25%` width, a `50%` top offset, and a `100%` inline-start offset, as the `partitions shared names, pins raw-composition incompatibility, and gives utilities to Tailwind and components to Bootstrap` case reads.
+ 
+ Preflight wins on a bare element. The sheet moves the reboot's element rules to the `reset` layer,
+@@ -1604,6 +1606,7 @@ case reads, with the recipe's `base` layer deleted as the control; see the
+ give it the Bootstrap class that carries the value, such as the `h5` class, which keeps Bootstrap's
+ 20 px heading size on a `p` element under the recipe, as the
+ `reads every Tailwind reading the caption claims under the three faces in %s color mode` case reads.
++An image sized by its `height` attribute takes preflight's `height: auto`, so a stretching flex row stretches it; give the image the `align-self-start` class.
+ 
+ Your overrides over the sheet resolve as the following table states:
+ 
+@@ -2420,38 +2423,47 @@ specimen at 575, 576, 639, and 640 px, and the
+ link's 4 px focus halo in its face's color after Tab and `none` after the next Tab; see the
+ [showcase proofs](../tests/app/browser/Showcase.test.ts).
+ 
+-| Specimen                                  | Reading                                                                                                                                   | Bootstrap                                                                                  | Tailwind, no layer                                                                         | Tailwind + layer                                                                                    |
+-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+-| Bootstrap card on Tailwind's reset        | `font-weight` of `card-title`, `margin-bottom` of `card-text` and of a bare `p`                                                           | `500`, `16px`, `16px`                                                                      | `500`, `16px`, `16px`                                                                      | `500`, `16px`, `0px`                                                                                |
+-| Bare heading beside a heading class       | `font-size` of a bare `h5` and of `p.h5`                                                                                                  | `20px`, `20px`                                                                             | `20px`, `20px`                                                                             | `16px`, `20px`                                                                                      |
+-| Bare image and list                       | `display` of `img`, `list-style-type` of `ul`                                                                                             | `inline`, `disc`                                                                           | `block`, `none`                                                                            | `block`, `none`                                                                                     |
+-| Hidden attribute with a display utility   | `display` of `<div hidden class="d-flex">`                                                                                                | `flex`                                                                                     | `none`                                                                                     | `none`                                                                                              |
+-| Icon in a Bootstrap button                | `display` of `svg.bi`                                                                                                                     | `inline`                                                                                   | `block`                                                                                    | `inline`                                                                                            |
+-| Image in a Bootstrap figure               | `display` of `img.figure-img`                                                                                                             | `inline`                                                                                   | `block`                                                                                    | `inline`                                                                                            |
+-| Bootstrap modal and offcanvas titles      | `font-size` and `font-weight` of `modal-title`, then of `offcanvas-title`                                                                 | `20px`, `500`, `20px`, `500`                                                               | `20px`, `500`, `20px`, `500`                                                               | `20px`, `500`, `20px`, `500`                                                                        |
+-| Bootstrap pagination list                 | `margin-bottom` of `pagination`                                                                                                           | `16px`                                                                                     | `16px`                                                                                     | `16px`                                                                                              |
+-| Bootstrap checkbox                        | `color` of `form-check-input` in light mode, then in dark mode                                                                            | `rgb(0, 0, 0)`, `rgb(255, 255, 255)`                                                       | `rgb(33, 37, 41)`, `rgb(222, 226, 230)`                                                    | `rgb(0, 0, 0)`, `rgb(255, 255, 255)`                                                                |
+-| Collapse, a name both systems declare     | `display` and `visibility` of `collapse` and `show`                                                                                       | `block`, `visible`                                                                         | `block`, `collapse`                                                                        | `block`, `visible`                                                                                  |
+-| Container, a name both systems declare    | `padding-left` of `container`, and its `max-width` at 1280 px and 390 px                                                                  | `12px`, `1140px`, `none`                                                                   | `12px`, `1280px`, `none`                                                                   | `12px`, `1280px`, `none`                                                                            |
+-| Tailwind padding on a Bootstrap button    | `padding-left` of `btn btn-primary px-8`                                                                                                  | `12px`                                                                                     | `32px`                                                                                     | `32px`                                                                                              |
+-| Tailwind grid in a card body              | `display` of `card-body grid grid-cols-3`                                                                                                 | `block`                                                                                    | `grid`                                                                                     | `grid`                                                                                              |
+-| Tailwind variant at the md breakpoint     | `display` of `md:flex` at 1280 px and 390 px                                                                                              | `block`, `block`                                                                           | `flex`, `block`                                                                            | `flex`, `block`                                                                                     |
+-| Arbitrary margin value                    | `margin-top` of `mt-[1rem]`                                                                                                               | `0px`                                                                                      | `16px`                                                                                     | `16px`                                                                                              |
+-| Tailwind color, ring, shadow, and size    | `width`, `height`, and `border-top-left-radius` of `size-12`, `background-color` of `bg-sky-500`, and `letter-spacing` of `tracking-wide` | `0px`, `0px`, `0px`, `rgba(0, 0, 0, 0)`, `normal`                                          | `48px`, `48px`, `3.35544e+07px`, `oklch(0.685 0.169 237.323)`, `0.4px`                     | `48px`, `48px`, `3.35544e+07px`, `oklch(0.685 0.169 237.323)`, `0.4px`                              |
+-| Tailwind dividers and vertical spacing    | `border-bottom-width` of an `li` in a `divide-y` list, and `margin-bottom` of a `div` in a `space-y-2` stack                              | `0px`, `0px`                                                                               | `1px`, `8px`                                                                               | `1px`, `8px`                                                                                        |
+-| Shared spacing, border, and radius        | `margin-top` of `mt-3`, `column-gap` of `gap-4`, `border-top-left-radius` of `rounded`                                                    | `16px`, `24px`, `6px`                                                                      | `16px`, `24px`, `6px`                                                                      | `12px`, `16px`, `4px`                                                                               |
+-| Border width without a border style       | `border-top-width` of `border-1`                                                                                                          | `0px`                                                                                      | `1px`                                                                                      | `1px`                                                                                               |
+-| Pill radius beside rounded-full           | `border-top-left-radius` of `rounded-pill rounded-full`                                                                                   | `800px`                                                                                    | `800px`                                                                                    | `800px`                                                                                             |
+-| Responsive alignment at the md breakpoint | `text-align` of `text-center text-md-start` at 1280 px and 390 px                                                                         | `left`, `center`                                                                           | `left`, `center`                                                                           | `left`, `center`                                                                                    |
+-| Link in a Bootstrap alert                 | `color` and `background-color` of `alert` in light mode, then in dark mode                                                                | `rgb(5, 81, 96)`, `rgb(207, 244, 252)`, `rgb(110, 223, 246)`, `rgb(3, 40, 48)`             | `rgb(5, 81, 96)`, `rgb(207, 244, 252)`, `rgb(110, 223, 246)`, `rgb(3, 40, 48)`             | `rgb(0, 95, 120)`, `rgb(206, 250, 254)`, `rgb(83, 234, 253)`, `rgb(5, 51, 69)`                      |
+-| Bootstrap table with bare cells           | `border-bottom-color` of a bare `th` and `td` in light mode, then in dark mode                                                            | `rgb(222, 226, 230)`, `rgb(73, 80, 87)`                                                    | `rgb(222, 226, 230)`, `rgb(73, 80, 87)`                                                    | `rgb(209, 213, 220)`, `rgb(74, 85, 101)`                                                            |
+-| Primary button, page link, and focus ring | `background-color` of `btn-primary`, `color` of the link in light and dark mode, and its `--bs-focus-ring-color`                          | `rgb(13, 110, 253)`, `rgb(13, 110, 253)`, `rgb(110, 168, 254)`, `rgba(13, 110, 253, 0.25)` | `rgb(13, 110, 253)`, `rgb(13, 110, 253)`, `rgb(110, 168, 254)`, `rgba(13, 110, 253, 0.25)` | `rgb(21, 93, 252)`, `rgb(21, 93, 252)`, `rgb(142, 197, 255)`, `rgba(21, 93, 252, 0.25)`             |
+-| Primary table colors                      | `background-color` and `color` of a cell in a `table table-primary` table                                                                 | `rgb(207, 226, 255)`, `rgb(0, 0, 0)`                                                       | `rgb(207, 226, 255)`, `rgb(0, 0, 0)`                                                       | `rgb(219, 234, 254)`, `rgb(0, 0, 0)`                                                                |
+-| Radius and shadow scales                  | `border-top-left-radius` and `box-shadow` of `toast`, and the first family of its `font-family`                                           | `16px`, `rgba(0, 0, 0, 0.15) 0px 8px 16px 0px`, `system-ui`                                | `16px`, `rgba(0, 0, 0, 0.15) 0px 8px 16px 0px`, `system-ui`                                | `16px`, `rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px`, `-apple-system` |
+-| Mapped sm breakpoint                      | `text-align` of a `text-center text-sm-start` paragraph below and from the face's `sm` width                                              | `center` below 576 px, `left` from 576 px                                                  | `center` below 576 px, `left` from 576 px                                                  | `center` below 640 px, `left` from 640 px                                                           |
+-| Description list in Bootstrap's markup    | `margin-bottom` of `dl.row`, `dd.col-sm-9`, and `dd.col-sm-8`                                                                             | `16px`, `8px`, `8px`                                                                       | `16px`, `8px`, `8px`                                                                       | `0px`, `0px`, `0px`                                                                                 |
+-| Container widths                          | `max-width` of `container-sm` at 1280 px and 390 px                                                                                       | `1140px`, `none`                                                                           | `1140px`, `none`                                                                           | `1280px`, `none`                                                                                    |
+-| Breakpoint scroll wrappers                | `overflow-x` of `table-responsive-sm` at 1280 px and 390 px                                                                               | `visible`, `auto`                                                                          | `visible`, `auto`                                                                          | `visible`, `auto`                                                                                   |
++| Specimen                                  | Reading                                                                                                                                   | Bootstrap                                                                                  | Tailwind, no layer                                                                         | Tailwind + layer                                                                                                                                                                                                     |
++| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| Bootstrap card on Tailwind's reset        | `font-weight` of `card-title`, `margin-bottom` of `card-text` and of a bare `p`                                                           | `500`, `16px`, `16px`                                                                      | `500`, `16px`, `16px`                                                                      | `500`, `16px`, `0px`                                                                                                                                                                                                 |
++| Bare heading beside a heading class       | `font-size` of a bare `h5` and of `p.h5`                                                                                                  | `20px`, `20px`                                                                             | `20px`, `20px`                                                                             | `16px`, `20px`                                                                                                                                                                                                       |
++| Bare image and list                       | `display` of `img`, `list-style-type` of `ul`                                                                                             | `inline`, `disc`                                                                           | `block`, `none`                                                                            | `block`, `none`                                                                                                                                                                                                      |
++| Hidden attribute with a display utility   | `display` of `<div hidden class="d-flex">`                                                                                                | `flex`                                                                                     | `none`                                                                                     | `none`                                                                                                                                                                                                               |
++| Icon in a Bootstrap button                | `display` of `svg.bi`                                                                                                                     | `inline`                                                                                   | `block`                                                                                    | `inline`                                                                                                                                                                                                             |
++| Image in a Bootstrap figure               | `display` of `img.figure-img`                                                                                                             | `inline`                                                                                   | `block`                                                                                    | `inline`                                                                                                                                                                                                             |
++| Bootstrap modal and offcanvas titles      | `font-size` and `font-weight` of `modal-title`, then of `offcanvas-title`                                                                 | `20px`, `500`, `20px`, `500`                                                               | `20px`, `500`, `20px`, `500`                                                               | `20px`, `500`, `20px`, `500`                                                                                                                                                                                         |
++| Bootstrap pagination list                 | `margin-bottom` of `pagination`                                                                                                           | `16px`                                                                                     | `16px`                                                                                     | `16px`                                                                                                                                                                                                               |
++| Bootstrap checkbox                        | `color` of `form-check-input` in light mode, then in dark mode                                                                            | `rgb(0, 0, 0)`, `rgb(255, 255, 255)`                                                       | `rgb(33, 37, 41)`, `rgb(222, 226, 230)`                                                    | `rgb(0, 0, 0)`, `rgb(255, 255, 255)`                                                                                                                                                                                 |
++| Collapse, a name both systems declare     | `display` and `visibility` of `collapse` and `show`                                                                                       | `block`, `visible`                                                                         | `block`, `collapse`                                                                        | `block`, `visible`                                                                                                                                                                                                   |
++| Container, a name both systems declare    | `padding-left` of `container`, and its `max-width` at 1280 px and 390 px                                                                  | `12px`, `1140px`, `none`                                                                   | `12px`, `1280px`, `none`                                                                   | `12px`, `1280px`, `none`                                                                                                                                                                                             |
++| Tailwind padding on a Bootstrap button    | `padding-left` of `btn btn-primary px-8`                                                                                                  | `12px`                                                                                     | `32px`                                                                                     | `32px`                                                                                                                                                                                                               |
++| Tailwind grid in a card body              | `display` of `card-body grid grid-cols-3`                                                                                                 | `block`                                                                                    | `grid`                                                                                     | `grid`                                                                                                                                                                                                               |
++| Tailwind variant at the md breakpoint     | `display` of `md:flex` at 1280 px and 390 px                                                                                              | `block`, `block`                                                                           | `flex`, `block`                                                                            | `flex`, `block`                                                                                                                                                                                                      |
++| Arbitrary margin value                    | `margin-top` of `mt-[1rem]`                                                                                                               | `0px`                                                                                      | `16px`                                                                                     | `16px`                                                                                                                                                                                                               |
++| Tailwind color, ring, shadow, and size    | `width`, `height`, and `border-top-left-radius` of `size-12`, `background-color` of `bg-sky-500`, and `letter-spacing` of `tracking-wide` | `0px`, `0px`, `0px`, `rgba(0, 0, 0, 0)`, `normal`                                          | `48px`, `48px`, `3.35544e+07px`, `oklch(0.685 0.169 237.323)`, `0.4px`                     | `48px`, `48px`, `3.35544e+07px`, `oklch(0.685 0.169 237.323)`, `0.4px`                                                                                                                                               |
++| Tailwind dividers and vertical spacing    | `border-bottom-width` of an `li` in a `divide-y` list, and `margin-bottom` of a `div` in a `space-y-2` stack                              | `0px`, `0px`                                                                               | `1px`, `8px`                                                                               | `1px`, `8px`                                                                                                                                                                                                         |
++| Shared spacing, border, and radius        | `margin-top` of `mt-3`, `column-gap` of `gap-4`, `border-top-left-radius` of `rounded`                                                    | `16px`, `24px`, `6px`                                                                      | `16px`, `24px`, `6px`                                                                      | `12px`, `16px`, `4px`                                                                                                                                                                                                |
++| Border width without a border style       | `border-top-width` of `border-1`                                                                                                          | `0px`                                                                                      | `1px`                                                                                      | `1px`                                                                                                                                                                                                                |
++| Pill radius beside rounded-full           | `border-top-left-radius` of `rounded-pill rounded-full`                                                                                   | `800px`                                                                                    | `800px`                                                                                    | `800px`                                                                                                                                                                                                              |
++| Responsive alignment at the md breakpoint | `text-align` of `text-center text-md-start` at 1280 px and 390 px                                                                         | `left`, `center`                                                                           | `left`, `center`                                                                           | `left`, `center`                                                                                                                                                                                                     |
++| Link in a Bootstrap alert                 | `color` and `background-color` of `alert` in light mode, then in dark mode                                                                | `rgb(5, 81, 96)`, `rgb(207, 244, 252)`, `rgb(110, 223, 246)`, `rgb(3, 40, 48)`             | `rgb(5, 81, 96)`, `rgb(207, 244, 252)`, `rgb(110, 223, 246)`, `rgb(3, 40, 48)`             | `rgb(0, 95, 120)`, `rgb(206, 250, 254)`, `rgb(83, 234, 253)`, `rgb(5, 51, 69)`                                                                                                                                       |
++| Bootstrap table with bare cells           | `border-bottom-color` of a bare `th` and `td` in light mode, then in dark mode                                                            | `rgb(222, 226, 230)`, `rgb(73, 80, 87)`                                                    | `rgb(222, 226, 230)`, `rgb(73, 80, 87)`                                                    | `rgb(209, 213, 220)`, `rgb(74, 85, 101)`                                                                                                                                                                             |
++| Primary button, page link, and focus ring | `background-color` of `btn-primary`, `color` of the link in light and dark mode, and its `--bs-focus-ring-color`                          | `rgb(13, 110, 253)`, `rgb(13, 110, 253)`, `rgb(110, 168, 254)`, `rgba(13, 110, 253, 0.25)` | `rgb(13, 110, 253)`, `rgb(13, 110, 253)`, `rgb(110, 168, 254)`, `rgba(13, 110, 253, 0.25)` | `rgb(21, 93, 252)`, `rgb(21, 93, 252)`, `rgb(142, 197, 255)`, `rgba(21, 93, 252, 0.25)`                                                                                                                              |
++| Primary table colors                      | `background-color` and `color` of a cell in a `table table-primary` table                                                                 | `rgb(207, 226, 255)`, `rgb(0, 0, 0)`                                                       | `rgb(207, 226, 255)`, `rgb(0, 0, 0)`                                                       | `rgb(219, 234, 254)`, `rgb(0, 0, 0)`                                                                                                                                                                                 |
++| Radius and shadow scales                  | `border-top-left-radius` and `box-shadow` of `toast`, and the first family of its `font-family`                                           | `16px`, `rgba(0, 0, 0, 0.15) 0px 8px 16px 0px`, `system-ui`                                | `16px`, `rgba(0, 0, 0, 0.15) 0px 8px 16px 0px`, `system-ui`                                | `16px`, `rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px`, `-apple-system`                                                                                                                  |
++| Mapped sm breakpoint                      | `text-align` of a `text-center text-sm-start` paragraph below and from the face's `sm` width                                              | `center` below 576 px, `left` from 576 px                                                  | `center` below 576 px, `left` from 576 px                                                  | `center` below 640 px, `left` from 640 px                                                                                                                                                                            |
++| Description list in Bootstrap's markup    | `margin-bottom` of `dl.row`, `dd.col-sm-9`, and `dd.col-sm-8`                                                                             | `16px`, `8px`, `8px`                                                                       | `16px`, `8px`, `8px`                                                                       | `0px`, `0px`, `0px`                                                                                                                                                                                                  |
++| Container widths                          | `max-width` of `container-sm` at 1280 px and 390 px                                                                                       | `1140px`, `none`                                                                           | `1140px`, `none`                                                                           | `1280px`, `none`                                                                                                                                                                                                     |
++| Breakpoint scroll wrappers                | `overflow-x` of `table-responsive-sm` at 1280 px and 390 px                                                                               | `visible`, `auto`                                                                          | `visible`, `auto`                                                                          | `visible`, `auto`                                                                                                                                                                                                    |
++| Media row with a stretched link           | `height` of `img.flex-shrink-0.align-self-start`                                                                                          | `64px`                                                                                     | `64px`                                                                                     | `64px`                                                                                                                                                                                                               |
++| Shadow sizes                              | `box-shadow` of `shadow`                                                                                                                  | `rgba(0, 0, 0, 0.15) 0px 8px 16px 0px`                                                     | `rgba(0, 0, 0, 0.15) 0px 8px 16px 0px`                                                     | `rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px`    |
++| Shadow sizes                              | `box-shadow` of `shadow-sm`                                                                                                               | `rgba(0, 0, 0, 0.075) 0px 2px 4px 0px`                                                     | `rgba(0, 0, 0, 0.075) 0px 2px 4px 0px`                                                     | `rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px`    |
++| Shadow sizes                              | `box-shadow` of `shadow-lg`                                                                                                               | `rgba(0, 0, 0, 0.176) 0px 16px 48px 0px`                                                   | `rgba(0, 0, 0, 0.176) 0px 16px 48px 0px`                                                   | `rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px` |
++| Shadow sizes                              | `--bs-box-shadow` component token                                                                                                         | `0 0.5rem 1rem rgba(0, 0, 0, 0.15)`                                                        | `0 0.5rem 1rem rgba(0, 0, 0, 0.15)`                                                        | `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)`                                                                                                                                                   |
++| On a card and a badge                     | `background-color` of `text-bg-dark`                                                                                                      | `rgb(33, 37, 41)`                                                                          | `rgb(33, 37, 41)`                                                                          | `rgb(3, 7, 18)`                                                                                                                                                                                                      |
++| On a card and a badge                     | `border-bottom-color` of the header in light mode, then dark mode                                                                         | `rgba(0, 0, 0, 0.176)`, `rgba(255, 255, 255, 0.15)`                                        | `rgba(0, 0, 0, 0.176)`, `rgba(255, 255, 255, 0.15)`                                        | `rgba(0, 0, 0, 0.176)`, `rgba(255, 255, 255, 0.15)`                                                                                                                                                                  |
++| Gutters on both axes                      | `--bs-gutter-x` of `g-5` (48 px at the 16 px root)                                                                                        | `3rem`                                                                                     | `3rem`                                                                                     | `3rem`                                                                                                                                                                                                               |
++| Gap                                       | `gap` of `gap-5`                                                                                                                          | `48px`                                                                                     | `48px`                                                                                     | `20px`                                                                                                                                                                                                               |
+ 
+ The hidden-attribute row is a preflight departure that the Tailwind compatibility sheet section
+ states, and its specimen sets the `hidden` attribute. The Link in a Bootstrap alert, Bootstrap
+@@ -2466,9 +2478,11 @@ The Tailwind color, ring, shadow, and size specimen also reads the `box-shadow`
+ under both Tailwind faces, and the `box-shadow` of `ring-2` as `none` under the `bootstrap` face
+ and as
+ `rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklch(0.685 0.169 237.323) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px`
+-under both Tailwind faces. Three specimens sit outside the Tailwind on Bootstrap markup section:
+-Description list in Bootstrap's markup in the Typography section, Container widths in the
+-Containers section, and Breakpoint scroll wrappers in the Tables section. The same cases read them,
++under both Tailwind faces. The specimens outside the Tailwind on Bootstrap markup section are
++Description list in Bootstrap's markup in Typography, Container widths in Containers, Breakpoint
++scroll wrappers in Tables, Media row with a stretched link in Stretched link, Shadow sizes in
++Shadows, On a card and a badge in Color and background, Gutters on both axes in Gutters, and Gap
++in Spacing. The same cases read them,
+ and the Container widths and Breakpoint scroll wrappers readings are equal in both color modes.
+ 
+ ### Specimen geometry
+@@ -2483,16 +2497,18 @@ frames clip, so a marker that Tailwind's reading moves stays inside its figure,
+ states the reading under the layer. Elsewhere the page spells each intent with names both systems
+ read alike, as the following table states:
+ 
+-| Intent                                       | Spelling                                                                               | Specimen                         |
+-| -------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------- |
+-| Fill the card body                           | a `vstack` card body and no width class                                                | Alerts                           |
+-| A fraction of the container                  | `col-3`, `col-6`, `col-9`, or `col-12`                                                 | Progress, the carousels          |
+-| Center a sized box on one axis               | `start-0 end-0 mx-auto`, or `top-0 bottom-0 my-auto`                                   | Tooltip and popover arrows       |
+-| Center content over a box                    | `top-0 start-0 bottom-0 end-0` with `d-flex align-items-center justify-content-center` | Layer below the content          |
+-| Center a badge on a corner                   | a `top-0 end-0` anchor holding a `top-0 start-0 translate-middle` badge                | Counters on buttons              |
+-| A transform that keeps its place             | `offset-6 translate-middle-x`                                                          | Fixed top and bottom             |
+-| Hold a frozen panel inside its frame         | a positioned wrapper sized by `col-9` or by a `ratio-21x9` box                         | The offcanvas previews           |
+-| A term that truncates inside a wrapping body | `mw-100` on the wrapper                                                                | The Typography description lists |
++| Intent                                              | Spelling                                                                               | Specimen                         |
++| --------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------- |
++| Fill the card body                                  | a `vstack` card body and no width class                                                | Alerts                           |
++| A fraction of the container                         | `col-3`, `col-6`, `col-9`, or `col-12`                                                 | Progress, the carousels          |
++| Center a sized box on one axis                      | `start-0 end-0 mx-auto`, or `top-0 bottom-0 my-auto`                                   | Tooltip and popover arrows       |
++| Center content over a box                           | `top-0 start-0 bottom-0 end-0` with `d-flex align-items-center justify-content-center` | Layer below the content          |
++| Center a badge on a corner                          | a `top-0 end-0` anchor holding a `top-0 start-0 translate-middle` badge                | Counters on buttons              |
++| A transform that keeps its place                    | `offset-6 translate-middle-x`                                                          | Fixed top and bottom             |
++| Hold a frozen panel inside its frame                | a positioned wrapper sized by `col-9` or by a `ratio-21x9` box                         | The offcanvas previews           |
++| A term that truncates inside a wrapping body        | `mw-100` on the wrapper                                                                | The Typography description lists |
++| Reserve room for visible overflow                   | an outer `ratio ratio-1x1` box with a plain child holding the `ratio-21x9` frame       | Overflow                         |
++| Keep an image at its intrinsic height in a flex row | `align-self-start` on the image                                                        | Media row with a stretched link  |
+ 
+ Bootstrap documents the grid column classes as widths outside a row for placeholders, and the
+ exclusion keeps them Bootstrap's under the recipe, so a page of your own can write `col-12` where
+diff --git a/tests/app/browser/factories.test.ts b/tests/app/browser/factories.test.ts
+index 090cb4f..3f13855 100644
+--- a/tests/app/browser/factories.test.ts
++++ b/tests/app/browser/factories.test.ts
+@@ -1,5 +1,6 @@
+ import type { Template } from '../../../app/browser/types.js'
+ import sheet from '../../../dist/src/bootstrap/index.css?raw'
++import { recipe } from '../../../app/browser/recipe.json'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	mount,
+@@ -530,75 +531,104 @@ describe('createSection', () => {
+ 		expect(createSpecimen(document, 'raise', 'shadow').hasAttribute('data-bs-theme')).toBe(false)
+ 	})
+ 
+-	it('gives wrapping flex specimens separate lines and free cross-axis space', () => {
+-		const adopted = adoptSheet(sheet)
+-		const host = mount(document.createElement('div'))
+-		host.className = 'w-25'
+-		host.append(
+-			createShape(document, 'wrap', 'flex-wrap'),
+-			createShape(document, 'wrap', 'flex-nowrap'),
+-			createShape(document, 'wrap', 'align-content-start'),
+-			createShape(document, 'wrap', 'align-content-end'),
+-		)
+-		try {
+-			const wrap = requireValue(host.querySelector('.flex-wrap'))
+-			const lines = [...wrap.children].map((child) => child.getBoundingClientRect().top)
+-			expect(new Set(lines).size).toBe(2)
+-			expect(wrap.getBoundingClientRect().height).toBeGreaterThan(
+-				[...wrap.children].reduce(
+-					(height, child) => height + child.getBoundingClientRect().height,
+-					0,
+-				),
+-			)
+-			const start = requireValue(host.querySelector('[class$="align-content-start"]'))
+-			const end = requireValue(host.querySelector('.align-content-end'))
+-			const nowrap = requireValue(host.querySelector('.flex-nowrap'))
+-			const bounds = nowrap.getBoundingClientRect()
+-			expect(
+-				[...nowrap.children].map((child) => {
+-					const box = child.getBoundingClientRect()
+-					return (
+-						box.left >= bounds.left &&
+-						box.right <= bounds.right &&
+-						box.top >= bounds.top &&
+-						box.bottom <= bounds.bottom
+-					)
+-				}),
+-			).toStrictEqual([true, true, true, true])
+-			expect(
+-				requireValue(end.firstElementChild).getBoundingClientRect().top -
+-					end.getBoundingClientRect().top,
+-			).toBeGreaterThan(
+-				requireValue(start.firstElementChild).getBoundingClientRect().top -
+-					start.getBoundingClientRect().top,
++	it.each([sheet, recipe])(
++		'gives wrapping flex specimens separate lines and free cross-axis space',
++		(stylesheet) => {
++			const adopted = adoptSheet(stylesheet)
++			const host = mount(document.createElement('div'))
++			host.className = 'w-25'
++			host.append(
++				createShape(document, 'wrap', 'flex-wrap'),
++				createShape(document, 'wrap', 'flex-nowrap'),
++				createShape(document, 'wrap', 'align-content-start'),
++				createShape(document, 'wrap', 'align-content-end'),
+ 			)
+-		} finally {
+-			host.remove()
+-			adopted.release()
+-		}
+-	})
++			try {
++				const wrap = requireValue(host.querySelector('.flex-wrap'))
++				const lines = [...wrap.children].map((child) => child.getBoundingClientRect().top)
++				expect(new Set(lines).size).toBe(2)
++				expect(wrap.getBoundingClientRect().height).toBeGreaterThan(
++					[...wrap.children].reduce(
++						(height, child) => height + child.getBoundingClientRect().height,
++						0,
++					),
++				)
++				const start = requireValue(host.querySelector('[class$="align-content-start"]'))
++				const end = requireValue(host.querySelector('.align-content-end'))
++				const nowrap = requireValue(host.querySelector('.flex-nowrap'))
++				expect(
++					new Set([...nowrap.children].map((child) => child.getBoundingClientRect().top)).size,
++				).toBe(1)
++				const bounds = nowrap.getBoundingClientRect()
++				expect(
++					[...nowrap.children].map((child) => {
++						const box = child.getBoundingClientRect()
++						return (
++							box.left >= bounds.left &&
++							box.right <= bounds.right &&
++							box.top >= bounds.top &&
++							box.bottom <= bounds.bottom
++						)
++					}),
++				).toStrictEqual([true, true, true, true])
++				expect(
++					requireValue(end.firstElementChild).getBoundingClientRect().top -
++						end.getBoundingClientRect().top,
++				).toBeGreaterThan(
++					requireValue(start.firstElementChild).getBoundingClientRect().top -
++						start.getBoundingClientRect().top,
++				)
++			} finally {
++				host.remove()
++				adopted.release()
++			}
++		},
++	)
+ 
+-	it('keeps overflow visible outside its frame and hints before the specimen scrollers', () => {
+-		const adopted = adoptSheet(sheet)
+-		const host = mount(createShell(document, 'bootstrap', 'light'))
++	it('keeps overflow visible outside its frame and hints before the specimen scrollers', async () => {
++		const original = { width: innerWidth, height: innerHeight }
+ 		try {
+-			const visible = requireValue(host.querySelector('#overflow .overflow-visible'))
+-			expect(getComputedStyle(visible).overflow).toBe('visible')
+-			expect(getComputedStyle(requireValue(visible.parentElement)).overflow).toBe('visible')
+-			expect(visible.scrollWidth).toBeGreaterThan(visible.clientWidth)
+-			const scrollers = [...host.querySelectorAll('#overflow td [role="region"]')]
+-			expect(scrollers.length).toBeGreaterThan(0)
+-			for (const scroller of scrollers) {
+-				expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight)
+-				expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth)
+-				expect(scroller.previousElementSibling?.textContent).toBe(
+-					'Scroll sideways where the content exceeds the frame.',
+-				)
+-				expect(getComputedStyle(requireValue(scroller.closest('td'))).paddingTop).toBe('48px')
++			for (const stylesheet of [sheet, recipe]) {
++				const adopted = adoptSheet(stylesheet)
++				const host = mount(createShell(document, 'bootstrap', 'light'))
++				try {
++					for (const width of [390, 1280]) {
++						await browserPage.viewport(width, 844)
++						const visible = requireValue(host.querySelector('#overflow .overflow-visible'))
++						expect(getComputedStyle(visible).overflow).toBe('visible')
++						expect(getComputedStyle(requireValue(visible.parentElement)).overflow).toBe('visible')
++						const scrollers = [...host.querySelectorAll('#overflow td [role="region"]')]
++						expect(scrollers.length).toBeGreaterThan(0)
++						for (const scroller of scrollers) {
++							expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight)
++							expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth)
++							const reservation = requireValue(scroller.closest('.ratio.ratio-1x1'))
++							expect(reservation.previousElementSibling?.textContent).toBe(
++								'Scroll sideways where the content exceeds the frame.',
++							)
++							expect(getComputedStyle(requireValue(scroller.closest('td'))).paddingTop).toBe(
++								stylesheet === sheet ? '48px' : '20px',
++							)
++						}
++						const clearances = scrollers
++							.filter((frame) => [...frame.classList].some((name) => name.endsWith('-visible')))
++							.map(
++								(frame) =>
++									requireValue(frame.closest('td')).getBoundingClientRect().bottom -
++									requireValue(frame.querySelector('p:last-child')).getBoundingClientRect().bottom,
++							)
++						expect(clearances).toHaveLength(3)
++						for (const clearance of clearances) expect(clearance).toBeGreaterThan(0)
++						for (const table of host.querySelectorAll('#overflow .table-responsive'))
++							expect(table.scrollHeight).toBe(table.clientHeight)
++					}
++				} finally {
++					host.remove()
++					adopted.release()
++				}
+ 			}
+ 		} finally {
+-			host.remove()
+-			adopted.release()
++			await browserPage.viewport(original.width, original.height)
+ 		}
+ 	})
+ 
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 84f2f81..38b5a39 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -101,6 +101,7 @@ import {
+ 	readDisabledSpecimen,
+ 	observeShowcaseStability,
+ 	settleShowcaseScroll,
++	settleScrollspy,
+ 	collectFrozenShowcase,
+ 	readFrozenShowcase,
+ 	FACE_SCENARIOS,
+@@ -234,6 +235,144 @@ afterEach(async () => {
+ })
+ 
+ describe('showcase journeys', () => {
++	// Source-order conflicts are independent of theme and viewport, so one variant owns the census.
++	it.each(VARIANT === 'light-1280' ? [VARIANT] : [])(
++		'refuses opposite-order shared utility pairs in every showcase specimen',
++		async () => {
++			const pairs = [
++				'invisible visible',
++				'order-0 order-first',
++				'order-1 order-first',
++				'order-2 order-first',
++				'order-3 order-first',
++				'order-4 order-first',
++				'order-5 order-first',
++				'float-end float-start',
++				'float-none float-start',
++				'flex-nowrap flex-wrap',
++				'overflow-scroll overflow-visible',
++				'overflow-x-scroll overflow-x-visible',
++				'overflow-y-scroll overflow-y-visible',
++				'bg-transparent bg-white',
++				'text-center text-end',
++				'text-center text-start',
++				'text-end text-start',
++				'align-bottom align-middle',
++				'align-bottom align-top',
++				'align-middle align-top',
++				'align-text-bottom align-top',
++				'align-text-top align-top',
++				'text-nowrap text-wrap',
++				'shadow-lg shadow-sm',
++				'shadow-none shadow-sm',
++			]
++			const bootstrap = new CSSStyleSheet()
++			bootstrap.replaceSync(liftedBootstrap)
++			const tailwind = new CSSStyleSheet()
++			tailwind.replaceSync(recipe)
++			const original = scanSheetRules(bootstrap).flatMap(({ rule }) =>
++				rule instanceof CSSStyleRule &&
++				/^\.[\w-]+$/u.test(rule.selectorText) &&
++				rule.cssText.includes('!important')
++					? [rule]
++					: [],
++			)
++			const utilities = scanSheetRules(tailwind).flatMap(({ rule, layer }) =>
++				layer === 'utilities' &&
++				rule instanceof CSSStyleRule &&
++				/^\.[\w-]+$/u.test(rule.selectorText)
++					? [rule.selectorText.slice(1)]
++					: [],
++			)
++			const derived = new Set<string>()
++			for (const [index, left] of original.entries()) {
++				const first = left.selectorText.slice(1)
++				if (!SHARED_UTILITIES.includes(first)) continue
++				for (const right of original.slice(index + 1)) {
++					const second = right.selectorText.slice(1)
++					if (
++						!SHARED_UTILITIES.includes(second) ||
++						utilities.indexOf(first) <= utilities.indexOf(second)
++					)
++						continue
++					if (
++						Array.from(left.style).some(
++							(property) =>
++								!property.startsWith('--') &&
++								right.style.getPropertyValue(property) !== '' &&
++								left.style.getPropertyValue(property) !== right.style.getPropertyValue(property),
++						)
++					)
++						derived.add([first, second].sort().join(' '))
++				}
++			}
++			expect([...derived].sort()).toEqual([...pairs].sort())
++			await buildJourney(OWN, CAPTURE)
++			const selector = pairs
++				.map((pair) =>
++					pair
++						.split(' ')
++						.map((name) => `.${name}`)
++						.join(''),
++				)
++				.join(',')
++			const main = page.getByRole('main').element()
++			expect([...main.querySelectorAll(selector)].map((element) => element.className)).toEqual([])
++			const control = requireValue(main.querySelector('.flex-nowrap'))
++			control.classList.add('flex-wrap')
++			try {
++				expect([...main.querySelectorAll(selector)]).toEqual([control])
++			} finally {
++				control.classList.remove('flex-wrap')
++			}
++			console.info(
++				'Opposite-order census',
++				JSON.stringify({
++					pairs: pairs.length,
++					population: main.querySelectorAll('[class]').length,
++					conflicts: 0,
++					control: 1,
++				}),
++			)
++		},
++	)
++
++	it.each(OWN.width === 1280 ? ['layer', 'return'] : ['capture'])(
++		're-seats the live Scrollspy after the %s face transition',
++		async (transition) => {
++			await buildJourney(OWN, CAPTURE)
++			startJourneyVeneer()
++			const demo = requireValue(document.querySelector<HTMLElement>('#engine-demo'))
++			const sections = ['feedback', 'disclosure', 'overlays', 'motion']
++			await settleScrollspy(demo, sections)
++			for (const face of ['bootstrap', 'tailwindcss'] as const) {
++				await applyFace(face)
++				await settleScrollspy(demo, sections)
++				if (transition === 'capture') {
++					const section = page.getByRole('region', { name: 'Position utilities', exact: true })
++					assert.isAbove(section.element().getBoundingClientRect().height, OWN.height)
++					await section.screenshot({ save: false })
++					await page
++						.getByRole('region', { name: 'Live components', exact: true })
++						.screenshot({ save: false })
++					await settleScrollspy(demo, sections)
++				}
++			}
++			if (transition === 'return') {
++				await applyFace('bootstrap')
++				await settleScrollspy(demo, sections)
++			}
++			const active = [...document.querySelectorAll('#example-navigation .nav-link.active')].map(
++				(link) => link.textContent,
++			)
++			console.info(
++				'Scrollspy face transition',
++				JSON.stringify({ variant: VARIANT, transition, active, scrollTop: demo.scrollTop }),
++			)
++			expect(active).toEqual(['Feedback'])
++		},
++	)
++
+ 	it('copies the Tailwind recipe through the copy button under every face', async () => {
+ 		await buildJourney(OWN, CAPTURE)
+ 		const scope = createVeneer(document, {
+@@ -583,7 +722,9 @@ describe('showcase journeys', () => {
+ 					)
+ 				const unhinted = scrollers
+ 					.filter((scroller) => {
+-						const hint = scroller.previousElementSibling
++						const hint =
++							scroller.closest('#overflow td .ratio.ratio-1x1')?.previousElementSibling ??
++							scroller.previousElementSibling
+ 						return hint === null || hint.localName !== 'p' || !isRendered(hint)
+ 					})
+ 					.map((scroller) => scroller.getAttribute('aria-labelledby'))
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 178442d..027c842 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1243,6 +1243,92 @@ export const TAILWIND_READINGS: readonly TailwindReading[] = Object.freeze([
+ 		narrow: Object.freeze({ bootstrap: 'auto', unexcluded: 'auto', tailwindcss: 'auto' }),
+ 		minimum: Object.freeze({ bootstrap: 576, unexcluded: 576, tailwindcss: 640 }),
+ 	}),
++	Object.freeze({
++		specimen: 'Media row with a stretched link',
++		subject: 'img.flex-shrink-0',
++		property: 'height',
++		values: Object.freeze({ bootstrap: '64px', unexcluded: '64px', tailwindcss: '64px' }),
++	}),
++	Object.freeze({
++		specimen: 'Shadow sizes',
++		subject: '.shadow',
++		property: 'box-shadow',
++		values: {
++			bootstrap: 'rgba(0, 0, 0, 0.15) 0px 8px 16px 0px',
++			unexcluded: 'rgba(0, 0, 0, 0.15) 0px 8px 16px 0px',
++			tailwindcss:
++				'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px',
++		},
++	}),
++	Object.freeze({
++		specimen: 'Shadow sizes',
++		subject: '.shadow-sm',
++		property: 'box-shadow',
++		values: {
++			bootstrap: 'rgba(0, 0, 0, 0.075) 0px 2px 4px 0px',
++			unexcluded: 'rgba(0, 0, 0, 0.075) 0px 2px 4px 0px',
++			tailwindcss:
++				'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px',
++		},
++	}),
++	Object.freeze({
++		specimen: 'Shadow sizes',
++		subject: '.shadow-lg',
++		property: 'box-shadow',
++		values: {
++			bootstrap: 'rgba(0, 0, 0, 0.176) 0px 16px 48px 0px',
++			unexcluded: 'rgba(0, 0, 0, 0.176) 0px 16px 48px 0px',
++			tailwindcss:
++				'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px',
++		},
++	}),
++	Object.freeze({
++		specimen: 'Shadow sizes',
++		subject: '.shadow',
++		property: '--bs-box-shadow',
++		values: {
++			bootstrap: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)',
++			unexcluded: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)',
++			tailwindcss: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
++		},
++	}),
++	Object.freeze({
++		specimen: 'On a card and a badge',
++		subject: '.card.text-bg-dark',
++		property: 'background-color',
++		values: {
++			bootstrap: 'rgb(33, 37, 41)',
++			unexcluded: 'rgb(33, 37, 41)',
++			tailwindcss: 'rgb(3, 7, 18)',
++		},
++	}),
++	Object.freeze({
++		specimen: 'On a card and a badge',
++		subject: '.card-header',
++		property: 'border-bottom-color',
++		values: {
++			bootstrap: 'rgba(0, 0, 0, 0.176)',
++			unexcluded: 'rgba(0, 0, 0, 0.176)',
++			tailwindcss: 'rgba(0, 0, 0, 0.176)',
++		},
++		dark: {
++			bootstrap: 'rgba(255, 255, 255, 0.15)',
++			unexcluded: 'rgba(255, 255, 255, 0.15)',
++			tailwindcss: 'rgba(255, 255, 255, 0.15)',
++		},
++	}),
++	Object.freeze({
++		specimen: 'Gutters on both axes',
++		subject: '.g-5',
++		property: '--bs-gutter-x',
++		values: { bootstrap: '3rem', unexcluded: '3rem', tailwindcss: '3rem' },
++	}),
++	Object.freeze({
++		specimen: 'Gap',
++		subject: '.gap-5',
++		property: 'gap',
++		values: { bootstrap: '48px', unexcluded: '48px', tailwindcss: '20px' },
++	}),
+ ])
+ 
+ /**
