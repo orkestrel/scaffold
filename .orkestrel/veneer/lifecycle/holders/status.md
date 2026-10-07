@@ -761,15 +761,15 @@ Lane results:
         - cart `type e7` on the tray link, 8 of 8, so the best-match line reaches the tray, but the 2B types instead of clicking;
         - search `read {"from":1,"search":"kettle"}`, 8 of 8, with no `type` on `e4`.
       - The unchanged-page wording (C2R) moves nothing.
-    - **Running: unit `store-validate-3`** (ollama `tmp/codex/store-validate-3-brief.md`, cap 2 h, records `tmp/codex/store-campaign5/validate-3/`). It runs the 2B's search and cart to the end of each attempt under C2, transforming every result, with the arms:
-      - C2, the control;
-      - P1, the search-box sentence;
-      - D1, the analyst's `read` copy;
-      - X6, `search` renamed `find`;
-      - T1, `type` naming a search box;
-      - P1 with X6.
-
-      It ends with the guards for any arm that passes search on 6 or more of 8.
+    - **Unit `store-validate-3`** (ollama `tmp/codex/store-validate-3-report.md`; 25 minutes). 2B completions under C2, every result transformed:
+      - **Cart passes 8 of 8 under every arm:** the best-match line reaches the tray, and a refused `type` on the link leads to `click`.
+      - **Search:**
+        - C2, P1, and D1 score 0;
+        - X6 scores 1, and P1 with X6 scores 1;
+        - **T1 scores 6**, with `type` described as "Types into a field such as a search box, optionally submits its form, and returns the page.". Its passes run `read 46–52` then `type e4 kettle submit`, in 6.4 s.
+      - **T1's guard passes:** 2B shipping and paging 8, and the 4B 8 on all five tasks.
+    - **Plan drafted:** `reading/redesign/plan.md`, the change set for the user's approval. Rule R needs the user's ruling.
+    - **Running: unit `store-validate-4`** (ollama `tmp/codex/store-validate-4-brief.md`, cap 90 min). It tests T1 with D1, T1 with P1, and all three against a T1 control on 2B search and cart, then guards the best arm.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
