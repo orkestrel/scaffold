@@ -10,16 +10,21 @@ Ollama `tmp/codex/census.md` (230 attempts): the 2B's cart and checkout runs all
 
 | Row | Class | Variant | Instrument | Status | Result |
 | --- | --- | --- | --- | --- | --- |
-| T0 | baseline | none | store-live, 2B, journey, 8 ports | running | |
-| T1 | type on links and buttons | `click` and `type` descriptions name links, buttons, textboxes | store-live, 2B, cart and checkout, 16 ports | queued | |
-| T2 | type on links and buttons | system sentence `To follow a link or press a button, call click …` | same | queued | |
-| T3 | type on links and buttons | T1 and T2 | same | queued | |
-| J1 | save after saved | refusal `Journey "…" is saved already; do not call save again. Answer the user.` | store-live, 2B, journey, 8 ports | queued | |
-| J2 | tool count | journey advertises no `capture`, `forget`, `dialog`, `switch`, `navigate`, `press` | same | queued | |
-| J3 | both | J1 and J2 | same | queued | |
-| S1 | stale reference | the refusal carries the current view with fresh references | needs a harness hook or a browser change | design | |
-| S2 | stale reference | a reference stays bound to the same element identity across page changes; a gone element is refused by name | browser design, planner lane | design | |
-| R1 | missing `from` | `journeys` and `read` default `from` to 1 | browser change; prompt form landed in ollama `5cfa5ed` | design | |
-| P1 | plain-read early answer | system sentence for a partial window without `search` | store-live, 2B, paging, 16 ports | queued | |
+| T0 | baseline | the `from 1` prompt, limit 8 | store-live, 2B, journey, 8 ports | done | **0 of 8.** Every port `partial`: the opening turn spends its 8 calls before the model answers (the analyst's finding), and `converseStore` carries the flag. Also: stale `e4` on 4 ports (the buyer's name typed into the seed's search box), the ollama 500 on 2, `save` loops after every follow-up on 5 (`ended` 2–3), an extra submission or a replay stopped at a product link on 3. Record `tmp/codex/store-live/journey-T0.md`. |
+| JL | opening-turn budget | per-turn call limit 12 (harness option `limit`, uncommitted) | store-live, 2B, journey, 8 ports | queued | |
+| JS | save conflict | journey sentence `Call save only when the user asks … after save, edit, or replay succeeds, answer without saving again.` | same | queued | |
+| V4 | save after saved | refusal `Nothing is recording, so there is nothing to save; "…" is already saved. Answer the user.` | same | queued | |
+| JP | task wording | `click the Cart link, then complete checkout` in place of `then open the cart before you complete checkout` | same | queued | |
+| TB, TB2 | type refusal advice | the `type` refusal names the fields in view (`to type, use textbox "Full name" [ref=e23]`) instead of `call click for a link`; TB2 keeps the click advice when no field is in view | same | queued | |
+| JA | combined | JP, V4, TB2 | same | queued | |
+| JB | combined | JA and V1c | same | queued | |
+| JC | combined | JB, JS, and limit 12 | same | queued | |
+| V1a, V1b, V1c | type on links and buttons | the planner's `click` and `type` copy (a), the prompt order (b), both (c) | store-live, 2B, all five tasks, 16 ports | queued | |
+| V5 | tool count | journey advertises no `capture`, `forget`, `dialog`, `switch`, `navigate`, `press` | store-live, 2B, journey, 8 ports | queued | |
+| V6 | plain-read early answer | a numbered row `61–80: not shown yet; call read with from 61.` replaces the partial-view header line | store-live, 2B, paging, 16 ports | queued | |
+| S2 | stale reference | a link with the same name and resolved `href` keeps its reference across page changes; a gone element is refused by name | browser design, planner §2 | design | |
+| S3 | replay start | a journey records where it starts, and a replay navigates there first; today a replay from the checkout page stops at a catalogue-only link | browser design | design | |
+| R1 | missing `from` | `journeys` and `read` default `from` to 1 and accept digit strings | browser design, planner §3; the prompt form landed in ollama `5cfa5ed` | design | |
+| O1 | oracle strictness | a refused stale reference the model recovers from no longer fails the attempt; a successful unlisted action still does | oracle ruling for the user, analyst hypothesis 4 | ruling | |
 | X1 | ollama 500 | `num_predict` 512 on the journey | store-live, 2B, journey, 8 ports | queued | |
 | M4 | 4B journey | the `from 1` prompt | confirm.ts, 4B, journey, 2 runs | queued | |
