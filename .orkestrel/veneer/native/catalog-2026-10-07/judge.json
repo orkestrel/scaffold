@@ -1,0 +1,312 @@
+{
+ "shortlist": [
+  {
+   "rank": 1,
+   "name": "Clipboard copy button (Async Clipboard API)",
+   "why": "A copy button beside a code sample, an API key, or a share link is one of the most common page needs, Bootstrap 5.3 has no counterpart (no clipboard name in `CLASS_NAMES`, `bootstrap.css`, or `js/src`, grep of 2026-10-07), and the showcase already holds a consumer in its Tailwind recipe block (`V/app/browser/sections/tailwindcss.html:31-38`). It is ready under the Chromium 153 floor: web-features 3.40.1 lists the `async-clipboard` feature from Chrome 76 at Baseline low since 2024-06-11, and the probe of 2026-10-07 wrote text from a `--copy` command inside a Vitest-shaped iframe and read it back by a real Control+V paste under Chromium 141 and 153 with no permission grant. It fits a from-scratch module with one host, a native trigger contract, two typed events, and no stylesheet in its first unit.",
+   "support": "Chrome 76; Baseline low since 2024-06-11 (web-features 3.40.1 `async-clipboard`, https://unpkg.com/web-features/data.json, read 2026-10-07); `ClipboardItem.supports` from Chrome 121 (`clipboard-supports`). Probe of 2026-10-07 under 141.0.7390.37 (`/opt/pw-browsers/chromium-1194`) and 153.0.8010.12 (`/home/user/.wave/pw-153/chromium-1243`): the `writeText` call resolves from a `command` event inside an iframe that carries Vitest 4.1.11's `allow=\"clipboard-write;\"` attribute (`V/node_modules/@vitest/browser/dist/client/__vitest_browser__/orchestrator-jtzFEKPy.js:271-272`); the `readText` call in that iframe is refused under 153 (`Read permission denied`) and never settles under 141, so the proof reads the clipboard back by a real paste, which returned the copied text under both.",
+   "module": "Folder `src/browser/copiers/`, entity `Copier` (the DOM already owns a global `Clipboard` type, which a `Clipboard` class would shadow). Kind files: `Copier.ts`, `types.ts` (`CopierInterface`, `CopierEventMap`), `constants.ts` (`COPIER_EVENTS`), `factories.ts` (`createCopier`), `plugins.ts` (`createCopierPlugin`, kept out of `createBootstrapPlugins`), `index.ts`, and one row `export * from './copiers/index.js'` in `src/browser/index.ts` (`R/native-separation-verdict.md:46`). Markup contract: `<button type=\"button\" commandfor=\"HOST_ID\" command=\"--copy\">`, where the `HOST_ID` placeholder is the `id` of the element whose text the button copies; an `input` or `textarea` host gives its `value`, any other host its text content. The plugin routes `click` on `button[command=\"--copy\"][commandfor]` and resolves the host through `commandForElement` in the route's `hosts` function (`T:2042`), so the existing route shape carries it. Events on the host, in the `toggle.vn.button` namespace form (`V/src/browser/constants.ts:47`): `copy.vn.copier` (cancelable, before the write, `detail.text`) and `result.vn.copier` (after the write settles, with `detail.error` set only on a rejection). Styles face: none in the first unit. First proof: a real click copies the host text and a real paste into a `textarea` reads it back; `preventDefault` on the `copy.vn.copier` event leaves the clipboard unchanged; an `input` host copies its value; a scope that composes no copier plugin adds no `click` listener for it (`V/src/browser/Veneer.ts:66-73`).",
+   "firstUnit": "Copier 1: the `copiers/` module, its barrel row, `tests/src/browser/copiers/Copier.test.ts`, a copy button on the showcase's recipe block as the first consumer (`/home/user/scaffold/AGENTS.md:65`), a `## Native surfaces` guide section, and the `### Native departures` table with no rows. Acceptance: the four proof cases pass through real input under Chromium 141 (the reading arbiter, `R/lanes.md:47`) and 153 (the floor, `R/stage-b/user-rulings-2026-10-06.md:13`); every root file of `src/browser` other than `index.ts` stays byte-identical (`R/native-separation-verdict.md:44`); `createBootstrapPlugins()` returns the same names in the same order; format, lint, check, and `src:browser` exit 0.",
+   "cost": "small"
+  },
+  {
+   "rank": 2,
+   "name": "Sortable list (HTML drag and drop with keyboard reorder)",
+   "why": "Reordering tasks, playlist rows, or dashboard cards by dragging is a frequent need that Bootstrap 5.3 lacks: `list-group` styles items with no reorder behavior, and its one `dragstart` listener only blocks image drags inside a carousel (`V/node_modules/bootstrap/js/src/carousel.js:221`). HTML drag and drop is Baseline high since 2018-01-29 from Chrome 3, `Element.moveBefore()` moves a node with its state from Chrome 133 (web-features 3.40.1 `draganddrop`, `move-before`), and the probe of 2026-10-07 fired `dragstart` and `drop` through Playwright's `dragAndDrop` under Chromium 153. It fits a module with its own host marker, cancelable typed events, and a small state stylesheet, and the user's API guidance repository carries the same capability as `createDrag` and `createDrop` (`/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:28-40`; `createDrop.ts:7-16`), read as guidance only.",
+   "support": "`draganddrop`: Baseline high, low date 2015-07-29, high date 2018-01-29, Chrome 3; `move-before`: not Baseline, Chrome 133, Firefox 144 (web-features 3.40.1, read 2026-10-07; the researcher row gave no Baseline line). Probe of 2026-10-07: `dragstart` on the source and `drop` on the target fired under 153.0.8010.12; `Element.prototype.moveBefore` is a function under 141 and 153. Touch drag on Android is unread.",
+   "module": "Folder `src/browser/drags/`, entity `Drag` (the name the user's guidance repository uses). Kind files: `Drag.ts`, `types.ts` (`DragInterface`, `DragEventMap`), `constants.ts` (`DRAG_EVENTS`), `factories.ts` (`createDrag`), `plugins.ts` (`createDragPlugin`), `index.ts`. Markup contract: a list host carrying `data-vn-drag` whose direct children carry the native `draggable=\"true\"` attribute; a focused item moves one place with Alt+ArrowUp or Alt+ArrowDown. The plugin routes `dragstart`, `dragover`, `drop`, `dragend`, and `keydown` from `[data-vn-drag] > [draggable=\"true\"]` to the list host, and moves nodes with `moveBefore`. Events on the host: `start.vn.drag` (cancelable, before a pointer or keyboard grab), `move.vn.drag` (cancelable, before each DOM move, `detail.from` and `detail.to` indexes), and `end.vn.drag` (after a drop, an Escape, or `dragend`). Styles face: a guide fence in `@layer reset` for the grabbed item and the drop indicator, with its transition under `prefers-reduced-motion: reduce` (`R/native-separation-verdict.md:51`). First proof: a pointer drag and an Alt+ArrowDown each move the item one place with the same `move.vn.drag` detail, `preventDefault` on that event leaves the order, the moved item keeps focus, and a polite live region reports the position.",
+   "firstUnit": "Drag 1: reorder within one list by pointer and by keyboard, with no cross-list transfer and no file drop, and a showcase Native group specimen as the first consumer (`R/native-separation-verdict.md` § R13). Acceptance: the proof cases pass through `userEvent.dragAndDrop` and `userEvent.keyboard` under Chromium 141 and 153; a `list-group` host keeps Bootstrap's resolved styles outside the fence's rules; the root files stay byte-identical; format, lint, check, and `src:browser` exit 0.",
+   "cost": "medium"
+  },
+  {
+   "rank": 3,
+   "name": "Fullscreen toggle (Fullscreen API)",
+   "why": "A fullscreen button on a media player, chart, slideshow, or dashboard panel is a common need that the user named in the plan (`R/plan.md:22`), and Bootstrap 5.3 has no counterpart: `.modal-fullscreen` only sizes a modal to the viewport (`V/src/bootstrap/components/_modal.scss:170`), and no Bootstrap script calls `requestFullscreen` (grep of `V/node_modules/bootstrap/js/src/`, 2026-10-07). web-features 3.40.1 lists `fullscreen` from Chrome 71 and outside Baseline because iOS Safari lacks it, which the Chromium-only target sets aside, and the probe of 2026-10-07 entered and left fullscreen from a `--fullscreen` command inside a Vitest-shaped iframe under Chromium 141 and 153. It fits a small module on the copier's invoker contract, with typed events that mirror `fullscreenchange` and one fenced rule.",
+   "support": "Chrome 71; not Baseline (web-features 3.40.1 `fullscreen`, read 2026-10-07; the MDN Fullscreen API page, https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API, read 2026-10-07 by the researcher, agrees). Probe of 2026-10-07: `document.fullscreenEnabled` is true and `requestFullscreen()` sets `document.fullscreenElement` inside an iframe that carries Vitest 4.1.11's `allowfullscreen` attribute (`orchestrator-jtzFEKPy.js:271`), with two `fullscreenchange` events, under 141.0.7390.37 and 153.0.8010.12.",
+   "module": "Folder `src/browser/fullscreens/`, entity `Fullscreen`. Kind files: `Fullscreen.ts`, `types.ts` (`FullscreenInterface`, `FullscreenEventMap`), `constants.ts` (`FULLSCREEN_EVENTS`), `factories.ts` (`createFullscreen`), `plugins.ts` (`createFullscreenPlugin`), `index.ts`. Markup contract: `<button type=\"button\" commandfor=\"HOST_ID\" command=\"--fullscreen\">`; the plugin routes `click` on `button[command=\"--fullscreen\"][commandfor]`, toggles the host, and mirrors `aria-pressed` on every trigger that names the host. Events on the host: `enter.vn.fullscreen` and `exit.vn.fullscreen` (cancelable, before the request), `change.vn.fullscreen` (after the document's `fullscreenchange`, an Escape exit included), and `error.vn.fullscreen` (after `fullscreenerror` or a rejected request). Styles face: a fence rule that gives `:fullscreen` the body background token and `overflow: auto`, because a host with no background shows the user agent's black backdrop. Risk the guide must state: a Bootstrap tooltip, popover, or modal whose element sits outside the fullscreen host renders under the top layer, so its `container` has to name the host (unread; the first unit owes the reading). First proof: a real click enters, a second click or `document.exitFullscreen()` leaves, `aria-pressed` follows both, and a cancelled `enter.vn.fullscreen` event leaves `document.fullscreenElement` null.",
+   "firstUnit": "Fullscreen 1: the module, its proofs, its guide fence, and a showcase Native group specimen as the first consumer. Acceptance: the proof cases pass through real clicks under Chromium 141 and 153; the fenced host resolves its background to the body background token; the tooltip-in-fullscreen reading is recorded as a `### Native departures` row or as a guide sentence; the root files stay byte-identical.",
+   "cost": "small"
+  },
+  {
+   "rank": 4,
+   "name": "List filter on the search landmark (`<search>` with `hidden`)",
+   "why": "Filtering a long list or table as the user types is a common need with no Bootstrap 5.3 counterpart, and the showcase has a consumer in its Contents panel, which lists every section (`V/app/browser/factories.ts:652`; 55 section files under `V/app/browser/sections/`, `ls | wc -l` on 2026-10-07). The `<search>` element is Baseline high since 2026-04-13 from Chrome 118 (web-features 3.40.1 `search`), the probe of 2026-10-07 parsed it as a known element under Chromium 141 and 153, and hiding rides the reboot's `[hidden]` rule (`V/src/bootstrap/_reset.scss:533`). It fits a module whose host is the native landmark, with one typed event and no stylesheet.",
+   "support": "`search`: Baseline high, low date 2023-10-13, high date 2026-04-13, Chrome 118 (web-features 3.40.1, read 2026-10-07; the researcher's MDN reading of widely available since 2023-10 states the low date only). Probe of 2026-10-07: `document.createElement('search')` is not an `HTMLUnknownElement` under 141 and 153.",
+   "module": "Folder `src/browser/filters/`, entity `Filter`. Kind files: `Filter.ts`, `types.ts` (`FilterInterface`, `FilterEventMap`), `constants.ts` (`FILTER_EVENTS`), `factories.ts` (`createFilter`), `plugins.ts` (`createFilterPlugin`), `index.ts`. Markup contract: a `<search>` host holding an `input type=\"search\"` whose `aria-controls` attribute names the container; the container's direct children are the items, matched case-insensitively on their text content. The plugin routes `input` on `search input[type=\"search\"][aria-controls]` and resolves the closest `search` element as the host. It never sets `hidden` on a Bootstrap family host (`.collapse`, `.tab-pane`, `.carousel-item`), because those families own their visibility. Events on the host: `change.vn.filter` after each pass, with `detail.query` and `detail.count`. Styles face: none. First proof: typing through `userEvent.type` hides the items that do not match, clearing the field restores every item, and a polite live region reports the count.",
+   "firstUnit": "Filter 1: the module and a filter field in the showcase's Contents panel as the first consumer. Acceptance: the proof cases pass through real typing under Chromium 141 and 153; the Contents panel's journeys pass unchanged with the field empty; the root files stay byte-identical.",
+   "cost": "small"
+  },
+  {
+   "rank": 5,
+   "name": "Computed readout (`<output>`)",
+   "why": "A live value beside a range or a computed total in a form is a frequent need with no Bootstrap 5.3 counterpart: the reboot only sets `output { display: inline-block }` (`V/node_modules/bootstrap/scss/_reboot.scss:582`), and the showcase's range specimens show no value (`V/app/browser/sections/range.html:6-7`). The `output` element is Baseline high since 2021-04-02 from Chrome 10 (web-features 3.40.1, matching both researchers), so it carries no readiness risk under the Chromium 153 floor. It fits a small plugin whose markup contract is the native `for` attribute, with one event per write, no `eval`, and no stylesheet.",
+   "support": "`output`: Baseline high, low date 2018-10-02 or earlier, high date 2021-04-02 or earlier, Chrome 10 (web-features 3.40.1, read 2026-10-07). Probe of 2026-10-07: `HTMLOutputElement` is a function under 141 and 153.",
+   "module": "Folder `src/browser/outputs/`, entity `Output`. Kind files: `Output.ts`, `types.ts` (`OutputInterface`, `OutputEventMap`), `constants.ts`, `factories.ts` (`createOutput`), `plugins.ts` (`createOutputPlugin`), `index.ts`. Markup contract: `<output for=\"INPUT_ID\">`, where the `INPUT_ID` placeholder is the `id` of one form control. The plugin routes `input` from a control and resolves every `output` whose `htmlFor` token list names that control's `id`, writes the control's value into `output.value`, routes the form's `reset` event so the readout follows a reset, and boots every `output[for]` after load through the plugin's boot entry (`T:2048`) so the first value shows. A formula over several controls takes a registered function in a later unit, never a string. Events on the host: `change.vn.output` after each write, with `detail.value`. Styles face: none. First proof: ArrowRight on a focused range updates the readout, a form reset restores it, and the readout keeps its implicit `status` role.",
+   "firstUnit": "Output 1: the single-control mirror and its boot, with an `output` beside the showcase's Pallet count range as the first consumer (`V/app/browser/sections/range.html:6-7`). Acceptance: the proof cases pass through real keyboard input under Chromium 141 and 153, the boot writes the initial value before any input, and the root files stay byte-identical.",
+   "cost": "small"
+  },
+  {
+   "rank": 6,
+   "name": "View transitions detached from Bootstrap families (cross-document opt-in, then same-document swaps)",
+   "why": "A crossfade between the pages of a multi-page site, or an animated content swap such as a filtered grid, gives continuity that Bootstrap 5.3 lacks: its `.fade` and `.collapsing` classes serve one component's show and hide (`_transitions.scss`), never a document or a content swap. Same-document transitions are Baseline low since 2025-10-14 from Chrome 111 and cross-document transitions are Chrome 126 outside Baseline (web-features 3.40.1, read 2026-10-07, which settles the researchers' split on the Baseline date), and the probe of 2026-10-07 ran `startViewTransition` to `finished` under Chromium 153 and found `pagereveal` and `CSSViewTransitionRule` under 141 and 153. The fit is mixed: the cross-document opt-in is a stylesheet fence with no engine, and a same-document class is thin, so it must earn its place under the wrapper law (`/home/user/scaffold/AGENTS.md:64`) by owning the reduced-motion and hidden-document skips.",
+   "support": "`view-transitions`: Baseline low since 2025-10-14, Chrome 111, Firefox 144, Safari 18; `cross-document-view-transitions`: not Baseline, Chrome 126, Safari 18.2 (web-features 3.40.1, read 2026-10-07). The researcher who read MDN found no Baseline date; web-features is the source this ruling trusts. Probe of 2026-10-07: `document.startViewTransition` resolved `finished` under 153.0.8010.12.",
+   "module": "Folder `src/browser/transitions/`, entity `Transition` (the DOM owns `ViewTransition`). The first unit is the stylesheet face alone: a guide fence with `@view-transition { navigation: auto }` inside `@media (prefers-reduced-motion: no-preference)` and a duration for `::view-transition-group(*)`. The second unit adds `Transition.ts`, `types.ts` (`TransitionInterface`), `factories.ts` (`createTransition`), and `index.ts`, with no plugin, because a view transition has no host or trigger: the class wraps one DOM update in `document.startViewTransition`, runs the update directly under reduced motion or a hidden document, and returns the platform's `finished` promise; it dispatches no event of its own. It never wraps a Bootstrap family's transition (the stage B refused rows, `R/browser-stage-b-verdict.md:261`, `:357`). First proof: two same-origin documents under the fence report a non-null `viewTransition` on `pagereveal`, and the same pair under reduced-motion emulation reports null.",
+   "firstUnit": "Transition 1: the cross-document fence, its two-document proof, and its guide section. Acceptance: the proof passes under Chromium 141 and 153, and the Bootstrap sheet takes no rule (`R/native-separation-verdict.md:51`). The same-document class waits for a consumer such as the showcase's face or theme switch, whose journeys must wait for `finished` before a capture.",
+   "cost": "medium"
+  },
+  {
+   "rank": 7,
+   "name": "Inline plain-text editing (`contenteditable=\"plaintext-only\"`)",
+   "why": "Click-to-rename for a title, a list label, or a table cell is a common need, and Bootstrap 5.3 has no editing behavior on page content: `.form-control-plaintext` (`C:1411`) only styles a read-only input as text, which resembles an inline editor in look alone. The `plaintext-only` value is Baseline low since 2025-03-04 and Chrome has had it since 51 (web-features 3.40.1 `contenteditable-plaintextonly`, which settles the researcher's unverified support note), and the probe of 2026-10-07 read the value back as `plaintext-only` under Chromium 141 and 153. It fits a module whose markup contract is the native attribute and whose events give commit and revert, but composition input and line-break refusal make it a medium unit.",
+   "support": "`contenteditable-plaintextonly`: Baseline low since 2025-03-04, Chrome 51, Firefox 136, Safari 5.1 (web-features 3.40.1, read 2026-10-07). Probe of 2026-10-07: an element given `contentEditable = 'plaintext-only'` reads it back unchanged under 141 and 153.",
+   "module": "Folder `src/browser/editors/`, entity `Editor` (plain text, one line). Kind files: `Editor.ts`, `types.ts` (`EditorInterface`, `EditorEventMap`), `constants.ts` (`EDITOR_EVENTS`), `factories.ts` (`createEditor`), `plugins.ts` (`createEditorPlugin`), `index.ts`. Markup contract: a host carrying the native `contenteditable=\"plaintext-only\"` attribute. The plugin routes `focusin` (records the text), `keydown` (Enter commits by blurring, Escape restores the recorded text, both skipped while `isComposing`), `beforeinput` (refuses `insertParagraph` and `insertLineBreak`), and `focusout` (commits). Events on the host: `commit.vn.editor` (cancelable, before the text is kept, `detail.value` and `detail.previous`; prevention restores `previous`) and `revert.vn.editor` (after Escape restores the text). Styles face: a fence focus ring from Bootstrap's focus-ring tokens on `[contenteditable=\"plaintext-only\"]:focus-visible`. First proof: typing then Enter dispatches `commit.vn.editor` with the typed value, Escape restores the text and dispatches `revert.vn.editor`, a prevented commit restores the previous text, and Enter inserts no line break.",
+   "firstUnit": "Editor 1: the module and a showcase Native group specimen as the first consumer. Acceptance: the proof cases pass through `userEvent.type` and `userEvent.keyboard` under Chromium 141 and 153; pasted rich text arrives as plain text; the root files stay byte-identical.",
+   "cost": "medium"
+  },
+  {
+   "rank": 8,
+   "name": "Keep-screen-on toggle (Screen Wake Lock API)",
+   "why": "Keeping the screen on while a person follows a recipe, a presentation, or a scanner page is a real but narrower need, and Bootstrap 5.3 has no power or screen-state concept. The `screen-wake-lock` feature is Baseline low since 2025-03-31 from Chrome 84 (web-features 3.40.1), and the probe of 2026-10-07 acquired and released a `screen` sentinel inside a Vitest-shaped iframe under Chromium 141 and 153 after granting the permission through CDP, which the test setup already reaches (`V/tests/setupBrowser.ts:73`). It fits a small module on the same invoker contract, but the showcase has no natural consumer for it, which ranks it last under the first-consumer law (`/home/user/scaffold/AGENTS.md:65`).",
+   "support": "`screen-wake-lock`: Baseline low since 2025-03-31, Chrome 84 (web-features 3.40.1, read 2026-10-07; matches the researcher's MDN reading). Probe of 2026-10-07: without a grant, `navigator.wakeLock.request('screen')` rejects with `NotAllowedError` (`Wake Lock permission request denied`); after `Browser.grantPermissions` with `wakeLockScreen`, it resolves a `screen` sentinel whose `release` event fires, under 141 and 153.",
+   "module": "Folder `src/browser/wakes/`, entity `Wake` (the DOM owns `WakeLock`). Kind files: `Wake.ts`, `types.ts` (`WakeInterface`, `WakeEventMap`), `constants.ts` (`WAKE_EVENTS`), `factories.ts` (`createWake`), `plugins.ts` (`createWakePlugin`), `index.ts`. Markup contract: `<button type=\"button\" commandfor=\"HOST_ID\" command=\"--wake\">`, where the host is the region the lock serves; the lock lasts while the host is connected, the trigger mirrors `aria-pressed`, and the class re-acquires on `visibilitychange` when the document returns visible, because the platform releases the lock on hide. Events on the host: `acquire.vn.wake` (cancelable, before the request), `release.vn.wake` (after the sentinel's `release`, the platform's release included), and `error.vn.wake` (a rejected request). Styles face: none. First proof: with the permission granted, a real click acquires and a second click releases, each with `aria-pressed`; without the grant, `error.vn.wake` carries `NotAllowedError`.",
+   "firstUnit": "Wake 1: acquire, release, and refusal, with a showcase Native group specimen as the first consumer. Acceptance: the proof cases pass under Chromium 141 and 153; the re-acquire case waits for a reading of a visibility change inside the harness, which no run has taken; the root files stay byte-identical.",
+   "cost": "small"
+  }
+ ],
+ "excluded": [
+  {
+   "name": "Bare `<dialog>` (`show()`, `showModal()`, `close()`, `returnValue`, `closedby`, `::backdrop`), the native modal, the non-modal `show()` mode for `focus: false`, `::backdrop` as the scrim, the forced-close reason, and the borrowed Tab wrap",
+   "counterpart": "Modal (`Modal.ts:16`; `_modal.scss`), Offcanvas with `scroll: true` (`T:1368-1372`), and the Backdrop and Trap helpers (`Backdrop.ts:12`; `Trap.ts:11`)",
+   "reason": "A dialog window over the page is Modal's concept, and a non-modal floating panel is Offcanvas's or a popover's. The bare element sits on the overlap side even with no `.modal` chrome, because the concept is the window itself, with its focus move, its Escape dismissal, and its backdrop, all of which the bare element brings; the chrome line that applies to `details` does not apply to a window. The user's ruling cuts the native `Dialog` over `modal` (`R/stage-b/user-rulings-2026-10-06.md:26`)."
+  },
+  {
+   "name": "`<details>` and `<summary>` with `name` groups, `::details-content`, and the `toggle` event (unit N10)",
+   "counterpart": "Collapse and Accordion (`Collapse.ts:22`, `:64`; `_accordion.scss`); the reboot styles `summary` (`V/src/bootstrap/_reset.scss:521-525`)",
+   "reason": "With accordion chrome, a `name` group (accordion's `parent`), or an animated `::details-content` (Collapse's measured height transition), it duplicates Accordion and Collapse. The bare element with no accordion chrome sits on the pass side of the chrome line only as markup, and as markup it needs no module: it works with no script and Bootstrap's reboot already styles its `summary`. Every addition a module would make (a show and hide API, events, grouping, animation) crosses back into Collapse, so no module results on either side."
+  },
+  {
+   "name": "Customizable `<select>` (`appearance: base-select`, `::picker(select)`, `selectedcontent`, `::checkmark`)",
+   "counterpart": "`.form-select` (`C:1399`; `_form-select.scss:4`, `:13-15`) and `.dropdown-menu` for the open picker",
+   "reason": "With `.form-select` chrome, `base-select` has to replace the `appearance: none` the same rule declares, which works against Bootstrap's stylesheet. A bare `select` without `.form-select` still serves the select-control concept, and its picker is a styled dropdown list, so both sides of the chrome line overlap. It is Chrome 135 and Safari 27 only (web-features 3.40.1 `customizable-select`, read 2026-10-07)."
+  },
+  {
+   "name": "Form validation: the Constraint Validation API as an engine, and `:user-valid` with `:user-invalid`",
+   "counterpart": "The validation component: `.was-validated`, `.is-valid`, `.is-invalid`, and the feedback and tooltip messages (`_validation.scss:24`; `C:1930`, `:1458`, `:1454`, `:1918`)",
+   "reason": "Validation feedback is a Bootstrap component keyed on the native `:valid` and `:invalid` states; `:user-invalid` replaces `.was-validated`, and a script engine drives the same feedback. Bootstrap ships no validation script, and the concept stays Bootstrap's."
+  },
+  {
+   "name": "The `popover` attribute in every use: `beforetoggle` and `toggle` events, `popover=\"manual\"` tips (`topmost`, B5), popover-based pickers, and `interestfor`",
+   "counterpart": "Tooltip, Popover, and Dropdown (`Tip.ts:35`; `Dropdown.ts:24`; `_tooltip.scss`, `_popover.scss`, `_dropdown.scss`)",
+   "reason": "Every popover surface renders a floating tip, menu, or panel, so a popover-attribute tooltip duplicates the tooltip even though the mechanism differs; `interestfor` is a hover-triggered tip and exists under Chromium 153 and not 141 (probe of 2026-10-07). `topmost` is cut (`R/plan.md:23`)."
+  },
+  {
+   "name": "Anchor positioning for in-flow callouts, connectors, and labels",
+   "counterpart": "The Placement helper (`Placement.ts:28`), Tooltip, and Popover",
+   "reason": "An element placed against an anchor is Placement's concept, and an anchored annotation is a tooltip or popover that stays open; the boundary the researcher drew is too thin to carry a module. The researchers' support reads conflict; the source this ruling trusts is web-features 3.40.1 read on 2026-10-07, which lists `anchor-positioning` outside Baseline with only Safari 27 in its support map, together with the probe of 2026-10-07, where `CSS.supports('anchor-name: --a')` is true under 141 and 153. Neither reading changes the ruling."
+  },
+  {
+   "name": "`hidden=\"until-found\"` with `beforematch` on collapse panels, tab panes, and carousel items (gates G2 and G4)",
+   "counterpart": "Collapse, Tab, and Carousel",
+   "reason": "Every host it reveals is a Bootstrap family, and a reveal forces a non-cancelable show past the family's veto (`R/browser-stage-b-verdict.md:807`, `:358`, `:265`); it has no standalone surface."
+  },
+  {
+   "name": "`CloseWatcher` with Android Back (gate G3)",
+   "counterpart": "Escape dismissal of Modal, Offcanvas, Dropdown, and Alert",
+   "reason": "It serves the dismissal of Bootstrap's overlays, and its `cancel` event is not cancelable without user activation (`R/browser-stage-b-verdict.md:808`)."
+  },
+  {
+   "name": "Invoker commands as a standalone command router, and custom `--` commands on Bootstrap family markup (gate G5)",
+   "counterpart": "Bootstrap's data API: `data-bs-toggle`, `data-bs-target`, and `data-bs-dismiss`",
+   "reason": "Declarative trigger-to-target wiring is the data API's concept, and G5 routes it onto Bootstrap family hosts (`R/native-separation-verdict.md:343`). The `commandfor` and `command` pair survives only as the trigger syntax inside a passing module (`--copy`, `--fullscreen`, `--wake`), where the command names an action Bootstrap lacks; it is Chrome 135 at Baseline low since 2025-12-12 (web-features 3.40.1 `invoker-commands`), and the probe of 2026-10-07 delivered a cancelable `command` event with its `source` button under 153."
+  },
+  {
+   "name": "`<dialog class=\"offcanvas\">` (gate G1) and the manual-popover offcanvas",
+   "counterpart": "Offcanvas (`Offcanvas.ts:21`; `_offcanvas.scss`)",
+   "reason": "Both replace the offcanvas host (`R/native-separation-verdict.md:334`)."
+  },
+  {
+   "name": "Top-layer toast promotion",
+   "counterpart": "Toast (`Toast.ts:8`; `_toasts.scss`)",
+   "reason": "It moves Bootstrap's toast out of `.toast-container` layout and was refused as scope (`R/browser-stage-b-verdict.md:1193`)."
+  },
+  {
+   "name": "`@starting-style` entry animations",
+   "counterpart": "`.fade` with `.show` (`_transitions.scss`; the composables at `C:1934-1945`)",
+   "reason": "An entry fade is the `.fade` concept, recorded against the Alert and Modal fades (`R/native-separation-verdict.md:336`)."
+  },
+  {
+   "name": "`interpolate-size` and `calc-size()` (the `intrinsic` leaf)",
+   "counterpart": "Collapse's measured `.collapsing` height transition",
+   "reason": "The concept is Collapse's height animation; the leaf is withdrawn at veneer `7de4387` (unit N6), and both features are Chrome 129 only (researcher reading of webstatus.dev, 2026-10-07)."
+  },
+  {
+   "name": "Scroll snap with `::scroll-button` and `::scroll-marker`",
+   "counterpart": "Carousel (`Carousel.ts:25`; `_carousel.scss`)",
+   "reason": "A slideshow is the Carousel concept even when the mechanism is pure CSS; `scroll-buttons` and `scroll-markers` are Chrome 135 only (web-features 3.40.1)."
+  },
+  {
+   "name": "The `stable` reserved-gutter leaf (`scrollbar-gutter`, unit N5)",
+   "counterpart": "The Lock helper (`Lock.ts:12`) and Bootstrap's `util/scrollbar.js`",
+   "reason": "It changes how Bootstrap's overlays compensate the scrollbar, and the user's ruling cuts it (`R/plan.md:23`)."
+  },
+  {
+   "name": "The `<progress>` element",
+   "counterpart": "Progress (`C:1700`; `_progress.scss`); the reboot styles `progress` (`V/src/bootstrap/_reset.scss:527`)",
+   "reason": "Task completion is the Progress component's concept."
+  },
+  {
+   "name": "The `<meter>` element",
+   "counterpart": "`.progress` and `.progress-bar` (`C:1700`; `_progress.scss`)",
+   "reason": "Borderline, ruled overlap: a bar filled to a value within a range is what `.progress` draws, so a `meter` skin puts a second bar beside Bootstrap's. The semantic zones (`low`, `high`, `optimum`) differ from task completion, so the ruling flips only if the user rules a gauge a different concept from a progress bar."
+  },
+  {
+   "name": "`accent-color`",
+   "counterpart": "`.form-check-input`, `.form-switch`, and `.form-range`",
+   "reason": "Bootstrap draws checks, radios, switches, and range thumbs itself with `appearance: none`, so the tint restyles controls Bootstrap already styles."
+  },
+  {
+   "name": "`light-dark()` and `color-scheme`",
+   "counterpart": "Color modes (`data-bs-theme`, `V/src/bootstrap/_tokens.scss:40`, `:177-178`)",
+   "reason": "Dual light and dark values are the color-mode concept."
+  },
+  {
+   "name": "`color-mix()` and relative color syntax for runtime theming",
+   "counterpart": "Bootstrap's CSS variable tokens with their subtle and emphasis tints, and the `bg-opacity` and `text-opacity` modifiers (`C:1947`, `:2161`)",
+   "reason": "Theming from tokens is Bootstrap's concept, and runtime derivation is a mechanism for it that diverges from the compiled token values."
+  },
+  {
+   "name": "Container queries and container units",
+   "counterpart": "The responsive grid tiers and the responsive utility infixes (`_grid.scss`; `V/src/bootstrap/_utilities.scss`)",
+   "reason": "Responsive variants of layout utilities are Bootstrap's concept with a different trigger, and the proposed shape repeats Bootstrap's utilities under container breakpoints. Tailwind 4.3.3 already declares `@container` (`V/tests/fixtures/tailwindcss/oracle.min.json`, grep of 2026-10-07), so the layer face carries it."
+  },
+  {
+   "name": "`:has()` patterns (selectable cards, invalid-field groups)",
+   "counterpart": "`.btn-check` toggles (`C:1120`) and `.was-validated` (`C:1930`)",
+   "reason": "A selector is a technique with no concept of its own, and its proposed patterns are Bootstrap's toggle-check and validation concepts."
+  },
+  {
+   "name": "`<datalist>` suggestions and a fetch-filling suggest plugin",
+   "counterpart": "Bootstrap 5.3 documents datalists on `.form-control` under Form controls (https://getbootstrap.com/docs/5.3/forms/form-control/#datalists, read 2026-10-07), and the reboot hides the `[list]` picker indicator (`V/node_modules/bootstrap/scss/_reboot.scss:443`)",
+   "reason": "Both researchers ruled it a pass, but input suggestions are a documented Bootstrap form-control feature; a plugin that fills the list drives that concept, the way a validation engine drives Bootstrap's validation."
+  },
+  {
+   "name": "`inert` as a busy region",
+   "counterpart": "Placeholders and Spinners as loading states (`C:1686`, `:1822`), the disabled fieldset on forms, the `pe-none` utility (`V/src/bootstrap/_utilities.scss:922-931`), and Modal with Trap for containment",
+   "reason": "A region shown as loading or frozen while work runs is the loading-state concept those components serve; `inert` adds a mechanism, not a concept."
+  },
+  {
+   "name": "File drop zone",
+   "counterpart": "The file input `.form-control[type=file]` with `::file-selector-button` (`V/node_modules/bootstrap/scss/forms/_form-control.scss:95`)",
+   "reason": "Borderline, ruled overlap: choosing files for an upload is the file input's concept. It flips only if the user rules a drop target a different concept; the sortable list on the shortlist leaves file drop out."
+  },
+  {
+   "name": "Native inputs Bootstrap already styles: `type=file`, the date and time types, number spin buttons, the search cancel button, range thumbs, and color alpha with color space",
+   "counterpart": "`.form-control`, `.form-range`, `.form-control-color`, and the reboot rules (`_reboot.scss:514-520`, `:524`, `:539`; `_form-control.scss:69`, `:95`, `:193`; `_form-range.scss:27`)",
+   "reason": "Bootstrap styles each control, so a native module would restyle Bootstrap's own controls."
+  },
+  {
+   "name": "Scroll-driven reading-progress bar",
+   "counterpart": "`.progress` (`C:1700`)",
+   "reason": "The bar form draws a filled bar like `.progress`, ruled with `meter`; stage B attached scroll-driven motion to Carousel (`R/browser-stage-b-verdict.md:264`). The reveal-on-view form passes and sits on the longlist."
+  },
+  {
+   "name": "View transitions inside Bootstrap families (carousel slides, tab panes, collapse)",
+   "counterpart": "The Carousel, Tab, and Collapse transitions (`R/browser-stage-b-verdict.md:261`, `:357`)",
+   "reason": "Attached to a family it replaces that family's motion; the detached form is on the shortlist."
+  },
+  {
+   "name": "`focusgroup`",
+   "counterpart": "Arrow-key navigation in Dropdown, Tab, and button groups (`R/browser-stage-b-verdict.md:241`, `:293`, `:312`, `:355-356`)",
+   "reason": "It serves keyboard navigation Bootstrap's families own, and web-features 3.40.1 lists no browser support for it (read 2026-10-07)."
+  },
+  {
+   "name": "The native pressed toggle and the checkbox `switch` attribute",
+   "counterpart": "The Button toggle (`Button.ts:7`) and `.form-switch`",
+   "reason": "Both are Bootstrap's toggle concepts (`R/browser-stage-b-verdict.md:250`)."
+  },
+  {
+   "name": "`ariaNotify` attached to Alert and Toast",
+   "counterpart": "The live regions in Alert and Toast markup",
+   "reason": "As recorded it replaces their announcements (`R/browser-stage-b-verdict.md:239`); the standalone announcer is on the longlist."
+  }
+ ],
+ "longlist": [
+  {
+   "name": "Web Share (`navigator.share`)",
+   "note": "Passes (Bootstrap has no sharing concept), but `navigator.share` is undefined under Chromium 141 and 153 on the Linux reading host (probe of 2026-10-07), and web-features 3.40.1 `share` is outside Baseline (Chrome 128 desktop, Chrome Android 61); only a fallback to the copier is provable there."
+  },
+  {
+   "name": "Read aloud (Speech Synthesis)",
+   "note": "Passes, Baseline high since 2021-03-05 from Chrome 33 (web-features 3.40.1), but the reading host has 0 voices and `speak()` fails with `synthesis-failed` under 153 (probe of 2026-10-07), so only the failure path is provable."
+  },
+  {
+   "name": "Reveal-on-view utilities (scroll-driven animations)",
+   "note": "Passes in the reveal form only; Chrome 115 outside Baseline (web-features 3.40.1); CSS only, so it waits for chunk 3's `./styles` face (`R/plan.md:32`)."
+  },
+  {
+   "name": "Stuck-state styling (container scroll-state queries)",
+   "note": "Passes: `sticky-top` sets the position with no stuck state; Chrome 133 only (web-features 3.40.1); one fenced rule of low value."
+  },
+  {
+   "name": "Auto-growing fields (`field-sizing: content`)",
+   "note": "Passes, settling the researchers' split: `.form-control` has no auto-grow, and an opt-in class layers on it without changing it; Chrome 123, Baseline low since 2026-06-16; Tailwind 4.3.3 already declares `field-sizing-content` (oracle grep of 2026-10-07); one declaration for `./styles`."
+  },
+  {
+   "name": "Balanced headings (`text-wrap: balance` and `pretty`)",
+   "note": "Passes; balance is Chrome 114 at Baseline low since 2024-05-13, pretty is Chrome 117 outside Baseline; Bootstrap's `.text-wrap` class means `white-space: normal`, and Tailwind 4.3.3 already declares `text-balance` and `text-pretty`; one declaration each for `./styles`."
+  },
+  {
+   "name": "Focus order that follows layout (`reading-flow`)",
+   "note": "Passes: Bootstrap's `order-*` utilities reorder visually with no focus-order concept; Chrome 137 only; one declaration for `./styles`, paired with `order-*`."
+  },
+  {
+   "name": "`@scope`",
+   "note": "Passes, but it is an authoring technique for chunk 3's sheet with no user-facing surface; Chrome 143 at Baseline low since 2026-03-24 (web-features 3.40.1, matching the researcher)."
+  },
+  {
+   "name": "Standalone announcer (`ariaNotify`)",
+   "note": "Passes in the standalone form; `ariaNotify` exists on `Element` and `Document` under 141 and 153 (probe of 2026-10-07); the copier, the drag list, and the filter announce through a live region first, because no reading observes speech (`R/browser-stage-b-verdict.md:239`)."
+  },
+  {
+   "name": "Routed views (Navigation API)",
+   "note": "Passes (a routed view with history is not Tab's in-place pane), but `@orkestrel/router` 0.0.16 owns browser navigation through its `Navigator` with history mode and link interception (`V/node_modules/@orkestrel/router/dist/src/browser/index.d.ts:110-155`); Baseline low since 2026-01-13 (web-features 3.40.1 `navigation`). Route it to that package."
+  },
+  {
+   "name": "Template stamping (`template` and declarative shadow DOM)",
+   "note": "Passes, but `@orkestrel/template` owns a template registry and filler (its `package.json` description), and Bootstrap's styles do not reach into a shadow root."
+  },
+  {
+   "name": "Save in place (File System Access pickers)",
+   "note": "Passes (a writable file handle is not a file input's concept); Chrome 86 outside Baseline (web-features 3.40.1, settling the researchers' split on support); the proof path through the native picker is unread, and the value is limited to editor pages."
+  },
+  {
+   "name": "App-icon badge (Badging API)",
+   "note": "Passes (it resembles `.badge` in name only); Chrome 81 desktop outside Baseline; it acts only on an installed web app."
+  },
+  {
+   "name": "Form-associated custom elements (`ElementInternals`)",
+   "note": "Passes for form participation, but it is a custom-element authoring model beside Veneer's data-API plugins, and its validity surface feeds Bootstrap's validation, which is overlap."
+  },
+  {
+   "name": "EditContext",
+   "note": "Passes; Chrome 121 only (web-features 3.40.1), and an editor engine is a product rather than a module."
+  },
+  {
+   "name": "Idle Detection",
+   "note": "Passes; Chrome 94 only behind a permission prompt, and presence is application policy (`/home/user/scaffold/AGENTS.md:67`)."
+  },
+  {
+   "name": "Prioritized Task Scheduling (`scheduler.postTask`)",
+   "note": "No user-facing concept; Chrome 129 (web-features 3.40.1); internal infrastructure only."
+  },
+  {
+   "name": "`enterkeyhint` and `inputmode`",
+   "note": "Pass; both Baseline high (web-features 3.40.1); a guide note on markup, with nothing to build."
+  },
+  {
+   "name": "`fetchpriority` and `loading=\"lazy\"`",
+   "note": "Pass; `fetch-priority` Baseline low since 2024-10-29 and `loading-lazy` Baseline high (web-features 3.40.1); a guide note on markup, with nothing to build."
+  }
+ ],
+ "reasoning": "Method. I deduplicated the 66 researcher rows and the scout's record inventory by user-facing concept into 58 concepts, and I applied the overlap test to each: a feature is overlap when Bootstrap 5.3 implements its concept as a component, helper, or utility, whatever the mechanism. The ruling yields 31 exclusions, 8 shortlisted modules, and 19 longlisted passes. The scout's two passes, clipboard and fullscreen, stand. The ruling moves five researcher verdicts: datalist goes from none to overlap, because Bootstrap 5.3 documents datalists under Form controls (https://getbootstrap.com/docs/5.3/forms/form-control/#datalists, read 2026-10-07); `meter` and the file drop zone go from none or partial to borderline overlap, each with its flip condition; `inert` busy regions and container queries go to overlap; and standalone invoker commands go to overlap as Bootstrap's data-API concept, kept only as the trigger syntax inside passing modules. On the chrome line, a bare `details` is the only element that passes, and only as markup that Bootstrap's reboot already styles, so it needs no module. Bare `dialog` and bare customizable `select` overlap on both sides of the line, because their concepts (a window, a select control) do not depend on chrome. A scroll-snap carousel and a popover-attribute tooltip overlap whatever their mechanism.\n\nSources and conflicts. For support I trust web-features 3.40.1 (https://unpkg.com/web-features/data.json, read 2026-10-07; `low` and `high` are its two Baseline tiers), together with my own feature probes in headless Chromium 141.0.7390.37 (the reading arbiter, `R/lanes.md:47`) and 153.0.8010.12 (the floor, `R/stage-b/user-rulings-2026-10-06.md:13`). The probe scripts are `/tmp/claude-0/-home-user/4338f304-4fe6-5169-89e8-36562d885cad/scratchpad/scripts/probe.mjs` to `probe5.mjs`, with outputs under `.../scratchpad/wf/`. That pair settles these conflicts:\n- View transitions: Baseline low since 2025-10-14 from Chrome 111, where one researcher found no date.\n- Clipboard: Chrome 76, Baseline low since 2024-06-11; no researcher gave a version.\n- Drag and drop: Baseline high since 2018-01-29; no researcher gave a Baseline line.\n- `contenteditable=\\\"plaintext-only\\\"`: Baseline low since 2025-03-04, recorded as unverified by its researcher.\n- File System Access: Chrome 86, outside Baseline, where one researcher left support unread.\n- Anchor positioning: my web-features read shows not Baseline with only Safari 27, which contradicts the researcher's read of the same file. The probe shows Chromium 141 and 153 accept `anchor-name`. The feature is excluded either way.\n\nThree probe findings shape the ranking:\n- A `--copy` command writes the clipboard inside an iframe shaped like Vitest 4.1.11's tester frame (`allowfullscreen`, `allow=\\\"clipboard-write;\\\"`, `orchestrator-jtzFEKPy.js:271-272`). The text reads back by a real Control+V paste under both versions, while `readText` there is refused (153) or hangs (141).\n- Fullscreen works in the same frame. The wake lock works after a CDP grant.\n- `navigator.share` is undefined on this Linux host, and speech synthesis has 0 voices. That moves Web Share and read-aloud to the longlist.\n\nRanking and fit. I ranked by consumer value, readiness under the Chromium 153 floor, and fit with the separation rule (`R/native-separation-verdict.md:42-52`). That rule requires a `src/browser/<plural entity>/` folder, composition through a `create*Plugin` factory, a guide fence until chunk 3, root files kept byte-identical, and a first real consumer (`/home/user/scaffold/AGENTS.md:65`). The copier, the filter, and the output each have a showcase consumer (the recipe block, the Contents panel, and the range specimens). The fullscreen, drag, editor, and wake modules rely on the Native showcase group that § R13 already plans. I avoided DOM global names (`Clipboard`, `WakeLock`, `ViewTransition`) and checked the eight entity names against the fleet's declarations under `V/guides` and `V/node_modules/@orkestrel` (no match, 2026-10-07). Two passes belong to other fleet packages and go to the longlist: routing to `@orkestrel/router` and template stamping to `@orkestrel/template`. The events follow the `toggle.vn.button` namespace form (`V/src/browser/constants.ts:47`) with one-word present-tense verbs or nouns (`/home/user/scaffold/.claude/rules/names.md:31`). The recommendation is to open Copier 1 first."
+}
