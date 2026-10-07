@@ -601,6 +601,29 @@ Lane results:
       - Guide drift: 38 checks.
     - **`@orkestrel/codec ^0.0.5` installed** in browser by the Orchestrator, per user ruling B. The manifest is uncommitted and rides with slice 4.
     - **Slice 4 resumed** (browser `tmp/codex/api-impl-4-resume*`). The unit also rules on the helper names added in the series, `assertBrowserPage` and `validateBrowserJourneyWriteOptions`.
+    - **Slice 4 landed locally:** browser `89a9776`, unpushed, with the codec dependency.
+      - dead search and byte wrappers removed;
+      - codec's refusals coded `PROTOCOL` and `ARGUMENT`;
+      - `findSystemBrowser` removed;
+      - 14 private shapes inlined;
+      - policy clean;
+      - both helper names kept, because each throws on refusal.
+      - Results:
+
+        | Gate | Result |
+        | --- | --- |
+        | core | 1,161 |
+        | browser | 478 |
+        | server | 393 |
+        | service | 204 |
+        | setup | 181 |
+        | bin | 19 |
+        | distribution | 14 |
+        | policy | 119 |
+
+      - Guide drift: 39 checks.
+    - **Slice 5, the guide, resumed** (browser `tmp/codex/api-impl-5-resume*`).
+    - **API falsify claims drafted:** scaffold `tmp/units/api-claims.md`, 12 claims.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
