@@ -95,3 +95,18 @@ Release-chain notes:
 - mcp's visit ran alone: source 1539 passed with 2 skipped, guides 202, conformance 47. The publish answered "accepted, confirmed", and `npm view` serves 0.0.37.
 - npm's session had expired; one login link, then the code.
 - Ollama 0.0.21 is held. Its visit failed `test:service` on the live shipping and paging store cases, and the user ruled to release only after the store campaign's acceptance series passes. The release head `58c08d8` stays local.
+
+## 2026-10-07 round, continued: browser 0.0.27 and ollama 0.0.21 after the small-model campaign
+
+The campaign's record is `.orkestrel/veneer/lifecycle/reading/small/matrix.md`. The user's gate was the 2B's clean confirmation on the real harness; `confirm.ts 2b-final3` passed every one of the six store tasks in 16 runs of 16 (row F3), after the wire audit found the harness ran the thinking model with `think: false` (row W1).
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | L5 | `@orkestrel/browser` | 0.0.26 | 0.0.27 | bump: dist moved (the journey `start` and in-place replay, stable link references, the one-exit journey refusals, the field-aware `type` refusal, the `type` description that focuses the field, `edit` with `journey` optional and defaulting to the only saved journey across every store page, the restored `read` shape); ranges moved (codec `^0.0.5` added, mcp `^0.0.37`); 3 self-pin hits ruled kept (the compatibility fixture that preserves a file written by the published 0.0.26 store, tarball SHA1 `995478a4…`, and the case that replays it name that version by design) | `36cde8f` |
+
+Release-chain notes:
+- The browser layer's first visit failed `npm test` on one server case: the stable-links MCP case called `read` with no `from` (written after `74a8708` made `from` required; the server project had not run whole since). Both calls pass `from: 1` in `ee8aed1`.
+- The second visit refused the overwrite over the first visit's uncommitted catalog row (agent 0.0.27 to 0.0.28); committed as `6578fad`.
+- The third visit passed every gate (`npm test` 91.8 s) and ruled the bump; the layer stopped on the self-pin sweep's three hits, ruled kept per § Sweep the self-pins (a canned fixture carries the version it preserves).
+- The first whole `test:service` run failed 3 of 263: two editable-region cases and the measured cart refusal still pinned the pre-`2098194` `type` refusal (`call click for a button`, `call click for a link`), the suite having last run before that commit; they pin the shipped field-aware text in `36cde8f` (the two files alone: 132 passed).
+- Windows gates: default-mode distribution 14 passed with 9 host-bound skips; the second whole `test:service` run 256 passed with 6 skipped and one timing miss (`codegen.test.ts` claim 12, `outline is gone because the page changed`), which passed alone (2 of 2, 3.3 s), the file-by-file reading the Windows releases take.
