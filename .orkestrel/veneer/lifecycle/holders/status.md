@@ -708,7 +708,26 @@ Lane results:
       - **The 4B never pages the policy page,** in any variant. It replies "I've reviewed the entire shipping policy page… no policy token", although the view ends at line 34 of 80 with "46 below".
       - **No single factor moves the 2B's search,** and the system prompt's read sentences and the `search` name change nothing on their own.
     - **Old-format comparison** (ollama `tmp/codex/toolset-probe-last.md`): on browser 0.0.26, the 2B also opened the action tasks with a read, `look {"search":"add"}` for cart and `look {"search":"kettle"}` for search, and those tasks still passed (search 14 of 16 runs). So M1's first-call gate would have stopped the old format too. The real difference: `look` searched the whole page, while `read` searches from `from` onward, and the 2B takes `from` from the footer (47), so a search for the tray on line 11 misses it.
-    - **Running: unit `store-m2diag`** (ollama `tmp/codex/store-m2diag-brief.md`, cap 90 min, records `tmp/codex/store-campaign5/M2diag/`). M2's single attempts on the shipped input, as a diagnostic: 5 tasks × 8 ports on the 2B, then the 4B, with every transcript, failure class, and detour cost.
+    - **Unit `store-m2diag`** (ollama `tmp/codex/store-m2diag-report.md`, records `tmp/codex/store-campaign5/M2diag/`; 18 minutes). Single attempts to completion on the shipped input; passes out of 8 (shipping, cart, search, checkout, paging):
+      - **2B:** 8, 0, 0, 0, 8. Each attempt 4 to 12 s.
+      - **4B:** 8, 8, 8, 8, 0. Each attempt 10 to 21 s.
+
+      Failure classes:
+      - **2B cart, C-loop:** the search from `from` 47 misses the tray on line 11; the model then types into buttons for 8 turns.
+      - **2B search, S-answer:** it reads from 47, then answers from the review prose and never types into `e4`. On 0.0.26 its first call was `type e4 kettle submit`, 16 of 16.
+      - **2B checkout, O-reference:** it completes the one order and reports `HG-48213`, but clicked `e3` after a window of lines 47 to 52 that listed no references. The harness replaces the exposed set on every listing, empty windows included.
+      - **4B paging, P-premature:** no call; it answers that it reviewed the entire page.
+      - **4B cart:** passes after a 2-turn detour from `click e11`.
+    - **Running: the redesign round** (scaffold `.orkestrel/veneer/lifecycle/reading/redesign/design-brief.md`). An Opus planner (Agent tool) and the Astra analyst `redesign-analyst` (scaffold `tmp/codex/redesign-analyst-brief.md`, xhigh, cap 90 min) work blind. The brief asks seven questions:
+      1. the number and reference forms;
+      2. the search scope past `from`;
+      3. truncation salience;
+      4. the footer's pull;
+      5. what made 0.0.26's 2B type into `e4`;
+      6. reference tracking against the oracle's claim;
+      7. probe validation before implementation.
+
+      Next: reconcile both proposals, validate the change set by probe transforms on both models, then take the plan to the user. Numbered lines with inline references are the user's ruling, so any change that leaves it goes to the user.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
