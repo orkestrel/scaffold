@@ -16,7 +16,7 @@ The map follows one policy, the consumer judge's synthesis (`design/judge-consum
 - Colors are resolved sRGB hex from the installed `node_modules/tailwindcss/theme.css`, clipped per channel; a consumer `--color-*` does not reach the tuned sheet through the CSS export (`rulings.md` question 2). A Sass `$palette` for Sass consumers stays a roadmap item.
 - Fonts, radii, and shadows are `var(--TOKEN, LITERAL)`, `LITERAL` being Tailwind 4.3.3's default (`rulings.md` question 1), subject to M2: if the references break pin 4 or the `prefix(tw)` form, the fallback literal is emitted instead and the guide states the limit.
 - Breakpoints align to Tailwind's `40/48/64/80/96rem`; container widths take Tailwind's `max-width = breakpoint` (`rulings.md` question 3). The down forms keep Bootstrap's `0.02px` gap, in rem. The RFS cap stays `1200px`, and `.modal-xl` stays `1140px`.
-- Type sizes, spacers, component paddings, transitions, and z-indices keep Bootstrap's values: h4 to h6, `.lead`, and the body already equal `--text-*`; h1 to h3 have no injective nearest step; spacers equal `--spacing` multiples.
+- (Spacers amended 2026-10-07, § Amendments.) Type sizes, spacers, component paddings, transitions, and z-indices keep Bootstrap's values: h4 to h6, `.lead`, and the body already equal `--text-*`; h1 to h3 have no injective nearest step; spacers equal `--spacing` multiples.
 - The map is a function of the lifted literal: one Bootstrap value takes one tuned value, except the context split of § 3 if M1 requires it.
 
 ## 3. The map
@@ -188,3 +188,11 @@ The six defaults of `rulings.md` stand as rulings: references for fonts, radii, 
 ## 11. Order and open risks
 
 The token units follow the structural flip's landing on `main` (the F1 wave, U8, and the landing rule of `../../lanes.md` § Rules), and no release ships between. The open risks are the mechanism judge's three (`design/judge-mechanism.md` § 5): the oracle's key alignment (M8), a split the value key cannot express (M1 and § 3.1), and the clip against Chromium's paint (M7). All three are closed on veneer `main` at `4d21de7` (2026-10-05): M8 by `tests/conformance.test.ts:1329`; M1 by `tests/src/tailwindcss/index.test.ts:104`, with the `mapReading` dark-context residual; M7 by T4's ruling (`units/tokens-t4/report-2.md:59`), with § 10 M7 (`:184`), `guides/veneer.md:1688-1698`, and `tests/guides.test.ts:206`.
+
+## Amendments of 2026-10-07 after the whole-showcase audit
+
+The user ruled the audit's R2 and R5 as recommended (`../../stage-b/user-rulings-2026-10-06.md` § Sixth round):
+
+- **Spacers at steps 3, 4, and 5 map** (R2): the margin, padding, gap, row-gap, and column-gap maps of `src/bootstrap/_utilities.scss` take `measure('spacer-3', 1rem)`, `measure('spacer-4', 1.5rem)`, and `measure('spacer-5', 3rem)`, with the three roles in `$scale` emitted as `calc(var(--spacing, 0.25rem) * N)` subject to M2 (literal fallback 0.75rem, 1rem, 1.25rem), so that one step digit names one length under the layer and the infixed and Bootstrap-only names follow a consumer's `--spacing` as the shared names do. The § 2 line "spacers equal `--spacing` multiples" matched by value and missed the step index. The `g-*`, `gx-*`, and `gy-*` gutters stay unmapped, because `g-4` equals the `.row` default of 1.5rem, which § 2 keeps as a component value.
+- **Subtle borders map by role** (R5): `border-secondary-subtle` and `border-light-subtle` share gray-200 in light mode, and `border-secondary-subtle` and `border-dark-subtle` share gray-800 in dark mode (rows `'#c4c8cb': '#e5e7eb'` and `'#41464b': '#1e2939'`); the Borders section states the two collisions.
+
