@@ -837,7 +837,12 @@ Lane results:
       - The bytes probe compares the full user turn; restoring the old framing fails 10 assertions.
       - The legacy parser is gone.
       - Setup passes 267; check, lint, format, the probes, and store-first and store-series at count 1 pass.
-    - **Running: `redesign-fix`**, which resumes the API session in browser (cap 4 h).
+    - **Browser fixes landed:** `a204d97`, pushed. The report is browser `tmp/codex/api-impl-report.md` § Redesign fixes.
+      - Every ruling was applied as prescribed, and 19 reverting mutations each fail their tests, which closes the round without a successor. One addition beyond the ruling: a limit too small for the miss sentence and one row refuses, the toolset's existing rule for a row that cannot fit.
+      - **The measured bytes still hold,** pinned by committed tests: both seeds, the cart range miss, and the exact `type` refusal.
+      - **Gates:** check, core, browser, server, bin, guides 278, policy, setup, lint, format, build, and the touched service, distribution, and conformance files pass.
+    - **Pack:** browser `5F8662C2…` from `a204d97`, at ollama `tmp/codex/store-campaign5/packs-redesign/`.
+    - **Running: unit `store-measure-2`** (ollama `tmp/codex/store-measure-2-brief.md`, cap 3 h, on ollama `78da8b9`). It runs V, then M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs on the 2B, M4's 2 runs on the 4B, and M5, the journey. Four orphaned Edge helpers were cleared before launch.
     - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
