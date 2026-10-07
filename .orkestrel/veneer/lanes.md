@@ -70,6 +70,13 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-07 — showcase session (the user's order for the native catalog; the elements addendum; Copier 1 open)
+
+- **The user's ruling** (`stage-b/user-rulings-2026-10-06.md` § Fifth round): the shortlist opens in rank order, Copier 1 first, Drag 1 next as the high-return pick; the elements repository is read for ideas, as guidance only.
+- **Elements addendum** (workflow `wf_f2c92aaa-7ea`, 5 agents, 42.7 min; `native/catalog-2026-10-07/elements-addendum.md` and its journal; the catalog's § Addendum): 80 factories and composables read; 15 of 20 factories overlap; three additions ruled in (table column sort at rank 5, Drag 2 as the second `drags/` unit, an unsaved-changes guard at rank 10); readings under 141 and 153 on reset timing, `moveBefore` keeping focus, a `::view-transition-group(*)` duration rule, and the `beforeunload` prompt; lessons per shortlisted module.
+- **Copier 1 open** (Astra, worktree `/home/user/.wave/veneer-copier` at `7de4387`; brief `scaffold/tmp/codex/copier-1-brief.md`): the first launch stopped on the test mirror policy (a `boundary.test.ts` with no source twin is refused; the purity case moves into the barrel's `index.test.ts`) after proving the three platform readings under 141 and 153 (`runs/copier-probe-141`, `-153`); the second launch runs.
+- **N6** (`7de4387` on the branch): `src:browser` 788 of 788 as predicted; the first gate run timed out in four suites under a load average near 6.5 on 4 CPUs (the audit's reviewers, the elements scout, and the Copier lane's Chromium at once; every gate ran 2 to 10 times slower); the four suites and the journey re-read after the load dropped (`runs/landing-7de4387-2-*`), the landing waits on them.
+
 ### 2026-10-07 — showcase session (the user's ruling on the native track; the native catalog round)
 
 - **The user's ruling** (`stage-b/user-rulings-2026-10-06.md` § Fourth round; `plan.md`; `native-separation-verdict.md` § Amendment of 2026-10-07): the native track builds only surfaces with no Bootstrap counterpart, from scratch, never against the drop-in engine. The native `Dialog` over `modal`, the `stable` gutter leaf, `topmost`, and the landed `intrinsic` leaf leave the plan; unit N6 reverts `6b99552` on the veneer branch (`7de4387`, gates running at this entry).
