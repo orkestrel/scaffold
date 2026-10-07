@@ -534,6 +534,24 @@ Lane results:
       4. hygiene, with codec;
       5. the guide.
     - **Unit `api-impl`** (browser `tmp/codex/api-impl-brief.md`, cap 3 h per launch) runs slice 1, errors. Each later slice resumes the same session, and the Orchestrator commits each green slice.
+    - **Slice 1 landed locally:** browser `8f5e6f4`, unpushed, with the push held until slice 5 greens the guide.
+      - 486 construction sites migrated, and 181 catch-all sites mapped (browser `tmp/codex/api-catchall-final.json`).
+      - The page tools, copy, and reading code are unchanged, per an audit script.
+      - Results:
+
+        | Gate | Result |
+        | --- | --- |
+        | core | 1,145 |
+        | browser | 478 |
+        | server | 389 |
+        | service | 248 |
+        | setup | 180 |
+        | bin | 19 |
+        | distribution | 14 |
+        | check, lint, format | pass |
+
+      - Guide drift: 6 checks, reserved for slice 5.
+      - Session `01a113b2`. Slice 2 resumed (journal `tmp/codex/api-impl-resume.jsonl`).
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
