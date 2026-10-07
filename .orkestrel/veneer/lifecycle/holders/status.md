@@ -832,9 +832,12 @@ Lane results:
         - only a successful action resets the set;
         - the bytes probe compares the full user turn, with a real control;
         - the legacy reference parser is dropped.
-    - **Running in parallel:**
-      - `redesign-fix`, which resumes the API session in browser (cap 4 h);
-      - `redesign-harness-fix`, which resumes the harness session in ollama (cap 2 h).
+    - **Harness fixes landed locally:** ollama `78da8b9`, unpushed. Its report is `tmp/codex/redesign-harness-report.md` § Audit fixes.
+      - Only a successful action resets the set, and a real-browser case pins the measured cart path.
+      - The bytes probe compares the full user turn; restoring the old framing fails 10 assertions.
+      - The legacy parser is gone.
+      - Setup passes 267; check, lint, format, the probes, and store-first and store-series at count 1 pass.
+    - **Running: `redesign-fix`**, which resumes the API session in browser (cap 4 h).
     - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
