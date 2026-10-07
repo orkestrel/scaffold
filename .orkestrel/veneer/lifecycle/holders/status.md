@@ -658,7 +658,21 @@ Lane results:
       - Positions held: fact on line 52, token on line 80.
       - setup 256; check and lint pass.
       - **Recheck on the `b6dda22` pack passed** (ollama `tmp/codex/harness-recheck.log`): setup 255 passed and 1 skipped (`TIMER_LEAD`'s host-conditional case); check, lint, and the instrument typecheck pass; store-first and store-series at count 1 pass (shipping in 4.9 s, 1 call). Ollama's source and tests use none of the renamed or collapsed names; only its browser guide mirror does, refreshed at the re-pin.
-    - **Running: unit `store-measure`** (ollama `tmp/codex/store-measure-brief.md`, cap 3 h, records in `tmp/codex/store-campaign5/`): V for agent and ollama (browser's V is the fix round's acceptance), then M0 to M5 per `reading/plan.md` § Measurement, with the per-case time targets. It stops at the first rule that says stop; the fix and restart are the Orchestrator's. Twenty orphaned Edge helpers (17:06 to 23:31) were cleared before launch.
+    - **Unit `store-measure`** (ollama `tmp/codex/store-measure-brief.md`, report `store-measure-report.md`, records in `tmp/codex/store-campaign5/`; 9 minutes). Twenty orphaned Edge helpers (17:06 to 23:31) were cleared before launch.
+      - **V passed:** agent and ollama format, lint, check, build, and test; browser's V is the fix round's acceptance. **M0 passed.**
+      - **M1 stopped the series.** Productive first calls on the 2B, out of 8: shipping 8, cart 0, search 0, checkout 0, paging 8. Identities unchanged (Ollama 0.35.1; 2B digest `124a03c3…`). M2 to M5 did not run.
+      - **Every cart, search, and checkout first call was a `read` from line 47,** the line the seed's footer names. The seed (ollama `tmp/codex/store-campaign5/M1/seeds/`, from `tmp/probes/store-seed.test.ts`) already shows Checkout `e3` (line 3), the search box `e4` (line 6), and the tray link `e7` (line 11), and it ends `[lines 1–46 of 52; 6 below; call read with from 47 for more]`.
+      - **Candidate causes:**
+        - the footer's imperative, the last text before the reply;
+        - the system prompt's "For more text, follow the footer" sentence;
+        - the task placed before the seed.
+    - **Running: unit `store-ablate`** (ollama `tmp/codex/store-ablate-brief.md`, cap 90 min). First replies, 5 tasks × 8 ports per variant, transformed inside the probe with the judge fixed:
+      - A0: as shipped;
+      - A1: a declarative footer;
+      - A2: no footer sentence in the system prompt;
+      - A3: A1 and A2;
+      - A4: the seed first, the task last;
+      - then A0 and the best variant on the 4B.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
