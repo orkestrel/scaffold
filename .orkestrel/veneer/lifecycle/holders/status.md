@@ -810,6 +810,15 @@ Lane results:
       - the M1 judge;
       - byte equality with the measured seeds and the cart range-miss reply.
     - **The falsify claims** for the integrated round are drafted at scaffold `tmp/units/redesign-claims.md`: ten browser claims, with the harness claims added when the harness lands. One round runs on the integrated result, with two blind Opus lanes, because Astra wrote both halves.
+    - **Harness landed locally:** ollama `b45eae7`, unpushed because the release is held. Its report is `tmp/codex/redesign-harness-report.md`.
+      - **The stop and resume.** The unit stopped once on a position requirement the brief misworded. The Orchestrator ruled the oracle's wording: shipping's fact lies past the first window, and paging's token past the seed and the next window. It also ruled that the `press` assertion follows rule R. The unit resumed as `redesign-harness-2`.
+      - **What landed:**
+        - byte equality for all five seeds and for the cart range-miss reply;
+        - the positions hold: the fact on line 52 is past lines 1–45, and the token on line 80 is past lines 1–33 and 34–61;
+        - setup 261 passed; check, lint, format, and the instrument typecheck pass;
+        - store-first and store-series at count 1 pass.
+    - **Running: the falsify workflow `redesign-falsify`** (run `wf_ec521808-cf5`): two blind Opus lanes on 16 claims. The verdicts go to `reading/redesign/falsify/`.
+    - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5, and launches after the audit closes.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
