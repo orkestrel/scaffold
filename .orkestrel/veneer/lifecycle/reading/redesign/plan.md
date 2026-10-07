@@ -30,7 +30,9 @@ Every change keeps the user's rulings in `campaign.md`:
 
 1. **References after the name.** Every reference prints as `[ref=eN]` immediately after its element's quoted name: in reading rows, action receipts, refusals, journey listings, and MCP text. Every line keeps its `N: ` number. For example, `11: ### link "Cedar Tea Tray" [ref=e7] /product/p3`. `parseBrowserReference` already accepts `ref=e7` and `[ref=e7]`.
 2. **A partial-view line.** When lines remain after the window, a second header line reads `This read shows lines A–B of T; lines B+1–T are not shown yet.` The footer keeps its bytes.
-3. **A search past `from` names its best match.** When the requested range holds no match and the page does, the reply adds `No line from F on matches "Q"; the best match is line M:` and line M quoted in full. The window does not move, and the footer describes only the window.
+3. **A search past `from` names its best match.** When the requested range holds no match and the page's best match carries an element reference, the reply adds `No line from F on matches "Q"; the best match is line M:` and line M quoted in full. The window does not move, and the footer describes only the window.
+   - **The element condition was added on 2026-10-07,** after M2 measured 2B paging at 0 of 8 with a quoted heading. See `reconcile.md`, ruling 1.
+   - **A best match with no reference** keeps the plain miss sentence.
 4. **A change note from line 1.** A changed read from line 1 also carries the change note, so a reader can tell a changed page from a re-read.
 5. **`type` names a search box.** Its description becomes `Types into a field such as a search box, optionally submits its form, and returns the page.`
 

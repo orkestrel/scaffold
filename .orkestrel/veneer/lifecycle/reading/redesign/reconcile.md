@@ -41,6 +41,10 @@ Unit `store-validate` measures each split on both models (ollama `tmp/codex/stor
 
      The planner's reason holds: both add backward pull and bytes, and no task needs them.
    - **Rejected from the planner's shape:** the element-only restriction, because a fact searched from a wrong `from` needs the same help. This is browser behavior, so it needs the package's code, not a byte transform. It is validated by completion runs after implementation.
+   - **Reversed on 2026-10-07 by measurement** (`store-measure-2`, M2): with text lines quoted, 2B paging fell from 8 to 0 of 8.
+     - **What happened:** its `read {"from":34,"search":"policy token"}` drew a quote of line 4, `# Shipping policy`, a match on "policy" alone, and the model answered "line 4" instead of following the footer.
+     - **The rule now:** the quote appears only when the best match carries an element reference, the planner's original condition. A best match without a reference keeps the plain miss sentence.
+     - **The cart quote is unaffected,** because line 11 holds `[ref=e7]`.
 2. **Reference tracking.** Adopt rule R, with the analyst's conditions:
    - an action's supplied reference is checked before the reset;
    - a changed read from line 1 also emits the change note, which closes the reporting gap at browser `src/core/helpers.ts:755`;

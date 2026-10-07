@@ -842,7 +842,19 @@ Lane results:
       - **The measured bytes still hold,** pinned by committed tests: both seeds, the cart range miss, and the exact `type` refusal.
       - **Gates:** check, core, browser, server, bin, guides 278, policy, setup, lint, format, build, and the touched service, distribution, and conformance files pass.
     - **Pack:** browser `5F8662C2…` from `a204d97`, at ollama `tmp/codex/store-campaign5/packs-redesign/`.
-    - **Running: unit `store-measure-2`** (ollama `tmp/codex/store-measure-2-brief.md`, cap 3 h, on ollama `78da8b9`). It runs V, then M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs on the 2B, M4's 2 runs on the 4B, and M5, the journey. Four orphaned Edge helpers were cleared before launch.
+    - **Unit `store-measure-2`** (ollama `tmp/codex/store-measure-2-report.md`; 25 minutes) stopped at M2. Four orphaned Edge helpers were cleared before launch.
+      - **V passed:** ollama `test` covers core 100, setup 267, policy 119, config 227, guides 34, and conformance 17.
+      - **M1, productive first calls out of 8** (shipping, cart, search, checkout, paging):
+        - 2B: 8, 8, 0, 0, 8;
+        - 4B: 8, 8, 8, 7, 8.
+      - **M2 on the 2B, single attempts:** shipping 8, cart 8, search 8, and checkout 8, each attempt 4.6 to 7.9 s. **Paging 0.**
+        - Every paging attempt read `{"from":34,"search":"policy token"}`.
+        - The reply quoted the best match, line 4 `# Shipping policy`, which matches on "policy" alone.
+        - The model then answered "line 4" instead of following the footer to 62.
+      - **The 4B's M2, M3, M4, and M5 did not run.**
+      - **The Edge readings:** 25 Edge processes whose parents had exited, none with an `orkestrel-browser-` profile, so they may be the user's own. Left alone.
+    - **Ruling:** narrow the best-match line to a best match that carries an element reference, the planner's original condition. That reverses the Orchestrator's reconciliation ruling; `reconcile.md` and `plan.md` are amended.
+    - **Running: `redesign-narrow`**, which resumes the API session in browser (cap 2 h). Then a pack rebuild, then the measurement restarts from M2 on both models.
     - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
