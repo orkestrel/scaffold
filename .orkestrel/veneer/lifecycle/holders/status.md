@@ -629,7 +629,7 @@ Lane results:
       - `test:guides` 269 passed; 670 exports documented; 55 method tables match; 9 fences execute from the Markdown.
       - **Browser `main` pushed at `ae1c9a1`**, with all five API slices. Unreleased.
       - Observation: the browse renderer-crash recovery case failed once beside a concurrent discovery scan, and passed alone and on a rerun. It is carried into the audit's claim 1.
-    - **Packs** (ollama `tmp/codex/store-campaign5/packs-api/`): browser `AC3A5B97…` from `ae1c9a1`, and agent `17F8A491…` from `65c706a`.
+    - **Packs** (ollama `tmp/codex/store-campaign5/packs-api/`): browser `AC3A5B97…` from `ae1c9a1` (superseded), and agent `17F8A491…` from `65c706a`.
     - **Running in parallel:**
       - the API falsify workflow `api-falsify` (run `wf_92b6692e-f17`), with two Opus lanes;
       - unit `harness-fix` (ollama `tmp/codex/harness-fix-brief.md`): the reading audit's harness items (H1 paging, H2 instruments, A6 fixtures), the API migration, and re-pinned positions.
@@ -645,12 +645,269 @@ Lane results:
       - Stale docs are fixed, and the Surface is reordered entity-first.
       - A crash-flake probe compares 20 runs at `51cf268` with 20 at HEAD.
       - `depth`/`breadth` and `listed`/`found` are kept.
-      - **Fix round `api-fix`** resumed the API session (cap 4 h).
+      - **Fix round `api-fix` landed:** browser `b6dda22`, pushed (report: browser `tmp/codex/api-fix-resume-last.md`, appended to `api-impl-report.md`; 73 minutes).
+        - Every ruled item is fixed; 60 reverting mutations each fail their tests, one per required guard key.
+        - Acceptance passes: check, build, lint, format, guides 274, policy 119, setup 181, core 1,203, browser 478, server 395, service 250, bin 19, distribution 14.
+        - The page-tool audit against `51cf268` passes: 8 handlers, their copy, and the reading code are unchanged.
+        - **Crash probe:** `51cf268` failed 13/20 and `ae1c9a1` 14/20 beside discovery. The cause was in the test: it crashed `launcher.browsers[0]`, which served the session only in launch order. The case finds its lease by URL and runs in both inventory orders. The unit raised the crash event's wait from 1 s to 5 s after 1/20 lease-only failures; final stress 0/20.
+        - **The 5 s wait is kept.** The Orchestrator measured the event latency at `b6dda22`, from the crash request, across 20 invocations with a 30 s budget and discovery beside (`scaffold/tmp/units/crash-latency.ts`; logs in browser `tmp/codex/api-fix-crash-latency/`). All 80 events arrived: median 708 ms, p90 1,050 ms, max 4,428 ms; 2 over 2 s, none over 5 s. The events are late under load, not lost, and a missing event still fails at any budget. The worktree is removed.
+        - Advisory: the shared store's `STORE_LOCKED` message still reads "Journey is locked".
+    - **Packs rebuilt:** browser `A0A54AAA…` from `b6dda22`; agent unchanged (`17F8A491…`).
     - **Harness fix landed locally:** ollama `b3083aa`, unpushed, on top of the held release head.
       - Each finding red then green.
       - Positions held: fact on line 52, token on line 80.
       - setup 256; check and lint pass.
-      - It gets a recheck on the post-fix browser pack.
+      - **Recheck on the `b6dda22` pack passed** (ollama `tmp/codex/harness-recheck.log`): setup 255 passed and 1 skipped (`TIMER_LEAD`'s host-conditional case); check, lint, and the instrument typecheck pass; store-first and store-series at count 1 pass (shipping in 4.9 s, 1 call). Ollama's source and tests use none of the renamed or collapsed names; only its browser guide mirror does, refreshed at the re-pin.
+    - **Unit `store-measure`** (ollama `tmp/codex/store-measure-brief.md`, report `store-measure-report.md`, records in `tmp/codex/store-campaign5/`; 9 minutes). Twenty orphaned Edge helpers (17:06 to 23:31) were cleared before launch.
+      - **V passed:** agent and ollama format, lint, check, build, and test; browser's V is the fix round's acceptance. **M0 passed.**
+      - **M1 stopped the series.** Productive first calls on the 2B, out of 8: shipping 8, cart 0, search 0, checkout 0, paging 8. Identities unchanged (Ollama 0.35.1; 2B digest `124a03c3…`). M2 to M5 did not run.
+      - **Every cart, search, and checkout first call was a `read` from line 47,** the line the seed's footer names. The seed (ollama `tmp/codex/store-campaign5/M1/seeds/`, from `tmp/probes/store-seed.test.ts`) already shows Checkout `e3` (line 3), the search box `e4` (line 6), and the tray link `e7` (line 11), and it ends `[lines 1–46 of 52; 6 below; call read with from 47 for more]`.
+      - **Candidate causes:**
+        - the footer's imperative, the last text before the reply;
+        - the system prompt's "For more text, follow the footer" sentence;
+        - the task placed before the seed.
+    - **Unit `store-ablate`** (ollama `tmp/codex/store-ablate-report.md`, records `tmp/codex/store-campaign5/ablate/`; 35 minutes). First replies, 5 tasks × 8 ports per variant, judged against the untransformed seed. Productive first calls out of 8 (shipping, cart, search, checkout, paging):
+
+      | Model, variant | Counts |
+      | --- | --- |
+      | 2B A0, as shipped | 8, 0, 0, 0, 8 |
+      | 2B A1, declarative footer | 6, 1, 0, 1, 5 |
+      | 2B A2, no footer sentence in the system prompt | 8, 0, 0, 0, 8 |
+      | 2B A3, A1 and A2 | 8, 0, 0, 1, 5 |
+      | 2B A4, seed first, task last | 8, 2, 0, 3, 0 |
+      | 2B A3 and A4 | 8, 0, 0, 0, 0 |
+      | 4B A0 | 8, 0, 8, 8, 0 |
+
+      - **No copy variant fixes the 2B.** Search is 0 of 8 under every variant: the first call is `read` with `search: "kettle"`.
+      - **The 4B's cart first call is `click e11` on every port.** The tray is `e7` on line `11`, so the line number is read as the reference.
+      - **The 4B answers paging with text and no call.**
+      - The 2B's malformed tool-call XML (Ollama HTTP 500) appears under A1, A3, and A3 with A4 on checkout.
+    - **Unit `store-ablate-2`** (ollama `tmp/codex/store-ablate-2-report.md`, records `tmp/codex/store-campaign5/ablate-2/`; 59 minutes). Variants:
+      - X1: no line numbers;
+      - X2: no footer;
+      - X3: neither;
+      - X4: no read sentences in the system prompt;
+      - X5: X3 and X4;
+      - X6: `search` renamed `find`.
+
+      Productive first calls out of 8 (shipping, cart, search, checkout, paging):
+
+      | Variant | 2B | 4B |
+      | --- | --- | --- |
+      | A0 | 8, 0, 0, 0, 8 | 8, 0, 8, 8, 0 |
+      | X1 | 1, 0, 0, 4, 8 | 8, 8, 6, 8, 0 |
+      | X2 | 0, 1, 0, 5, 0 | 0, 0, 8, 8, 0 |
+      | X3 | 0, 0, 0, 0, 7 | 0, 8, 8, 8, 0 |
+      | X4 | 8, 0, 0, 0, 8 | 8, 0, 8, 8, 0 |
+      | X5 | 0, 4, 0, 2, 0 | 0, 8, 8, 8, 0 |
+      | X6 | 8, 0, 0, 0, 8 | 6, 0, 8, 8, 0 |
+
+      - **Line numbers cause the 4B's cart failure:** without them, every first call clicks `e7`.
+      - **Both models need the footer to page.** Without it, shipping falls to 0 on both, and the models answer "not mentioned" or invent a time.
+      - **The 2B needs the numbers to follow the footer.** Without them, shipping falls to 1 of 8.
+      - **The 4B never pages the policy page,** in any variant. It replies "I've reviewed the entire shipping policy page… no policy token", although the view ends at line 34 of 80 with "46 below".
+      - **No single factor moves the 2B's search,** and the system prompt's read sentences and the `search` name change nothing on their own.
+    - **Old-format comparison** (ollama `tmp/codex/toolset-probe-last.md`): on browser 0.0.26, the 2B also opened the action tasks with a read, `look {"search":"add"}` for cart and `look {"search":"kettle"}` for search, and those tasks still passed (search 14 of 16 runs). So M1's first-call gate would have stopped the old format too. The real difference: `look` searched the whole page, while `read` searches from `from` onward, and the 2B takes `from` from the footer (47), so a search for the tray on line 11 misses it.
+    - **Unit `store-m2diag`** (ollama `tmp/codex/store-m2diag-report.md`, records `tmp/codex/store-campaign5/M2diag/`; 18 minutes). Single attempts to completion on the shipped input; passes out of 8 (shipping, cart, search, checkout, paging):
+      - **2B:** 8, 0, 0, 0, 8. Each attempt 4 to 12 s.
+      - **4B:** 8, 8, 8, 8, 0. Each attempt 10 to 21 s.
+
+      Failure classes:
+      - **2B cart, C-loop:** the search from `from` 47 misses the tray on line 11; the model then types into buttons for 8 turns.
+      - **2B search, S-answer:** it reads from 47, then answers from the review prose and never types into `e4`. On 0.0.26 its first call was `type e4 kettle submit`, 16 of 16.
+      - **2B checkout, O-reference:** it completes the one order and reports `HG-48213`, but clicked `e3` after a window of lines 47 to 52 that listed no references. The harness replaces the exposed set on every listing, empty windows included.
+      - **4B paging, P-premature:** no call; it answers that it reviewed the entire page.
+      - **4B cart:** passes after a 2-turn detour from `click e11`.
+    - **Running: the redesign round** (scaffold `.orkestrel/veneer/lifecycle/reading/redesign/design-brief.md`). An Opus planner (Agent tool) and the Astra analyst `redesign-analyst` (scaffold `tmp/codex/redesign-analyst-brief.md`, xhigh, cap 90 min) work blind. The brief asks seven questions:
+      1. the number and reference forms;
+      2. the search scope past `from`;
+      3. truncation salience;
+      4. the footer's pull;
+      5. what made 0.0.26's 2B type into `e4`;
+      6. reference tracking against the oracle's claim;
+      7. probe validation before implementation.
+
+      Next: reconcile both proposals, validate the change set by probe transforms on both models, then take the plan to the user. Numbered lines with inline references are the user's ruling, so any change that leaves it goes to the user.
+    - **Both proposals landed:** `redesign/proposal-planner.md` and `redesign/proposal-analyst.md`. The reconciliation is in `redesign/reconcile.md`.
+      - **Agreed:**
+        - rule R, references accumulate per unchanged page;
+        - outside-range matches without moving the window;
+        - the footer stays;
+        - every line stays numbered, while the bare number beside a bare reference goes;
+        - a partial-view header line.
+      - **Splits, to be measured:**
+        - the line form, `[ref=e7]` after the name or `[line N]` at the end;
+        - the partial-view wording;
+        - the framing;
+        - 2B search, a prompt sentence or control cues and `read` copy;
+        - a purpose-qualified footer.
+      - **Ruled:**
+        - search past `from` quotes the best page-wide match line under the header;
+        - M1 becomes a diagnostic, with M2 the gate;
+        - rule R goes to the user.
+    - **Unit `store-validate`** (ollama `tmp/codex/store-validate-report.md`, records `tmp/codex/store-campaign5/validate/`; about 2.5 hours).
+      - **Stage 0, rule R:** 2B checkout goes from 0 to 8 of 8, and no other task classification changes. All seven controls pass, including an invented reference, a reference listed before a page change, an action checked before its reset, and the not-in-view refusal.
+      - **L1, `[ref=e7]` after the name with `N: ` kept:** 4B cart 8 of 8, with every guard at 8. N1, `[line N]` at the end, breaks 2B shipping (4) and 4B shipping (2).
+      - **No arm moves 2B search from 0:** not P1, K1, D1, F1, or any other.
+      - **Judging artifact, corrected by the Orchestrator.** The paging judge read the untransformed footer (35), while H1 and H2 re-fit the window so the footer the model saw named 34. The re-judge (`scaffold/tmp/units/paging-rejudge.ts`) gives:
+        - 2B paging 8 of 8 under H1, H2, every H×G pair, K1, and N1;
+        - **4B paging 8 of 8 under H1 with G1,** where the 4B reads from line 34 instead of claiming the whole page;
+        - 4B paging at most 2 under every other arm.
+      - **The unit's chosen C1 (L1 + G1) is superseded** by C2 = L1 + H1 + G1.
+    - **Unit `store-validate-2`** (ollama `tmp/codex/store-validate-2-report.md`; 34 minutes).
+      - **C2 first calls:** the 4B is 8 of 8 on every task. The 2B is unchanged: shipping and paging 8; cart, search, and checkout read from 46. The guard passes, and C2R matches C2.
+      - **The 2B's second turn under C2:**
+        - checkout `click e3`, 8 of 8;
+        - cart `type e7` on the tray link, 8 of 8, so the best-match line reaches the tray, but the 2B types instead of clicking;
+        - search `read {"from":1,"search":"kettle"}`, 8 of 8, with no `type` on `e4`.
+      - The unchanged-page wording (C2R) moves nothing.
+    - **Unit `store-validate-3`** (ollama `tmp/codex/store-validate-3-report.md`; 25 minutes). 2B completions under C2, every result transformed:
+      - **Cart passes 8 of 8 under every arm:** the best-match line reaches the tray, and a refused `type` on the link leads to `click`.
+      - **Search:**
+        - C2, P1, and D1 score 0;
+        - X6 scores 1, and P1 with X6 scores 1;
+        - **T1 scores 6**, with `type` described as "Types into a field such as a search box, optionally submits its form, and returns the page.". Its passes run `read 46–52` then `type e4 kettle submit`, in 6.4 s.
+      - **T1's guard passes:** 2B shipping and paging 8, and the 4B 8 on all five tasks.
+    - **Plan drafted:** `reading/redesign/plan.md`, the change set for the user's approval. Rule R needs the user's ruling.
+    - **Unit `store-validate-4`** (ollama `tmp/codex/store-validate-4-report.md`; 21 minutes). 2B search and cart passes out of 8:
+
+      | Arm | Search | Cart |
+      | --- | --- | --- |
+      | T1, the control, reproduced | 6 | 8 |
+      | T1 + D1 | 0 | 8 |
+      | **T1 + P1** | **8** | **8** |
+      | T1 + D1 + P1 | 2 | 8 |
+
+      The guard for T1 + P1: every cell holds 8 except 4B checkout's first call at 7, where one port reads from line 46 before acting. The plan's threshold is 7, so this passes.
+    - **Plan ready for the user:** `reading/redesign/plan.md`.
+      - **Browser:**
+        - `[ref=eN]` after the name;
+        - the partial-view line;
+        - the best-match line;
+        - the change note from line 1;
+        - the `type` description.
+      - **Harness:**
+        - the framing;
+        - the type sentence;
+        - rule R;
+        - the parsers;
+        - M1 as a diagnostic, with M2 the gate.
+      - **The user's rulings asked for:**
+        - approval of the change set;
+        - rule R;
+        - whether the type sentence counts as task copy.
+    - **The user approved all three (2026-10-07):** the change set, rule R, and the type sentence as procedure. They are recorded in `reading/campaign.md`.
+    - **Unit `redesign-impl` landed:** browser `d921838`, pushed. Its report is in browser `tmp/codex/api-impl-report.md` § Line-view redesign; it took 66 minutes.
+      - **Red then green** for each of the five rules.
+      - **Byte equality:** the real catalogue and policy renders equal the measured records, port-masked.
+      - **The audit script** confirms the 8 page tools and their parameters are unchanged.
+      - **Acceptance:** check, core 1,207, browser 478, server 395, bin 19, guides 274, policy 119, setup 181, lint, format, build, and the touched service, distribution, and conformance files.
+    - **Pack:** browser `3175EDE4…` from `d921838`, at ollama `tmp/codex/store-campaign5/packs-redesign/`.
+    - **Running: unit `redesign-harness`** (ollama `tmp/codex/redesign-harness-brief.md`, cap 3 h, from `b3083aa`):
+      - the framing and the type sentence;
+      - rule R;
+      - the `[ref=eN]` parsers, with the paging window parsed explicitly so a quoted best-match row earns no credit;
+      - the M1 judge;
+      - byte equality with the measured seeds and the cart range-miss reply.
+    - **The falsify claims** for the integrated round are drafted at scaffold `tmp/units/redesign-claims.md`: ten browser claims, with the harness claims added when the harness lands. One round runs on the integrated result, with two blind Opus lanes, because Astra wrote both halves.
+    - **Harness landed locally:** ollama `b45eae7`, unpushed because the release is held. Its report is `tmp/codex/redesign-harness-report.md`.
+      - **The stop and resume.** The unit stopped once on a position requirement the brief misworded. The Orchestrator ruled the oracle's wording: shipping's fact lies past the first window, and paging's token past the seed and the next window. It also ruled that the `press` assertion follows rule R. The unit resumed as `redesign-harness-2`.
+      - **What landed:**
+        - byte equality for all five seeds and for the cart range-miss reply;
+        - the positions hold: the fact on line 52 is past lines 1–45, and the token on line 80 is past lines 1–33 and 34–61;
+        - setup 261 passed; check, lint, format, and the instrument typecheck pass;
+        - store-first and store-series at count 1 pass.
+    - **The falsify round ruled FAIL in both lanes.** Rulings are in `reading/redesign/audit-verdict.md`; lane reports are in `falsify/`.
+      - **The defect that would fail the measurement:** claim 11. The harness clears the exposed set on every action call, refused ones included, so the measured 2B cart path (a refused `type e7`, then `click e7`) would be flagged unlisted.
+      - **Browser fixes:**
+        - refusal subjects in the `ROLE "NAME" [ref=eN]` form;
+        - the best-match note quotes the 120-unit query and never cuts a numbered row;
+        - the click hint restored to the measured `call type with e4`;
+        - the guide's receipts table and framing;
+        - `to` in miss sentences, only when it ends before the last line;
+        - a wrap that keeps a reference on its line;
+        - a boolean switch for the partial line;
+        - no evidence writes from the committed test.
+      - **Harness fixes:**
+        - only a successful action resets the set;
+        - the bytes probe compares the full user turn, with a real control;
+        - the legacy reference parser is dropped.
+    - **Harness fixes landed locally:** ollama `78da8b9`, unpushed. Its report is `tmp/codex/redesign-harness-report.md` § Audit fixes.
+      - Only a successful action resets the set, and a real-browser case pins the measured cart path.
+      - The bytes probe compares the full user turn; restoring the old framing fails 10 assertions.
+      - The legacy parser is gone.
+      - Setup passes 267; check, lint, format, the probes, and store-first and store-series at count 1 pass.
+    - **Browser fixes landed:** `a204d97`, pushed. The report is browser `tmp/codex/api-impl-report.md` § Redesign fixes.
+      - Every ruling was applied as prescribed, and 19 reverting mutations each fail their tests, which closes the round without a successor. One addition beyond the ruling: a limit too small for the miss sentence and one row refuses, the toolset's existing rule for a row that cannot fit.
+      - **The measured bytes still hold,** pinned by committed tests: both seeds, the cart range miss, and the exact `type` refusal.
+      - **Gates:** check, core, browser, server, bin, guides 278, policy, setup, lint, format, build, and the touched service, distribution, and conformance files pass.
+    - **Pack:** browser `5F8662C2…` from `a204d97`, at ollama `tmp/codex/store-campaign5/packs-redesign/`.
+    - **Unit `store-measure-2`** (ollama `tmp/codex/store-measure-2-report.md`; 25 minutes) stopped at M2. Four orphaned Edge helpers were cleared before launch.
+      - **V passed:** ollama `test` covers core 100, setup 267, policy 119, config 227, guides 34, and conformance 17.
+      - **M1, productive first calls out of 8** (shipping, cart, search, checkout, paging):
+        - 2B: 8, 8, 0, 0, 8;
+        - 4B: 8, 8, 8, 7, 8.
+      - **M2 on the 2B, single attempts:** shipping 8, cart 8, search 8, and checkout 8, each attempt 4.6 to 7.9 s. **Paging 0.**
+        - Every paging attempt read `{"from":34,"search":"policy token"}`.
+        - The reply quoted the best match, line 4 `# Shipping policy`, which matches on "policy" alone.
+        - The model then answered "line 4" instead of following the footer to 62.
+      - **The 4B's M2, M3, M4, and M5 did not run.**
+      - **The Edge readings:** 25 Edge processes whose parents had exited, none with an `orkestrel-browser-` profile, so they may be the user's own. Left alone.
+    - **Ruling:** narrow the best-match line to a best match that carries an element reference, the planner's original condition. That reverses the Orchestrator's reconciliation ruling; `reconcile.md` and `plan.md` are amended.
+    - **`redesign-narrow` landed:** browser `7e45703`, pushed. It quotes a best match only when the line carries a reference.
+      - The touched helper and toolset tests pass (229), and `check` and `test:guides` (278) pass.
+      - The Orchestrator stopped the unit before its full gates, at the user's direction.
+    - **The user's direction, 2026-10-07:**
+      - Kill the orphaned processes. 25 orphaned `msedge.exe` were killed.
+      - Run the 2B and 4B store tasks directly, without the full suites, because the issues are known.
+      - Live runs now go straight through `tests/service/browser.test.ts -t "(shipping|cart|search|checkout|paging)"`. The case names quote the task key (`'shipping'`), so the earlier filter `… satisfies its complete predicate` with a bare key matched nothing.
+    - **Live run, 4B, on `a204d97`:** all five pass on the first attempt, each under its target.
+
+      | Task | Time | Target |
+      | --- | --- | --- |
+      | shipping | 21.9 s | 35 s |
+      | cart | 12.5 s | 25 s |
+      | search | 12.9 s | 27 s |
+      | checkout | 13.4 s | 20 s |
+      | paging | 17.0 s | 31 s |
+
+      The run took 84 s in all.
+    - **Live run, 2B, on `7e45703`:**
+      - shipping 9.8 s, cart 7.2 s, search 6.7 s, and checkout 7.8 s pass;
+      - paging fails all 3 attempts. After reading lines 34–61, the 2B answers "the token is on line 61 or 62" instead of following the footer to 62.
+    - **Paging second-turn replays** (`ollama tmp/probes/paging-turn.test.ts`; 8 ports, from the recorded attempt): ports that follow the footer, out of 8.
+      - As shipped: 4.
+      - Prompt-side reverts: old framing 2, old `type` description 6, old type sentence 3, old reference form 2, all reverts 5.
+      - Partial-line rewordings: 0.
+      - **Window never ends on a heading: 7.**
+      - System-prompt closers: S1 (only text shown) 0, S2 (follow the footer if not shown yet) 6, S1 and S2 together 3.
+
+      An earlier R8 run was invalid: a PowerShell rewrite turned the probe's en dashes into mojibake. The file was rewritten clean, and R8 was measured again.
+    - **`heading-boundary` landed:** browser `07a906e`, pushed, pack `B6DEE567…`. A window never ends on a heading while rows follow.
+      - The touched tests (232), `check`, and guides (278) pass.
+      - Ollama `debc48c`, local, pins the policy windows at 33 and 61.
+    - **Live confirmation on `07a906e`** (ollama `tmp/codex/confirm.ts`; records in `tmp/codex/confirm/`):
+      - **2B: 11 of 12 runs clean.**
+        - Shipping, cart, search, and checkout passed on the first attempt in all 12 runs: 9.5–9.8 s, 7.3–7.4 s, 6.2–6.3 s, and 7.8–8.0 s.
+        - Paging took 22 attempts for 11 passes, so about 50% per attempt; it ran 7.7–16.9 s.
+        - Run 12 failed paging on all 3 attempts: after the window 33–60, the 2B answered "line 54" instead of following the footer.
+      - **S4, reworded footer sentence in the system prompt, rejected:**
+        - in replay, the failing turn followed the footer on 8 of 8 ports;
+        - live, paging passed every run (17 attempts for 10 passes);
+        - but search regressed: it needed retries in 4 runs, and run 10 failed all 3 attempts. The sentence is reverted.
+      - **4B: 2 of 2 runs clean,** each task under target: shipping 17 s, cart 12.7 s, search 13.2 s, checkout 13.7 s, paging 17–18 s.
+      - **Journey:**
+        - 2B fails all 3 attempts in 107 s: repeated `save` after saving, a stale-reference loop, and an invented tool;
+        - 4B passes in 83 s, on attempt 2.
+    - **The user's answer (2026-10-07): push until 16 clean,** paging then the journey, before any release.
+    - **`miss-placement` landed:** browser `06d1975`, pushed; pack `1A60AB50…` installed in ollama. An unquoted miss sits immediately before the footer; the touched tests (234), `check`, and guides (278) pass.
+    - **2B confirmation on `06d1975`: 16 of 16 runs clean** (`tmp/codex/confirm/2b-c2/`), every task on its first attempt: shipping 9.5–10.1 s, cart 7.3–7.4 s, search 6.2–6.3 s, checkout 7.8–7.9 s, paging 7.8–8.4 s.
+    - **The user's directive (2026-10-07):** drill into every issue the 2B meets until it uses the tools reliably; where the 4B also stumbles, the implementation is at fault; try every sensible idea and get the evidence.
+    - **Census** (ollama `tmp/probes/census.test.ts`, `tmp/probes/census.ts`, report `tmp/codex/census.md`, 230 attempts against the real oracles): every 2B cart and checkout run first calls `type` on a link or button and recovers (33 of 33 each; the 4B never); every failed paging attempt is a single `read` (18 of 18) and every `read>read` passes (34 of 34); the 2B journey fails on `journeys{}` (refused: `from` required) followed by 7 plain reads to the turn limit, repeated `save` after its own save, a stale `e4` loop, and an ollama 500 on malformed tool-call XML (ollama `server.log`, qwen35 parser); the 4B's journey attempt 1 clicked the seed's `e3` right after the page changed.
+    - **Ollama `5cfa5ed`, local:** the journey prompt says `call journeys with from 1`.
+    - **Live variant probe:** ollama `tmp/probes/store-live.test.ts` wraps the provider boundary (system prompt, advertised definitions, tool-result text) and runs whole attempts through the real harness over fixed ports; records in `tmp/codex/store-live/<label>.{json,md}`. Running: the 2B journey baseline `journey-T0` over 8 ports. Port 49171: the 2B typed the buyer's name into the seed's search box `e4` after the page changed, 17 times.
+    - **Lanes:** Opus planner on the tool surface for small models (returns text; the `planner`, `researcher`, and `analyst` roles have no write tool here), Astra analyst on the harness and oracle (ollama `tmp/codex/small-analyst-brief.md`, journal `small-analyst.jsonl`), prior art filed at `reading/small/research-prior-art.md`. The matrix: `reading/small/matrix.md`.
+    - **Ready:** the measurement brief, ollama `tmp/codex/store-measure-2-brief.md`. It covers V, M1 as a diagnostic, the M2 gate at 7 of 8 on both models, M3's 16 runs, M4, and M5. It launches after both fix rounds land and the pack is rebuilt.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;

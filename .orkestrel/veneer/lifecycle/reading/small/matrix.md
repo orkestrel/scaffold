@@ -1,0 +1,42 @@
+# Small-model reliability: the experiment matrix
+
+Opened 2026-10-07 on the user's directive: the 2B (`qwen3.5:2b-q4_K_M`, temperature 0, `num_predict` 256, `num_ctx` 16384) must use the browser toolset reliably; where the 4B stumbles too, the implementation is at fault. Every row runs live through ollama `tmp/probes/store-live.test.ts` (whole attempts through the real harness, one variant at the provider boundary, fixed ports) unless it names another instrument. The GPU runs one row at a time.
+
+## Evidence the matrix rests on
+
+Ollama `tmp/codex/census.md` (230 attempts): the 2B's cart and checkout runs all open with `type` on a link or button and recover (33 of 33 each; the 4B never); every failed paging attempt is a single `read` (18 of 18); the 2B journey fails on a refused `journeys{}`, repeated `save` after its own save, stale-reference loops on a seed reference after the page changed (`e4`, 17 times on port 49171 of `journey-T0`), an invented tool, and one ollama 500 on malformed tool-call XML; the 4B's journey attempt 1 clicked the seed's `e3` right after the page changed.
+
+## Rows
+
+| Row | Class | Variant | Instrument | Status | Result |
+| --- | --- | --- | --- | --- | --- |
+| T0 | baseline | the `from 1` prompt, limit 8 | store-live, 2B, journey, 8 ports | done | **0 of 8.** Every port `partial`: the opening turn spends its 8 calls before the model answers (the analyst's finding), and `converseStore` carries the flag. Also: stale `e4` on 4 ports (the buyer's name typed into the seed's search box), the ollama 500 on 2, `save` loops after every follow-up on 5 (`ended` 2–3), an extra submission or a replay stopped at a product link on 3. Record `tmp/codex/store-live/journey-T0.md`. |
+| JL | opening-turn budget | per-turn call limit 12 (ollama `3c6345d`, local) | store-live, 2B, journey, 8 ports | done | **0 of 8.** The loops run longer (stale `e4` 26 times, `save` loops 33) and 6 ports exceed the oracle's 40-call cap; the 500 on the same 2 ports. The budget absorbs detours, as the planner predicted. |
+| JS | save conflict | journey sentence `Call save only when the user asks … after save, edit, or replay succeeds, answer without saving again.` | same | done | **0 of 8.** The byte shift moved the deterministic 500 onto 5 ports (each right after a refused `read{"from":6}` on a 5-line page); the other 3 still loop on `save`. |
+| V4 | save after saved | refusal `Nothing is recording, so there is nothing to save; "…" is already saved. Answer the user.` | same | in JA–JG | |
+| JP | task wording | `click the Cart link, then complete checkout` in place of `then open the cart before you complete checkout` | same | rejected | The 2B did the flow first and called `record` last on 8 of 8 ports, so the recording was empty; the original wording's `then` after `Record` put `record` first every time. Replaced by JP2: `then click the Cart link and complete checkout`. |
+| TB, TB2 | type refusal advice | the `type` refusal names the fields in view (`to type, use textbox "Full name" [ref=e23]`) instead of `call click for a link`; TB2 keeps the click advice when no field is in view | same | in JA–JG | |
+| JA | combined | JP, V4, TB2 | same | done | 0 of 8, all by JP's `record` order. The `type!` detour remained on 4 of 8 ports. |
+| JB | combined | JA and V1c | same | done | 0 of 8, all by JP's `record` order. **The `type!` detour vanished on 8 of 8 ports** (`click>click>type` every time): V1c works. |
+| JC | combined | JB, JS, and limit 12 | same | done | 0 of 8, the same; one port 500 after its first `click`. |
+| S4 | empty recording | with a recording that holds no step, `save` is refused ("nothing is recorded") and `record` is refused ("a journey is recording; call save first"); the 2B alternated between the two for 36 calls | the planner ruled (`rulings-planner.md` §4): keep both refusals, each names one exit and never the other tool; a restart or a discard would reset the refusal cap | ruled | |
+| X6 | ollama 500 | a past-the-end `read` returns the last window headed by `Line 6 is past the end; the page has 5 lines, shown here.` instead of refusing (`rulings-planner.md` §5) | store-live, 2B, journey, 8 ports, then the five page tasks | queued | |
+| X2 | ollama 500 | capture the raw malformed call with `OLLAMA_DEBUG=1` on a failing port | daemon restart; after the live series | queued | |
+| X4 | ollama 500 | a provider-level retry of the turn | refused by the ruling: deterministic, and it hides a failure | closed | |
+| X5 | ollama 500 | a derived model with a JSON tool-call template | attribution only, one run, never a harness default | queued | |
+| JE | combined | JP2, V1c, V4, TB2 | store-live, 2B, journey, 8 ports | done | **0 of 8, but 5 ports complete the whole journey** (record, the flow, save, journeys, edit, replay, both orders) and fail on one behavior: after `Save the journey.` and after each later success the 2B calls `save` with a description narrating the turn, 7 times to the budget (`loops` 25, `ended` 4); the V4 wording changes nothing. 2 ports fail on a malformed `edit`, 1 on the stale `e3`. Transcripts: `tmp/codex/store-live/journey-arms2-logs/JE-*.json`. |
+| JF | combined | JE and limit 12 | same | done | 0 of 8, JE's shapes with longer `save` loops (37) and 4 ports over the 40-call cap; the budget changes nothing. |
+| X3 | ollama 500 | the past-the-end refusal gains `, all in the latest result` | store-live, 2B, journey, 8 ports | done | The 500 stayed on ports 49175 and 49183 with the same prefix `record>read>click>read>read!`: the refusal's wording is not the trigger; the situation is. X6 is the arm that changes the situation. |
+| JG | combined, original wording | V1c, V4, TB2 | same | done | 0 of 8: with `then open the cart`, 5 ports type into a stale product link `e6` 15–16 times; 2 type into the stale `e2`. The literal `then click the Cart link` (JP2) is the test wording to adopt. |
+| JSV, JEV, JEW | save loop | a repeat `save` answers success-shaped, `Saved "place-order"; nothing changed.` (JSV alone; JEV = JE with it; JEW = JEV with the deferred-save sentence) | store-live, 2B, journey, 8 ports | queued | |
+| X3 | ollama 500 | the past-the-end refusal gains `, all in the latest result` | same | queued | The 500 followed a refused `read{"from":6}` on 9 of 10 occurrences; the tenth followed a first `click`. |
+| V1a, V1b, V1c | type on links and buttons | the planner's `click` and `type` copy (a), the prompt order (b), both (c) | store-live, 2B, all five tasks, 16 ports | queued | |
+| V5 | tool count | journey advertises no `capture`, `forget`, `dialog`, `switch`, `navigate`, `press` | store-live, 2B, journey, 8 ports | queued | |
+| V6 | plain-read early answer | a numbered row `61–80: not shown yet; call read with from 61.` replaces the partial-view header line | store-live, 2B, paging, 16 ports | queued | |
+| S2 | stale reference | a link with the same name and resolved `href` keeps its reference across page changes; a gone element is refused by name | browser design, planner §2 | design | |
+| S3 | replay start | a journey records where it starts, and a replay navigates there first; today a replay from the checkout page stops at a catalogue-only link | browser design; the planner ruled adopt (`rulings-planner.md` §1): optional `start` on the journey, format stays 1 | ruled | |
+| R1 | missing `from` | `journeys` and `read` default `from` to 1 and accept digit strings | browser design, planner §3; the prompt form landed in ollama `5cfa5ed` | design | |
+| O1 | oracle strictness | a refused stale reference the model recovers from no longer fails the attempt; a successful unlisted action still does; the refused-unlisted count is reported beside the pass rate | the planner and the analyst both rule relax (`rulings-planner.md` §2); the user decides | ruled | |
+| B1 | opening-turn budget | per-turn budgets: the shortest correct sequence plus one correction per call (8 for the opening turn, 1 per follow-up), passed to the agent per user turn in one unit, with the oracle cap derived | the planner's ruling (`rulings-planner.md` §3); JL raises every turn and is evidence only | ruled | |
+| X1 | ollama 500 | `num_predict` 512 on the journey | store-live, 2B, journey, 8 ports | queued | |
+| M4 | 4B journey | the `from 1` prompt | confirm.ts, 4B, journey, 2 runs | queued | |
