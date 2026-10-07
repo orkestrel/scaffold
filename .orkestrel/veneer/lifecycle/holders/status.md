@@ -576,6 +576,31 @@ Lane results:
 
       - Guide drift: 10 checks.
     - **Slice 3 resumed** (browser `tmp/codex/api-impl-3-resume*`).
+    - **Slice 3 landed locally:** browser `c5b1cb1`, unpushed.
+      - plumbing off the contracts, with emulation ordering pinned;
+      - `page.recorder`;
+      - `routes` and `apply`;
+      - the cookie, storage, clock, HAR, worker, and handle vocabulary;
+      - `depth` and `breadth`;
+      - `listed` and `found`;
+      - atomic `{ revision, exclusive }` journey writes;
+      - `BrowserStorePageOptions`;
+      - run store `create` and `write`.
+      - Results:
+
+        | Gate | Result |
+        | --- | --- |
+        | core | 1,159 |
+        | browser | 478 |
+        | server | 393 |
+        | service | 250 |
+        | setup | 181 |
+        | bin | 19 |
+        | distribution | 14 |
+
+      - Guide drift: 38 checks.
+    - **`@orkestrel/codec ^0.0.5` installed** in browser by the Orchestrator, per user ruling B. The manifest is uncommitted and rides with slice 4.
+    - **Slice 4 resumed** (browser `tmp/codex/api-impl-4-resume*`). The unit also rules on the helper names added in the series, `assertBrowserPage` and `validateBrowserJourneyWriteOptions`.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
