@@ -65,14 +65,16 @@ Continued on 2026-10-06 UTC:
 
 ## 2026-10-07 round: the scope-at-dispatch fix, the line view, and the 2B
 
-The small-model campaign (`.orkestrel/veneer/lifecycle/reading/small/matrix.md`) found that the agent loop dispatched calls to tools the active scope had withdrawn; the fix is recorded in `.orkestrel/agent/refine.md` § Scope at dispatch. Agent 0.0.27 was published by the other session earlier the same day with the System One judge additions; this row is the loop fix on top of it.
+Two agent releases landed the same day from two sessions. Code 1 is the judge round (`.orkestrel/agent/refine.md` § The judge): the judge contract and engine, the System One wire, and the helpers, visited with `scripts/wave.ts --visit` and uploaded with `scripts/window.ts --publish` (package size 445.4 kB, 9 files). The small-model campaign (`.orkestrel/veneer/lifecycle/reading/small/matrix.md`) then found that the agent loop dispatched calls to tools the active scope had withdrawn; the fix is recorded in `.orkestrel/agent/refine.md` § Scope at dispatch, and code 2 is that loop fix on top of the judge. The ollama judge wire for Mica's raw logprob readout waits in the held ollama checkout for its release; the desk re-pins when agent and ollama are both served.
 
 | Code | Layer | Package | Prior | Published | Ruling | gitHead |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | L5 | `@orkestrel/agent` | 0.0.27 | 0.0.28 | bump: a call to a tool the active scope does not admit is never dispatched; a turn that advertised no tool ends on the reply with each dropped call observed through `deny`; an out-of-scope call with tools advertised is denied before the authority gate; results and denials merge by call position | `7784837` |
+| 1 | L5 | `@orkestrel/agent` | 0.0.26 | 0.0.27 | bump: dist moved (`AgentJudge`, `SystemOneJudge`, `computeReading`, the judge types, guards, and helpers; `copyJSON`); runtime ranges same; dev re-pins probe `^0.0.21`, scaffold `^0.0.94`, toolchain | `6ea0451` |
+| 2 | L5 | `@orkestrel/agent` | 0.0.27 | 0.0.28 | bump: a call to a tool the active scope does not admit is never dispatched; a turn that advertised no tool ends on the reply with each dropped call observed through `deny`; an out-of-scope call with tools advertised is denied before the authority gate; results and denials merge by call position | `7784837` |
 
 Release-chain notes:
-- The first code expired between the user's message and the upload (`EOTP`); the second landed. The upload journal answered `+ @orkestrel/agent@0.0.28` at once and the registry served it about 6 minutes later.
+- Code 1: the visit's compare step ruled the bump (exit 3, dist moved, ranges same); the login URL expired once before the user reached it and was minted again; the upload answered `+ @orkestrel/agent@0.0.27` and the registry served it with `gitHead` `6ea0451`.
+- Code 2: the first code expired between the user's message and the upload (`EOTP`); the second landed. The upload journal answered `+ @orkestrel/agent@0.0.28` at once and the registry served it about 6 minutes later.
 - The agent visit's overwrite refused the tree once over a formatter reflow in the vendored `guides/router.md` mirror; the committed bytes were written back (`tmp/units/committed.ts`) and the visit passed.
 - Browser 0.0.27 is prepared and held for the 2B's last live confirmation (release commit `59abac3` plus the journey start, in-place replay, stable links, the one-exit refusals, the restored `read` and `click`/`type` copy, all pushed); ollama re-pins to agent `^0.0.28` and browser `^0.0.27` after it.
 
