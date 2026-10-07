@@ -170,6 +170,7 @@ Each item waits for the consumer named; none is a unit here.
 
 - [context.md](context.md), the refactor verdict: § Ruling, § What the source says, § The proposal, § The living context, staged by consumer, § Guide readings to correct, § Risks.
 - [refine.md](refine.md), the judge, judgments, selection, and scope verdict: § The judgments, § The selection seam, § The stock selection, § The desk after the change, § Scope and selection, § Scope at dispatch, § Risks.
-- `.orkestrel/release.md` § 2026-10-07 round, the agent 0.0.27 and 0.0.28 rows.
-- `.orkestrel/veneer/lifecycle/reading/small/matrix.md`, the small-model campaign's measurements, held by the other session.
+- `.orkestrel/release.md` § 2026-10-07 round, the agent 0.0.27 and 0.0.28 rows, and § 2026-10-07 round, continued, the browser 0.0.27 and ollama 0.0.21 rows.
+- [small-models.md](small-models.md), the small-model campaign's hand-off: the user's position, the findings in order, the wire instruments under the ollama checkout's `tmp/`, the advice for the context work, and the Mica and tev1 judge models.
+- `.orkestrel/veneer/lifecycle/reading/small/matrix.md`, the small-model campaign's measurements, closed 2026-10-07 at 16 of 16 clean runs (row F3).
 - In the agent checkout: `src/core/Agent.ts` (`#run`, `#authorize`, `#dispatch`), `src/core/AgentContext.ts` (`build`), `src/core/scopes/Scope.ts`, `tests/src/core/Agent.test.ts` (the scope-dispatch describe), `guides/agent.md` § Scoping a turn.
