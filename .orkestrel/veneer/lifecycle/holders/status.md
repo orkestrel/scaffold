@@ -682,15 +682,33 @@ Lane results:
       - **The 4B's cart first call is `click e11` on every port.** The tray is `e7` on line `11`, so the line number is read as the reference.
       - **The 4B answers paging with text and no call.**
       - The 2B's malformed tool-call XML (Ollama HTTP 500) appears under A1, A3, and A3 with A4 on checkout.
-    - **Running: unit `store-ablate-2`** (ollama `tmp/codex/store-ablate-2-brief.md`, cap 2 h, records `tmp/codex/store-campaign5/ablate-2/`). Single factors on both models:
+    - **Unit `store-ablate-2`** (ollama `tmp/codex/store-ablate-2-report.md`, records `tmp/codex/store-campaign5/ablate-2/`; 59 minutes). Variants:
       - X1: no line numbers;
       - X2: no footer;
-      - X3: neither, close to 0.0.26's outline;
+      - X3: neither;
       - X4: no read sentences in the system prompt;
       - X5: X3 and X4;
-      - X6: `read`'s `search` renamed `find`.
+      - X6: `search` renamed `find`.
 
-      Rows now keep the reply text. The design round follows from which factor moves each failing task.
+      Productive first calls out of 8 (shipping, cart, search, checkout, paging):
+
+      | Variant | 2B | 4B |
+      | --- | --- | --- |
+      | A0 | 8, 0, 0, 0, 8 | 8, 0, 8, 8, 0 |
+      | X1 | 1, 0, 0, 4, 8 | 8, 8, 6, 8, 0 |
+      | X2 | 0, 1, 0, 5, 0 | 0, 0, 8, 8, 0 |
+      | X3 | 0, 0, 0, 0, 7 | 0, 8, 8, 8, 0 |
+      | X4 | 8, 0, 0, 0, 8 | 8, 0, 8, 8, 0 |
+      | X5 | 0, 4, 0, 2, 0 | 0, 8, 8, 8, 0 |
+      | X6 | 8, 0, 0, 0, 8 | 6, 0, 8, 8, 0 |
+
+      - **Line numbers cause the 4B's cart failure:** without them, every first call clicks `e7`.
+      - **Both models need the footer to page.** Without it, shipping falls to 0 on both, and the models answer "not mentioned" or invent a time.
+      - **The 2B needs the numbers to follow the footer.** Without them, shipping falls to 1 of 8.
+      - **The 4B never pages the policy page,** in any variant. It replies "I've reviewed the entire shipping policy page… no policy token", although the view ends at line 34 of 80 with "46 below".
+      - **No single factor moves the 2B's search,** and the system prompt's read sentences and the `search` name change nothing on their own.
+    - **Old-format comparison** (ollama `tmp/codex/toolset-probe-last.md`): on browser 0.0.26, the 2B also opened the action tasks with a read, `look {"search":"add"}` for cart and `look {"search":"kettle"}` for search, and those tasks still passed (search 14 of 16 runs). So M1's first-call gate would have stopped the old format too. The real difference: `look` searched the whole page, while `read` searches from `from` onward, and the 2B takes `from` from the footer (47), so a search for the tray on line 11 misses it.
+    - **Running: unit `store-m2diag`** (ollama `tmp/codex/store-m2diag-brief.md`, cap 90 min, records `tmp/codex/store-campaign5/M2diag/`). M2's single attempts on the shipped input, as a diagnostic: 5 tasks × 8 ports on the 2B, then the 4B, with every transcript, failure class, and detour cost.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
