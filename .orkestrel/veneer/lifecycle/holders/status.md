@@ -745,10 +745,18 @@ Lane results:
         - search past `from` quotes the best page-wide match line under the header;
         - M1 becomes a diagnostic, with M2 the gate;
         - rule R goes to the user.
-    - **Running: unit `store-validate`** (ollama `tmp/codex/store-validate-brief.md`, cap 3 h, records `tmp/codex/store-campaign5/validate/`).
-      - **Stage 0:** rescore the M2diag transcripts under rule R.
-      - **Stage 1:** ten presentation arms (L1, N1, H1, H2, G1, G2, P1, K1, D1, F1) on both models.
-      - **Stage 2:** the combined candidate, chosen by rules stated before the run.
+    - **Unit `store-validate`** (ollama `tmp/codex/store-validate-report.md`, records `tmp/codex/store-campaign5/validate/`; about 2.5 hours).
+      - **Stage 0, rule R:** 2B checkout goes from 0 to 8 of 8, and no other task classification changes. All seven controls pass, including an invented reference, a reference listed before a page change, an action checked before its reset, and the not-in-view refusal.
+      - **L1, `[ref=e7]` after the name with `N: ` kept:** 4B cart 8 of 8, with every guard at 8. N1, `[line N]` at the end, breaks 2B shipping (4) and 4B shipping (2).
+      - **No arm moves 2B search from 0:** not P1, K1, D1, F1, or any other.
+      - **Judging artifact, corrected by the Orchestrator.** The paging judge read the untransformed footer (35), while H1 and H2 re-fit the window so the footer the model saw named 34. The re-judge (`scaffold/tmp/units/paging-rejudge.ts`) gives:
+        - 2B paging 8 of 8 under H1, H2, every H×G pair, K1, and N1;
+        - **4B paging 8 of 8 under H1 with G1,** where the 4B reads from line 34 instead of claiming the whole page;
+        - 4B paging at most 2 under every other arm.
+      - **The unit's chosen C1 (L1 + G1) is superseded** by C2 = L1 + H1 + G1.
+    - **Running: unit `store-validate-2`** (ollama `tmp/codex/store-validate-2-brief.md`, cap 2 h, records `tmp/codex/store-campaign5/validate-2/`).
+      - **Stage 1:** first replies for C2 and C2R on both models, with the paging judge reading the seen footer. C2R adds the prompt wording "click a reference shown on this unchanged page".
+      - **Stage 2:** the 2B's second turn on cart, search, and checkout after a first read. The read's result is transformed into the arm's form, with the ruled best-match line on a range miss.
     - **Order:**
       1. the browser fix round, done;
       2. absorb, read-only, in parallel: Grok session A on the ecosystem patterns (scaffold `tmp/cursor/api-patterns*`, sliced), then session B on browser's API inventory;
