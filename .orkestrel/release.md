@@ -213,3 +213,11 @@ Release-chain notes, layers L5 and L6:
 - Agent 0.0.29 takes the version the agent session's plan proposed for its selection release, which therefore publishes as 0.0.30 or later; its branch merges agent `main` (the re-pin and the overwrite) before that release.
 - Browser: the self-pin sweep found the HAR creator stamp (`BROWSER_HAR_CREATOR.version`) at 0.0.27; it moved to 0.0.28 with the bump. Windows chain: format, lint, check, build, `npm test` (2,142 source), default-mode distribution (14 passed, 9 host-bound skips), and `test:service` whole (257 passed, 6 skipped).
 - Ollama: the first visit missed one case whose excerpt framed `tests/setupStore.test.ts:275` (the journey proof that starts a real page browser, the first browser launch after the visit's install); three whole `npm test` reruns passed (129, 280, 120, 228, 42, 17), and the second visit's `prepublishOnly` passed with the live service suite whole (15 files, 76 passed: the 2B store tasks with thinking and both judge models).
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 9 | L3 | `@orkestrel/scaffold` | 0.0.96 | 0.0.97 | bump: generated workspaces pin browser `^0.0.28` and probe `^0.0.23`; the catalog after layer L6 | `cb1cceed0` |
+
+Code 9 is 602919: the first code for it (384930) was never spent, because `window.ts` found npm's session expired before the upload; `tmp/units/npm-login.ts` minted a login link, the user approved it, and `--whoami` read the session live.
+
+The closing pass (2026-10-08): with scaffold 0.0.97 served, a no-bump visit of every other published checkout (48, in batches of four, probe and ollama alone) moved the development pins on probe, scaffold, test, and browser to their latest, overwrote with scaffold 0.0.97, passed each visit's gates, and pushed; every visit ruled no bump. `fleet-pins.ts` then read every `@orkestrel` range of all 49 published packages on its latest release, and `fleet-sync.ts` read every checkout clean, on `main`, and level with `origin/main`. The wave is closed. Open after it: supervisor stays on its prior ranges by the standing rule; veneer's re-pin belongs to its session; TypeScript 7, Vitest 5, and `@vitest/browser-playwright` 5 wait on the user's ruling (the user, 2026-10-07: not yet).
