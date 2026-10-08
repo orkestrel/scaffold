@@ -46,6 +46,20 @@ Other readings:
 - Fixed-string counts over `src/core`: `byte-for-byte` 11, `prior behavior` 5, `as before` 4. `.claude/rules/writing.md` § Code comments bars narrating history, which those phrases do. The prose verb `ensures` appears 5 times (`src/core/types.ts:672`, `src/core/AgentContext.ts:47`, `:107`, `:146`, `:234`), which § Claims and time bars; a fixed-string count of `ensure` reads 10 lines because the method `AgentContext.#ensure` is declared at `src/core/AgentContext.ts:259`, called at `:154` and `:236`, and named in comments at `:150` and `:235`, and a code identifier is exempt.
 - Declaration lines by concern, summed from the cited ranges in the Grok source map: record 957, loop 709, assembly 695, provider engine 519, jobs 437, shared 290, scopes 201, relay 190, instructions 189, authority 116.
 
+### The live comparison of 2026-10-08
+
+The agent checkout's `tmp/bench/bench.mjs` ran the Larkspur support-desk scenario on `qwen3.5:2b-q4_K_M` (`think` false, `temperature` 0, `seed` 7, `truncate` false) with Mica as the selection judge; the full reading is `tmp/bench/results/REPORT.md` there and the binding facts are in plan.md § Measurement discipline. Each axis of the Opus grade is out of 20.
+
+| run | context | passed | replied | overflow from | largest prompt | correct | faithful |
+| --- | ---: | ---: | ---: | --- | ---: | ---: | ---: |
+| `none` | 6,144 | 7 | 7 | never | 3,922 | 13 | 13 |
+| `none` | 3,072 | 3 | 3 | g05 | 2,992 | 8 | 8 |
+| compaction, `window` 1,200, no cap | 3,072 | 3 | 5 | g07 | 2,824 | 6 | 4 |
+| compaction, no cap, with Mica selection | 3,072 | 3 | 5 | g06 | 2,813 | 9 | 7 |
+| Mica selection, `limit` 12, no compaction | 3,072 | 3 | 3 | g05 | 2,901 | 6 | 5 |
+| compaction, `sections` 3 | 3,072 | 5 | 8 | never | 2,054 | 11 | 10 |
+| compaction, `sections` 3, with Mica selection | 3,072 | 5 | 9 | never | 2,114 | 13 | 9 |
+
 ## What the source says
 
 The source passes the mechanical rule sweep. The Grok source map, read against `AGENTS.md`, `.claude/rules/names.md`, `.claude/rules/architecture.md`, `.claude/rules/patterns.md`, and `.claude/rules/typescript.md`, found no nested function outside an admitted position, no module-scope declaration beside one class in an implementation file, no non-exported declaration in a kind file, no public member of two or more words, no public method forwarding 1:1 to a helper (`RelayProvider.frame` and `finish` forward to an injected parser, not to a module helper), no helper duplicating an installed `@orkestrel/*` export, no `any`, non-null assertion, or `as` beyond two `as const`, no store departing from the Stores rule, no binary switch encoded as a literal union, and no stored flag a sibling field determines.
