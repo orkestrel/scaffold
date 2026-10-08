@@ -1,0 +1,984 @@
+{
+ "run": "wf_d0847c77-afd",
+ "agents": 5,
+ "results": [
+  {
+   "subject": "Facts with file:line citations on how the elements project's createForm/useForm maps the DOM to a model, the hazards it handles, what else it offers, the ARIA attributes it writes, its lifecycle and the tests that pin it. These are guidance for the veneer Guard 1, which binds a Bootstrap form to @orkestrel/form. Paths below are relative to /home/user/mikesaintsg/elements. Entries marked INFERENCE are my reading, not stated in the source. Hazard entries marked CONTRADICTION or UNKNOWN cover the conflicts and gaps, because the output schema has no separate field for them.",
+   "files": [
+    "/home/user/mikesaintsg/elements/src/browser/factories/createForm.ts",
+    "/home/user/mikesaintsg/elements/src/browser/composables/useForm.ts",
+    "/home/user/mikesaintsg/elements/src/browser/types.ts (lines 1098-1148, 2217-2315)",
+    "/home/user/mikesaintsg/elements/src/browser/helpers.ts (lines 1471-1570, 1794-1865)",
+    "/home/user/mikesaintsg/elements/src/browser/constants.ts (lines 453-463, 617-618, 639)",
+    "/home/user/mikesaintsg/elements/src/browser/events.ts (line 75)",
+    "/home/user/mikesaintsg/elements/src/browser/schema.ts (form models 1239-1480; content-model data only, createForm does not import it)",
+    "/home/user/mikesaintsg/elements/guides/w3c/elements/forms.md (lines 1024-1060)",
+    "/home/user/mikesaintsg/elements/guides/composables.md (lines 15, 33, 74, 412, 440)",
+    "/home/user/mikesaintsg/elements/guides/elements.md (lines 39, 219)",
+    "/home/user/mikesaintsg/elements/guides/components.md (line 230)",
+    "/home/user/mikesaintsg/elements/tests/src/browser/factories/createForm.test.ts",
+    "/home/user/mikesaintsg/elements/tests/setupBrowser.ts (lines 309-337, 433-464)",
+    "/home/user/mikesaintsg/elements/tests/app/browser/pages/UseFormPage.test.ts",
+    "/home/user/mikesaintsg/elements/tests/app/browser/examples/SettingsExamplePage.test.ts (lines 81-103)",
+    "/home/user/mikesaintsg/elements/tests/app/browser/examples/CrmExamplePage.test.ts (lines 94-118)",
+    "/home/user/mikesaintsg/elements/tests/app/browser/examples/SigninExamplePage.test.ts (lines 143-173)"
+   ],
+   "mapping": [
+    {
+     "rule": "The host must be a <form>. assertElement compares the lowercased tagName with 'form' and throws a TypeError naming the received tag. A null host throws too.",
+     "citation": "src/browser/factories/createForm.ts:40; src/browser/helpers.ts:1471-1490"
+    },
+    {
+     "rule": "The control set is Array.from(form.elements) filtered to button, fieldset, input, object, output, select and textarea instances. The filter checks instanceof, not tag name. It reads no Bootstrap classes and no data- attributes on controls. INFERENCE: native form.elements decides membership, so form=\"id\" controls outside the form are included and input type=image is not.",
+     "citation": "src/browser/helpers.ts:1796-1807, 1820-1823; src/browser/types.ts:1102-1110; guides/w3c/elements/forms.md:1030"
+    },
+    {
+     "rule": "Field names are the unique, non-empty name properties, kept in form (document) order through a Set. Unnamed controls stay in items but are left out of names.",
+     "citation": "src/browser/helpers.ts:1825-1832"
+    },
+    {
+     "rule": "Values come from native FormData: new FormData(form).entries() becomes an ordered list of {name, value} entries. Values are FormDataEntryValue (a string or a File). The factory infers no types and coerces nothing. Duplicate names (checkbox groups, multi-selects, file multiple) are deliberately kept as repeated entries. INFERENCE: FormData's own rules decide what is included, so disabled controls, unchecked checkboxes and radios, and non-submitter buttons are left out.",
+     "citation": "src/browser/helpers.ts:1834-1837; src/browser/types.ts:1112-1120"
+    },
+    {
+     "rule": "An event target's field name is its name property, but only when the target is a form-associated field element with a non-empty name. Otherwise it is null. Input, change, invalid and focusout all resolve the name this way.",
+     "citation": "src/browser/helpers.ts:1862-1865; src/browser/factories/createForm.ts:257, 266, 275, 295"
+    },
+    {
+     "rule": "Errors are collected only from input, select and textarea fields where willValidate is true and validity.valid is false. Each error records name, validationMessage and the live ValidityState. The form counts as valid when there are zero errors.",
+     "citation": "src/browser/helpers.ts:1809-1818, 1839-1860; src/browser/factories/createForm.ts:107-108"
+    },
+    {
+     "rule": "Lookup by name filters items whose name matches exactly, so one name can return several elements (a radio group, for example). field(name) returns the first match.",
+     "citation": "src/browser/factories/createForm.ts:71-74, 205-207"
+    },
+    {
+     "rule": "Each snapshot recomputes items, names, data, errors and valid, then applies the validated mirror. When the form is null (destroyed), the snapshot sets everything to empty and valid to true.",
+     "citation": "src/browser/factories/createForm.ts:94-110, 134"
+    },
+    {
+     "rule": "The guide's list of what makes willValidate false: disabled, inside a disabled fieldset, no or empty name, hidden/reset/button inputs, button type=button or reset, and readonly inputs. Those controls are left out of errors and validity.field().",
+     "citation": "guides/w3c/elements/forms.md:1045-1056"
+    }
+   ],
+   "hazards": [
+    {
+     "hazard": "Calls after destroy reaching a torn-down or detached form",
+     "handling": "A destroyed flag makes current() return null. check and report then return false, submit and reset do nothing, refresh empties the state, and the handlers return before emitting. destroy can be called more than once: listener removal runs only once, but it clears attributes and state every time.",
+     "citation": "src/browser/factories/createForm.ts:61, 69, 137-138, 147-148, 157, 161, 177-200, 303-304, 311-312, 317-318, 327-328"
+    },
+    {
+     "hazard": "The native invalid event does not bubble",
+     "handling": "The invalid listener is registered on the form in the capture phase, and destroy removes it with the same capture flag.",
+     "citation": "src/browser/factories/createForm.ts:344, 184; guides/composables.md:412"
+    },
+    {
+     "hazard": "A burst of invalid events (one per failing control during checkValidity or submit) causing repeated snapshots",
+     "handling": "An invalidPending flag collapses the burst into one queueMicrotask refresh. Each invalid event still emits its own elements:form:invalid with field, message and validity.",
+     "citation": "src/browser/factories/createForm.ts:283-308"
+    },
+    {
+     "hazard": "Validation aborting a user-gesture submit, so the native submit event never fires",
+     "handling": "The invalid handler sets validated to true (when validate.submit is on), so the data-form-validated attribute still shows that an attempt happened.",
+     "citation": "src/browser/factories/createForm.ts:296-301"
+    },
+    {
+     "hazard": "Reset ordering: the reset event fires before the controls get their default values back",
+     "handling": "onReset dispatches the cancelable elements:form:reset. If that is not cancelled, it clears dirty, touched and validated synchronously and defers the refresh with queueMicrotask. INFERENCE: the deferral exists so the snapshot reads the restored values.",
+     "citation": "src/browser/factories/createForm.ts:326-338"
+    },
+    {
+     "hazard": "A consumer veto on reset or submit",
+     "handling": "Both re-dispatches are cancelable. If a listener cancels, the native event's default is prevented. Submit is also prevented when the form is invalid unless options.submit.invalid is true.",
+     "citation": "src/browser/factories/createForm.ts:316-324, 329-333; src/browser/helpers.ts:1519-1523"
+    },
+    {
+     "hazard": "Repeated dirty notifications",
+     "handling": "touch() emits elements:form:dirty only on the pristine-to-dirty edge. dirty is a sticky boolean set by any input or change event. Nothing compares against a baseline, so changing a value back to its original does not clear dirty. Only clear(), an uncancelled reset, and destroy set it back to false. Submit does not touch dirty.",
+     "citation": "src/browser/factories/createForm.ts:112-126, 164-166, 316-324, 334, 196"
+    },
+    {
+     "hazard": "A field visited without changing it",
+     "handling": "focusout adds the name to touched without setting dirty, and skips names already present. touched is replaced with a new Set on each change, never mutated in place.",
+     "citation": "src/browser/factories/createForm.ts:253-263, 123-125"
+    },
+    {
+     "hazard": "Disabled or readonly controls, controls in a disabled fieldset, and non-validating buttons",
+     "handling": "Error collection and the aria-invalid mirror both skip controls where willValidate is false. validity.field(name) returns null for them. enable and disable change the disabled property only when the element has it, then refresh.",
+     "citation": "src/browser/helpers.ts:1839-1851; src/browser/factories/createForm.ts:81, 230-234, 214-225"
+    },
+    {
+     "hazard": "Stale aria-invalid values left behind",
+     "handling": "An aria Set records every field that was given aria-invalid. clearAria removes the attribute from exactly those fields before each apply, and again on clear and destroy.",
+     "citation": "src/browser/factories/createForm.ts:62-67, 77, 171, 191"
+    },
+    {
+     "hazard": "Duplicate names and multi-value fields",
+     "handling": "names are de-duplicated with a Set. data keeps duplicates on purpose. fields(name), validity.mark and validity.clear act on every match. focus targets the first match.",
+     "citation": "src/browser/helpers.ts:1825-1832; src/browser/types.ts:1112-1116; src/browser/factories/createForm.ts:208-213, 239-250"
+    },
+    {
+     "hazard": "ValidityState is a live object",
+     "handling": "Not guarded in the code. The guide warns that FormError.validity is live and tells readers to copy the message string if they need a stable value.",
+     "citation": "guides/w3c/elements/forms.md:1058-1060; src/browser/helpers.ts:1853-1857"
+    },
+    {
+     "hazard": "Every snapshot fires the native formdata event",
+     "handling": "readFormData builds new FormData(form), which fires formdata synchronously. onFormData re-emits it, so the custom formdata event fires on mount, on each input or change, on check, report and submit, not only on real submission. Consumers can add entries before the snapshot is taken.",
+     "citation": "src/browser/helpers.ts:1836; src/browser/factories/createForm.ts:310-314; guides/w3c/elements/forms.md:1041-1043"
+    },
+    {
+     "hazard": "SSR, or a Vue ref that is null or replaced",
+     "handling": "useForm builds the factory in a post-flush, immediate watcher only when window exists and the element is not null. onCleanup destroys the old instance and sets the slot to null only if it still holds that instance. Fallbacks (empty array, empty set, false or true) cover the time before mount.",
+     "citation": "src/browser/composables/useForm.ts:30-38, 62-74; src/browser/constants.ts:617-618"
+    },
+    {
+     "hazard": "Live DOM mutations (controls added or removed after construction)",
+     "handling": "Not observed. There is no MutationObserver in src/browser. items and names refresh only on input, change, invalid (via microtask), submit, reset (via microtask), check, report, clear, mark, enable, disable, or an explicit refresh() call.",
+     "citation": "src/browser/factories/createForm.ts:134, 141, 151, 173, 218, 224, 243, 249, 269, 279, 289, 320, 337, 349; Grep for MutationObserver|beforeunload in src/browser returned no files"
+    },
+    {
+     "hazard": "Locale, number or date parsing, and large forms",
+     "handling": "Not addressed. Values remain raw FormDataEntryValue, and every snapshot re-reads the whole form. INFERENCE: each event costs a full scan of the form.",
+     "citation": "src/browser/helpers.ts:1834-1837; src/browser/factories/createForm.ts:94-110"
+    },
+    {
+     "hazard": "Preventing page unload while the form is dirty",
+     "handling": "Not provided. There is no beforeunload handling anywhere in src/browser. The factory only emits a dirty event that a consumer could use.",
+     "citation": "src/browser/types.ts:2241-2243; Grep for beforeunload in src/browser returned no files"
+    },
+    {
+     "hazard": "CONTRADICTION: the event name prefix",
+     "handling": "forms.md:1034 and 1043 call the re-emitted event mailbox:form:formdata, but constants.ts:455 defines elements:form:formdata.",
+     "citation": "guides/w3c/elements/forms.md:1034, 1043; src/browser/constants.ts:455"
+    },
+    {
+     "hazard": "CONTRADICTION: the documented event list",
+     "handling": "composables.md:412 lists change, formdata, input, invalid, reset, submit and validate. FORM_EVENTS and FormEventMap also define dirty and clear.",
+     "citation": "guides/composables.md:412; src/browser/constants.ts:453-463; src/browser/types.ts:2233-2248"
+    },
+    {
+     "hazard": "UNKNOWN: whether the guide's willValidate list is accurate",
+     "handling": "forms.md:1051 says a control with no or empty name has willValidate false. The code does not establish this, and it was not checked against the browser or the spec.",
+     "citation": "guides/w3c/elements/forms.md:1051"
+    }
+   ],
+   "capabilities": [
+    {
+     "capability": "Constraint validation on demand",
+     "shape": "check() calls checkValidity silently; report() calls reportValidity, which shows the browser's UI. Both set validated, refresh, emit elements:form:validate with {errors, valid}, and return a boolean.",
+     "citation": "src/browser/factories/createForm.ts:136-154"
+    },
+    {
+     "capability": "Custom, cross-field or server-side validity",
+     "shape": "validity.mark(name, message) calls setCustomValidity on every matching field and returns false if none match. validity.clear(name) sets it back to an empty string. Both refresh.",
+     "citation": "src/browser/factories/createForm.ts:239-250; src/browser/types.ts:2271-2277"
+    },
+    {
+     "capability": "Per-field validity queries",
+     "shape": "validity.field(name) returns the ValidityState, or null if the field does not validate. validity.message(name) returns the validationMessage. validity.errors is a readonly ref usable for an error summary.",
+     "citation": "src/browser/factories/createForm.ts:228-238"
+    },
+    {
+     "capability": "Imperative field control",
+     "shape": "fields.items, fields.names, field(name), fields(name?), has(name), focus(name) (returns a boolean), enable(name) and disable(name).",
+     "citation": "src/browser/factories/createForm.ts:202-226; src/browser/types.ts:2260-2269"
+    },
+    {
+     "capability": "Submit and reset through the native path",
+     "shape": "submit() calls requestSubmit, so validation and the submit event both run. reset() calls the native form.reset. clear() resets only the bookkeeping (dirty, touched, validated, attributes) and leaves values alone, then emits elements:form:clear.",
+     "citation": "src/browser/factories/createForm.ts:156-175; guides/composables.md:412"
+    },
+    {
+     "capability": "Options",
+     "shape": "submit.invalid allows submitting while invalid (default false). validate.input marks the form validated while typing (default false). validate.mount marks it validated at construction (default false). validate.submit marks it validated on submit or invalid (default true). on is a partial event map wired through bindEventMap.",
+     "citation": "src/browser/factories/createForm.ts:42-45, 268, 277, 301, 319, 340, 348; src/browser/types.ts:2250-2258"
+    },
+    {
+     "capability": "A namespaced event surface on the form host",
+     "shape": "Nine bubbling CustomEvents named elements:form:*: change, formdata, input, invalid, reset (cancelable), submit (cancelable), validate, dirty and clear. The details carry field, data and valid, or data, errors and valid. The map is registered in the public events tree under form.",
+     "citation": "src/browser/constants.ts:453-463; src/browser/events.ts:75; src/browser/types.ts:1128-1148, 2221-2248; src/browser/helpers.ts:1519-1532"
+    },
+    {
+     "capability": "Reactive state",
+     "shape": "Readonly refs for data, dirty, touched (a ReadonlySet of names), valid and validated, created in a @vue/reactivity effectScope that destroy stops.",
+     "citation": "src/browser/factories/createForm.ts:47-59, 351-367"
+    },
+    {
+     "capability": "A CSS hook for validation state",
+     "shape": "A data-form-validated attribute on the form, used by framework styles for invalid or valid chrome, mirroring Bootstrap's .was-validated.",
+     "citation": "src/browser/constants.ts:639; guides/elements.md:219; guides/composables.md:412"
+    }
+   ],
+   "accessibility": [
+    {
+     "write": "Once validated is true, every control that validates (input, select or textarea with willValidate true) gets aria-invalid set to 'true' or 'false' from validity.valid. The explicit 'false' is intentional so screen readers confirm the field passed.",
+     "citation": "src/browser/factories/createForm.ts:78-88; guides/w3c/elements/forms.md:1037-1038"
+    },
+    {
+     "write": "aria-invalid is removed from every field the factory set it on: before each apply, when validated is false, on clear(), and on destroy().",
+     "citation": "src/browser/factories/createForm.ts:64-67, 77, 171, 191"
+    },
+    {
+     "write": "data-form-validated is added to the form while validated is true and removed otherwise, and also on clear and destroy. It is a CSS hook, not an ARIA attribute.",
+     "citation": "src/browser/factories/createForm.ts:79, 91, 170, 190"
+    },
+    {
+     "write": "Focus is moved only by an explicit fields.focus(name), which focuses the first field with that name. The factory never moves focus automatically, adds no roles and creates no live regions. report() relies on the native reportValidity UI.",
+     "citation": "src/browser/factories/createForm.ts:146-154, 208-213"
+    }
+   ],
+   "lifecycle": "Construction: checks that the host is a form (createForm.ts:40), reads the options with defaults (42-45), creates the refs in an effectScope (47-59), wires on hooks with bindEventMap (340), adds listeners on the form for focusout, input, change, invalid (capture), submit, reset and formdata (341-347), optionally marks the form validated at mount (348), and takes an initial snapshot (349). Observation is event-driven only, with no MutationObserver. Input and change mark the field touched, emit dirty on the first edge, optionally set validated, refresh, and re-emit (265-281). focusout only marks touched (256-263). invalid sets validated, schedules one microtask refresh and re-emits (283-308). submit sets validated, refreshes and dispatches a cancelable submit, preventing it on veto or on invalid (316-324). reset dispatches a cancelable reset, clears the bookkeeping and refreshes in a microtask (326-338). formdata is re-emitted (310-314). Destroy: on the first call it unbinds the on hooks, removes all seven listeners and stops the scope. On every call it removes data-form-validated and the aria-invalid marks and resets all refs to empty or default (177-200). The Vue adapter useForm creates one factory per non-null element in a post-flush immediate watcher and destroys it in onCleanup (useForm.ts:62-74). Its fields and validity wrappers keep a stable identity and forward to the current instance (40-60).",
+   "tests": [
+    "Rejects a host that is not a form: tests/src/browser/factories/createForm.test.ts:16-19",
+    "Initial snapshot of names in form order, data entry names, and valid=true: createForm.test.ts:21-29",
+    "check() sets data-form-validated and emits validate exactly once: createForm.test.ts:31-39, 296-302",
+    "An invalid required field gets aria-invalid='true', valid=false, and errors list the field name: createForm.test.ts:41-49, 228-250",
+    "A valid field gets aria-invalid='false' after check: createForm.test.ts:194-207",
+    "clear() resets dirty and validated and removes data-form-validated: createForm.test.ts:51-63, 251-261",
+    "clear() keeps values, so valid stays false when the required field is empty: createForm.test.ts:262-284",
+    "input re-emits under the namespaced elements:form:input name, once per keystroke: createForm.test.ts:65-72, 304-311",
+    "Pristine to dirty on input; dirty stays dirty and valid flips when a required field is emptied, with no validated flip: createForm.test.ts:183-227",
+    "Statechart table: check does not reset dirty, and only clear drops it: createForm.test.ts:163-172",
+    "destroy removes every listener and is idempotent (double destroy, listener and observer counts via the harness): createForm.test.ts:74-79; tests/setupBrowser.ts:309-337",
+    "Fixtures: createFormElements builds a required text input 'username' and an email input 'email'; inputField sets the value and dispatches a bubbling input event: tests/setupBrowser.ts:433-464",
+    "Showcase API-name parity for useForm/createForm: tests/app/browser/pages/UseFormPage.test.ts:10-12",
+    "Integration: the Settings Save button submits once: tests/app/browser/examples/SettingsExamplePage.test.ts:81-103",
+    "Integration: CRM composer on.submit clears the draft: tests/app/browser/examples/CrmExamplePage.test.ts:94-118",
+    "Integration: sign-in on.submit puts the submit button into a loading state: tests/app/browser/examples/SigninExamplePage.test.ts:143-173",
+    "NOT PINNED (no test found): the focusout touched path; the dirty event firing once; the reset event, its veto and the microtask refresh; submit veto and the submit.invalid option; the validate.input, validate.mount and validate.submit options; invalid-event microtask coalescing; formdata re-emit; validity.mark/clear/field/message; fields.focus/enable/disable; duplicate names and multi-value data; disabled or fieldset-disabled exclusion; refs after destroy; useForm ref swap and cleanup",
+    "NOT READ (outside the named inputs): src/styles/elements/_form.scss, src/styles/components/_form.scss and src/styles/modifiers/_local.scss, which match data-form-validated or aria-invalid; tests/app/browser/pages/_contract.ts lines 129-148 beyond the grep hit; the sections of guides/elements.md:9 and guides/components.md:230 beyond the grep hits; app/browser UseFormPage source"
+   ]
+  },
+  {
+   "subject": "QUESTION: What does the elements project's createTable factory and useTable composable (a different API; reference only) teach a veneer table column sorter? The sorter binds a Bootstrap .table to an @orkestrel/table document. It reads headers and cells into a schema and rows, requests sorts through sort.set behind a cancelable sort.vn.sorter event, redraws rows from view, and writes aria-sort. Scope: DOM-to-model mapping, hazards, extra capabilities, accessibility writes, lifecycle, and the tests that pin them. All citations are relative to /home/user/mikesaintsg/elements. Anything marked (inference) is mine and is not stated in the source. UNKNOWNS / NOT REACHED: (1) src/browser/factories/createPointer.ts was not read, so how resize-handle pointer capture behaves inside is unknown. (2) src/styles/elements/_table.scss was not read, so the CSS for aria-sort indicators and sortable headers is unverified. (3) tests/app/browser/pages/_composable-api.ts (runComposableApiParity), which UseTablePage.test.ts calls, was not read. (4) app/browser/pages/TablesPage.vue, UseTablePage.vue, playgrounds/TablePlaygroundPage.vue and demo/showcase.html were not read; they are not tests. (5) createTable imports nothing from schema.ts or traversals.ts. schema.ts:995-1237 is only the HTML content model for tables, and traversals.ts:211 mentions a table only in a doc example. (6) Nothing in the inputs states the factory's behavior for colspan or rowspan headers, multiple header rows, multiple tbodies when sorting, or hidden or disabled rows. Those entries below are inference only.",
+   "files": [
+    "/home/user/mikesaintsg/elements/src/browser/factories/createTable.ts",
+    "/home/user/mikesaintsg/elements/src/browser/composables/useTable.ts",
+    "/home/user/mikesaintsg/elements/src/browser/types.ts",
+    "/home/user/mikesaintsg/elements/src/browser/constants.ts",
+    "/home/user/mikesaintsg/elements/src/browser/helpers.ts",
+    "/home/user/mikesaintsg/elements/src/browser/events.ts",
+    "/home/user/mikesaintsg/elements/src/browser/schema.ts",
+    "/home/user/mikesaintsg/elements/src/browser/traversals.ts",
+    "/home/user/mikesaintsg/elements/src/core/parsers.ts",
+    "/home/user/mikesaintsg/elements/guides/composables.md",
+    "/home/user/mikesaintsg/elements/guides/surfaces.md",
+    "/home/user/mikesaintsg/elements/guides/elements.md",
+    "/home/user/mikesaintsg/elements/guides/components.md",
+    "/home/user/mikesaintsg/elements/guides/styles.md",
+    "/home/user/mikesaintsg/elements/guides/inspector.md",
+    "/home/user/mikesaintsg/elements/tests/src/browser/factories/createTable.test.ts",
+    "/home/user/mikesaintsg/elements/tests/setupBrowser.ts",
+    "/home/user/mikesaintsg/elements/tests/guides/composables.test.ts",
+    "/home/user/mikesaintsg/elements/tests/app/browser/pages/UseTablePage.test.ts",
+    "/home/user/mikesaintsg/elements/tests/app/browser/pages/_contract.ts",
+    "/home/user/mikesaintsg/elements/tests/app/browser/examples/ConsoleExamplePage.test.ts",
+    "/home/user/mikesaintsg/elements/app/browser/examples/ConsoleExample.vue"
+   ],
+   "mapping": [
+    {
+     "rule": "Host gate: the element must be a <table>. assertElement throws a TypeError when the host is null or has a different tag.",
+     "citation": "src/browser/factories/createTable.ts:98; src/browser/helpers.ts:1471-1490"
+    },
+    {
+     "rule": "Headers are read from the first row of thead only (tHead.rows[0]). Values are each cell's textContent ('' when null). No other header rows are read.",
+     "citation": "src/browser/helpers.ts:2053-2057, 1890-1893; createTable.ts:472"
+    },
+    {
+     "rule": "Body rows are read from every tbody in document order. thead and tfoot rows are never included. The factory indexes everything off this list rather than table.rows.",
+     "citation": "src/browser/helpers.ts:1916-1928; createTable.ts:209-212, 469"
+    },
+    {
+     "rule": "Every cell value is a string (TableValue = string) taken from textContent. One entry per physical cell, so colspan='2' gives one slot, not two. A columns view is derived by transposing, padding short rows with ''.",
+     "citation": "src/browser/types.ts:1157-1160; src/browser/helpers.ts:2065-2082"
+    },
+    {
+     "rule": "The footer is read from tFoot.rows[0] and the caption from caption.textContent (null when absent).",
+     "citation": "src/browser/helpers.ts:2059-2063; createTable.ts:471, 474"
+    },
+    {
+     "rule": "Column keys come from data-key on the header cell. Keys are not derived from header text. At seed, schema[i].key is written onto head.cells[i] by position, and only when the cell has no data-key yet. Header cells without a schema entry get no key.",
+     "citation": "createTable.ts:349-357"
+    },
+    {
+     "rule": "Sortability comes only from the consumer schema: a column is sortable when its TableColumn entry has sortable === true. Both the click/keyboard path and sort.toggle look the key up in a Map built from options.columns. Keys not in the schema, or not sortable, are silently ignored.",
+     "citation": "createTable.ts:103-105, 823-825, 1324-1333; types.ts:2321-2331"
+    },
+    {
+     "rule": "Sort column index is resolved at sort time: each data-key in thead rows[0] is mapped to its cell index, and rows are compared on row.cells[thatIndex].",
+     "citation": "createTable.ts:775-782, 792-798"
+    },
+    {
+     "rule": "Sort value: a cell's data-sort-value attribute is used when present, otherwise its textContent, otherwise ''. This lets formatted text such as '$1,200.00' sort by an explicit numeric value.",
+     "citation": "createTable.ts:794-800; guides/composables.md:413"
+    },
+    {
+     "rule": "Value type inference happens per comparison, not in a schema. Both values are trimmed. If both are non-empty and both parse as finite numbers via Number(), they compare numerically. Otherwise an Intl.Collator compares them (default locale, numeric: true, sensitivity: 'base'), falling back to raw < and > when Intl is absent.",
+     "citation": "src/browser/helpers.ts:1333-1354; src/core/parsers.ts:29-39"
+    },
+    {
+     "rule": "Row identity comes from data-id, then data-index, otherwise '' (positional identity, which is unstable). Rows with an empty id cannot be selected or expanded.",
+     "citation": "src/browser/helpers.ts:1930-1938; constants.ts:76-79; createTable.ts:87-92, 913, 1065, 1417"
+    },
+    {
+     "rule": "Row ids are seeded only from an explicit id argument or options.id(). options.value is checked, but nothing is written when it is set.",
+     "citation": "createTable.ts:312-322"
+    },
+    {
+     "rule": "Controls the factory reads to exclude: clicks on input, button, a, select, textarea or label, or inside [data-no-select], are skipped by the selection and expansion click handlers. Clicks inside a [data-table-expansion] row are skipped for expansion. Rows marked [data-table-expansion] are excluded from selection targets. [data-table-expansion-trigger] is an opt-in marker that the factory reads.",
+     "citation": "createTable.ts:1353-1367, 1456-1494; guides/composables.md:80"
+    },
+    {
+     "rule": "The sort-header click and keydown path has no interactive-descendant exclusion. Any target whose closest('thead th[data-key]') is a sortable header triggers a toggle. (inference: a button inside a sortable th would also toggle sort)",
+     "citation": "createTable.ts:1324-1348"
+    },
+    {
+     "rule": "Writes go through textContent only: a Node input is appended, and every other input becomes String(value). null or undefined empties the cell. Header writes create <th scope='col'>.",
+     "citation": "src/browser/helpers.ts:1869-1888, 1998-2012; createTable.ts:550-552"
+    },
+    {
+     "rule": "Sort state is a Map of key to 'asc' or 'desc' plus an ordered key array (priority). It is published as readonly TableSortEntry[] {key, direction}; 'none' is never stored.",
+     "citation": "createTable.ts:193-195, 730-737; types.ts:1180-1187"
+    },
+    {
+     "rule": "Toggle cycle: none goes to order (default 'asc'), then to the opposite direction, then back to none. With sort.mandate the third step returns to order instead of none. With sort.multiple false, every other sorted key is dropped and its aria-sort removed.",
+     "citation": "createTable.ts:107-109, 823-859; types.ts:2397-2411"
+    },
+    {
+     "rule": "Redraw (sort.auto, default true) runs on tBodies[0] only. Rows are captured with their ordinal, stable-sorted across all active keys in priority order (ties keep original order), then re-appended with appendChild, which moves them and keeps row references and listeners. With sort.auto false the DOM is untouched and consumers react to the sort event, for example by refetching.",
+     "citation": "createTable.ts:110-114, 763-811; createTable.test.ts:235-253"
+    },
+    {
+     "rule": "When no sort is active the DOM order is left as-is: the early return when sortKeys is empty means the original order is not restored. (inference: after cycling back to none, rows stay in the last sorted order)",
+     "citation": "createTable.ts:773"
+    }
+   ],
+   "hazards": [
+    {
+     "hazard": "Use after destroy",
+     "handling": "Every accessor goes through table(), which returns null once destroyed is set, so all domain methods and emits become no-ops.",
+     "citation": "createTable.ts:183, 201-231, 281-309"
+    },
+    {
+     "hazard": "Double destroy",
+     "handling": "A second destroy() runs teardown() again and returns. The dispose test helper calls destroy twice.",
+     "citation": "createTable.ts:1539-1543; tests/setupBrowser.ts:328-329"
+    },
+    {
+     "hazard": "Nested tables / foreign headers",
+     "handling": "The sortable header must satisfy th.closest('table') === element. Selection and expansion rows must sit in a tbody whose parentElement is the host.",
+     "citation": "createTable.ts:1328, 1363-1364, 1467-1468"
+    },
+    {
+     "hazard": "Special characters in column keys used in selectors",
+     "handling": "Keys pass through cssEscape (CSS.escape, or a regex polyfill) before being placed into thead th[data-key=\"...\"].",
+     "citation": "createTable.ts:742; helpers.ts:1327-1331"
+    },
+    {
+     "hazard": "Lexicographic misorder of numbers and formatted values",
+     "handling": "Numeric-looking values compare numerically. The collator uses numeric: true so 'row 9' sorts before 'row 10'. data-sort-value overrides formatted text.",
+     "citation": "helpers.ts:1333-1354; createTable.ts:794-800; createTable.test.ts:88-117, 211-233"
+    },
+    {
+     "hazard": "Unstable ordering of equal keys",
+     "handling": "The comparator falls back to the captured ordinal.",
+     "citation": "createTable.ts:784-805"
+    },
+    {
+     "hazard": "Locale",
+     "handling": "A single module-level Intl.Collator with an undefined locale (runtime default) and sensitivity 'base' (case-insensitive). Number parsing uses Number(), so '1,200' and '$24' are not numeric. (inference: there is no per-document lang or locale option)",
+     "citation": "helpers.ts:1340-1343; parsers.ts:29-39"
+    },
+    {
+     "hazard": "Losing listeners and row references when reordering",
+     "handling": "Rows are moved with appendChild, not cloned or re-rendered.",
+     "citation": "createTable.ts:763-766, 807-810"
+    },
+    {
+     "hazard": "Live DOM mutations outside the API",
+     "handling": "There is no MutationObserver. Every API mutation calls refresh(), which re-reads the whole table, prunes selected and expanded ids that no longer exist, and clears a focus cell that is gone. Consumers who edit the DOM directly must call the public refresh(); the tests do this after hand-seeding data-id.",
+     "citation": "createTable.ts:454-503, 1646; createTable.test.ts:274-279, 326"
+    },
+    {
+     "hazard": "Large tables",
+     "handling": "refresh() re-reads every row and cell on every mutation, and sort re-appends every tbody row. Paging subsets are expressed through offset (aria-rowindex) and total (aria-rowcount) instead of rendering everything. (inference: there is no batching or virtualization)",
+     "citation": "createTable.ts:469-483, 786-810; types.ts:2385-2388"
+    },
+    {
+     "hazard": "Re-entrancy during sort",
+     "handling": "sort state, aria-sort, the DOM reorder, then emitSort and emitChange all run synchronously in one call. (inference: there is no guard against a sort listener calling toggle re-entrantly, and no in-flight flag)",
+     "citation": "createTable.ts:855-858"
+    },
+    {
+     "hazard": "Cancelable / vetoable sort",
+     "handling": "None: the sort event is dispatched with emit (cancelable: false) after the state and DOM have already changed. The codebase has a cancelable dispatch() helper, and AGENTS \u00a714 reserves it for pre-transition gates, but sort does not use it.",
+     "citation": "createTable.ts:296-299, 855-858; helpers.ts:1512-1532"
+    },
+    {
+     "hazard": "Duplicate column keys",
+     "handling": "No explicit handling: the schema Map keeps the last entry per key, applyAriaSort writes only the first matching th through querySelector, and indexByKey keeps the last index. (inference)",
+     "citation": "createTable.ts:104-105, 742, 779-782"
+    },
+    {
+     "hazard": "Expansion detail rows during sort",
+     "handling": "No explicit handling: [data-table-expansion] rows are ordinary tbody.rows entries in the sort. (inference: detail rows can be separated from their parent row)",
+     "citation": "createTable.ts:786"
+    },
+    {
+     "hazard": "Multiple tbody sections",
+     "handling": "Reads include every tbody, but the sort reorders only tBodies[0].",
+     "citation": "helpers.ts:1922-1928; createTable.ts:771"
+    },
+    {
+     "hazard": "Disabled or hidden rows and columns",
+     "handling": "There is no hidden or disabled detection. The only gate is the consumer predicate selection.selectable(row), which is used for select-all scope and clicks.",
+     "citation": "createTable.ts:248-251, 1418; types.ts:2435-2436"
+    },
+    {
+     "hazard": "Keyboard sort scrolling the page",
+     "handling": "Enter and Space on a sortable header call preventDefault before toggling.",
+     "citation": "createTable.ts:1341-1348"
+    },
+    {
+     "hazard": "Text selection during shift or ctrl click",
+     "handling": "pointerdown preventDefault on modifier clicks, then window.getSelection().removeAllRanges().",
+     "citation": "createTable.ts:1419-1432"
+    },
+    {
+     "hazard": "Clicks outside clearing selection",
+     "handling": "A capture-phase document pointerdown listener runs, using element.contains to check the target.",
+     "citation": "createTable.ts:1434-1442, 1614"
+    },
+    {
+     "hazard": "Clobbering author attributes",
+     "handling": "role, aria-multiselectable, tabindex and data-table-resizable are written only when absent, and removed on teardown only when the factory added them. Seed writes aria-sort, tabindex and data-key only when absent.",
+     "citation": "createTable.ts:184-187, 356-363, 1585-1602, 1501-1504"
+    },
+    {
+     "hazard": "Teardown removes author aria-sort",
+     "handling": "Teardown strips aria-sort from every thead th, including ones the author wrote. It does not remove the seed-added header tabindex='0', data-key, or the injected resize-handle divs. (inference from what is absent)",
+     "citation": "createTable.ts:1497-1520"
+    },
+    {
+     "hazard": "Detached or not-yet-mounted host in Vue",
+     "handling": "useTable creates the factory in a watch on the element ref with flush: 'post' and immediate: true. It skips when the window is undefined (SSR) or the element is null. When the element changes, it destroys the old instance and removes the bridging listeners.",
+     "citation": "composables/useTable.ts:217-241"
+    },
+    {
+     "hazard": "CONTRADICTION: options.value",
+     "handling": "The TSDoc says rows seeded via options.rows and rows.insert write the supplied id as data-id when options.value is set (createTable.ts:87-92), and types.ts:2383 calls value the property read for stable identity. seedRowId returns without writing when only value is set (createTable.ts:318-321).",
+     "citation": "createTable.ts:87-92, 312-322; types.ts:2383-2384"
+    },
+    {
+     "hazard": "CONTRADICTION: TableColumn.sort and filter",
+     "handling": "types.ts declares a per-column sort comparator plus filterable and filter, and says columns 'drives sort/filter'. applySortToDOM always uses compareCellValues, and no filter code exists in createTable.",
+     "citation": "types.ts:2321-2331, 2381; createTable.ts:801"
+    },
+    {
+     "hazard": "CONTRADICTION: shift multi-sort and Home/End keys in the guide",
+     "handling": "guides/composables.md:413 claims 'single + shift-multi-column' sort and 'arrow / Home / End / Tab' focus. onSortClick ignores modifier keys, multi-sort is only options.sort.multiple, and onKeydown handles arrow keys only.",
+     "citation": "guides/composables.md:413; createTable.ts:107, 1289-1303, 1335-1339"
+    },
+    {
+     "hazard": "CONTRADICTION: aria-sort='none' advertisement is lost",
+     "handling": "Seed writes aria-sort='none' so assistive technology knows the column is sortable (createTable.ts:341-343, 358-360). Returning to none, or sort.clear, removes the attribute entirely (744, 751-753), and the test pins the removal (createTable.test.ts:84). The app test accepts either null or 'none' (ConsoleExamplePage.test.ts:108, 183).",
+     "citation": "createTable.ts:341-343, 358-360, 744, 748-754; createTable.test.ts:84; ConsoleExamplePage.test.ts:108,183"
+    },
+    {
+     "hazard": "CONTRADICTION: dispose test name versus what it checks",
+     "handling": "The test is named 'destroy reverses every listener and ARIA' (createTable.test.ts:415), but assertCleanDispose only asserts listener, observer and timer counts, never ARIA attributes.",
+     "citation": "createTable.test.ts:415-428; tests/setupBrowser.ts:315-337"
+    },
+    {
+     "hazard": "CONTRADICTION: stale async comments",
+     "handling": "A test comment says multiple:false 'awaits the prior collapse via the async expand/collapse pipeline' (createTable.test.ts:357-359), but expandOne and collapseOne are synchronous (createTable.ts:1064-1094; createTable.test.ts:398-400). ConsoleExamplePage.test.ts:97 says 'useTable's onMounted', but useTable uses a post-flush watch (useTable.ts:217-241). helpers.ts:2026-2028 says cleanTableSelection is used by useTable; it is called from createTable.",
+     "citation": "createTable.test.ts:357-360; ConsoleExamplePage.test.ts:97; useTable.ts:217-241; helpers.ts:2026-2028"
+    }
+   ],
+   "capabilities": [
+    {
+     "capability": "Multi-column sort with priority",
+     "shape": "options.sort.multiple. sort.priority(key) returns the 0-based index or -1. sort.columns is a readonly ref of {key, direction}[] in priority order.",
+     "citation": "createTable.ts:107, 758-761, 861-867; types.ts:2545-2556"
+    },
+    {
+     "capability": "Sort policy knobs",
+     "shape": "sort.mandate (never clear; cycles asc and desc), sort.order (first-click direction), sort.auto false (server-driven: state and event only, no DOM reorder).",
+     "citation": "types.ts:2397-2411; createTable.ts:107-114"
+    },
+    {
+     "capability": "Programmatic sort API",
+     "shape": "sort.toggle(key), sort.direction(key) returning 'asc', 'desc' or 'none', sort.clear() (removes all aria-sort and emits sort plus change{sort, clear}).",
+     "citation": "createTable.ts:813-867"
+    },
+    {
+     "capability": "Explicit sort value per cell",
+     "shape": "data-sort-value attribute overrides textContent.",
+     "citation": "createTable.ts:794-800"
+    },
+    {
+     "capability": "Delegated click and Enter/Space header activation",
+     "shape": "One click listener and one keydown listener on the <table>, added unconditionally. Non-sortable headers do nothing.",
+     "citation": "createTable.ts:1318-1348, 1619-1623"
+    },
+    {
+     "capability": "Structural CRUD sub-domains",
+     "shape": "caption {set, clear}; headers {set, append, insert, update, remove, clear}; rows {append, prepend, insert(index, values, id), update, remove (also removes the detail row), move, swap, clear}; cells {cell, read, update (pads missing cells), clear}; footer like headers. Each emits change{part, action}.",
+     "citation": "createTable.ts:515-727; types.ts:2488-2543"
+    },
+    {
+     "capability": "Row selection",
+     "shape": "Id-based Set. Strategy 'single', 'page' or 'all'. select, clear and toggle each take no argument, one id, or an id array. Reactive all and mixed refs. selectable predicate. Desktop click model: plain click replaces, ctrl or meta toggles, shift selects a range from the anchor, an outside click clears. Emits select{ids}.",
+     "citation": "createTable.ts:869-1009, 1350-1442; types.ts:2432-2452, 2558-2584"
+    },
+    {
+     "capability": "Row expansion",
+     "shape": "A detail <tr data-table-expansion> carries a [data-table-expansion-panel]. expand, collapse and toggle (same three argument shapes), set(ids). Options multiple, initial, and click: true, 'row', 'caret' or false. Emits expand and collapse {id}.",
+     "citation": "createTable.ts:1011-1168, 1444-1494; types.ts:2412-2431, 2586-2611"
+    },
+    {
+     "capability": "Column resize",
+     "shape": "options.resize {min (default 40), max (default Infinity)}. Injects a [data-table-resize-handle] into each header cell and drives it with createPointer, writing th.style.width. resize {active, width, set, clear}. Sets [data-table-resizing] on the table during a drag.",
+     "citation": "createTable.ts:135-136, 1170-1250; types.ts:2453-2459, 2633-2642"
+    },
+    {
+     "capability": "Keyboard grid focus",
+     "shape": "focus.keyboard and wrap. Arrow keys move the focused cell. Focusing the table seeds cell (0, 0). focus {cell, focus, move, clear}. Emits focus{cell}.",
+     "citation": "createTable.ts:1252-1316; types.ts:2644-2649"
+    },
+    {
+     "capability": "Pagination (event-only)",
+     "shape": "pagination {size, page, count, to, next, prev}. to() clamps the page and emits paginate{page, offset, size}. The factory never mutates data or offset itself. offset, total and size accept a number or a Ref.",
+     "citation": "createTable.ts:370-452; types.ts:2385-2396, 2613-2631"
+    },
+    {
+     "capability": "Reactive snapshots",
+     "shape": "ready, data (string matrix), headers.values and count, rows.ids and count, footer.values, caption.value, total.",
+     "citation": "createTable.ts:138-181, 1629-1649"
+    },
+    {
+     "capability": "Seeding from options",
+     "shape": "caption, headers, rows (replaces existing body rows), footer, columns; on (initial listeners via bindEventMap); id generator.",
+     "citation": "createTable.ts:324-368, 1583-1584; types.ts:2370-2384"
+    },
+    {
+     "capability": "Event surface",
+     "shape": "elements:table:{change, focus, select, sort, expand, collapse, paginate}. Bubbling, non-cancelable CustomEvents on the <table>. Registered in the public events tree.",
+     "citation": "constants.ts:512-520; events.ts:81; types.ts:2333-2368"
+    },
+    {
+     "capability": "Vue adapter",
+     "shape": "useTable(ref, options) forwards every sub-domain through computed refs, mirrors the selection and expansion Sets into shallowReactive views synced on select, expand, collapse and change events, and returns resize as null when options.resize is absent.",
+     "citation": "composables/useTable.ts:38-264"
+    }
+   ],
+   "accessibility": [
+    {
+     "write": "At seed, sortable header cells get aria-sort='none' and tabindex='0', each only when absent. Non-sortable headers get neither.",
+     "citation": "createTable.ts:340-364; createTable.test.ts:119-138"
+    },
+    {
+     "write": "aria-sort on thead th[data-key]: 'ascending' or 'descending' (from ARIA_SORT_VALUE). The attribute is REMOVED, not set to 'none', when the direction returns to none. With multiple:false, other keys have it removed.",
+     "citation": "createTable.ts:739-746, 828-854; constants.ts:89, 648-652"
+    },
+    {
+     "write": "sort.clear removes aria-sort from every thead th[data-key].",
+     "citation": "createTable.ts:748-754, 813-821"
+    },
+    {
+     "write": "Teardown removes aria-sort from every thead th.",
+     "citation": "createTable.ts:1508-1510"
+    },
+    {
+     "write": "Selection uses triadic aria-selected on rows. Selected rows get 'true'. When at least one row is selected, every other tbody row gets 'false'. When none are selected, the attribute is absent everywhere. Each pass first strips aria-selected from all rows and cells.",
+     "citation": "createTable.ts:253-267; helpers.ts:2025-2051; createTable.test.ts:286-289, 566-573"
+    },
+    {
+     "write": "aria-rowindex, 1-based from the offset, on every body row, rewritten on each refresh. aria-rowcount on the <table> from total, removed when total is 0 or not finite.",
+     "citation": "createTable.ts:269-278, 493-494; helpers.ts:1950-1966"
+    },
+    {
+     "write": "With focus.keyboard: role='grid', aria-multiselectable='true' and tabindex='0' on the <table>, each only when absent. aria-multiselectable is written regardless of selection strategy.",
+     "citation": "createTable.ts:1585-1598"
+    },
+    {
+     "write": "Focus management: the focused body cell gets tabindex='-1' and receives .focus(). The previous cell's tabindex is cleared. Focusing the table itself seeds cell (0, 0).",
+     "citation": "createTable.ts:1253-1269, 1305-1316"
+    },
+    {
+     "write": "Header cells written by the factory are <th scope='col'>.",
+     "citation": "helpers.ts:1998-2012; createTable.ts:550-552"
+    },
+    {
+     "write": "Collapsed expansion panels get inert, and expanded ones have it removed, instead of using hidden (which would freeze the CSS tween). The data row gets data-table-expanded.",
+     "citation": "createTable.ts:1034-1054, 1075-1078, 1088-1091"
+    },
+    {
+     "write": "CSS contract: table[role='grid'] is excluded from the universal :focus-visible ring because the table is the focus anchor and cells are the visible target.",
+     "citation": "guides/surfaces.md:244; guides/composables.md:413"
+    },
+    {
+     "write": "No live region: nothing in createTable writes aria-live, role=status, or an announcement after a sort. (fact by absence in the file)",
+     "citation": "createTable.ts:1-1650"
+    }
+   ],
+   "lifecycle": "CONSTRUCTION, in order (createTable.ts:1582-1627):\n1. Assert the host is a <table> (98).\n2. Read the options into constants and build the schema-by-key Map (100-136).\n3. Create the effectScope reactives (138-160).\n4. Bind options.on handlers with bindEventMap (1583).\n5. seed(): caption, headers, rows (replacing existing body rows), footer, then schema-driven data-key, aria-sort='none' and tabindex='0' on header cells (324-368, 1584).\n6. If keyboard is enabled, write role, aria-multiselectable and tabindex (1585-1598). If resize is enabled, write data-table-resizable (1599-1602).\n7. Initialise offset, total and size. Ref inputs get effects that rewrite aria-rowindex and aria-rowcount (370-410, 1603-1605).\n8. refresh(), which reads the full model and applies selection, expansion, row index, row count and resize handles, then sets ready=true (1606).\n9. Add listeners: keyboard (keydown, focus); selection click (click and pointerdown on the table, capture-phase pointerdown on document); expansion click; and, unconditionally, sort click and keydown (1607-1623).\n10. Apply expansion.initial (1624-1626), set up the resize handles (1627), and return the instance (1629-1649).\n\nOBSERVATION: there is no MutationObserver. The model is re-read by refresh() after every API mutation and whenever the consumer calls the public refresh() (454-503, 1646). Reactive offset, total and size Refs are watched with effects (373-379, 387-393, 401-406). All interaction uses delegated listeners on the <table>, plus one capture-phase pointerdown listener on document (1611-1623).\n\nCLEAR: clear() deletes the caption, thead, tfoot and all body rows, resets selection, expansion and focus, then refreshes and emits change{rows, clear} (1522-1537).\n\nDESTROY, in order (1539-1580):\n1. If already destroyed, run teardown() only.\n2. Otherwise set destroyed=true and collapse every expanded row (remove data-table-expanded, add inert to the panel).\n3. Remove every listener the factory added, including the document capture listener.\n4. Null the selection anchor, run offBound(), and stop the effect scope.\n5. teardown(): remove aria-selected; remove focus tabindex; remove role, aria-multiselectable, tabindex and data-table-resizable only if the factory added them; remove data-table-resizing, aria-rowcount, every aria-rowindex, every thead th aria-sort and every data-table-expanded; clear header inline widths; destroy the resize pointers (1497-1520).\n6. Clear the selection, null the focus, and set ready=false.\n\nAfter destroy, table() returns null, so every method becomes a no-op (201).\n\nVUE (useTable.ts:217-241): the factory is created in a post-flush, immediate watch on the element ref; it is skipped when there is no window or no element. On cleanup the bridging listeners are removed, instance.destroy() runs, and the factory ref and views are cleared. Proxies return safe defaults while no factory exists (44-207).",
+   "tests": [
+    "tests/src/browser/factories/createTable.test.ts:18-21: rejects a non-<table> host (throws matching /table/i).",
+    "createTable.test.ts:23-44: seeds caption, headers, rows and footer from options; data is a string matrix (numbers become strings).",
+    "createTable.test.ts:46-59: rows.append with an id writes data-id; update, remove and cells.read.",
+    "createTable.test.ts:61-86: sort.toggle cycles asc, desc, none; aria-sort goes ascending, descending, then absent; the sort event fires 3 times.",
+    "createTable.test.ts:88-117: data-sort-value overrides cell text (numeric order 24, 480, 1200).",
+    "createTable.test.ts:119-138: sortable headers seed aria-sort='none' and tabindex='0'; non-sortable headers get neither.",
+    "createTable.test.ts:140-158: clicking a sortable th cycles the direction and aria-sort.",
+    "createTable.test.ts:160-174: Enter and Space keydown on the header drive the same cycle.",
+    "createTable.test.ts:176-209: sort.auto (default) physically reorders tbody rows ascending and descending.",
+    "createTable.test.ts:211-233: numeric columns sort numerically ('5','12','20'), not lexicographically.",
+    "createTable.test.ts:235-253: sort.auto false updates state but leaves the DOM order alone.",
+    "createTable.test.ts:255-268: clicking a non-sortable header does not toggle; sort.columns stays empty.",
+    "createTable.test.ts:270-293: selection writes aria-selected true on the chosen row and false on the others; the select event fires.",
+    "createTable.test.ts:295-303: change event fires on row append and remove.",
+    "createTable.test.ts:305-339, 365-413: expansion toggles data-table-expanded on the row and inert on the panel; no legacy data-collapsing or inline height.",
+    "createTable.test.ts:341-363: expansion.multiple false keeps only one row open.",
+    "createTable.test.ts:415-428: destroy leaves no listeners (via assertCleanDispose, which checks only listener, observer and timer counts and calls destroy twice: tests/setupBrowser.ts:315-337).",
+    "createTable.test.ts:442-522: statechart sort scenarios: none to asc, asc to desc, desc to none, with aria-sort mirrored as null, 'ascending', 'descending'.",
+    "createTable.test.ts:524-632: statechart selection scenarios: aria-selected is 'true' or absent (null) after toggle or clear.",
+    "createTable.test.ts:634-749: statechart expansion scenarios: expand, collapse and toggle mirror data-table-expanded.",
+    "tests/app/browser/examples/ConsoleExamplePage.test.ts:93-120: useTable integration; clicking the first header goes from null or 'none' to 'ascending' to 'descending'.",
+    "ConsoleExamplePage.test.ts:166-187: with multiple false, sorting a second column returns the first header to null or 'none' (the page config is in app/browser/examples/ConsoleExample.vue:168-179).",
+    "ConsoleExamplePage.test.ts:55-67: table renders with tbody rows (thead injected after mount).",
+    "tests/app/browser/pages/UseTablePage.test.ts:10-12: composable API-name parity, useTable paired with createTable (mechanism in _composable-api.ts, not read).",
+    "tests/app/browser/pages/_contract.ts:125-128: ConsoleExamplePage is declared to exercise useTable.",
+    "tests/guides/composables.test.ts:246-248: createTable or useTable must appear in guides/composables.md. Lines 265-285: data-* naming gate; data-key is allow-listed as consumer content (282).",
+    "NOT PINNED by any test read: mandate, order:'desc', multi-sort priority, sort.clear, duplicate keys, cssEscape keys, collator or locale behavior, multiple tbodies, nested tables, removal of seed-added header tabindex on destroy, ARIA cleanup after destroy, resize, keyboard grid focus, pagination, aria-rowindex and aria-rowcount, the options.value id path."
+   ]
+  },
+  {
+   "subject": "Objective-lane refutation of the reading of elements createForm/useForm (/home/user/mikesaintsg/elements/src/browser/factories/createForm.ts, /home/user/mikesaintsg/elements/src/browser/composables/useForm.ts) as guidance for veneer Guard 1. I attacked 42 entries: 9 mapping rules, 20 hazards, 9 capabilities and 4 accessibility writes. 38 hold and 4 need correction. The lifecycle paragraph and the test list were attacked too: the lifecycle holds, and two test entries need correction. The spec-based INFERENCE entries (form.elements leaving out input type=image, the reset event firing before values are restored, FormData leaving out non-submitter buttons) match the HTML spec, but no test or source line in the repo shows them, so they are NOT-EVIDENCED in-repo. The UNKNOWN willValidate-without-a-name entry stays UNKNOWN; the spec question goes to the Orchestrator. I left createTable out of scope because Guard 1 binds only a form. Terminal: 38 upheld, 6 corrected (4 claim entries plus 2 test entries), 14 omissions, verdict REVISE.",
+   "upheld": 38,
+   "corrected": [
+    {
+     "claim": "Capability 'A namespaced event surface': 'The details carry field, data and valid, or data, errors and valid.'",
+     "correction": "The details have six shapes, not two. input, change and dirty carry {field, data, valid}. clear carries {field: null, data, valid}. validate carries {errors, valid}, where valid is the native checkValidity/reportValidity result. submit carries {data, errors, valid} at runtime, but FormSubmitDetail declares only {data, valid}. invalid carries {field, message, validity: ValidityState | null}. reset carries {data}, which is the last snapshot taken before the values are restored. formdata carries {data: FormData}. Every FormEventMap handler is typed as a bare CustomEvent with no detail generic, so an `on` handler gets an untyped detail.",
+     "evidence": "createForm.ts:128-132, 142, 152, 174, 307, 313, 321-322, 329; types.ts:1128-1148 (FormSubmitDetail has no errors), 2221-2248 (FormEventMap values are `(event: CustomEvent) => void`); guides/composables.md:412 documents submit as `{ data, errors, valid }`"
+    },
+    {
+     "claim": "Capability 'Custom, cross-field or server-side validity': 'validity.mark(name, message) calls setCustomValidity on every matching field and returns false if none match. validity.clear(name) sets it back to an empty string. Both refresh.'",
+     "correction": "mark(name, message) filters the matches to input, select and textarea. It returns false without a refresh when none match; otherwise it sets the custom validity, refreshes and returns true. It does not set validated, so aria-invalid shows the mark only if the form was already validated. clear(name?) takes an optional name. Called with no name, fieldsByName(undefined) returns every item, so it clears custom validity on all fields and then refreshes. Custom validity is not cleared by form.reset() or by api.clear().",
+     "evidence": "createForm.ts:72, 239-250; types.ts:2275-2276; createForm.ts:78 (aria-invalid is written only while validated is true)"
+    },
+    {
+     "claim": "Accessibility: 'The factory never moves focus automatically ... report() relies on the native reportValidity UI.'",
+     "correction": "The factory calls focus() only in fields.focus(name). However, report() calls reportValidity(), and submit() calls requestSubmit(), which runs interactive validation when the form has no novalidate attribute. In browsers both of these focus the first invalid control. So report() and submit() move focus as a side effect of the native call. Whether focus moves is NOT-EVIDENCED: no test checks it.",
+     "evidence": "createForm.ts:150, 157, 208-213; guides/w3c/elements/forms.md:1032-1033"
+    },
+    {
+     "claim": "Hazard 'Every snapshot fires the native formdata event': 'the custom formdata event fires on mount, on each input or change, on check, report and submit, not only on real submission.'",
+     "correction": "The custom formdata event fires on every refresh(): mount, input, change, check, report, submit, api.clear(), validity.mark, validity.clear, fields.enable, fields.disable, the deferred invalid refresh, the deferred reset refresh, and an explicit refresh(). On a real native submission it fires twice: once from the refresh in onSubmit, and once more when the browser builds the entry list for submission.",
+     "evidence": "helpers.ts:1836; createForm.ts:134, 141, 151, 173, 218, 224, 243, 249, 269, 279, 289, 310-314, 320, 337, 349"
+    },
+    {
+     "claim": "Test: 'destroy removes every listener and is idempotent (double destroy, listener and observer counts via the harness): createForm.test.ts:74-79; setupBrowser.ts:309-337'",
+     "correction": "This test cannot fail when the capture flag is dropped from the invalid listener's removal. The harness records listeners by type and function only and ignores the capture option. If removeEventListener('invalid', onInvalid, true) at createForm.ts:184 loses its `true`, the harness count still drops to 0 while the real capture listener stays attached. The fixture passes no `on` option, so bindEventMap returns a no-op and the teardown of `on` hooks is never exercised. The observer count tracks only IntersectionObserver. No `exercise` callback is passed, so no event fires before destroy.",
+     "evidence": "setupBrowser.ts:258, 269 (Set keyed by listener, options ignored), 278-290; createForm.test.ts:74-79; helpers.ts:1563"
+    },
+    {
+     "claim": "Test: 'Statechart table: check does not reset dirty, and only clear drops it: createForm.test.ts:163-172'",
+     "correction": "Lines 163-166 are a comment, and the comment's statement that `clear()` is the only path back to pristine is false in the code: an uncancelled reset (createForm.ts:334) and destroy (createForm.ts:196) also set dirty to false. No assertion checks 'only clear'. FormEvent declares 'reset' and 'destroy' (test line 98, 149-153), but no scenario uses them. Only 'check does not reset dirty' is asserted, by the 'dirty \u00d7 check' scenario (test lines 194-207).",
+     "evidence": "createForm.test.ts:98, 149-153, 163-172, 182-285; createForm.ts:196, 334"
+    }
+   ],
+   "missing": [
+    "Guard 1 unload hazard: a successful native submission does not clear dirty (createForm.ts:316-324). A beforeunload guard gated on dirty therefore fires on the navigation that the form's own submit causes. Guard 1 must rebuild its baseline or disarm itself inside the submit path, before the navigation.",
+    "elements:form:submit is dispatched, and `on.submit` handlers run, before the factory prevents an invalid submit (createForm.ts:322-323). With novalidate or formnovalidate, a consumer that rebuilds its baseline on that event rebuilds it on a submission the factory then cancels, so it must check detail.valid. Without novalidate, requestSubmit and user submits never reach the submit event while constraints fail.",
+    "Reset timing: elements:form:reset is dispatched at createForm.ts:329, before dirty, touched and validated are cleared (334-336). Its detail.data is the pre-reset snapshot. Nothing is emitted after the deferred refresh at 337, and no dirty-false event exists at all. A guard that clears on reset must defer its read past the microtask, because inside the reset handler api.dirty is still true and the values are still the old ones.",
+    "The elements:form:dirty detail is stale. touch() emits dirty at createForm.ts:120 before refresh() at 269 or 278, so detail.data and detail.valid describe the snapshot before the edit.",
+    "Controls associated with form=\"ID\" outside the form element appear in form.elements and in the FormData `data` (helpers.ts:1822, 1836). Their input, change and focusout events bubble through their own DOM ancestors, not to the form, so the listeners at createForm.ts:341-343 never see them: dirty and touched never change, and data refreshes only through another trigger.",
+    "Any input or change event that bubbles to the form marks it dirty, including events from unnamed controls (touch(null) still sets dirty, createForm.ts:116-117, 122), contenteditable regions and non-field custom elements. A Bootstrap form that contains a filter or search box, or an unnamed toggle, becomes dirty without any model change.",
+    "Programmatic value writes (field.value = x, v-model writes, scripted fills) fire no input or change event. They do not set dirty, and `data` stays stale until refresh() is called (createForm.ts:265-281).",
+    "valid and the validate detail can disagree. valid is errors.length === 0 over input, select and textarea only (helpers.ts:1850, createForm.ts:108). check() and report() emit the native checkValidity() result (createForm.ts:140-142), which also covers submit buttons that carry custom validity and form-associated custom elements.",
+    "readFormErrors records field.name, which can be an empty string (helpers.ts:1854). An error entry can therefore carry name '' if an unnamed control validates. The helper's own TSDoc (helpers.ts:1842-1845) leaves 'no name' out of the willValidate-false conditions that forms.md:1051 lists. Refer the spec question to the Orchestrator.",
+    "fields.items is the internal writable ref and is not wrapped in readonly() (createForm.ts:203; compare names at 204 and the Readonly<Ref> type at types.ts:2261). A consumer can overwrite items.",
+    "validity.field(name) checks willValidate only on the first matching input, select or textarea (createForm.ts:231-232). For a radio group whose first member is disabled, it returns null even when later members validate. validity.message does not check willValidate at all (235-238).",
+    "Additional CONTRADICTION: guides/composables.md:412 documents the submit detail as { data, errors, valid }, but FormSubmitDetail (types.ts:1140-1143) declares no errors field.",
+    "data-form-validated and aria-invalid lag the validated ref. They are written only inside apply() during a snapshot (createForm.ts:76-92). After onInvalid sets validated at line 301, or onReset clears it at line 336, the DOM changes only when the microtask refresh runs.",
+    "useForm captures `options` once, and the watcher tracks only elementRef.value (useForm.ts:62-66). Changing the options after setup has no effect. UseFormReturn.destroy() destroys the instance but leaves factory.value pointing at it (useForm.ts:91), so the refs then read the destroyed instance's emptied state until the ref changes."
+   ]
+  },
+  {
+   "subject": "Objective lane: falsification of the reading of the elements createTable factory and useTable composable (/home/user/mikesaintsg/elements) as reference for the veneer table column sorter. I opened every cited range in createTable.ts, useTable.ts, helpers.ts, parsers.ts, constants.ts, types.ts, createTable.test.ts, setupBrowser.ts, ConsoleExamplePage.test.ts, ConsoleExample.vue, composables.test.ts, guides/composables.md:80 and :413, and guides/surfaces.md:244. The reading has 74 entries in scope: 19 mapping rules, 28 hazards, 15 capabilities, and 12 accessibility writes. 65 are upheld and 9 are corrected. Outside those categories, one lifecycle claim is also corrected (DESTROY step 2). Every citation resolves; none is missing. The reading covers only createTable. The user also named createForm, which this reading does not address, so that gap goes to the Orchestrator. Terminal: REVISE. The reading holds as reference after the 10 corrections and the omissions that follow.",
+   "upheld": 65,
+   "corrected": [
+    {
+     "claim": "Mapping, row identity: 'Row identity comes from data-id, then data-index, otherwise ''. Rows with an empty id cannot be selected or expanded.'",
+     "correction": "Row identity uses data-id ?? data-index ?? ''. An empty `data-id=\"\"` attribute gives '' and does not fall back to data-index. The click paths match only `tr[data-id]` (rowInTbody and expandableRowFor), so a row identified only by data-index can be selected and expanded through the API but never by a click.",
+     "evidence": "helpers.ts:1937 `row.dataset.id ?? row.dataset.index ?? ''`; createTable.ts:1361 `target.closest('tr[data-id]')`; createTable.ts:1464 same selector for expansion."
+    },
+    {
+     "claim": "Mapping, body rows: 'Body rows are read from every tbody in document order ... The factory indexes everything off this list rather than table.rows.'",
+     "correction": "Reads and rowAt use all tbodies, but several writes do not. The sort reorders only tBodies[0]. rows.insert, rows.append, and rows.prepend insert into tBodies[0] and check the index against that section's length, while rows.count covers every tbody. As a result, rows.append returns null whenever a later tbody holds rows. Teardown and cleanTableSelection walk el.rows, which includes thead and tfoot rows. [data-table-expansion] detail rows are ordinary entries in this list, so rows.count, data, rows.ids, and aria-rowindex all include them.",
+     "evidence": "createTable.ts:596 (append uses rowCount.value), 599-603 (body(true) gives tBodies[0], normalizeIndex(index, section.rows.length)); helpers.ts:1901-1904 (null when index > count); helpers.ts:1973; createTable.ts:771; helpers.ts:2030; createTable.ts:1507, 1511; helpers.ts:1922-1928 (no detail-row filter)."
+    },
+    {
+     "claim": "Hazard, use after destroy: 'Every accessor goes through table() ... so all domain methods and emits become no-ops.'",
+     "correction": "After destroy, methods no longer touch the DOM or emit, but some still change in-memory state. sort.toggle still writes sortDirection, sortKeys, and sortColumns, so sort.columns and sort.direction report a sort that never happened. selection.select and selection.toggle still change selectedIds and selectionTick. pagination.to still computes a page and returns without emitting.",
+     "evidence": "createTable.ts:823-855: schemaByKey, sortDirection.set, and recomputeSortColumns do not check table(), and only applyAriaSort, applySortToDOM, and the emits do; createTable.ts:910-927, 904-908."
+    },
+    {
+     "claim": "Hazard, nested tables: 'The sortable header must satisfy th.closest('table') === element. Selection and expansion rows must sit in a tbody whose parentElement is the host.'",
+     "correction": "Only the click and keydown resolution is scoped to the host. clearAllAriaSort (`thead th[data-key]`), teardown (`thead th`), and setupResizeHandles (RESIZE_HANDLE_SELECTOR = `thead th [data-table-resize-handle]`) use descendant querySelectorAll on the host. They strip aria-sort from, and attach pointers to, the headers of any table nested inside a cell. applyAriaSort uses querySelector, which takes the first match in document order.",
+     "evidence": "createTable.ts:742, 751, 1208-1220, 1508-1510; constants.ts:647."
+    },
+    {
+     "claim": "Hazard, locale: '... sensitivity 'base' (case-insensitive).'",
+     "correction": "sensitivity 'base' ignores both case and accents, so 'r\u00e9sum\u00e9' and 'Resume' compare equal and fall through to the ordinal tie-break.",
+     "evidence": "helpers.ts:1342 `new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })`."
+    },
+    {
+     "claim": "Hazard, lexicographic misorder: handling cited to createTable.test.ts:88-117 and 211-233 as proof of the numeric path.",
+     "correction": "The handling is right, but neither test can tell the Number() branch apart from the collator. Delete the parseNumber branch in compareCellValues (helpers.ts:1347-1351) and both tests still pass, because Intl.Collator with numeric:true already orders '5','12','20' and '24','480','1200' by magnitude. Only decimal input ('1.5' against '1.25') or negative input ('-5' against '-12') tells the two paths apart, and no test uses either. The ordinal tie-break is not pinned either, and Array.prototype.sort has been stable since ES2019.",
+     "evidence": "helpers.ts:1344-1354; createTable.test.ts:106, 216-232; createTable.ts:804."
+    },
+    {
+     "claim": "Hazard, live DOM mutations: 'Every API mutation calls refresh(), which re-reads the whole table ...'",
+     "correction": "Only the structural sub-domains (caption, headers, rows, cells, footer, clear) call refresh(). sort.toggle and sort.clear never call it. After an auto sort, the data, rows.ids, and columns snapshots stay in pre-sort order, aria-rowindex values move with their rows and read out of DOM order, and focus.cell coordinates point at whatever row now sits at that index. Selection and expansion mutations do not refresh either.",
+     "evidence": "createTable.ts:855-858 (sortToggle tail: recomputeSortColumns, applySortToDOM, emitSort, emitChange); 813-821 (sortClear); 270-272 (writeRowIndex runs only from refresh at 493 and the offset effect at 377)."
+    },
+    {
+     "claim": "Accessibility: 'aria-rowindex, 1-based from the offset, on every body row, rewritten on each refresh.'",
+     "correction": "Rewritten on each refresh, and never after a sort. A sort reorders rows without refresh(), so the DOM order shows indices such as 3,1,2. aria-rowindex is also written on [data-table-expansion] detail rows, and the header row gets none, so the first body row claims index 1 (inference about ARIA grid counting).",
+     "evidence": "createTable.ts:493, 767-811, 855-858; helpers.ts:1954-1959 applied to readTableRows output, which includes detail rows."
+    },
+    {
+     "claim": "Capability, row selection: 'Strategy 'single', 'page' or 'all'.'",
+     "correction": "'page' and 'all' produce the same scope. 'page' returns bodyRows(), which is readTableRows over every tbody. 'all' returns allBodyRows(), which also covers every tbody. The two strategies differ in name only.",
+     "evidence": "createTable.ts:209-212, 234-246; helpers.ts:1922-1928."
+    },
+    {
+     "claim": "Lifecycle, DESTROY step 2: 'Otherwise set destroyed=true and collapse every expanded row (remove data-table-expanded, add inert to the panel).'",
+     "correction": "The collapse loop never runs its body. destroyed=true is set at 1544, before the loop, and findRowById calls bodyRows(), which calls table(). table() returns null once destroyed is set, so every row lookup gives null. Teardown later strips data-table-expanded from every row (1511), but nothing restores inert, so a panel that was open at destroy stays interactive.",
+     "evidence": "createTable.ts:1544-1558, 1056-1059, 209-212, 201, 1511."
+    }
+   ],
+   "missing": [
+    "The sort never calls refresh(). After any reorder, data, rows.ids, the columns snapshot, aria-rowindex, and focus.cell are stale (createTable.ts:855-858, 493). A sorter that redraws rows from a view must re-derive row indices and any index-addressed state after each redraw.",
+    "There is no sort.set(key, direction). The only write paths are toggle and clear, so a caller cannot request an explicit direction (createTable.ts:861-867; types.ts:2545-2556). sort.clear neither restores the original DOM order nor calls applySortToDOM (createTable.ts:813-821, 773).",
+    "Rows inserted or updated after a sort are not placed in sorted order. refresh() never calls applySortToDOM, and rows.insert goes to the given index (createTable.ts:598-609, 455-503).",
+    "Header seeding runs once and by position, while sort lookups go by key. If a header cell already has a data-key that differs from schema[i].key, the seed puts aria-sort='none' and tabindex='0' on the wrong header (createTable.ts:352-363). headers.set, insert, remove, and clear, and the factory clear(), rebuild the th cells without data-key, aria-sort, or tabindex, and nothing seeds them again. After that the click path finds no th[data-key], applySortToDOM finds no index, and sortKeys and sortDirection survive clear() (createTable.ts:534-584, 1522-1537, 2005-2011 in helpers.ts).",
+    "Column index misaligns under colspan or rowspan. indexByKey is the header cell's index within thead rows[0], and that index is applied to body row.cells[i]. A colspan='2' header or a body rowspan therefore sorts on the wrong column (createTable.ts:776-798). A th[data-key] in a second header row toggles state and aria-sort through closest('thead th[data-key]'), but rows[0] has no index for it, so the DOM is not reordered (createTable.ts:1326, 776-793).",
+    "Detail rows during a sort: a single-cell [data-table-expansion] row reads '' for any cellIndex above 0. The collator puts '' before everything, so detail rows gather at the top when ascending and at the bottom when descending. That breaks findDetailRow's nextElementSibling pairing, after which expansion of the moved data rows stops working (createTable.ts:786, 797-801; helpers.ts:1944-1948, 1352).",
+    "The comparator is not transitive on mixed columns. A pair goes through Number() only when both values parse, and otherwise through the collator. For '1e3', '1f', '20': 1e3 < 1f by the collator, 1f < 20 by the collator, and 20 < 1e3 by Number(), which forms a cycle. Number() also accepts '0x1F', '1e3', and padded ' 12 ' (helpers.ts:1344-1354; parsers.ts:29-39). Empty cells always sort first when ascending and last when descending, and no 'empties last' policy exists.",
+    "A data-sort-value that is present but empty is used as '' and does not fall back to text, because ?? skips only undefined (createTable.ts:799-800).",
+    "Multi-sort priority: a newly toggled key is appended as the lowest priority. No call promotes a key, and toggling a key that is already sorted keeps its position (createTable.ts:837-843). With multiple:true, several headers carry aria-sort at the same time. Inference: ARIA asks authors to set aria-sort on one header at a time.",
+    "onSortKeydown has no event.repeat guard, so holding Enter or Space cycles the sort repeatedly. It has no interactive-descendant exclusion either, so Enter on a button inside a sortable th toggles the sort and calls preventDefault on the button's keydown (createTable.ts:1341-1348).",
+    "Inference from browser behavior: appendChild removes and reinserts each row, so a focused control inside a moved row loses focus (createTable.ts:810).",
+    "Vue: ConsoleExample.vue:410-421 renders tbody rows with a keyed v-for while useTable runs sort.auto:true (ConsoleExample.vue:168-179), so the factory moves Vue-owned rows. Inference: the virtual DOM order diverges from the DOM. useTable rebuilds the factory with the same options object whenever the element ref changes, which seeds options.rows again and drops sort state (useTable.ts:217-241).",
+    "The guide contradicts the code on focus. guides/composables.md:413 claims an 'APG roving-tabindex focus model (arrow / Home / End / Tab)'. The code gives the focused cell tabindex='-1', and the table keeps tabindex='0' (createTable.ts:1264, 1594-1596). Sortable headers with tabindex='0' are extra tab stops inside role='grid' (createTable.ts:361-363), and arrow keys never reach headers because cellAt walks body rows only (createTable.ts:214-219).",
+    "TableColumn.title is declared and never read by createTable (types.ts:2324).",
+    "The test that pins aria-sort seeding through the app accepts null as well as 'none' (ConsoleExamplePage.test.ts:108). Deleting the seed write at createTable.ts:358-360 still passes it; only createTable.test.ts:133 catches that mutation.",
+    "Refer to the Orchestrator: the user's request names createForm (src/browser/factories/createForm.ts exists), and this reading does not cover it. createPointer.ts and _table.scss remain unread, as the reading itself declares."
+   ]
+  },
+  {
+   "guard_amendments": [
+    {
+     "amendment": "Pin the membership predicate and filter every event through it. A control is a member when `control.form === host`, it is an `HTMLInputElement`, `HTMLSelectElement`, or `HTMLTextAreaElement`, its `name` is non-empty and within the package's `NAME_LIMIT` (128 UTF-16 code units), and its input `type` is not `file`, `button`, `submit`, `reset`, `image`, or `hidden`. This excludes `fieldset`, `output`, `object`, `button`, and form-associated custom elements. Read a field's members by filtering `host.elements` on `name`. Never use `host.elements.namedItem(name)`, because it also matches an `id`. When an `input` or `change` event's target fails the predicate, ignore it: no `fill` and no rebuild. Add a proof that typing into a nameless search box inside the host leaves `dirty` false and causes no rebuild. List `hidden` among the guide's exclusions: a user can't edit a hidden input, and a page script writes one without an event.",
+     "why": "Objective lane. The brief maps 'every other input' and names no element filter for the `name`-bearing members of `host.elements` (guard-1-brief.md:14). The elements filter admits `button`, `fieldset`, `object`, and `output` (src/browser/helpers.ts:1796-1807). Any bubbling `input` event marks the elements form dirty, including events from unnamed controls, contenteditable regions, and filter boxes (form verdict missing item 6; createForm.ts:116-122). In this brief, such an event either throws from `fill` or hits the unknown-control rebuild rule (guard-1-brief.md:14) on every keystroke. The specimen also places an `output` inside the host (guard-1-brief.md:21).",
+     "urgency": "resume the lane now",
+     "package_surface": "`FormInterface.fill` and `touch` throw `FormError` `FIELD` for an undeclared name (form index.d.ts:551-552, 806-813); `NAME_LIMIT` = 128 (form index.d.ts:1170-1171)"
+    },
+    {
+     "amendment": "Guard controls associated through `form=\"ID\"` that sit outside the host. Add the `input` and `change` listeners on `host.ownerDocument`, filtered by the membership predicate (`target.form === host`). Keep one listener of each type per controller and remove both on destroy. Add a proof that an `input form=\"ID\"` placed outside the host moves `dirty` and emits `dirty.vn.guard`.",
+     "why": "`host.elements` includes outside controls (helpers.ts:1822), so the brief's schema includes them (guard-1-brief.md:14). Their events bubble through their own ancestors and never reach the host, so their edits never move `dirty` (form verdict missing item 5; createForm.ts:341-343). Leaving them in the schema with a stale value is a silent hole in the guard. Excluding them is the alternative, but that leaves a submitted field unguarded, so the document-level listener is the better design.",
+     "urgency": "resume the lane now",
+     "package_surface": "`FormInterface.fill(name, value)` (form index.d.ts:813)"
+    },
+    {
+     "amendment": "Carry the baseline forward when an unknown member control triggers a rebuild. Open the replacement document with `createForm(schema, { values })`, where `values` holds the old `baseline` entries for every surviving field plus the added control's default state (`defaultValue`, `defaultChecked`, or `defaultSelected`). Then `fill` the current values of every field. A rebuild must never clear dirtiness that it found. A field whose members have all left the host is dropped at the same reconcile, and its dirtiness goes with it; record that rule in the guide. Add a proof: edit field A, insert a named control B, type into B, and `dirty` stays true with no `clean.vn.guard`.",
+     "why": "The brief tells the guard to rebuild the document 'on the next `input` from an unknown control' (guard-1-brief.md:14). A rebuild from the current controls resets `baseline` to the edited values, so `dirty` turns false and `clean.vn.guard` fires while field A's unsaved edit remains. Elements avoids the problem only because it keeps no baseline (form hazard 'Repeated dirty notifications'; createForm.ts:112-126). Tension: whether removing an edited control counts as a change is product policy. The Orchestrator can rule it, and this amendment drops the field.",
+     "urgency": "resume the lane now",
+     "package_surface": "`FormOptions.values` seeds the answers that `baseline` overlays (form index.d.ts:759-766, 923-928); `createForm` throws `FIELD` when `options.values` names an undeclared field (form index.d.ts:140, 494-496), so restrict `values` to the surviving fields"
+    },
+    {
+     "amendment": "Replace `clear()` on reset with a read of the controls. In the task after the `reset` event, `fill(values)` with every member's current value, so the document equals the DOM whatever the reset did. Defer with a task, never a microtask. Add three proofs: (a) a reset through a real click and a reset through `host.reset()` from script both read clean; (b) submit a typed value, which rebuilds the baseline, then reset, and `dirty` reads true because the browser restored the markup defaults, which differ from the submitted baseline; (c) a reset that a page listener cancels with `preventDefault()` leaves `dirty` unchanged.",
+     "why": "`clear()` writes `baseline`, but the browser's reset writes the controls' default state. The two differ after a submit rebuild (guard-1-brief.md:14) and when the browser restored form state before boot, so `clear()` makes the document depart from the DOM. A cancelled reset leaves the controls unchanged, and `clear()` would still clean the document (elements reset veto: createForm.ts:326-333). Elements defers with `queueMicrotask` (createForm.ts:337), and no elements test pins reset (form tests 'NOT PINNED'). Inference from the HTML event loop: for a user-activated reset, the microtask checkpoint after the listener returns runs before the reset algorithm restores the values. That is why both the click proof and the script proof are needed. This inference needs a reading under 141 and 153.",
+     "urgency": "resume the lane now",
+     "package_surface": "`FormInterface.clear` returns to `baseline` (form index.d.ts:887-894); `fill(values)` (form index.d.ts:806)"
+    },
+    {
+     "amendment": "Resolve the submit contradiction: drop 'when not prevented by another listener'. Every `submit` event that reaches the guard's host listener settles and rebuilds the document, whatever later listeners do. State in the guide that a page which cancels a submit and then fails to save has no means to re-mark the form dirty. Add a guide sentence and a proof that `form.submit()` fires no `submit` event: a page that submits that way calls `clean()` first, or the prompt fires on its own submission. The user's ruling in the following question can reverse this amendment.",
+     "why": "The contract rebuilds only for an unprevented submit (guard-1-brief.md:14). The proofs, the specimen, and the journey all expect a rebuild when the page's handler prevents navigation (guard-1-brief.md:20-21; catalog-2026-10-07-systems.md:194). No listener position lets the guard read a later listener's `preventDefault()` before the navigation's `beforeunload`. Elements shows the same trap: it dispatches its submit before vetoing an invalid submit, so a consumer that rebuilds on that event rebuilds on a submission the factory then cancels (form verdict missing items 1-2; createForm.ts:316-324). The catalog's binder lesson prefers `requestSubmit()` over `submit()` (catalog-2026-10-07-systems.md:127).",
+     "urgency": "resume the lane now",
+     "package_surface": "`FormInterface.submit` settles on a passing submit (form index.d.ts:886, 967-979); `submit` fires only on a passed submit (form index.d.ts:693); the guard's schema declares no rule, so a submit passes"
+    },
+    {
+     "amendment": "Read control properties directly, and never construct `FormData` to read values.",
+     "why": "`new FormData(host)` fires `formdata` on the host each time it is built. Elements builds one per snapshot, so page listeners ran on mount and on every input, change, check, and refresh (form verdict correction 4; helpers.ts:1836; createForm.ts:310-314). `FormData` also yields `File` objects and leaves out disabled controls, which differs from the brief's field model.",
+     "urgency": "resume the lane now",
+     "package_surface": "`FieldValue` = `string | number | boolean | readonly string[]` (form index.d.ts:446)"
+    },
+    {
+     "amendment": "Pin each field kind to a package control. A name carried by one checkbox maps to `confirm`, holding `checked`. A name carried by several checkboxes maps to `checkbox`, holding the checked values in document order, with `choices` set to the members' de-duplicated `value` strings. A `select multiple` maps to `checkbox`, holding the selected values in option order, with `choices` from its options. A `select` and a radio group map to `select` with de-duplicated `choices` and `open: true`; an unchecked group or an empty selection reads as absent (`undefined`). A text-like `input` or a `textarea` maps to `text`. Exclude a name whose members span more than one of these kinds, and list it in the guide.",
+     "why": "The brief maps every checkbox to a boolean and leaves the multiple-select kind open (guard-1-brief.md:14). A shared-name checkbox group carries several values (elements mapping item 4 and the duplicate-names hazard; types.ts:1112-1116). The package has no multiple `select`: only `checkbox` holds a list. Without `open: true`, an option that a script adds after construction makes `fill` refuse the value. Reading lists in document order makes the comparison order-stable.",
+     "urgency": "resume the lane now",
+     "package_surface": "`CheckboxField` (form index.d.ts:38-42), `ConfirmField` (104-107), `SelectField.open` (1238-1243), `FieldValue` (440-446), `matchesValue` compares lists by order (1152-1159)"
+    },
+    {
+     "amendment": "Handle package refusals in the guard; never let one escape a listener. Before each `fill`, and at construction, test the value with `matchesField(field, value)`. When the control can't hold the value, write `undefined` instead. A value longer than `STRING_LIMIT` (65536 code units), or a list longer than `LIST_LIMIT` (1024), therefore reads as a change against any baseline that held a value. When the package refuses a host's schema, for example more names than `FIELD_LIMIT` (512) or a list longer than `CHOICE_LIMIT` (1024), `createGuard` throws that `FormError`, and the plugin skips the host and binds the others. Add a proof that pasting a value longer than `STRING_LIMIT` into a `textarea` turns `dirty` true and throws nothing. List the limits in the guide.",
+     "why": "Elements keeps raw strings and has no limits (form hazard 'Locale, number or date parsing, and large forms'; helpers.ts:1834-1837). The package gate refuses over-long values on every write, so a long paste would throw from the guard's `input` listener and leave the document stale. Tension: the plugin either skips a refused host silently or announces it. The subjective lane can rule whether an event names that refusal.",
+     "urgency": "resume the lane now",
+     "package_surface": "`matchesField` (form index.d.ts:1139-1150); `FIELD_LIMIT` (294-295), `CHOICE_LIMIT` (44-45), `LIST_LIMIT` (1122-1123), `STRING_LIMIT` (1255-1256); `FormErrorCode` (680-684)"
+    },
+    {
+     "amendment": "Cancel the pending reset task on destroy. Add a proof that a reset followed by `destroy()` in the same task emits no `clean.vn.guard` and throws nothing.",
+     "why": "Elements guards every handler with a destroyed flag (form hazard 1; createForm.ts:61, 303-304, 327-328). The package refuses every write to an abandoned document, so a reset task that runs after teardown would throw `ABANDONED` from `fill`. The brief names the teardown pattern (guard-1-brief.md:9), but its proofs cover only the window listener (guard-1-brief.md:20).",
+     "urgency": "resume the lane now",
+     "package_surface": "`destroy` abandons an unsettled form, and every later write is refused (form index.d.ts:895-903, 967-979)"
+    },
+    {
+     "amendment": "Add a guide sentence: a script that writes a member control's value fires no `input` event, so the page dispatches a bubbling `input` event after the write or calls `clean()` when the write is a save. Record a reading of whether Chromium autofill dispatches `input` events under 141 and 153.",
+     "why": "Programmatic writes leave the elements model stale and never set dirty (form verdict missing item 7; createForm.ts:265-281). The guard has the same blind spot, because the value property has no observer.",
+     "urgency": "follow-up unit",
+     "package_surface": "`FormInterface.fill` is the only entry for values (absorb README.md:12)"
+    }
+   ],
+   "sorter_contract": [
+    {
+     "item": "Binding and scope. The host is a `table.table[data-vn-sort]`. The sorter reads exactly `host.tHead.rows` and `host.tBodies[0].rows`, and never a descendant `querySelectorAll`. A click resolves only when the header cell's `closest('table') === host`. The sorter refuses, and leaves untouched, a host with more than one `tbody`, a header cell with `colspan` or `rowspan` above 1, or a body cell with either span above 1, and the guide lists those refusals. It never sorts `thead` or `tfoot` rows.",
+     "why": "Elements reads every `tbody` but sorts only `tBodies[0]` (table verdict correction 2; createTable.ts:771). It strips `aria-sort` from nested tables' headers through descendant queries (table correction 4; createTable.ts:742, 751). It applies a header's `cellIndex` to body cells, which misaligns under `colspan` and `rowspan` (table verdict missing item 5; createTable.ts:776-798).",
+     "package_surface": "`COLUMN_LIMIT` = 256 (table index.d.ts:114-115); one `TableSchema.columns` list per document (1254-1260)"
+    },
+    {
+     "item": "Column keys and sortability. Each header cell gets one column. Its key is the cell's position in the header row as a decimal string, which stays under `NAME_LIMIT` and stays unique; the header cells are left without a `data-key` attribute. A column offers sorting when its `th` holds a `button`. The sorter listens to that button's `click` only. It adds no `tabindex` and no `keydown` handler to the `th`, and a click elsewhere in the `th`, or on another control inside it, does not sort.",
+     "why": "Elements makes every target inside a sortable `th` toggle the sort, and adds `tabindex=0` plus a `keydown` path with no `event.repeat` guard (table mapping 'no interactive-descendant exclusion'; verdict missing item 10; createTable.ts:1324-1348, 361-363). Its positional seeding of `data-key` can put `aria-sort` on the wrong header (verdict missing item 4; createTable.ts:352-363). A native button carries focus, Enter, and Space. Tension: the subjective lane rules whether later filter and pager units need an authored column key instead of a positional one.",
+     "package_surface": "No `sortable` member; whether a heading offers sorting is the host's decision (table index.d.ts:128-129); `NAME_LIMIT` = 128 (557-559)"
+    },
+    {
+     "item": "Row identity. The schema declares a `hidden` `text` key column. Each `tr` gets a string key held in a `Map` from key to row element. Either the sorter mints the key for the element at read time, or it uses the author's key, as the user's ruling in the questions decides. The key never derives from the row's index.",
+     "why": "Elements falls back from `data-id` to `data-index` to `''`, which is positional, unstable, and click-unreachable (table verdict correction 1; helpers.ts:1930-1938). The package refuses positional and missing keys.",
+     "package_surface": "`TableSchema.key` is required, and no positional fallback exists (table index.d.ts:1233-1237); `ColumnBase.hidden` (125-126); `rows.add` throws `KEY` (675-676)"
+    },
+    {
+     "item": "Cell values. A cell's sort value is the `value` of its `data` element, else the `datetime` of its `time` element, else its trimmed `textContent`. A value that is empty after trimming is absent: the row carries no key for that column. It is never `''`.",
+     "why": "Elements reads an empty `data-sort-value` as `''` and does not fall back to the text (table verdict missing item 8; createTable.ts:799-800). It puts `''` first, which scatters blank cells and detail rows (missing item 6). The catalog fixes `data value` and `time datetime` as the key sources (catalog-2026-10-07-systems.md:60).",
+     "package_surface": "Absence is a missing key, never `null` or `''` (table index.d.ts:964-972); absent cells sort first ascending and last descending (absorb README.md:21)"
+    },
+    {
+     "item": "Column cell kind, fixed once per column. A column is `number` when every present value matches a strict decimal grammar (optional sign, digits, optional fraction); its cells hold `Number(value)`. Every other column is `text`. A `text` column gets a `CellComparator` built on `Intl.Collator`, with the locale from the host's nearest `lang` attribute and `numeric: true`. That comparator places `undefined` first, and a tie falls back to store order. `time datetime` columns stay `text` and sort correctly only in one offset and precision; the guide states that limit.",
+     "why": "Elements decides numeric or collator comparison per pair, so a mixed column is not transitive ('1e3', '1f', '20' form a cycle). `Number()` also accepts '0x1F', '1e3', and padded values (table verdict missing item 7; helpers.ts:1344-1354). Its `sensitivity: 'base'` collator equates accented and unaccented letters (table correction 5; helpers.ts:1342). The package's default text order is UTF-16 code units.",
+     "package_surface": "`CellComparator` receives `undefined` for an absent cell and describes ascending order (table index.d.ts:40-58); `TableOptions.comparators` (1168-1171, 1188); a datetime is `text` (151-153); a `NaN` comparison is a tie (absorb README.md:20)"
+    },
+    {
+     "item": "Request flow. On a header button click, read `sort.order(column)`. The next state cycles from no term to `ascending` to `descending` and back to no term. Narrow the direction to `TableDirection` before any `set`. Dispatch a cancelable `sort.vn.sorter` on the host whose detail holds `column` and the next `direction`, where `direction` is absent when the next state has no term. When a listener cancels it, change nothing. Otherwise keep a single term: call `remove()` and then `set(order)` when the column changes, and `set(order)` alone when only the direction flips.",
+     "why": "Elements' sort event is not cancelable and fires after the state and the DOM have moved (table hazard 'Cancelable / vetoable sort'; createTable.ts:296-299, 855-858). The package has no toggle verb and no veto. One term keeps `aria-sort` on one header.",
+     "package_surface": "`SortManagerInterface.order`, `set`, and `remove` (table index.d.ts:838-904); `TableDirection` (989-995); events fire after commit with no veto (1027-1032)"
+    },
+    {
+     "item": "Redraw. On the table's `sort` event, schedule one redraw per synchronous batch, so the two emissions from `remove()` then `set()` move rows once. The redraw places each row element in `view` order with `moveBefore()`, moving only the rows that are out of place. Cycling back to no term redraws store order, which is the markup's original order. Add a proof that a focused button inside a moved row keeps focus under Chromium 141 and 153.",
+     "why": "Elements re-appends rows with `appendChild`, which loses focus inside a moved row (table verdict missing item 11; createTable.ts:810). It never restores the original order after a sort is cleared (table mapping 'When no sort is active'; createTable.ts:773). The catalog names `moveBefore()` (catalog-2026-10-07-systems.md:60).",
+     "package_surface": "`view` is recomputed on every read (table index.d.ts:1111-1117); `rows.rows()` keeps store order (656-669); replacing a column emits twice (absorb README.md:21)"
+    },
+    {
+     "item": "`aria-sort`. Write `ascending` or `descending` on the `th` of the single sorted column, and remove the attribute from every other sortable header. Write no `aria-sort=\"none\"`, because the button conveys that the column sorts. At boot, read an author's `aria-sort` of `ascending` or `descending` as the initial term, seeded with `set` and no redraw. Ignore `none`, `other`, and an absent attribute. Write no `aria-rowindex` or `aria-rowcount`; the deferred pager owns both.",
+     "why": "Elements removes the `none` advertisement it seeded (table contradiction; createTable.ts:341-343, 744). It puts `aria-sort` on several headers under multi-sort (verdict missing item 9). Its `aria-rowindex` goes stale after a sort, because a sort never refreshes (table correction 8). The pager row owns those attributes (catalog-2026-10-07-systems.md:129).",
+     "package_surface": "`sort.orders()` gives the first term (table index.d.ts:860-865); `set` does not check `direction` at runtime (absorb README.md:21)"
+    },
+    {
+     "item": "Live markup. Observe the bound `tbody` with one `MutationObserver` covering `childList`, `characterData` across the subtree, and the `value` and `datetime` attributes. Reconcile through `rows.add`, `rows.remove`, and `rows.update`. Discard the records the sorter's own moves produce by calling `takeRecords()` after each redraw. Redraw only while a term is set.",
+     "why": "Elements has no observer, never refreshes after a sort, and leaves inserted rows unsorted (table hazard 'Live DOM mutations'; verdict missing items 1 and 3; createTable.ts:455-503, 598-609).",
+     "package_surface": "`RowManagerInterface.add`, `update`, and `remove` validate the whole batch before writing (table index.d.ts:670-739); a write that changes nothing announces nothing (1031-1032)"
+    },
+    {
+     "item": "Refusals and limits. A host whose cells or schema the package refuses (`SCHEMA`, `KEY`, or `CELL`; a cell longer than `STRING_LIMIT`, a key column with a duplicate) makes `createSorter` throw the `TableError`. The plugin skips that host and binds the others. Every package limit appears in the guide.",
+     "why": "Elements accepts any string and has no refusal path, so it gives no lesson here; the package refuses whole payloads.",
+     "package_surface": "`TableErrorCode` (table index.d.ts:1016-1025); `STRING_LIMIT` (918-919); `Table` constructor throws (927-935)"
+    },
+    {
+     "item": "Teardown. Remove listeners and disconnect the observer first, then cancel a pending redraw, then call `table.destroy()` alone. Restore each `th`'s author `aria-sort` and remove only the `aria-sort` values the sorter wrote. Leave rows in their last drawn order. Add a proof that a click after destroy changes nothing and throws nothing.",
+     "why": "Elements' teardown strips author `aria-sort` and leaves the attributes it seeded (table hazard 'Teardown removes author aria-sort'; createTable.ts:1497-1520). After destroy, its sort still changes in-memory state (table correction 3; createTable.ts:823-855). The dispose test there counts listeners only (table contradiction; setupBrowser.ts:315-337).",
+     "package_surface": "`destroy` is idempotent, later writes raise `DESTROYED`, and getters keep answering (table index.d.ts:1131-1139); `Table.destroy` destroys its emitter (absorb README.md:22)"
+    },
+    {
+     "item": "Multiple tables and nesting proofs. Under 141 and 153, prove that a `tbody` with a blank cell sorts it first ascending and last descending; that a mixed text and number column orders transitively; that a nested table inside a cell keeps its own `aria-sort`; and that a cancelled `sort.vn.sorter` leaves the order and `aria-sort` unchanged.",
+     "why": "Elements pins no case that tells the numeric path from the collator path, and no case for the tie-break, nested tables, or `aria-sort` cleanup (table verdict correction 6; tests 'NOT PINNED').",
+     "package_surface": "`sortRows` is stable in both directions (table index.d.ts:906-916; absorb README.md:21)"
+    }
+   ],
+   "binder_items": [
+    "The package already coalesces validation: project errors to the DOM on the package's `validate` event, which fires only when the error list's content changes. Never project on each DOM `invalid` event. Elements needed a pending flag and a microtask to collapse the `invalid` burst (createForm.ts:283-308); `FormEventMap.validate` (form index.d.ts:691, 698) makes that flag unnecessary.",
+    "Choose one validity source: `form.errors` and `form.valid` from the package. Never mix them with `checkValidity()`. In elements, `valid` (input, select, and textarea only) and the native `checkValidity()` result disagree (form verdict missing item 8; helpers.ts:1850; createForm.ts:140-142).",
+    "When a binder mirrors `invalidate(name, message)` into `setCustomValidity`, it must clear the native message on that field's next `fill` and on `clear`. Native custom validity survives `form.reset()` (form verdict correction 2; createForm.ts:239-250). The package holds an external failure until the field is filled again or the form is cleared (form index.d.ts:821-830).",
+    "Map a control that is disabled, or inside a disabled `fieldset`, to the package's `disable(name)`, so the field is neither evaluated nor submitted. Elements reaches the same result through `willValidate` (helpers.ts:1839-1851; guides/w3c/elements/forms.md:1045-1056), and `disable` keeps the answer (form index.d.ts:831-841).",
+    "Treat a radio group's validity as a group. Elements checks `willValidate` on the first member only (form verdict missing item 10; createForm.ts:231-232).",
+    "Write `aria-invalid` only on the fields the binder marked, record them, and remove exactly those on every pass and at teardown. Elements writes an explicit 'false' after validation (createForm.ts:62-88). The Q2 ruling of 2026-10-08 seals CSS-only Bootstrap components (catalog-2026-10-07-systems.md:164). The binder's `.is-invalid` and `.was-validated` writes need a fresh ruling before the binder brief; the catalog row's shape predates that ruling (catalog-2026-10-07-systems.md:127).",
+    "Focus: `reportValidity()` and `requestSubmit()` without `novalidate` move focus to the first invalid control natively (form verdict correction 3). A binder that runs its own first-error focus sets `novalidate` on the host, or focus moves twice.",
+    "Decide validity before announcing a submit, and put that verdict in the event. Elements dispatches its submit before it vetoes an invalid submit (form verdict missing item 2; createForm.ts:322-323).",
+    "Copy `validationMessage` strings, never `ValidityState` objects, because a `ValidityState` is live (guides/w3c/elements/forms.md:1058-1060).",
+    "Reuse the guard's membership predicate (form owner, element class, name, and excluded types) and its document-level `form=\"ID\"` listener, imported from `src/browser/guards/` under the sharing law, so the binder and the guard agree on which controls a form owns (catalog-2026-10-07-systems.md:68)."
+   ],
+   "rejected": [
+    {
+     "lesson": "A sticky `dirty` boolean set by any `input` or `change` event, with no baseline (createForm.ts:112-126).",
+     "why": "The package derives `dirty` against a fixed `baseline` (form index.d.ts:759-766, 784-785). The Derive state law forbids a second flag that can drift."
+    },
+    {
+     "lesson": "A values model built on `FormData` entries, raw strings or `File` objects (helpers.ts:1834-1837).",
+     "why": "The package holds typed `FieldValue` answers (form index.d.ts:446). Building `FormData` fires `formdata` at the host on every read (form verdict correction 4)."
+    },
+    {
+     "lesson": "Cancelable re-dispatches of `submit` and `reset`, and a `submit.invalid` option (createForm.ts:316-333).",
+     "why": "The guard announces state only (`dirty.vn.guard` and `clean.vn.guard` with no detail, guard-1-brief.md:15) and never cancels a submit or a reset. Cancelling is the page's decision (Mechanism, not product policy)."
+    },
+    {
+     "lesson": "Elements' `touched` tracking on `focusout`, `check()` and `report()`, `validity.*`, `aria-invalid`, and `data-form-validated` on the guard.",
+     "why": "None of these move `dirty`, and the guard's API is `dirty`, `clean()`, and `destroy()` (guard-1-brief.md:17). These lessons belong to the binder (Minimal public API)."
+    },
+    {
+     "lesson": "The imperative `fields` surface: `field`, `fields`, `has`, `focus`, `enable`, and `disable` (createForm.ts:202-226).",
+     "why": "No consumer for the guard, so the Minimal public API law forbids it. The package already offers `disable` and `enable` for the binder (form index.d.ts:831-880)."
+    },
+    {
+     "lesson": "The namespaced `elements:form:*` and `elements:table:*` event names (constants.ts:453-463, 512-520).",
+     "why": "Veneer names events `NAME.vn.MODULE` in the Bootstrap style (`dirty.vn.guard`, `sort.vn.sorter`), and the single-word law governs those names."
+    },
+    {
+     "lesson": "Reactive refs, `effectScope`, and the `useForm` and `useTable` Vue adapters (useForm.ts:62-74; useTable.ts:217-241).",
+     "why": "Veneer's native modules are browser plugins with `ComponentContext` ownership (guard-1-brief.md:9). They have no Vue face, so the stale-options and ref-swap hazards there have no counterpart."
+    },
+    {
+     "lesson": "`sort.toggle` with the `mandate`, `order`, `multiple`, and `auto` options (createTable.ts:107-114, 823-859).",
+     "why": "The package exposes no cycle verb (table index.d.ts:841-844). The sorter owns the cycle internally and exposes no toggle. `auto: false` and `multiple` have no consumer, and `mandate` is product policy."
+    },
+    {
+     "lesson": "The `data-sort-value` custom attribute (createTable.ts:794-800).",
+     "why": "Veneer reads the standard `data value` and `time datetime` (catalog-2026-10-07-systems.md:60). A second custom attribute would give one concept two terms."
+    },
+    {
+     "lesson": "Per-pair type inference in the comparator, with `Number()` or a base-sensitivity collator (helpers.ts:1333-1354).",
+     "why": "It is not transitive on mixed columns (table verdict missing item 7). The package fixes one comparison per column through `ColumnCell` or a `CellComparator` (table index.d.ts:58, 160)."
+    },
+    {
+     "lesson": "Seeding `aria-sort=\"none\"` and `tabindex=\"0\"` on sortable `th` cells, and a `keydown` sort path (createTable.ts:340-364, 1341-1348).",
+     "why": "The header button carries focus and activation. ARIA puts `aria-sort` on one header at a time, and the extra tab stops are a hazard elements itself shows (table verdict missing item 13)."
+    },
+    {
+     "lesson": "The `role=grid` keyboard focus, column resize, row selection, row expansion, pagination, and the structural CRUD sub-domains (createTable.ts:515-1316).",
+     "why": "Each one either is deferred behind Sorter 1 (catalog-2026-10-07-systems.md:129-133) or belongs to Collapse (catalog-2026-10-07-systems.md:118). The sorter reads markup and writes no structure."
+    },
+    {
+     "lesson": "Row identity from `data-index`, or positional fallback, or `options.value` (helpers.ts:1930-1938; createTable.ts:312-322).",
+     "why": "The package refuses positional identity (table index.d.ts:1233-1237)."
+    },
+    {
+     "lesson": "Elements' `queueMicrotask` deferral after `reset` (createForm.ts:337).",
+     "why": "It is unpinned there, and by inference it reads old values for a user-activated reset. The guard amendment replaces it with a task and two proofs."
+    }
+   ],
+   "questions": [
+    "When page code prevents a submit (for example, to save through a fetch), does the guard treat that submit as a save and read clean? The running brief says no in its contract (guard-1-brief.md:14) and yes in its proofs, specimen, and journey (guard-1-brief.md:20-21; catalog-2026-10-07-systems.md:194), and no listener can see a later listener's veto before the page unloads. Recommendation: yes. Every `submit` event that reaches the form rebuilds the baseline. A page whose save then fails has no way to re-mark the form dirty, and the guide states that limit.",
+    "For the table sorter, may the sorter mint a row key for each `tr` element when it binds (held in a hidden key column and mapped to the element), or must every row carry an author key? `@orkestrel/table` refuses positional and missing keys (table index.d.ts:1233-1237), and elements' positional fallback is the hazard to avoid (helpers.ts:1930-1938). Recommendation: mint per element. The key names the row element, not its position, so any Bootstrap table qualifies without extra markup."
+   ]
+  }
+ ]
+}
