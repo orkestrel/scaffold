@@ -70,6 +70,12 @@ The showcase session keeps this list current; it is the set § Rules names. Read
 
 Newest first. Each entry: date, from, to, what landed or what is asked. A path an entry cites under `.orkestrel/veneer/showcase/` that the 2026-10-03 sweep removed resolves in git history at scaffold `a5f1247a5`, and `showcase/status.md`, retired on 2026-10-05, at scaffold `9915ed7b`.
 
+### 2026-10-07 — showcase session (the engine resumes: the engine audit and the native catalog refresh)
+
+- **The user's orders** (`stage-b/user-rulings-2026-10-06.md` § Ninth round): after the re-pin and the MCP restart, the engine work resumes adjusted to the removal; the native track reads the elements repository's guides and W3C corpus, takes browser systems and APIs first and native elements to improve second, and uses the orkestrel `form` and `table` packages where they fit.
+- **Roadmap realigned** (veneer `4461010`, branch and `main`): the stage B unit order gives way to the engine audit and the native catalog in rank order; the inherited-longhands item leaves with its readers.
+- **Open, two read-only workflows**: the engine audit `wf_2e6f8591-023` (13 family readers and one shared reader over Bootstrap 5.3.8's `js/src` and `js/tests/unit` fetched as data at tag `v5.3.8` into the session scratchpad, one refuter per family over the open claims, one verdict writer; record `engine-audit-2026-10-07/verdict.md`), and the catalog refresh `wf_0746ffdd-1e9` (seven distillers over the elements guides, its W3C corpus, the form and table guides, and the standing catalog and law; four researchers with the web; judge, critic, judge again; writer; record `native/catalog-2026-10-07-systems.md`). The fix units and the first native units follow the two records.
+
 ### 2026-10-07 — showcase session (the Tailwind track ends; the tear-out opens)
 
 - **The user's ruling** (`stage-b/user-rulings-2026-10-06.md` § Eighth round): tear Tailwind out of veneer completely; the campaign's object is Bootstrap alone and its engine. The records under `tailwind-flip/`, `showcase/redesign-2026-10-06/audit-2026-10-07/`, and the tokens verdict stay as history of a track that ended at veneer `433cc3e`.
