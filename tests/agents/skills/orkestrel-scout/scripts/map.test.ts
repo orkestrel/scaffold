@@ -155,6 +155,12 @@ describe('map.ts', () => {
 			expect(runSkillScript(SCRIPT, ['--tree', '.', '--out'], { cwd: scratch.path }).status).toBe(
 				64,
 			)
+			const census = runSkillScript(SCRIPT, ['--tree', '.', '--census', '--vn-drag-color'], {
+				cwd: scratch.path,
+			})
+			expect(census.status).toBe(64)
+			expect(census.stderr).toContain('--census given with no value')
+			expect(census.stdout).toBe('')
 		} finally {
 			scratch.destroy()
 		}

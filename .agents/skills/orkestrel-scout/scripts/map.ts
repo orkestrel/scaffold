@@ -9,8 +9,9 @@
 // heading the named file, or the same file, does not carry. Walks skip node_modules, .git, dist,
 // tmp, .orkestrel, .idea, and host.json; --paths narrows a census or refs walk. Modes combine, each
 // printing its section; --json prints one object; --out writes the output to FILE instead of the
-// terminal. Give each flag once; a later duplicate is not read. Exit 0, or 64 when no mode is
-// given or --refs names no path.
+// terminal. Give each flag once; a later duplicate is not read. A value that opens with `--` is a
+// missing value, so census a custom property without its leading dashes. Exit 0, or 64 when no
+// mode is given or a flag is given with no value.
 import { existsSync, readFileSync, statSync, mkdirSync, writeFileSync } from 'node:fs'
 import { basename, dirname } from 'node:path'
 import {
@@ -300,7 +301,17 @@ function renderReport(report: Report): string {
 }
 
 function main(argv: readonly string[]): number {
-	const missing = readMissingFlags(argv, ['--refs', '--paths', '--out'])
+	const missing = readMissingFlags(argv, [
+		'--tree',
+		'--headings',
+		'--frontmatter',
+		'--exports',
+		'--census',
+		'--refs',
+		'--anchors',
+		'--paths',
+		'--out',
+	])
 	if (missing.length > 0) {
 		console.error(`map: ${missing.join(', ')} given with no value`)
 		return 64
