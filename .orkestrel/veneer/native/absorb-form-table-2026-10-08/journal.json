@@ -1,0 +1,579 @@
+{
+ "run": "wf_8627d022-35a",
+ "agents": 4,
+ "results": [
+  {
+   "package": "@orkestrel/table (installed at /home/user/veneer/node_modules/@orkestrel/table). Exports `.` only: import -> `./dist/src/core/index.js` with types `./dist/src/core/index.d.ts`; require -> `./dist/src/core/index.cjs` with types `./dist/src/core/index.d.cts`; plus `./package.json` (package.json:22-34). `sideEffects: false` (package.json:18). Runtime dependencies: `@orkestrel/contract` ^0.0.19 and `@orkestrel/emitter` ^0.0.12 (package.json:64-67); the emitter is nested at node_modules/@orkestrel/table/node_modules/@orkestrel/emitter, version 0.0.12 (its package.json:3). The build copies `index.d.ts` to `index.d.cts` (package.json:57), and both files hold 69 `export declare` lines. README:22 says \"Host-independent: no `node:*`, no DOM\". The guide /home/user/veneer/guides/table.md is 1557 lines; I read all of them. The catalog (/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md) was read at lines 50-74, plus grep hits at lines 128-133, 157, and 159.",
+   "version": "The installed package is 0.0.8 (node_modules/@orkestrel/table/package.json:3). /home/user/veneer/package.json:125-126 declares `\"@orkestrel/form\": \"^0.0.9\"` and `\"@orkestrel/table\": \"^0.0.8\"`. Four sources name a version, and they disagree. (1) The relayed user request: \"Add @orkestrel/form 0.0.8 and @orkestrel/table 0.0.7\". (2) The computed task: table 0.0.8. (3) Catalog:60 says \"`@orkestrel/table` 0.0.7 is the strongest fit\". (4) Catalog:157 asks about \"`@orkestrel/form` 0.0.8 and `@orkestrel/table` 0.0.7\" and says \"Neither is declared (`veneer/package.json:123-133`)\". That claim no longer matches package.json:125-126. The installed 0.0.7 surface was not available to read. Every fact in this report is for 0.0.8.",
+   "surfaces": [
+    {
+     "name": "createTable",
+     "shape": "function createTable(schema: TableSchema, options?: TableOptions): TableInterface",
+     "guide": "guides/table.md:116 (Surface row); :31-64 (Open a table fence); :1355-1357 (same construction as `new Table`)",
+     "types": "dist/src/core/index.d.ts:246 (doc :206-245; throws `SCHEMA` / `KEY` / `CELL` :212-213)",
+     "fit": "This is the only way in. It takes a data schema and rows. It takes no element. The sorter must build the schema and rows from the `table` element itself (inference)."
+    },
+    {
+     "name": "Table (class)",
+     "shape": "class Table implements TableInterface { constructor(schema: TableSchema, options?: TableOptions); get emitter(): EmitterInterface<TableEventMap>; get schema(): TableSchema; get rows(): RowManagerInterface; get sort(): SortManagerInterface; get filter(): FilterManagerInterface; get selection(): SelectionManagerInterface; get expansion(): ExpansionManagerInterface; get pagination(): PaginationManagerInterface; get view(): readonly TableRow[]; get count(): number; get destroyed(): boolean; clear(): void; destroy(): void }",
+     "guide": "guides/table.md:114; :1355-1368",
+     "types": "dist/src/core/index.d.ts:925-962",
+     "fit": "Use the class where a sorter class holds a table as its own `#field` (guide:1356-1357)."
+    },
+    {
+     "name": "TableInterface",
+     "shape": "interface TableInterface { readonly emitter: EmitterInterface<TableEventMap>; readonly schema: TableSchema; readonly rows: RowManagerInterface; readonly sort: SortManagerInterface; readonly filter: FilterManagerInterface; readonly selection: SelectionManagerInterface; readonly expansion: ExpansionManagerInterface; readonly pagination: PaginationManagerInterface; readonly view: readonly TableRow[]; readonly count: number; readonly destroyed: boolean; clear(): void; destroy(): void }",
+     "guide": "guides/table.md:115; :1251-1256 (methods); :888-934 (lifecycle)",
+     "types": "dist/src/core/index.d.ts:1094-1140. :1078-1079 says it \"renders nothing, reads no document, and names no host type\". :1112-1117 says `view` is filtered, then sorted, then paged, and is computed on every read. :1132-1139 says `destroy` is idempotent and every later write raises `DESTROYED`.",
+     "fit": "`view` is the sorted order the sorter projects onto the DOM. `destroy` is the release call."
+    },
+    {
+     "name": "TableSchema",
+     "shape": "interface TableSchema { readonly name?: string; readonly label?: string; readonly help?: string; readonly key: string; readonly columns: readonly TableColumn[] }",
+     "guide": "guides/table.md:85; :492-506 (identity required; no default column, positional fallback, or key generation)",
+     "types": "dist/src/core/index.d.ts:1254-1260. :1234-1237 says `key` is required, must name a declared column, and a row is refused when that cell is missing, empty, or not a string. An index is not an identity.",
+     "fit": "The sorter must declare one `text` (or `choice`) identity column. Audit refuses a `number` or `flag` key column (guide:1195). `tr` elements have no package-supplied identity."
+    },
+    {
+     "name": "ColumnBase",
+     "shape": "interface ColumnBase { readonly key: string; readonly label?: string; readonly help?: string; readonly hidden?: boolean; readonly meta?: JSONRecord }",
+     "guide": "guides/table.md:79; :405-414 (`meta` is never read and round-trips; `hidden` columns are still sorted)",
+     "types": "dist/src/core/index.d.ts:135-141. :128-129 says there is no `sortable` or `filterable`: every column sorts, and the host decides whether a heading offers sorting.",
+     "fit": "The sorter decides which `th` gets a button. The schema cannot mark a column unsortable."
+    },
+    {
+     "name": "TableColumn variants (TextColumn, NumberColumn, FlagColumn, ChoiceColumn)",
+     "shape": "type TableColumn = TextColumn | NumberColumn | FlagColumn | ChoiceColumn; interface TextColumn extends ColumnBase { readonly cell: 'text' }; interface NumberColumn extends ColumnBase { readonly cell: 'number' }; interface FlagColumn extends ColumnBase { readonly cell: 'flag' }; interface ChoiceColumn extends ColumnBase { readonly cell: 'choice'; readonly choices: readonly ColumnChoice[] }",
+     "guide": "guides/table.md:80-84; :260-276 (cell table: text lexical, number magnitude, flag false<true, choice declared order); :278-360",
+     "types": "dist/src/core/index.d.ts:987 (union); :1284-1286 (text, \"compared lexically\"); :565-567 (number, \"compared by magnitude\"); :439-441 (flag, \"false before true\"); :89-92 (choice, \"compared by the order that list declares\")",
+     "fit": "The chosen cell type sets the comparison. A `data value` key would need a `number` cell to sort numerically. A `time datetime` key is a `text` cell."
+    },
+    {
+     "name": "ColumnCell",
+     "shape": "type ColumnCell = 'text' | 'number' | 'flag' | 'choice'",
+     "guide": "guides/table.md:77; :362-403 (temporal data is text); :1096 (`isColumnCell('date')` is false)",
+     "types": "dist/src/core/index.d.ts:160. :151-153 says date, time, and timestamp are `text` holding canonical ISO, and lexical order is chronological only with one offset, one precision, and normalized midnight. There is no temporal cell.",
+     "fit": "There is no date cell for `time datetime` keys."
+    },
+    {
+     "name": "ColumnChoice",
+     "shape": "interface ColumnChoice { readonly value: string; readonly label: string; readonly help?: string }",
+     "guide": "guides/table.md:78; :339-342",
+     "types": "dist/src/core/index.d.ts:170-174 (declared order is sort order, :167-168)",
+     "fit": "Use it only if the sorter models a declared-order column. A cell value outside the list is refused at admission (d.ts:87)."
+    },
+    {
+     "name": "TableCell / TableRow / TableKey",
+     "shape": "type TableCell = string | number | boolean; type TableRow = Readonly<Record<string, TableCell>>; type TableKey = string",
+     "guide": "guides/table.md:74-76; :273-276 (absence is a missing key; an absent cell sorts before every present one in ascending order)",
+     "types": "dist/src/core/index.d.ts:972 (:968-970: absence is `undefined`, never `null` or empty string); :1223 (:1215-1216: undeclared keys refused, rows cloned and frozen); :1155 (non-empty)",
+     "fit": "Each `tr` becomes one `TableRow`. An empty `data value` must be left out of the row. It is not written as `''`."
+    },
+    {
+     "name": "TableOptions",
+     "shape": "interface TableOptions { readonly on?: EmitterHooks<TableEventMap>; readonly error?: EmitterErrorHandler; readonly rows?: readonly TableRow[]; readonly comparators?: Readonly<Record<string, CellComparator>>; readonly matchers?: Readonly<Record<string, CellMatcher>>; readonly limit?: number }",
+     "guide": "guides/table.md:117; :447-490 (overriding a column); :961-962 (seeding is silent)",
+     "types": "dist/src/core/index.d.ts:1184-1191. :1165-1166: `rows` seeds quietly. :1168-1171: `comparators` are keyed by column key and replace that column's comparison. :1173: with `limit` left out, the table is not paged.",
+     "fit": "`comparators` is the place for locale and numeric collation and for mixed-offset datetimes. The sorter must leave `limit` unset so that `view` holds every row (guide:775-776)."
+    },
+    {
+     "name": "SortManagerInterface",
+     "shape": "interface SortManagerInterface { order(column: string): TableOrder | undefined; orders(): readonly TableOrder[]; set(orders: readonly TableOrder[]): void; set(order: TableOrder): void; remove(): void; remove(column: string): boolean; remove(columns: readonly string[]): boolean }",
+     "guide": "guides/table.md:120; :1269-1276 (methods); :595-635 (sorting); :632-635 (no cycling verb; `set` replaces in place, other terms join the end)",
+     "types": "dist/src/core/index.d.ts:852-904. :842-844: \"there is no cycling verb here: read the column's term, decide, then set or remove it\". :867-868 and :872-873: `set` raises `COLUMN` for an undeclared column, and all terms are checked first.",
+     "fit": "This is how a sort is requested. The interface has no single-term replace verb. A single-column sorter would call `remove()` and then `set(...)`. Each of those changes the term list (inference: two `sort` emissions, per guide:945)."
+    },
+    {
+     "name": "TableOrder / TableDirection",
+     "shape": "interface TableOrder { readonly column: string; readonly direction: TableDirection }; type TableDirection = 'ascending' | 'descending'",
+     "guide": "guides/table.md:96-97",
+     "types": "dist/src/core/index.d.ts:1206-1209 (:1197-1199: the first term decides, later terms break ties, and rows no term separates keep table order); :995 (:993: unsorted is the missing `TableOrder`)",
+     "fit": "`order(column)` returns `undefined` for an unsorted column. The direction literals are spelled like two `aria-sort` tokens, but the package writes no ARIA (inference about the token match)."
+    },
+    {
+     "name": "CellComparator",
+     "shape": "type CellComparator = (left: TableCell | undefined, right: TableCell | undefined) => number",
+     "guide": "guides/table.md:103; :449-490 (example `localeCompare(..., undefined, { numeric: true })` at :458-459; :486-490 says an override receives `undefined` and always describes ascending order)",
+     "types": "dist/src/core/index.d.ts:58 (doc :40-57; the example at :55 uses `localeCompare`)",
+     "fit": "This is the seam for locale collation, numeric strings, and offset-aware datetime ordering. The override decides how absent cells sort."
+    },
+    {
+     "name": "TableEventMap",
+     "shape": "type TableEventMap = { readonly write: readonly [key: TableKey]; readonly remove: readonly [key: TableKey]; readonly sort: readonly [orders: readonly TableOrder[]]; readonly filter: readonly [filters: readonly TableFilter[]]; readonly select: readonly [keys: ReadonlySet<TableKey>]; readonly expand: readonly [keys: ReadonlySet<TableKey>]; readonly paginate: readonly [page: number]; readonly clear: readonly [] }",
+     "guide": "guides/table.md:118; :936-999 (event table :941-950, ordering :957-959, wiring :964-966)",
+     "types": "dist/src/core/index.d.ts:1046-1055 (doc :1027-1045: fires after commit, a no-op is silent, `sort` carries the whole list, and payloads are owned by the listener)",
+     "fit": "The `sort` event fires after commit. It cannot be canceled."
+    },
+    {
+     "name": "EmitterInterface<TableEventMap> (from @orkestrel/emitter 0.0.12)",
+     "shape": "interface EmitterInterface<TMap extends EventMap> { readonly destroyed: boolean; on<K extends keyof TMap>(event: K, handler: EmitterHandler<TMap[K]>): void; once<K extends keyof TMap>(event: K, handler: EmitterHandler<TMap[K]>): void; off<K extends keyof TMap>(event: K, handler: EmitterHandler<TMap[K]>): void; emit<K extends keyof TMap>(event: K, ...args: TMap[K]): void; count(event?: keyof TMap): number; clear(event?: keyof TMap): void; destroy(): void }; type EmitterHandler<TArgs extends readonly unknown[]> = (...args: TArgs) => void; type EmitterHooks<TMap> = { readonly [K in keyof TMap]?: EmitterHandler<TMap[K]> }; type EmitterErrorHandler = (error: unknown, event: string) => void",
+     "guide": "guides/table.md:964-966 (subscribe through `TableOptions.on` or `emitter`; a throwing listener is isolated and goes to `TableOptions.error`)",
+     "types": "node_modules/@orkestrel/table/node_modules/@orkestrel/emitter/dist/src/core/index.d.ts:109-164 (interface); :94 (EmitterHandler); :100-102 (EmitterHooks); :91 (EmitterErrorHandler); :41-50 (synchronous, registration order, throws swallowed when no `error` handler, `on`/`emit` are no-ops after destroy)",
+     "fit": "Subscribe with `emitter.on('sort', handler)`. Release with `emitter.off('sort', handler)` (:134), which takes the original handler. The listener runs synchronously inside the `sort.set` call (inference from :41-42 and :147)."
+    },
+    {
+     "name": "RowManagerInterface",
+     "shape": "interface RowManagerInterface { row(key: TableKey): TableRow | undefined; rows(): readonly TableRow[]; add(rows: readonly TableRow[]): void; add(row: TableRow): void; update(rows: readonly TableRow[]): boolean; update(row: TableRow): boolean; move(key: TableKey, index: number): boolean; remove(): void; remove(key: TableKey): boolean; remove(keys: readonly TableKey[]): boolean }",
+     "guide": "guides/table.md:119; :1258-1267; :1488 (`rows.move` is the one verb that writes the table's own order)",
+     "types": "dist/src/core/index.d.ts:656-740 (:646-648: sorting reads the store order and never rewrites it)",
+     "fit": "The sorter needs it only if DOM rows change after boot. `add` raises `KEY` for a duplicate or missing identity and `CELL` for a bad cell (:675-677)."
+    },
+    {
+     "name": "compareCells",
+     "shape": "function compareCells(column: TableColumn, left: TableCell | undefined, right: TableCell | undefined): number",
+     "guide": "guides/table.md:216; :344-360",
+     "types": "dist/src/core/index.d.ts:184",
+     "fit": "The default ascending comparison, usable without a table."
+    },
+    {
+     "name": "sortRows",
+     "shape": "function sortRows(schema: TableSchema, rows: readonly TableRow[], orders: readonly TableOrder[], comparators?: Readonly<Record<string, CellComparator>>): readonly TableRow[]",
+     "guide": "guides/table.md:220; :658-678 (sorts a copy; absent cell first in ascending order; no term means no movement)",
+     "types": "dist/src/core/index.d.ts:916 (doc :906-915: \"stably\"; a frozen sorted copy)",
+     "fit": "A stable sort with no entity or events. The package-free or lighter path could use it in place of `createTable`."
+    },
+    {
+     "name": "mergeTerms / removeTerms / matchesTerms",
+     "shape": "function mergeTerms<Term extends TableTerm>(current: readonly Term[], requested: readonly Term[]): readonly Term[]; function removeTerms<Term extends TableTerm>(current: readonly Term[], columns: readonly string[]): readonly Term[]; function matchesTerms<Term extends TableTerm>(left: readonly Term[], right: readonly Term[], equal: (left: Term, right: Term) => boolean): boolean; interface TableTerm { readonly column: string }",
+     "guide": "guides/table.md:212-214; :95; :637-656",
+     "types": "dist/src/core/index.d.ts:556, :641, :545, :1271-1273",
+     "fit": "Lens-list arithmetic for a host that holds its own term list."
+    },
+    {
+     "name": "extractColumn / extractKey / matchesCell / parseRows",
+     "shape": "function extractColumn(schema: TableSchema, key: string): TableColumn | undefined; function extractKey(schema: TableSchema, row: TableRow): TableKey | undefined; function matchesCell(column: TableColumn, value: unknown): value is TableCell; function parseRows(schema: TableSchema, input: unknown): readonly TableRow[] | undefined",
+     "guide": "guides/table.md:209-210, :215, :254; :416-445; :574-586; :1041-1073 (`parseRows` turns numeric strings into numbers for `number` columns and 'true'/'false' into booleans for `flag` columns, and nothing else; rejects `null` and whole payloads)",
+     "types": "dist/src/core/index.d.ts:333, :343, :523, :623",
+     "fit": "`parseRows` can turn DOM strings from `data value` into `number` cells. `matchesCell` refuses a numeric string for a `number` column (guide:438)."
+    },
+    {
+     "name": "TableError / TableErrorCode / isTableError",
+     "shape": "class TableError extends Error { readonly code: TableErrorCode; readonly context?: JSONRecord; constructor(code: TableErrorCode, message: string, context?: JSONRecord) }; type TableErrorCode = 'SCHEMA' | 'COLUMN' | 'KEY' | 'CELL' | 'DESTROYED'; function isTableError(input: unknown): input is TableError",
+     "guide": "guides/table.md:125-127; :1310-1353",
+     "types": "dist/src/core/index.d.ts:1001-1014, :1025, :494",
+     "fit": "Boot from malformed markup can raise `SCHEMA`, `KEY`, or `CELL`. A write after `destroy` raises `DESTROYED`."
+    },
+    {
+     "name": "PaginationManagerInterface",
+     "shape": "interface PaginationManagerInterface { readonly page: number; readonly limit: number | undefined; readonly offset: number; readonly count: number; move(page: number): void; resize(limit?: number): void }",
+     "guide": "guides/table.md:124; :770-803",
+     "types": "dist/src/core/index.d.ts:586-613",
+     "fit": "Not used by the sorter. Only `limit` matters, because an unpaged table returns every admitted row in `view`."
+    },
+    {
+     "name": "Budget constants",
+     "shape": "const COLUMN_LIMIT = 256; const CHOICE_LIMIT = 1024; const NAME_LIMIT = 128; const STRING_LIMIT = 65536; const TEXT_LIMIT = 1048576; const NODE_LIMIT = 16384; const COLUMN_CELLS: readonly ColumnCell[]",
+     "guide": "guides/table.md:150-158; :1148-1186 (rows are not budgeted)",
+     "types": "dist/src/core/index.d.ts:115, :80, :559, :919, :1278, :562, :112",
+     "fit": "A column key from a `th` is limited to 128 code units. A cell string is limited to 65536."
+    }
+   ],
+   "binding": "The package does not bind to a `<table>` element and does not render one. It holds values and no DOM. Citations: d.ts:1078-1079 (\"renders nothing, reads no document, and names no host type\"); README:22 (\"no DOM\"); guide:7-11 (\"Nothing here renders ... The table owns values; the host owns everything a person looks at\"); guide:1482 (Rendering is the host's); guide:1506 (browser binding \"belongs in a future `src/browser`, taking a table and an element. Nothing renders in this round\").\n\nColumns are declared as data in `TableSchema.columns`, a union discriminated on `cell` (d.ts:987, :1254-1260). Column order is presentation order (d.ts:1233). Row identity comes from `TableSchema.key`, which must name a declared column holding a non-empty string (d.ts:1234-1237). There is no default key and no key generation (guide:496-499).\n\nA sort is requested with `table.sort.set(order | orders)` and dropped with `table.sort.remove(...)`. It is read with `sort.order(column)` and `sort.orders()` (d.ts:852-904). There is no toggle or cycle verb (d.ts:842-844).\n\nThe sorted result is read from `table.view`. It is filtered, then sorted, then paged, and recomputed on every read as frozen copies (d.ts:952-953, :1112-1117; guide:590-593, :1398-1402). `rows.rows()` keeps the store's own order and ignores sorting (d.ts:665-669; guide:1485).\n\nComparison rules:\n- `text` is lexical. It uses the language's own string order, not a locale-aware collator (d.ts:1281; guide:288-291, :1499).\n- `number` compares by magnitude, and values must be finite (d.ts:564; guide:303-304).\n- `flag` sorts false before true (d.ts:438).\n- `choice` follows declared order (d.ts:83).\n- Dates are ISO `text`. They sort chronologically only with one offset, one precision, and normalized midnight. No calendar check is made (d.ts:151-153; guide:362-403, :1462-1471).\n- An absent cell sorts before present ones in ascending order (guide:274-275, :1407-1408).\n- The sort is stable. The first term decides, later terms break ties, and the store order is the final tiebreak (d.ts:906-907, :1197-1199; guide:597-600, :1403-1405).\n- `CellComparator` overrides replace one column's ascending comparison, and direction is applied afterwards (d.ts:40-47; guide:486-490).\n\nDOM reordering: none (guide:1482). Accessibility writes: none. ARIA, roles, and ids are listed as host concerns (guide:1483). Keyboard and focus are also host concerns (guide:1484).\n\nSubscribe with `TableOptions.on` at construction or `table.emitter.on/once` afterwards (guide:964-966; d.ts:1185). Release with `emitter.off(event, originalHandler)` (emitter d.ts:127-134) or `emitter.clear(event?)` (emitter d.ts:155-161). Tear down with `table.destroy()`, which is idempotent; getters stay readable and writes raise `DESTROYED` (d.ts:1132-1139; guide:899-901).",
+   "events": "The package's events are `TableEventMap` (d.ts:1046-1055). They are emitted through `EmitterInterface<TableEventMap>` (d.ts:937, :1096).\n- `sort`: `[orders: readonly TableOrder[]]`. Fires whenever the term list's content changes and carries the whole list (guide:945). Setting the same term twice emits nothing (guide:994-998).\n- `write`: `[key]`, once per row admitted, written over, or moved (guide:943).\n- `remove`: `[key]` (guide:944).\n- `filter`: `[filters]` (guide:946).\n- `select`: `[ReadonlySet<TableKey>]` (guide:947).\n- `expand`: `[ReadonlySet<TableKey>]` (guide:948).\n- `paginate`: `[page: number]` (guide:949).\n- `clear`: `[]`. A `clear()` emits nothing else (d.ts:1043-1044; guide:950).\n\nTiming and guarantees:\n- Every event fires after the state it reports is committed, and only when something moved (d.ts:1031-1032; guide:938-939, :1426-1430).\n- When one call announces several things, rows come first, then `select`, `expand`, `paginate` (guide:957-959).\n- Payloads are owned copies (d.ts:1037-1038; guide:952-955).\n- Seeded `rows` announce nothing (d.ts:1165-1166; guide:961-962).\n- Emission is synchronous in registration order. Listener throws are isolated, sent to `TableOptions.error`, and swallowed silently when no handler is set (emitter d.ts:41-48, :140-143; guide:964-966).\n\nNo event is cancelable. There is no pre-commit event. No DOM `Event`/`CustomEvent` is dispatched. The catalog's cancelable `sort.vn.sorter` (catalog:60) has no counterpart in the package.",
+   "gaps": [
+    "The package has no DOM binding. Nothing reads `th`, `tr`, `td`, `data value`, or `time datetime`, and nothing writes `aria-sort` or calls `moveBefore()` (d.ts:1078-1079; guide:1482-1484, :1506). The sorter must build the schema from headers, build rows from cells, map `view` keys back to `tr` elements, and reorder them itself (inference from those citations).",
+    "The package has no row identity source. `TableSchema.key` must name a declared `text`/`choice` column with a non-empty unique string, and the package refuses key generation and positional fallback (d.ts:1234-1237; guide:496-499, :1195). The sorter must supply a key per `tr`. The markup in catalog:60 names none (inference).",
+    "It cannot cancel a sort. Package events fire after commit and have no veto (d.ts:1031). A cancelable `sort.vn.sorter` must be dispatched by the sorter before it calls `sort.set` (inference).",
+    "It cannot replace the sort in one write. `sort.set` with a term for a column not yet sorted appends it after the existing terms (d.ts:867-868; guide:633-635). Single-column replacement takes `sort.remove()` then `sort.set(...)`, and each call changes the list. Inference: a listener sees two `sort` emissions, the first with `[]` (guide:945).",
+    "It cannot choose the next direction. There is no cycling verb (d.ts:842-844; guide:632-633). The sorter owns the click cycle (ascending, descending, and whether a third click clears).",
+    "It cannot write `aria-sort`. Unsorted is a missing `TableOrder` (d.ts:993). Mapping to `aria-sort` values and placing them on `th` is host work (guide:1483). The match between `'ascending'`/`'descending'` and the ARIA tokens is inference; no file states it.",
+    "Text collation is not locale-aware, and `contains` is case-sensitive (guide:288-291, :1499). Locale or numeric-aware text order needs a `CellComparator` per column (guide:449-490).",
+    "It has no temporal parsing. `time datetime` values are `text` and sort correctly only with one offset, one precision, and normalized midnight. No calendar check is made (d.ts:151-153; guide:386-403, :1462-1471). Mixed spellings need a `CellComparator`.",
+    "DOM strings need coercion. A `number` cell must be a finite number, and `matchesCell` refuses `'36'` (guide:303-304, :438). `parseRows` turns numeric strings into numbers and 'true'/'false' into booleans, nothing else, and refuses the whole payload on any fault (guide:1041-1052). An empty `data value` must be an absent key, not `''` or `null` (d.ts:968-970; guide:1049-1050).",
+    "No sortable flag exists in the schema. Every declared column sorts, and the host decides which headings offer it (d.ts:128-129; guide:263-264).",
+    "The package does not watch the DOM. Rows added or removed later must be mirrored through `rows.add`/`rows.remove`, which validate atomically and raise `KEY`/`CELL` (d.ts:671-687). Seeding is silent (d.ts:1165-1166).",
+    "Pagination: if `limit` is set, `view` is a single page (d.ts:1173; guide:775-776). A full-table sorter leaves it unset.",
+    "Teardown leaves emitter release unclear. `TableInterface.destroy` (d.ts:1132-1139) does not say whether it destroys the emitter or drops listeners. Emitter `off`/`clear`/`destroy` are separate calls (emitter d.ts:127-163).",
+    "Guide and types mostly agree. The guide's event table (guide:943) lists row moves under `write`; d.ts:1034-1035 says \"the order the table wrote or removed them\" and does not mention moves. On `clear`, d.ts:1043-1044 says no `remove`, `select`, or `paginate` is emitted; guide:950 adds `sort`, `filter`, and `expand`. These are additions, not conflicts. The guide's Surface row for `isTableError` shows the shape `TableError` (guide:127); d.ts:494 declares `(input: unknown): input is TableError`. This follows the guide's stated rule that a guard row shows the type it narrows to (guide:110).",
+    "The catalog and the installed package disagree on version. Catalog:60 and :157 name table 0.0.7 and say the packages are undeclared. node_modules has 0.0.8, and package.json:125-126 declares form ^0.0.9 and table ^0.0.8. The user request names form 0.0.8 and table 0.0.7.",
+    "Inputs not reached: dist/src/core/index.js, index.cjs, and their .map files (runtime implementation not read, so behavior claims rest on the types and guide only); LICENSE; index.d.cts beyond confirming the same `export declare` count as index.d.ts (69); the emitter README and runtime files; catalog lines outside 50-74 and the grep hits at 128-133, 157, and 159 (including catalog:165, which catalog:60 cites for the DOM-order-as-truth note); and every @orkestrel/form file (out of scope)."
+   ],
+   "questions": [
+    "Version: the user request names `@orkestrel/table` 0.0.7 and `@orkestrel/form` 0.0.8. The installed table is 0.0.8, and veneer/package.json:125-126 declares table ^0.0.8 and form ^0.0.9. Which versions does the brief pin, and does the 0.0.7 surface differ from 0.0.8 (unread)?",
+    "Package form or package-free: catalog:68 and :157 make the package form depend on the dependency decision. Does the brief build the `createTable` document as the source of truth, or use only `sortRows`/`compareCells` as stateless helpers, or ship both shapes?",
+    "Row identity: which attribute or value gives each `tr` a non-empty, unique `TableKey`? The package requires a declared string key column and refuses generated or positional keys (guide:496-499).",
+    "Column typing: how does the sorter decide `text`, `number`, `flag`, or `choice` per `th`, for example from an attribute on `th` or from the cell contents? How are `data value` strings turned into numbers (`parseRows` coercion, guide:1041-1044)?",
+    "Single or multi-column sort: the package holds an ordered multi-term list (d.ts:1197-1199). Does a header click replace all terms (`remove()` then `set`, two `sort` emissions) or add a tie-breaker? Which `th` gets which `aria-sort` value when several terms are active?",
+    "Direction cycle: ascending to descending, or ascending to descending to none? The package leaves this to the host (d.ts:842-844).",
+    "Cancelable `sort.vn.sorter`: does it fire before `sort.set`, so cancel skips the write? What does its `detail` carry (column key, next `TableOrder`, the full `orders()`)? Package events are post-commit only (d.ts:1031).",
+    "Collation: are text columns compared with a `CellComparator` that uses `localeCompare` (and `numeric: true`)? If so, which locale? The package default is language string order (guide:290-291).",
+    "Datetimes: are `time datetime` values assumed canonical UTC ISO, or does the sorter supply an offset-aware `CellComparator` (guide:389-392)?",
+    "How are absent cells placed? The default puts absent cells first in ascending order (guide:274-275). Is that kept, or overridden per column?",
+    "Live DOM changes: are rows added or removed after boot mirrored into the table (`rows.add`/`rows.remove`)? If so, by what trigger?",
+    "Teardown: does the sorter call `table.destroy()`, `emitter.off(...)`, or both, given that `destroy` does not state whether it releases emitter listeners (d.ts:1132-1139)?",
+    "Where does the binding live: Veneer `src/browser/sorters/` (catalog:60) or the package's future `src/browser` (catalog:159; guide:1506)? Which leaves (`aria-sort` from `sort.order`, row order from `view`) are planned to move later?"
+   ]
+  },
+  {
+   "package": "@orkestrel/form. Files read: /home/user/veneer/node_modules/@orkestrel/form/package.json, /home/user/veneer/node_modules/@orkestrel/form/dist/src/core/index.d.ts (cited \"d.ts\"), /home/user/veneer/node_modules/@orkestrel/form/dist/src/core/index.d.cts (the build copies the d.ts byte for byte, per package.json:57; a grep found matching line numbers at d.ts:473/500/506/518/739/763/766/785/891), /home/user/veneer/node_modules/@orkestrel/form/README.md, /home/user/veneer/guides/form.md (cited \"guide\"), the nested dependency /home/user/veneer/node_modules/@orkestrel/form/node_modules/@orkestrel/emitter/dist/src/core/index.d.ts (cited \"emitter.d.ts\") with its package.json, and the catalog /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md (cited \"catalog\"). There is one entry point: exports \".\" covers import and require (package.json:22-34). It is `\"type\": \"module\"` (:17), `\"sideEffects\": false` (:18), and depends on @orkestrel/contract ^0.0.19 and @orkestrel/emitter ^0.0.12 (:64-67). The nested emitter is 0.0.12 (emitter package.json:3).",
+   "version": "0.0.9 is installed (package.json:3; veneer package-lock.json:336-337). The two sources disagree. The user request names @orkestrel/form 0.0.8 and @orkestrel/table 0.0.7. The computed task names 0.0.9. The catalog cites the 0.0.8 guides (catalog:10, :32, :157) and says \"Neither is declared (`veneer/package.json:123-133`)\" (catalog:157). On disk, /home/user/veneer/package.json:125-126 already declares `\"@orkestrel/form\": \"^0.0.9\"` and `\"@orkestrel/table\": \"^0.0.8\"`, and package-lock.json:609-610 resolves table 0.0.8. The mirrored guide carries no version stamp. The README links ./guides/form.md (README:62), but the package ships only dist/src and README.md (package.json:13-16), so the mirror's version cannot be confirmed from these inputs.",
+   "surfaces": [
+    {
+     "name": "createForm",
+     "shape": "export declare function createForm(schema: FormSchema, options?: FormOptions): FormInterface;",
+     "guide": "guide:110 (Surface row), guide:26-44 (flagship example), guide:1624-1626 (factory vs class)",
+     "types": "d.ts:160 (doc d.ts:131-159; throws `FormError` coded SCHEMA, FIELD, or CONTROL, d.ts:140-142)",
+     "fit": "The only construction path besides `new Form`. It takes a data schema, never an element. Guard 1 would have to build a `FormSchema` from the `data-vn-guard` form's controls itself (inference)."
+    },
+    {
+     "name": "Form (class)",
+     "shape": "export declare class Form implements FormInterface { #private; constructor(schema: FormSchema, options?: FormOptions); get emitter(): EmitterInterface<FormEventMap>; get schema(): FormSchema; get values(): FormValues; get baseline(): FormValues; get errors(): readonly FieldError[]; get touched(): ReadonlySet<string>; get disabled(): ReadonlySet<string>; get status(): FormStatus; get valid(): boolean; get dirty(): boolean; get answer(): Promise<FormValues>; field(name: string): FormField | undefined; fill(values: FormValues): void; fill(name: string, value: FieldValue | undefined): void; touch(name: string): void; invalidate(name: string, message: string): void; disable(): void; disable(name: string): void; disable(names: readonly string[]): void; enable(): void; enable(name: string): void; enable(names: readonly string[]): void; submit(): FormResult; clear(): void; destroy(): void; }",
+     "guide": "guide:108 (row), guide:1559-1561 (implements `FormInterface` exactly and adds nothing), guide:1628-1634",
+     "types": "d.ts:487-629 (doc d.ts:461-486: owns its schema, so a later edit to the caller's schema changes nothing; `valid` and `dirty` are derived on read, never stored)",
+     "fit": "This is the concrete type for a `Guard` class that holds a form as a `#` field (guide:1624-1626)."
+    },
+    {
+     "name": "FormInterface",
+     "shape": "export declare interface FormInterface { readonly emitter: EmitterInterface<FormEventMap>; readonly schema: FormSchema; readonly values: FormValues; readonly baseline: FormValues; readonly errors: readonly FieldError[]; readonly touched: ReadonlySet<string>; readonly disabled: ReadonlySet<string>; readonly status: FormStatus; readonly valid: boolean; readonly dirty: boolean; readonly answer: Promise<FormValues>; field(name: string): FormField | undefined; fill(values: FormValues): void; fill(name: string, value: FieldValue | undefined): void; touch(name: string): void; invalidate(name: string, message: string): void; disable(): void; disable(name: string): void; disable(names: readonly string[]): void; enable(): void; enable(name: string): void; enable(names: readonly string[]): void; submit(): FormResult; clear(): void; destroy(): void; }",
+     "guide": "guide:109 (row), guide:1570-1582 (Methods table)",
+     "types": "d.ts:752-904",
+     "fit": "The contract that `createForm` returns."
+    },
+    {
+     "name": "dirty",
+     "shape": "get dirty(): boolean  /  readonly dirty: boolean",
+     "guide": "guide:109; guide:962-964 (\"`dirty` is true once the answers differ from `baseline`... Neither is stored, so neither can drift\"); guide:1659-1661 (Contract 5); guide:1221-1223 (`clear()` makes `dirty` false)",
+     "types": "d.ts:517-518 (Form: \"Reports whether any answer has moved since the form opened.\"); d.ts:784-785 (interface); d.ts:473-474 and d.ts:739-740 (derived, never stored)",
+     "fit": "A derived getter. It is not an event and not a stored flag. No event named `dirty` or `change` exists (d.ts:696-704). Guard 1 must read `form.dirty` after the events that can move it: `fill` and `clear` (inference from guide:1373 and :1378)."
+    },
+    {
+     "name": "baseline",
+     "shape": "get baseline(): FormValues  /  readonly baseline: FormValues",
+     "guide": "guide:1184-1187 (\"fixed when the form opens and never moved again\"; `extractChanges(form.values, form.baseline)` names the changed fields)",
+     "types": "d.ts:505-506; d.ts:759-766 (\"the schema's defaults, overlaid with any seeded values... fixed when the form opens and never moves again, so it is what `dirty` measures against and what `clear` returns to\")",
+     "fit": "The reference point for `dirty`. No method moves it. A successful `submit` does not re-baseline (inference from d.ts:763)."
+    },
+    {
+     "name": "values",
+     "shape": "get values(): FormValues  /  readonly values: FormValues",
+     "guide": "guide:1013 (a disabled field's value may still appear); guide:1745 (drafts and autosave are host loops over `values`)",
+     "types": "d.ts:503-504; d.ts:757-758",
+     "fit": "The answers the form holds. The package fills them only through `fill` and `clear`, never from the DOM."
+    },
+    {
+     "name": "status / FormStatus",
+     "shape": "get status(): FormStatus; export declare type FormStatus = 'editing' | 'settled' | 'abandoned';",
+     "guide": "guide:112; guide:944-954",
+     "types": "d.ts:513-514; d.ts:780-781; d.ts:967-979 (both end states are terminal, and a write in either is refused)",
+     "fit": "After a valid submit, `status` is 'settled' while `dirty` keeps reporting values against baseline (inference). A clean-after-submit reading therefore needs `status`, the `submit` event, or a new form."
+    },
+    {
+     "name": "fill",
+     "shape": "fill(values: FormValues): void; fill(name: string, value: FieldValue | undefined): void;",
+     "guide": "guide:1175-1178 (every answer is checked before any is written; `undefined` clears); guide:1079-1084 (an unchanged answer suppresses the `fill` event but is still rewritten and recomputed); guide:1014-1015 (`fill` accepts hidden, locked, and disabled fields); guide:1593-1594 (FIELD and CONTROL codes)",
+     "types": "Form d.ts:534-546; interface d.ts:801-813",
+     "fit": "The only way a DOM value enters the form. Guard 1 must call it from its own `input`/`change` listeners (inference)."
+    },
+    {
+     "name": "clear",
+     "shape": "clear(): void;",
+     "guide": "guide:1189-1190 (restores `baseline` and clears touched, external failures, and runtime disable/enable); guide:1090-1095 (the `clear` event is the whole announcement: no `fill`, `disable`, or `enable`); guide:1581",
+     "types": "Form d.ts:612-618 (throws SETTLED or ABANDONED after the form has ended); interface d.ts:887-894",
+     "fit": "The package-side counterpart of a native form reset. The package does not listen to the DOM `reset` event (README:24)."
+    },
+    {
+     "name": "submit / FormResult",
+     "shape": "submit(): FormResult; export declare type FormResult = Result<FormValues, readonly FieldError[]>;",
+     "guide": "guide:1272-1277 (the first valid submit resolves `answer`, emits `submit`, sets `settled`, and every later write throws SETTLED; a failed submit leaves the form open); guide:1284-1308 (the submit decision); guide:1310-1336 (\"`submit` is the commit, not the attempt\"); guide:42 and guide:1302 (result shapes `{ success: true, value }` and `{ success: false, error: [...] }`)",
+     "types": "Form d.ts:595-611 (a failed submit marks every enabled field touched; throws SETTLED or ABANDONED); interface d.ts:882-886; FormResult d.ts:930-939 (`Result` comes from @orkestrel/contract, d.ts:5, not read)",
+     "fit": "A settling commit. It does not reset values or baseline (inference from d.ts:763), and it ends the form for further edits."
+    },
+    {
+     "name": "destroy",
+     "shape": "destroy(): void;",
+     "guide": "guide:1279-1282; guide:1251-1270 (`answer` rejects with ABANDONED); guide:1234 (\"An unawaited form that is destroyed does not take the host down with it\")",
+     "types": "Form d.ts:619-628 (idempotent; a settled form keeps its status and announces nothing; a request inside a listener is deferred until the outermost batch closes; \"Every getter keeps answering afterwards; every write is refused\"); interface d.ts:895-903",
+     "fit": "The form-level release. Its doc does not say whether it destroys the emitter or drops listeners (see Unknowns)."
+    },
+    {
+     "name": "answer",
+     "shape": "get answer(): Promise<FormValues>  /  readonly answer: Promise<FormValues>",
+     "guide": "guide:1226-1249",
+     "types": "d.ts:519-526; d.ts:786-793",
+     "fit": "Not needed for Guard 1. It rejects on destroy of an unsettled form, which is harmless when unawaited (guide:1234)."
+    },
+    {
+     "name": "emitter (FormInterface member)",
+     "shape": "get emitter(): EmitterInterface<FormEventMap>  /  readonly emitter: EmitterInterface<FormEventMap>",
+     "guide": "guide:1381-1383 (\"Wire listeners at construction through `FormOptions.on`, or afterwards through the `emitter`\"; a throwing listener is isolated and reported to `FormOptions.error`)",
+     "types": "d.ts:499-500; d.ts:753-754; imports at d.ts:1-3",
+     "fit": "The subscription surface."
+    },
+    {
+     "name": "EmitterInterface (from @orkestrel/emitter 0.0.12)",
+     "shape": "export declare interface EmitterInterface<TMap extends EventMap> { readonly destroyed: boolean; on<K extends keyof TMap>(event: K, handler: EmitterHandler<TMap[K]>): void; once<K extends keyof TMap>(event: K, handler: EmitterHandler<TMap[K]>): void; off<K extends keyof TMap>(event: K, handler: EmitterHandler<TMap[K]>): void; emit<K extends keyof TMap>(event: K, ...args: TMap[K]): void; count(event?: keyof TMap): number; clear(event?: keyof TMap): void; destroy(): void; }  with  type EmitterHandler<TArgs extends readonly unknown[]> = (...args: TArgs) => void;",
+     "guide": "Not documented in guide/form.md beyond guide:1381-1383",
+     "types": "emitter.d.ts:109-164; EmitterHandler emitter.d.ts:94; Emitter class remarks emitter.d.ts:40-50 (synchronous in registration order; a throwing listener is isolated and routed to `error`, and swallowed silently without one; after `destroy()`, on/once/emit do nothing)",
+     "fit": "Release is `off(event, originalHandler)` (emitter.d.ts:128-134), `clear(event?)`, or `destroy()`. `on` returns `void`, and no method accepts an `AbortSignal`, so no disposer is returned."
+    },
+    {
+     "name": "FormOptions",
+     "shape": "export declare interface FormOptions { readonly on?: EmitterHooks<FormEventMap>; readonly error?: EmitterErrorHandler; readonly values?: FormValues; readonly messages?: Readonly<Partial<Record<FieldRuleName, string>>>; }  with  type EmitterHooks<TMap> = { readonly [K in keyof TMap]?: EmitterHandler<TMap[K]> }; type EmitterErrorHandler = (error: unknown, event: string) => void;",
+     "guide": "guide:111; guide:1381-1383",
+     "types": "d.ts:906-928; EmitterHooks emitter.d.ts:100-102; EmitterErrorHandler emitter.d.ts:91",
+     "fit": "`values` seeds the answers over the schema defaults (d.ts:911), so it is one way to make `baseline` equal the DOM's opening state (inference). `on` wires listeners at construction."
+    },
+    {
+     "name": "FormEventMap",
+     "shape": "export declare type FormEventMap = { readonly fill: readonly [name: string, value: FieldValue | undefined]; readonly validate: readonly [errors: readonly FieldError[]]; readonly disable: readonly [name: string]; readonly enable: readonly [name: string]; readonly submit: readonly [values: FormValues]; readonly clear: readonly []; readonly abandon: readonly []; };",
+     "guide": "guide:114; guide:1367-1408 (Events table)",
+     "types": "d.ts:686-704",
+     "fit": "No dirty/clean transition event exists. Guard 1's `dirty.vn.guard` and `clean.vn.guard` must be derived by the guard from `fill`, `clear`, `submit`, and `abandon` plus a read of `dirty`/`status` (inference)."
+    },
+    {
+     "name": "extractChanges",
+     "shape": "export declare function extractChanges(current: FormValues, opened: FormValues): ReadonlySet<string>;",
+     "guide": "guide:200; guide:1184-1187; guide:1212",
+     "types": "d.ts:260-272 (\"Presence is compared in both directions before present values are compared through `matchesValue`\")",
+     "fit": "Names which fields moved. Optional for Guard 1."
+    },
+    {
+     "name": "matchesAnswer",
+     "shape": "export declare function matchesAnswer(value: FieldValue | undefined): boolean;",
+     "guide": "guide:194; guide:635-676 (\"Bind with `fill(name, matchesAnswer(raw) ? raw : undefined)`\"; blank and whitespace-only strings become absence)",
+     "types": "d.ts:1125-1137",
+     "fit": "The documented binding projection. Whether Guard 1 projects through it changes whether an emptied box reads equal to an absent baseline (inference)."
+    },
+    {
+     "name": "parseValue / parseValues",
+     "shape": "export declare function parseValue(field: FormField, input: unknown): FieldValue | undefined; export declare function parseValues(schema: FormSchema, input: unknown): FormValues | undefined;",
+     "guide": "guide:229-230; guide:1438-1462 (a numeric string coerces to number for `number`, and 'true'/'false' to boolean for `confirm`; `parseValues` is strict)",
+     "types": "d.ts:1191-1202; d.ts:1204-1211",
+     "fit": "DOM controls yield strings. Writing a string to a `number` field throws CONTROL (guide:1615-1619), so a binding needs this parse or its own (inference)."
+    },
+    {
+     "name": "Schema types (FormSchema, FormField, FieldBase, FieldControl, FieldValue, FormValues)",
+     "shape": "interface FormSchema { readonly name?: string; readonly label?: string; readonly help?: string; readonly groups?: readonly FormGroup[]; readonly fields: readonly FormField[]; }  interface FieldBase { readonly name: string; readonly label?: string; readonly help?: string; readonly group?: string; readonly hidden?: boolean; readonly disabled?: boolean; readonly locked?: boolean; readonly rule?: FieldRule; readonly meta?: JSONRecord; }  type FieldControl = 'text' | 'editor' | 'password' | 'number' | 'date' | 'time' | 'datetime' | 'color' | 'confirm' | 'select' | 'checkbox' | 'file';  type FieldValue = string | number | boolean | readonly string[];  type FormValues = Readonly<Record<string, FieldValue>>;  FormField = union of 12 *Field interfaces discriminated on `control`",
+     "guide": "guide:57-76, :86-89; Controls guide:232-267 (a lone browser checkbox is `confirm`, a radio group is `select`, `checkbox` is the multi-choice group, `file` is names only)",
+     "types": "FormSchema d.ts:959-965; FieldBase d.ts:313-323; FieldControl d.ts:357; FieldValue d.ts:446; FormValues d.ts:993; FormField d.ts:720; SelectField d.ts:1238-1243 (default?: string, single value); PasswordField d.ts:1220-1223 (no default); FileField d.ts:455-459",
+     "fit": "Guard 1 must author or derive one field per Bootstrap control (`.form-control` to text/editor, `.form-select` to select, `.form-check` to confirm or checkbox) (inference from guide:238-252)."
+    },
+    {
+     "name": "FormError / FormErrorCode",
+     "shape": "export declare class FormError extends Error { readonly code: FormErrorCode; readonly context?: JSONRecord; constructor(code: FormErrorCode, message: string, context?: JSONRecord); }  type FormErrorCode = 'SCHEMA' | 'FIELD' | 'CONTROL' | 'SETTLED' | 'ABANDONED';  function isFormError(input: unknown): input is FormError;",
+     "guide": "guide:115-117; guide:1584-1622",
+     "types": "d.ts:661-684; isFormError d.ts:1071",
+     "fit": "These are the throws Guard 1 can hit: FIELD for an unknown name, CONTROL for a wrong value shape, and SETTLED for an edit after a valid submit."
+    },
+    {
+     "name": "computeDefaults",
+     "shape": "export declare function computeDefaults(schema: FormSchema): FormValues;",
+     "guide": "guide:198; guide:1549",
+     "types": "d.ts:91-101 (password and file never appear)",
+     "fit": "Shows what `baseline` holds before seeding."
+    }
+   ],
+   "binding": "The package binds to no element. It is a data document keyed by schema field names.\n\n1. No DOM: README:24 says \"Host-independent: no `node:*`, no DOM. Ships dual ESM+CJS builds.\" README:7-8 says it \"neither renders nor reads input itself\". guide:12-13 says \"Nothing here renders, reads a keyboard, or opens a socket.\"\n2. DOM binding is deferred to a future `src/browser`:\n   - guide:1754: \"Binding a schema to real elements belongs in a future `src/browser`, taking a form and an element. It is not in this round because nothing renders here yet.\"\n   - guide:1752: Constraint-API reflection and `validity` belong to `src/browser`.\n   - guide:1753: `FormData`, duplicate names, and the submitter button belong to `src/browser`.\n   - The only export is \".\" (package.json:22-34), so no browser subpath ships.\n3. Schema-first construction: `createForm(schema, options)` (d.ts:160) or `new Form(schema, options)` (d.ts:498). The form clones and freezes the schema at construction, and a later edit to the caller's schema changes nothing (d.ts:466, :501-502; guide:1646-1650).\n4. Values enter only through `fill(name, value)` or `fill(record)` (d.ts:539-546). Every value is checked against its field's control first:\n   - `matchesField` (d.ts:1139-1150) gates the write.\n   - FIELD is thrown for an undeclared name and CONTROL for a value the control cannot hold (guide:1593-1594). Example: writing 'twelve' to a `number` field throws CONTROL (guide:1615-1619).\n   - The documented binding line is `fill(name, matchesAnswer(raw) ? raw : undefined)` (d.ts:1129; guide:647-676).\n   - Trim and normalize are binding work (guide:1748). Reading localized values is binding work (guide:1750).\n5. Control mapping (guide:234-267):\n   - A lone browser checkbox is `confirm` (boolean).\n   - A multi-choice group is `checkbox` (readonly string[]).\n   - A radio group is `select`.\n   - A switch is `confirm`.\n   - Email and URL inputs are `text` with a rule, and tel and search are `text`.\n   - A range is `number` with minimum, maximum, and step.\n   - `file` holds names only.\n   - `SelectField` holds one `string` (d.ts:1238-1243). No control models `<select multiple>`, and duplicate names are out of scope (guide:1753). That last point is inference.\n6. Baseline and `dirty`:\n   - `baseline` = schema `default`s overlaid with `FormOptions.values`, fixed at construction (d.ts:759-766; guide:1184-1187).\n   - `dirty` = the answers differ from `baseline`, derived on read (d.ts:473-474, :739-740, :784-785; guide:962-964).\n   - A field with no default and no seed is absent from baseline, and \"`undefined` is the only absence\" (guide:637-640; Contract 8 guide:1673-1677).\n   - Inference: filling '' into such a field makes it present, so `dirty` reads true unless the binding projects blanks to `undefined` through `matchesAnswer`. This assumes `dirty` uses the same presence-aware comparison that `extractChanges` documents (d.ts:263-265). The `dirty` doc does not state its comparison.\n7. Controls added later:\n   - The schema is owned and frozen (guide:1646-1650; Contract 3).\n   - No method adds or removes a field. The `FormInterface` methods are field, fill, touch, invalidate, disable, enable, submit, clear, and destroy (d.ts:800-903; guide:1572-1582).\n   - `fill` with a name the schema does not declare throws FIELD (guide:1593).\n   - guide:1744: a changed choice list \"is the host building a new schema\".\n   - Inference: a control inserted after construction is invisible to the form. Tracking it needs a new form, which resets `baseline`.\n   - `FIELD_LIMIT` caps one schema at 512 fields (d.ts:295).\n8. Runtime:\n   - Node >=22.12 (README:23; package.json:81-83).\n   - Host-independent with no DOM (README:24), dual ESM+CJS (README:24, :70-71).\n   - Inference: it runs in a browser and in Node alike, and it does not require a DOM.",
+   "events": "The form announces through `emitter: EmitterInterface<FormEventMap>` (d.ts:500, :754). Listeners can be wired at construction through `FormOptions.on` (d.ts:924) or afterwards with `form.emitter.on/once` (guide:1381-1383).\n\nEmitter behavior:\n- `emit` is synchronous, in registration order, in the current tick (emitter.d.ts:41-42).\n- A throwing listener is isolated and routed to `FormOptions.error: (error: unknown, event: string) => void`, and swallowed silently when no handler is set (emitter.d.ts:43-48, :91; d.ts:925).\n- Release goes through `off(event, originalHandler)` (emitter.d.ts:128-134), `clear(event?)`, which drops listeners and leaves the emitter usable (emitter.d.ts:155-161), or `destroy()` (emitter.d.ts:162-163).\n- `on` returns `void`, and no signal parameter exists (emitter.d.ts:118).\n\nEvent map (d.ts:696-704; guide table :1371-1379):\n- `fill`: `[name: string, value: FieldValue | undefined]`.\n  - Fires once per field whose answer actually moved, in the order written. `undefined` means cleared.\n  - An unchanged answer suppresses the event but is still rewritten (guide:1081-1084).\n  - It does not fire for answers that `clear` restores (guide:1092-1095, :1373).\n- `validate`: `[errors: readonly FieldError[]]`.\n  - Fires whenever the error list's content changes, after fill, invalidate, disable, enable, clear, or submit. It can fire more than once per submit (guide:1374, :1296-1298).\n- `disable`: `[name: string]`. Fires once per field moved, in schema order, and not on `clear` (guide:1375).\n- `enable`: `[name: string]`. Same rules as `disable` (guide:1376).\n- `submit`: `[values: FormValues]`.\n  - Fires only on the submit that settles the form (d.ts:693; guide:1377).\n  - After it, `status` is 'settled' and every write throws SETTLED (guide:1274-1277).\n- `clear`: `[]`.\n  - Fires on a completed `clear()`, before any `validate` it caused. It is the whole announcement of the reset.\n  - A custom-validator throw during re-evaluation resets state but emits no `clear` (guide:1378; Contract 4 guide:1655-1656).\n- `abandon`: `[]`.\n  - Fires on the `destroy` that abandons an unsettled form, never on a settled one (guide:1379).\n  - A destroy deferred behind a settling batch emits no `abandon` (d.ts:972-977; guide:950-954).\n\nEvents that do not exist: `dirty`, `clean`, `change`, `reset`, and `beforeunload` (d.ts:696-704).\n\nInference: a dirty-to-clean or clean-to-dirty transition is observable only by reading `form.dirty` after `fill` and `clear`. Read `status` or listen to `submit` and `abandon` for the end states.",
+   "gaps": [
+    "Guard 1 must build each of these itself, because the package has no DOM (README:24) and no element binding (guide:1754):\n- The `beforeunload` listener on `window`, its `preventDefault()` call, and the sticky-activation precondition (catalog:32, :187).\n- Listening to `input`/`change` on the `data-vn-guard` form's controls and calling `fill`.\n- Listening to the native `reset` event and calling `form.clear()`.\n- Listening to the native `submit` event and deciding whether to call `form.submit()`.\n- Reading each control's value and coercing it (`parseValue`, d.ts:1202).\n- Deriving or authoring the `FormSchema` from the Bootstrap markup.\n- Seeding `baseline` to match the DOM's opening state through `FormOptions.values` or the schema `default`s (d.ts:911, :759-766).",
+    "No dirty or clean event exists (d.ts:696-704). Guard 1's `dirty.vn.guard` and `clean.vn.guard` events (catalog:32) must come from the guard comparing `form.dirty` before and after `fill`, `clear`, and `submit` events. Inference: that previous reading is a value the guard holds between events, which bears on the catalog's \"stores no second flag\" (catalog:32).",
+    "A successful `form.submit()` settles the form and does not move `baseline` (d.ts:763: \"fixed when the form opens and never moves again\"). Inference: `form.dirty` stays true after a successful submit of an edited form. The catalog's \"cleared after a successful submit\" (catalog:32) and the journey's \"clean after a reset and a submit\" (catalog:191) cannot be read from `form.dirty` alone. They need `status === 'settled'`, the `submit` event, or a fresh form.",
+    "After a valid submit, every write throws SETTLED: `fill`, `touch`, `invalidate`, `disable`, `enable`, `submit`, and `clear` (guide:1274-1277). The showcase keeps the page after submit (catalog:190). Inference: further edits on that page cannot be filled into the settled form without opening a new `Form`, which takes a new baseline.",
+    "Controls added after construction are not supported. The schema is owned and frozen (guide:1646-1650), no method adds a field (d.ts:800-903), and an undeclared name throws FIELD (guide:1593). Watching for added controls (for example with `MutationObserver`) and rebuilding the form is guard work (inference).",
+    "Release has no `AbortSignal` path. `emitter.on` returns `void` (emitter.d.ts:118). Release is `off` with the original handler, `emitter.clear`, `emitter.destroy`, or `form.destroy()` (d.ts:628). The DOM listeners Guard 1 adds are outside the package entirely.",
+    "Value-model mismatches with HTML (guide:642-645, :1673-1677):\n- `undefined` is the only absence, and '' counts as an answer.\n- `<select multiple>` has no control (SelectField holds one `string`, d.ts:1238-1243).\n- `FormData` and duplicate names are out of scope (guide:1753).\n- `password` and `file` carry no `default` (d.ts:95-96, :1217), so a pre-filled password cannot enter `baseline` through a schema default. Whether `FormOptions.values` may seed it is not stated.\n- Temporal values are lexical strings (guide:922-942).",
+    "In-app navigation through `@orkestrel/router` stays unguarded and belongs to that package (catalog:32, :149, :192). Drafts and autosave are host work (guide:1745).",
+    "Version conflict: the user request names form 0.0.8 and table 0.0.7. The computed task names form 0.0.9. The installed form is 0.0.9 (package.json:3). veneer/package.json:125-126 already declares `^0.0.9` and `^0.0.8`, while catalog:157 says neither is declared and cites 0.0.8.",
+    "Source conflict: catalog:32 cites `form.md:106-117` and `form.md:1745` in scaffold/guides/form.md (catalog:21), a file not read. In the veneer mirror, line 109 holds the `FormInterface` row with `dirty` and line 1745 is \"Drafts and autosave\". Whether scaffold/guides/form.md (0.0.8) equals this mirror is unknown.",
+    "No guide-versus-types conflict was found on the asked surfaces. Two wording differences exist:\n- `Form.fill` doc \"Answers several fields at once.\" (d.ts:535) vs `FormInterface.fill` and guide:1575 \"Answers one field, or several at once.\" (d.ts:802).\n- `Form.errors` \"last completed evaluation\" (d.ts:507) vs `FormInterface.errors` \"last check\" (d.ts:767).",
+    "Unknown: whether `dirty` compares with presence in both directions as `extractChanges` documents (d.ts:263-265). The `dirty` doc says only \"any answer has moved since the form opened\" (d.ts:518).",
+    "Unknown: whether `form.destroy()` destroys or clears its emitter's listeners. The types say only that getters keep answering and writes are refused (d.ts:626).",
+    "Unknown: whether `disable` or `enable` affects `dirty`. A disabled field's value stays in `values` (guide:1013), and no source states that `dirty` excludes disabled fields.",
+    "Unknown: the shape of `Result` from @orkestrel/contract (d.ts:5), which was not read. The guide shows `{ success: true, value }` and `{ success: false, error: [...] }` (guide:42, :1302).",
+    "Inputs not reached:\n- The runtime sources dist/src/core/index.js and index.cjs (and their maps).\n- The emitter README.\n- @orkestrel/contract types.\n- scaffold/guides/form.md.\n- Every records/ and elements/ file the catalog cites.\n- veneer/package.json beyond the grep of lines 124-126."
+   ],
+   "questions": [
+    "Which version does Guard 1 target? The user request says form 0.0.8 and table 0.0.7. The install and veneer/package.json:125-126 say form ^0.0.9 and table ^0.0.8. catalog:157 says neither is declared.",
+    "Is the schema authored by hand in the showcase, or derived by the guard from the `data-vn-guard` form's controls? If derived, which control-to-`FieldControl` mapping applies (guide:254-267)? How are radio groups, `.form-check` singles versus groups, and `<select multiple>` handled?",
+    "How is `baseline` made equal to the DOM's opening state: schema `default`s, `FormOptions.values` read from `defaultValue`/`defaultChecked`/`defaultSelected`, or something else? What happens to a pre-filled `password` field, which carries no `default` (d.ts:1217)?",
+    "Does the binding project blank strings through `matchesAnswer` (guide:647-676)? That decides whether emptying a field that had no default reads clean or dirty.",
+    "What makes Guard 1 read clean after a successful submit? `form.dirty` does not reset on submit, because `baseline` is fixed (d.ts:763). The choices are `status === 'settled'`, the `submit` event, or opening a new `Form`. If it opens a new form, when?",
+    "Does a native `submit` event call `form.submit()`, a commit that settles the form and refuses later writes (guide:1274-1277, :1312-1330)? Or does the guard reset its state another way? How does a page that stays put after submit (catalog:190) accept further edits?",
+    "Does the native `reset` event map to `form.clear()`? Must the DOM's reset values match `baseline` for `dirty` to read false afterwards?",
+    "How are controls inserted after boot handled: ignored, or a rebuild of the form (which resets `baseline`)?",
+    "How is release shaped? `emitter.on` returns `void` and takes no signal. Is the choice `off` with retained handlers, `emitter.clear`, or `form.destroy()`? How does the guard's own `AbortSignal` (if any) tear down both the DOM listeners and the form?",
+    "Since `FormEventMap` has no `dirty` event, how are `dirty.vn.guard` and `clean.vn.guard` derived from `fill`, `clear`, and `submit`? Does holding the previous `dirty` reading conflict with the catalog's \"stores no second flag\" (catalog:32)?",
+    "Is the package-free `FormData` snapshot shape (catalog:32, :187) still in scope now that the package is declared in veneer/package.json, or is it dropped?"
+   ]
+  },
+  {
+   "package": "@orkestrel/table 0.0.8, installed at /home/user/veneer/node_modules/@orkestrel/table (package.json:3), checked in the objective lane against the installed files: index.d.ts and index.d.cts (69 `export declare` lines each), index.js and index.cjs, README.md, the nested @orkestrel/emitter 0.0.12, @orkestrel/contract 0.0.19, /home/user/veneer/guides/table.md, /home/user/veneer/package.json, and the catalog at /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md. No diff was part of this dispatch; this is a reading check, not a change review. The task text cuts the consumer description off at \"keys from `\", so I took the consumer from catalog:60. Terminal line: REVISE. Most citations hold, 7 claims need correction, and the reading leaves out several things the sorter needs. The version conflict goes to the Orchestrator.",
+   "upheld": [
+    "1. Package entry facts hold. The only exports are `.` (import and require, each with its own types) and `./package.json` (package.json:22-34). `sideEffects: false` is at :18. The dependencies `@orkestrel/contract` ^0.0.19 and `@orkestrel/emitter` ^0.0.12 are at :64-67. The build copies index.d.ts to index.d.cts at :57, and a Grep of `^export declare` finds 69 lines in each file. README:22 holds. The nested emitter is 0.0.12 (nested package.json:3).",
+    "2. Version facts hold. Installed table is 0.0.8. /home/user/veneer/package.json:123-127 is the `dependencies` block, with form ^0.0.9 at :125 and table ^0.0.8 at :126. The relayed user request names form 0.0.8 and table 0.0.7. Catalog:60 says \"`@orkestrel/table` 0.0.7 is the strongest fit\". Catalog:157 says \"Neither is declared (`veneer/package.json:123-133`)\", which is stale against :125-126. I refer the question of which version to pin to the Orchestrator and make no ruling on it.",
+    "3. createTable: d.ts:246, doc :206-245, and the throws at :212-213 all hold. The guide row is at :116.",
+    "4. Table class (d.ts:925-962) and TableInterface (d.ts:1094-1140) hold, including :1078-1079 \"renders nothing, reads no document, and names no host type\", :1112-1117 (view is filtered, then sorted, then paged, and computed on every read), and :1132-1139 (destroy is idempotent and later writes raise `DESTROYED`).",
+    "5. TableSchema holds: d.ts:1254-1260, with :1234-1237 for the required key, refused rows, and no positional fallback. The guide :1195 says audit refuses a `number` or `flag` key column. `choice` is not in that list, so the reading's \"`text` (or `choice`)\" holds.",
+    "6. ColumnBase holds at d.ts:135-141, and :128-129 says there is no `sortable` or `filterable`. Guide :405-414 and :263-264 hold.",
+    "7. ColumnCell holds (d.ts:160, :151-153), as do guide :1096 for `isColumnCell('date')` and the absence of a temporal cell. ColumnChoice holds (d.ts:170-174, :167-168) with refusal at admission at :87. Runtime index.js:166 confirms the membership check.",
+    "8. TableOptions holds: d.ts:1184-1191, :1165-1166 (seeding is silent), :1168-1171 (comparators keyed by column), and :1173 (no limit means no paging). Guide :447-490 and :961-962 hold.",
+    "9. SortManagerInterface holds at d.ts:852-904. The no-cycling-verb text is at :842-844, and COLUMN with all-terms-first is at :867-868 and :872-873. Runtime index.js:1157-1165 agrees: every column is checked first, mergeTerms runs, a no-op returns before any emit, and the emit comes after `#write`.",
+    "10. TableOrder and TableDirection hold: d.ts:1206-1209, :1197-1199, :995, and :993. The ARIA-token match is correctly marked as inference. Guide :805-806 attributes `ascending` and `descending` to the @orkestrel/database vocabulary, not to ARIA, which supports that marking.",
+    "11. CellComparator holds: d.ts:58, doc :40-57, and the `localeCompare` example at :55. Guide :458-459 and :486-490 hold.",
+    "12. TableEventMap holds: d.ts:1046-1055 and doc :1027-1045. The fact that the `sort` event cannot be canceled is upheld because emits run after the write (index.js:1163-1164 and :1173-1174).",
+    "13. The EmitterInterface citations all hold: emitter d.ts:109-164, :94, :100-102, :91, :41-50, :134, :127-134, :155-161, and :140-143. The inference that a listener runs synchronously inside `sort.set` holds: index.js:1164 calls `emit` inside `set`, and emitter d.ts:41-42 says listeners run in the current tick.",
+    "14. RowManagerInterface holds: d.ts:656-740, :646-648, :665-669, and the add throws at :675-677. Guide :1488 holds.",
+    "15. compareCells (d.ts:184), sortRows (d.ts:916 and :906-915 \"stably\"), mergeTerms, removeTerms, matchesTerms, and TableTerm (d.ts:556, :641, :545, :1271-1273) hold. Runtime sortRows (index.js:256-274) breaks ties on the original index, which confirms stability.",
+    "16. extractColumn, extractKey, matchesCell, and parseRows hold (d.ts:333, :343, :523, :623), as do guide :438, :1041-1052, and :1049-1050 on `null`. On an empty `data value` for a `number` column: parseNumber returns undefined for a blank string (contract index.js:6895), so parseRows refuses the whole payload (table index.js:657-660).",
+    "17. TableError, TableErrorCode, and isTableError hold (d.ts:1001-1014, :1025, :494; guide :125-127 and :110). The guard-row shape rule at guide :110 is quoted correctly.",
+    "18. PaginationManagerInterface (d.ts:586-613; guide :770-803 and :775-776) and the budget constants (d.ts:115, :80, :559, :919, :1278, :562, :112; guide :150-158, :1181) hold.",
+    "19. The binding section holds: guide :7-11, :1482-1485, :1506, :496-499, :590-593, :597-600, :632-635, and :1398-1408, and d.ts:1233. \"No DOM binding, no ARIA writes, no DOM reorder\" is upheld.",
+    "20. The event claims hold: guide :943-950, :952-959, :964-966, and :994-998. The reading's statement that `write` on move is a guide addition and not a conflict holds, because runtime index.js:1008 emits `write` for each moved key. On `clear` emitting nothing else: index.js:1301-1311 emits only `clear`, and only when something reset.",
+    "21. The catalog citations hold: :60 (the markup names sort keys from `data value` and `time datetime` and names no row-identity source), :68, :128-133, :157, and :159.",
+    "22. Attacked and held: an `undefined` absent cell versus a present one in descending order. compareCells returns -1 for an absent left cell (index.js:178), and the descending branch negates it (index.js:269), so absent cells sort last in descending order. This is consistent with the reading, which states only the ascending placement."
+   ],
+   "corrected": [
+    {
+     "claim": "Gap and question: \"Teardown leaves emitter release unclear. `TableInterface.destroy` (d.ts:1132-1139) does not say whether it destroys the emitter or drops listeners.\"",
+     "correction": "The types are silent, but the installed runtime is not. `Table.destroy` sets `#destroyed` and calls `this.#emitter.destroy()`, and emitter d.ts:162 says `destroy` \"drops every listener and sets `destroyed` to `true`\". After teardown, `emitter.on` and `once` do nothing (emitter d.ts:49-50). This is 0.0.8 runtime behavior and no typed contract states it. If the sorter wants a contract-backed release, it must call `emitter.off` before `table.destroy()`. The open question can be narrowed to that point.",
+     "evidence": "node_modules/@orkestrel/table/dist/src/core/index.js:1314-1318 and index.cjs:1315-1319 (`this.#emitter.destroy();`). The reading lists index.js as not reached."
+    },
+    {
+     "claim": "SortManagerInterface fit and gap: \"A single-column sorter would call `remove()` and then `set(...)`. Each of those changes the term list... a listener sees two `sort` emissions, the first with `[]`.\"",
+     "correction": "There are two emissions only when the clicked column differs from the column already sorted. Flipping the direction of the column already sorted is one `set` that replaces the term in place, with one emission. A first click on an unsorted table is one emission, because `remove()` on an empty list is silent. A `set` with the same term emits nothing. The single-column sorter can read `sort.orders()` and call `remove()` only when another column holds a term.",
+     "evidence": "index.js:1171-1175: remove emits only when `next.length !== this.#read().length`. index.js:1161-1164: set returns before emit when matchesTerms reports no change. d.ts:867-868 covers in-place replacement."
+    },
+    {
+     "claim": "Gap: \"Rows added or removed later must be mirrored through `rows.add`/`rows.remove`, which validate atomically and raise `KEY`/`CELL` (d.ts:671-687).\"",
+     "correction": "Only `rows.add` raises `KEY` or `CELL` (d.ts:671-687). `rows.remove` raises nothing for an unknown key. It returns `false` and leaves the table unchanged, and the list form checks every key first (d.ts:720-739; guide:1392-1394). After teardown, both raise `DESTROYED` (guide:930-934).",
+     "evidence": "d.ts:731 `remove(key: TableKey): boolean`; d.ts:736-737 \"one unknown key leaves the whole call undone\"; guide:1392-1394."
+    },
+    {
+     "claim": "TableCell fit and coercion gap: \"An empty `data value` must be left out of the row. It is not written as `''`.\"",
+     "correction": "The effect depends on the column type. A `number` column refuses `''`: parseNumber returns undefined for a blank string, so matchesCell fails, `rows.add` raises `CELL`, and `parseRows` refuses the whole payload. A `text` column admits `''` as a present string (index.js:163), and it sorts after absent cells and before every non-empty string. d.ts:968-970 states absence as meaning, not as a check, so the sorter has to drop the key for a `text` column itself.",
+     "evidence": "index.js:160-164 (matchesCell: `case \"text\": return isString(value)`); contract index.js:6895 (`if (value.trim() === \"\") return void 0`); index.js:178-183."
+    },
+    {
+     "claim": "Comparison rules: \"`text` is lexical. It uses the language's own string order\" (d.ts:1281; guide:288-291).",
+     "correction": "The citation holds. The concrete rule is a UTF-16 code-unit comparison, `left < right ? -1 : left > right ? 1 : 0`. Every uppercase ASCII letter sorts before every lowercase one ('Zebra' before 'apple'), and accented letters sort after 'z'. Header-text and cell-text columns need a `CellComparator` before they sort the way a reader expects.",
+     "evidence": "index.js:181-183."
+    },
+    {
+     "claim": "Column variant types citations: \":1284-1286 (text, \\\"compared lexically\\\"); :565-567 (number, \\\"compared by magnitude\\\"); :439-441 (flag, \\\"false before true\\\"); :89-92 (choice, ...)\"; TableKey \":1155 (non-empty)\".",
+     "correction": "Each quoted phrase sits in the doc comment before the cited declaration lines: d.ts:1281, :564, :438, and :83-84. \"must be non-empty\" for TableKey is at d.ts:1146. The declarations themselves are at the cited lines.",
+     "evidence": "d.ts:1281 \"Represents a column of text, compared lexically\"; :564; :438; :83; :1146 \"The identity must be non-empty.\""
+    },
+    {
+     "claim": "Comparison rules: \"The sort is stable... store order is the final tiebreak\", with absent-cell placement given only for ascending order.",
+     "correction": "This holds, with one property the reading leaves out. Descending negates the column comparison but not the index tiebreak, so tied rows keep store order in both directions. A descending view is therefore not the reverse of the ascending view. Absent cells sort last in descending order.",
+     "evidence": "index.js:269 (`order.direction === \"ascending\" ? compared : -compared`) and index.js:271 (`return left.index - right.index`)."
+    }
+   ],
+   "missing": [
+    "Dependency range truth (referred to the Orchestrator, no ruling). A caret on 0.0.x matches that exact patch only, so `^0.0.8` (veneer/package.json:126) cannot resolve to the user-named table 0.0.7, and `^0.0.9` (:125) cannot resolve to the user-named form 0.0.8. The declared ranges and the relayed request cannot both be satisfied.",
+    "Undeclared emitter import hazard. Veneer does not declare `@orkestrel/emitter` (package.json:123-127). The hoisted copy is 0.0.11 (node_modules/@orkestrel/emitter/package.json:3), and table uses its nested 0.0.12 copy. If the sorter imports `EmitterHandler` or `EmitterHooks` from `@orkestrel/emitter`, that is an undeclared dependency at a different version. Type the handler from table's own exports instead, either as `(...args: TableEventMap['sort']) => void` or through `TableOptions['on']`. The table barrel does not re-export the emitter types (d.ts:1-3 are `import type` only).",
+    "Precision for parseRows coercion. The reading says it \"turns numeric strings into numbers\". The rule is `Number(value)` after a blank check (contract index.js:6891-6899, `numeric: Number` at :162). So `'0x1F'`, `'1e3'`, and `' 36 '` are coerced, while `'1,234'`, `'36 kg'`, and `''` refuse the whole payload. A `data value` attribute must hold a plain JavaScript number literal.",
+    "sort.set does not check `direction` at runtime. index.js:1157-1165 checks only the column, and sortRows treats any value other than `'ascending'` as descending (index.js:269). If the sorter reads an initial direction from markup `aria-sort` (which also allows `none` and `other`), it must narrow the string to `TableDirection` before calling `set`.",
+    "There is no seed for an initial sort. TableOptions seeds only `rows` silently (d.ts:1165-1166) and has no `orders` member (d.ts:1184-1191). If markup boots with `aria-sort` on a `th`, the first `sort.set` emits `sort`. Subscribe through `table.emitter.on` after that call, or accept the boot emission. A listener passed in `TableOptions.on` will hear it.",
+    "The reading omits the schema validation surfaces a markup-inferring sorter needs before it throws: `auditTable` (d.ts:23; guide:1188-1213), `isTableSchema` and `isStructuralTableSchema` (d.ts:513, :467), and `parseTable` (d.ts:631). Duplicate or empty `th` keys, or a key column typed `number`, make `createTable` raise `SCHEMA`. Calling `auditTable` first returns the diagnostics without a throw.",
+    "`hidden` lets the identity column stay out of the drawn headings (d.ts:125-126; guide:412-414). That gives the sorter a way to declare a synthetic `text` key column (for example from a `tr` id attribute) without a visible `th`. The key column must still be declared, and the cells must be non-empty unique strings (d.ts:1234-1237).",
+    "A comparator that returns `NaN` is treated as a tie and falls through to the next term (index.js:269). A sorter that writes an offset-aware datetime `CellComparator` must return 0 or a finite number for unparsable values on purpose.",
+    "Not evidenced: the catalog's `catalog:165` cites on line 60 point into another document. Line 165 of this file is a module-folder bullet, so neither the reading nor I could check the DOM-order-as-truth note against this file."
+   ]
+  },
+  {
+   "package": "@orkestrel/form 0.0.9 (installed at /home/user/veneer/node_modules/@orkestrel/form). Lane: objective, covering what the contracts and installed declarations permit, dependency and range truth, and the letter of the citations.",
+   "upheld": [
+    "Entry point and manifest: package.json:3 reads 0.0.9, :13-16 lists the shipped files, :17 and :18 set type and sideEffects, :22-34 export only '.', :57 copies d.ts to d.cts, :64-67 hold the dependencies, and :81-83 set the engines. index.d.cts carries the same line numbers at 473/518/739/763/785. Nested emitter package.json:3 reads 0.0.12.",
+    "Version facts: package-lock.json:336-337 resolves form 0.0.9 and :609-610 resolves table 0.0.8. veneer/package.json:125-126 declares ^0.0.9 and ^0.0.8. catalog:10, :32, and :157 cite 0.0.8 and 0.0.7, and catalog:157 says neither is declared, which the disk contradicts. The guide carries no version string (grep for 0\\.0\\.\\d+ in guides/form.md finds 0 matches). README:62 links ./guides/form.md, which package.json:13-16 does not ship.",
+    "createForm: d.ts:160 holds the signature, :131-159 the doc, and :140-142 the throws. guide:110, :26-44, and :1624-1626 match.",
+    "Form class: d.ts:487-629 holds the class, :461-486 the doc, :466 the owned schema, :473-474 the derived valid and dirty, and :498 the constructor. guide:108, :1559-1561, and :1628-1634 match.",
+    "FormInterface: d.ts:752-904 holds the interface. guide:109 holds the row and guide:1570-1582 the Methods table.",
+    "dirty: d.ts:517-518, :784-785, :473-474, and :739-740 match, as do guide:962-964, :1221-1223, and :1659-1661. FormEventMap at d.ts:696-704 has no dirty, clean, change, or reset event.",
+    "baseline: d.ts:505-506 and :759-766 match, as does guide:1184-1187. Runtime index.js:1479-1515 never touches #baseline or #values on submit, so the inference that a successful submit does not re-baseline holds.",
+    "status and FormStatus: d.ts:513-514, :780-781, and :967-979 match, as do guide:112 and :944-954.",
+    "fill: d.ts:534-546 and :801-813 match, as do guide:1175-1178, :1079-1084, :1014-1015, and :1593-1594.",
+    "clear: d.ts:612-618 and :887-894 match, as do guide:1189-1190, :1090-1095, and :1581. README:24 states no DOM.",
+    "submit and FormResult: d.ts:595-611, :882-886, and :930-939 match, as do guide:1272-1277, :1284-1308, :1310-1336, :42, and :1302.",
+    "destroy: d.ts:619-628 (with 'Every getter keeps answering afterwards; every write is refused.' at :626) and :895-903 match, as do guide:1279-1282, :1251-1270, and :1234.",
+    "answer: d.ts:519-526 and :786-793 match, as does guide:1226-1249.",
+    "emitter member: d.ts:499-500, :753-754, and imports at :1-3 match, as does guide:1381-1383.",
+    "EmitterInterface: emitter.d.ts:109-164, :94, :40-50, :118 (on returns void), :128-134 (off by original handler), :155-161 (clear leaves the emitter usable), and :162-163 match. No method takes an AbortSignal.",
+    "FormOptions: d.ts:906-928 matches, with values at :911, on at :924, and error at :925. EmitterHooks at emitter.d.ts:100-102 and EmitterErrorHandler at :91 match.",
+    "FormEventMap: d.ts:686-704 matches, with 'submit fires only on a submit that passed' at :693. The guide's events table at guide:1371-1379 matches every per-event claim in the reading, as do guide:1081-1084 and :950-954.",
+    "extractChanges at d.ts:260-272 (presence in both directions at :263-265), matchesAnswer at d.ts:1125-1137 (binding line at :1129), parseValue at d.ts:1191-1202, parseValues at d.ts:1204-1211, and computeDefaults at d.ts:91-101 (password and file excluded at :95-96) all match. guide:194, :198, :200, :229-230, :635-676, :1438-1462, and :1549 match.",
+    "Schema types: FormSchema d.ts:959-965, FieldBase :313-323, FieldControl :357, FieldValue :446, FormValues :993, FormField :720, SelectField :1238-1243, PasswordField :1220-1223 (no default, :1217), FileField :455-459, FIELD_LIMIT :295, and matchesField :1139-1150 all match. guide:57-76, :86-89, and :232-267 match.",
+    "FormError: d.ts:661-684 and isFormError at :1071 match, as do guide:115-117, :1584-1622, and the 'twelve' CONTROL example at :1615-1619.",
+    "Binding boundary: README:7-8, :23-24, and :70-71 match, as do guide:12-13, :1744, :1748, :1750, :1752-1754, :1646-1650 (Contract 3), and :1673-1677 (Contract 8).",
+    "Wording differences: d.ts:535 'Answers several fields at once.' differs from d.ts:802 and guide:1575 'Answers one field, or several at once.', and d.ts:507 'last completed evaluation' differs from d.ts:767 'last check'. Both are verbatim.",
+    "Catalog citations: catalog:21 points form.md at scaffold/guides/form.md, catalog:32 says 'stores no second flag', and catalog:149, :187, :190, :191, and :192 match the reading's use of them.",
+    "Inference that Guard 1 reads form.dirty after fill: index.js:1395-1404 writes every entry before any 'fill' emission, so form.dirty read inside a fill listener already reflects the whole batch. index.js:1525-1531 restores values before the 'clear' emission, so the same holds inside a clear listener."
+   ],
+   "corrected": [
+    {
+     "claim": "Unknown: whether `dirty` compares with presence in both directions, as `extractChanges` documents. The `dirty` doc says only 'any answer has moved' (d.ts:518). Inference: filling '' into an unseeded field reads dirty.",
+     "correction": "Resolved by the installed runtime, though the declarations still don't promise it. `dirty` is `!matchesValues(this.values, this.#baseline)`, and `matchesValues` is `extractChanges(a, b).size === 0`. So `dirty` compares presence in both directions, and filling '' into a field with no default and no seed reads dirty unless the binding projects it through `matchesAnswer`. The reading's inference holds for 0.0.9 at runtime. Tag it as runtime behavior, not as a type contract.",
+     "evidence": "index.js:1352-1354, :799-800, :778-791 (presence mismatch adds the name at :782-784)"
+    },
+    {
+     "claim": "Unknown: whether `form.destroy()` destroys or clears its emitter's listeners (d.ts:626). The destroy surface's fit says the doc does not say.",
+     "correction": "The doc is silent, but the runtime always destroys the emitter. `#teardown` calls `this.#emitter.destroy()` unconditionally. That happens for an editing form after 'abandon' and for a settled form, which announces nothing. Every listener is dropped, and later on, once, and emit calls do nothing (emitter.d.ts:49-50). `form.destroy()` is therefore a complete release of the package side, but no declaration promises it.",
+     "evidence": "index.js:1544-1548, :1627-1634; emitter.d.ts:162-163"
+    },
+    {
+     "claim": "Unknown: whether `disable` or `enable` affects `dirty`.",
+     "correction": "Neither does. `dirty` reads `this.values`, which copies every held answer, disabled fields included, against `#baseline`, and neither reads the disabled overlay. `disable` and `enable` only write `#disabled` and never touch `#values`. A disabled field that holds an edit keeps the form dirty.",
+     "evidence": "index.js:1320-1324, :1352-1354, :1558-1574"
+    },
+    {
+     "claim": "`password` and `file` carry no `default` (d.ts:95-96, :1217). Whether `FormOptions.values` may seed a password is not stated.",
+     "correction": "Seeding a password is permitted. The constructor documents only FIELD for an undeclared name and CONTROL for a value the control cannot hold. At runtime it runs each seeded entry through `#requireField` and `matchesField`, and `matchesField` accepts any string up to 65536 code units for `password`. A pre-filled password can therefore enter `baseline` through `FormOptions.values`.",
+     "evidence": "d.ts:494-496, :911; index.js:1296-1303, :553, :566"
+    },
+    {
+     "claim": "Unknown: the shape of `Result` from @orkestrel/contract (d.ts:5), which was not read.",
+     "correction": "`Result<T, E>` is `Success<T> | Failure<E>`. `Success<T>` is `{ readonly success: true; readonly value: T }` and `Failure<E>` is `{ readonly success: false; readonly error: E }`. This matches the shapes shown at guide:42 and guide:1302.",
+     "evidence": "/home/user/veneer/node_modules/@orkestrel/contract/dist/src/core/index.d.ts:5533, :1700-1703, :6344-6347; runtime index.js:1502-1513"
+    },
+    {
+     "claim": "Schema types fit: Guard 1 maps `.form-check` to confirm or checkbox (inference from guide:238-252).",
+     "correction": "A Bootstrap `.form-check` also wraps radio inputs, and a radio group maps to `select`. A switch maps to `confirm`. The mapping is: lone check or switch to `confirm`, check group to `checkbox`, and radio group to `select`.",
+     "evidence": "guide:249-250, :264-265"
+    },
+    {
+     "claim": "No control models `<select multiple>` (SelectField holds one `string`, d.ts:1238-1243). Inference.",
+     "correction": "No mapping is documented for `<select multiple>`, but the `checkbox` control holds exactly that value model: any number of choices out of a list, held as a `readonly string[]`. The guide maps affordances onto value models and leaves the drawing to the renderer. 'No control models it' overstates the case. The open question is whether Guard 1 maps `<select multiple>` to `checkbox`.",
+     "evidence": "d.ts:31-42; guide:249-252, :266"
+    },
+    {
+     "claim": "values fit: the package fills them only through `fill` and `clear`, never from the DOM.",
+     "correction": "The constructor also seeds `values` from `baseline`, which is the schema defaults overlaid with `FormOptions.values`. After construction, only `fill` and `clear` move them. The 'never from the DOM' half holds.",
+     "evidence": "index.js:1294-1306; d.ts:759-760, :911"
+    },
+    {
+     "claim": "Inference: a dirty-to-clean or clean-to-dirty transition is observable only by reading `form.dirty` after `fill` and `clear`.",
+     "correction": "One transition emits no event. When a `custom` validator throws during `clear`, the answers are already restored to `baseline` but no 'clear' event fires, because `#evaluate` runs before the emit. `dirty` can therefore go from true to false silently. 'fill' does not have this gap: its events fire before evaluation. The hole matters only when Guard 1's schema carries `custom` rules.",
+     "evidence": "index.js:1525-1531 (values restored at :1525-1526, evaluate at :1530, emit at :1531), :1401-1405; guide:1378, :1655-1656"
+    },
+    {
+     "claim": "FormError fit: these are the throws Guard 1 can hit: FIELD for an unknown name, CONTROL for a wrong value shape, and SETTLED for an edit after a valid submit.",
+     "correction": "Guard 1 can also hit three more. ABANDONED: any write after `destroy`, including while a deferred destroy is pending. SCHEMA at construction: a schema derived from markup with a duplicate field name (several same-named radios each made a field), a name longer than 128 code units, or more than 1024 choices. CONTROL at construction or fill: a `select` or `checkbox` value that is a disabled choice or not offered and `open` is not set (for example a disabled selected placeholder `<option>`), a string over 65536 code units, or duplicate checkbox entries.",
+     "evidence": "index.js:1549-1552, :553, :573-574, :1290-1291; d.ts:330-331, :1098, :1171, :45, :1256; guide:1592, :1696-1698"
+    },
+    {
+     "claim": "Source conflict: whether scaffold/guides/form.md (0.0.8) equals this mirror is unknown.",
+     "correction": "/home/user/scaffold/guides/form.md exists, and every sampled line is identical to the veneer mirror at the same line number: 109, 194, 645-668, 962, 982, 990, 1185, 1211, 1223, 1659, 1676, 1745, 1748, 1754, and 1769. This is not a byte comparison. Which package version the scaffold guide documents is also unproven: the scaffold catalog lists form 0.0.8 depending on emitter ^0.0.11 and contract ^0.0.18, while the installed 0.0.9 depends on ^0.0.12 and ^0.0.19.",
+     "evidence": "Grep of dirty|matchesAnswer|Drafts and autosave|Browser binding over both files; scaffold/.claude/agents/orkestrel.md:59, :87; form package.json:64-67"
+    },
+    {
+     "claim": "Version conflict: the user request names form 0.0.8 and table 0.0.7, while veneer/package.json:125-126 declares ^0.0.9 and ^0.0.8.",
+     "correction": "The conflict is real, and the declared ranges are stricter than the reading says. Under npm caret semantics, ^0.0.9 matches only 0.0.9 and ^0.0.8 matches only 0.0.8. The declared ranges therefore exclude the versions the user named, not just prefer later ones. Choosing between them is outside this lane: refer it to the Orchestrator, because the relayed user request takes precedence over the computed task.",
+     "evidence": "veneer/package.json:125-126; package-lock.json:336-337, :609-610; npm semver caret rule for 0.0.x"
+    }
+   ],
+   "missing": [
+    "FieldChoice (d.ts:325-338): `select` and `checkbox` fields require `choices`. A disabled choice is refused at every input door, seeded values included (d.ts:330-331; index.js:573-574). Guard 1 must build the choices from `<option>` and radio or check values. A disabled selected option makes the form throw CONTROL at construction.",
+    "SelectField.open (d.ts:1235-1236, :1242): admits a value that is not among the choices. A derived schema needs it, or the full choice list, for any free value.",
+    "CheckboxField (d.ts:31-42) and ConfirmField (d.ts:103-107): the reading lists them only by union name. These are the shapes for `.form-check` groups and singles, and checkbox refuses duplicate entries (index.js:574).",
+    "matchesValue and matchesValues (d.ts:1152-1168): `dirty` is `!matchesValues(values, baseline)` (index.js:1352-1353), and `matchesValue` compares lists by ordered content (d.ts:1153). Guard 1 must collect checked values in the same order the baseline used, DOM order for example, or a reorder of the same set reads dirty.",
+    "auditSchema and isFormSchema (d.ts:23-29, :1094-1104): let Guard 1 check a markup-derived schema before construction. A duplicate name is a domain fault (d.ts:1098), and `createForm` throws SCHEMA on any fault (guide:1592).",
+    "STRING_LIMIT, LIST_LIMIT, NAME_LIMIT, and CHOICE_LIMIT (d.ts:1256, :1123, :1171, :45): a textarea over 65536 code units throws CONTROL on fill (index.js:553; guide:1696-1698). A DOM `name` over 128 code units or a select with more than 1024 options makes construction throw SCHEMA.",
+    "FormValues absence remark (d.ts:984-986): a name with no key is unanswered, and a disabled field's value may appear. This is the declaration-side source for the presence model the reading cites only from the guide.",
+    "Declaration gap: Form.fill at d.ts:534-546 and FormInterface.touch and invalidate at d.ts:814-830 carry no @throws, while the runtime JSDoc at index.js:1379-1381 and the class touch and invalidate docs at d.ts:551-552 and :563-564 document SETTLED, ABANDONED, FIELD, and CONTROL. Guard 1 must not rely on the FormInterface declaration to list fill's throws.",
+    "Referral to the Orchestrator: whether holding the previous `dirty` reading so Guard 1 can emit `dirty.vn.guard` and `clean.vn.guard` on edges conflicts with the 'Derive state' law and catalog:32 ('stores no second flag'). This is a design ruling outside the objective lane. Evidence: FormEventMap has no transition event (d.ts:696-704).",
+    "Terminal: 11 claims corrected, 4 of them stated unknowns that the installed runtime or the contract declarations resolve. Every other citation was opened and holds at the cited line. The version and range decision goes to the Orchestrator."
+   ]
+  }
+ ]
+}
