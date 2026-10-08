@@ -167,8 +167,8 @@ Each item waits for the consumer named; none is a unit here.
 | A policy-only swap builds a fresh scope with a fresh minted id, so an identity check against the previous constant (the ollama harness's `scope !== STORE_ANSWER_SCOPE`) breaks | Compare against the fresh constant or by `name`; the guide pattern says so |
 | A field-by-field copy of a scope fails `exactOptionalPropertyTypes`, and a handler lookup from data fails `noUncheckedIndexedAccess` when unguarded | The guide's data-loaded pattern spreads the row and guards the lookup before the spread |
 | The documentation that the scope never touches inclusion (`AgentContextOptions.conversations` TSDoc, guides/agent.md § Scoping a turn) becomes partly false under a scope-held `select` | `guide` rewrites both with the one timing rule |
-
 | A live System One or TypeSafe server refuses or truncates a JSON-tuple question id (`["needed","<id>","<id>"]`), so the stock selection's keys never reach the judge | the desk's first live `POST /turn` against a recording daemon origin in `desk-select`, read for the request body and the server's answer keys |
+
 
 ## Open for the user
 
