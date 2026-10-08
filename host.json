@@ -448,7 +448,7 @@
 			"storage": "claude/AGENTS.md",
 			"destination": ".claude/AGENTS.md",
 			"executable": false,
-			"digest": "dede1382efd51e89aad92e283641d986ea3e2b1715057991461189b027fcca96"
+			"digest": "a5a2d9afe1819bd0217599cf9c346896c25b5fbce57b0246eea8902bdbc9121c"
 		},
 		{
 			"storage": "claude/agents/analyst.md",
@@ -610,7 +610,7 @@
 			"storage": "claude/settings.json",
 			"destination": ".claude/settings.json",
 			"executable": false,
-			"digest": "2f30ada5af217277f1ccc351986d0f7f9d85a720e26489bd9a6032bb43af03e7"
+			"digest": "2823070394f07bf5ebca83745ae7a080db084fa29c1e9c8ce94600f7fcbc0bc8"
 		},
 		{
 			"storage": "claude/skills/enterprise-bootstrap/SKILL.md",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "5b8d11fdfe999f437e6783367b1e66d59ac686ac00ee715d1807c26fd040f7bf"
+			"digest": "a4e8f0a6b6fb77b04feeeb3e5901b0f84a139bea63070b9285ef1d6198f456a9"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1144,7 +1144,7 @@
 			"storage": "scripts/browsers.sh",
 			"destination": "scripts/browsers.sh",
 			"executable": true,
-			"digest": "5a6c6a72425989dbaa82cd8c204f37b0577ce9a4a72fcdbc104d2d4d54c96a26"
+			"digest": "5b012656f2b2ea980b36755a6ab7db0b157a52c5d74b10a0c9582b24818cc9fa"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -2114,5 +2114,5 @@
 			]
 		}
 	],
-	"digest": "4f29474f6c541313ce27ceb5ce375b87e192d8846e24364a236ed36e3dd91cf3"
+	"digest": "2a41d916755536e906177ff3b6729228aa7b54b97f9058319b8a081885692ea9"
 }

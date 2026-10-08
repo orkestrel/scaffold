@@ -37,4 +37,4 @@
 
 - Setup installs `@openai/codex` and never authenticates. Start each live session with `codex login --device-auth`.
 - `scripts/deps.sh` reinstalls when the lockfile digest differs from `node_modules/.orkestrel-lock.sha256`. Write the marker only after `npm ci` succeeds for that lockfile, in the same turn.
-- `scripts/browsers.sh` installs the Chromium builds `node_modules/playwright-core/browsers.json` pins into `PLAYWRIGHT_BROWSERS_PATH` when the store lacks them, and only when `CLAUDE_CODE_REMOTE` is `true`; a remote container pre-installs one build, and a lockfile that pins another makes every browser launch fail until this hook runs.
+- When a browser launch in a remote session reports `Executable doesn't exist`, run `scripts/browsers.sh` and rerun the test before treating the failure as a defect. SessionStart runs that hook after `scripts/deps.sh` in one command when `CLAUDE_CODE_REMOTE` is `true`, and it installs the Chromium builds the `playwright-core` manifest pins.

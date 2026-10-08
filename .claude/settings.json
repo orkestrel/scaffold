@@ -972,13 +972,8 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "\"$CLAUDE_PROJECT_DIR\"/scripts/deps.sh",
-						"timeout": 600
-					},
-					{
-						"type": "command",
-						"command": "\"$CLAUDE_PROJECT_DIR\"/scripts/browsers.sh",
-						"timeout": 600
+						"command": "\"$CLAUDE_PROJECT_DIR\"/scripts/deps.sh && \"$CLAUDE_PROJECT_DIR\"/scripts/browsers.sh",
+						"timeout": 900
 					},
 					{
 						"type": "command",
