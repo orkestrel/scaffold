@@ -448,7 +448,7 @@
 			"storage": "claude/AGENTS.md",
 			"destination": ".claude/AGENTS.md",
 			"executable": false,
-			"digest": "ffa68cb4ed116bcb876c99b0153d436baa9027d40c7ea2652faa6c74cc483c69"
+			"digest": "f2936f6781c2e6d470308e9e3218a745554fa59a3a884d115ffdb0d35df42cf9"
 		},
 		{
 			"storage": "claude/agents/analyst.md",
@@ -478,7 +478,7 @@
 			"storage": "claude/agents/distiller.md",
 			"destination": ".claude/agents/distiller.md",
 			"executable": false,
-			"digest": "78b6c099e362f9d7fe6bba3f6a6a96cac4cd29c46f9b1eef84d2c34631656619"
+			"digest": "a54a0534be8684a31741a6a9d1e56e083897a08bda09019fa5682c143e2677c2"
 		},
 		{
 			"storage": "claude/agents/grok.md",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "c6027b37f2386a2f3c14818a99bfd7749ec7b9b61197476d013b6a5fd4f5867b"
+			"digest": "24b0bc9ef3af118a43ebd036679f813b403f1a7cc595562c7300f8c785c41ff3"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2108,5 +2108,5 @@
 			]
 		}
 	],
-	"digest": "bccafe6e01c5a5f21ce626af42faf3351abec1f07419bf5a4a6115ddb8bd9ec0"
+	"digest": "81a905d6d1ff73bb20006a7cc2a506626e0ba86dca7662df4f3af2c8270f5d48"
 }
