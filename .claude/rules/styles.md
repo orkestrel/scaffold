@@ -102,8 +102,11 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 | Sass variable   | lowercase kebab-case; `!default` when overridable                   |
 | Custom property | project token scheme: `--{scope}-{property}[-modifier]`             |
 | Modifier class  | bare adjective/noun: `.surface`, `.muted`, `.accent`                |
+| Variant class   | component name, hyphen, map key: `.drag-success`                    |
 | State class     | bare adjective using the shared lifecycle vocabulary                |
 
 State classes are bare adjectives such as `.active` and `.disabled`, chosen consistently with the shared lifecycle vocabulary.
+
+When a class sets one component's tokens for one key of a shared Sass map, such as a recreated `$theme-colors`, write it as a variant class, as Bootstrap writes `.btn-success`: generate one class per key with `@each` over the map's keys, take each value from the family map with an `@error` on a missing key, and set only the component's own custom properties. Keep the bare modifier form for a class that any component reads.
 
 The composable owns interaction state, class application, `aria-*`, and timing. The partial owns visual presentation. Their contracts are stable class names and transition tokens. A native browser module's partial keys its chrome on the module's `data-*` state attribute, scoped under the module's host attribute, and its proof sets the attribute directly; the stable-class-name contract covers the classes a composable writes, not a module's attributes.
