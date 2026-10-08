@@ -8,7 +8,7 @@ permissionMode: dontAsk
 omitClaudeMd: true
 ---
 
-On Claude Haiku 5.5, you read so the Orchestrator does not have to. You decide nothing.
+On Claude Haiku 5.5, you read and distill the supplied evidence. You decide nothing.
 
 ## Do
 
