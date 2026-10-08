@@ -5,10 +5,10 @@ Every driver that carries a brief to the Cursor Grok bench follows this file. Ro
 ## Model
 
 ```text
-CURSOR_GROK_MODEL=grok-4.7-high
+CURSOR_GROK_MODEL=grok-4.7-xhigh
 ```
 
-Read from `agent models` on 2026-08-13. Re-read `agent models` and update this line when the id changes. Never guess or substitute a model id.
+`grok-4.7-xhigh` is Grok 4.7 Extra High in `agent models` (read 2026-10-08). Re-read `agent models` and update this line, the `bench.ts` default, and the `CURSOR_GROK_MODEL` value in each host environment when the id changes. Never guess or substitute a model id.
 
 ## Command
 
@@ -16,7 +16,7 @@ Read from `agent models` on 2026-08-13. Re-read `agent models` and update this l
 - Launch:
 
 ```text
-node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/cursor/<unit>.jsonl --errors tmp/cursor/<unit>.err --cap <seconds> --status -- <node> <index> -p --trust --mode=ask --model grok-4.7-high --output-format stream-json "Read tmp/cursor/<unit>-brief.md and execute it exactly. Your final message is the document it specifies."
+node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/cursor/<unit>.jsonl --errors tmp/cursor/<unit>.err --cap <seconds> --status -- <node> <index> -p --trust --mode=ask --model grok-4.7-xhigh --output-format stream-json "Read tmp/cursor/<unit>-brief.md and execute it exactly. Your final message is the document it specifies."
 ```
 
 - Write the brief to `tmp/cursor/<unit>-brief.md` with `scripts/brief.ts --lane cursor`; the prompt is a pointer to it.
@@ -32,5 +32,5 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/cursor/<u
 
 ## Availability
 
-- `bench.ts --cursor` reporting `live: false` records the bench dark. Stop with a deviation naming the fallback from `.agents/orchestration.md` § Benches: Luna, then Sonnet. Never hand the reading to the Orchestrator, `planner`, or `analyst`. Never install or authenticate.
+- `bench.ts --cursor --model grok-4.7-xhigh` reporting `live: false` records the bench dark. Stop with a deviation naming the native reader for the harness from `.agents/orchestration.md` § Benches. Never hand the reading to the Orchestrator, `planner`, or `analyst`. Never install or authenticate.
 - Never route orchestration or acceptance across this bridge.

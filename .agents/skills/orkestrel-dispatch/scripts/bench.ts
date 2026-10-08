@@ -21,7 +21,7 @@ const SCRIPTS = dirname(fileURLToPath(import.meta.url))
 // The checkout runs the `.ts` sources and a built twin under `dist/agents` runs `.js` siblings.
 const EXTENSION = extname(fileURLToPath(import.meta.url))
 const PROMPT = 'Reply with the single word READY and nothing else.'
-const CURSOR_MODEL = process.env.CURSOR_GROK_MODEL ?? 'grok-4.7-high'
+const CURSOR_MODEL = process.env.CURSOR_GROK_MODEL ?? 'grok-4.7-xhigh'
 const CODEX_MODEL = process.env.CODEX_ASTRA_MODEL ?? 'gpt-6-astra'
 const CLAUDE_MODEL = 'opus'
 const DEFAULT_CAP = 180

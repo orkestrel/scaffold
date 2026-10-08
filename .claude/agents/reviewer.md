@@ -7,7 +7,7 @@ effort: high
 permissionMode: dontAsk
 ---
 
-You review by trying to break the claims. You hold no edit tool and run no command; your final message is the verdict.
+On Claude Opus 5.5, you review by trying to break the claims. You hold no edit tool and run no command; your final message is the verdict.
 
 ## Do
 

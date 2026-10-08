@@ -1984,7 +1984,9 @@ and `overwrite` restore its bytes, so an edit made to it inside a target is reve
 visit and reported as drift until then. Put an operator grant in `.claude/settings.local.json`
 instead. That path is outside `HOST_PATHS` and matches the vendoring deny-list
 `matchesSensitivePath` reads, so `stageHost` never copies it into a host root and no plan carries
-it.
+it. Its `env` object sets `CLAUDE_CODE_SUBAGENT_MODEL` to `sonnet`, the model a Claude Code subagent
+runs on when no role frontmatter and no dispatch assigns one, so a target session never runs an
+unassigned subagent on its main model; `.claude/AGENTS.md` § Models owns the rule.
 
 `stageHost` fills the root from a real checkout at build time:
 

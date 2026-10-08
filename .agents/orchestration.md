@@ -8,32 +8,35 @@ Read in order: the user's instruction; `AGENTS.md` and the rules it scopes to yo
 
 ## Engines
 
-| Engine                            | Job                                                   | Posture                                                  |
-| --------------------------------- | ----------------------------------------------------- | -------------------------------------------------------- |
-| Cursor Grok                       | absorb, distill, scout, bounded research              | read-only; returns evidence, never decisions             |
-| Opus 5.5                          | subjective design, design-fit review, implementation  | proposes, audits, implements; never accepts its own work |
-| GPT-6 Astra                       | objective analysis, correctness audit, implementation | proposes, audits, implements; never accepts its own work |
-| Sonnet 5.5, GPT-6 Sol, GPT-6 Luna | mechanical units, gates, conformance, locating        | executes a fully specified brief                         |
+| Engine                | Job                                                                             | Posture                                                                 |
+| --------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Claude Fable 5.1      | orchestration in Claude Code: the plan, every decision, integration, acceptance | never dispatched: never a subagent, a bench, a fork, or a Workflow node |
+| Cursor Grok           | absorb, distill, scout, bounded research                                        | read-only; returns evidence, never decisions                            |
+| Claude Opus 5.5       | subjective design, design-fit review, implementation                            | proposes, audits, implements; never accepts its own work                |
+| GPT-6 Astra           | objective analysis, correctness audit, implementation                           | proposes, audits, implements; never accepts its own work                |
+| Claude Sonnet 5.5     | bounded implementation of a closed shape, ecosystem reconciliation              | executes a fully specified brief                                        |
+| Claude Haiku 5.5      | bench drivers, locating, bulk reading, bounded research, conformance, gates     | executes a fully specified brief; edits no source                       |
+| GPT-6 Sol, GPT-6 Luna | mechanical units, drivers, gates, conformance, locating, reading                | executes a fully specified brief                                        |
 
-The harness's own engine orchestrates: Opus 5.5 in Claude Code, Astra in Codex, Grok in Cursor. The Orchestrator owns the plan, every decision, integration, and acceptance. When the size gate names a review, the review runs on an engine that did not write the work.
+The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Claude Code, GPT-6 Astra in Codex, Cursor Grok in Cursor. The Orchestrator owns the plan, every decision, integration, and acceptance. When the size gate names a review, the review runs on an engine that did not write the work.
 
 ## Roles
 
-| Role         | Job                                                                | Claude        | Codex      |
-| ------------ | ------------------------------------------------------------------ | ------------- | ---------- |
-| `grok`       | absorption and distillation on Cursor Grok                         | sonnet driver | sol driver |
-| `analyst`    | objective design argument or correctness audit on Astra            | sonnet driver | astra      |
-| `astra`      | objective, constraint-heavy implementation on Astra                | sonnet driver | astra      |
-| `planner`    | subjective design on Opus                                          | opus          | sol driver |
-| `reviewer`   | design-fit or correctness review on Opus                           | opus          | sol driver |
-| `opus`       | subjective implementation (API shape, naming, guide voice) on Opus | opus          | sol driver |
-| `builder`    | one fully specified taste-free unit, app layer included            | sonnet        | sol        |
-| `checker`    | mechanical conformance against criteria and rules                  | sonnet        | luna       |
-| `verifier`   | gates and evidence commands, exit-code truth                       | sonnet        | sol        |
-| `scout`      | locate files, symbols, seams                                       | sonnet        | luna       |
-| `distiller`  | bulk reading when the Cursor bench is dark                         | sonnet        | luna       |
-| `researcher` | primary-source research when the Cursor bench is dark              | sonnet        | luna       |
-| `orkestrel`  | ecosystem reconciliation over supplied evidence                    | sonnet        | luna       |
+| Role         | Job                                                                | Claude       | Codex      |
+| ------------ | ------------------------------------------------------------------ | ------------ | ---------- |
+| `grok`       | absorption and distillation on Cursor Grok                         | haiku driver | sol driver |
+| `analyst`    | objective design argument or correctness audit on Astra            | haiku driver | astra      |
+| `astra`      | objective, constraint-heavy implementation on Astra                | haiku driver | astra      |
+| `planner`    | subjective design on Opus                                          | opus         | sol driver |
+| `reviewer`   | design-fit or correctness review on Opus                           | opus         | sol driver |
+| `opus`       | subjective implementation (API shape, naming, guide voice) on Opus | opus         | sol driver |
+| `builder`    | one bounded unit with a closed shape, app layer included           | sonnet       | sol        |
+| `checker`    | mechanical conformance against criteria and rules                  | haiku        | luna       |
+| `verifier`   | gates and evidence commands, exit-code truth                       | haiku        | sol        |
+| `scout`      | locate files, symbols, seams                                       | haiku        | luna       |
+| `distiller`  | bulk reading when the Cursor bench is dark                         | haiku        | luna       |
+| `researcher` | primary-source research when the Cursor bench is dark              | haiku        | luna       |
+| `orkestrel`  | ecosystem reconciliation over supplied evidence                    | sonnet       | sol        |
 
 - Name the role and its engine in every dispatch. Reach a role by its own name.
 - A driver launches another provider's CLI and returns the journal path and session id with the result. It never judges or implements. Refuse a bench result that carries no journal path and session id; it ran on the driver.
@@ -41,7 +44,7 @@ The harness's own engine orchestrates: Opus 5.5 in Claude Code, Astra in Codex, 
 
 ## Routing
 
-- Route by judgment load. Objective, constraint-heavy, mechanical-precision work goes to `astra`. API shape, naming, and documentation voice go to `opus`. A unit whose correct implementations cannot differ goes to `builder`.
+- Route by judgment load. Objective, constraint-heavy, mechanical-precision work goes to `astra`. API shape, naming, and documentation voice go to `opus`. A bounded unit whose brief or types fix its names, API, and architecture goes to `builder`, whatever its private lines; a unit that spans packages or leaves one of those open goes to `astra` or `opus`.
 - Delegate bulk supporting reads to `grok`: terrain, prior art, diff sweeps, scattered sources. Read decision-bearing source yourself. Fall back to `distiller` or `researcher` only when the Cursor bench is dark, and record the fallback.
 - Route gates to `verifier`. A writer's self-reported gate is not evidence.
 - Work directly on a one-file change, a lookup, or a one-line fix. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
@@ -141,8 +144,8 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 
 ## Benches
 
-- Probe a bench with the dispatch skill's `scripts/bench.ts` before its first lane in a session. A version string or a login status is not liveness.
-- A dispatch that fails on auth, quota, model access, or network records the bench dark and re-plans the lane on the substitute engine: Astra dark → Opus holds the objective lane too; Opus dark in Codex → Astra holds the subjective lane too; Grok dark → Luna, then Sonnet. Record every substitution in the routing ledger.
+- Probe a bench with the dispatch skill's `scripts/bench.ts` and the model its transport pins before its first lane in a session. A version string or a login status is not liveness.
+- A dispatch that fails on auth, quota, model access, or network records the bench dark and re-plans the lane on the substitute engine: Astra dark → Opus holds the objective lane too; Opus dark in Codex → Astra holds the subjective lane too; Grok dark → the harness's native reader, `distiller` or `researcher`: Claude Haiku 5.5 in Claude Code, GPT-6 Luna in Codex; when Haiku refuses the read, re-dispatch the role with `model: sonnet`. Record every substitution in the routing ledger.
 - Never assign Grok a design or review lane in Claude Code or Codex.
 - Journal every bench run under `tmp/<bench>/` with its session id. Never commit a journal.
 

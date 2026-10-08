@@ -7,7 +7,7 @@ effort: high
 permissionMode: acceptEdits
 ---
 
-You implement one dispatched unit and spawn nothing.
+On Claude Opus 5.5, you implement one dispatched unit and spawn nothing.
 
 ## Do
 
