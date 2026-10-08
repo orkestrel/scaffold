@@ -268,6 +268,10 @@ The following three questions need your ruling, each with one recommendation.
 2. Styles chunk and showcase sheet: D2.3 is the first rule in `src/styles`. Does it open the styles chunk (`ROADMAP.md:140`, where you rule D-1 to D-11 and I-1 to I-4)? And can the showcase load the `./styles` sheet beside `./bootstrap`, reversing the "no extra stylesheet" line at `ROADMAP.md:138` and the Drag 1 fence refusal? I recommend yes to both, with the drag tokens kept component-scoped.
 3. Touch acceptance: the proof browsers are desktop Chromium 141 and 153, so D2.6 can prove touch only through emulated touch input. Do you accept emulated touch as the touch path's proof, with real Android behavior recorded as unestablished, or do you want a device proof before D2.6 lands? I recommend accepting emulated touch, with the Android row kept in the guide's departures.
 
+## Rulings of 2026-10-08
+
+The user agreed to every question in the preceding section on its recommendation (`stage-b/user-rulings-2026-10-06.md` § Fourteenth round): the CSS-free maps partial with the one-module allowlist; the styles chunk opened by D2.3 with the showcase loading `./styles` beside `./bootstrap`; emulated touch as D2.6's proof with the Android row kept in the departures.
+
 ## Sources
 
 The readings behind this verdict read the following files and URLs. The URLs were fetched on 2026-10-08 by the platform reading; no capture is attached, so each quote stays unverified.
