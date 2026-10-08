@@ -89,6 +89,7 @@ import {
 	createHostRoot,
 	createOllamaServer,
 	DIGEST_CASES,
+	executeNpmHook,
 	executeOllamaHook,
 	executeOllamaSetup,
 	GIT_PATH_CASES,
@@ -146,6 +147,145 @@ describe.skipIf(resolveOllamaShell() === undefined)('Ollama POSIX setup', () => 
 		}
 	})
 })
+
+// SessionStart runs scripts/npm.sh only on the Claude Code Cloud Linux host, and win32 resolves
+// no bash this proof can treat as that host's. Every case declares a floor the ambient npm meets,
+// or none, so no case installs anything.
+describe.skipIf(process.platform === 'win32' || resolveTool('bash') === undefined)(
+	'npm floor hook',
+	() => {
+		it('stays silent outside Claude Code cloud and in a checkout with no manifest', () => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const project = workspace.ensure('project')
+				workspace.write(
+					'project/package.json',
+					JSON.stringify({ devEngines: { packageManager: { name: 'npm', version: '>=1.0.0' } } }),
+				)
+				expect(executeNpmHook(project, undefined)).toEqual({ status: 0, output: '' })
+				expect(executeNpmHook(project, 'false')).toEqual({ status: 0, output: '' })
+				expect(executeNpmHook(workspace.ensure('empty'), 'true')).toEqual({ status: 0, output: '' })
+			} finally {
+				workspace.destroy()
+			}
+		})
+
+		it('reads the npm entry from one record or from an array of named entries', () => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const declarations = [
+					{ name: 'npm', version: '>=1.0.0' },
+					[
+						{ name: 'pnpm', version: '>=9.0.0' },
+						{ name: 'npm', version: '>=1.0.0' },
+					],
+				]
+				for (const [index, packageManager] of declarations.entries()) {
+					const project = workspace.ensure(`project-${String(index)}`)
+					workspace.write(
+						`project-${String(index)}/package.json`,
+						JSON.stringify({ devEngines: { packageManager } }),
+					)
+					const run = executeNpmHook(project, 'true')
+					expect(run.status).toBe(0)
+					expect(run.output).toMatch(
+						/^npm\.sh: npm \d+\.\d+\.\d+ meets the floor 1\.0\.0 — skipped\.$/u,
+					)
+				}
+			} finally {
+				workspace.destroy()
+			}
+		})
+
+		it('refuses a declaration whose npm floor it cannot read', () => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const manifests = [
+					'{"name":',
+					JSON.stringify({ devEngines: 'npm' }),
+					JSON.stringify({ devEngines: { packageManager: 'npm@1.0.0' } }),
+					JSON.stringify({ devEngines: { packageManager: { version: '>=1.0.0' } } }),
+					JSON.stringify({ devEngines: { packageManager: [{ version: '>=1.0.0' }] } }),
+					JSON.stringify({ devEngines: { packageManager: { name: 'npm', version: '^1.0.0' } } }),
+					JSON.stringify({ devEngines: { packageManager: { name: 'npm', version: '>=01.0.0' } } }),
+					JSON.stringify({ devEngines: { packageManager: { name: 'npm', version: '>=1.0' } } }),
+				]
+				for (const [index, manifest] of manifests.entries()) {
+					const project = workspace.ensure(`project-${String(index)}`)
+					workspace.write(`project-${String(index)}/package.json`, manifest)
+					expect(executeNpmHook(project, 'true')).toEqual({
+						status: 0,
+						output: 'npm.sh: could not read the npm floor — skipped.',
+					})
+				}
+			} finally {
+				workspace.destroy()
+			}
+		})
+
+		it('reports no floor where no npm entry is declared and never imports a target source', () => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const plain = workspace.ensure('plain')
+				workspace.write('plain/package.json', JSON.stringify({ name: 'plain' }))
+				const pnpm = workspace.ensure('pnpm')
+				workspace.write(
+					'pnpm/package.json',
+					JSON.stringify({ devEngines: { packageManager: { name: 'pnpm', version: '>=9.0.0' } } }),
+				)
+				const target = workspace.ensure('target')
+				workspace.write('target/package.json', JSON.stringify({ name: 'target', type: 'module' }))
+				workspace.write(
+					'target/src/core/constants.ts',
+					"throw new Error('a target source was imported')\nexport const MINIMUM_NPM_VERSION = '1.0.0'\n",
+				)
+				for (const project of [plain, pnpm, target]) {
+					expect(executeNpmHook(project, 'true')).toEqual({
+						status: 0,
+						output: 'npm.sh: the checkout declares no npm floor — skipped.',
+					})
+				}
+			} finally {
+				workspace.destroy()
+			}
+		})
+
+		it('reads the scaffold checkout floor from the core constants it exports', () => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const exact = workspace.ensure('exact')
+				workspace.write(
+					'exact/package.json',
+					JSON.stringify({ name: '@orkestrel/scaffold', type: 'module' }),
+				)
+				workspace.write(
+					'exact/src/core/constants.ts',
+					"export const MINIMUM_NPM_VERSION: string = '1.0.0'\n",
+				)
+				const run = executeNpmHook(exact, 'true')
+				expect(run.status).toBe(0)
+				expect(run.output).toMatch(
+					/^npm\.sh: npm \d+\.\d+\.\d+ meets the floor 1\.0\.0 — skipped\.$/u,
+				)
+				const partial = workspace.ensure('partial')
+				workspace.write(
+					'partial/package.json',
+					JSON.stringify({ name: '@orkestrel/scaffold', type: 'module' }),
+				)
+				workspace.write(
+					'partial/src/core/constants.ts',
+					"export const MINIMUM_NPM_VERSION = '1.0'\n",
+				)
+				expect(executeNpmHook(partial, 'true')).toEqual({
+					status: 0,
+					output: 'npm.sh: could not read the npm floor — skipped.',
+				})
+			} finally {
+				workspace.destroy()
+			}
+		})
+	},
+)
 
 // Windows protocol cases run the in-process HTTP helper and need no installed executable.
 // POSIX cases execute scripts/ollama.sh through their resolved shell.

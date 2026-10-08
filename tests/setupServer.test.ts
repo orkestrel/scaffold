@@ -93,6 +93,7 @@ import {
 	REFUSED_MANIFEST_TEXT,
 	renderLauncher,
 	resolveOllamaShell,
+	resolveNpmEntry,
 	resolveTool,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
@@ -1415,6 +1416,56 @@ describe('the admitted npm', () => {
 		// the case rather than at module scope, so a host carrying no npm fails the cases that
 		// need one instead of collecting none of this file.
 		expect(extractVersion(readNpmVersion())).not.toBe(undefined)
+	})
+
+	it('reads the version of the npm a spawn launches when the environment names its entry', async () => {
+		// npm names its own entry in npm_execpath for every script it runs, and a spawn launches
+		// that entry first, so a version read anywhere else admits one npm and launches another.
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const entry = workspace.write('npm/bin/npm-cli.js', "process.stdout.write('0.0.1\\n')\n")
+			const environment = { ...process.env, npm_execpath: entry }
+			expect(resolveNpmEntry(environment)).toBe(entry)
+			expect(readNpmVersion(environment)).toBe('0.0.1')
+			const launched = await spawnNpm(['--version'], { environment })
+			expect(launched.stdout.trim()).toBe('0.0.1')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads the inherited npm entry when an override names only PATH, as a spawn does', async () => {
+		// A spawn merges its overrides over this process's environment, so an override that leaves
+		// npm_execpath out still launches the inherited entry, and the reading must follow it.
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const inherited = process.env.npm_execpath
+		try {
+			process.env.npm_execpath = workspace.write(
+				'npm/bin/npm-cli.js',
+				"process.stdout.write('0.0.2\\n')\n",
+			)
+			const environment = { PATH: requireValue(readVariable(process.env, 'PATH')) }
+			expect(readNpmVersion(environment)).toBe('0.0.2')
+			const launched = await spawnNpm(['--version'], { environment })
+			expect(launched.stdout.trim()).toBe('0.0.2')
+		} finally {
+			if (inherited === undefined) delete process.env.npm_execpath
+			else process.env.npm_execpath = inherited
+			workspace.destroy()
+		}
+	})
+
+	it('passes over an npm_execpath that names no npm entry file', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const absent = join(workspace.path, 'absent', 'npm-cli.js')
+			const resolved = resolveNpmEntry({ ...process.env, npm_execpath: absent })
+			expect(resolved).not.toBe(absent)
+			expect(basename(resolved)).toBe('npm-cli.js')
+			expect(isFile(resolved)).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
 	})
 
 	it('launches the ambient npm unchanged when it already satisfies the floor', () => {

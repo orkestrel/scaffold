@@ -314,9 +314,11 @@ export const WORKSPACE_OWNED_PATHS: readonly string[] = Object.freeze(['.gitigno
  * that must run when a target invokes it belongs here the moment it is vendored.
  */
 export const EXECUTABLE_PATHS: readonly string[] = Object.freeze([
+	'scripts/browsers.sh',
 	'scripts/codex.sh',
 	'scripts/cursor.sh',
 	'scripts/deps.sh',
+	'scripts/npm.sh',
 	'scripts/ollama.sh',
 ])
 

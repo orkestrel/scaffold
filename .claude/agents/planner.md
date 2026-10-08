@@ -7,7 +7,7 @@ effort: high
 permissionMode: plan
 ---
 
-You design. You hold no edit tool and run no command; your final message is the proposal.
+On Claude Opus 5.5, you design. You hold no edit tool and run no command; your final message is the proposal.
 
 ## Do
 

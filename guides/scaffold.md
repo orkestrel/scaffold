@@ -1860,8 +1860,11 @@ lists name.
 licence, the harness permission file, the scaffold-owned `scripts` directory, the
 shared policy register, the shared policy proof, the shared policy plugin, the shared configuration
 leaf and its proof, and the byte-identical root dotfiles. The session-start hooks inside `scripts`
-split by job. The bench probe reports whether a bench CLI resolves, and the dependency hook installs
-the lockfile's closure in a remote session.
+split by job. The bench probe reports whether a bench CLI resolves. In a remote session one command
+runs three hooks in order: the npm hook installs the newest npm in the major of the floor the
+workspace's `devEngines` record declares when the container's npm is older, the dependency hook
+installs the lockfile's closure, and the browser hook installs the Chromium builds the
+`playwright-core` package pins when the container's browser store lacks them.
 The Ollama hook invokes `scripts/ollama.sh` only when `CLAUDE_CODE_REMOTE=true`; direct invocation
 remains available for live-service setup. Claude Code Cloud is Linux and has bash: SessionStart
 runs that POSIX script and never a Windows wrapper. What wires a bench stays in the canon, and a
@@ -1984,7 +1987,9 @@ and `overwrite` restore its bytes, so an edit made to it inside a target is reve
 visit and reported as drift until then. Put an operator grant in `.claude/settings.local.json`
 instead. That path is outside `HOST_PATHS` and matches the vendoring deny-list
 `matchesSensitivePath` reads, so `stageHost` never copies it into a host root and no plan carries
-it.
+it. The staged `.claude/settings.json` sets `CLAUDE_CODE_SUBAGENT_MODEL` to `sonnet` in its `env`
+object: the model a Claude Code subagent runs on when no role frontmatter and no dispatch assigns
+one; `.claude/AGENTS.md` § Models owns the rule.
 
 `stageHost` fills the root from a real checkout at build time:
 

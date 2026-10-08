@@ -1469,6 +1469,7 @@ export default ({ mode }) => {
 		}
 	})
 
+	// Budgeted for the whole skills project running beside this checkout-wide census.
 	it('reads this checkout: every gated project, its root chain, the workbench, and the skip markers', () => {
 		const run = runSkillScript(SCRIPT, ['--json'], { cwd: WORKSPACE_ROOT })
 		expect(run).toMatchObject({ status: 0 })
@@ -1501,7 +1502,7 @@ export default ({ mode }) => {
 		expect(text.stdout).toContain(
 			'discovery: probe is an empty workbench; no chain containing " > " names it',
 		)
-	})
+	}, 180_000)
 
 	it('refuses a missing configuration, a flag with no value, and a checkout with no local Vitest', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-discovery-' })
