@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.95",
+	"version": "0.0.96",
 	"description": "Scaffold workspaces with commands: new, audit, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
@@ -98,12 +98,12 @@
 		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:templates && npm run test:distribution -- --mode release"
 	},
 	"dependencies": {
-		"@orkestrel/console": "^0.0.15",
+		"@orkestrel/console": "^0.0.16",
 		"@orkestrel/contract": "^0.0.19",
 		"@orkestrel/emitter": "^0.0.12",
 		"@orkestrel/markdown": "^0.0.17",
-		"@orkestrel/process": "^0.0.14",
-		"@orkestrel/template": "^0.0.9"
+		"@orkestrel/process": "^0.0.15",
+		"@orkestrel/template": "^0.0.10"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.59.4",
@@ -111,7 +111,7 @@
 		"@orkestrel/guide": "^0.0.24",
 		"@orkestrel/html": "^0.0.12",
 		"@orkestrel/probe": "^0.0.22",
-		"@orkestrel/test": "^0.0.24",
+		"@orkestrel/test": "^0.0.25",
 		"@types/node": "^26.6.4",
 		"@vitest/browser-playwright": "^4.1.11",
 		"oxfmt": "^0.72.0",
