@@ -496,7 +496,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "7c081ea4deffe54305f4a43685adbde2a5941d4f69c3ed386690ab409372a638"
+			"digest": "5f763e0e937888661175795f7c8235cba38db8ce6ebbcf3715ce50472756bd8f"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -850,7 +850,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "55487dfd29fd256ff5d770b422d9fc4f45d4bfad48edf094fefa3c36a8b069ba"
+			"digest": "f43f24eafb1583396abb5ee9d2b056923e02cc53e29f18064d6f5bf9017c014e"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -862,7 +862,7 @@
 			"storage": "guides/browser.md",
 			"destination": "guides/browser.md",
 			"executable": false,
-			"digest": "dfeb5feef6751bac487cf0205736a6763995b259ef1ee9bee8a606bb12f50e33"
+			"digest": "41892754ac63c9344555f53fb8b2118bb2ece1ec79b4d4594077e8a77e1cb3a2"
 		},
 		{
 			"storage": "guides/budget.md",
@@ -874,7 +874,7 @@
 			"storage": "guides/codec.md",
 			"destination": "guides/codec.md",
 			"executable": false,
-			"digest": "34753f320755a729eecde87a559f97763893487bb695344a82feeb2110f55b4d"
+			"digest": "8cb147a47eb934fc811e5a41e55f69f8610b42c1dadd46b2d44279ba4278ce78"
 		},
 		{
 			"storage": "guides/console.md",
@@ -952,7 +952,7 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "d7363cdbde8cde24503915b0fdc78e30543e3b81e68e105500dfda3ffee7702e"
+			"digest": "e66a9a0c81f3734a56db229f111f9c4ee26bfa99fa12b3dd8a8aea04016a26ac"
 		},
 		{
 			"storage": "guides/middleware.md",
@@ -964,7 +964,7 @@
 			"storage": "guides/msg.md",
 			"destination": "guides/msg.md",
 			"executable": false,
-			"digest": "ec7defb572feb4c3fa313055e54189e93b8a9c448cbec793d7af19d24b7796ae"
+			"digest": "335777be8e8f515f521a016ed7d7b1d3e165f083b2fe22fbd12d67eb9231b3cd"
 		},
 		{
 			"storage": "guides/ndjson.md",
@@ -976,7 +976,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "cec4bcaa69a0f8e191decff335f3c431b9ddf0e11d29cd6ff6368c46e1108b0f"
+			"digest": "53134e4f0a914c7bfc7fd0490dda362dbfb3327e917b5b6c1ddc89c3911a9323"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1054,7 +1054,7 @@
 			"storage": "guides/server.md",
 			"destination": "guides/server.md",
 			"executable": false,
-			"digest": "cda2cf8a0e35c0f5031cc6f9ae528ae3b5c42dd12f06aef24c1fa6bc1cad70a1"
+			"digest": "25bbe9def89dcdcce6eb2b0226f4703bac7afc7706cc9074fce6816a94664f5a"
 		},
 		{
 			"storage": "guides/sqlite.md",
@@ -1114,7 +1114,7 @@
 			"storage": "guides/toolbox.md",
 			"destination": "guides/toolbox.md",
 			"executable": false,
-			"digest": "a5a5c4679075ae6ca937d15af49189fc9e0e9e79a5fe7f4227a56be25bdf3910"
+			"digest": "80f9f6c95dafddd02a2fa59856a1af70e55fa2f7f74fe857e551b4d2249e98d4"
 		},
 		{
 			"storage": "guides/websocket.md",
@@ -1313,13 +1313,6 @@
 			]
 		},
 		{
-			"name": "Failure",
-			"owners": [
-				"contract",
-				"msg"
-			]
-		},
-		{
 			"name": "Finding",
 			"owners": [
 				"qualifier",
@@ -1502,13 +1495,6 @@
 			]
 		},
 		{
-			"name": "Result",
-			"owners": [
-				"contract",
-				"msg"
-			]
-		},
-		{
 			"name": "Row",
 			"owners": [
 				"csv",
@@ -1591,13 +1577,6 @@
 			"owners": [
 				"agent",
 				"server"
-			]
-		},
-		{
-			"name": "Success",
-			"owners": [
-				"contract",
-				"msg"
 			]
 		},
 		{
@@ -1771,7 +1750,6 @@
 		{
 			"name": "decodeBase64",
 			"owners": [
-				"browser",
 				"codec",
 				"msg"
 			]
@@ -1795,13 +1773,6 @@
 			"owners": [
 				"codec",
 				"msg"
-			]
-		},
-		{
-			"name": "encodeBase64",
-			"owners": [
-				"browser",
-				"codec"
 			]
 		},
 		{
@@ -1975,13 +1946,6 @@
 			]
 		},
 		{
-			"name": "isRecord",
-			"owners": [
-				"contract",
-				"msg"
-			]
-		},
-		{
 			"name": "isStage",
 			"owners": [
 				"probe",
@@ -2144,5 +2108,5 @@
 			]
 		}
 	],
-	"digest": "ffc221eacdfb7e9c96f1374ebb04666839c32a4fe53d02979f8cae0a0e2b4e7b"
+	"digest": "38e3f7e6d29adb05d4febb0639fef8a650f175a7ba624c7958e8cd060730a80f"
 }
