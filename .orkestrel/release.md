@@ -2,66 +2,7 @@
 
 Each round lists its packages in publish order: the layer, the version it replaced, the version the registry serves, the bump ruling with its evidence, and the `gitHead` the registry records. A row's ruling is the visit's (`.agents/skills/orkestrel-publish/scripts/wave.ts --visit`).
 
-## 2026-10-04: the eager browse server and the contract-0.0.19 wave
-
-The round shipped `@orkestrel/pool` 0.0.14 and the eager `browse` server in `@orkestrel/browser` 0.0.23, then moved every runtime consumer of pool and of the database chain to `@orkestrel/contract` `^0.0.19` (the user's ruling of 2026-10-04, "Contract wave first"), in the catalog's layer order regenerated before sequencing. `@orkestrel/supervisor` is excluded by the user's standing rule and stays on its prior ranges.
-
-| Code | Layer | Package | From | To | Ruling | `gitHead` |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 (pre-round) | L2 | `@orkestrel/pool` | 0.0.13 | 0.0.14 | bump: dist moved (floor, `watch`, token `destroy`, `restarts`), contract `^0.0.19` | `5a3a631` |
-| 2 | L1 | `@orkestrel/indexeddb` | 0.0.13 | 0.0.14 | bump: contract range moved; dist same | `b6fae46` |
-| 2 | L1 | `@orkestrel/sqlite` | 0.0.13 | 0.0.14 | bump: contract range moved; dist same | `e456876` |
-| 3 | L2 | `@orkestrel/database` | 0.0.16 | 0.0.17 | bump: contract, indexeddb, sqlite ranges moved; dist same | `14fd5b6` |
-| 3 | L5 | `@orkestrel/browser` | 0.0.22 | 0.0.23 | bump: dist moved (the eager server), `@orkestrel/pool` `^0.0.14` added | `242f380` |
-| 4 | L3 | `@orkestrel/queue` | 0.0.15 | 0.0.16 | bump: ranges moved; dist same | `b182c1e` |
-| 4 | L3 | `@orkestrel/relation` | 0.0.14 | 0.0.15 | bump: ranges moved; dist same | `aec669d` |
-| 4 | L3 | `@orkestrel/terminal` | 0.0.17 | 0.0.18 | bump: ranges moved; dist same | `bf3c7e8` |
-| 4 | L3 | `@orkestrel/workspace` | 0.0.10 | 0.0.11 | bump: ranges moved; dist same | `ed74aaf` |
-| 5 | L4 | `@orkestrel/worker` | 0.0.14 | 0.0.15 | bump: dist moved (forwards pool's `min`, `restarts`, `watch`), pool `^0.0.14`, contract `^0.0.19` | `a055007` |
-| 5 | L5 | `@orkestrel/probe` | 0.0.19 | 0.0.20 | bump: contract, mcp, queue, tool ranges moved; dist same | `dee8845` |
-| 5 | L3 | `@orkestrel/scaffold` | 0.0.90 | 0.0.91 | bump: generated workspaces pin browser `^0.0.23`, `BROWSE_UPSTREAM` adds pool, catalog regenerated; published ahead of its layer because consumers' audits read its browser pin | `9c6f2dbc2` |
-| 6 | L4 | `@orkestrel/workflow` | 0.0.20 | 0.0.21 | bump: contract, database, queue ranges moved; dist same | `62e0718` |
-| 7 | L5 | `@orkestrel/agent` | 0.0.25 | 0.0.26 | bump: six ranges moved; dist same (the first code for it was refused with `EOTP`) | `3a4e970` |
-| 8 | L6 | `@orkestrel/toolbox` | 0.0.16 | 0.0.17 | bump: ranges moved; dist same | `2f535df` |
-
-The code column counts the user's one-time codes in order; code 1 here is pool's, published before the wave. Every row was confirmed against the registry by `gitHead`.
-
-Release-chain notes:
-
-- `@orkestrel/browser`'s `prepublishOnly` runs `test:distribution -- --mode release`, which needs a Linux `/proc` table and filesystem FIFOs; on Windows the default mode ran (14 passed, 9 host-bound skips), the standard 0.0.22 shipped on. One full `test:service` run failed the synthesized-orphan case once (a 5 s window over a detached sweep and Edge's exit under load); 5 of 5 alone and the next full run (182) passed.
-- `@orkestrel/scaffold` 0.0.91's catalog carries the versions published through code 4; the later rows refresh at its next release.
-- `@orkestrel/ollama` 0.0.21 is held for one repair (the user's ruling, 2026-10-04): its live store tasks on `qwen3.5:2b-q4_K_M` passed 2 of 3 runs under both browser 0.0.22 and 0.0.23 in an A/B (`ollama/tmp/ab-store.json`), and `attemptStoreTask` opened every attempt in the browser's shared default context, so attempts 2 and 3 ran on shifted references (`e13`, `e25`) and never recovered. The repair isolates a fresh context per attempt; ollama publishes on the next code after its chain is green.
-
-## 2026-10-04 evening round: parallel browse holders
-
-| Code | Layer | Package | Prior | Published | Ruling | gitHead |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | L2 | `@orkestrel/pool` | 0.0.14 | 0.0.15 | bump: a grant resets the strikes only for a record created after the last strike (the user's Q3 ruling, `lifecycle/holders/synthesis.md`) | `4c589c6` |
-| 2 | L5 | `@orkestrel/browser` | 0.0.23 | 0.0.24 | bump: parallel holders (`acquire`, `execute`, `tools`, `destroy`), journey admission across holders, downloads under each profile, `BROWSE_VIEWPORT`, `capture`, the scroll settle and `OCCLUDED`, the deadline-not-gone fix, the failover hardening; pool `^0.0.15` | `b81c22c` |
-| 3 | L3 | `@orkestrel/scaffold` | 0.0.91 | 0.0.92 | bump: generated workspaces pin browser `^0.0.24` and probe `^0.0.20`; the canon's measured-performance rule and figures turned into properties; catalog and the browser and pool guide mirrors refreshed (npm's session expired between codes 2 and 3; one login, then a fresh code) | `5612beb` |
-
-Release-chain notes: browser's `prepublishOnly` ran with the default distribution mode on Windows (14 passed, 9 host-bound skips) and `test:service` green (193 passed); its first visit caught the server case that pinned the old strike reset, rewritten to the ruled behavior with a control against the old rule. `@orkestrel/worker` still pins pool `^0.0.14` and takes the strike rule at its next visit.
-## 2026-10-05 round: holders as contexts, shared leases, the sync fix
-
-| Code | Layer | Package | Prior | Published | Ruling | gitHead |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | L2 | `@orkestrel/pool` | 0.0.15 | 0.0.16 | bump: per-record `capacity` (shared leases), the idle-loss strike, and `isPoolMax` renamed to `isPoolLimit` (a breaking public rename; no fleet source imports it) | `f5c3289` |
-| 2 | L4 | `@orkestrel/worker` | 0.0.15 | 0.0.16 | bump: `WorkerOptions.pool` refuses `capacity` (`Omit` plus `capacity?: never`), the idle-loss strike case, pool `^0.0.16` | `5c14ed7` |
-| 3 | L5 | `@orkestrel/browser` | 0.0.24 | 0.0.25 | bump: holders as isolated contexts on pooled browsers (`BROWSE_CONTEXTS`, default 2, limit 4; admission `size × contexts`, the shared holder counted); service-worker start (ROADMAP item 16); `--disable-sync` in `BROWSER_LAUNCH_ARGS` (ROADMAP item 15: the account's synced network-hooking extensions reset the loader factories mid-run); `CDPClient` settles a detached session's pending commands; page close before release; the teardown and crash repairs; concurrent replays; pool `^0.0.16` | `ea8477b` |
-
-Release-chain notes:
-- npm's session expired before pool's code; one login, then a fresh code. Worker and browser each answered "accepted, unconfirmed" while npm processed them, then `npm view` served them (worker after about 75 s, browser after about 4 minutes).
-- Browser's `prepublishOnly` release-mode distribution needs `/proc` and FIFOs. On Windows the default mode ran (14 passed, 9 host-bound skips), and `test:service` passed (205 passed, 6 skipped), as for 0.0.22 and 0.0.24.
-- The browser visit's test gate missed three times on `FileBrowserStore`'s lock-race case, a 512-iteration loop at Vitest's 5 s default under the parallel load. It was sized to 8 iterations from mutation measurements (`75c8fc2`).
-- Probe (L5) is held: its visit failed the silent-initialize teardown case under the host load of worker's gates. Scaffold follows.
-
-Continued on 2026-10-06 UTC:
-
-| Code | Layer | Package | Prior | Published | Ruling | gitHead |
-| --- | --- | --- | --- | --- | --- | --- |
-| 4 | L5 | `@orkestrel/browser` | 0.0.25 | 0.0.26 | bump: `--disable-features=msImplicitSignin` in every library launch, merged with a caller's disabled features into one switch, so Edge automation profiles carry no Microsoft account (measured on Edge 154.0.4258.53) | `0379087` |
-| 5 | L5 | `@orkestrel/probe` | 0.0.20 | 0.0.21 | bump: the eager start (ROADMAP item 1) on pool `^0.0.16`, with one exclusive pool per stage; `initialize` waits for lint and runtime while the type stage warms behind it under `PROBE_WARM`; `createHandshakeError`; `LINT_TEARDOWN`; queue removed | `0745af2` |
-| 6 | L3 | `@orkestrel/scaffold` | 0.0.92 | 0.0.93 | bump: generated workspaces pin browser `^0.0.26` and probe `^0.0.21`; the catalog regenerated; the pool, worker, browser, and probe mirrors copied from their release heads; Oxfmt 0.72 reformatting | `916820149` |
+The rounds of 2026-10-04 to 2026-10-06 and the 2026-10-07 re-pin check closed and were swept on 2026-10-08; read them at scaffold `5aff2b245`.
 
 ## 2026-10-07 round: the scope-at-dispatch fix, the line view, and the 2B
 
@@ -84,17 +25,6 @@ Release-chain notes, continued:
 - Probe's second visit ran alone and passed, after the fixture fix (`140c5bd`: the overlap is recorded with the pid) and the receipt re-quote for Oxlint 1.87.0 (`24b8a27`).
 - Scaffold's first preparation undid the visit's format step, and its second added a trailing newline to the `app-only-toolchain.txt` snapshot. Both were corrected before the passing `prepublishOnly`.
 - Probe and scaffold each answered "accepted, unconfirmed", then `npm view` served them within about 2 minutes.
-
-## 2026-10-06 round: mcp items 13 and 14, the ollama re-pin
-
-| Code | Layer | Package | Prior | Published | Ruling | gitHead |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | L5 | `@orkestrel/mcp` | 0.0.36 | 0.0.37 | bump: `MCPInputOptions.clock` reads every expiry (ROADMAP item 14); `isPingRequest` lets a headerless legacy pre-initialize `ping` pass the session middleware (ROADMAP item 13, a recorded departure from the transport page's 400 recommendation); scaffold 0.0.93 | `9e374f2` |
-
-Release-chain notes:
-- mcp's visit ran alone: source 1539 passed with 2 skipped, guides 202, conformance 47. The publish answered "accepted, confirmed", and `npm view` serves 0.0.37.
-- npm's session had expired; one login link, then the code.
-- Ollama 0.0.21 is held. Its visit failed `test:service` on the live shipping and paging store cases, and the user ruled to release only after the store campaign's acceptance series passes. The release head `58c08d8` stays local.
 
 ## 2026-10-07 round, continued: browser 0.0.27 and ollama 0.0.21 after the small-model campaign
 
@@ -124,26 +54,6 @@ Release-chain notes, ollama:
 - **Ollama 0.0.21: published** 2026-10-07 from `058e770`. `window.ts --publish` answered accepted and unconfirmed; `--confirm` served it within the wait, and `npm view` reads `gitHead` `058e770d…` with agent `^0.0.28`.
 - The desk (an application; nothing to publish) re-pinned to agent `^0.0.28`, ollama `^0.0.21`, browser `^0.0.27`, scaffold `^0.0.94`, and probe `^0.0.21` at desk `e9d6ca8`, with one agent copy (ollama's deduped) and every desk gate green at its pre-re-pin counts (type check 0, 101 app tests, 119 policy, 225 config, the journey 6 with 66 captures).
 - mcp's `tests/distribution.test.ts` pins (`['"receipt-1"']` at lines 1596 and 1732) moved to `['receipt-1']` (`8695571`): the distribution adopter installs agent at `^0.0.23` and resolves 0.0.28, which passes a string tool result unchanged. The mcp visit then ruled no bump (dist same, ranges same, 0 self-pin hits; `npm test` 113.6 s) and pushed the re-pin to scaffold `^0.0.94`, the pins, and the overwrite (`ad9276d`); mcp stays at 0.0.37. **The user ruled (2026-10-07): the `@orkestrel/ollama` provider keeps `think` defaulting to `false`**; a harness or a consumer that wants a thinking model's reasoning sets `think: true` itself, as the store harness does.
-
-## 2026-10-07 re-pin check: the consumers the rounds left behind
-
-`tmp/units/fleet-pins.ts` read every checkout's `@orkestrel` ranges in `dependencies`, `devDependencies`, and `peerDependencies` against the registry's `latest` tags (supervisor skipped by the standing rule). Each stale range is ruled by its cause.
-
-- **Runtime ranges these rounds left behind, re-pinned and released here:** middleware's peers on database (`^0.0.16`; the 2026-10-04 wave released database 0.0.17 and missed this peer) and server (`^0.0.21`); probe's `mcp` (`^0.0.36`; mcp 0.0.37 shipped 2026-10-06); scaffold's own browser and probe pins, which its generated workspaces copy (`^0.0.26` and `^0.0.21`), after probe publishes.
-- **Owned by the agent session's plan** (`.orkestrel/agent/plan.md`, unit 14, after its agent release): toolbox (agent `^0.0.26`), mcp's quoted tool-result lines, and the scaffold guide mirrors; the desk re-pinned at `e9d6ca8`.
-- **Owned by the veneer session:** veneer's browser pin (`lanes.md`, 2026-10-07).
-- **Development ranges only, moved at each package's next visit with no release:** database and indexeddb (browser `^0.0.22`), workflow (browser `^0.0.23`), pool and worker (probe `^0.0.20`, scaffold `^0.0.92`).
-- **Drift older than these rounds, waiting on the user's ruling:** 25 packages declare `@orkestrel/contract` `^0.0.18` at runtime (abort, brief, budget, codec, console, csv, emitter, form, interpret, lsp, msg, ndjson, process, program, qualifier, rater, reason, router, sea, sse, table, template, test, timeout, websocket), most with development pins on scaffold `^0.0.81` and probe `^0.0.19`. Contract 0.0.19 shipped 2026-10-01, and the user's ruling of 2026-10-04 moved only pool's consumers and the database chain, so an adopter of agent, browser, or middleware installs contract 0.0.18 and 0.0.19 side by side. Moving them is a fleet wave in layer order, with one release per package.
-
-| Code | Layer | Package | Prior | Published | Ruling | gitHead |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | L4 | `@orkestrel/middleware` | 0.0.22 | 0.0.23 | bump: ranges moved (contract `^0.0.19`; peers database `^0.0.17`, server `^0.0.22`); dist same; scaffold 0.0.81 to 0.0.94 overwrite; 0 self-pin hits | `a1bc606` |
-
-Release-chain notes:
-- Middleware's first visit failed `lint:check`: scaffold 0.0.94's `policy(no-nested-functions)` refuses the session middleware's `control` methods on an object literal bound to a local. The literal moved into the `Object.assign` argument, typed through its type arguments so it still checks against `SessionControlInterface` (`72dd145`; `tests/src/core/middlewares.test.ts` 117 of 117, the `regenerate` and `destroy` cases included). The second visit passed every gate and `prepublishOnly`, release-mode distribution included (11 passed).
-- The first code expired while the pack ran (`EOTP`); the second landed. `window.ts --publish` answered accepted and unconfirmed, `--confirm` served it, and `npm view` reads `gitHead` `a1bc606…` with peers server `^0.0.22` and database `^0.0.17`.
-- **Probe 0.0.22 is prepared at `0ff5ff7`, pushed** (mcp `^0.0.37`; scaffold 0.0.92 to 0.0.94 overwrite; dist same, 0 self-pin hits): the visit's `npm test` passed in 534.2 s beside the `tmp/` recycle, and `prepublishOnly` passed (13 files, 269 passed with 12 skipped; policy 119; config 227; distribution 11). It publishes on the next code; scaffold's visit follows it.
-- **Probe 0.0.22: published** 2026-10-07 from `0ff5ff7` (code 409869, accepted and unconfirmed, then served).
 
 ## 2026-10-07 fleet wave: every checkout on origin main, every `@orkestrel` range on its latest
 
