@@ -82,3 +82,10 @@ The user agreed to all three questions of `native/drag-2026-10-08/verdict.md` §
 3. Touch acceptance: emulated touch input under Chromium 141 and 153 is the touch path's proof for D2.6; real Android behavior is recorded as unestablished in the guide's departures until a device proof exists.
 
 Units opened by the round: D2.0 (the maps data partial and the gate allowlist), D2.3 after D2.2 lands, D2.4 after D2.2 lands, D2.6 after D2.3 lands, D2.5 after D2.4 lands.
+
+## Fifteenth round, 2026-10-08, on the variants keying
+
+The user, 2026-10-08: "explain why we are doing a `data-vn-color` instead of an added class like we would in bootstrap? We should still follow their conventions." Reading: the keying question of `native/variants-2026-10-08/verdict.md` § Questions for the user is ruled against its recommendation. A veneer variant is a class named by the component and the key of the Bootstrap map it varies over, as Bootstrap writes `.btn-success`: the sortable takes `drag-KEY` for each key of `$theme-colors`, generated with `@each` over the map's keys in a `modifiers`-layer partial, and each class sets the sortable's own `--vn-drag-color` token on the `[data-vn-drag]` host. The `data-vn-color` attribute is withdrawn with no shim. The scaffold styles rule gains a `Variant class` row and its directive (S50), `CLASS_NAMES` gains its `veneer` group, and the class census admits that group. The verdict's other three questions stand on their recommendations unless the user rules otherwise: the text-emphasis family, the host class winning over a contextual item's own tint, and Bootstrap's `text-bg-KEY` class as the solid-fill path.
+
+Units opened by the round: S50 (the scaffold rule row), V1c (the class conversion, replacing V1's attribute), and the variants guide pass after V1c lands.
+
