@@ -1,0 +1,294 @@
+{
+	"date": "2026-10-08",
+	"subject": "Variants for native-module chrome and later styled components",
+	"request": "I would like to allow applying variants to drag and drop elements and other elements and components that we come up with that need styling.",
+	"tips": {
+		"main": "9f56e6a",
+		"landing": "de168b8"
+	},
+	"verdict": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/verdict.md",
+	"brief": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/brief.md",
+	"proposals": {
+		"attribute": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/proposal-attribute.md",
+		"class": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/proposal-class.md",
+		"token": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/proposal-token.md"
+	},
+	"judgment": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/judgment.md",
+	"critique": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/variants-2026-10-08/critique.md",
+	"doctrine": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-2026-10-08/verdict.md",
+	"scores": {
+		"attribute": 27,
+		"class": 25,
+		"token": 21,
+		"selected": 29,
+		"of": 30
+	},
+	"evidence": [
+		{
+			"script": "/home/user/veneer/tmp/units/variants-2026-10-08/verdict/compile.ts",
+			"output": "/home/user/veneer/tmp/units/variants-2026-10-08/verdict/compile.txt",
+			"reading": "Inline partial with the island selector over de168b8, planted and hand-listed controls, gap refusals, the recolor move, a two-family caller, and the themes barrel; Sass 1.105.1; exit 0"
+		},
+		{
+			"script": "/home/user/veneer/tmp/units/variants-2026-10-08/verdict/contrast.ts",
+			"output": "/home/user/veneer/tmp/units/variants-2026-10-08/verdict/contrast.txt",
+			"reading": "Island contrast: contextual item 1.00 to 1.69 on the host rule and 4.55 to 10.91 on the island rule; plain item 6.10 to 14.63 on the host rule and 1.05 to 2.53 on the island rule"
+		},
+		{
+			"script": "/home/user/veneer/tmp/units/variants-2026-10-08/judge/compile.ts",
+			"output": "/home/user/veneer/tmp/units/variants-2026-10-08/judge/compile.txt",
+			"reading": "The judge's inline partial over de168b8 without the island selector"
+		},
+		{
+			"script": "/home/user/veneer/tmp/units/variants-2026-10-08/contrast.mjs",
+			"output": "/home/user/veneer/tmp/units/variants-2026-10-08/contrast.txt",
+			"reading": "Body-background contrast of the base and text-emphasis families"
+		},
+		{
+			"script": "/home/user/veneer/tmp/units/variants-2026-10-08/probe/contrast.ts",
+			"output": "/home/user/veneer/tmp/units/variants-2026-10-08/probe/contrast.txt",
+			"reading": "Text-emphasis contrast against every same-mode subtle background, 4.55 or more"
+		},
+		{
+			"script": "/home/user/veneer/tmp/units/variants-2026-10-08/token/freeze.mjs",
+			"output": "/home/user/veneer/tmp/units/variants-2026-10-08/token/freeze.txt",
+			"reading": "Cross-mode emphasis against the other mode body background, 1.05 to 2.53"
+		}
+	],
+	"gaps": [
+		{
+			"gap": 1,
+			"hits": [
+				"token"
+			],
+			"ruling": "falls with the token proposal",
+			"where": "§ Rejected, accent token family"
+		},
+		{
+			"gap": 2,
+			"hits": [
+				"token"
+			],
+			"ruling": "falls with the token proposal",
+			"where": "§ Rejected, accent token family"
+		},
+		{
+			"gap": 3,
+			"hits": [
+				"token"
+			],
+			"ruling": "falls with the token proposal",
+			"where": "§ Rejected, accent token family"
+		},
+		{
+			"gap": 4,
+			"hits": [
+				"class",
+				"attribute"
+			],
+			"ruling": "closed by this verdict: the island selector in its child-combinator form, island cells per key, the plain-item limit, and the nested-host readings",
+			"where": "§ Dark mode and color-mode islands; V1 island case and control; V2 § Sortable list limits"
+		},
+		{
+			"gap": 5,
+			"hits": [
+				"attribute",
+				"class",
+				"token"
+			],
+			"ruling": "closed by this verdict: decoration statement, per-key forced-colors case reading the over tint",
+			"where": "§ Forced colors; V1 forced-colors case; V2 § Sortable list"
+		},
+		{
+			"gap": 6,
+			"hits": [
+				"attribute"
+			],
+			"ruling": "closed by the judgment: the loop stays inline until a second caller",
+			"where": "§ Generation; V3"
+		},
+		{
+			"gap": 7,
+			"hits": [
+				"attribute"
+			],
+			"ruling": "closed by this verdict: packed ./styles/scss and ./styles/themes/scss compiles through NodePackageImporter",
+			"where": "V1 distribution proofs"
+		},
+		{
+			"gap": 8,
+			"hits": [
+				"class",
+				"token"
+			],
+			"ruling": "falls with those proposals; the selected mechanism amends no scaffold rule",
+			"where": "§ Rejected, class per module"
+		},
+		{
+			"gap": 9,
+			"hits": [
+				"class"
+			],
+			"ruling": "falls with the class proposal; the selected loop keys on map.keys($theme-colors)",
+			"where": "§ Generation"
+		},
+		{
+			"gap": 10,
+			"hits": [
+				"attribute",
+				"class",
+				"token"
+			],
+			"ruling": "closed by this verdict: what the maps cannot give, the pack limit, and the solid-fill question",
+			"where": "§ Scope; V2 § Styles sheet paragraph; question 4"
+		},
+		{
+			"gap": 11,
+			"hits": [
+				"attribute"
+			],
+			"ruling": "closed by this verdict: the fallback law in the guide and one site law for every color property",
+			"where": "§ Placement and layers; § Registries; V2 § Styles sheet"
+		},
+		{
+			"gap": 12,
+			"hits": [
+				"attribute"
+			],
+			"ruling": "closed by this verdict: authored-attribute table, guide case against the maps fixture, and the state-attribute sentences",
+			"where": "§ Registries; V2 edits and guide case"
+		},
+		{
+			"gap": 13,
+			"hits": [
+				"attribute",
+				"class",
+				"token"
+			],
+			"ruling": "closed by this verdict: the journey case runs under JOURNEY_PLACEMENTS.shared and § Variant placement gains it",
+			"where": "V1 journey proof; V2 § Variant placement"
+		},
+		{
+			"gap": 14,
+			"hits": [
+				"class"
+			],
+			"ruling": "falls with the class proposal; recolor takes a token-to-family map with a refusal per family",
+			"where": "§ The mixin at the second caller"
+		},
+		{
+			"gap": 15,
+			"hits": [
+				"class"
+			],
+			"ruling": "falls with the class proposal; the Node proofs compile inline strings, so no fixture path exists",
+			"where": "V1 Node proofs"
+		},
+		{
+			"gap": 16,
+			"hits": [
+				"class"
+			],
+			"ruling": "falls with the class proposal",
+			"where": "§ Rejected, class per module"
+		},
+		{
+			"gap": 17,
+			"hits": [
+				"token"
+			],
+			"ruling": "falls with the token proposal; the attribute word is color",
+			"where": "§ Rejected, attribute words"
+		},
+		{
+			"gap": 18,
+			"hits": [
+				"attribute"
+			],
+			"ruling": "closed by this verdict: § Surface sentence, guide index rows, composable comment, and the primary matrix assertion; the judgment held the light, dark, and primary prose",
+			"where": "§ Generation; V1 matrix case; V2 edits"
+		},
+		{
+			"gap": 19,
+			"hits": [
+				"class"
+			],
+			"ruling": "closed by this verdict for its items that hit the selected mechanism: § Interaction row and the composable comment",
+			"where": "V1 contract; V2 § Interaction"
+		},
+		{
+			"gap": 20,
+			"hits": [
+				"token"
+			],
+			"ruling": "closed by this verdict for its items that hit the selected mechanism: § Theme packs sentence and the guide index showcase column",
+			"where": "V2 § Theme packs; V2 index edits"
+		},
+		{
+			"gap": 21,
+			"hits": [
+				"class",
+				"token"
+			],
+			"ruling": "closed by this verdict: the judgment's partial comment carried an unrun ratio and is rewritten; each unit sweeps its partial comments",
+			"where": "§ Generation; V1 and V3 contracts"
+		},
+		{
+			"gap": 22,
+			"hits": [
+				"attribute",
+				"class"
+			],
+			"ruling": "closed by this verdict: the judge ran over de168b8 and this verdict ran the mixin form over de168b8; V3 re-runs at its tip",
+			"where": "§ The mixin at the second caller; V3 contract"
+		},
+		{
+			"gap": 23,
+			"hits": [
+				"class",
+				"attribute"
+			],
+			"ruling": "closed by this verdict: the item path is Bootstrap's contextual class, and the attribute on an item is inert",
+			"where": "§ Precedence over Bootstrap's contextual classes; V1 inert-item reading; V2 § Sortable list"
+		}
+	],
+	"units": [
+		{
+			"id": "variants-1",
+			"name": "V1: Paint the sortable's variants, with the specimen and the journey",
+			"engine": "astra",
+			"starts": "de168b8 or later",
+			"lands": "after M1, rebased onto it"
+		},
+		{
+			"id": "variants-2",
+			"name": "V2: Write the guide, the roadmap, and the guide index",
+			"engine": "opus",
+			"starts": "after V1 and M1 land"
+		},
+		{
+			"id": "variants-3",
+			"name": "V3: Generalize the color rules to the next module through recolor",
+			"engine": "astra and opus",
+			"starts": "with the second module that passes the generation criterion"
+		}
+	],
+	"questions": [
+		{
+			"topic": "Keying",
+			"recommendation": "Accept the data-vn-color host attribute over a drag-KEY class."
+		},
+		{
+			"topic": "Color family",
+			"recommendation": "Accept the text-emphasis family for the line, tint, and outline."
+		},
+		{
+			"topic": "Precedence",
+			"recommendation": "Accept that a colored host wins over contextual item tints, resolved in an item's own color mode."
+		},
+		{
+			"topic": "Solid fills",
+			"recommendation": "Accept Bootstrap's text-bg-KEY class as the solid-fill path, with no contrast map under src/bootstrap."
+		}
+	]
+}
