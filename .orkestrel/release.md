@@ -143,3 +143,30 @@ Release-chain notes:
 - Middleware's first visit failed `lint:check`: scaffold 0.0.94's `policy(no-nested-functions)` refuses the session middleware's `control` methods on an object literal bound to a local. The literal moved into the `Object.assign` argument, typed through its type arguments so it still checks against `SessionControlInterface` (`72dd145`; `tests/src/core/middlewares.test.ts` 117 of 117, the `regenerate` and `destroy` cases included). The second visit passed every gate and `prepublishOnly`, release-mode distribution included (11 passed).
 - The first code expired while the pack ran (`EOTP`); the second landed. `window.ts --publish` answered accepted and unconfirmed, `--confirm` served it, and `npm view` reads `gitHead` `a1bc606…` with peers server `^0.0.22` and database `^0.0.17`.
 - **Probe 0.0.22 is prepared at `0ff5ff7`, pushed** (mcp `^0.0.37`; scaffold 0.0.92 to 0.0.94 overwrite; dist same, 0 self-pin hits): the visit's `npm test` passed in 534.2 s beside the `tmp/` recycle, and `prepublishOnly` passed (13 files, 269 passed with 12 skipped; policy 119; config 227; distribution 11). It publishes on the next code; scaffold's visit follows it.
+- **Probe 0.0.22: published** 2026-10-07 from `0ff5ff7` (code 409869, accepted and unconfirmed, then served).
+
+## 2026-10-07 fleet wave: every checkout on origin main, every `@orkestrel` range on its latest
+
+The user's order (2026-10-07): bring every package to its origin `main`, re-pin it to the latest contract and every other `@orkestrel` package, make it work, and republish in layer order. Supervisor stays out by the standing rule; veneer is unpublished and its re-pin belongs to its session. `tmp/units/fleet-sync.ts` found every checkout current except scaffold (4 commits) and veneer (73), both clean and fast-forwarded. The agent session lands its work on `claude/confident-maxwell-6nd0f3` in agent, so agent `main` carries none of it; agent, toolbox, and ollama wait for the user's ruling before the wave visits them, because that session's plan proposes agent 0.0.29 and its own re-pin unit.
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| — | L0 | `@orkestrel/contract` | 0.0.19 | 0.0.19 | no bump: development ranges only (guide, probe, scaffold) | `main` pushed |
+| 1 | L1 | `@orkestrel/abort` | 0.0.12 | 0.0.13 | bump: contract `^0.0.19`; scaffold 0.0.94 overwrite | `25d63a5` |
+| 1 | L1 | `@orkestrel/budget` | 0.0.12 | 0.0.13 | bump: contract `^0.0.19` | `3363fea` |
+| 1 | L1 | `@orkestrel/csv` | 0.0.9 | 0.0.10 | bump: contract `^0.0.19` | `65f1640` |
+| 1 | L1 | `@orkestrel/emitter` | 0.0.11 | 0.0.12 | bump: contract `^0.0.19` | `fe9a19b` |
+| 1 | L1 | `@orkestrel/msg` | 0.0.12 | 0.0.13 | bump: contract `^0.0.19` | `f27910a` |
+| 1 | L1 | `@orkestrel/ndjson` | 0.0.11 | 0.0.12 | bump: contract `^0.0.19` | `e809bba` |
+| 1 | L1 | `@orkestrel/sse` | 0.0.9 | 0.0.10 | bump: contract `^0.0.19` | `a3142b0` |
+| 1 | L1 | `@orkestrel/timeout` | 0.0.12 | 0.0.13 | bump: contract `^0.0.19` | `f8d14d2` |
+| — | L1 | `@orkestrel/html`, `@orkestrel/indexeddb`, `@orkestrel/sqlite` | — | — | no bump: development ranges only | `main` pushed |
+
+Prepared, not yet published: codec 0.0.6 (`2f1ac65`) and scaffold 0.0.95 (`3df25bd6c`, ahead of its layer as in the 2026-10-04 wave, because a consumer's audit reads its browser pin; it republishes in L3 after its runtime dependencies move).
+
+Release-chain notes:
+- Codec's visit failed the policy sweep's mirror rule: scaffold 0.0.94 requires a proof for an exporting `tests/setup.ts`. Unit `codec-setup` (Astra) wrote `tests/setup.test.ts` (13 cases: the tables against `atob` and `parseInt`, the UTF oracles against handwritten bytes and the fatal decoders) and stopped, as briefed, at the vendored config; `scaffold repair` registered the `setup` project; a deliberate encoder break reddened exactly the three encoder cases; `toThrow(TypeError)` met the lint rule.
+- The test package's audit refused scaffold 0.0.94's plan (browser `^0.0.26` against the re-pinned `^0.0.27`, and the browser guide mirror), which scaffold 0.0.95 carries; its visit reruns after that publish.
+- Scaffold 0.0.95: `scaffold catalog --all` regenerated the table and eleven mirrors (exit 1 only for the supervisor guide, HTTP 404); the three pin fixtures regenerated after the bump; nine CLI fixture lines moved vite 8.3.2 to 8.3.3 with the re-pin (`CLI.test.ts` 162 of 162); `prepublishOnly` passed.
+- The registry serves TypeScript 7.0.2, Vitest 5.0.3, and `@vitest/browser-playwright` 5; every audit reports them as non-blocking readings. Moving the fleet's toolchain to those majors is a separate decision for the user.
+- Development pins on guide, scaffold, probe, and test in lower layers trail by one release whenever those packages republish in a later layer, because each depends at runtime on lower layers; their next visit moves them.

@@ -1,10 +1,10 @@
 {
-	"@orkestrel/browser": "^0.0.26",
+	"@orkestrel/browser": "^0.0.27",
 	"@orkestrel/contract": "^0.0.19",
 	"@orkestrel/guide": "^0.0.24",
 	"@orkestrel/html": "^0.0.12",
-	"@orkestrel/probe": "^0.0.21",
-	"@orkestrel/scaffold": "^0.0.93",
+	"@orkestrel/probe": "^0.0.22",
+	"@orkestrel/scaffold": "^0.0.95",
 	"@orkestrel/test": "^0.0.24",
 	"@types/node": "^26.6.4",
 	"@vitejs/plugin-vue": "^6.0.8",
@@ -13,7 +13,7 @@
 	"oxlint": "^1.87.0",
 	"playwright": "^1.63.0",
 	"typescript": "^6.0.3",
-	"vite": "^8.3.2",
+	"vite": "^8.3.3",
 	"vitest": "^4.1.11",
 	"vue": "^3.5.40",
 	"vue-tsc": "^3.3.7"
