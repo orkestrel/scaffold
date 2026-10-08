@@ -593,6 +593,7 @@ describe('installed package consumer', () => {
 			'guides/worker.md',
 			'guides/workflow.md',
 			'guides/workspace.md',
+			'scripts/browsers.sh',
 			'scripts/codex.sh',
 			'scripts/cursor.sh',
 			'scripts/deps.sh',
