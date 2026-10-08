@@ -169,7 +169,6 @@ Each item waits for the consumer named; none is a unit here.
 | The documentation that the scope never touches inclusion (`AgentContextOptions.conversations` TSDoc, guides/agent.md § Scoping a turn) becomes partly false under a scope-held `select` | `guide` rewrites both with the one timing rule |
 | A live System One or TypeSafe server refuses or truncates a JSON-tuple question id (`["needed","<id>","<id>"]`), so the stock selection's keys never reach the judge | the desk's first live `POST /turn` against a recording daemon origin in `desk-select`, read for the request body and the server's answer keys |
 
-
 ## Open for the user
 
 - **Handler home.** Ruled on 2026-10-07 as two homes, scope first (§ Rulings). Overturn before `seam` dispatches if the scope-only or the agent-only shape is wanted; each loses one of the two requirements the ruling names.
