@@ -60,6 +60,21 @@ The agent checkout's `tmp/bench/bench.mjs` ran the Larkspur support-desk scenari
 | compaction, `sections` 3 | 3,072 | 5 | 8 | never | 2,054 | 11 | 10 |
 | compaction, `sections` 3, with Mica selection | 3,072 | 5 | 9 | never | 2,114 | 13 | 9 |
 
+### The tuned rerun of 2026-10-08
+
+After the calibration (the bounded plain state, the lookup criterion, threshold 0.90), the tuned summary, word-wise search, and the judge runner isolated from the agent model, the same 10 goals at 3,072 tokens read as follows; grades are the Opus reader's, each axis out of 20, "strict" scoring a missing `send_reply` as 0 and "answer" counting a correct plain-text answer; substring passes are after the offline rescore with the adjacent-word patterns.
+
+| arm | passed (strict / answer) | largest prompt | correct (strict / answer) | faithful (strict / answer) | judge questions per goal | minutes per goal |
+| --- | --- | ---: | --- | --- | ---: | ---: |
+| none | 3 / 4 (overflow from g05) | 3,004 | 6 / 8 | 6 / 8 | 0 | 0.1 |
+| compaction, generic summary, window 1,600, cap 3 | 3 / 3 | 2,269 | 11 / 11 | 13 / 13 | 0 | 0.6 |
+| compaction, tuned summary, window 1,600, cap 3 | 5 / 5 | 2,363 | 14 / 14 | 14 / 14 | 0 | 0.6 |
+| selection, 0.90, first run | 3 / 6 | 1,935 | 9 / 15 | 7 / 13 | 48 to 78 | 6 to 12 |
+| selection, 0.90, second run | 5 / 7 | 1,939 | 11 / 17 | 10 / 14 | 48 to 77 | 4 to 6 |
+| selection, 0.95 | 4 / 7 | 2,769 | 9 / 16 | 7 / 13 | 48 to 81 | 4 to 20 |
+
+Selection holds the prompt flat (1,166 to 1,939 tokens while the view grows from 49 to 79 messages) and reads the record best where it replies, at a judge cost of about 60 questions and 5 minutes per goal on this CPU; compaction answers in seconds and loses identifiers in its summaries; the two 0.90 runs differ by decisions within 0.01 of the cut and by the model's own generation at temperature 0. The reruns on the seam-fixed package (unit 16) and the v3 harness are recorded in the agent checkout under `tmp/bench/results/v4/` when they land.
+
 ## What the source says
 
 The source passes the mechanical rule sweep. The Grok source map, read against `AGENTS.md`, `.claude/rules/names.md`, `.claude/rules/architecture.md`, `.claude/rules/patterns.md`, and `.claude/rules/typescript.md`, found no nested function outside an admitted position, no module-scope declaration beside one class in an implementation file, no non-exported declaration in a kind file, no public member of two or more words, no public method forwarding 1:1 to a helper (`RelayProvider.frame` and `finish` forward to an injected parser, not to a module helper), no helper duplicating an installed `@orkestrel/*` export, no `any`, non-null assertion, or `as` beyond two `as const`, no store departing from the Stores rule, no binary switch encoded as a literal union, and no stored flag a sibling field determines.
