@@ -1,0 +1,1707 @@
+{
+ "run": "wf_61aed847-7d5",
+ "agents": 10,
+ "results": [
+  {
+   "subject": "How the elements repo's drag (createDrag / useDrag, plus createDrop, _drag.scss, the guides, tests and showcase pages) works, read-only, as reference material for improving the veneer sortable. Covered: input model, state machine and thresholds, cross-container transfer, placeholders and indicators, auto-scroll, constraints, events and payloads, accessibility writes, shipped styles and tokens, teardown, what the tests pin, and gaps against W3C/APG.",
+   "files": [
+    "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts",
+    "/home/user/mikesaintsg/elements/src/browser/composables/useDrag.ts",
+    "/home/user/mikesaintsg/elements/src/browser/factories/createDrop.ts",
+    "/home/user/mikesaintsg/elements/src/browser/types.ts",
+    "/home/user/mikesaintsg/elements/src/browser/constants.ts",
+    "/home/user/mikesaintsg/elements/src/browser/helpers.ts",
+    "/home/user/mikesaintsg/elements/src/browser/events.ts",
+    "/home/user/mikesaintsg/elements/src/browser/patterns.ts",
+    "/home/user/mikesaintsg/elements/src/styles/composables/_drag.scss",
+    "/home/user/mikesaintsg/elements/guides/components.md",
+    "/home/user/mikesaintsg/elements/guides/composables.md",
+    "/home/user/mikesaintsg/elements/guides/patterns.md",
+    "/home/user/mikesaintsg/elements/guides/styles.md",
+    "/home/user/mikesaintsg/elements/tests/src/browser/factories/createDrag.test.ts",
+    "/home/user/mikesaintsg/elements/tests/app/browser/pages/UseDragDropPage.test.ts",
+    "/home/user/mikesaintsg/elements/tests/app/browser/pages/_composable-api.ts",
+    "/home/user/mikesaintsg/elements/tests/setupBrowser.ts",
+    "/home/user/mikesaintsg/elements/app/browser/pages/UseDragDropPage.vue",
+    "/home/user/mikesaintsg/elements/app/browser/playgrounds/DragPlaygroundPage.vue"
+   ],
+   "facts": [
+    {
+     "topic": "input model",
+     "fact": "createDrag uses only the HTML5 Drag and Drop API. It listens for dragstart, dragend, dragenter, dragover, dragleave and drop on the host, plus click and mousedown on the host. On the document it listens for keydown, mouseup (capture) and pointerdown (capture). There are no pointermove or touch listeners and no pointer capture.",
+     "citation": "createDrag.ts:27-31, 435-449"
+    },
+    {
+     "topic": "input model",
+     "fact": "The PointerEvent objects placed in event details are made up. start, over and drop get new PointerEvent('pointerdown'/'pointermove'/'pointerup') with no coordinates. The tap event gets a PointerEvent built from the click with pointerType hard-coded to 'mouse'. The end event's pointer is always null.",
+     "citation": "createDrag.ts:148, 178, 203, 241, 394-402"
+    },
+    {
+     "topic": "input model",
+     "fact": "The only keyboard handling is Escape, caught on the document while dragging, which calls resetState(true, true). There is no keyboard way to pick up, move or drop an item, and no arrow-key selection. select() accepts a KeyboardEvent, but no key handler ever calls it.",
+     "citation": "createDrag.ts:275, 407-413"
+    },
+    {
+     "topic": "input model",
+     "fact": "Inference: browsers usually handle Escape themselves during a native drag (it ends with dragend), so the document keydown listener may never run mid-drag. Also, HTML5 drag-and-drop gives little or no support for touch on many mobile browsers. Neither point is stated in the inputs.",
+     "citation": "inference; createDrag.ts:407-413"
+    },
+    {
+     "topic": "input model",
+     "fact": "The elements repo positions this as the platform drag-and-drop wrapper. It points continuous manipulation (splitters, sliders) to a separate usePointer, which owns pointerdown, pointermove and pointerup with a body cursor lock.",
+     "citation": "UseDragDropPage.vue:41-44, 204-209; composables.md:432; types.ts:1231-1261; constants.ts:568-581"
+    },
+    {
+     "topic": "state machine",
+     "fact": "The reactive state is dragging (boolean), indices (the set being dragged), selected (the click selection), target (the row index under the pointer) and position ('before', 'after', 'into' or null). It lives in an effectScope and is exposed read-only.",
+     "citation": "createDrag.ts:62-71, 482-492; types.ts:1897-1907"
+    },
+    {
+     "topic": "state machine",
+     "fact": "The drag lifecycle: dragstart \u2192 begin() sets dragging, computes indices, writes dataTransfer, sets the drag image and emits start. dragover \u2192 update() sets target and position and emits over. drop \u2192 drop() emits drop, reorders if the row belongs to this host, clears the selection and calls resetState(true, false). dragend \u2192 resetState(true, true). resetState only emits end if dragging was true, so a drop followed by dragend emits end once, with cancelled:false.",
+     "citation": "createDrag.ts:152-159, 167-182, 184-209, 234-252, 348-352"
+    },
+    {
+     "topic": "state machine",
+     "fact": "Drag set rule: resolve.indices(start) wins if supplied. Otherwise, if the start row is selected, the whole selection is dragged. Otherwise only the start row is.",
+     "citation": "createDrag.ts:161-165"
+    },
+    {
+     "topic": "state machine",
+     "fact": "Selection: a plain click replaces the selection and sets the anchor. Ctrl/Meta+click toggles a row and moves the anchor. Shift+click selects the range from the anchor. Each change clears the window text selection and emits a select event with { added, removed, anchor, selection }. A pointerdown outside the host clears the selection without emitting any event.",
+     "citation": "createDrag.ts:275-308, 415-425"
+    },
+    {
+     "topic": "thresholds",
+     "fact": "There is no movement threshold and no long-press delay; drag start is left to the platform's dragstart. The drop zone is split at the row midpoint (clientY on the vertical axis, clientX on horizontal) into 'before' or 'after'. 'into' only comes from a custom resolve.zone callback, and that callback can return null to reject a row.",
+     "citation": "createDrag.ts:78-90, 190-195; types.ts:1890-1893"
+    },
+    {
+     "topic": "state sync",
+     "fact": "syncRows rewrites every row's classes and draggable flag. queueSync runs it immediately and again in a microtask, so rows that Vue re-renders get fixed up.",
+     "citation": "createDrag.ts:102-139"
+    },
+    {
+     "topic": "reorder",
+     "fact": "reorder() runs only when a list is given, the drag set is not empty, and the position is not 'into'. It removes the sorted indices in reverse order, adjusts the insert point for removed rows that sat above it, splices the items back in, clears the selection, and emits reorder with { from: sorted indices, to: insertion index after removal, items }.",
+     "citation": "createDrag.ts:211-232; types.ts:1051-1056"
+    },
+    {
+     "topic": "cross-container",
+     "fact": "createDrag only reorders when the drop row's parentElement is its own host. Rows are found with extractRow, which only accepts direct [data-index] children of the root.",
+     "citation": "createDrag.ts:245-246; helpers.ts:1767-1776, 1786-1792"
+    },
+    {
+     "topic": "cross-container",
+     "fact": "Moving items between containers is done through createDrop/useDrop. The drop handler reads the source's indices ref (filled only while that source is dragging) to work out what was dropped; the drag carries no custom data. The page's own source/target example uses items (read-only) plus target:false on the tray.",
+     "citation": "UseDragDropPage.vue:129-175, 389-396, 456-473"
+    },
+    {
+     "topic": "cross-container",
+     "fact": "createDrop tracks an over ref, using relatedTarget so nested children don't make it flicker. accept filters on dataTransfer.types, and an empty types list is accepted. It writes effectAllowed and dropEffect, calls on.dragenter/dragover/dragleave/drop, and emits elements:drop:enter, leave and drop with { originalEvent }.",
+     "citation": "createDrop.ts:16-100; constants.ts:427-431; types.ts:1945-1959"
+    },
+    {
+     "topic": "cross-container",
+     "fact": "dataTransfer gets setData('text/plain', startIndex) only when list or items is given. The types option is never written to dataTransfer; it is only copied into the over and drop details.",
+     "citation": "createDrag.ts:51, 171-174, 204, 242"
+    },
+    {
+     "topic": "cross-container",
+     "fact": "Inference: when items are dropped onto another createDrag host, that host's own indices are empty, so it emits drop but does not splice anything. The source's dragend then reports cancelled:true, because dragend never looks at dropEffect.",
+     "citation": "inference; createDrag.ts:212, 348-352"
+    },
+    {
+     "topic": "placeholders/indicators",
+     "fact": "There is no placeholder or gap element. The drag image is the row itself, via setDragImage with the grab offset. Feedback is entirely through row classes: dragging, selected (only when not also dragging), drop-target, drop-indicator (hovered and not 'into'), drop-indicator-before and drop-indicator-after.",
+     "citation": "createDrag.ts:92-100, 107-114; constants.ts:625-634"
+    },
+    {
+     "topic": "auto-scroll",
+     "fact": "createDrag has no auto-scroll code (no scroll listeners, rAF loop or edge zones). Inference: any auto-scroll during a drag comes from the browser's native drag-and-drop behaviour.",
+     "citation": "createDrag.ts (whole file; no matches for scroll except a comment at line 119)"
+    },
+    {
+     "topic": "constraints",
+     "fact": "Axis: 'vertical' (default) or 'horizontal', used only to choose before/after. Nothing locks movement to the axis.",
+     "citation": "createDrag.ts:49, 78-87; UseDragDropPage.vue:507-511"
+    },
+    {
+     "topic": "constraints",
+     "fact": "Handles: if a row contains .drag-handle, the row gets draggable=false and each handle gets draggable=true. canStartFrom rejects drags that start under .no-drag, and when a handle exists it requires the drag to start inside it. The mousedown target is remembered (pressedRow/pressedAllowed) because dragstart's target is the draggable element, not the element the user pressed.",
+     "citation": "createDrag.ts:115-132, 256-273, 318-346"
+    },
+    {
+     "topic": "constraints",
+     "fact": "There is no disabled-item support: the factory never reads aria-disabled, disabled or a data flag. The showcase writes aria-disabled on tray items, but the factory ignores it.",
+     "citation": "createDrag.ts (no matches); UseDragDropPage.vue:405"
+    },
+    {
+     "topic": "constraints",
+     "fact": "There are no named groups or shared-list groups. Source/target roles are booleans: isSource = source ?? (auto || effect.allowed || list/items); isTarget = target ?? (effect.drop || list/items). select:false turns off click selection, but tap still fires.",
+     "citation": "createDrag.ts:53-58, 385-405"
+    },
+    {
+     "topic": "events",
+     "fact": "DRAG_EVENTS: tap, start, over, drop, end, reorder, select and clear, named 'elements:drag:{verb}'. They are registered in the public events tree as events.drag, with DROP_EVENTS as events.drop. All are emitted as bubbling, non-cancelable CustomEvents.",
+     "citation": "constants.ts:407-416; events.ts:72-73; helpers.ts:1530-1532"
+    },
+    {
+     "topic": "events",
+     "fact": "Payloads. tap: { index, pointer }. start: { indices, pointer }. over: { index, position, target, pointer, types }. drop: { index|null, position|null, target|null, pointer, types }. end: { cancelled, pointer|null }. reorder: { from, to, items }. select: { added, removed, anchor, selection }. clear: no detail. over and drop are emitted on the row; everything else on the host. Strict runtime guards exist for the tap, start, over and drop details.",
+     "citation": "types.ts:1012-1056; createDrag.ts:180, 206, 227, 244, 302-307, 315, 404; helpers.ts:1694-1764"
+    },
+    {
+     "topic": "events",
+     "fact": "None of the events can be cancelled, so a listener cannot veto a drop or a reorder. emit always passes cancelable:false.",
+     "citation": "helpers.ts:1530-1532"
+    },
+    {
+     "topic": "accessibility",
+     "fact": "createDrag writes no ARIA at all: no role, aria-selected, aria-grabbed, aria-dropeffect, aria-describedby or tabindex, and no live region or announcements. It does not move or restore focus. The only DOM writes are classes and the draggable property.",
+     "citation": "createDrag.ts:107-131 (grep for aria-|role|live|focus finds nothing)"
+    },
+    {
+     "topic": "accessibility",
+     "fact": "The showcase writes aria-selected on rows itself, from the selected ref. Its handle is a span with aria-label and title but no role or tabindex.",
+     "citation": "UseDragDropPage.vue:294-296, 348"
+    },
+    {
+     "topic": "styles",
+     "fact": "_drag.scss is in @layer composables. It gives [draggable='true'] cursor:grab, and grabbing on :active or .dragging. .dragging gets opacity 0.5. [data-index].drop-target gets a 12% oklab mix of --color-primary. Before/after indicators are a 2px --color-primary bar drawn with ::before/::after on a row made position:relative, using logical insets.",
+     "citation": "_drag.scss:37-103"
+    },
+    {
+     "topic": "styles",
+     "fact": "The styles take values straight from global tokens (--color-primary) or literals (2px, 12%, 0.5). No --set-drag-* tokens exist anywhere in src, and COMPOSABLE_CONTRACTS.drag requires no tokens. The style partial does not loop over variants with palette-each and has no forced-colors, focus-visible or 'into' styles. The .selected and plain .drop-indicator classes get no style there.",
+     "citation": "_drag.scss:76-102; patterns.ts:1270-1289; grep --set-drag in src"
+    },
+    {
+     "topic": "styles",
+     "fact": "The showcase restyles rows in a scoped block with hard-coded values: .selected uses 12% primary with an inset ring, .dragging opacity 0.4, and an indicator inset 0.5rem / -2px with a border radius. Its transitions are hand-written with no reduced-motion guard.",
+     "citation": "UseDragDropPage.vue:605-651"
+    },
+    {
+     "topic": "guides",
+     "fact": "components.md and composables.md describe useDrag/useDrop in one line each ('HTML5 DnD with reorder events'). composables.md lists six events (tap, start, over, drop, end, reorder) and puts useDrag among the behavioural primitives. Neither patterns.md nor styles.md mentions drag.",
+     "citation": "components.md:233; composables.md:17, 41, 64, 430-431; grep of patterns.md/styles.md = 0 hits"
+    },
+    {
+     "topic": "teardown",
+     "fact": "destroy() can be called more than once. The first call removes the on.* listeners, all host and document listeners, and stops the effect scope. Every call then strips all DRAG_ROW_CLASSES, sets draggable=false on rows and handles when auto is on, and clears the selection. useDrag creates the factory in a post-flush watch on the element ref and destroys it on cleanup or when the ref changes.",
+     "citation": "createDrag.ts:451-480; useDrag.ts:45-69"
+    },
+    {
+     "topic": "tests",
+     "fact": "createDrag.test.ts pins: the initial empty state; select(1); Shift range 1\u21923; clear() emptying selected and indices; auto:true making rows draggable; and destroy leaving no listeners or observers behind (destroy called twice). A statechart covers selection only (empty \u2192 single \u2192 range \u2192 empty). Its comment says the drag sub-machine is not table-tested because DataTransfer resists synthetic dispatch.",
+     "citation": "createDrag.test.ts:28-81, 83-213; setupBrowser.ts:315-337"
+    },
+    {
+     "topic": "tests",
+     "fact": "UseDragDropPage.test.ts only checks that the page renders (section#use-drag-intro with h1 'useDrag / useDrop') and that every option, on.* key and return member the page's script uses still exists in the source of createDrag/useDrag/types or createDrop/useDrop/types. Behaviour is not tested.",
+     "citation": "UseDragDropPage.test.ts:8-14; _composable-api.ts:259-323"
+    },
+    {
+     "topic": "tests",
+     "fact": "No test covers reorder, any emitted event or payload, handles, .no-drag, Escape, row classes, dataTransfer, cross-container drops, or the select/clear events.",
+     "citation": "createDrag.test.ts:1-213"
+    },
+    {
+     "topic": "showcase",
+     "fact": "The page has four demos (default reorder, handle, multi-select, source-to-drop-zone) plus an API reference. DragPlaygroundPage drives only selection, with source:false and target:false, listening for DRAG_EVENTS.select and clear.",
+     "citation": "UseDragDropPage.vue:46-54, 221-475; DragPlaygroundPage.vue:1-49"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "UseDragDropPage.vue:563-564 says the framework 'deliberately does not theme drag affordances'. _drag.scss:17-21 and patterns.ts:1288 say it paints baseline visual feedback.",
+     "citation": "UseDragDropPage.vue:563-564; _drag.scss:17-21; patterns.ts:1287-1288"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "_drag.scss:20 tells authors to retune via `--set-drag-*` tokens. patterns.ts:1274 says no such tokens are required, and none exist in src.",
+     "citation": "_drag.scss:20; patterns.ts:1274-1278"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "_drag.scss:4-5 says the factory drives 'pointer + keyboard selection'. The factory only does click selection and Escape-to-cancel.",
+     "citation": "_drag.scss:4-5; createDrag.ts:385-413"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "UseDragEventMap declares on.select and on.clear (types.ts:1864-1868), but createDrag only binds on.tap/start/over/drop/end/reorder (createDrag.ts:429-434), so on.select and on.clear passed as options are never called. The page and composables.md also list only the six events.",
+     "citation": "types.ts:1857-1869; createDrag.ts:429-434; UseDragDropPage.vue:526-528; composables.md:430"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "Demo 2's grip is class 'showcase-drag-handle' (UseDragDropPage.vue:294), but the factory looks for '.drag-handle' (createDrag.ts:125, 258). Inference: the handle restriction does not apply in that demo, and the whole row is draggable apart from the .no-drag button.",
+     "citation": "UseDragDropPage.vue:276-286, 294; createDrag.ts:125, 258"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "composables.md:80 names data-no-select as the general opt-out that skips drag. createDrag reads only the .no-drag class and never data-no-select.",
+     "citation": "composables.md:80; createDrag.ts:257, 328, 390"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "The page tells consumers to use useDrop accept ['text/plain'] for drags from useDrag, but createDrag only sets text/plain when list or items is given.",
+     "citation": "UseDragDropPage.vue:574-576; createDrag.ts:173"
+    },
+    {
+     "topic": "distillate",
+     "fact": "The elements drag is a thin HTML5 drag-and-drop wrapper keyed on rows that are direct [data-index] children. Its strengths: a selection model with an anchor (click, Ctrl, Shift) and multi-row drags; midpoint before/after hit-testing with a pluggable zone/indices resolver; list splicing that corrects the insert index; handle and .no-drag gating that remembers the mousedown target; state shown as classes; and named 'elements:drag:*' CustomEvents plus a separate drop-zone factory. It has no pointer or touch path, no keyboard move, no ARIA or live announcements, no focus handling, no auto-scroll, no placeholder, no disabled items or groups, no cancelable events, no tokenized styles, and its tests cover selection only.",
+     "citation": "createDrag.ts:1-493; createDrop.ts:1-101; _drag.scss:37-103; createDrag.test.ts:83-213"
+    }
+   ],
+   "gaps": [
+    {
+     "gap": "There is no way to reorder without dragging: no keyboard pick-up/move/drop and no single-pointer alternative such as move up/down. WCAG 2.2 SC 2.5.7 (Dragging Movements) and the APG listbox 'rearrangeable options' guidance call for one. This is outside knowledge; the elements guides contain no APG drag material.",
+     "citation": "createDrag.ts:407-413 (Escape only); grep of guides for aria-grabbed/rearrang = 0 hits"
+    },
+    {
+     "gap": "There are no screen-reader announcements for pick-up, move, drop or cancel (no live region). ARIA 1.1 deprecated aria-grabbed/aria-dropeffect, so APG-style practice relies on live-region announcements and descriptive instructions. This is outside knowledge.",
+     "citation": "createDrag.ts (no aria/live writes)"
+    },
+    {
+     "gap": "The factory writes no roles or states: no aria-selected for the selection, no aria-describedby instructions, no tabindex/roving focus for rows or handles. Focus is not kept on the moved item after a reorder.",
+     "citation": "createDrag.ts:102-134, 211-232; UseDragDropPage.vue:348 (page writes aria-selected itself)"
+    },
+    {
+     "gap": "There is no touch or pointer-events fallback. HTML drag-and-drop on touch devices is limited (outside knowledge), and the factory adds no long-press or threshold logic.",
+     "citation": "createDrag.ts:435-449"
+    },
+    {
+     "gap": "There is no auto-scroll, no placeholder, no disabled-item handling, no axis lock and no named groups or compatibility rules between containers.",
+     "citation": "createDrag.ts:44-60, 256-263"
+    },
+    {
+     "gap": "Drag styles lack forced-colors handling, a styled 'into' state, a .selected style, tokenized sizes and colours, and variant support. AGENTS.md section 21 asks for tokens via --set-*, palette-each and forced-colors discipline on interactive chrome.",
+     "citation": "_drag.scss:37-103; AGENTS.md \u00a721.7, \u00a721.11 (loaded context)"
+    },
+    {
+     "gap": "No event can be cancelled, so there is no gate before a drop or reorder. AGENTS.md section 14 provides dispatch() for cancelable pre-transition gates.",
+     "citation": "createDrag.ts:149, 180, 206, 227, 244; helpers.ts:1530-1532"
+    },
+    {
+     "gap": "Inputs not reached: guides/README.md line 322 (a long line mentioning Drag, not in the requested list), useDrop.ts, the COMPOSABLE_CONTRACTS enforcement tests, and the body of the dispose harness (installDisposeHarness).",
+     "citation": "guides/README.md:322; tests/setupBrowser.ts:315-337"
+    }
+   ],
+   "questions": [
+    "Does the document keydown Escape handler ever fire during a native HTML5 drag in the target browsers, or does the browser consume Escape and end the drag itself?",
+    "After a successful drop onto another createDrag host or a createDrop zone, does the source's dragend need to report cancelled:false? Currently it always reports cancelled:true.",
+    "Is the showcase handle demo (class showcase-drag-handle) meant to use .drag-handle? As written, the handle restriction does not apply.",
+    "Are on.select and on.clear meant to be bound through options? The type declares them, but the factory does not wire them.",
+    "Which W3C/APG source should define the target for the veneer sortable's accessibility gaps, given that the elements guides carry no APG drag pattern?"
+   ]
+  },
+  {
+   "subject": "Read-only distillation of the veneer sortable list (Drag 1) as it stands. Question: what the markup, pointer, keyboard, event, ARIA, teardown, proof, deviation, and styling contracts are, and what a production-grade sortable would need that this one lacks.",
+   "files": [
+    "/home/user/veneer/src/browser/drags/Drag.ts",
+    "/home/user/veneer/src/browser/drags/plugins.ts",
+    "/home/user/veneer/src/browser/drags/index.ts",
+    "/home/user/veneer/src/browser/drags/factories.ts",
+    "/home/user/veneer/src/browser/drags/constants.ts",
+    "/home/user/veneer/src/browser/drags/types.ts",
+    "/home/user/veneer/tests/src/browser/drags/Drag.test.ts",
+    "/home/user/veneer/tests/src/browser/drags/plugins.test.ts",
+    "/home/user/veneer/tests/src/browser/drags/factories.test.ts",
+    "/home/user/veneer/tests/src/browser/drags/index.test.ts",
+    "/home/user/veneer/guides/veneer.md",
+    "/home/user/veneer/app/browser/sections/sortable-list.html",
+    "/home/user/veneer/app/browser/constants.ts",
+    "/home/user/veneer/app/browser/Showcase.ts",
+    "/home/user/veneer/tests/app/browser/integration.test.ts",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/brief.md",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/report.md",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/lane-report.md",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/attempt1-stop.md",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/attempt2-stop.md",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md",
+    "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md"
+   ],
+   "facts": [
+    {
+     "topic": "markup contract",
+     "fact": "The plugin boots every `[data-vn-drag]` host; its direct children are items. The `data-vn-drag` value is reserved for a later group-transfer unit; Drag 1 reads only presence and exchanges nothing between hosts, even with matching values.",
+     "citation": "/home/user/veneer/src/browser/drags/plugins.ts:17; /home/user/veneer/guides/veneer.md:1132-1137"
+    },
+    {
+     "topic": "markup contract",
+     "fact": "The author writes `draggable=\"true\"` on the item or a grip handle; the module never adds or removes it. A grab is refused when there is no `[draggable=\"true\"]` ancestor, when the handle is outside the item, when the item itself is draggable but also contains a draggable handle, or when it starts from an `input, textarea, select, button, a[href], [contenteditable]` descendant that is neither the item nor the handle.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:134-152; /home/user/veneer/guides/veneer.md:1139-1143"
+    },
+    {
+     "topic": "markup contract",
+     "fact": "The guide recommends a `div` host with `role=\"list\"` and `role=\"listitem\"` children, because the controller appends its `output` inside the host. Keyboard needs `tabindex=\"0\"` on the item or a focusable handle such as a button.",
+     "citation": "/home/user/veneer/guides/veneer.md:1135, 1142-1143"
+    },
+    {
+     "topic": "data attributes",
+     "fact": "The module writes `data-vn-dragging` on the source item at pointer dragstart and removes it in finish; it writes `data-vn-insert=\"before\"|\"after\"` on one target item, rewriting only when target or side changes. It paints neither.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:168, 180-190, 274-283; /home/user/veneer/guides/veneer.md:1185-1186"
+    },
+    {
+     "topic": "routing",
+     "fact": "The plugin routes `pointerdown`, `dragstart`, `dragenter`, `dragover`, `dragleave`, `drop`, `dragend`, and `keydown` through selector `[data-vn-drag] > *`, with the trigger's parent as host. A clear path on `drop`, `dragend`, and Escape `keydown` calls `end()` on every `[data-vn-drag]` component in the target's document. The controller holds no listeners itself.",
+     "citation": "/home/user/veneer/src/browser/drags/plugins.ts:18-51; /home/user/veneer/guides/veneer.md:1181-1183"
+    },
+    {
+     "topic": "pointer model",
+     "fact": "The pointer path is the native HTML Drag and Drop API only. `pointerdown` records the pressed target (no pointer capture, no movement threshold); `dragstart` emits `start`, sets `effectAllowed` and `dropEffect` to `move`, writes no payload, and calls `setDragImage(item, grab offset)`.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:66-67, 153-168"
+    },
+    {
+     "topic": "pointer model",
+     "fact": "`dragenter`/`dragover`/`drop` are accepted (preventDefault) only while `this.#item` is a child of this host, so external text/files and cross-host items are not accepted. Events are handled only when they hit an item (a direct child); the owned output is skipped.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:56-62, 73-88"
+    },
+    {
+     "topic": "pointer model",
+     "fact": "Insertion side is the pointer against the target's midpoint on the list axis. The axis comes from computed `display` flex/inline-flex, `flex-direction`, `writing-mode`, and `direction`; reversal flips the side. `#axis()` runs `getComputedStyle` on every `dragover` through `#side`.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:118-132, 171-178, 185"
+    },
+    {
+     "topic": "pointer model",
+     "fact": "`dragleave` clears the indicator only when `relatedTarget` is outside the host. Dragging over the source item clears the indicator. There is no placeholder element, no auto-scroll code, and no animation; the indicator is the attribute alone.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:74-79, 180-184"
+    },
+    {
+     "topic": "pointer model",
+     "fact": "A drop computes `to` as the target's index among children without the source, plus 1 for `after`, then calls `#relocate(..., 'pointer')`. Dropping on the source item returns false.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:192-201"
+    },
+    {
+     "topic": "move mechanics",
+     "fact": "`#relocate` emits cancelable `move`; it aborts if prevented, destroyed, or the session changed, and also returns false if a listener re-rendered the children synchronously. It moves with `moveBefore` when present, otherwise `insertBefore` plus focus restoration with `preventScroll`. The reference node is the owned output when the item goes last.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:244-272"
+    },
+    {
+     "topic": "keyboard model",
+     "fact": "Escape calls `end()` unconditionally. A move needs Alt with no Ctrl, Meta, or Shift, not composing, and no outstanding session. The target must be the item or a `draggable=\"true\"` element, and the item must be draggable or hold a draggable handle. ArrowUp/ArrowDown (vertical) or ArrowLeft/ArrowRight (horizontal) move one place with reversal applied. Movement stops at the ends with no wrap. Each key press emits `start`, then `move` (by `keyboard`), then `end`.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:203-242; /home/user/veneer/guides/veneer.md:1158-1162"
+    },
+    {
+     "topic": "keyboard model",
+     "fact": "There is no grab or pick-up mode and no Home/End or Page keys. Each Alt+Arrow press is an atomic one-step move.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:226-241"
+    },
+    {
+     "topic": "ARIA and live region",
+     "fact": "The constructor appends one `output` with `aria-live=\"polite\"`, `aria-atomic=\"true\"`, and `aria-label=\"Sort status\"` inside the host. The only text written is `Moved to position ${to + 1} of ${children.length}`, after a completed move. There is no announcement on grab, cancel, or refusal, and the item's name is not included. The module writes no other ARIA attribute.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:33-37, 270"
+    },
+    {
+     "topic": "events",
+     "fact": "The wire events are `start.vn.drag` `{item}` (cancelable; prevention refuses the grab), `move.vn.drag` `{item, from, to, by: 'pointer'|'keyboard'}` (cancelable; zero-based, with `to` counted after the item leaves its slot), and `end.vn.drag` `{item, moved}`. All are dispatched through the root `emitEvent`. `end` fires only when a session was admitted and the controller is not destroyed.",
+     "citation": "/home/user/veneer/src/browser/drags/constants.ts:4-8; /home/user/veneer/src/browser/drags/types.ts:12-24; /home/user/veneer/src/browser/drags/Drag.ts:279-285; /home/user/veneer/guides/veneer.md:1172-1176"
+    },
+    {
+     "topic": "public API",
+     "fact": "The exports are `Drag`, `DRAG_EVENTS`, `DRAG_DEFAULTS`, `createDrag`, and `createDragPlugin`, plus the types `DragInterface` (`receive`, `end`), `DragEventMap`, and `DragOptions` (`on` hooks only). `createDrag` settles one configured lifetime per host through a Registry. There are no options for axis, handle selector, group, disabled state, or drag image.",
+     "citation": "/home/user/veneer/src/browser/drags/types.ts:4-30; /home/user/veneer/src/browser/drags/factories.ts:16-27; /home/user/veneer/tests/src/browser/drags/index.test.ts:30-36"
+    },
+    {
+     "topic": "teardown",
+     "fact": "`destroy()` aborts the lifetime, calls `end()` (which clears the indicator and `data-vn-dragging`), removes the owned output, unbinds hooks, and releases registry ownership. It never touches `draggable`.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:101-109"
+    },
+    {
+     "topic": "proofs pin",
+     "fact": "Drag.test.ts pins: a real pointer drag with event order start/move/end and detail `{from:0,to:1,by:'pointer'}`; Alt+Arrow keyboard moves with retained focus and live text; prevented move under both paths; refusals outside a handle, from an input descendant, and on a prevented start; a drop outside the host with no text payload and `moved:false`; `moveBefore` keeping an input's value and focus; row-axis keys with no wrap.",
+     "citation": "/home/user/veneer/tests/src/browser/drags/Drag.test.ts:8-210"
+    },
+    {
+     "topic": "proofs pin",
+     "fact": "plugins.test.ts pins: no listener or output without composition, and release on destroy (CDP listener counts); external text/files are not accepted and matching group values exchange nothing; the indicator survives a real nested-child crossing; injected Escape during a native drag reaches no document keydown, and protocol `dragCancel` ends with `moved:false`. factories.test.ts pins configured identity and owned-output-only cleanup. index.test.ts pins root-file purity and the Bootstrap plugin order.",
+     "citation": "/home/user/veneer/tests/src/browser/drags/plugins.test.ts:8-262; /home/user/veneer/tests/src/browser/drags/factories.test.ts:5-31; /home/user/veneer/tests/src/browser/drags/index.test.ts:5-37"
+    },
+    {
+     "topic": "proofs pin",
+     "fact": "The journey case drives the showcase list by real drag and Alt+ArrowDown. It reads order, the `opacity-50` and `border-bottom border-primary border-2` painting, registry admission of the painted classes, cleanup, focus, and the `Sort status` text (`Moved to position 2 of 5`, then `3 of 5`).",
+     "citation": "/home/user/veneer/tests/app/browser/integration.test.ts:186-266"
+    },
+    {
+     "topic": "proofs do not pin",
+     "fact": "Not exercised by any proof read: the `insertBefore` fallback (the test asserts `moveBefore` exists); reversed axes (row-reverse, column-reverse, rtl, vertical writing modes); the synchronous re-render branch; destroy during an active drag; `dragleave` out of the host clearing the indicator; refusals for `textarea`, `select`, `a[href]`, and contenteditable; touch input; the indicator writing only on change; Alt+Arrow on an item lacking any draggable. Inference: from the absence of such cases in the four test files.",
+     "citation": "/home/user/veneer/tests/src/browser/drags/Drag.test.ts:174, 191-210; /home/user/veneer/src/browser/drags/Drag.ts:254-269"
+    },
+    {
+     "topic": "styling",
+     "fact": "The specimen is a `card` figure holding a `list-group` host (`data-vn-drag role=list aria-label=\"Dispatch priorities\"`) of five `list-group-item d-flex align-items-center column-gap-3` rows. Each row has a `btn btn-link text-body` grip button with `draggable=\"true\"` and an aria-hidden \u283f glyph. The figcaption is a `card-footer bg-transparent small`.",
+     "citation": "/home/user/veneer/app/browser/sections/sortable-list.html:1-92"
+    },
+    {
+     "topic": "styling",
+     "fact": "No stylesheet ships. `Showcase.start` puts a MutationObserver on each host that toggles `opacity-50` from `data-vn-dragging`, and `border-top`/`border-bottom` plus `border-primary border-2` from `data-vn-insert`, on direct children. The guide states there is no stylesheet, cursor rule, touch-action rule, or style attribute for dragging.",
+     "citation": "/home/user/veneer/app/browser/Showcase.ts:135-152; /home/user/veneer/guides/veneer.md:1186-1194"
+    },
+    {
+     "topic": "showcase row",
+     "fact": "The section row `sortable-list` (Native group) has the lead 'Reorder dispatch priorities with a grip, or focus a grip and press Alt + Arrow Up or Down.'",
+     "citation": "/home/user/veneer/app/browser/constants.ts:518-523"
+    },
+    {
+     "topic": "recorded deviations",
+     "fact": "The brief required a guide fence in `@layer reset` scoped to `[data-vn-drag]`: a grab cursor, a dimmed source, an insertion line from Bootstrap border/primary tokens, `touch-action: none` on the handle, and transitions under `prefers-reduced-motion: no-preference`. An amended ruling refused the fence because it broke the Matrix style census, and it was replaced by the utility observer.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/brief.md:18; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/report.md:98, 104; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/lane-report.md:99, 105"
+    },
+    {
+     "topic": "recorded deviations",
+     "fact": "Escape during a native drag: injected Escape produces zero document keydowns and zero ends under Chromium 141 and 153. This is recorded as a guide departure, and physical Escape cancellation is not established.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/report.md:24, 97; /home/user/veneer/guides/veneer.md:1212"
+    },
+    {
+     "topic": "open items",
+     "fact": "The final app-browser gate had 2 failures: the Contents contrast case timed out at 15,123.8 ms, and the following outline case failed with 'Interactive target \"Bootstrap\" is ambiguous'. Both are left unresolved.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/report.md:44-50, 106-107; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/lane-report.md:57-61"
+    },
+    {
+     "topic": "open items",
+     "fact": "Touch dragging on Android is not established by the desktop Chromium proofs.",
+     "citation": "/home/user/veneer/guides/veneer.md:1203"
+    },
+    {
+     "topic": "catalog Deferred",
+     "fact": "Drag 1 was committed at `77cabe6` (in origin/main; the local main ref is at `269e8a6`). Whether the 2 app browser cases pass at `77cabe6` is unread, and the row says to confirm that gate before Drag 2. The Drag 2 row (cross-list transfer, `drags/`) is gated on Drag 1 being committed with its app browser project green. A table-row drag ends in `rows.move(key, index)` after the sorter binds the table document.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md:126, 128"
+    },
+    {
+     "topic": "Drag 2 plan (addendum, beyond named inputs; cited by brief.md:9)",
+     "fact": "Planned shape: hosts with matching `data-vn-drag` values exchange items, and an empty value accepts only its own items. Alt+ArrowLeft/Right move to the previous or next host of the group. `move` gains `detail.source` and both hosts receive `end`. Styles are 'the Drag 1 fence's indicator plus one rule for an empty target host'. The specimen is a two-column Native specimen.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:82-93"
+    },
+    {
+     "topic": "elements lessons (addendum)",
+     "fact": "The elements prior art that was named: `createDrag.ts`, `createDrop.ts`, `_drag.scss`, `UseDragDropPage.vue`, `BoardExample.vue`. The addendum names a touch fallback (taking the `createPointer` shape: capture on press, `pointercancel` as end, `touch-action: none` on the handle only) and taking the target tint and insertion line from `_drag.scss:76-102` with Bootstrap color tokens. It holds back multi-selection, multi-item drag (`createDrag.ts:211-232`), and nesting (`into`).",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:114-115, 137-139, 157-158, 162"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "The guide says 'A drop outside, Escape, or a refused move ends without a DOM move'. The departure row in the same guide says injected Escape during a native drag reaches no listener and does not cancel, and physical Escape is unestablished.",
+     "citation": "/home/user/veneer/guides/veneer.md:1168 vs /home/user/veneer/guides/veneer.md:1212"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "The brief and lane report say the plugin records the dragged item and its host. In code, the `Drag` controller instance holds `#item` and admits by `#item.parentElement === host`, and the plugin holds no session state.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/brief.md:15; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/lane-report.md:34 vs /home/user/veneer/src/browser/drags/Drag.ts:13, 73, 161"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "The addendum's Drag 2 plan builds on 'the Drag 1 fence's indicator', but no fence shipped.",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:90 vs /home/user/veneer/guides/veneer.md:1193-1194"
+    },
+    {
+     "topic": "contradiction",
+     "fact": "The guide says the output is excluded from item indexes. `#children()` excludes only the controller's own output, so an author-written `output` child (present in the factory test fixture) would count as an item. Inference from code: no test reads indexes with an authored output present.",
+     "citation": "/home/user/veneer/guides/veneer.md:1133-1134 vs /home/user/veneer/src/browser/drags/Drag.ts:111-115; /home/user/veneer/tests/src/browser/drags/factories.test.ts:7"
+    }
+   ],
+   "gaps": [
+    {
+     "gap": "Missing: a pointer-events path (pointer capture, movement threshold, `pointercancel`). Only native HTML Drag and Drop is used, so touch on Android is unestablished and no touch fallback exists.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:66-67; /home/user/veneer/guides/veneer.md:1203; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:158"
+    },
+    {
+     "gap": "Missing: auto-scroll of the scroll container or viewport near edges while dragging. The controller has no scroll code.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:134-201"
+    },
+    {
+     "gap": "Missing: a placeholder or gap preview, and any animated reflow. The indicator is a single attribute on the target.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:180-190"
+    },
+    {
+     "gap": "Missing: a shipped style layer. There is no grab cursor, no `touch-action` on the handle, no reduced-motion transitions, no focus or grabbed visuals, and no Sass partial, so each consumer must paint state attributes itself (the showcase uses a MutationObserver adapter).",
+     "citation": "/home/user/veneer/guides/veneer.md:1185-1194; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/brief.md:18; /home/user/veneer/app/browser/Showcase.ts:135-152"
+    },
+    {
+     "gap": "Missing keyboard features: a grab or pick-up mode (pick up, move, drop, cancel with restore), Home/End jumps, and announcements on grab, cancel, or refusal. Each Alt+Arrow press is atomic.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:203-242"
+    },
+    {
+     "gap": "Live text lacks the item's name and gives no usage instructions (no `aria-describedby` hint). Only 'Moved to position N of M' is written.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:270"
+    },
+    {
+     "gap": "Missing: cross-list transfer (Drag 2). The `data-vn-drag` value is ignored and matching groups exchange nothing.",
+     "citation": "/home/user/veneer/guides/veneer.md:1136-1137; /home/user/veneer/tests/src/browser/drags/plugins.test.ts:67-97; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md:128"
+    },
+    {
+     "gap": "Drops are accepted only on item children. An empty host, or host padding and gaps between items, can't receive a drop.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:73-88; /home/user/veneer/src/browser/drags/plugins.ts:29; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:90"
+    },
+    {
+     "gap": "Axis detection is one-dimensional (flex row versus block). Inference: there is no midpoint handling for wrapped flex or CSS grid layouts.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:118-132, 171-178"
+    },
+    {
+     "gap": "Missing: multi-selection and multi-item drag, and nested lists (`into`).",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:114-115, 139"
+    },
+    {
+     "gap": "Item identity is DOM index only, with no key in event details. There is also no `source` or target-element field in `move` detail.",
+     "citation": "/home/user/veneer/src/browser/drags/types.ts:16-21; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md:128"
+    },
+    {
+     "gap": "Missing: options beyond hooks (axis override, handle selector, disabled or locked items, custom drag image). `DragOptions` carries only `on`.",
+     "citation": "/home/user/veneer/src/browser/drags/types.ts:27-30"
+    },
+    {
+     "gap": "Physical Escape cancellation of a native drag is unproven.",
+     "citation": "/home/user/veneer/guides/veneer.md:1212"
+    },
+    {
+     "gap": "Inference, a performance concern: `getComputedStyle` is read on every `dragover`, with no throttle or cache.",
+     "citation": "/home/user/veneer/src/browser/drags/Drag.ts:172, 118-121"
+    },
+    {
+     "gap": "Untested branches: the `insertBefore` fallback, reversed and rtl axes, the synchronous re-render path, destroy mid-drag, and refusals beyond `input`.",
+     "citation": "/home/user/veneer/tests/src/browser/drags/Drag.test.ts:100-133, 174, 191-210"
+    },
+    {
+     "gap": "Input not reached: the glob `**/drag*` under `.orkestrel/veneer` returned no files, even though the folder `native/drag-1/` exists; the records were located through `native/**/*`. No file named review exists there, and `lane-report.md` (titled 'Drag 1 review') was read as the review. Not read: lane-gates.json, lane-source.patch, lane-differences-r12.json, lane-proofs.json, and lane-compare-r12.md. The elements repository source was not read. Showcase.ts was read only through grep (lines 131-154).",
+     "citation": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/lane-report.md:1"
+    }
+   ],
+   "questions": [
+    "Does the veneer checkout at /home/user/veneer match commit 77cabe6, and do its 2 app-browser failures (Contents timeout and the ambiguous outline target) pass there? The catalog records this as unread (catalog-2026-10-07-systems.md:126).",
+    "Does a physical Escape key cancel a native drag session in Chromium 141/153? Only injected Escape and protocol dragCancel were read (guides/veneer.md:1212).",
+    "Does a touch press on Android start a native drag on the grip? This is unestablished (guides/veneer.md:1203).",
+    "Is the amended ruling that refused the style fence (report.md:98) still binding, now that the user asks for Sass on the styles layer?",
+    "Does an `output` element appended inside a `role=list` host break the list's owned-element rule for assistive technology? Inference; no reading exists."
+   ]
+  },
+  {
+   "subject": "Which Bootstrap Sass partials the veneer styles layer (src/styles) can draw on: module paths, maps, mixins, cascade layers, sheet build and proofs, and the styles layer's contents. Read-only distillation; no recommendation.",
+   "files": [
+    "/home/user/veneer/src/bootstrap/index.scss",
+    "/home/user/veneer/src/bootstrap/_tokens.scss",
+    "/home/user/veneer/src/bootstrap/_mixins.scss",
+    "/home/user/veneer/src/bootstrap/_utilities.scss",
+    "/home/user/veneer/src/bootstrap/_reset.scss",
+    "/home/user/veneer/src/bootstrap/sheet.ts",
+    "/home/user/veneer/src/bootstrap/index.ts",
+    "/home/user/veneer/src/bootstrap/elements/_index.scss",
+    "/home/user/veneer/src/bootstrap/components/_index.scss",
+    "/home/user/veneer/src/bootstrap/components/_color-bg.scss",
+    "/home/user/veneer/src/bootstrap/components/_buttons.scss",
+    "/home/user/veneer/src/styles/index.scss",
+    "/home/user/veneer/src/styles/_tokens.scss",
+    "/home/user/veneer/src/styles/_mixins.scss",
+    "/home/user/veneer/src/styles/_reset.scss",
+    "/home/user/veneer/src/styles/elements/_index.scss",
+    "/home/user/veneer/src/styles/components/_index.scss",
+    "/home/user/veneer/src/styles/surfaces/_index.scss",
+    "/home/user/veneer/src/styles/composables/_index.scss",
+    "/home/user/veneer/src/styles/modifiers/_index.scss",
+    "/home/user/veneer/src/styles/utilities/_index.scss",
+    "/home/user/veneer/src/styles/themes/index.scss",
+    "/home/user/veneer/src/styles/themes/_default.scss",
+    "/home/user/veneer/src/styles/themes/sheet.ts",
+    "/home/user/veneer/src/styles/sheet.ts",
+    "/home/user/veneer/src/styles/index.ts",
+    "/home/user/veneer/dist/src/styles/index.css",
+    "/home/user/veneer/dist/src/styles/themes/index.css",
+    "/home/user/veneer/tests/fixtures/styles/bootstrap.scss",
+    "/home/user/veneer/tests/fixtures/styles/pack.scss",
+    "/home/user/veneer/tests/fixtures/styles/compiled.scss",
+    "/home/user/veneer/tests/fixtures/integration/styles.scss",
+    "/home/user/veneer/tests/fixtures/integration/themes.scss",
+    "/home/user/veneer/tests/fixtures/integration/bootstrap.scss",
+    "/home/user/veneer/tests/fixtures/integration/consumer-elements.scss",
+    "/home/user/veneer/tests/fixtures/bootstrap/configured.scss",
+    "/home/user/veneer/tests/setupStyles.ts",
+    "/home/user/veneer/tests/setup.ts",
+    "/home/user/veneer/tests/setup.test.ts",
+    "/home/user/veneer/tests/conformance.test.ts",
+    "/home/user/veneer/tests/integration.test.ts",
+    "/home/user/veneer/tests/src/styles/index.test.ts",
+    "/home/user/veneer/tests/src/styles/themes/index.test.ts",
+    "/home/user/veneer/tests/src/bootstrap/index.test.ts",
+    "/home/user/veneer/configs/src/vite.styles.config.ts",
+    "/home/user/veneer/package.json",
+    "/home/user/veneer/guides/veneer.md",
+    "/home/user/veneer/ROADMAP.md",
+    "/home/user/scaffold/.claude/rules/styles.md"
+   ],
+   "facts": [
+    {
+     "topic": "Hard boundary: cross-face Sass loads are refused",
+     "fact": "A conformance gate refuses every relative Sass load between the src/styles and src/bootstrap faces. `scanStyleLoads(readStyleSources())` must equal []. The forbidden forms are @use, @forward, @import, and meta.load-css(), in both directions. The planted controls include `src/styles/_tokens.scss @use '../bootstrap/tokens'` and `@forward '../bootstrap/mixins'`. So a styles-layer partial cannot use `@use '../bootstrap/...'` today.",
+     "citation": "/home/user/veneer/tests/conformance.test.ts:672-680; /home/user/veneer/tests/setup.ts:335-378, 387-444; /home/user/veneer/tests/setup.test.ts:18-49"
+    },
+    {
+     "topic": "Boundary scanner scope (inference)",
+     "fact": "`scanStyleLoads` checks only targets that match `^\\.\\.?\\/` (line 429), and it classifies faces only under src/bootstrap and src/styles (lines 393-396). A bare `@use 'bootstrap'` is not flagged (setup.test.ts:61, 71-114), and neither is a `pkg:` URL. INFERENCE: a package-specifier load such as `pkg:@orkestrel/veneer/bootstrap/scss` would pass this scanner. That is a loophole, not a sanctioned path; no rule or guide line permits it.",
+     "citation": "/home/user/veneer/tests/setup.ts:393-396, 429-431; /home/user/veneer/tests/setup.test.ts:61, 117-133"
+    },
+    {
+     "topic": "Scaffold law on cross-face imports",
+     "fact": "AGENTS.md (scaffold) says no extension face imports another extension's face. Its one exception is a styles extension that builds another extension's recreation for a utility library (src/tailwindcss building Bootstrap), which may @use that extension's Sass partials configured through their _tokens.scss switches. src/styles is the base styles surface, not that tailwindcss exception.",
+     "citation": "/home/user/scaffold/AGENTS.md (Project model section, 'No extension face imports server code or another extension's face' bullet)"
+    },
+    {
+     "topic": "Published Bootstrap Sass entry and its namespace",
+     "fact": "package.json exports `./bootstrap/scss` -> `./src/bootstrap/index.scss` and `./styles/scss` -> `./src/styles/index.scss`. src/bootstrap/index.scss forwards only `$layered` (`@forward 'tokens' show $layered;`) and then @uses reset, elements, components, and utilities. A consumer of the barrel therefore sees only the `$layered` member: no maps, no mixins, no functions. INFERENCE (Sass default): the namespace is the last URL segment, for example `scss` for `.../bootstrap/scss` or `index` for `../bootstrap/index`.",
+     "citation": "/home/user/veneer/package.json:52-57; /home/user/veneer/src/bootstrap/index.scss:1-5"
+    },
+    {
+     "topic": "Configurability through @use with",
+     "fact": "The only configurable variable is `$layered: true !default`. It is declared in _tokens.scss and forwarded to mixins through `@use 'mixins' with ($layered: $layered)`. Fixtures configure it with `@use '.../bootstrap/tokens' with ($layered: false)`, and the guide shows `@use 'pkg:@orkestrel/veneer/bootstrap/scss' with ($layered: false)`. No map (`$utilities`, `$breakpoints`) carries `!default`, so none can be configured.",
+     "citation": "/home/user/veneer/src/bootstrap/_tokens.scss:1-5; /home/user/veneer/src/bootstrap/_mixins.scss:5-6; /home/user/veneer/src/bootstrap/_utilities.scss:6, 1035; /home/user/veneer/tests/fixtures/bootstrap/configured.scss:1-4; /home/user/veneer/guides/veneer.md:1301-1323"
+    },
+    {
+     "topic": "Bootstrap _tokens.scss emits CSS",
+     "fact": "_tokens.scss emits the layer order statement when `$layered` is true (lines 8-10) and a license comment (12-16). Under `@include mixins.layer` it also emits every `--bs-*` custom property for `:root,[data-bs-theme='light']` (19-138) and for `[data-bs-theme='dark']` (139-193). These cover theme colors and their -rgb, -text-emphasis, -bg-subtle, and -border-subtle forms (44-83), radii (120-126), shadows (127-130), and focus ring (131-133). All are CSS custom properties written as string interpolations. There is no Sass map of theme colors.",
+     "citation": "/home/user/veneer/src/bootstrap/_tokens.scss:8-10, 18-194"
+    },
+    {
+     "topic": "Bootstrap _mixins.scss members",
+     "fact": "The members are `$layered` (6) and three mixins. `reboot` wraps `layer` (8-12). `layer` writes `@layer bootstrap { @content }`, or bare content when `$layered` is false (14-22). `utility($utility, $infix: '')` emits `.{class}{infix}-{key}` rules from one utility map entry; it honors class, property, values, state, css-var, css-variable-name, and local-vars, and it routes every declaration through `unlayer` as !important (24-76). `unlayer($declarations)` emits !important declarations at-root without layer (79-100). The partial has no @function, uses sass:list, map, and string, and emits no top-level CSS.",
+     "citation": "/home/user/veneer/src/bootstrap/_mixins.scss:1-100"
+    },
+    {
+     "topic": "Bootstrap _utilities.scss maps (variant sources)",
+     "fact": "`$utilities` (6-1033) holds Bootstrap 5.3.8 utility keys. The per-theme-color value lists are 'focus-ring' (106-120), 'border-color' (211-229), 'subtle-border-color' (230-243), 'color' (763-789), 'text-color' emphasis (800-813), 'link-underline' (836-853), 'background-color' (867-889), and 'subtle-background-color' (901-914). The spacer scale 0/1/2/3/4/5 = 0/.25rem/.5rem/1rem/1.5rem/3rem appears only inside margin* (437-534), padding* (535-625), and gap/row-gap/column-gap (626-664). Font sizes are 'font-size' with values and an rfs map (672-689). Radii are 'rounded*' (939-1013). Shadows are 'shadow' (96-105). `$breakpoints` is (sm 576px, md 768px, lg 992px, xl 1200px, xxl 1400px) (1035-1041). There is no standalone $theme-colors, $spacers, $grid-breakpoints, or $font-sizes map.",
+     "citation": "/home/user/veneer/src/bootstrap/_utilities.scss:6-1041"
+    },
+    {
+     "topic": "Bootstrap _utilities.scss emits CSS at top level",
+     "fact": "The partial ends with a top-level `@include layer { ... }` schedule (1043-1077). The schedule emits base utilities, responsive passes per $breakpoints, an rfs pass at 1200px, and print passes. INFERENCE: any @use of this module emits the whole utilities CSS into the consumer's output. This is why the rules table puts the map and its schedule in _utilities.scss.",
+     "citation": "/home/user/veneer/src/bootstrap/_utilities.scss:1043-1077; /home/user/scaffold/.claude/rules/styles.md:23"
+    },
+    {
+     "topic": "Bootstrap components/ and elements/ partials",
+     "fact": "elements/_index.scss is empty. components/_index.scss @uses 49 partials in order: type, images, containers, grid, tables, labels, form-text, form-control, form-select, form-check, form-range, floating-labels, input-group, validation, buttons, transitions, dropdown, button-group, nav, navbar, card, accordion, breadcrumb, pagination, badge, alert, progress, list-group, close, toasts, modal, tooltip, popover, carousel, spinners, offcanvas, placeholders, clearfix, color-bg, colored-links, focus-ring, icon-link, ratio, position, stacks, visually-hidden, stretched-link, text-truncation, and vr. Each partial opens with `@use '../mixins' as *;` and `@include layer {`. None defines a Sass variable, map, mixin, function, @each, @for, or @if (grep for `$`, @each, @for, and @if in components/ returned 0). Per-variant blocks are written out literally, for example the eight .text-bg-* rules.",
+     "citation": "/home/user/veneer/src/bootstrap/elements/_index.scss (empty); /home/user/veneer/src/bootstrap/components/_index.scss:1-49; /home/user/veneer/src/bootstrap/components/_color-bg.scss:1-44; /home/user/veneer/src/bootstrap/components/_buttons.scss:1-42"
+    },
+    {
+     "topic": "Component-scoped custom properties in Bootstrap partials",
+     "fact": "Bootstrap component partials declare component-scoped tokens as string interpolations on the selector, for example `.btn { --bs-btn-padding-x: #{'0.75rem'}; ... --bs-btn-focus-box-shadow: ... }`. Rules then read them through var().",
+     "citation": "/home/user/veneer/src/bootstrap/components/_buttons.scss:4-42"
+    },
+    {
+     "topic": "Cascade layer order",
+     "fact": "The shared order is `@layer reset, bootstrap, theme, elements, components, surfaces, composables, modifiers, utilities;`. It is declared in src/styles/_tokens.scss:2 unconditionally and in src/bootstrap/_tokens.scss:9 under `@if $layered`. The fixture tests/fixtures/styles/bootstrap.scss:1 opens with it. LAYER_ORDER and LAYER_STATEMENT are defined in tests/setup.ts:1156-1169.",
+     "citation": "/home/user/veneer/src/styles/_tokens.scss:1-2; /home/user/veneer/src/bootstrap/_tokens.scss:7-10; /home/user/veneer/tests/fixtures/styles/bootstrap.scss:1; /home/user/veneer/tests/setup.ts:1155-1169"
+    },
+    {
+     "topic": "Which layer a veneer component lands in",
+     "fact": "The rule says: 'Put ... a class skin that applies with no script running in components/', and 'Each partial uses its folder's own layer' and must never wrap rules in a foreign layer. A src/styles/components partial therefore writes `@layer components`. The styles proof requires every layer block and every declaration placement to be in the owned list (theme, reset, elements, components, surfaces, composables, modifiers, utilities). Unlayered declarations (layer undefined) and the `bootstrap` layer both fail that proof. INFERENCE: Bootstrap's `layer` mixin (writes @layer bootstrap) and `unlayer` (writes outside every layer) would each break tests/src/styles/index.test.ts if used in src/styles.",
+     "citation": "/home/user/scaffold/.claude/rules/styles.md:72-76, 87-89; /home/user/veneer/tests/src/styles/index.test.ts:8-32; /home/user/veneer/tests/setup.ts:561-574"
+    },
+    {
+     "topic": "Layer ownership disjointness",
+     "fact": "SHEET_LAYERS gives the owned layers per built sheet: bootstrap = ['bootstrap']; styles = [theme, reset, elements, components, surfaces, composables, modifiers, utilities]; themes = ['theme']. A proof requires each pair of built sheets to share no class name in any shared layer.",
+     "citation": "/home/user/veneer/tests/setup.ts:561-574; /home/user/veneer/tests/integration.test.ts:292-321"
+    },
+    {
+     "topic": "Guide on cascade between faces",
+     "fact": "A styles-sheet rule may declare a Bootstrap class name to record an addition, and it wins over Bootstrap by layer order. A `surfaces` rule beats a `bootstrap` rule on the same class in all 6 load permutations (fixture .probe: margin-top 3px, padding-top 5px). An unlayered consumer rule beats every rule the styles sheet writes. surfaces, composables, and modifiers precede utilities.",
+     "citation": "/home/user/veneer/guides/veneer.md:1460-1502, 1570-1591; /home/user/veneer/tests/integration.test.ts:91-121; /home/user/veneer/tests/fixtures/integration/styles.scss:1-13"
+    },
+    {
+     "topic": "How the styles sheet is built",
+     "fact": "src/styles/sheet.ts is `import './index.scss'`, and index.ts re-exports sheet.js. Vite lib build: entry src/styles/sheet.ts, outDir dist/src/styles, cssMinify false 'to preserve the authored layer-order statement', fileName index. The script `build:src:styles` runs vite.styles.config.ts then vite.themes.config.ts, and `test:src:styles` builds first and then runs vitest over tests/src/styles/**/*.test.ts.",
+     "citation": "/home/user/veneer/src/styles/sheet.ts:1; /home/user/veneer/src/styles/index.ts:1; /home/user/veneer/configs/src/vite.styles.config.ts:1-23; /home/user/veneer/package.json:87, 109"
+    },
+    {
+     "topic": "Styles-sheet proofs today",
+     "fact": "tests/src/styles/index.test.ts has one real case. It asserts that the first CSSOM rule equals LAYER_STATEMENT, that readLayerNames opens with LAYER_ORDER, and that every layer block and placement is in the owned list. It also carries an `it.todo` for 'proves TOKEN_NAMES.veneer in both directions in the Veneer styles chunk of ROADMAP.md \u00a7 Sequence'. The themes proof requires the built ./styles sheet to contain no 'data-vn-theme'.",
+     "citation": "/home/user/veneer/tests/src/styles/index.test.ts:7-41; /home/user/veneer/tests/src/styles/themes/index.test.ts:23-39"
+    },
+    {
+     "topic": "The 'digest gate' (Bootstrap only)",
+     "fact": "The SHA-256 digest gate belongs to the Bootstrap face. Link 3 hashes the bundled sheet and compares it to tests/fixtures/bootstrap/pass.json `digest`, then compares the built and bundled priority sequences. BOOTSTRAP_DIGEST in setupServer.ts pins the bundled bootstrap.css. No digest gate exists for the styles sheet.",
+     "citation": "/home/user/veneer/tests/src/bootstrap/index.test.ts:543-559; /home/user/veneer/tests/fixtures/bootstrap/pass.json:2; /home/user/veneer/tests/setupServer.ts:90-91"
+    },
+    {
+     "topic": "Bootstrap source guard",
+     "fact": "`scanBootstrapSources` flags any Bootstrap partial other than _mixins.scss that contains !important, @layer, or @import layer(). The one exemption is the conditional order statement in _tokens.scss.",
+     "citation": "/home/user/veneer/tests/setup.ts:1188-1211"
+    },
+    {
+     "topic": "CSSOM instruments available",
+     "fact": "tests/setupStyles.ts exports collectSheetClasses, readSequences, readKeyframes, collectSheetNames, collectSheetRootNames, readChromiumMajor, adoptSheet, scanSheetRules, readLayerNames, flattenRules, readPlacement, readLayerExceptions, and collectLayerClasses. It does not define LAYER_ORDER.",
+     "citation": "/home/user/veneer/tests/setupStyles.ts:15-468"
+    },
+    {
+     "topic": "What src/styles holds today",
+     "fact": "index.scss @uses tokens, reset, elements, components, surfaces, composables, modifiers, and utilities. _tokens.scss holds only the order statement. _reset.scss is an empty `@layer reset {}`. The elements, components, surfaces, composables, modifiers, and utilities _index.scss barrels are all empty. _mixins.scss holds one mixin, `retune($name, $light, $dark)`, which writes `@layer theme { @scope ([data-vn-theme='name']) to ([data-vn-theme]) { ... } }` from light and dark property maps. themes/index.scss @uses ../tokens and default. themes/_default.scss calls `retune('default', (), ())` with a TODO. The built dist/src/styles/index.css is the order statement plus `@layer reset {}`.",
+     "citation": "/home/user/veneer/src/styles/index.scss:1-8; /home/user/veneer/src/styles/_tokens.scss:1-2; /home/user/veneer/src/styles/_reset.scss:1-2; /home/user/veneer/src/styles/_mixins.scss:1-22; /home/user/veneer/src/styles/themes/index.scss:1-3; /home/user/veneer/src/styles/themes/_default.scss:1-4; /home/user/veneer/dist/src/styles/index.css:1-2; /home/user/veneer/dist/src/styles/themes/index.css:1-4"
+    },
+    {
+     "topic": "Styles rules that bind a first component",
+     "fact": "The binding rules are: `_mixins.scss` emits no top-level CSS and is loaded with `@use '../mixins' as *`. Repeating per-color or per-variant blocks is forbidden; use one @each over a shared list. A pattern in two or more partials moves to _mixins. Literal colors outside _tokens.scss are forbidden. Every transition: needs prefers-reduced-motion through 'the project transition mixin', and every animation needs `@include reduced-motion { animation: none }`. Component partials never override global tokens, and component-scoped custom properties go on the component selector. Every folder keeps an _index.scss barrel. Every CSSOM instrument is declared in tests/setupStyles.ts.",
+     "citation": "/home/user/scaffold/.claude/rules/styles.md:19-36, 47-71, 87-93"
+    },
+    {
+     "topic": "Roadmap scope of the styles chunk",
+     "fact": "Veneer styles in src/styles: 'tokens and Veneer rules only. Do not copy the Bootstrap cascade.' The chunk declares the first --vn-* token, adds the veneer token and class groups with two-way pins, and fills the default theme pack. It opens after browser engine stage B, with open decisions D-1 to D-7, D-9, D-10, D-11 and identity values I-1 to I-4 'the user rules when the chunk opens'.",
+     "citation": "/home/user/veneer/ROADMAP.md:140"
+    },
+    {
+     "topic": "Sortable (drag) styling contract today",
+     "fact": "The drag module writes `data-vn-dragging` on the source and `data-vn-insert=\"before\"|\"after\"` on the target, and it does not paint them. The showcase observes those attributes and toggles Bootstrap utilities: opacity-50 for the source, and border-top or border-bottom with border-primary border-2. The showcase adds no stylesheet, cursor rule, touch-action rule, or style attribute. Touch dragging on Android is not established.",
+     "citation": "/home/user/veneer/guides/veneer.md:1188-1206"
+    }
+   ],
+   "gaps": [
+    {
+     "gap": "The surface has no sanctioned path from src/styles to the Bootstrap Sass. Relative @use or @forward of ../bootstrap/* is refused by the conformance gate. The published barrel forwards only $layered, so it exposes no maps or mixins even through a package URL.",
+     "citation": "/home/user/veneer/tests/conformance.test.ts:672-680; /home/user/veneer/src/bootstrap/index.scss:1"
+    },
+    {
+     "gap": "There is no forwarding partial that exposes Bootstrap data (theme-color list, breakpoints, spacers, font sizes, radii, shadows) as Sass maps without emitting CSS. _tokens.scss and _utilities.scss both emit CSS on load. Theme colors exist only as CSS custom properties and as values inside utility maps.",
+     "citation": "/home/user/veneer/src/bootstrap/_tokens.scss:18-194; /home/user/veneer/src/bootstrap/_utilities.scss:1043-1077"
+    },
+    {
+     "gap": "src/styles/_mixins.scss has no layer emitter for the folder layers (components, surfaces, and the rest), no per-theme-color, per-breakpoint, or per-spacer variant mixin, no media-up breakpoint mixin, and no transition or reduced-motion mixin. The styles rule refers to 'the project transition mixin', which does not exist in src/styles.",
+     "citation": "/home/user/veneer/src/styles/_mixins.scss:1-22; /home/user/scaffold/.claude/rules/styles.md:70-71"
+    },
+    {
+     "gap": "Bootstrap's own variant mixin (`utility`) emits only !important declarations outside every layer. The styles proof refuses any declaration whose layer is undefined, so it cannot be reused as-is for styles-layer variants.",
+     "citation": "/home/user/veneer/src/bootstrap/_mixins.scss:24-76, 79-100; /home/user/veneer/tests/src/styles/index.test.ts:28-32"
+    },
+    {
+     "gap": "There is no styles-layer test fixture or proof for a component: no fixture under tests/fixtures/styles exercises a components-layer rule, and no case pins a veneer class against CLASS_NAMES or TOKEN_NAMES. The TOKEN_NAMES.veneer two-way proof is an it.todo.",
+     "citation": "/home/user/veneer/tests/src/styles/index.test.ts:38-40; /home/user/veneer/tests/fixtures/styles/compiled.scss:1-7"
+    },
+    {
+     "gap": "No --vn-* token is declared yet. src/styles/_tokens.scss carries only the order statement, and the default theme pack maps are empty with a TODO.",
+     "citation": "/home/user/veneer/src/styles/_tokens.scss:1-2; /home/user/veneer/src/styles/themes/_default.scss:3-4"
+    },
+    {
+     "gap": "Brief mismatch: /home/user/veneer/.claude/rules/styles.md does not exist. The rule resolves to /home/user/scaffold/.claude/rules/styles.md per the AGENTS.md pointer, and that copy was read. LAYER_ORDER is not in tests/setupStyles.ts; it is in tests/setup.ts:1156.",
+     "citation": "/home/user/veneer/AGENTS.md (resolution instructions); /home/user/veneer/tests/setup.ts:1156-1169"
+    },
+    {
+     "gap": "Input rows not reached: the remaining 47 components/*.scss bodies were not read line by line. Only their @use, @include, and variable/loop grep was read, plus _color-bg.scss in full and _buttons.scss lines 1-80. Also not read: tests/setupStyles.test.ts, the remaining styles fixtures (early.scss, other.scss, *.css), configs/src/vite.themes.config.ts, readStyleSources in tests/setupServer.ts, the elements repo, and guides/veneer.md outside lines 1133-1212 and 1228-1592.",
+     "citation": "/home/user/veneer/src/bootstrap/components/_index.scss:1-49"
+    }
+   ],
+   "questions": [
+    "The user asked to 'take full advantage of using sass on the styles layer, especially all that we now have from our bootstrap layer', but tests/conformance.test.ts:672-680 refuses every Sass load from src/styles into src/bootstrap. Does the user's request override that boundary? If so, through which path: lifting the gate, a published pkg: forward, or duplicating the data into src/styles?",
+    "If the boundary is lifted, should Bootstrap gain a data-only forwarding partial (maps without CSS emission, for example theme colors, breakpoints, and spacers extracted from _utilities.scss), given that Bootstrap partials are a pinned recreation (styles.md:50-62) whose byte proofs must not change?",
+    "ROADMAP.md:140 says the styles chunk's open decisions D-1 to D-7, D-9, D-10, D-11 and I-1 to I-4 are ruled by the user when the chunk opens. Has the chunk opened, and have those decisions been ruled?",
+    "Should the drag states (data-vn-dragging, data-vn-insert) gain a painted rule in a src/styles layer, which layer should it be (components versus modifiers), and does that conflict with the guide's statement that the module does not paint those states (guides/veneer.md:1188-1197)?",
+    "Contradiction: guides/veneer.md:1487-1488 says the ./styles sheet 'writes the theme, reset, elements, components, surfaces, composables, modifiers, and utilities layers'. The built dist/src/styles/index.css:1-2 writes only an empty `@layer reset {}` block, and the theme layer is written only by the themes sheet (themes/index.test.ts:26). Which statement governs?"
+   ]
+  },
+  {
+   "subject": "What the primary sources say about building a veneer sortable list: reordering Bootstrap list items by pointer and keyboard, with cross-list transfer as a later unit. Covers HTML DnD, Pointer Events, DOM moveBefore, ARIA/APG reordering, WCAG 2.5.7, prefers-reduced-motion, and Chromium 141/153 status. All web sources fetched 2026-10-08.",
+   "files": [
+    "/home/user/mikesaintsg/elements/guides/w3c/interactions.md",
+    "/home/user/mikesaintsg/elements/guides/w3c/elements/texts.md",
+    "/home/user/mikesaintsg/elements/guides/w3c/elements/sections.md",
+    "/home/user/mikesaintsg/elements/guides/w3c/aria.md",
+    "/home/user/mikesaintsg/elements/src/browser/factories/createPointer.ts"
+   ],
+   "facts": [
+    {
+     "topic": "Local corpus coverage",
+     "fact": "The local W3C corpus has almost no sortable or reorder material. Searching for sortable, reorder, aria-grabbed, dropeffect, moveBefore, setPointerCapture, pointercancel and rearrangeable found only 2 hits, both in texts.md: a table-sorting example (`<script src=\"sortable.js\">`, `<table class=\"sortable\">`). That example is about sorting by column value, not drag reordering.",
+     "citation": "/home/user/mikesaintsg/elements/guides/w3c/elements/texts.md:1123-1124"
+    },
+    {
+     "topic": "Local corpus: draggable",
+     "fact": "The only drag-and-drop entry in the corpus is a summary of the draggable attribute: \"an enumerated attribute with states `true` and `false`\". Some elements (`img`, `a[href]`, selections) are draggable by default.",
+     "citation": "/home/user/mikesaintsg/elements/guides/w3c/interactions.md:595"
+    },
+    {
+     "topic": "Local corpus: aria.md",
+     "fact": "aria.md has no entries for live regions, aria-grabbed, aria-dropeffect or reordering. It only maps implicit roles, e.g. `output` \u2192 `status` and `select[multiple]` \u2192 `listbox`.",
+     "citation": "/home/user/mikesaintsg/elements/guides/w3c/aria.md:127-131"
+    },
+    {
+     "topic": "HTML DnD: input model",
+     "fact": "HTML DnD is framed around a pointing device and mousedown: \"On a visual medium with a pointing device, a drag operation could be the default action of a `mousedown` event\". It sets no user-agent requirement for touch or keyboard. The introduction only says users \"would probably have to explicitly indicate their intention\" (non-normative).",
+     "citation": "https://html.spec.whatwg.org/multipage/dnd.html#dnd (\u00a76.11.1), fetched 2026-10-08"
+    },
+    {
+     "topic": "HTML DnD: accessibility",
+     "fact": "The HTML DnD section has no keyboard-access requirement. Its only accessibility text says draggable elements \"should also have a title attribute that names the element for the purpose of non-visual interactions.\"",
+     "citation": "https://html.spec.whatwg.org/multipage/dnd.html#the-draggable-attribute (\u00a76.11.7), fetched 2026-10-08"
+    },
+    {
+     "topic": "HTML DnD: protected mode",
+     "fact": "During dragenter and dragover the drag data store is in protected mode, where \"the data itself is unavailable\". In that mode getData returns the empty string. A drop target therefore cannot read the payload until the drop event.",
+     "citation": "https://html.spec.whatwg.org/multipage/dnd.html#drag-data-store-mode (\u00a76.11.2, \u00a76.11.3, \u00a76.11.6), fetched 2026-10-08"
+    },
+    {
+     "topic": "HTML DnD: drop effects and cancellation",
+     "fact": "dropEffect accepts \"none\", \"copy\", \"link\", and \"move\". effectAllowed \"Can be set (during the dragstart event)\". dragover \"also needs to be canceled\" for a drop to be accepted. dragend is not cancelable and fires at the source node.",
+     "citation": "https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-dropeffect (\u00a76.11.3\u20136.11.5), fetched 2026-10-08"
+    },
+    {
+     "topic": "HTML DnD: pointer stream ends at dragstart",
+     "fact": "In the processing model, step 10 runs after dragstart: \"Fire a pointer event at the source node named pointercancel\". Once a native drag starts, the source's pointer event stream ends, so native DnD cannot be combined with a pointer-capture drag on the same gesture.",
+     "citation": "https://html.spec.whatwg.org/multipage/dnd.html#drag-and-drop-processing-model (\u00a76.11.5 step 10), fetched 2026-10-08"
+    },
+    {
+     "topic": "Chromium: pointer suppression on drag start",
+     "fact": "Chromestatus entry 6732314958757888, \"Pointer event suppression on drag start\", is \"Proposed\" with desktop milestone 148 and no Android milestone. Its motivation: \"the user agent must notify the drag source that it will no longer receive pointer events\". The search summary says Android already partly behaves this way for touch drags.",
+     "citation": "https://chromestatus.com/api/v0/features/6732314958757888 (updated 2026-03-18), fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: document status",
+     "fact": "Pointer Events Level 3 is a W3C Recommendation dated 30 June 2026 and supersedes Level 2.",
+     "citation": "https://www.w3.org/TR/2026/REC-pointerevents3-20260630/, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: setPointerCapture",
+     "fact": "setPointerCapture only works while the pointer is in its active buttons state; \"otherwise it fails silently\". It throws NotFoundError when the pointerId does not match an active pointer, and InvalidStateError when the element is not connected.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a75, \u00a79.2, \u00a79.3, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: implicit release",
+     "fact": "\"Immediately after firing the pointerup or pointercancel events, the user agent MUST clear the pending pointer capture target override\". If the capture target is \"no longer connected\", the override \"SHOULD be set to the document\" and lostpointercapture fires at the document.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a79.5, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: capture events",
+     "fact": "gotpointercapture fires \"when an element receives pointer capture\". lostpointercapture \"MUST be fired prior to any subsequent events for the pointer after capture was released\".",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a74.2.10, \u00a74.2.11, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: implicit capture on touch",
+     "fact": "On pointerdown, if \"the associated device is a direct manipulation device, and the target is an Element, then set pointer capture\" happens implicitly. hasPointerCapture \"may be used (for instance, in a pointerdown listener)\" to detect this.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a74.1.3, \u00a79.4, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: pointercancel",
+     "fact": "The UA fires pointercancel \"when it detects a scenario to suppress a pointer event stream\". One listed scenario is the pointer being \"used by the user agent to manipulate the page viewport (e.g. panning or zooming)\".",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a74.2.7, \u00a74.1.3.3, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: touch-action",
+     "fact": "Panning and zooming cannot be canceled through pointer events: \"Authors must instead use touch-action\". With touch-action none, interactions \"MUST NOT trigger behaviors related to viewport panning and zooming\". Later changes to touch-action \"will be ignored for the duration of the action\". Spec examples use `touch-action: none` so pointer events reach the application.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a74.1.3.1, \u00a78.1\u20138.3, \u00a710.1 Example 10, fetched 2026-10-08"
+    },
+    {
+     "topic": "Pointer Events: touch-action scope",
+     "fact": "touch-action \"applies to all forms of pointer inputs that allow direct manipulation for panning and zooming\". A desktop mouse, which pans with scrollbars, is not direct manipulation.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a78, \u00a713, fetched 2026-10-08"
+    },
+    {
+     "topic": "DOM moveBefore: definition",
+     "fact": "The DOM spec's summary note reads: \"Moves, without first removing, movedNode into node after child if child is non-null; otherwise after the last child of node.\" However, the method steps set referenceChild and \"move node into this before referenceChild\" (a likely editorial inconsistency; see gaps). The note also says \"This method preserves state associated with movedNode\".",
+     "citation": "https://dom.spec.whatwg.org/#dom-parentnode-movebefore, fetched 2026-10-08"
+    },
+    {
+     "topic": "DOM moveBefore: throws",
+     "fact": "The move algorithm throws HierarchyRequestError when the shadow-including roots differ, when node is a host-including inclusive ancestor of newParent, or when node is not an Element or CharacterData node, among other cases. It also throws when \"the state associated with the moved node cannot be preserved.\" NotFoundError is thrown when child's parent is not newParent.",
+     "citation": "https://dom.spec.whatwg.org/#move, fetched 2026-10-08"
+    },
+    {
+     "topic": "DOM moveBefore: observers and ranges",
+     "fact": "A move runs \"the live range pre-remove steps\" and queues two tree mutation records: one removal for oldParent, then one insertion for newParent. MutationObservers therefore see a remove and an add.",
+     "citation": "https://dom.spec.whatwg.org/#move steps 9, 25, 26, fetched 2026-10-08"
+    },
+    {
+     "topic": "DOM moveBefore: custom elements",
+     "fact": "For custom descendants, a move enqueues the \"connectedMoveCallback\" reaction. MDN says it \"is run instead of connectedCallback() and disconnectedCallback()\".",
+     "citation": "https://dom.spec.whatwg.org/#move step 24.3; https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore (modified 2026-09-12), fetched 2026-10-08"
+    },
+    {
+     "topic": "moveBefore: preserved state (MDN)",
+     "fact": "MDN lists the state moveBefore preserves: animation and transition state, iframe loading state, \"Interactivity states (for example, :focus and :active)\", fullscreen element state, popover open state, and modal dialog state.",
+     "citation": "https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore, fetched 2026-10-08"
+    },
+    {
+     "topic": "moveBefore: constraints (MDN)",
+     "fact": "MDN: moveBefore \"can only work when moving a node within the same document\". It also \"won't work\" when moving between disconnected and connected trees. As a fallback, MDN advises: \"use Node.insertBefore() instead, or use try...catch\".",
+     "citation": "https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore, fetched 2026-10-08"
+    },
+    {
+     "topic": "moveBefore: Chromium ship",
+     "fact": "Chromestatus \"DOM State-Preserving Move\" (5135990159835136) is \"Enabled by default\", shipped in milestone 133 on desktop and Android. The Chrome blog says it is \"available in Chrome version 133\".",
+     "citation": "https://chromestatus.com/api/v0/features?q=moveBefore; https://developer.chrome.com/blog/movebefore-api, fetched 2026-10-08"
+    },
+    {
+     "topic": "moveBefore: cross-browser (BCD)",
+     "fact": "Browser compat data for api.Element.moveBefore: Chrome 133 (Chrome Android and Edge follow Chrome), Firefox 144, Safari `version_added: false` with impl_url https://webkit.org/b/281223 (iOS Safari follows Safari). MDN calls it \"not Baseline\".",
+     "citation": "https://raw.githubusercontent.com/mdn/browser-compat-data/main/api/Element.json, fetched 2026-10-08"
+    },
+    {
+     "topic": "Baseline API versions (BCD)",
+     "fact": "Version support: setPointerCapture Chrome 55, Firefox 59, Safari 13. touch-action Chrome 36, Safari 13, iOS Safari 9.3. DragEvent Chrome 46, Safari 14, with Chrome Android and iOS Safari following desktop.",
+     "citation": "https://raw.githubusercontent.com/mdn/browser-compat-data/main/api/Element.json; .../css/properties/touch-action.json; .../api/DragEvent.json, fetched 2026-10-08"
+    },
+    {
+     "topic": "Chromium 141 and 153 schedule",
+     "fact": "Chromium dashboard stable dates: M141 stable_date 2025-09-30; M153 stable_date 2026-09-08 (early stable 2026-08-26). Both are above 133, so moveBefore, setPointerCapture and touch-action are all shipped in both.",
+     "citation": "https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=141 and ?mstone=153, fetched 2026-10-08"
+    },
+    {
+     "topic": "ARIA 1.1: aria-grabbed and aria-dropeffect deprecated",
+     "fact": "Both attributes are marked \"[Deprecated in ARIA 1.1]\". Each \"is expected to be replaced by a new feature in a future version of WAI-ARIA\", and \"Authors are therefore advised to treat aria-grabbed as deprecated\" (same wording for aria-dropeffect).",
+     "citation": "https://www.w3.org/TR/wai-aria-1.1/#aria-grabbed, #aria-dropeffect, fetched 2026-10-08"
+    },
+    {
+     "topic": "ARIA: deprecation meaning",
+     "fact": "For deprecated features, \"it is recommended that authors do not use it for new content\".",
+     "citation": "https://www.w3.org/TR/wai-aria-1.1/#deprecated, fetched 2026-10-08"
+    },
+    {
+     "topic": "ARIA: status live region",
+     "fact": "\"Elements with the role status have an implicit aria-live value of polite.\" The alert role \"will be processed as an atomic live region\" with assertive politeness.",
+     "citation": "https://www.w3.org/TR/wai-aria-1.1/#status, #alert, fetched 2026-10-08"
+    },
+    {
+     "topic": "APG: rearrangeable listbox example",
+     "fact": "In the rearrangeable listbox example, the Up and Down move commands are Alt + Up Arrow and Alt + Down Arrow. Focus stays on the listbox and aria-activedescendant identifies the focused option. \"Live regions provide confirmation of completed actions.\" The shortcut keeps focus on the moved option so screen reader users can \"hear the position of an option after it is moved.\" Moves are also exposed through toolbar buttons.",
+     "citation": "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/examples/listbox-rearrangeable/ (last updated 12 August 2025), fetched 2026-10-08"
+    },
+    {
+     "topic": "APG: listbox pattern constraints",
+     "fact": "The listbox role \"does not support interacting with elements inside of an option\" (links, buttons, checkboxes). The APG points to the Grid Pattern for those. Horizontal lists need aria-orientation=\"horizontal\". Home and End support is \"strongly recommended for lists with more than five options.\"",
+     "citation": "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/, fetched 2026-10-08"
+    },
+    {
+     "topic": "WCAG 2.2 SC 2.5.7 Dragging Movements (AA)",
+     "fact": "\"All functionality that uses a dragging movement for operation can be achieved by a single pointer without dragging\", unless dragging is essential or user-agent determined. Keyboard support alone does not satisfy it: \"achieving keyboard equivalence for a dragging operation does not automatically meet this success criterion.\" Example: \"A sortable list of elements may, after tapping or clicking on a list element, provide adjacent controls.\"",
+     "citation": "https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html (updated 10 August 2026), fetched 2026-10-08"
+    },
+    {
+     "topic": "prefers-reduced-motion",
+     "fact": "prefers-reduced-motion is \"used to detect if the user has requested the system minimize the amount of non-essential motion it uses.\" The `reduce` value means the user prefers an interface that \"removes or replaces the types of motion-based animation\"; `no-preference` is false in a boolean context. Media Queries 5 is a Working Draft dated 29 June 2026.",
+     "citation": "https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-motion (\u00a712.1), fetched 2026-10-08"
+    },
+    {
+     "topic": "Elements repo precedent",
+     "fact": "The elements repo's createPointer factory already uses setPointerCapture, hasPointerCapture/releasePointerCapture, and a pointercancel end handler. This is a lead for the drag engine; no sortable factory exists there.",
+     "citation": "/home/user/mikesaintsg/elements/src/browser/factories/createPointer.ts:47,63,66,80,89"
+    },
+    {
+     "topic": "Matrix: native HTML DnD as the drag engine",
+     "fact": "For: shipped widely (DragEvent Chrome 46, Safari 14) and offers dropEffect move/copy for cross-list transfer. Against: no keyboard requirement, touch behavior not specified, payload unreadable in protected mode during dragover, and pointercancel fires at the source on dragstart.",
+     "citation": "html.spec.whatwg.org/multipage/dnd.html \u00a76.11.1\u20136.11.7; BCD DragEvent.json"
+    },
+    {
+     "topic": "Matrix: Pointer Events plus capture as the drag engine",
+     "fact": "For: a Recommendation (2026-06-30) supported in Chrome 55, Firefox 59 and Safari 13; touch-action:none stops pan/zoom from cancelling the drag; capture keeps events on the source. Against: capture is lost silently if not in the active buttons state, it moves to the document if the target is disconnected, and touch-action changes mid-gesture are ignored.",
+     "citation": "w3.org/TR/pointerevents3 \u00a75, \u00a78, \u00a79.5"
+    },
+    {
+     "topic": "Matrix: moveBefore for reorder commits",
+     "fact": "For: preserves focus, :active, animations and popover/dialog state; Chrome 133+ and Firefox 144. Against: Safari has not shipped it (version_added false); throws on cross-document or connected/disconnected moves; MutationObservers still see remove plus add records. MDN advises an insertBefore fallback.",
+     "citation": "dom.spec.whatwg.org/#move; MDN Element/moveBefore; BCD Element.json"
+    },
+    {
+     "topic": "Matrix: aria-grabbed / aria-dropeffect",
+     "fact": "Against: deprecated in ARIA 1.1, and authors are advised not to use them in new content. For: none found in primary sources.",
+     "citation": "w3.org/TR/wai-aria-1.1/#aria-grabbed, #aria-dropeffect, #deprecated"
+    },
+    {
+     "topic": "Matrix: keyboard reorder via Alt+Arrow with live-region confirmation",
+     "fact": "For: the APG rearrangeable listbox uses Alt+Up/Down with a live region confirming completed actions, and keeps focus on the moved option. Against: the listbox role disallows interactive content inside options (APG points to Grid). Under WCAG 2.5.7, keyboard support alone does not meet the single-pointer requirement.",
+     "citation": "APG listbox-rearrangeable; APG listbox pattern; WCAG 2.5.7 Understanding"
+    }
+   ],
+   "gaps": [
+    {
+     "gap": "Unresolved: the DOM spec's moveBefore summary says \"after child\" but the method steps insert \"before referenceChild\". The fetched text did not settle whether this is editorial. Tests should establish the observed behavior (before child).",
+     "citation": "https://dom.spec.whatwg.org/#dom-parentnode-movebefore"
+    },
+    {
+     "gap": "Unknown whether active pointer capture survives when the captured element is moved with moveBefore, or with insertBefore (remove then re-insert). \u00a79.5 covers only a target that is \"no longer connected\", and neither MDN nor the Chrome blog lists pointer capture among preserved state.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a79.5; https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore"
+    },
+    {
+     "gap": "The DOM spec defines no specific state list for moveBefore. MDN and the Chrome blog give examples only. Whether text selection and :hover survive was not stated.",
+     "citation": "https://dom.spec.whatwg.org/#move; https://developer.chrome.com/blog/movebefore-api"
+    },
+    {
+     "gap": "Safari has no moveBefore (BCD version_added false, webkit.org/b/281223). A production sortable needs a feature-detected insertBefore fallback, plus explicit focus restoration and animation handling on that path.",
+     "citation": "https://raw.githubusercontent.com/mdn/browser-compat-data/main/api/Element.json"
+    },
+    {
+     "gap": "No primary source defines a successor to aria-grabbed and aria-dropeffect. The ARIA editor's draft fetch (2 Oct 2026) was truncated before the property definitions, so their status in ARIA 1.3 (still deprecated or removed) is unknown.",
+     "citation": "https://w3c.github.io/aria/"
+    },
+    {
+     "gap": "No primary source fetched gives a normative announcement-text pattern for a sortable (e.g. grab, move \"position N of M\", drop, cancel messages). The APG example says only that live regions confirm completed actions. Its exact markup (aria-live value, role) was not quoted.",
+     "citation": "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/examples/listbox-rearrangeable/"
+    },
+    {
+     "gap": "Choosing between the listbox role (plain options only) and grid or list semantics for Bootstrap list-group items that contain buttons or links is not settled by the APG beyond pointing to the Grid Pattern for interactive content.",
+     "citation": "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/"
+    },
+    {
+     "gap": "WCAG 2.5.7 needs a single-pointer, non-drag alternative (e.g. tap to select, then move controls). A pointer-drag plus keyboard sortable without one would not meet AA.",
+     "citation": "https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html"
+    },
+    {
+     "gap": "Native HTML DnD touch behavior on Chrome Android and iOS Safari is not specified by HTML. BCD shows only that DragEvent mirrors desktop versions; the actual touch drag initiation behavior was not established.",
+     "citation": "https://html.spec.whatwg.org/multipage/dnd.html#dnd; BCD api/DragEvent.json"
+    },
+    {
+     "gap": "Chromium's pointer-suppression-on-dragstart change (5135990159835136's sibling 6732314958757888) is \"Proposed\" at M148. Whether it shipped by M153 is not shown, so pointercancel timing on native dragstart may differ between Chromium 141 and 153.",
+     "citation": "https://chromestatus.com/api/v0/features/6732314958757888"
+    },
+    {
+     "gap": "The exact Pointer Events \u00a78.2 sentence on when touch-action is sampled (at touch start) was not captured verbatim. Only \"ignored for the duration of the action\" was quoted.",
+     "citation": "https://www.w3.org/TR/pointerevents3/ \u00a78.1\u20138.2"
+    },
+    {
+     "gap": "No primary source fetched covers auto-scrolling the scroll container during a pointer drag, hit-testing or placeholder geometry, or Escape-to-cancel semantics. These are production behaviors that need a design decision rather than a spec citation.",
+     "citation": "n/a (not found in fetched sources)"
+    },
+    {
+     "gap": "No primary source settles whether a sortable should animate reorder with FLIP transitions or View Transitions under prefers-reduced-motion: reduce. MQ5 says only that reduce removes or replaces non-essential motion.",
+     "citation": "https://drafts.csswg.org/mediaqueries-5/#prefers-reduced-motion"
+    }
+   ],
+   "questions": [
+    "Should the veneer sortable use the listbox role (APG rearrangeable pattern), given that Bootstrap list-group items may contain buttons or links the listbox role cannot support, or grid or plain list semantics with a separate live region?",
+    "Which single-pointer, non-drag alternative will satisfy WCAG 2.5.7: per-item move up/down buttons, or tap-to-select then tap-target?",
+    "Is the drag engine Pointer Events with capture and touch-action:none (recommended by the evidence for touch), with native HTML DnD reserved, or not used, for the later cross-list unit?",
+    "Is Safari a support target? If so, the moveBefore path needs an insertBefore fallback with manual focus restoration.",
+    "Should the createPointer factory in the elements repo (/home/user/mikesaintsg/elements/src/browser/factories/createPointer.ts) be the basis for the veneer drag engine?"
+   ]
+  },
+  {
+   "subject": "elements-drag, objective lane. I checked every cited file and line in /home/user/mikesaintsg/elements against the source. Verdict: 43 of 52 claims are upheld, 8 need corrections and 1 is UNRESOLVED; no citation is missing. Terminal: the reading is usable as reference after the corrections, with the omissions below added.",
+   "upheld": 43,
+   "corrected": [
+    {
+     "claim": "Input model: createDrag listens for dragstart, dragend, dragenter, dragover, dragleave and drop on the host.",
+     "correction": "These listeners are conditional. dragstart and dragend are added only when isSource is true. dragenter, dragover, dragleave and drop are added only when isTarget is true. With the defaults (auto:true, no list, no items, no effect.drop), isTarget is false. Such a host is a drag source only: it never calls preventDefault on dragover, never emits over or drop, and never reorders. Only click and mousedown on the host, plus the three document listeners, are always added.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:56-57 (isTarget = options.target ?? (!!dropEffect || !!source)), :435-444 (if (isSource) {...} if (isTarget) {...})"
+    },
+    {
+     "claim": "State sync: syncRows rewrites every row's classes and draggable flag. queueSync runs it again in a microtask so rows that Vue re-renders get fixed up.",
+     "correction": "syncRows always rewrites the classes, but it writes draggable only when isSource && auto. The 'Vue re-renders' reason is the reader's inference; no comment in the code states it. The factory has no MutationObserver, and useDrag does not watch the list. Rows added after mount, for example from async data, stay non-draggable until something else calls queueSync, such as a click or another drag. The first drag on such a row fails silently.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:115 (if (isSource && auto)), :136-139; /home/user/mikesaintsg/elements/src/browser/composables/useDrag.ts:45-69 watches only elementRef"
+    },
+    {
+     "claim": "Selection: each change clears the window text selection and emits a select event with { added, removed, anchor, selection }.",
+     "correction": "select() clears the text selection and emits select on every call, including calls that change nothing. For example, clicking the row that is already the only selection emits added:[] and removed:[]. A click also emits tap after select. Shift extends the range only when an anchor exists, and the range replaces any rows toggled in with Ctrl. It does not add to them.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:277, 283-288, 300-307, 391-404"
+    },
+    {
+     "claim": "Lifecycle: drop() emits drop, reorders if the row belongs to this host, clears the selection and calls resetState(true, false).",
+     "correction": "drop() clears the selection only when row is non-null and pos is non-null. Dropping on the host's padding or the gap between rows gives row === null. In that case no drop CustomEvent is emitted, yet end still fires with cancelled:false. Dropping a row onto its own position still splices the list and emits reorder, because update() never excludes the dragged rows from targeting. For example, from:[2] with to:2 is a no-op splice that still emits reorder.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:244 (if (row) emit), :247-251, :196 (setTarget on any row), :211-231"
+    },
+    {
+     "claim": "Tests: the statechart covers selection only (empty \u2192 single \u2192 range \u2192 empty). Its comment says the drag sub-machine is not table-tested because DataTransfer resists synthetic dispatch.",
+     "correction": "The statechart also has a single \u00d7 clear \u2192 empty scenario, and it declares a 'destroy' event that no scenario uses. The same comment calls the drag sub-machine 'pointer-driven' and says 'the existing one-off tests cover that path'. Both statements are false: no test anywhere dispatches a DragEvent. That comment is a contradiction the reading missed.",
+     "evidence": "/home/user/mikesaintsg/elements/tests/src/browser/factories/createDrag.test.ts:85-89, 95, 194-204"
+    },
+    {
+     "claim": "UseDragDropPage.test.ts checks that every option, on.* key and return member the page's script uses still exists in the source of createDrag/useDrag/types.",
+     "correction": "The name guard runs `\\b${name}\\b` against a corpus that concatenates the factory, the composable and the whole of types.ts. Common words such as select, clear, list, items and on match anywhere in that corpus, so the guard can hardly fail. For example, on.select passes even though createDrag never wires it. Mutation check: deleting the on.select wiring from types.ts alone would not fail the guard, because 'select' appears elsewhere in types.ts. The guard also asserts the barrel import and the call site.",
+     "evidence": "/home/user/mikesaintsg/elements/tests/app/browser/pages/_composable-api.ts:236-239, 296-300, 317-319"
+    },
+    {
+     "claim": "Gap: AGENTS.md \u00a721.7 and \u00a721.11 ask for tokens via --set-*, palette-each and forced-colors discipline on interactive chrome.",
+     "correction": "In elements, forced-colors and :focus-visible discipline is the INTERACTIVE_ELEMENTS contract, which covers a closed set of native tags (AGENTS.md \u00a721 preamble). It does not cover composable partials. COMPOSABLE_CONTRACTS.drag sets tokens.required to [], so the elements rules do not require --set-drag-* tokens. \u00a721.7 requires palette-each only where per-variant rules exist, and _drag.scss has none. \u00a721.11 bans literal colors, but 2px, 12% and 0.5 are not colors. Present this as a design recommendation for veneer, not as an elements rule violation.",
+     "evidence": "/home/user/mikesaintsg/elements/AGENTS.md \u00a721 preamble (INTERACTIVE_ELEMENTS), \u00a721.7, \u00a721.11; /home/user/mikesaintsg/elements/src/browser/patterns.ts:1278"
+    },
+    {
+     "claim": "createDrop writes effectAllowed and dropEffect, calls on.dragenter/dragover/dragleave/drop, and emits elements:drop:enter, leave and drop.",
+     "correction": "createDrop writes effectAllowed in dragenter and dragover. The HTML spec ignores that write outside dragstart, because the data store is in protected mode then (outside knowledge), so only dropEffect has an effect. on.dragleave runs even for drags that accept() rejected. onDrop sets over to false but emits no elements:drop:leave, so a listener sees enter followed by drop with no leave. accept() also accepts any drag whose types list is empty.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrop.ts:33, 37-41, 62-71, 73-80"
+    },
+    {
+     "claim": "Inference: browsers handle Escape themselves during a native drag, so the document keydown listener may never run mid-drag.",
+     "correction": "UNRESOLVED. The reading labels this as an inference and offers no capture or browser run. The code shows only that the handler exists and calls resetState(true, true). Whether it fires during a drag is not evidenced. Keep this as an open question (question 1), not as a fact.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:407-413, 447"
+    }
+   ],
+   "missing": [
+    "Root cause of the unwired on.select and on.clear hooks: createDrag wires `on` with six hand-written listen() calls. It does not use bindEventMap(host, DRAG_EVENTS, on), which elements AGENTS.md \u00a714 step 5 prescribes and helpers.ts:1558-1570 provides. Using that helper would wire all eight events. The veneer sortable needs to take the event map from one registry and not hand-list the hooks.",
+    "createPointer, the pointer path the reading points to, is relevant base material for a pointer or touch sortable. Its JSDoc says it sets pointer capture and locks the body cursor and user-select (createPointer.ts:6-11). It has no movement threshold and no rAF throttling. That contradicts constants.ts:568-576, which says 'start fires when the pointer threshold is crossed' and that move is 'throttled to animation frames upstream'. It writes no touch-action and gives no long-press.",
+    "In handle mode the row's draggable is false (createDrag.ts:126-128). _drag.scss styles `.dragging` only as `[draggable='true'].dragging` (lines 58-69), so a dragged row with a handle never dims and never gets the grabbing cursor. The `[draggable='true']` cursor rule is also global, so it matches any draggable='true' element in the page, not only rows on a createDrag host.",
+    "clear() during a drag resets dragging, indices and target through resetState(false, false) with no end event (createDrag.ts:310-316). destroy() during a drag emits no end either. The page's API reference describes clear() as 'safe to call from inside on.drop' (UseDragDropPage.vue:556-557) but does not mention that the drag ends silently.",
+    "update() emits a bubbling `over` CustomEvent and runs queueSync on every dragover, with no check for an unchanged target or position (createDrag.ts:184-209). That cost matters for a veneer design that copies this pattern.",
+    "The drag image is only the start row, even for a multi-row drag (createDrag.ts:92-100, 175). Nothing shows how many rows the drag carries.",
+    "reorder trusts each row's data-index as the list index (createDrag.ts:104, 197, 211-223). Filtered, paginated or virtualized lists whose data-index is not the list position will splice the wrong items.",
+    "The factory never sets user-select. The showcase adds `user-select: none` to rows itself (UseDragDropPage.vue:613, 730), and select() calls removeAllRanges as a workaround (createDrag.ts:300).",
+    "The page's API text for select:false (UseDragDropPage.vue:514-515) says rows drag 'only via the multi-row API'. In fact rows still drag one at a time; select:false only turns off click selection. This contradiction is missing from the list.",
+    "DragPlaygroundPage also runs a ctrl-2 toggle scenario (DragPlaygroundPage.vue:99-112). Ctrl/Meta toggle and the outside-pointerdown clear are not covered in createDrag.test.ts. The reading's 'no test covers' list omits both.",
+    "The reading does not map the veneer side: veneer's existing sortable, its Sass bootstrap layer (variant loops, tokens) and its rules. A judge designing the veneer component needs that baseline next to this elements reference. That mapping is outside this subject; refer it to the Orchestrator.",
+    "The 'over' cadence in the page prose (~50\u2013100 ms, UseDragDropPage.vue:43, 206) has no run or citation behind it. Do not carry it into veneer as a design input without a measurement."
+   ]
+  },
+  {
+   "subject": "veneer-drags, reviewed in the objective lane (citations, contracts, and adverse orderings against the code). Terminal line: the reading is mostly upheld. Six claims need a substantive correction, and every guide citation is 3 lines early. One defect the reading missed is that the owned output works as the \"last\" reference (Drag.ts:261), which misplaces items appended after mount and can leave the keyboard path stuck. The styles-layer inputs the user asked for (src/styles, the layer order, styles.md) were never read.",
+   "upheld": 45,
+   "corrected": [
+    {
+     "claim": "Every citation into /home/user/veneer/guides/veneer.md (1132-1137, 1139-1143, 1135, 1142-1143, 1158-1162, 1168, 1172-1176, 1181-1183, 1185-1186, 1186-1194, 1193-1194, 1203, 1212, 1133-1134, 1136-1137)",
+     "correction": "Each guide citation points 3 lines too early. The correct lines are: section heading 1133; host and items 1135-1140; output excluded from indexes 1136-1137; role=list 1138; value reserved 1139-1140; draggable and handle rules 1142-1146; keyboard 1161-1165; 'A drop outside, Escape, or a refused move ends without a DOM move' 1171; events table 1173-1179; 'The controller holds no listeners itself' 1184-1185; data attributes painted by the consumer 1188-1197; 'no stylesheet, cursor rule, touch-action rule' 1196-1197; Android 1206; Escape departure row 1215.",
+     "evidence": "/home/user/veneer/guides/veneer.md:1133 '### Sortable list'; :1171 'A drop outside, Escape, or a refused move ends without a DOM move.'; :1206 'Touch dragging on Android is not established'; :1215 Escape departure row."
+    },
+    {
+     "claim": "A grab is refused '... when the item itself is draggable but also contains a draggable handle, or when it starts from an `input, textarea, select, button, a[href], [contenteditable]` descendant that is neither the item nor the handle.'",
+     "correction": "The handle clause only refuses a press whose closest `[draggable=\"true\"]` is the item itself, so pressing inside the handle still starts a drag. The control selector is `[contenteditable]:not([contenteditable=\"false\"])`. `closest()` also walks past the item, so a host nested inside an `a[href]`, a `button`, or a contenteditable ancestor refuses every grab. That case is not a descendant refusal.",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:140-149: `handle === item && item.querySelector('[draggable=\"true\"]')`; `target?.closest('input, textarea, select, button, a[href], [contenteditable]:not([contenteditable=\"false\"])')`; `control !== item && control !== handle`."
+    },
+    {
+     "claim": "Routing: the clear path 'calls `end()` on every `[data-vn-drag]` component in the target's document. The controller holds no listeners itself.'",
+     "correction": "The clear path ends only the components that this scope's `component` resolves, meaning hosts whose nearest live Veneer scope is this one. The controller holds no native input listeners. It does bind its hook listeners on the host through `bindEventMap`, and `destroy()` removes them. The clear listener runs at document bubble, after the capture-phase route, so on `drop` the route's `#finish` runs before the clear's `end()`.",
+     "evidence": "/home/user/veneer/src/browser/Veneer.ts:57-63 (scoped `component` returns undefined unless `#nearest(element) === this`), :69-77 (routes capture:true, clear without capture); /home/user/veneer/src/browser/drags/Drag.ts:32 `this.#unbind = bindEventMap(element, DRAG_EVENTS, options.on)`."
+    },
+    {
+     "claim": "Keyboard: 'Each key press emits `start`, then `move` (by `keyboard`), then `end`.'",
+     "correction": "A qualifying Alt+Arrow press emits nothing when the target index is out of range, although it still calls `preventDefault`. A prevented `start` emits nothing further. Only a press that is in range and admitted emits start, move, and end.",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:230 `event.preventDefault()` precedes :233 `if (to < 0 || to >= children.length) return`; :234-239 return without end on a prevented start."
+    },
+    {
+     "claim": "'An amended ruling refused the fence because it broke the Matrix style census.'",
+     "correction": "The refusal is recorded. Its stated cause is only the writer's hypothesis column, and no input contains the ruling text, so the causal half is UNRESOLVED. The systems journal adds that native CSS is 'a guide fence in @layer reset until chunk 3's ./styles'. A judge needs that fact for the user's Sass styles-layer request.",
+     "evidence": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/report.md:98 'Amended ruling refuses it' and :104 hypothesis 'Exact stylesheet census'; lane-report.md:105 hypothesis 'The fence violated the exact style census'; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems/journal.json:1107."
+    },
+    {
+     "claim": "Contradiction: 'The brief and lane report say the plugin records the dragged item and its host' (brief.md:15; lane-report.md:34).",
+     "correction": "Only the brief, together with the elements addendum, says the plugin keeps the record. The lane report agrees with the code that the controller holds it. Replace lane-report.md:34 with addendum:150 ('keeps that record in the plugin') and addendum:88 (Drag 2 'the plugin records the dragged item and its source host').",
+     "evidence": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/lane-report.md:34 'The controller remembers the item in that host ... The module holds no native listeners itself.'; elements-addendum.md:88, :150; /home/user/veneer/src/browser/drags/Drag.ts:13, :161."
+    },
+    {
+     "claim": "Gap: 'Missing: auto-scroll of the scroll container or viewport near edges while dragging. The controller has no scroll code.'",
+     "correction": "The controller has no scroll code. On the native path, though, Chromium's own drag-and-drop autoscroll applies to scrollable ancestors and the viewport. That is an inference from platform behavior, and no proof reads it. Auto-scroll is missing only on a future pointer-events or touch fallback, where the module would have to supply it.",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:134-201 (no scroll code); no test in /home/user/veneer/tests/src/browser/drags/ reads scrolling. NOT-EVIDENCED either way."
+    }
+   ],
+   "missing": [
+    "Defect, /home/user/veneer/src/browser/drags/Drag.ts:261. `children.filter((child) => child !== item)[to] ?? this.#output` uses the owned output as the reference for 'last'. The constructor appends the output at mount (:37), so any item the author or a framework appends later sits after it. Case: host [A, B, output, C], Alt+ArrowDown on B. `to` is 2, remaining[2] is undefined, and `moveBefore(B, output)` leaves the order unchanged. The module still emits move {from:1,to:2}, end moved:true, and 'Moved to position 3 of 3'. A pointer 'after' drop on C lands before C. The reference must be the item that follows the insertion point among items: when moving last, insert after the last item (`lastItem.nextSibling`), never the output.",
+    "Defect, /home/user/veneer/src/browser/drags/Drag.ts:241 with :263-265. When a re-render detaches or moves the owned output, `moveBefore` and `insertBefore` throw NotFoundError. On the keyboard path `this.#finish(...)` then never runs, so `#item` stays set and :214 refuses every later Alt+Arrow until an Escape or a dragend calls `end()`. The output is also never re-created, so announcements go nowhere. The move needs a reference whose parent is the host and a try/finally around relocate.",
+    "Unproven painting, /home/user/veneer/app/browser/Showcase.ts:141-144 against /home/user/veneer/src/bootstrap/_utilities.scss:244-254. `.border-2` sets `border-width` on all four sides, and `border-primary` (:211-218) recolors all four, so 'before' and 'after' likely render as the same 2px primary frame rather than an insertion line on one side. The added border width also shifts the layout during dragover. This comes from CSS source alone and is NOT-EVIDENCED, because no capture was read. The journey (integration.test.ts:215-222) asserts class presence only, never geometry or which side is drawn.",
+    "The styles layer the user asked for was never read. /home/user/veneer/src/styles/composables/_index.scss is empty. /home/user/veneer/src/styles/_tokens.scss:2 and /home/user/veneer/src/bootstrap/_tokens.scss:9 fix `@layer reset, bootstrap, theme, elements, components, surfaces, composables, modifiers, utilities`. /home/user/veneer/src/styles/_mixins.scss holds only `retune` and has no transition or reduced-motion mixin. A sortable partial belongs in `composables` with its own barrel entry. Because that layer sits after `bootstrap`, it beats `.btn`'s normal cursor without `!important`, which is the failure that attempt2-stop.md:64 hit when the fence used `@layer reset`.",
+    "Rule conflict a judge must settle. brief.md:18 asks for transitions under `prefers-reduced-motion: no-preference`. /home/user/.wave/scaffold-main-wt/.claude/rules/styles.md:70-71 requires the project transition mixin, which emits the `reduce` guard, and no such mixin exists in src/styles. styles.md:108 also makes 'stable class names' the composable-to-partial contract, but Drag 1 exposes `data-vn-dragging` and `data-vn-insert` attributes. The judge must choose whether the partial keys on those attributes or the module writes state classes.",
+    "Bootstrap's veneer recreation puts every `!important` utility outside all layers (styles.md:72-76). Any utility class an author leaves on an item (`border-*`, `opacity-*`) therefore beats a composables-layer drag rule. A partial built on Bootstrap tokens (`--bs-primary-rgb`, `--bs-border-width`, `--bs-border-color`) must draw the insertion line without changing the box, for example with `box-shadow` or a pseudo-element on the named side. A judge needs this before replacing the MutationObserver adapter.",
+    "Axis edge, /home/user/veneer/src/browser/drags/Drag.ts:128-130. For a flex row under `writing-mode: sideways-lr`, inline flow runs bottom-to-top, yet `reversed` reads only `direction === 'rtl'`, so the side and the keys invert. Hosts whose items flow horizontally as inline or inline-block in block layout, and grid hosts, are treated as vertical.",
+    "Drag 2 collisions the reading did not raise. Addendum:88 assigns Alt+ArrowLeft and Alt+ArrowRight to cross-host moves, but Drag 1 uses those keys for row-axis reorder (Drag.ts:227-228). Addendum:88 also keeps the session in the plugin, while Drag 1 keeps it per controller (`#item`, Drag.ts:13 and :73). A group transfer therefore needs shared session state across controllers.",
+    "Inference, not read. The guide's recommended `role=\"list\"` host has an `output` child, whose implicit role is status, and ARIA allows only listitem as an owned child, so audit tools might flag that markup. Two consecutive identical messages ('Moved to position 2 of 3' after different items) might not be re-announced, because Drag.ts:270 never clears or varies the text. Both are open questions for the accessibility design.",
+    "Mutation checks for the proofs. Removing the early return at Drag.ts:186 survives every test. Removing the `relatedTarget` containment at :75-77 fails plugins.test.ts:209-212. Removing the control branch at :148 fails Drag.test.ts:117-121. Nothing pins the plugin clear path, the output-reference defect, destroy during a keyboard move, or the `#pressed` reuse (:137-139), because `#pressed` is cleared only by `end()` and `#start`.",
+    "Question 1 cannot be answered from this checkout. The environment reports /home/user/veneer as not a git repository, so whether it matches commit 77cabe6 needs another source. Question 4, whether the fence ruling still binds now that the user asked for Sass styles, is referred to the Orchestrator: the user's relayed request names the Sass styles layer, and journal.json:1107 records the fence as interim 'until chunk 3's ./styles'."
+   ]
+  },
+  {
+   "subject": "sass-surface (objective lane: what the Sass partials, the proofs, and the rule letter allow for a src/styles sortable and its styles-layer partial)",
+   "upheld": 27,
+   "corrected": [
+    {
+     "claim": "Bootstrap _mixins.scss members: `utility` ... 'routes every declaration through `unlayer` as !important (24-76)'.",
+     "correction": "Only the property declarations go through `unlayer` (line 71). When the entry sets `css-var`, `utility` writes `--bs-#{$name}: #{$value};` as a normal declaration (lines 54-56). Each `local-vars` pair is also written as a normal declaration, `--bs-#{$name}: #{$local};` (lines 58-60). Both stay inside whatever layer encloses the call, which is `@layer bootstrap` through the schedule (1043). Neither is !important. `unlayer` lifts out of the layer only when `$layered` is true (80-90); otherwise it emits in place (91-98).",
+     "evidence": "/home/user/veneer/src/bootstrap/_mixins.scss:54-60, 71, 80-98; /home/user/veneer/src/bootstrap/_utilities.scss:766-768, 790-799, 1043"
+    },
+    {
+     "claim": "Gap: 'Bootstrap's own variant mixin (`utility`) emits only !important declarations outside every layer.'",
+     "correction": "`utility` emits two kinds of declaration. Normal `--bs-*` custom properties for the css-var and local-vars entries stay in the enclosing layer. Property declarations become !important and are lifted out of the layer. The conclusion still holds, for a different reason. Called inside `@layer components`, the property declarations would land with layer undefined, and the placement check refuses that. The emitter also hard-codes the `--bs-` prefix, which is not a `--vn-*` name.",
+     "evidence": "/home/user/veneer/src/bootstrap/_mixins.scss:54-60, 79-90; /home/user/veneer/tests/src/styles/index.test.ts:28-32"
+    },
+    {
+     "claim": "Scaffold AGENTS.md says no extension face imports another extension's face. The one exception covers a styles extension that 'builds another extension's recreation' ... src/styles is the base styles surface, not that tailwindcss exception.",
+     "correction": "The exact text is 'No extension face imports server code or another extension's face, with one exception: a styles extension that builds another styles extension's recreation for a utility library (`src/tailwindcss` building Bootstrap for Tailwind) may `@use` that extension's Sass partials, configured through their `_tokens.scss` switches, and imports none of its TypeScript.' The bullet's subject is extension faces. The same section says 'the styles surface is `src/styles` and its themes', while 'a named styles extension adds `src/<name>`', which covers src/bootstrap. src/styles is therefore not an extension face, and this bullet does not by its letter refuse a load from src/styles into src/bootstrap. The only refusal the reading found is the repository's conformance gate, tests/conformance.test.ts:672-680.",
+     "evidence": "/home/user/scaffold/AGENTS.md, Project model section, bullets 'The browser surface is ...' and '`src/vue` and each `src/<name>` may import ...'"
+    },
+    {
+     "claim": "Vite lib build: ... cssMinify false 'to preserve the authored layer-order statement'.",
+     "correction": "The comment in the config reads: `// Preserve the authored layer-order statement in the published sheet.` The quoted text is a paraphrase, not the source.",
+     "evidence": "/home/user/veneer/configs/src/vite.styles.config.ts:11-12"
+    },
+    {
+     "claim": "Question 4 frames the drag-state paint as a choice between 'components versus modifiers'.",
+     "correction": "Neither candidate fits the folder law. `components/` holds 'a static class skin [that] applies with the class present and no script running'. `modifiers/` holds 'a class that sets a token other rules read'. `composables/` holds 'chrome that applies only after the engine or a composable sets state', and `surfaces/` holds 'pseudo-elements, attribute APIs, and user-agent pieces'. `data-vn-dragging` and `data-vn-insert` are attributes the engine sets. The live choice is therefore composables versus surfaces, and placing the paint in components contradicts the rule.",
+     "evidence": "/home/user/veneer/ROADMAP.md:100-105; /home/user/scaffold/.claude/rules/styles.md:88"
+    }
+   ],
+   "missing": [
+    "Adding the first `--vn-*` token breaks the themes proof. themes/index.scss loads `../tokens` (themes/index.scss:2), and the themes proof requires `flattenRules` on the themes sheet to equal [] and the sheet to contain no ':root' (tests/src/styles/themes/index.test.ts:36-38). A `:root { --vn-* }` in src/styles/_tokens.scss therefore turns that proof red. ROADMAP.md:63 says the themes barrel 'switches to its own copy of the statement' at that point. scaffold .claude/rules/styles.md:83 says 'never write the statement there literally'. These two conflict; refer to the Orchestrator.",
+    "The keyboard path writes neither drag attribute. Drag.ts:203-242 (Alt+Arrow) sets `#item` and relocates the item but never sets `data-vn-dragging` or `data-vn-insert`. Any paint driven by those attributes shows nothing for a keyboard move. Drag.ts:168 and 189 are the only writers.",
+    "`before` and `after` are logical DOM sides, not physical edges. `#side` and `#axis` (Drag.ts:118-131, 171-177) choose them from the computed flex direction, writing mode, and direction, and `#move` (Drag.ts:199) inserts at `index + (after ? 1 : 0)`. The showcase's border-top/border-bottom mapping (app/browser/Showcase.ts:139-141) is right only for an unreversed column flow. CSS logical properties absorb writing mode and direction but not `flex-direction: *-reverse`, and the host exposes no axis attribute a selector could read.",
+    "Bootstrap utilities beat every styles-sheet rule on the same property. They are !important declarations outside every layer (ROADMAP.md:34; _mixins.scss:79-90). For example, `opacity-*` or `border-*` on an item beats every normal declaration in every src/styles layer. The guide's override table (guides/veneer.md:1499-1502) does not cover this direction.",
+    "The disjointness proof never compares bootstrap with styles. The two sheets own no common layer (tests/setup.ts:561-574), and the proof skips any layer the second sheet does not own (tests/integration.test.ts:302-303). A src/styles rule on a Bootstrap class such as `.list-group-item` is therefore unconstrained, which matches guides/veneer.md:1463-1464.",
+    "The styles proof reads only style-rule declarations. `readPlacement` reads only CSSStyleRule declarations (tests/setupStyles.ts:390-405), and the block check compares the unqualified `rule.name` (tests/src/styles/index.test.ts:26). Mutation: append a top-level `@keyframes` (or `@property` or `@font-face`) to any src/styles partial; the proof stays green. A nested `@layer components { @layer theme {} }` also passes the block check. src:bootstrap carries a keyframes placement control (ROADMAP.md:78); src:styles has none.",
+    "Only the pinned recreation is exempt from the per-variant and transition laws. Bootstrap keeps its literal per-variant blocks and literal transitions under that exemption (styles.md:50-54, 65-67). src/styles has no exemption, so the one-`@each` law (styles.md:63) and the transition and reduced-motion mixin laws (styles.md:70-71) bind there. Bootstrap writes reduced motion as a literal `@media (prefers-reduced-motion: reduce)` in 18 component partials (sweep: `prefers-reduced-motion|@keyframes` over src/bootstrap/components); it has no mixin src/styles could reuse.",
+    "Each new partial carries registry obligations. The TypeScript twin map requires `CLASS_NAMES.<face>.components` plus a component module for a components partial, and a browser composable module for a composables partial (ROADMAP.md:115-129). CLASS_NAMES adds `elements` and `surfaces` categories only where a face declares them (ROADMAP.md:46). src/core holds no `veneer` group yet (sweep: `veneer|styles` over src/core returned 0).",
+    "The precedence clauses bear on question 1. scaffold AGENTS.md \u00a7 Authority and loading says 'The user's current instruction wins' and 'Rules state how to write. Guides state what to build. On conflict, stop and report the conflict.' Refer that question to the Orchestrator.",
+    "The elements repo the user named is not checked out here. A `*/package.json` sweep of /home/user lists contract, server, ollama, scaffold, tool, markdown, html, browser, and mcp, plus a bare `package.json` match, presumably veneer, the working directory. No elements checkout appears, so the drag design reference the user cited is unread. Refer to the Orchestrator to fetch it."
+   ]
+  },
+  {
+   "subject": "platform: primary sources for the veneer sortable. Lane: objective (citation truth, contracts, adverse states). I could not open the web citations in this review; every https claim rests only on the writer's report.",
+   "upheld": 3,
+   "corrected": [
+    {
+     "claim": "Local corpus: draggable is 'the only drag-and-drop entry in the corpus' (interactions.md:595).",
+     "correction": "Upheld for the line cited, but it is not the only entry. sections.md is in the reading's own file list and has a second drag-and-drop mention that no fact cites: 'Some DOM operations (for example, parts of the drag and drop model) are defined in terms of \"the body element\".' The sweep found only the two sortable hits in texts.md and none of the other named terms, so that part of the coverage claim holds.",
+     "evidence": "/home/user/mikesaintsg/elements/guides/w3c/elements/sections.md:71; a case-insensitive sweep of /home/user/mikesaintsg/elements/guides/w3c for draggable|drag|dnd returned interactions.md:595 and sections.md:71. Upheld: texts.md:1123-1124 (a table-sorting example, not drag reorder) and aria.md:127-131 (implicit roles only; no aria-live, alert, aria-grabbed, or dropeffect anywhere in aria.md)."
+    },
+    {
+     "claim": "Elements repo precedent: createPointer uses setPointerCapture, has/releasePointerCapture and pointercancel 'at :47,63,66,80,89 ... no sortable factory exists there.'",
+     "correction": "The line citations are correct. 'No sortable factory exists there' is false. The elements repo ships createDrag, a native HTML DnD reorder factory. It emits elements:drag:reorder and has a selection model with Ctrl/Shift multi-select, before/after/'into' drop zones, a drag handle (.drag-handle), setData('text/plain', index), and cross-list drops judged by row ownership. A matching styles partial paints the drag states. createDrag has no keyboard reorder and no live region: its only keyboard handling is Escape, which clears the selection. For any reuse, the precedent is createDrag plus _drag.scss, not only createPointer.",
+     "evidence": "/home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:27-39,125-130,173,211-246,407-409; /home/user/mikesaintsg/elements/src/browser/types.ts:1051-1052 (DragReorderDetail); /home/user/mikesaintsg/elements/src/styles/composables/_drag.scss:1-103"
+    },
+    {
+     "claim": "Every https citation ('All web sources fetched 2026-10-08'): HTML DnD \u00a76.11, Pointer Events 3, DOM #move, MDN, BCD, chromestatus, chromiumdash, ARIA 1.1, APG, WCAG 2.5.7, MQ5.",
+     "correction": "UNRESOLVED. No capture or excerpt file comes with the reading, and this review could not open the URLs. A judge must treat each quoted sentence as unverified until a capture is attached. Highest risk: the PE3 REC date of 2026-06-30, the M153 stable date, the chromestatus 'Proposed/M148' status, BCD's 'iOS Safari follows desktop' for DragEvent, and the ARIA 'deprecated' quote ('recommended that authors do not use it for new content'), which may not be ARIA 1.1 wording.",
+     "evidence": "The reading's citation fields only; nothing under /home/user/veneer or /home/user/mikesaintsg/elements/guides captures these pages."
+    },
+    {
+     "claim": "Gap: Chromium pointer suppression '(5135990159835136's sibling 6732314958757888)'.",
+     "correction": "The reading's own facts identify 5135990159835136 as 'DOM State-Preserving Move' (moveBefore). Calling it a 'sibling' of the pointer-suppression entry has no support, so drop the parenthetical. The fact's sentence 'The search summary says Android already partly behaves this way' cites a search summary, not a primary source. Mark it UNRESOLVED or remove it.",
+     "evidence": "The reading's facts 'moveBefore: Chromium ship' and 'Chromium: pointer suppression on drag start'."
+    },
+    {
+     "claim": "DOM moveBefore custom elements: MDN says connectedMoveCallback 'is run instead of connectedCallback() and disconnectedCallback()'.",
+     "correction": "State the condition. connectedMoveCallback replaces the disconnect/connect pair only when the element defines it. Otherwise the custom-element reaction falls back to disconnectedCallback followed by connectedCallback. A sortable item that contains undecorated custom elements therefore still sees disconnect then connect on a move. UNRESOLVED here because I could not fetch the source; check it against HTML's 'enqueue a custom element callback reaction'.",
+     "evidence": "https://dom.spec.whatwg.org/#move step 24.3 as cited by the reading; HTML custom-element reactions (not fetched in this review)."
+    },
+    {
+     "claim": "HTML DnD protected mode: 'the data itself is unavailable ... A drop target therefore cannot read the payload until the drop event.'",
+     "correction": "Incomplete in a way that changes the design. In protected mode the formats and kinds in the drag data store can still be listed (DataTransfer.types), even though the data cannot be read. A cross-list target can therefore gate dragover on a custom MIME type it declared at dragstart. Leaving this out makes cross-list gating look impossible before drop. UNRESOLVED (not fetched); verify against \u00a76.11.2.",
+     "evidence": "https://html.spec.whatwg.org/multipage/dnd.html#drag-data-store-mode (cited by the reading, not fetched here); prior art writes only text/plain at /home/user/mikesaintsg/elements/src/browser/factories/createDrag.ts:173"
+    },
+    {
+     "claim": "ARIA facts cite WAI-ARIA 1.1 for the aria-grabbed/aria-dropeffect deprecation and the status/alert live-region semantics.",
+     "correction": "ARIA 1.1 is superseded. Cite WAI-ARIA 1.2, the W3C Recommendation, for both attributes' status and for status and alert. The gap about ARIA 1.3 remains, but the 1.2 status needs to be established first.",
+     "evidence": "The reading's citations https://www.w3.org/TR/wai-aria-1.1/#aria-grabbed, #status; no 1.2 citation anywhere in the reading."
+    }
+   ],
+   "missing": [
+    "The reading treats veneer as greenfield, but veneer already ships a sortable. /home/user/veneer/src/browser/drags/Drag.ts uses native HTML DnD on a [draggable=\"true\"] handle and adds Alt+Arrow keyboard reorder (Drag.ts:203-242), Escape (Drag.ts:204), and an <output aria-live=polite aria-atomic=true> announcing 'Moved to position N of M' (Drag.ts:33-37,270). It also falls back from moveBefore to insertBefore with manual focus restore (Drag.ts:263-269) and detects the axis from flex-direction, writing-mode, and direction (Drag.ts:118-132). Showcase: /home/user/veneer/app/browser/sections/sortable-list.html (role=list and listitem on .list-group, a btn-link handle). Questions 3 and 4 must be asked against this engine, not from scratch.",
+    "The styles layer has no sortable component. Drag.ts sets data-vn-dragging (Drag.ts:168) and data-vn-insert=before|after (Drag.ts:189), but no SCSS under /home/user/veneer/src matches either attribute. The judge needs the attribute contract as the styles-layer selector seam.",
+    "Prior-art styles in /home/user/mikesaintsg/elements/src/styles/composables/_drag.scss:88-102 draw the insertion line with inset-inline:0 and block-size:2px, which works for vertical lists only. Bootstrap's horizontal list-group variants and their responsive -sm through -xxl forms (/home/user/veneer/src/bootstrap/components/_list-group.scss:88-153) need an inline-edge indicator. Drag.ts already reports a horizontal or reversed axis, so the styles need an axis hook. The prior art also has no forced-colors rule and no reduced-motion opt-out.",
+    "Bootstrap .list-group sets display:flex, padding-left:0, and list-style-type:none (/home/user/veneer/src/bootstrap/components/_list-group.scss:22-29). /home/user/mikesaintsg/elements/guides/w3c/aria.md:165-168 records that list-style:none on a non-list-item display strips the list role unless role=\"list\" is present. The ul/ol to list and li to listitem rows are at aria.md:58-60. This is the corpus fact behind the listbox-versus-list question, and the reading omits it.",
+    "Variations the sortable styles must cover, which the reading does not list: list-group-flush, list-group-numbered (its CSS counters at _list-group.scss:28-32 renumber after a DOM move), list-group-item-{primary..dark} contextual classes (_list-group.scss:239-323), .active, .list-group-item-action hover/focus/active (_list-group.scss:72-84), .disabled items (are they draggable or drop targets?), and dark theme.",
+    "Refer to the objective code lane: the <output> live region is appended as a direct child of the role=list host (Drag.ts:33-37; sortable-list.html:5). A list may own only listitem children, so the status element needs to sit outside the list. The output element's implicit status role (aria.md:131) also makes the explicit aria-live=polite redundant.",
+    "Refer to the objective code lane: Drag.ts:263 calls moveBefore with no try/catch. The reading's own DOM #move and MDN facts say moveBefore throws when state cannot be preserved and advise an insertBefore fallback inside try...catch.",
+    "WCAG 2.5.7 as built: veneer's engine offers drag and Alt+Arrow only. No single-pointer, non-drag path exists in Drag.ts or the showcase, so by the reading's own criterion the existing sortable fails AA. The judge needs this stated against the code, not only as a design question.",
+    "createPointer as a basis (question 5) has defects the reading does not weigh. It registers no lostpointercapture listener and sets no touch-action, and its pointerdown preventDefault (/home/user/mikesaintsg/elements/src/browser/factories/createPointer.ts:78) does not stop panning. If capture moves to the document under PE3 \u00a79.5, onEnd never fires and the body cursor and userSelect stay locked (createPointer.ts:82-85). It also reports pointercancel through the same on.end as pointerup (createPointer.ts:60-71,89), so a sortable cannot tell commit from cancel. Capture on the list host rather than the moved item would avoid the reading's open moved-node-capture gap.",
+    "Drag-image timing for the native path: Drag.ts:166-168 calls setDragImage, then sets data-vn-dragging during the same dragstart. If styles dim [data-vn-dragging] and the browser snapshots the drag image after the dragstart handler returns, the ghost image is dimmed too. This needs a browser test before choosing the styles-layer treatment for the source item.",
+    "Prior art for the later cross-list unit: createDrag decides cross-list drops by row ownership (createDrag.ts:245), supports an 'into' zone (createDrag.ts:108,212), and has a multi-select model. None of this appears in the reading's matrix."
+   ]
+  },
+  {
+   "findings": [
+    {
+     "finding": "Lane: the dispatch names no lane, so this proposal holds the objective lane (correctness, constraints, and what the contracts permit). Naming and ergonomic calls appear as Tension lines inside the unit contracts for the subjective lane or the Orchestrator to rule. Defect: the owned output is the relocation reference for 'last' (Drag.ts:261). An item appended after mount sits after the output. Alt+ArrowDown toward that item, or a pointer 'after' drop on it, misplaces the item or leaves the order unchanged, yet the module still emits move, end with moved:true, and 'Moved to position N of M'.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:37 appends the output at mount; :261 `children.filter((child) => child !== item)[to] ?? this.#output`. Case from the verdict: host [A, B, output, C], Alt+ArrowDown on B gives `moveBefore(B, output)` with no order change.",
+     "source": "veneer-drags verdict (missing item 1); confirmed by own read of Drag.ts:33-37, 244-272"
+    },
+    {
+     "finding": "Defect: a throwing move leaves the session stuck. When a listener re-renders and detaches the output, `moveBefore` or `insertBefore` throws, so `#finish` never runs on the keyboard path. `#item` then stays set, and :214 refuses every later Alt+Arrow press until Escape or dragend.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:214 (`this.#item` refusal), :241 (`this.#finish(this.#relocate(...))` with no try/finally), :263-265.",
+     "source": "veneer-drags verdict (missing item 2); own read of Drag.ts"
+    },
+    {
+     "finding": "Defect, inferred from CSS source with no capture: the owned output inside the host breaks the Bootstrap list markup it rides on. The output is the host's last child, so the real last `.list-group-item` never matches `:last-child` and loses Bootstrap's bottom radii. A `role=list` host also owns an implicit `status` child, which list ownership forbids. The guide must prescribe a `div` host because of this placement.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/src/bootstrap/components/_list-group.scss:49-52 (`.list-group-item:last-child` radii); /home/user/veneer/src/browser/drags/Drag.ts:37; /home/user/mikesaintsg/elements/guides/w3c/aria.md:131 (output maps to status); /home/user/veneer/guides/veneer.md:1138 (div host recommended because of the output).",
+     "source": "own read of _list-group.scss and Drag.ts; platform verdict (missing item 6); veneer-drags question 5"
+    },
+    {
+     "finding": "Defect, inferred from CSS source with no capture: the showcase indicator draws a 2px primary frame on all four sides, not an insertion line, and changes the item's box during dragover. `border-2` sets every side's width and `border-primary` recolors every side, both as `!important` declarations outside every layer. The journey asserts only that the classes are present.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/app/browser/Showcase.ts:139-144; /home/user/veneer/src/bootstrap/_utilities.scss:211-229 and the border-width entry; /home/user/veneer/tests/app/browser/integration.test.ts:215-222 (class presence only).",
+     "source": "veneer-drags verdict (missing item 3); own read of Showcase.ts:135-152"
+    },
+    {
+     "finding": "Defect: the axis is wrong for a flex row under `writing-mode: sideways-lr`. Inline flow there runs bottom to top, but `reversed` for a row reads only `direction === 'rtl'`, so both the drop side and the arrow keys invert.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:128-130.",
+     "source": "veneer-drags verdict (missing item 7); own read"
+    },
+    {
+     "finding": "Defect against WCAG 2.2 SC 2.5.7 (AA): the sortable offers no single-pointer, non-dragging way to reorder. Alt+Arrow keyboard support does not meet the criterion by itself.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:203-242 (drag and Alt+Arrow only); the WCAG 2.5.7 Understanding text as quoted in the platform reading (fetched 2026-10-08; the verdict marks the web quotes unverified until a capture is attached).",
+     "source": "platform reading fact 'WCAG 2.2 SC 2.5.7' and verdict (missing item 8)"
+    },
+    {
+     "finding": "Defect in the guide: it says Escape ends without a DOM move, while its own departure row says injected Escape during a native drag reaches no listener and physical Escape is unestablished. The guide also claims every Alt+Arrow press emits start, move, and end. An out-of-range press emits nothing after `preventDefault`.",
+     "severity": "defect",
+     "evidence": "/home/user/veneer/guides/veneer.md:1171 vs :1215; /home/user/veneer/src/browser/drags/Drag.ts:230-233.",
+     "source": "veneer-drags reading (contradiction) and verdict (corrections 1 and 4)"
+    },
+    {
+     "finding": "Gap: drops land only on item children. Host padding, the gaps between items, an empty host, and a Bootstrap `.list-group-item.disabled` cannot receive a drop. The disabled case arises because Bootstrap sets `pointer-events: none`, so dragover goes to the host, which Drag 1 does not route.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:56-62, 73-88; /home/user/veneer/src/browser/drags/plugins.ts:29 (selector `[data-vn-drag] > *` only); /home/user/veneer/src/bootstrap/components/_list-group.scss:53-58.",
+     "source": "veneer-drags reading gap 'Drops are accepted only on item children'; own read of _list-group.scss"
+    },
+    {
+     "finding": "Gap: `data-vn-insert` carries the logical DOM side (before or after), but CSS needs the physical edge. Logical properties absorb writing mode and direction but not `flex-direction: *-reverse`. Bootstrap's `list-group-horizontal-{sm..xxl}` also switches axis at each breakpoint, and no host attribute exposes the axis.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:171-189; /home/user/veneer/src/bootstrap/components/_list-group.scss:88-153 (responsive horizontal variants); /home/user/mikesaintsg/elements/src/styles/composables/_drag.scss:88-102 (inset-inline line, vertical lists only).",
+     "source": "sass-surface verdict (missing item 3); platform verdict (missing item 3)"
+    },
+    {
+     "finding": "Gap: no styles ship for the sortable. There is no grab cursor, no `touch-action` on the handle, no insertion line that keeps the item's box, no forced-colors rule, and no reduced-motion guard. Consumers repaint the state attributes themselves, and the showcase does so with a MutationObserver class adapter. The user's thirteenth-round ruling puts every veneer style in the styles layer as Sass.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/guides/veneer.md:1188-1197; /home/user/veneer/app/browser/Showcase.ts:135-152; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/stage-b/user-rulings-2026-10-06.md:74.",
+     "source": "veneer-drags reading gap 'shipped style layer'; sass-surface fact 'Sortable (drag) styling contract today'"
+    },
+    {
+     "finding": "Gap that blocks part of the Sass ruling: the maps the user names (`$theme-colors`, `$grid-breakpoints`, `$spacers`) do not exist in veneer's Bootstrap Sass. The only maps are `$utilities` and `$breakpoints`, both in `_utilities.scss`, whose top-level schedule emits the whole utilities sheet on any load. `_tokens.scss` emits every `--bs-*` property on load. The components partials define no variable, map, mixin, or loop. The conformance gate refuses every relative load between src/styles and src/bootstrap, and the published barrel forwards only `$layered`. No sanctioned path exists today that hands src/styles a Bootstrap map without Bootstrap CSS.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/src/bootstrap/_utilities.scss:6, 1035-1041, 1043-1077; /home/user/veneer/src/bootstrap/_tokens.scss:18-194; /home/user/veneer/src/bootstrap/index.scss:1; /home/user/veneer/tests/conformance.test.ts:672-680; /home/user/veneer/tests/setup.ts:406-444; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/stage-b/user-rulings-2026-10-06.md:74.",
+     "source": "sass-surface reading facts and gaps 1-2; own read of _utilities.scss and setup.ts"
+    },
+    {
+     "finding": "Gap: veneer's Bootstrap mixins give src/styles nothing it can call. `layer` writes `@layer bootstrap`. `utility` and `unlayer` lift every property declaration outside every layer as `!important` under a hard-coded `--bs-` prefix. The src:styles placement proof refuses both outcomes. src/styles/_mixins.scss holds only `retune`. The transition mixin that styles.md:70 requires does not exist.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/src/bootstrap/_mixins.scss:14-22, 24-76, 79-100; /home/user/veneer/tests/src/styles/index.test.ts:8-32; /home/user/veneer/src/styles/_mixins.scss:1-22; /home/user/scaffold/.claude/rules/styles.md:70-71.",
+     "source": "sass-surface reading and verdict corrections 1-2"
+    },
+    {
+     "finding": "Gap: a Bootstrap utility on an item beats every styles-layer rule on the same property. `opacity-*` and `border-*` are `!important` declarations outside every layer. An indicator drawn with border or opacity on the item itself therefore yields to author utilities. An indicator on `::before` would also collide with `.list-group-numbered > .list-group-item::before`, and an indicator drawn with box-shadow disappears in forced-colors mode.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/ROADMAP.md:34; /home/user/veneer/src/bootstrap/_mixins.scss:79-90; /home/user/veneer/src/bootstrap/components/_list-group.scss:32-35.",
+     "source": "sass-surface verdict (missing item 4); veneer-drags verdict (missing item 6); own read of _list-group.scss"
+    },
+    {
+     "finding": "Gap: touch input is unestablished. The only pointer path is native HTML drag and drop. No pointer capture, slop, `pointercancel` handling, or `touch-action` exists. HTML fires `pointercancel` at the source after dragstart, so one gesture cannot run both native drag and drop and a capture drag.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:66-67; /home/user/veneer/guides/veneer.md:1206; HTML \u00a76.11.5 step 10 as quoted in the platform reading (unverified web quote).",
+     "source": "veneer-drags reading gap 1; platform reading facts 'pointer stream ends at dragstart' and 'touch-action'"
+    },
+    {
+     "finding": "Gap: cross-list transfer is missing, and the addendum's plan collides with Drag 1. The plan assigns Alt+ArrowLeft and Alt+ArrowRight to host-to-host moves, which Drag 1 uses for row-axis reorder. The plan also keeps the session in the plugin, while Drag 1 keeps `#item` per controller and the plugin holds no state.",
+     "severity": "gap",
+     "evidence": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07/elements-addendum.md:82-93; /home/user/veneer/src/browser/drags/Drag.ts:13, 73, 227-228; /home/user/veneer/src/browser/drags/plugins.ts:12-53.",
+     "source": "veneer-drags verdict (missing item 8)"
+    },
+    {
+     "finding": "Improvement: the announcements carry no item or list name, nothing on cancel or refusal, and identical consecutive messages that assistive technology might not re-announce. The English text is fixed inside framework code.",
+     "severity": "improvement",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:270.",
+     "source": "veneer-drags reading gap 'Live text lacks the item's name'; verdict (missing item 9)"
+    },
+    {
+     "finding": "Improvement: a stale `#pressed` is reused. A pointerdown that never becomes a drag leaves `#pressed` set until `end()` or the next `#start`, so a later dragstart on another item judges its handle against the wrong target.",
+     "severity": "improvement",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:67, 137-139.",
+     "source": "veneer-drags verdict (missing item 10)"
+    },
+    {
+     "finding": "Gap in proofs: no proof covers the `insertBefore` fallback, reversed or vertical axes, the synchronous re-render branch, destroy mid-drag, the plugin clear path, the output-reference defect, or refusals beyond `input`. The src:styles proof reads only style-rule declarations, so a top-level `@keyframes`, `@property`, or a nested foreign `@layer` passes.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/tests/src/browser/drags/Drag.test.ts:174, 191-210; /home/user/veneer/tests/setupStyles.ts:390-405; /home/user/veneer/tests/src/styles/index.test.ts:26.",
+     "source": "veneer-drags reading 'proofs do not pin' and verdict (missing item 10); sass-surface verdict (missing item 6)"
+    },
+    {
+     "finding": "Gap, a precondition: the catalog gates Drag 2 on Drag 1 being committed with its app browser project green. The final gate recorded 2 failures (the Contents contrast case timed out at 15,123.8 ms, and the outline case reported an ambiguous 'Bootstrap' target), both unresolved. /home/user/veneer is not a git repository here, so whether it matches 77cabe6 is unread.",
+     "severity": "gap",
+     "evidence": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/catalog-2026-10-07-systems.md:126, 128; /home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-1/report.md:44-50.",
+     "source": "veneer-drags reading 'open items' and 'catalog Deferred'; verdict (missing item 11)"
+    },
+    {
+     "finding": "Measurements supplied and missing. Supplied: injected Escape during a native drag produced zero document keydowns and zero ends under Chromium 141 and 153 (drag-1 report.md:24, 97); the Contents case timed out at 15,123.8 ms (report.md:44-50). Missing: the cost of `getComputedStyle` per dragover; whether a dragstart-time `data-vn-dragging` dim lands in the native drag image; physical Escape; a native touch drag on Android; and every web quote in the platform reading, which has no capture attached. No optimization or claim may rest on a missing reading.",
+     "severity": "gap",
+     "evidence": "/home/user/veneer/src/browser/drags/Drag.ts:118-121, 166-168, 172; /home/user/veneer/guides/veneer.md:1206, 1215.",
+     "source": "veneer-drags reading gaps; platform verdict (correction 3 and missing item 10)"
+    }
+   ],
+   "units": [
+    {
+     "id": "drag-2",
+     "title": "Repair the single-list session",
+     "owned": [
+      "/home/user/veneer/src/browser/drags/Drag.ts",
+      "/home/user/veneer/src/browser/drags/plugins.ts",
+      "/home/user/veneer/src/browser/drags/constants.ts"
+     ],
+     "contract": [
+      "Role: repair writer. No public type changes. Depends on the precondition finding: the app browser project is green at the base commit, or its 2 failures are recorded as unrelated with their run.",
+      "Place the owned `output` immediately after the host (`element.after(output)`), not inside it. `#children()` returns every element child of the host. The `item === this.#output` guard in `receive` goes. `destroy()` still removes the output. Before writing text, the controller re-places the output after the host when it no longer sits there (derived from `output.previousElementSibling !== element`; no stored flag).",
+      "Relocate with the reference `remaining[to]`, where `remaining` is the items without the moved one. When `to` equals `remaining.length`, pass `null`, which appends. Never use the output as a reference.",
+      "Wrap every relocation so `#finish` runs on every exit path. When `moveBefore` throws a `DOMException`, fall back once to `insertBefore` with focus restored using `preventScroll`. On any other throw, finish with `moved:false` and rethrow.",
+      "Consult `#pressed` only when `item.contains(this.#pressed)`. Otherwise use the dragstart target.",
+      "Fix the row-axis reversal: `reversed` for a flex row is `(direction === 'rtl') !== (writingMode === 'sideways-lr')`, still XOR the flex `*-reverse` flag. The column branch is unchanged.",
+      "Update consumers in the same change, with no shims. In guides/veneer.md \u00a7 Sortable list, a `ul` or `ol` host with `li` items becomes valid, the output sits after the host, the Escape sentence at :1171 agrees with the departure row at :1215, and the keyboard sentence states that an out-of-range press emits nothing. In app/browser/sections/sortable-list.html, the host may become a `ul`.",
+      "Tension: the `insertBefore` fallback cannot run in Chromium 141 or 153 because both ship `moveBefore`. The Orchestrator rules whether an own-property `moveBefore = undefined` on the fixture host counts as an inert platform stub or as a forbidden fake. With no such stub, the branch stays unproven and the guide must say so."
+     ],
+     "proofs": [
+      "tests/src/browser/drags/Drag.test.ts under Chromium 141 and 153: an item appended after mount, then Alt+ArrowDown into the last slot, puts the item last, and the live text and the event `to` agree. A pointer 'after' drop on that item lands after it. A `move` listener that detaches and reattaches the host's children makes relocation throw, the session ends with `end.moved === false`, and a later Alt+Arrow press moves. The output is the host's `nextElementSibling` and is absent from `host.children`. The real last item matches `:last-child`. Hosts with `row-reverse`, `column-reverse`, `rtl`, `vertical-rl`, and `sideways-lr` map Alt+Arrow keys and drop sides correctly. A stale press on item A followed by a drag on item B uses B's target. Destroy during a keyboard move leaves no `data-vn-*` attribute and no output.",
+      "Mutation controls: restoring `?? this.#output` reddens the appended-item case; removing the try/finally reddens the throw case; reverting the sideways-lr term reddens that axis case.",
+      "Project gate: `npm run test:src:browser`, then `npm run test:app:browser` for the journey's `Sort status` reads."
+     ],
+     "styles": "None. The output leaves the host, so Bootstrap's `.list-group-item:last-child` radii apply again with no veneer rule.",
+     "engine": "astra",
+     "order": 1
+    },
+    {
+     "id": "drag-3",
+     "title": "Hit-test slots on the host and write the physical edge",
+     "owned": [
+      "/home/user/veneer/src/browser/drags/Drag.ts",
+      "/home/user/veneer/src/browser/drags/plugins.ts",
+      "/home/user/veneer/src/browser/drags/helpers.ts",
+      "/home/user/veneer/src/browser/drags/types.ts",
+      "/home/user/veneer/src/browser/drags/index.ts"
+     ],
+     "contract": [
+      "Role: feature writer. Depends on drag-2.",
+      "Types first: declare in types.ts the pure slot contract that helpers.ts exports, with readonly inputs: the item boxes in order, the point, the axis `{ horizontal, reversed }`, and the source index. The result is the insertion index among the items without the source, plus the physical edge `'top' | 'right' | 'bottom' | 'left'`, or `undefined` when the slot is the source's own position.",
+      "helpers.ts exports one pure `{verb}{Noun}` function for that contract (proposed `findSlot`). It resolves the slot by comparing the point against item midpoints along the axis, so padding, `gap` space, and the end of the list all resolve. It reads no DOM. index.ts exports it through the module barrel.",
+      "plugins.ts routes `dragenter`, `dragover`, `dragleave`, and `drop` on the host itself as well as on `[data-vn-drag] > *`. The host resolves to itself. `pointerdown`, `dragstart`, `dragend`, and `keydown` stay item-only.",
+      "Drag.ts accepts dragover and drop anywhere inside the host while its own item is in flight. It computes the slot through the helper and relocates to the slot index. It writes `data-vn-insert` with the physical edge on the item adjacent to the slot: the leading edge of the item after the slot, or the trailing edge of the last item for an end slot. It rewrites the attribute only when the item or the edge changes. It writes no indicator for the source's own slot.",
+      "The host carries `data-vn-over` while an admitted drag is over it. The attribute is removed on a `dragleave` whose `relatedTarget` is outside the host, and in `#finish`.",
+      "An item whose `aria-disabled` is `true` refuses grabs by pointer and keyboard and stays a slot neighbor. The module reads ARIA only, never a Bootstrap class.",
+      "Read the axis per event as in Drag 1. Add no cache, because no measurement of the cost exists.",
+      "Guide: the \u00a7 Sortable list data-attribute table documents `data-vn-insert` values as physical edges and adds `data-vn-over`.",
+      "Tension for the subjective lane: physical edge values versus the logical `before` and `after` they replace, and the names `findSlot` and `data-vn-over`."
+     ],
+     "proofs": [
+      "tests/src/browser/drags/helpers.test.ts (Node or Chromium, pure): the end slot, the start slot, gap space, the source's own slot returning undefined, and reversed and horizontal axes, each with expected index and edge.",
+      "tests/src/browser/drags/Drag.test.ts and plugins.test.ts under Chromium 141 and 153 with real CDP drags: a drop on host padding after the last item puts the item last; a drop in a `gap` between items lands between them; a drop next to a Bootstrap `.list-group-item.disabled` (pointer-events none) lands beside it; an `aria-disabled` item refuses both grab paths; edge values on `row-reverse`, `rtl`, and `vertical-rl` hosts name the physical side the pointer is on; a MutationObserver recorder shows `data-vn-insert` rewritten only on change; `data-vn-over` appears on enter and clears on leaving the host and on drop.",
+      "Mutation controls: routing items only reddens the padding and gap cases; dropping the change check reddens the recorder case."
+     ],
+     "styles": "Feeds drag-4. The physical edge lets the composables partial draw the line with one `@each` over the four edges and no per-breakpoint rule for `list-group-horizontal-{sm..xxl}`.",
+     "engine": "astra",
+     "order": 2
+    },
+    {
+     "id": "drag-4",
+     "title": "Paint the sortable in the styles layer",
+     "owned": [
+      "/home/user/veneer/src/styles/_mixins.scss",
+      "/home/user/veneer/src/styles/surfaces/_drag.scss",
+      "/home/user/veneer/src/styles/surfaces/_index.scss",
+      "/home/user/veneer/src/styles/composables/_drag.scss",
+      "/home/user/veneer/src/styles/composables/_index.scss"
+     ],
+     "contract": [
+      "Role: styles writer. Depends on drag-3, and on the user's answer to the question that opens the styles chunk and the showcase sheet. Loads nothing from src/bootstrap: every Bootstrap value arrives as a `var(--bs-*)` reference, so this unit needs no map and no gate change.",
+      "_mixins.scss gains `transition($value...)`, which emits `transition` and, inside `@media (prefers-reduced-motion: reduce)`, `transition: none`. It also gains `reduced-motion`, which wraps `@content` in that media query. Both emit no top-level CSS.",
+      "surfaces/_drag.scss writes `@layer surfaces` once. On a handle inside a host item (`[data-vn-drag] > [draggable='true']` and `[data-vn-drag] > * [draggable='true']`), it sets `cursor: grab`, `touch-action: none`, and `user-select: none`. Inside an `[aria-disabled='true']` item, the cursor reverts to `default`.",
+      "composables/_drag.scss writes `@layer composables` once. It declares component-scoped `--vn-drag-size: calc(var(--bs-border-width) * 2)` and `--vn-drag-opacity` on `[data-vn-drag]`. The source `[data-vn-drag] > [data-vn-dragging]` takes `opacity: var(--vn-drag-opacity)` through the `transition` mixin.",
+      "Indicator: `[data-vn-drag] > [data-vn-insert]` takes `position: relative`. Its `::after` (never `::before`, which `.list-group-numbered` owns) is absolutely positioned with `pointer-events: none`, sits above `.list-group-item.active`'s `z-index: 2`, and draws the line as a border of width `--vn-drag-size` on the named edge. One `@each` over the four physical edges generates the edge rules from one partial-local map (edge to cross-axis insets). The insets are physical.",
+      "Indicator color resolves on the item: `var(--vn-drag-color, var(--bs-list-group-active-bg, var(--bs-primary)))`. Bootstrap's contextual `list-group-item-{color}` variants then retint the line through the tokens they already set, with no per-color rule. On `.active`, the line uses `--bs-list-group-active-color`.",
+      "Over state: `[data-vn-drag][data-vn-over]` takes a `color-mix(in oklab, \u2026, transparent)` tint of the same color. An empty host (`:not(:has(> *))`) adds a dashed outline of `--vn-drag-size`.",
+      "Under `@media (forced-colors: active)`, the line and the outline use `Highlight`. Nothing uses box-shadow. The partial writes no literal color.",
+      "Showcase, in the same change if the user rules yes: app/browser loads the built ./styles sheet beside ./bootstrap, deletes the MutationObserver adapter (Showcase.ts:135-152), and the journey reads geometry, not classes. Guide \u00a7 Sortable list replaces 'no stylesheet' with the partials' contract.",
+      "Tension: whether the sortable needs a theme-color modifier (`.drag-{color}` generated from the theme-color map). This design omits it. No consumer exists, and the contextual tokens already vary the line. If the subjective lane adds it, it waits on the map ruling."
+     ],
+     "proofs": [
+      "tests/src/styles/surfaces/drag.test.ts and tests/src/styles/composables/drag.test.ts under Chromium 141 and 153, with the built ./bootstrap and ./styles sheets adopted. The variation matrix is generated from `CLASS_NAMES.bootstrap`: plain, flush, and numbered list groups, `list-group-horizontal`, each `list-group-horizontal-{bp}` at widths on both sides of its `$breakpoints` boundary, each contextual `list-group-item-{color}`, `.active`, and `.disabled`, in light and dark `data-bs-theme`.",
+      "Per matrix cell, with `data-vn-insert` set to each edge directly (the attribute is the contract): the `::after` border width on the named edge equals `--vn-drag-size` and is 0 on the others; its color equals the item's resolved active background, or the active color on `.active`; the item's `getBoundingClientRect` is unchanged with the attribute on; the numbered `::before` content is unchanged; and the last item keeps Bootstrap's bottom radii.",
+      "Under emulated `prefers-reduced-motion: reduce`, the source's computed `transition-duration` is `0s`. Under emulated `forced-colors: active`, the line keeps a non-zero border width. On the handle, the computed `cursor` is `grab` and `touch-action` is `none`. Every block of each partial sits in its folder's layer, read through `readPlacement`. An author `opacity-25` on an item still wins, which pins the documented direction.",
+      "Controls: moving the composables rule into `@layer bootstrap` reddens placement; drawing the line with box-shadow reddens the forced-colors case; drawing it with `border-top` on the item reddens the geometry case; `::before` reddens the numbered case.",
+      "Project gates: `npm run test:src:styles`, `npm run test:src:bootstrap` with the digest and link 3 unchanged (the seal), and `npm run test:app:browser`."
+     ],
+     "styles": "Two partials, because the folder law splits one component by job. surfaces/_drag.scss holds the attribute API the markup carries before any script runs: grab cursor, touch-action, and user-select on the handle. composables/_drag.scss holds the chrome the engine's state attributes drive: dim, edge line, and over tint. Each writes its folder's layer, which follows `bootstrap` and beats its normal declarations without `!important`. The partials read Bootstrap through `--bs-list-group-*`, `--bs-primary`, and `--bs-border-width`, and loop once over the four edges.",
+     "engine": "opus",
+     "order": 3
+    },
+    {
+     "id": "drag-5",
+     "title": "Move by command buttons (single pointer, no dragging)",
+     "owned": [
+      "/home/user/veneer/src/browser/drags/types.ts",
+      "/home/user/veneer/src/browser/drags/plugins.ts",
+      "/home/user/veneer/src/browser/drags/Drag.ts",
+      "/home/user/veneer/src/browser/drags/constants.ts"
+     ],
+     "contract": [
+      "Role: feature writer. Depends on drag-2 and drag-3 (the disabled refusal).",
+      "Types first: `move` detail `by` gains `'command'`. The detail stays otherwise unchanged.",
+      "plugins.ts adds a `click` route on `button[command][commandfor]`, following the copier precedent (/home/user/veneer/src/browser/copiers/plugins.ts:21-32). The host is `commandForElement` when that element is a `[data-vn-drag]` host. The item is the button's ancestor that is a direct child of that host. A button outside every item does nothing.",
+      "Commands are `--previous`, `--next`, `--first`, and `--last`, in DOM order with no axis or reversal mapping. Each admitted command emits start, then the cancelable move with `by: 'command'`, then end. It writes the live text and keeps focus on the button through `moveBefore`.",
+      "An out-of-range command emits nothing. An `aria-disabled` item refuses. A prevented start or move leaves the DOM unchanged. Escape and the existing Alt+Arrow keys are unchanged. No Alt+Home or Alt+End is added, because browsers bind those chords.",
+      "Showcase and guide: each sortable specimen row gains a visible move-up and move-down button pair. The guide documents the commands under \u00a7 Sortable list as the WCAG 2.5.7 path.",
+      "Tension for the subjective lane: the command names, and whether the live text names the item."
+     ],
+     "proofs": [
+      "tests/src/browser/drags/plugins.test.ts under Chromium 141 and 153 with real clicks: each command's order, detail, and live text; focus retained on the button; the first item ignoring `--previous` and the last ignoring `--last` with no events; prevention; a button outside an item does nothing; a `commandfor` naming a non-host does nothing; no listener remains after destroy (CDP listener counts).",
+      "tests/app/browser/integration.test.ts journey: reorder the specimen by clicking only.",
+      "Control: deleting the route reddens every command case."
+     ],
+     "styles": "None. The buttons are Bootstrap `btn` markup.",
+     "engine": "astra",
+     "order": 4
+    },
+    {
+     "id": "drag-6",
+     "title": "Transfer between hosts of one group",
+     "owned": [
+      "/home/user/veneer/src/browser/drags/types.ts",
+      "/home/user/veneer/src/browser/drags/Drag.ts",
+      "/home/user/veneer/src/browser/drags/plugins.ts",
+      "/home/user/veneer/src/browser/drags/helpers.ts",
+      "/home/user/veneer/src/browser/drags/constants.ts",
+      "/home/user/veneer/src/styles/composables/_drag.scss"
+     ],
+     "contract": [
+      "Role: feature writer. Depends on drag-3 (host-level slots and `data-vn-over`), drag-4 (empty-host paint), and drag-5 (commands).",
+      "Types first: `move` detail gains `source: HTMLElement`, the host the item leaves, which equals the event's host for an in-list move. `from` indexes the source and `to` indexes the target.",
+      "Hosts whose `data-vn-drag` values are equal and non-empty form a group. An empty value accepts only its own items, as in Drag 1.",
+      "No shared session and no payload: the target controller derives the dragged item from the document's `[data-vn-dragging]` element whose parent host shares its non-empty group value. `dataTransfer` still carries no data. External drags stay refused.",
+      "`move` is dispatched, cancelable, on the target host. `start` and `end` stay on the source host. The target writes its own live text.",
+      "Keyboard: Alt+Arrow along the axis perpendicular to the host's list axis moves the item to the previous or next group host in document order, at the same index clamped to the target's length. Focus stays on the handle. Ends of the group emit nothing. This resolves the addendum's collision with the row-axis keys.",
+      "Commands: two host-to-host commands for the same moves (names for the subjective lane; proposed `--backward` and `--forward`), routed like drag-5.",
+      "Specimen and guide: a two-column Native board specimen; \u00a7 Sortable list documents groups, `source`, and the perpendicular keys.",
+      "Tension: the addendum has both hosts receive `end`; this design keeps `end` on the session owner and gives the target `move` only. Tension: whether the target's live text names the target list from its `aria-label`."
+     ],
+     "proofs": [
+      "tests/src/browser/drags/plugins.test.ts under Chromium 141 and 153 with real CDP drags across two group hosts: order in both hosts, the detail with `source`, `start` and `end` on the source, `move` on the target, prevention leaving both hosts unchanged, a drop on an empty group host, hosts with different values or an empty value refusing, external text and files refused, no `text/plain` payload, and the perpendicular Alt+Arrow and both commands.",
+      "Controls: deriving the item without the group check reddens the different-value case; dispatching `move` on the source reddens the target-listener case."
+     ],
+     "styles": "composables/_drag.scss gains nothing beyond drag-4's empty-host outline unless the board specimen shows a gap. Any rule added stays in `@layer composables` and reads the same tokens.",
+     "engine": "opus",
+     "order": 5
+    },
+    {
+     "id": "drag-7",
+     "title": "Drag by touch and pen through pointer events",
+     "owned": [
+      "/home/user/veneer/src/browser/drags/Drag.ts",
+      "/home/user/veneer/src/browser/drags/plugins.ts",
+      "/home/user/veneer/src/browser/drags/helpers.ts",
+      "/home/user/veneer/src/browser/drags/constants.ts",
+      "/home/user/veneer/src/browser/drags/types.ts"
+     ],
+     "contract": [
+      "Role: feature writer. Depends on drag-3 (the pure slot helper) and drag-4 (`touch-action: none` on the handle). Mouse keeps native drag and drop.",
+      "For a `pointerdown` whose `pointerType` is `touch` or `pen` on an admitted handle (same refusals as dragstart, including `aria-disabled`), the controller arms a session. It captures the pointer on the host, not on the item, so a move cannot drop the capture.",
+      "The session starts when movement exceeds a slop named in constants.ts. The slop must keep a tap on a grip button a click. At start, the controller emits start (cancelable) and writes `data-vn-dragging`.",
+      "Each `pointermove` hit-tests through the slot helper and writes `data-vn-insert` and `data-vn-over` as the native path does. `pointerup` relocates with `by: 'pointer'`. `pointercancel`, `lostpointercapture` before `pointerup`, Escape, and destroy end with `moved:false` and release the capture.",
+      "A `dragstart` that arrives while a touch session is armed is prevented, so one gesture never runs both engines.",
+      "Auto-scroll: while the pointer sits within an edge zone of the nearest scrollable ancestor or the viewport, each `pointermove` scrolls that container by a step proportional to the depth into the zone. No timer or animation-frame loop runs; this follows the no-polling law.",
+      "Guide: \u00a7 Sortable list states that the touch path needs `touch-action: none` on the handle from ./styles or from the author, and records Android behavior as unestablished unless the user rules a device proof.",
+      "Tension: scrolling advances only while the finger moves, which an animation-frame loop would avoid but the no-polling law forbids. Tension: the source stays in place with no floating preview."
+     ],
+     "proofs": [
+      "tests/src/browser/drags/Drag.test.ts under Chromium 141 and 153 with a touch-enabled context and CDP `Input.dispatchTouchEvent`: reorder by touch with start, move, and end; a tap under the slop still clicks the grip and moves nothing; touchCancel ends with `moved:false`; destroy mid-gesture releases the capture and removes the attributes; `window.scrollY` stays unchanged during a drag on the handle; an edge-zone drag scrolls a scrollable host; mouse still takes the native path.",
+      "Controls: capturing on the item and then moving it reddens the capture case; omitting the dragstart suppression reddens the one-engine case."
+     ],
+     "styles": "Uses drag-4's surfaces rule (`touch-action: none` and `user-select: none` on the handle). Adds no rule.",
+     "engine": "opus",
+     "order": 6
+    }
+   ],
+   "sass_doctrine": [
+    {
+     "rule": "Keep the Bootstrap face sealed. A veneer style unit changes no byte of the bootstrap sheet and edits no partial under src/bootstrap.",
+     "mechanism": "The conformance digest (tests/fixtures/bootstrap/pass.json, BOOTSTRAP_DIGEST in tests/setupServer.ts:90-91), link 1, and link 3 run unchanged in every styles unit's gate and read as the seal. A styles unit that turns any of them red has broken the seal.",
+     "home": "ROADMAP.md \u00a7 Style centralization"
+    },
+    {
+     "rule": "Reach Bootstrap from src/styles through `var(--bs-*)` references by default. When a variant set needs a Bootstrap key list, reach it only through `@use` of a CSS-free Bootstrap module, never by loading `tokens`, `utilities`, `reset`, `index`, or a components partial (each emits CSS), and never through a package-specifier load.",
+     "mechanism": "The styles-face load gate (tests/conformance.test.ts:672-680) moves from refusing every crossing to an allowlist: src/styles may load only the CSS-free Bootstrap data module, and src/bootstrap still loads nothing from src/styles. The src:styles placement proof catches any `bootstrap`-layer block or unlayered declaration that a wrong load leaks. Until the user rules on the data module, the allowlist is empty and the gate is unchanged.",
+     "home": "The scaffold plan's rule file (.claude/rules/styles.md, the cross-face load clause beside the extension-face exception), with ROADMAP.md \u00a7 Style centralization pointing at it"
+    },
+    {
+     "rule": "Never call veneer's Bootstrap emitters (`layer`, `utility`, `unlayer`) from src/styles. They write the `bootstrap` layer or `!important` outside every layer under the `--bs-` prefix.",
+     "mechanism": "The src:styles placement proof (tests/src/styles/index.test.ts:8-32) refuses a `bootstrap` block and any declaration whose layer is undefined.",
+     "home": "Veneer guide (guides/veneer.md, Styles section)"
+    },
+    {
+     "rule": "Generate a variant set with one `@each` over the Bootstrap key list it varies over. Never list variant keys by hand. Where a Bootstrap component already varies a token per variant (the `--bs-list-group-*` tokens each `list-group-item-{color}` sets), read that token in one rule and generate nothing. Where geometry the engine measures decides the variant (a list axis, `list-group-horizontal-{bp}`), the engine writes the resolved state and the partial generates no per-breakpoint rule.",
+     "mechanism": "Each partial's proof builds its variation matrix from `CLASS_NAMES.bootstrap` (contextual, active, disabled, flush, numbered, horizontal and each responsive horizontal at both sides of its boundary, light and dark) and asserts computed results per cell, so a missed variant reddens.",
+     "home": "Veneer guide (guides/veneer.md, Styles section); the matrix pattern in ROADMAP.md \u00a7 Proofs, src:styles row"
+    },
+    {
+     "rule": "Place each rule in the folder whose job it does, and split one component across folders by job, with one same-named partial per folder. An attribute API present in markup before script runs goes in `surfaces/`. Chrome that an engine-written state attribute or class drives goes in `composables/`. A static class skin goes in `components/`, and a class that only sets a token goes in `modifiers/`. Each partial writes its folder's layer once and no other.",
+     "mechanism": "A src:styles case reads every block and placement of the built sheet. A per-partial case compiles each partial through a fixture and asserts that all its blocks sit in its folder's layer, with a planted foreign layer as the control.",
+     "home": "ROADMAP.md \u00a7 Style centralization (the folder list at :100-105)"
+    },
+    {
+     "rule": "A native module's engine-written state is a `data-vn-*` attribute, and its partial keys on that attribute scoped under the module's host attribute. The scaffold rule's 'stable class names' contract applies to classes a composable writes, not to a native module's attributes.",
+     "mechanism": "The partial's proof sets the attribute directly and reads computed style, so the attribute is the pinned contract. The module's proofs pin the module writing it.",
+     "home": "The scaffold plan's rule file (.claude/rules/styles.md:108 gains the attribute clause)"
+    },
+    {
+     "rule": "A veneer rule beats Bootstrap's normal declarations by layer order alone, never by `!important` or added specificity. It never sets, on the same element, a property a Bootstrap `!important` utility owns (`opacity-*` excepted only where the yield is documented). State chrome that must not move layout is drawn on `::after` with borders, never on the element's own border and never with box-shadow.",
+     "mechanism": "Chromium geometry cases assert an unchanged `getBoundingClientRect` with the state on, and an author-utility case pins the documented yield. A forced-colors emulation case refuses box-shadow chrome.",
+     "home": "Veneer guide (guides/veneer.md, Styles section, beside the override table at :1499-1502)"
+    },
+    {
+     "rule": "Colors come from `var(--bs-*)` or `color-mix()` over them. Sizes come from Bootstrap tokens (`--bs-border-width`). Component-scoped `--vn-<component>-*` properties sit on the component's host selector, not in `_tokens.scss`, until the styles chunk declares its first global token.",
+     "mechanism": "The themes proof (tests/src/styles/themes/index.test.ts:36-38) stays green because `_tokens.scss` keeps only the order statement. The `TOKEN_NAMES.veneer` two-way pin (the `it.todo` at tests/src/styles/index.test.ts:38-40) admits each component token when the chunk opens.",
+     "home": "ROADMAP.md \u00a7 Published faces and the styles chunk line of \u00a7 Sequence"
+    },
+    {
+     "rule": "Every `transition` goes through the `transition` mixin, and every animation through `reduced-motion`, both in src/styles/_mixins.scss.",
+     "mechanism": "A Chromium case under emulated `prefers-reduced-motion: reduce` reads a computed `transition-duration` of `0s` on each transitioned state.",
+     "home": "ROADMAP.md \u00a7 Style centralization, `_mixins.scss` kind-file entry (the rule itself stays in .claude/rules/styles.md:70-71)"
+    },
+    {
+     "rule": "The src:styles placement proof reads every at-rule, not only style-rule declarations: a `@keyframes`, `@property`, or `@font-face` sits inside an owned layer, and no owned layer nests a foreign layer.",
+     "mechanism": "tests/setupStyles.ts gains the at-rule placement reader with its proof in tests/setupStyles.test.ts. src:styles adds planted top-level keyframes and nested-layer controls, mirroring the src:bootstrap keyframes control (ROADMAP.md:78).",
+     "home": "ROADMAP.md \u00a7 Proofs, src:styles row"
+    }
+   ],
+   "rejected": [
+    {
+     "lesson": "Elements' input model of HTML drag and drop only, with no pointer path (createDrag.ts:27-31, 435-449).",
+     "why": "Touch on Android is unestablished for native drag and drop, and HTML fires `pointercancel` at the source after dragstart. Veneer keeps native drag and drop for mouse and adds a separate touch and pen path (drag-7). Source: elements-drag input model; platform 'pointer stream ends at dragstart'."
+    },
+    {
+     "lesson": "Replacing native drag and drop with pointer events for every pointer type.",
+     "why": "That path discards the native autoscroll, the system drag image, and the Drag 1 proofs under Chromium 141 and 153. It would also need an animation-frame autoscroll loop, which conflicts with the no-polling law. Source: veneer-drags verdict correction 7; platform matrix."
+    },
+    {
+     "lesson": "`aria-grabbed` and `aria-dropeffect`.",
+     "why": "ARIA 1.1 marks both deprecated, and authors are advised not to use them in new content. The verdict says to re-cite against ARIA 1.2. Veneer keeps live-region confirmation, as the APG rearrangeable example does. Source: platform 'ARIA 1.1' facts and verdict correction 7."
+    },
+    {
+     "lesson": "The APG listbox role with `aria-activedescendant` for the sortable.",
+     "why": "Listbox options cannot contain interactive content, and the veneer grip is a button. The host stays a list (role=list, or a `ul` after drag-2). Source: platform 'APG: listbox pattern constraints'; /home/user/veneer/app/browser/sections/sortable-list.html."
+    },
+    {
+     "lesson": "Elements' `setData('text/plain', index)` payload and a plugin-held session record for cross-list drops.",
+     "why": "A text payload leaks to external drop targets, and Drag 1's proof pins that no payload is written. The target derives the item from the source's `[data-vn-dragging]` attribute under the derive-state law, so the plugin stays stateless. Source: elements-drag 'cross-container'; veneer-drags plugins.test.ts pins; addendum:88."
+    },
+    {
+     "lesson": "Elements' non-cancelable events and hand-wired `on` hooks.",
+     "why": "Veneer keeps a cancelable `start` and `move` and binds hooks through `bindEventMap` from one event registry (Drag.ts:32). Elements' hand-listed hooks left `on.select` and `on.clear` unwired. Source: elements-drag events and verdict missing item 1."
+    },
+    {
+     "lesson": "Elements' `syncRows`, which rewrites `draggable` and row classes with a microtask resync.",
+     "why": "Veneer leaves `draggable` to the author, writes state as attributes only on change, and runs no resync. A resync would be a superfluous wrapper over markup the author owns. Source: elements-drag 'state sync' and verdict correction 2."
+    },
+    {
+     "lesson": "Elements' selection model, multi-row drag, and `into` nesting.",
+     "why": "No first consumer exists, and the addendum holds them back. The minimal-public-API law gates creation on a consumer. Source: elements-drag 'state machine'; addendum:114-115, 139."
+    },
+    {
+     "lesson": "Elements' `_drag.scss` as written.",
+     "why": "Its global `[draggable='true']` cursor leaks outside sortable hosts. It dims `.dragging` only on `[draggable='true']`, so handle mode never dims. Its line is vertical-only (`inset-inline`), and it uses literal sizes with no forced-colors or reduced-motion rule. Veneer scopes under `[data-vn-drag]`, draws the physical edge, and reads tokens. Source: elements-drag styles facts and verdict missing item 3."
+    },
+    {
+     "lesson": "Elements' `createPointer` as the basis of the touch path.",
+     "why": "It registers no `lostpointercapture`, sets no `touch-action`, and reports `pointercancel` through the same end as `pointerup`. Drag-7 captures on the host and separates commit from cancel. Source: platform verdict missing item 9."
+    },
+    {
+     "lesson": "FLIP or View Transitions reorder animation, and live DOM reordering during the drag.",
+     "why": "A view-transition callback runs the move asynchronously, which breaks the synchronous cancelable `move`, the announcement, and focus. Live reordering would emit a `move` per hover. No source settles motion under reduced motion. Source: platform gap 'FLIP transitions or View Transitions'."
+    },
+    {
+     "lesson": "Upstream `pkg:bootstrap/scss` maps and mixins in the styles face.",
+     "why": "ROADMAP.md:111 states that published face sheets do not import official framework packages. Bootstrap 5.3.8's Sass also depends on the global scope of `@import`. Source: own read of ROADMAP.md:111 and package.json:139."
+    },
+    {
+     "lesson": "The `pkg:@orkestrel/veneer/bootstrap/scss` package-specifier load.",
+     "why": "It evades the load gate through a scanner loophole, the barrel forwards only `$layered`, and loading the Bootstrap barrel emits the whole bootstrap sheet. Source: sass-surface 'Boundary scanner scope' and 'Published Bootstrap Sass entry'."
+    },
+    {
+     "lesson": "Reusing Bootstrap's `utility` emitter for veneer variants.",
+     "why": "It lifts property declarations as `!important` outside every layer under `--bs-`, which the src:styles placement proof refuses. Source: sass-surface verdict corrections 1-2."
+    },
+    {
+     "lesson": "The Drag 1 brief's `@layer reset` fence and the showcase's MutationObserver utility adapter.",
+     "why": "`reset` precedes `bootstrap`, so reboot's cursor beats it (attempt2-stop.md:64). The adapter paints a four-sided frame through `!important` utilities. Drag-4 replaces both with layered partials. Source: veneer-drags recorded deviations and verdict missing items 3-4."
+    }
+   ],
+   "questions": [
+    "Sass maps for variants: veneer's Bootstrap Sass has no `$theme-colors`, `$grid-breakpoints`, or `$spacers`. Its only maps sit in `_utilities.scss`, which emits the whole utilities sheet on any load. May src/bootstrap gain one CSS-free data partial holding Bootstrap 5.3.8's maps under their upstream names, with `var(--bs-*)` values pinned to the upstream keys, with no change to the bootstrap sheet's digest, and with the styles load gate admitting that one module? I recommend yes. The sortable (drag-4) does not need it, because it reads Bootstrap's tokens.",
+    "Styles chunk and showcase sheet: drag-4 is the first rule in src/styles. Does it open the styles chunk (ROADMAP.md:140, where you rule D-1 to D-11 and I-1 to I-4)? And may the showcase load the ./styles sheet beside ./bootstrap, reversing the 'no extra stylesheet' line at ROADMAP.md:138 and the Drag 1 fence refusal? I recommend yes to both, with the drag tokens kept component-scoped.",
+    "Touch acceptance: the proof browsers are desktop Chromium 141 and 153, so drag-7 can prove touch only through emulated touch input. Do you accept emulated touch as the touch path's proof, with real Android behavior recorded as unestablished? Or do you want a device proof before drag-7 lands?"
+   ]
+  },
+  {
+   "path": "/home/user/.wave/scaffold-main-wt/.orkestrel/veneer/native/drag-2026-10-08/verdict.md",
+   "findings": 20,
+   "units": 6
+  }
+ ]
+}
