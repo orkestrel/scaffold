@@ -197,3 +197,19 @@ Release-chain notes, continued:
 - `@orkestrel/server`: the 413 drain case asserted that writing the rest of a 4 MB body returns `false`; this Windows host's loopback send buffer takes the whole write, at the pre-re-pin commit `fe0d85c` as well (3 of 3, read in a scratch worktree), so the case waits for `drain` only when the write buffered and keeps its server claim (`c0eb4fb`).
 - `@orkestrel/scaffold` 0.0.96: the CLI fixture's planned test line moved to `^0.0.25` with the re-pin.
 - `@orkestrel/mcp`: its first visit missed one case beside worker's gates and passed whole alone (1,539). Release-mode distribution then failed the three page compositions: the composition and the consumer overrides pinned agent `^0.0.23` and the fleet's earlier releases, so the page ran agent 0.0.23 (a JSON-encoded string result, three relay requests after a refused credential). The 2026-10-07 move to `'receipt-1'` had passed only the default mode, which skips those browser cases. Every pin moved to the served release (`6ed6509`), the page cases pass 8 of 8, and `prepublishOnly` passed (distribution 19 with 4 skipped).
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 6 | L4 | `@orkestrel/brief`, `mcp`, `middleware`, `program`, `worker`, `workflow` | 0.0.10, 0.0.37, 0.0.23, 0.0.15, 0.0.16, 0.0.21 | 0.0.11, 0.0.38, 0.0.24, 0.0.16, 0.0.17, 0.0.22 | bump: ranges moved | `2fa209c`, `7706492`, `7c8b83a`, `31a3214`, `9323028`, `a4efd33` |
+| 7 | L5 | `@orkestrel/agent` | 0.0.28 | 0.0.29 | bump: ranges moved; built from agent `main`, which carries none of the agent session's branch work | `2c38d00` |
+| 7 | L5 | `@orkestrel/browser` | 0.0.27 | 0.0.28 | bump: ranges moved; the HAR creator stamp follows the version | `e887416` |
+| 7 | L5 | `@orkestrel/probe` | 0.0.22 | 0.0.23 | bump: ranges moved (mcp `^0.0.38`, pool `^0.0.17`, timeout, tool) | `10ffee3` |
+| 8 | L6 | `@orkestrel/ollama` | 0.0.21 | 0.0.22 | bump: ranges moved (agent `^0.0.29`, budget, ndjson, tool) | `5e3cdbf` |
+| 8 | L6 | `@orkestrel/toolbox` | 0.0.17 | 0.0.18 | bump: agent `^0.0.26` to `^0.0.29` and the fleet's ranges | `93680f3` |
+
+Codes 6 to 8 are 828286, 996788, and 077715; every row was confirmed against the registry. After code 8, `fleet-pins.ts` reads every runtime and peer range in the fleet on its latest release; only development pins trail (probe, scaffold, test, browser), because those packages republished in later layers.
+
+Release-chain notes, layers L5 and L6:
+- Agent 0.0.29 takes the version the agent session's plan proposed for its selection release, which therefore publishes as 0.0.30 or later; its branch merges agent `main` (the re-pin and the overwrite) before that release.
+- Browser: the self-pin sweep found the HAR creator stamp (`BROWSER_HAR_CREATOR.version`) at 0.0.27; it moved to 0.0.28 with the bump. Windows chain: format, lint, check, build, `npm test` (2,142 source), default-mode distribution (14 passed, 9 host-bound skips), and `test:service` whole (257 passed, 6 skipped).
+- Ollama: the first visit missed one case whose excerpt framed `tests/setupStore.test.ts:275` (the journey proof that starts a real page browser, the first browser launch after the visit's install); three whole `npm test` reruns passed (129, 280, 120, 228, 42, 17), and the second visit's `prepublishOnly` passed with the live service suite whole (15 files, 76 passed: the 2B store tasks with thinking and both judge models).
