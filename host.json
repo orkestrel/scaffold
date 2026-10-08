@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "3cbee33fb3708221e9228a694ce6dd3f00ecbcbf2fd6764f8a7c70a2db247c77"
+			"digest": "92391c5adfa7652ce6c4b34b4b78176f152d0c4398f28dc7da04797b64e2e973"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1144,7 +1144,7 @@
 			"storage": "scripts/browsers.sh",
 			"destination": "scripts/browsers.sh",
 			"executable": true,
-			"digest": "5b012656f2b2ea980b36755a6ab7db0b157a52c5d74b10a0c9582b24818cc9fa"
+			"digest": "1f38c4b95681fe2415bfa5b44641859d80df866551733cb3d3b0e30ce41ff093"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -1168,7 +1168,7 @@
 			"storage": "scripts/npm.sh",
 			"destination": "scripts/npm.sh",
 			"executable": true,
-			"digest": "b2aee0e5007e26c9a8ca6aff2611d5cc493364db0bb7d5722a8abf54d4931e5c"
+			"digest": "5f9e12952eeddfd9c40d42710c0eabbbe5c9ee55d882f24e0015f419f0fba137"
 		},
 		{
 			"storage": "scripts/ollama.sh",
@@ -2120,5 +2120,5 @@
 			]
 		}
 	],
-	"digest": "cfd3a87022c53d2d02c46434517bc2b90d421c3ed52eb45ffc8db8b378abc645"
+	"digest": "ce09377c0924a0c47243e4558f2afd3784c71a9a69ff20a481dfc87331921452"
 }

@@ -390,6 +390,12 @@ export interface TestNpm {
 	readonly environment: NodeJS.ProcessEnv
 }
 
+/** Carries the exit status of a session hook run and what it printed, trimmed. */
+export interface TestHookResult {
+	readonly status: number | null
+	readonly output: string
+}
+
 /**
  * Describes how this host launches npm, as the spawn options a proof hands a child.
  *
@@ -645,18 +651,24 @@ export function readNpmFloor(manifest: unknown): string {
  * @param environment - The environment overrides a spawn takes. Default: this process's own.
  * @returns The exact version the entry {@link resolveNpmEntry} selects reports for its own
  * `--version`.
- * @throws When the environment resolves no npm entry, or when the run fails, carrying what
- * it wrote to standard error.
+ * @throws Thrown when the environment resolves no npm entry, or when the run fails, carrying
+ * what it wrote to standard error.
  *
  * @remarks
- * The reading runs the entry {@link spawnNpm} launches, through Node and never through a
- * shell, so a version admitted here is the version every spawn under the same environment
- * runs. The version comes from the entry rather than from a manifest beside it, because the
- * running npm is what a `devEngines` guard reads.
+ * The reading merges the overrides over this process's environment and runs the entry
+ * {@link spawnNpm} launches, through Node and never through a shell, so a version admitted
+ * here is the version every spawn under the same overrides runs. The version comes from the
+ * entry rather than from a manifest beside it, because the running npm is what a
+ * `devEngines` guard reads.
  */
 export function readNpmVersion(environment: NodeJS.ProcessEnv = process.env): string {
+	const merged = mergeEnvironment(false, environment)
 	const read = executeSync(
-		{ file: process.execPath, arguments: [resolveNpmEntry(environment), '--version'], environment },
+		{
+			file: process.execPath,
+			arguments: [resolveNpmEntry(merged), '--version'],
+			environment: merged,
+		},
 		{ workspace: WORKSPACE_ROOT, strict: false },
 	)
 	if (read.failed) {
@@ -692,8 +704,8 @@ export function spawnNpm(
  *
  * @param environment - The environment a spawn takes. Default: this process's own.
  * @returns The `npm-cli.js` file `npm_execpath` names, else the one beside the running
- * Node, else the real file behind the `npm` executable `PATH` resolves.
- * @throws When none of those candidates is an `npm-cli.js` file.
+ * Node, else the real file behind the `npm` that {@link resolveTool} reaches on `PATH`.
+ * @throws Thrown when none of those candidates is an `npm-cli.js` file.
  *
  * @remarks
  * npm names its own entry in `npm_execpath` for every script it runs, so a proof launched
@@ -708,11 +720,11 @@ export function spawnNpm(
  * ```
  */
 export function resolveNpmEntry(environment: NodeJS.ProcessEnv = process.env): string {
-	const executable = resolveExecutable('npm', { environment })
+	const tool = resolveTool('npm', environment)
 	const entry = [
 		readVariable(environment, 'npm_execpath'),
 		join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
-		executable === undefined ? undefined : realpathSync(executable),
+		tool === undefined ? undefined : realpathSync(tool),
 	].find(
 		(candidate) => candidate !== undefined && candidate.endsWith('npm-cli.js') && isFile(candidate),
 	)
@@ -743,10 +755,10 @@ export function resolveNpmEntry(environment: NodeJS.ProcessEnv = process.env): s
  * conforming host installs nothing and reaches no registry.
  */
 export function provisionNpm(options: TestNpmOptions): TestNpm {
-	const base = options.environment ?? process.env
+	const base = mergeEnvironment(false, options.environment)
 	const ambient = readNpmVersion(base)
 	if (compareVersions(ambient, options.floor) >= 0) {
-		return { version: ambient, environment: mergeEnvironment(false, base) }
+		return { version: ambient, environment: base }
 	}
 	const bin = join(options.prefix, 'node_modules', '.bin')
 	const provisioned = executeSync(
@@ -3354,6 +3366,33 @@ export function resolveTool(
 		if (isFile(candidate)) return candidate
 	}
 	return undefined
+}
+
+/**
+ * Runs the repository's npm floor hook against a project path through bash.
+ *
+ * @param project - The project path the hook reads as `CLAUDE_PROJECT_DIR`.
+ * @param remote - The `CLAUDE_CODE_REMOTE` marker, or `undefined` to run without one.
+ * @returns The hook's exit status and its standard output and error, joined and trimmed.
+ * @throws Thrown when {@link resolveTool} reaches no `bash` on this host.
+ *
+ * @remarks
+ * The run inherits this process's environment, so the hook reads the ambient npm; a case
+ * declares a floor that npm meets, or none, and the hook installs nothing.
+ */
+export function executeNpmHook(project: string, remote: string | undefined): TestHookResult {
+	const bash = resolveTool('bash')
+	if (bash === undefined) throw new Error('This host reaches no bash for scripts/npm.sh')
+	const { CLAUDE_CODE_REMOTE: _remote, ...inherited } = process.env
+	const result = spawnSync(bash, [join(WORKSPACE_ROOT, 'scripts', 'npm.sh')], {
+		encoding: 'utf8',
+		env:
+			remote === undefined
+				? { ...inherited, CLAUDE_PROJECT_DIR: project }
+				: { ...inherited, CLAUDE_PROJECT_DIR: project, CLAUDE_CODE_REMOTE: remote },
+		windowsHide: true,
+	})
+	return { status: result.status, output: `${result.stdout}${result.stderr}`.trim() }
 }
 
 /**

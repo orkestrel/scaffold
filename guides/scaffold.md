@@ -1863,9 +1863,8 @@ leaf and its proof, and the byte-identical root dotfiles. The session-start hook
 split by job. The bench probe reports whether a bench CLI resolves. In a remote session one command
 runs three hooks in order: the npm hook installs the newest npm in the major of the floor the
 workspace's `devEngines` record declares when the container's npm is older, the dependency hook
-installs the lockfile's closure, and
-the browser hook installs the Chromium builds the `playwright-core` package pins when the container's
-browser store lacks them.
+installs the lockfile's closure, and the browser hook installs the Chromium builds the
+`playwright-core` package pins when the container's browser store lacks them.
 The Ollama hook invokes `scripts/ollama.sh` only when `CLAUDE_CODE_REMOTE=true`; direct invocation
 remains available for live-service setup. Claude Code Cloud is Linux and has bash: SessionStart
 runs that POSIX script and never a Windows wrapper. What wires a bench stays in the canon, and a

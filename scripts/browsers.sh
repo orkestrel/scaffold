@@ -24,7 +24,12 @@ if [ ! -f "$CLI" ]; then
   exit 0
 fi
 
-BROWSERS_LOG="$(mktemp -t orkestrel-browsers.XXXXXX)" || {
+if ! TEMPORARY="$(node -p 'require("node:os").tmpdir()')" || [ -z "$TEMPORARY" ]; then
+  echo "browsers.sh: could not read the temporary directory — skipped."
+  exit 0
+fi
+
+BROWSERS_LOG="$(mktemp -p "$TEMPORARY" orkestrel-browsers.XXXXXX)" || {
   echo "browsers.sh: could not create a private install log — skipped."
   exit 0
 }
