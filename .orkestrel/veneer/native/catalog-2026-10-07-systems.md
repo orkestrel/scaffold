@@ -159,6 +159,10 @@ The following questions close the round, each with one recommendation.
 3. **Where does the generic browser binding live: in Veneer modules over Bootstrap markup, or in the packages' planned `src/browser` (`form.md:1754`; `table.md:1506`)?** Recommend Veneer first for the Bootstrap-specific projection. Move host-agnostic leaves (`aria-sort` from `sort.order`, row order from `view`) into the package after a second consumer.
 4. **Do the borderline exclusions flip: `meter`, the file drop zone, EyeDropper, Notifications, Custom Highlight for filter matches, and `showPicker()` on Bootstrap-styled inputs?** Recommend keeping all of them excluded (`catalog:118`, `:157`).
 
+### Rulings of 2026-10-08
+
+The user ruled on all four questions (`stage-b/user-rulings-2026-10-06.md` § Tenth and § Eleventh rounds). Question 1: yes; `@orkestrel/form` and `@orkestrel/table` are declared (veneer `7008619`, at the registry's versions of 2026-10-08). Question 2: no, against the recommendation; the Bootstrap layer and the Bootstrap-specific engine are sealed to match Bootstrap, and every improvement over a CSS-only Bootstrap component is a veneer component, composable, or surface in the styles layer built with the Bootstrap Sass partials' mixins. Question 3: the binding lives in veneer as the guard and the sorter modules, because both packages hold values and no DOM (`absorb-form-table-2026-10-08/README.md`). Question 4: the borderline exclusions stay excluded and are documented in veneer's `ROADMAP.md` with a pointer to § Excluded and § Deferred.
+
 ## The first units
 
 The three recommended units take tier 1 in rank order. Each follows the shape Copier 1 (`867f3b4`, 18 files) and Drag 1 (`77cabe6`, 23 files) landed in, read from `git show --stat` in `veneer/` on 2026-10-08:

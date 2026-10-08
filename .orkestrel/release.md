@@ -170,3 +170,30 @@ Release-chain notes:
 - Scaffold 0.0.95: `scaffold catalog --all` regenerated the table and eleven mirrors (exit 1 only for the supervisor guide, HTTP 404); the three pin fixtures regenerated after the bump; nine CLI fixture lines moved vite 8.3.2 to 8.3.3 with the re-pin (`CLI.test.ts` 162 of 162); `prepublishOnly` passed.
 - The registry serves TypeScript 7.0.2, Vitest 5.0.3, and `@vitest/browser-playwright` 5; every audit reports them as non-blocking readings. Moving the fleet's toolchain to those majors is a separate decision for the user.
 - Development pins on guide, scaffold, probe, and test in lower layers trail by one release whenever those packages republish in a later layer, because each depends at runtime on lower layers; their next visit moves them.
+
+Continued (the user, 2026-10-07: agent, toolbox, and ollama are re-pinned and republished in their layers; TypeScript and Vitest keep their majors, because 7 and 5 break the fleet; no manifest moved to either):
+
+| Code | Layer | Package | Prior | Published | Ruling | gitHead |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2 | L1 | `@orkestrel/codec` | 0.0.5 | 0.0.6 | bump: contract `^0.0.19`; the setup proof | `2f1ac65` |
+| 2 | L3 (ahead) | `@orkestrel/scaffold` | 0.0.94 | 0.0.95 | bump: generated pins browser `^0.0.27`, probe `^0.0.22`; emitter `^0.0.12`; catalog | `3df25bd6c` |
+| 3 | L1 | `@orkestrel/test` | 0.0.24 | 0.0.25 | bump: dist moved (`hasScratchPath`, the scratch and signal shapes) | `99efe1b` |
+| 3 | L2 | `@orkestrel/database` | 0.0.17 | 0.0.18 | bump: ranges moved | `d9519f9` |
+| 3 | L2 | `@orkestrel/pool` | 0.0.16 | 0.0.17 | bump: ranges moved | `60d1f27` |
+| 3 | L2 | `@orkestrel/tool` | 0.0.18 | 0.0.19 | bump: ranges moved | `775a46c` |
+| 3 | L2 | `@orkestrel/websocket` | 0.0.14 | 0.0.15 | bump: ranges moved | `4fc7508` |
+| 4 | L2 | `@orkestrel/console`, `form`, `process`, `reason`, `router`, `table`, `template` | 0.0.15, 0.0.8, 0.0.14, 0.0.12, 0.0.16, 0.0.7, 0.0.9 | 0.0.16, 0.0.9, 0.0.15, 0.0.13, 0.0.17, 0.0.8, 0.0.10 | bump: ranges moved | `00c992b`, `7f5fb4b`, `88d0d81`, `9238fb3`, `47f47b8`, `95dc2e0`, `f6e0a5b` |
+| — | L2 | `@orkestrel/markdown` | 0.0.17 | 0.0.17 | no bump: development ranges only | `main` pushed |
+| 5 | L3 | `@orkestrel/interpret`, `lsp`, `qualifier`, `queue`, `rater`, `relation`, `sea`, `server`, `terminal`, `workspace` | 0.0.15, 0.0.10, 0.0.16, 0.0.16, 0.0.16, 0.0.15, 0.0.18, 0.0.22, 0.0.18, 0.0.11 | 0.0.16, 0.0.11, 0.0.17, 0.0.17, 0.0.17, 0.0.16, 0.0.19, 0.0.23, 0.0.19, 0.0.12 | bump: ranges moved | `a19cc86`, `3969af1`, `57b04c8`, `d4bca87`, `d7e9b04`, `b6cbc87`, `67fcad8`, `e9162fe`, `c7c5726`, `9bc7487` |
+| 5 | L3 | `@orkestrel/scaffold` | 0.0.95 | 0.0.96 | bump: console `^0.0.16`, process `^0.0.15`, template `^0.0.10`; generated test `^0.0.25`; catalog | `85a20e380` |
+| — | L3 | `@orkestrel/guide` | 0.0.24 | 0.0.24 | no bump: development ranges only | `main` pushed |
+
+The code column restarts at the wave: code 1 is 144455 (the eight L1 rows earlier), code 2 is 013808, code 3 is 870746, code 4 is 881009, code 5 is 139265. Every row was confirmed against the registry.
+
+Prepared for layer L4: brief 0.0.11 (`2fa209c`), mcp 0.0.38 (`7706492`), middleware 0.0.24 (`7c8b83a`), program 0.0.16 (`31a3214`), worker 0.0.17 (`9323028`), workflow 0.0.22 (`a4efd33`).
+
+Release-chain notes, continued:
+- `@orkestrel/test`: scaffold 0.0.95's `policy(no-nested-functions)` refused nine sites (the scratch methods on a local `const scratch`, the signal listener on a local `const installed`). Unit `test-nested` (Astra) returned the scratch literal directly through `hasScratchPath` (exported, documented, tested, bound for `has` so detached calls keep working) and passed the listener through `Object.freeze` with `handleEvent` finding itself through `this`. An Opus review held behavior and failed one receiver assertion that could not fail; it now pins identity, and a `handleEvent.call(this)` mutation reddens it. `npm test`: 1,115 passed before, 1,122 after.
+- `@orkestrel/server`: the 413 drain case asserted that writing the rest of a 4 MB body returns `false`; this Windows host's loopback send buffer takes the whole write, at the pre-re-pin commit `fe0d85c` as well (3 of 3, read in a scratch worktree), so the case waits for `drain` only when the write buffered and keeps its server claim (`c0eb4fb`).
+- `@orkestrel/scaffold` 0.0.96: the CLI fixture's planned test line moved to `^0.0.25` with the re-pin.
+- `@orkestrel/mcp`: its first visit missed one case beside worker's gates and passed whole alone (1,539). Release-mode distribution then failed the three page compositions: the composition and the consumer overrides pinned agent `^0.0.23` and the fleet's earlier releases, so the page ran agent 0.0.23 (a JSON-encoded string result, three relay requests after a refused credential). The 2026-10-07 move to `'receipt-1'` had passed only the default mode, which skips those browser cases. Every pin moved to the served release (`6ed6509`), the page cases pass 8 of 8, and `prepublishOnly` passed (distribution 19 with 4 skipped).
