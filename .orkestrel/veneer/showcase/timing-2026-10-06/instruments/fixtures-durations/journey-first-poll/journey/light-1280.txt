@@ -1,2 +1,0 @@
-Settle probe {"variant":"light-1280","family":"popover","motion":true,"waits":[{"description":"visible","milliseconds":5}]}
-Statechart duration {"variant":"light-1280","family":"popover","motion":true,"seconds":1.1,"rows":[{"name":"show","milliseconds":200}]}

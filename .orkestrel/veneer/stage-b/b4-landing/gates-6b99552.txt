@@ -1,18 +1,0 @@
-Rebasing (1/1)[KSuccessfully rebased and updated detached HEAD.
-B4 on the landing tip: 6b99552
-Finished in 4334ms on 362 files using 4 threads.
-check: exit 0 — 
-src-browser: exit 1 — Tests  6 failed | 793 passed (799)
-'Popover'-'scroll'
-'Popover'-'transform'
-consumes every selected departure
-measures the perpendicular keyword dimension swap warrant for constructed rules
-projects markup leaves and refuses the tooltip config and sanitizer attributes
-records the config-popover-flip transient departure and compares the settled box
-[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
-policy: exit 0 — Tests  119 passed | 1 skipped (120)
-journey: exit 0 — Tests  94 passed (94)
-Equal: every gate holds.
-compare exit 0
-
-[exited with code 0]
