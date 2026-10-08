@@ -1,5 +1,0 @@
-src:browser exit 1       Tests  1 failed | 798 passed (799)
-capture exit 0       Tests  90 passed | 4 skipped (94)
-showcase-1 exit 0 sha256 c5e1551657664d79542af8cef5d1b283a2de1801f44ca660b4ea5df6fe1c64d9 build-id 1b92bcb84d7a8f3cd1d3
-showcase-2 exit 0 sha256 c5e1551657664d79542af8cef5d1b283a2de1801f44ca660b4ea5df6fe1c64d9 build-id 1b92bcb84d7a8f3cd1d3
- M showcase/browser.html

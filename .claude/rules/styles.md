@@ -27,6 +27,7 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 - Apply this table and the folder barrels in § Folders to every sheet face: `src/styles` and each
   `src/<name>` styles extension. `.claude/rules/workspace.md` § Environments fixes the `sheet.ts`
   entry.
+- A sheet face loads nothing from another face, with one admission: `src/styles` can load one CSS-free data module of a recreation face, a partial that declares the recreation's maps under their upstream names with `var(--*)` values and emits no CSS when loaded alone, and the conformance proof's load gate lists that module alone. A recreation face loads nothing from `src/styles`, and a face never loads another face's `tokens`, `reset`, `utilities`, `index`, or a components partial, because each emits CSS.
 - `_mixins.scss` emits no top-level CSS.
 - Consumers load it with `@use '../mixins' as *`.
 - Never load `mixins` from `index.scss`.
@@ -105,4 +106,4 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 
 State classes are bare adjectives such as `.active` and `.disabled`, chosen consistently with the shared lifecycle vocabulary.
 
-The composable owns interaction state, class application, `aria-*`, and timing. The partial owns visual presentation. Their contracts are stable class names and transition tokens.
+The composable owns interaction state, class application, `aria-*`, and timing. The partial owns visual presentation. Their contracts are stable class names and transition tokens. A native browser module's partial keys its chrome on the module's `data-*` state attribute, scoped under the module's host attribute, and its proof sets the attribute directly; the stable-class-name contract covers the classes a composable writes, not a module's attributes.

@@ -1,7 +1,0 @@
-src:browser exit 0       Tests  801 passed (801)
-src:browser 153 exit 0       Tests  801 passed (801)
-conformance exit 0       Tests  130 passed (130)
-showcase-1 exit 0 sha256 d1b0fe0099a40fda build-id 33f82fc2effb32eed082
-showcase-2 exit 0 sha256 d1b0fe0099a40fda build-id 33f82fc2effb32eed082
-Different: 207 differences; see /home/user/veneer/tmp/units/fleet-pins/compare-867f3b4.md
-compare exit 67 lines 300

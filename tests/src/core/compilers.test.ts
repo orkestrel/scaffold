@@ -901,6 +901,24 @@ describe('sheet planning', () => {
 		expect(blueprintToRootVite(blueprint)).toContain(
 			"include: ['@orkestrel/test', '@orkestrel/test/browser', '@orkestrel/contract']",
 		)
+		expect(
+			blueprintToRootVite(
+				buildBlueprint({
+					styles: true,
+					dependencies: [
+						{ name: '@orkestrel/table', range: '^0.0.8' },
+						{ name: '@orkestrel/form', range: '^0.0.9' },
+						{ name: 'bootstrap', range: '5.3.8' },
+					],
+					peers: [
+						{ name: '@orkestrel/contract', range: '^0.0.19' },
+						{ name: 'vue', range: '^3.5.0' },
+					],
+				}),
+			),
+		).toContain(
+			"const optimizeDeps = {\n\tinclude: [\n\t\t'@orkestrel/test',\n\t\t'@orkestrel/test/browser',\n\t\t'@orkestrel/contract',\n\t\t'@orkestrel/form',\n\t\t'@orkestrel/table',\n\t],\n}",
+		)
 		expect(blueprintToRootVite(blueprint)).toContain("sheetProject('integration'")
 		expect(blueprintToRootVite(blueprint)).toContain(
 			"exclude: ['tests/setupBrowser.test.ts', 'tests/setupStyles.test.ts']",

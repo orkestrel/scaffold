@@ -973,6 +973,46 @@ export function blueprintToProjects(blueprint: Blueprint): readonly string[] {
 }
 
 /**
+ * Compiles the browser projects' pre-bundled dependency list for a blueprint.
+ *
+ * @remarks
+ * A browser-mode run that discovers a runtime package mid-collection reloads the page, so the
+ * list names the test package, its browser entry, and every Orkestrel runtime package the
+ * blueprint declares or peers with, inline when the line fits the print width and stacked
+ * otherwise.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToOptimizedDependencies, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToOptimizedDependencies(blueprint).includes("'@orkestrel/test/browser'") // true
+ * ```
+ */
+export function blueprintToOptimizedDependencies(blueprint: Blueprint): string {
+	const names = [
+		'@orkestrel/test',
+		'@orkestrel/test/browser',
+		...[
+			...new Set([
+				...(Object.hasOwn(blueprintToDevDependencies(blueprint), '@orkestrel/contract')
+					? ['@orkestrel/contract']
+					: []),
+				...blueprint.dependencies.map((dependency) => dependency.name),
+				...blueprint.peers.map((peer) => peer.name),
+			]),
+		]
+			.filter((name) => name.startsWith('@orkestrel/'))
+			.sort(),
+	]
+	const inline = `\tinclude: [${names.map((name) => `'${name}'`).join(', ')}],`
+	return matchesPrintWidth(inline)
+		? `const optimizeDeps = {\n${inline}\n}\n\n`
+		: `const optimizeDeps = {\n\tinclude: [\n${names.map((name) => `\t\t'${name}',`).join('\n')}\n\t],\n}\n\n`
+}
+
+/**
  * Compiles the root Vite and Vitest configuration for a blueprint.
  *
  * @param blueprint - The workspace specification.
@@ -1216,19 +1256,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 		options:
 			(machinery.browser
 				? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n' +
-					`const optimizeDeps = {\n\tinclude: ${JSON.stringify([
-						'@orkestrel/test',
-						'@orkestrel/test/browser',
-						...(Object.hasOwn(blueprintToDevDependencies(blueprint), '@orkestrel/contract') ||
-						blueprint.dependencies.some(
-							(dependency) => dependency.name === '@orkestrel/contract',
-						) ||
-						blueprint.peers.some((peer) => peer.name === '@orkestrel/contract')
-							? ['@orkestrel/contract']
-							: []),
-					])
-						.replaceAll('"', "'")
-						.replaceAll(',', ', ')},\n}\n\n`
+					blueprintToOptimizedDependencies(blueprint)
 				: '') +
 			(blueprint.journey && blueprint.app.includes('browser')
 				? "const capture = process.env.CAPTURE === '1'\n\n"

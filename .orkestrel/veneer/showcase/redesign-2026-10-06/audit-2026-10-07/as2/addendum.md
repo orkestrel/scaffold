@@ -1,5 +1,0 @@
-# AS2 addendum (Orchestrator, 2026-10-07)
-
-- The lane was capped at four hours by the launcher, resumed for about twelve minutes on `gpt-6-luna` after the Codex catalog dropped Astra, then stopped and resumed on `gpt-6-astra` to its end; the user ordered a quick Astra review of its output (`astra-review.md`, verdict "land after fixes").
-- The reviewed commit is `10abe70` in `/home/user/.wave/veneer-audit-showcase`: the lane's 15 owned files and two new caption fragments plus the two-line J3 hint-lookup adjustment in `tests/app/browser/integration.test.ts` the lane proposed and the Orchestrator authorized and applied (the overflow fix wraps each frame in an outer `ratio-1x1` box, so J3 reads the hint before that wrapper).
-- The review's fixes: the final-revision journey and compare run as part of the batch landing's gate set; the setup suite's canonicalization case is the 5,000 ms budget-tight case of task 75 and is read on the quiet host by the same gate set; the color-background caption's light-mode qualification and the guide's parity for `Section.caption` and the Scrollspy re-seat go to the AS4 captions unit.

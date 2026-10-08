@@ -1,6 +1,0 @@
-format:check exit=0 4s
-lint:check exit=0 2s
-check exit=0 74s
-test:setup exit=0 20s
-test:guides exit=0 5s
-test:policy exit=0 4s

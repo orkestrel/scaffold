@@ -1,0 +1,279 @@
+{
+	"file": {
+		"url": "file:///home/user/veneer/showcase/browser.html",
+		"secure": true,
+		"randomUUID": "function",
+		"commandForElement": true,
+		"moveBefore": "function",
+		"sortBefore": null,
+		"sortAfter": null,
+		"copyStatus": "Moved to position 2 of 5",
+		"outputs": [
+			[
+				"Sort status",
+				"Moved to position 2 of 5"
+			],
+			[
+				"Fullscreen status",
+				"Windowed"
+			],
+			[
+				"Relative time changes",
+				"3 changes"
+			],
+			[
+				"Save status",
+				"All changes saved"
+			],
+			[
+				"Dispatch sort status",
+				"Sorted by Reference, ascending"
+			],
+			[
+				"Reference copy status",
+				""
+			],
+			[
+				"Consignment number copy status",
+				""
+			],
+			[
+				"Note copy status",
+				""
+			]
+		],
+		"orderBefore": [
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t"
+		],
+		"orderAfter": [
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t"
+		],
+		"moved": false,
+		"outputsAfter": [
+			[
+				"Sort status",
+				"Moved to position 2 of 5"
+			],
+			[
+				"Fullscreen status",
+				"Windowed"
+			],
+			[
+				"Relative time changes",
+				"3 changes"
+			],
+			[
+				"Save status",
+				"All changes saved"
+			],
+			[
+				"Dispatch sort status",
+				"Sorted by Reference, ascending"
+			],
+			[
+				"Reference copy status",
+				"Copied"
+			],
+			[
+				"Consignment number copy status",
+				""
+			],
+			[
+				"Note copy status",
+				""
+			]
+		],
+		"errors": []
+	},
+	"localhost": {
+		"url": "http://127.0.0.1:34267/browser.html",
+		"secure": true,
+		"randomUUID": "function",
+		"commandForElement": true,
+		"moveBefore": "function",
+		"sortBefore": null,
+		"sortAfter": null,
+		"copyStatus": "Moved to position 2 of 5",
+		"outputs": [
+			[
+				"Sort status",
+				"Moved to position 2 of 5"
+			],
+			[
+				"Fullscreen status",
+				"Windowed"
+			],
+			[
+				"Relative time changes",
+				"3 changes"
+			],
+			[
+				"Save status",
+				"All changes saved"
+			],
+			[
+				"Dispatch sort status",
+				"Sorted by Reference, ascending"
+			],
+			[
+				"Reference copy status",
+				""
+			],
+			[
+				"Consignment number copy status",
+				""
+			],
+			[
+				"Note copy status",
+				""
+			]
+		],
+		"orderBefore": [
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t"
+		],
+		"orderAfter": [
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t"
+		],
+		"moved": false,
+		"outputsAfter": [
+			[
+				"Sort status",
+				"Moved to position 2 of 5"
+			],
+			[
+				"Fullscreen status",
+				"Windowed"
+			],
+			[
+				"Relative time changes",
+				"3 changes"
+			],
+			[
+				"Save status",
+				"All changes saved"
+			],
+			[
+				"Dispatch sort status",
+				"Sorted by Reference, ascending"
+			],
+			[
+				"Reference copy status",
+				"Copied"
+			],
+			[
+				"Consignment number copy status",
+				""
+			],
+			[
+				"Note copy status",
+				""
+			]
+		],
+		"errors": []
+	},
+	"insecure-host": {
+		"url": "http://veneer.test/browser.html",
+		"secure": false,
+		"randomUUID": "undefined",
+		"commandForElement": true,
+		"moveBefore": "function",
+		"sortBefore": null,
+		"sortAfter": null,
+		"copyStatus": "Windowed",
+		"outputs": [
+			[
+				"Fullscreen status",
+				"Windowed"
+			],
+			[
+				"Relative time changes",
+				"3 changes"
+			],
+			[
+				"Save status",
+				"All changes saved"
+			],
+			[
+				"Dispatch sort status",
+				"Unsorted"
+			],
+			[
+				"Reference copy status",
+				""
+			],
+			[
+				"Consignment number copy status",
+				""
+			],
+			[
+				"Note copy status",
+				""
+			]
+		],
+		"orderBefore": [
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t"
+		],
+		"orderAfter": [
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t",
+			"⠿\n\t\t\t\t\t\t\n\t\t\t"
+		],
+		"moved": false,
+		"outputsAfter": [
+			[
+				"Fullscreen status",
+				"Windowed"
+			],
+			[
+				"Relative time changes",
+				"3 changes"
+			],
+			[
+				"Save status",
+				"All changes saved"
+			],
+			[
+				"Dispatch sort status",
+				"Unsorted"
+			],
+			[
+				"Reference copy status",
+				""
+			],
+			[
+				"Consignment number copy status",
+				""
+			],
+			[
+				"Note copy status",
+				""
+			]
+		],
+		"errors": [
+			"pageerror: crypto.randomUUID is not a function",
+			"pageerror: crypto.randomUUID is not a function"
+		]
+	}
+}

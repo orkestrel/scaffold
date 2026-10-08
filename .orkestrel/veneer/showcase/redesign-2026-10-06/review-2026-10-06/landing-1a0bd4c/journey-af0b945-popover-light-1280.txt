@@ -1,3 +1,0 @@
-AssertionError: popover: expected [ …(104) ] to deeply equal [ …(104) ]
-    at http://localhost:63317/home/user/veneer/tests/app/browser/integration.test.ts?import&browserv=1791321711861:843:15
-    at async http://localhost:63317/node_modules/@vitest/runner/dist/chunk-artifact.js?v=8df9fcc5:1903:20
