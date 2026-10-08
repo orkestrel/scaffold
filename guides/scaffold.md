@@ -1860,10 +1860,11 @@ lists name.
 licence, the harness permission file, the scaffold-owned `scripts` directory, the
 shared policy register, the shared policy proof, the shared policy plugin, the shared configuration
 leaf and its proof, and the byte-identical root dotfiles. The session-start hooks inside `scripts`
-split by job. The bench probe reports whether a bench CLI resolves, the dependency hook installs
-the lockfile's closure in a remote session, and the browser hook, run after it in the same command,
-installs the Chromium builds the `playwright-core` package pins when a remote container's browser
-store lacks them.
+split by job. The bench probe reports whether a bench CLI resolves. In a remote session one command
+runs three hooks in order: the npm hook installs npm at the floor the workspace's `devEngines` record
+declares when the container's npm is older, the dependency hook installs the lockfile's closure, and
+the browser hook installs the Chromium builds the `playwright-core` package pins when the container's
+browser store lacks them.
 The Ollama hook invokes `scripts/ollama.sh` only when `CLAUDE_CODE_REMOTE=true`; direct invocation
 remains available for live-service setup. Claude Code Cloud is Linux and has bash: SessionStart
 runs that POSIX script and never a Windows wrapper. What wires a bench stays in the canon, and a

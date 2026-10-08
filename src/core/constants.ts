@@ -318,6 +318,7 @@ export const EXECUTABLE_PATHS: readonly string[] = Object.freeze([
 	'scripts/codex.sh',
 	'scripts/cursor.sh',
 	'scripts/deps.sh',
+	'scripts/npm.sh',
 	'scripts/ollama.sh',
 ])
 

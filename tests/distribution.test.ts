@@ -597,6 +597,7 @@ describe('installed package consumer', () => {
 			'scripts/codex.sh',
 			'scripts/cursor.sh',
 			'scripts/deps.sh',
+			'scripts/npm.sh',
 			'scripts/ollama.sh',
 			'tests/config.test.ts',
 			'tests/policy.test.ts',
