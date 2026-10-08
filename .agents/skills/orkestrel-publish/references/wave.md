@@ -112,8 +112,7 @@ Prepare a published package's layer in this order, after the visit has ruled the
 4. **Run each package's own `prepublishOnly` script to green.**
    When the host npm is below the `MINIMUM_NPM_VERSION` floor a generated workspace declares in
    `devEngines`, prepend a local npm 11 install's `node_modules/.bin` to `PATH` for the visit and
-   this script; a distribution proof that installs a generated workspace under an older npm fails
-   `EBADDEVENGINES`.
+   this script.
 5. **Write the release commit and push before the window opens.** The preparation commit inside
    the visit is a different commit at a different moment.
 

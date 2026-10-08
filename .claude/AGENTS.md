@@ -36,6 +36,6 @@
 ## Cloud
 
 - Setup installs `@openai/codex` and never authenticates. Start each live session with `codex login --device-auth`.
-- When `npm ci` in a remote session refuses `EBADDEVENGINES`, run `scripts/npm.sh` and rerun the install. SessionStart runs that hook first in the `scripts/deps.sh` command when `CLAUDE_CODE_REMOTE` is `true`, and it installs npm at the floor the checkout declares: the manifest's `devEngines` npm range, or `MINIMUM_NPM_VERSION` in the scaffold checkout.
+- When `npm ci` in a remote session refuses `EBADDEVENGINES`, run `scripts/npm.sh` and rerun the install.
 - `scripts/deps.sh` reinstalls when the lockfile digest differs from `node_modules/.orkestrel-lock.sha256`. Write the marker only after `npm ci` succeeds for that lockfile, in the same turn.
-- When a browser launch in a remote session reports `Executable doesn't exist`, run `scripts/browsers.sh` and rerun the test before treating the failure as a defect. SessionStart runs that hook after `scripts/deps.sh` in one command when `CLAUDE_CODE_REMOTE` is `true`, and it installs the Chromium builds the `playwright-core` manifest pins.
+- When a browser launch in a remote session reports `Executable doesn't exist`, run `scripts/browsers.sh` and rerun the test before treating the failure as a defect.

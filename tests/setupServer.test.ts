@@ -93,6 +93,7 @@ import {
 	REFUSED_MANIFEST_TEXT,
 	renderLauncher,
 	resolveOllamaShell,
+	resolveNpmEntry,
 	resolveTool,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
@@ -1415,6 +1416,22 @@ describe('the admitted npm', () => {
 		// the case rather than at module scope, so a host carrying no npm fails the cases that
 		// need one instead of collecting none of this file.
 		expect(extractVersion(readNpmVersion())).not.toBe(undefined)
+	})
+
+	it('reads the version of the npm a spawn launches when the environment names its entry', async () => {
+		// npm names its own entry in npm_execpath for every script it runs, and a spawn launches
+		// that entry first, so a version read anywhere else admits one npm and launches another.
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const entry = workspace.write('npm/bin/npm-cli.js', "process.stdout.write('0.0.1\\n')\n")
+			const environment = { ...process.env, npm_execpath: entry }
+			expect(resolveNpmEntry(environment)).toBe(entry)
+			expect(readNpmVersion(environment)).toBe('0.0.1')
+			const launched = await spawnNpm(['--version'], { environment })
+			expect(launched.stdout.trim()).toBe('0.0.1')
+		} finally {
+			workspace.destroy()
+		}
 	})
 
 	it('launches the ambient npm unchanged when it already satisfies the floor', () => {

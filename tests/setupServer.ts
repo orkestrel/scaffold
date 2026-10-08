@@ -640,21 +640,23 @@ export function readNpmFloor(manifest: unknown): string {
 }
 
 /**
- * Reads the npm version an environment resolves.
+ * Reads the version of the npm an environment launches.
  *
  * @param environment - The environment overrides a spawn takes. Default: this process's own.
- * @returns The exact version the resolved npm reports for its own `--version`.
- * @throws When the run fails, carrying what it wrote to standard error.
+ * @returns The exact version the entry {@link resolveNpmEntry} selects reports for its own
+ * `--version`.
+ * @throws When the environment resolves no npm entry, or when the run fails, carrying what
+ * it wrote to standard error.
  *
  * @remarks
- * Launched through `executeSync`, which resolves the executable itself and never uses a
- * shell, so this reading carries no platform branch of its own. The version comes from
- * the binary rather than from a manifest beside it, because `PATH` decides which npm a
- * nested `npm run` launches and only a run under that environment reports the answer.
+ * The reading runs the entry {@link spawnNpm} launches, through Node and never through a
+ * shell, so a version admitted here is the version every spawn under the same environment
+ * runs. The version comes from the entry rather than from a manifest beside it, because the
+ * running npm is what a `devEngines` guard reads.
  */
 export function readNpmVersion(environment: NodeJS.ProcessEnv = process.env): string {
 	const read = executeSync(
-		{ file: 'npm', arguments: ['--version'], environment },
+		{ file: process.execPath, arguments: [resolveNpmEntry(environment), '--version'], environment },
 		{ workspace: WORKSPACE_ROOT, strict: false },
 	)
 	if (read.failed) {
@@ -679,6 +681,33 @@ export function spawnNpm(
 	options?: ExecuteOptions,
 ): Promise<ExecuteResult> {
 	const environment = mergeEnvironment(false, options?.environment)
+	return execute(
+		{ file: process.execPath, arguments: [resolveNpmEntry(environment), ...args] },
+		{ timeout: 300_000, limit: 8 * 1024 * 1024, strict: false, ...options, environment },
+	)
+}
+
+/**
+ * Resolves the npm JavaScript entry an environment launches.
+ *
+ * @param environment - The environment a spawn takes. Default: this process's own.
+ * @returns The `npm-cli.js` file `npm_execpath` names, else the one beside the running
+ * Node, else the real file behind the `npm` executable `PATH` resolves.
+ * @throws When none of those candidates is an `npm-cli.js` file.
+ *
+ * @remarks
+ * npm names its own entry in `npm_execpath` for every script it runs, so a proof launched
+ * through `npm run` resolves the npm running it. {@link readNpmVersion} and
+ * {@link spawnNpm} both read this one resolution, which keeps the npm a proof admits the
+ * npm it launches.
+ *
+ * @example
+ * ```ts
+ * resolveNpmEntry({ ...process.env, npm_execpath: '/opt/npm/bin/npm-cli.js' })
+ * // '/opt/npm/bin/npm-cli.js' when that file exists
+ * ```
+ */
+export function resolveNpmEntry(environment: NodeJS.ProcessEnv = process.env): string {
 	const executable = resolveExecutable('npm', { environment })
 	const entry = [
 		readVariable(environment, 'npm_execpath'),
@@ -688,10 +717,7 @@ export function spawnNpm(
 		(candidate) => candidate !== undefined && candidate.endsWith('npm-cli.js') && isFile(candidate),
 	)
 	if (entry === undefined) throw new Error('The host supplies no npm-cli.js entry')
-	return execute(
-		{ file: process.execPath, arguments: [entry, ...args] },
-		{ timeout: 300_000, limit: 8 * 1024 * 1024, strict: false, ...options, environment },
-	)
+	return entry
 }
 
 /**
@@ -710,8 +736,11 @@ export function spawnNpm(
  * proof driving such a workspace launches an admitted npm rather than the ambient one.
  * Prepending the provisioned `PATH` is what carries the selection down: a launcher form
  * that runs one version while the ambient copy stays on `PATH` leaves the guard reading
- * the ambient version and refusing. The ambient npm is used unchanged when it satisfies
- * the floor, so a conforming host installs nothing and reaches no registry.
+ * the ambient version and refusing. Naming the provisioned entry in `npm_execpath` is what
+ * selects it for {@link spawnNpm}, which launches that entry before any `PATH` copy; a proof
+ * run through an older `npm run` otherwise admits the provisioned npm and launches the
+ * running one. The ambient npm is used unchanged when it satisfies the floor, so a
+ * conforming host installs nothing and reaches no registry.
  */
 export function provisionNpm(options: TestNpmOptions): TestNpm {
 	const base = options.environment ?? process.env
@@ -722,8 +751,9 @@ export function provisionNpm(options: TestNpmOptions): TestNpm {
 	const bin = join(options.prefix, 'node_modules', '.bin')
 	const provisioned = executeSync(
 		{
-			file: 'npm',
+			file: process.execPath,
 			arguments: [
+				resolveNpmEntry(base),
 				'install',
 				'--prefix',
 				options.prefix,
@@ -743,6 +773,7 @@ export function provisionNpm(options: TestNpmOptions): TestNpm {
 	}
 	const environment = mergeEnvironment(false, base, {
 		PATH: `${bin}${delimiter}${readVariable(base, 'PATH') ?? ''}`,
+		npm_execpath: join(options.prefix, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
 	})
 	const version = readNpmVersion(environment)
 	if (compareVersions(version, options.floor) < 0) {
