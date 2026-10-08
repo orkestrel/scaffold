@@ -256,6 +256,8 @@ Rulings on the engine and the wires:
 
 ## The judgments
 
+The checkout's contract wins where the sketch that follows differs: a `Judgment` keys by its `id` and carries `answer` or `refusal` as separate members, `matchesJudgment` takes the judgment, the question, the sources, the rendered state, and the configured model, and identity is the JSON text of the owned question with key order kept (plan.md § Units row 6 and § Rulings, Judgments referrals).
+
 The conversations module records outcomes beside the messages. Measures are not stored.
 
 ```ts
