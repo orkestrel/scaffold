@@ -1,6 +1,6 @@
 # Bench lanes
 
-An external engine widens capacity and inherits no authority. Treat every bench output as a proposal until the Orchestrator verifies it against the tree. `.agents/transports/<provider>.md` owns each bench's command, sandbox, and recovery; this file owns what is true of every bench.
+An external engine widens capacity and inherits no authority. Treat every bench output as a proposal until the Orchestrator verifies it against the tree. `.agents/transports/<harness>.md` owns each bench's command, sandbox, and recovery; this file owns what is true of every bench.
 
 ## Before the lane
 

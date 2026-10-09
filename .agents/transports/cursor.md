@@ -1,6 +1,6 @@
 # Cursor transport contract
 
-Every driver that carries a brief to the Cursor Grok bench follows this file. Route: `grok`. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs. Read `.agents/orchestration.md` first; it owns the role set and the routing.
+Every driver that carries a brief to the Cursor Grok 4.7 Extra High bench follows this file. Route: `grok`. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs. Read `.agents/orchestration.md` first; it owns the role set and the routing.
 
 ## Model
 

@@ -1,6 +1,6 @@
 name = "grok"
-description = "Codex-side driver for the Cursor Grok bench: absorption, distillation, scouting, and bounded research over a large read. Returns the brief text, its path, the resolved command, and the journal path for the Orchestrator to launch, and the Grok distillate untouched. Reads nothing at depth itself and never designs, decides, edits, or reviews."
-model = "gpt-6-sol"
+description = "Codex-side driver for the Cursor Grok bench: context absorption, distillation, broad mapping, and exploration. Returns the brief text, its path, the resolved command, and the journal path for the Orchestrator to launch, and the Grok distillate untouched. Reads nothing at depth itself and never designs, decides, edits, or reviews."
+model = "gpt-6-luna"
 model_reasoning_effort = "low"
 sandbox_mode = "read-only"
 developer_instructions = """

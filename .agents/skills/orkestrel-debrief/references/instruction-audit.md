@@ -39,7 +39,7 @@ is the lens list's only normative home, and the lane states its coverage against
   charter's wording survives the swap: a charter that assumes its default perspective
   everywhere outside the swap clause cannot be dispatched into the other lane, and a round
   run under a swap that reads like the default lane's output is the residue.
-- **Bridge minimalism.** A provider bridge loads one canonical workflow and adds nothing.
+- **Bridge minimalism.** A harness bridge loads one canonical workflow and adds nothing.
   Any instruction beyond the load is a competing instruction.
 - **Vocabulary drift across mirrored files.** The same concept takes the same term across
   the Claude and Codex mirrors and each operating contract's role table.
@@ -92,7 +92,7 @@ Findings land as one of:
   skill step the campaign always skipped or always overrode is wrong.
 - **Orchestration-contract refinements.** Laws the orchestrator learned (cap sizing,
   probe-first, journal-first, verdict shapes, launch ownership) land in the operating
-  contract, mirrored across providers.
+  contract, mirrored across harnesses.
 
 ## The questions every round asks
 
@@ -108,6 +108,6 @@ Findings land as one of:
 
 ## Mirror discipline
 
-Every roster or contract change lands on all provider surfaces in the same round: the
+Every roster or contract change lands on all harness surfaces in the same round: the
 Claude charters, the Codex mirrors, and both operating-contract role tables. An
 unmirrored refinement is a new drift seeded on purpose.

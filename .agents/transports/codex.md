@@ -1,18 +1,18 @@
 # Codex transport contract
 
-Every driver that carries a brief to the GPT-6 Astra bench follows this file. Routes: `analyst` (audit, objective design argument) and `astra` (implementation). A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs.
+Every driver that carries a brief to the Codex GPT-6 Astra bench follows this file. Routes: `analyst` (audit, objective design argument) and `astra` (implementation). For native roles, use the canonical Codex mapping in `.agents/orchestration.md` without a bench launch or probe. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs.
 
 ## Models and effort
 
 ```text
 CODEX_ASTRA_MODEL=gpt-6-astra          effort high; xhigh only for a stated hard-reasoning need
-CODEX_MECHANICAL_MODEL=gpt-6-sol       fully specified, taste-free units and drivers
+CODEX_MECHANICAL_MODEL=gpt-6.1-sol     fully specified, taste-free units
 CODEX_READING_MODEL=gpt-6-luna         absorption and research when the Cursor bench is dark; record the substitution
 ```
 
 ## Command
 
-Use the journaled CLI for every unit. `codex mcp-server` was removed in Codex 0.154.0: never register it in an MCP configuration and never call an `mcp__codex__*` tool.
+Use the journaled CLI for every bench unit. `codex mcp-server` was removed in Codex 0.154.0: never register it in an MCP configuration and never call an `mcp__codex__*` tool.
 
 ```text
 node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<unit>.jsonl --errors tmp/codex/<unit>.err --cap <seconds> --status -- codex exec --json -C <checkout> --sandbox <sandbox> --model gpt-6-astra -c model_reasoning_effort="high" --output-last-message tmp/codex/<unit>-last.md "Read tmp/codex/<unit>-brief.md from disk and execute it exactly. Your final message is the report it specifies."
@@ -47,7 +47,7 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/<un
 
 ## Routing exclusion
 
-The provider's content filter has ended turns that authored a violation construct, even as a negative test: sandbox escapes, resolution-bypassing imports, injection payloads, credential probes. Route such a unit to `opus` from the start and record the bench dark for that unit only.
+For harnesses that route `opus` to Claude, route a unit that authors sandbox escapes, resolution-bypassing imports, injection payloads, or credential probes to `opus` from the start and record the Codex bench dark for that unit only. For native Codex roles, report a harness refusal through the deviation protocol; the `opus` role uses the same harness.
 
 ## Journals
 

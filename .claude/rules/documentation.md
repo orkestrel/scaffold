@@ -104,7 +104,7 @@ Never use in-repository `@src/*` aliases in public guide examples; reserve them 
 - Research the external schema only when a consumer needs a key outside `display_name`, `short_description`, and `default_prompt`, and add no key before then.
 - Give every one of those keys a non-empty single-quoted scalar, and write an apostrophe inside it as `''`.
 - Name the skill's own `$<directory>` token in `default_prompt`.
-- Keep provider bridges minimal: they load one canonical workflow and add no competing instructions.
-- Give a provider bridge its canonical skill's `name` and `description` verbatim, name the `.agents/skills/<name>/SKILL.md` path it loads, and give it no references of its own.
-- Give every canonical skill exactly one provider bridge directory of the same name, and give every bridge directory a canonical twin.
+- Keep harness bridges minimal: they load one canonical workflow and add no competing instructions.
+- Give a harness bridge its canonical skill's `name` and `description` verbatim, name the `.agents/skills/<name>/SKILL.md` path it loads, and give it no references of its own.
+- Give every canonical skill exactly one harness bridge directory of the same name, and give every bridge directory a canonical twin.
 - Review a bridge body's remaining instructions yourself: the policy sweep proves `name` and `description` parity, the named canonical path, and the absence of bridge-owned references, and nothing else about the body.

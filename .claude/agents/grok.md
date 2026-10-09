@@ -1,6 +1,6 @@
 ---
 name: grok
-description: 'Haiku 5.5 driver for the Cursor Grok bench: absorption, distillation, scouting, and bounded research over a large read. Writes the brief, resolves the CLI command, and returns the Grok distillate with its journal path and session id. Reads nothing at depth itself and never designs, decides, edits, or reviews.'
+description: 'Haiku 5.5 driver for the Cursor Grok bench: context absorption, distillation, broad mapping, and exploration. Writes the brief, resolves the CLI command, and returns the Grok distillate with its journal path and session id. Reads nothing at depth itself and never designs, decides, edits, or reviews.'
 tools: Bash, Read, Grep, Glob
 model: haiku
 effort: high

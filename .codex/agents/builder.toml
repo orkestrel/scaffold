@@ -1,6 +1,6 @@
 name = "builder"
 description = "Sol executor for one bounded unit with a closed shape in src, app, tests, or configs; writes only owned files as the sole writer in its checkout and validates scoped to them."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"
 developer_instructions = """
