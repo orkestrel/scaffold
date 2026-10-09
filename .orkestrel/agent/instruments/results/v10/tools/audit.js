@@ -7,7 +7,8 @@ export const meta = {
   ],
 }
 
-// args: { dir: AUDIT_DIR, chunks: [{ file: ITEMS_PATH, rows: 'passes' | 'failures' }] }
+// args: { dir: AUDIT_DIR, chunks: [{ file: ITEMS_PATH, rows: 'passes' | 'failures', ids?: [ITEM_ID, ...] }] }
+// `ids` lists the item ids in the chunk's file (items.ts prints them); an id that neither auditor returns is ruled unresolved.
 const DIR = args.dir
 const CHUNKS = args.chunks
 const schema = (verdicts) => ({
@@ -56,11 +57,12 @@ You audit an automatic scorer, blind. Read ${file}, a JSON list of failed replie
 
 Each item gives the shift lead's request, the seed facts the request depends on, the scorer's fields (expected strings that must all appear, expectedAny phrases of which one must appear, forbidden strings, forbiddenPatterns regexes, required tools), the scorer's failure details, and the reply. ${FACTS}
 
-For each item, take every point the scorer failed it on (each missing string, each forbidden hit, each pattern hit, a tool failure, an empty reply) and judge that point:
+For each item, take every point the scorer failed it on (each missing string, each forbidden hit, each pattern hit, an empty reply) and judge that point:
 - misread: on this point the reply is correct and complete for what the request asks, and the scorer's rule fails it anyway; for example a dead value mentioned only as replaced, a fit verdict in words the phrase list lacks, or a ship date given without promising a delivery date.
 - real: on this point the reply is wrong, incomplete, contradicts a fact or rule, omits what the request asks for, or answers another request. An empty reply is real.
 - ambiguous: a careful human grader could fairly go either way; say why.
-The item's verdict is real when any point is real; misread only when every failed point is a misread; ambiguous otherwise. Be strict and symmetric: never call a point a misread because the reply is otherwise good. Return a verdict for every item.
+Then judge the reply as a whole by the pass standard: read every element the request asks for and every value the reply states, and decide whether the reply is correct, meaning it answers the request it was given, every element the request asks for is present and right, and nothing it states contradicts a fact, a correction, or a rule. A wrong or miscalculated value, a superseded value given as current, a delivery date promised to a customer in writing, a wrong person, number, or extension, a required element omitted, a rule denied or broken, or an answer to a different request makes the reply a false pass, even when the scorer did not flag that point.
+The item's verdict is misread only when every failed point is a misread AND the reply as a whole is correct by that standard. It is real whenever the reply would be a false pass by that standard, on a flagged point or on any other. It is ambiguous otherwise. Be strict and symmetric: never call a point a misread because the reply is otherwise good, and never let an unflagged error pass. In points, name each point you checked; in reason, quote the reply text behind a real or ambiguous verdict. Return a verdict for every item.
 
 Deviation contract: if the items file is missing or unreadable, return an empty verdict list and say why in the first item's reason.`
 
@@ -76,8 +78,8 @@ const results = await pipeline(
   async ({ chunk, index, brief, shape, first, second }) => {
     const a = new Map(first.map((v) => [v.id, v]))
     const b = new Map(second.map((v) => [v.id, v]))
-    const ids = [...new Set([...a.keys(), ...b.keys()])]
-    const split = ids.filter((id) => a.get(id)?.verdict !== b.get(id)?.verdict)
+    const ids = [...new Set([...(chunk.ids ?? []), ...a.keys(), ...b.keys()])]
+    const split = ids.filter((id) => (a.has(id) || b.has(id)) && a.get(id)?.verdict !== b.get(id)?.verdict)
     let ties = new Map()
     if (split.length > 0) {
       const tie = await agent(`${brief}\n\nJudge ONLY these item ids, on which two independent auditors disagreed: ${split.join(', ')}. Their readings follow; weigh them, then rule yourself.\n${split.map((id) => `${id}: A=${JSON.stringify(a.get(id))} B=${JSON.stringify(b.get(id))}`).join('\n')}`, { label: `tiebreak:${index + 1}`, phase: 'Tiebreak', model: 'haiku', effort: 'high', agentType: 'checker', schema: shape })
@@ -86,6 +88,7 @@ const results = await pipeline(
     const final = ids.map((id) => {
       const x = a.get(id)
       const y = b.get(id)
+      if (x === undefined && y === undefined) return { id, rows: chunk.rows, verdict: 'unresolved', reason: 'no auditor returned it' }
       const decided = x?.verdict === y?.verdict ? x : ties.get(id)
       return { id, rows: chunk.rows, verdict: decided?.verdict ?? 'unresolved', a: x?.verdict, b: y?.verdict, tie: ties.get(id)?.verdict, reason: decided?.reason, points: decided?.points }
     })

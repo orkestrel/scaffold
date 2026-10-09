@@ -4,7 +4,9 @@
 // model, `think`, `num_ctx`, `num_predict`, temperature, seed, and `truncate`, against the condition the run name
 // carries (f4: 4B, thinking off; t2: 2B, thinking on, cap 1,024; t2w and t2a: 2B, thinking on, cap 2,048); then the
 // done reason, a cap hit, a prompt plus completion within 64 tokens of `num_ctx`, an empty reply with no tool call,
-// and thinking on a call that asked for none. It compares the agent-call count with the harness's own call log.
+// and thinking on a call that asked for none. A calibration call (`num_predict` 1) and a summarizer call (no tools and
+// the summarizer's system text, whatever the condition) are counted apart and leave the think, predict, empty, and
+// count checks. The agent-call count must equal the harness call log's count exactly.
 // Exit: 0 written; 64 on usage.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -23,6 +25,9 @@ interface Finding {
 }
 
 const MARGIN = 64
+
+// The opening of bench.mjs's SUMMARY_SYSTEM; the date after it varies by scenario.
+const SUMMARY_PREFIX = 'You summarize a support-desk conversation that took place on'
 
 function readFlag(argv: readonly string[], name: string): string | undefined {
 	const at = argv.indexOf(name)
@@ -75,6 +80,7 @@ function inspectRun(dir: string, run: string, findings: Finding[]): Record<strin
 	const requests = readdirSync(wire).filter((name) => name.endsWith('_api_chat-request.json')).sort()
 	let agent = 0
 	let summarizer = 0
+	let calibration = 0
 	let cut = 0
 	let empty = 0
 	let near = 0
@@ -86,17 +92,21 @@ function inspectRun(dir: string, run: string, findings: Finding[]): Record<strin
 		const add = (kind: string, detail: string): void => {
 			findings.push({ run, file: name, kind, detail })
 		}
-		// The summarizer and the answer pass are the calls that may differ from the agent's condition.
 		const tools = Array.isArray(body.tools) ? body.tools.length : 0
-		const isSummary = body.think !== true && tools === 0 && expect?.think === true && run.includes('compaction')
-		if (isSummary) summarizer += 1
+		const messages = Array.isArray(body.messages) ? (body.messages as readonly Record<string, unknown>[]) : []
+		const isCalibration = options.num_predict === 1
+		const isSummary = !isCalibration && tools === 0 && messages.some((message) => message.role === 'system' && typeof message.content === 'string' && message.content.startsWith(SUMMARY_PREFIX))
+		const isAgent = !isCalibration && !isSummary
+		if (isCalibration) calibration += 1
+		else if (isSummary) summarizer += 1
 		else agent += 1
 		if (expect !== undefined) {
 			if (body.model !== expect.model) add('model', `${String(body.model)} where the condition runs ${expect.model}`)
-			const answerPass = expect.think && body.think === false && tools === 0
-			if (!isSummary && !answerPass && Boolean(body.think) !== expect.think) add('think', `think ${String(body.think)} where the condition runs ${String(expect.think)}`)
+			// The answer pass is the agent's tool-free call with thinking off.
+			const answerPass = isAgent && expect.think && body.think === false && tools === 0
+			if (isAgent && !answerPass && Boolean(body.think) !== expect.think) add('think', `think ${String(body.think)} where the condition runs ${String(expect.think)}`)
 			if (answerPass && !run.startsWith('t2a-')) add('think', 'a tool-free call with thinking off outside t2a')
-			if (!isSummary && expect.think && options.num_predict !== expect.predict) add('predict', `num_predict ${String(options.num_predict)} where the condition caps ${String(expect.predict)}`)
+			if (isAgent && expect.think && options.num_predict !== expect.predict) add('predict', `num_predict ${String(options.num_predict)} where the condition caps ${String(expect.predict)}`)
 		}
 		if (options.temperature !== 0) add('sampler', `temperature ${String(options.temperature)}`)
 		if (options.seed !== 7) add('sampler', `seed ${String(options.seed)}`)
@@ -123,15 +133,15 @@ function inspectRun(dir: string, run: string, findings: Finding[]): Record<strin
 			near += 1
 			add('window', `prompt ${prompt} plus completion ${completion} within ${MARGIN} of num_ctx ${ctx}`)
 		}
-		if (stream.content.trim() === '' && stream.calls === 0 && stream.last.done_reason !== 'length') {
+		if (isAgent && stream.content.trim() === '' && stream.calls === 0 && stream.last.done_reason !== 'length') {
 			empty += 1
 			add('empty', `no content and no tool call; thinking ${stream.thinking.length} characters`)
 		}
 		if (body.think !== true && stream.thinking !== '') add('thinking', `thinking ${stream.thinking.length} characters on a call that asked for none`)
 	}
 	const logged = harnessCalls(join(dir, run))
-	if (logged !== undefined && logged !== agent + summarizer && logged !== agent) findings.push({ run, file: '', kind: 'count', detail: `${agent + summarizer} wire calls (agent ${agent}, summarizer ${summarizer}) against ${logged} in the harness log` })
-	return { run, calls: requests.length, agent, summarizer, cut, empty, near, logged }
+	if (logged !== undefined && logged !== agent) findings.push({ run, file: '', kind: 'count', detail: `${agent} wire agent calls (summarizer ${summarizer}, calibration ${calibration}) against ${logged} in the harness log` })
+	return { run, calls: requests.length, agent, summarizer, calibration, cut, empty, near, logged }
 }
 
 function main(): number {

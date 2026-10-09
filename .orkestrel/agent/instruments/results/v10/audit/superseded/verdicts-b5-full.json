@@ -163,5 +163,23 @@
   "b": "correct",
   "reason": "The extension and call time are correct and the reply adds nothing unsupported.",
   "points": "Extension: \"her direct line at extension 4127\" (4127 present). Time: \"She only takes calls after 2 pm\" (expectedAny 2 pm present). No forbidden Friday, 555-0142, or before-2-pm wording."
+ },
+ {
+  "id": "4ac760b4",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply says \"Estimated delivery is 2026-10-12.\" The seed acknowledgment at index 6 says \"no delivery dates go in customer replies,\" and the scenario rule forbids a delivery date in writing. The 2026-10-12 value is the carrier estimate on the LH-81660 lookup, so the reply passes a fact the desk rule forbids it to pass. The ISO pattern also matches the shipped-on date 2026-10-07, which alone would be a misread candidate, but the 2026-10-12 hit makes the point real. Unscored errors that support the verdict: \"shipped today, 2026-10-07\" conflicts with today being Thursday 2026-10-08 (the lookup records shipment on 2026-10-07, which is yesterday), and \"I've added the gift note ... to your order\" claims an action that no tool in this goal performs. The lookup states the gift note text is not recorded on the order. The expected PW-6013-2280 is present and no other scorer point failed.",
+  "points": "Failed points: forbiddenHit \"2026-10-12\"; patternsHit (the ISO-date alternative of the g06 pattern, which matches 2026-10-12). Both are the same point: the reply writes a delivery date to the customer."
+ },
+ {
+  "id": "b7b90bff",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply says the kettle \"is expected to arrive on 2026-10-12.\" That is a written arrival date, which the seed acknowledgment at index 6 forbids (\"no delivery dates go in customer replies\"). It is stated more firmly than the estimate in the other reply. The tracking number PW-6013-2280 is present, and the shipped status is correct, but the scorer's failed point stands. Unscored error that supports the verdict: \"I've added a gift note that reads 'Happy 40th, Aiko' to the package\" claims an action with no supporting tool call, and the LH-81660 lookup states the gift note text is not recorded on the order.",
+  "points": "Failed points: forbiddenHit \"2026-10-12\"; patternsHit (the ISO-date alternative of the g06 pattern, which matches 2026-10-12). Both are the same point: the reply writes a delivery date to the customer."
  }
 ]

@@ -1,13 +1,16 @@
 // Tallies the blind audits into adjudicated passes per run and reads the band for arm pairs:
-//   node tally.ts --audit AUDIT_DIR [--pair A,B,COPIES]... [--json FILE]
-// Reads every verdicts-*.json and key-*.json under AUDIT_DIR. A scorer pass counts unless the audit rules it a false
+//   node tally.ts --audit AUDIT_DIR [--keys KEY_DIR] [--pair A,B,COPIES]... [--json FILE]
+// Reads every verdicts-*.json and key-*.json under AUDIT_DIR, and every key-*.json under KEY_DIR. A scorer pass counts unless the audit rules it a false
 // pass; a scorer fail counts when the audit rules it a misread; an ambiguous row counts as a fail at the low end and
 // a pass at the high end. Each --pair names two run prefixes and a copy range (for example
 // t2a-records,t2w-control,1-4); the pair's d per copy is A − B, read at the low end, the high end, and across (A low
 // against B high), and it clears when mean(d) − 2·sd(d)/√n > 0. The flag repeats.
-// Exit: 0; 1 when a run of a pair has no audited rows; 64 on usage.
+// Exit: 0; 1 when a verdict id has no key, an id appears twice across the verdict files, a run of a pair has no audited
+// rows, or a paired run's audited row count is not 10; 64 on usage.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+
+const ROWS = 10
 
 interface Key {
 	readonly id: string
@@ -53,18 +56,29 @@ function main(): number {
 	const dir = readOptions(argv, '--audit')[0]
 	const json = readOptions(argv, '--json')[0]
 	if (dir === undefined) {
-		process.stderr.write('usage: node tally.ts --audit AUDIT_DIR [--pair A,B,COPIES]... [--json FILE]\n')
+		process.stderr.write('usage: node tally.ts --audit AUDIT_DIR [--keys KEY_DIR] [--pair A,B,COPIES]... [--json FILE]\n')
 		return 64
 	}
 	const files = readdirSync(dir)
 	const keys = new Map<string, Key>()
-	for (const name of files.filter((file) => file.startsWith('key-') && file.endsWith('.json')))
-		for (const key of JSON.parse(readFileSync(join(dir, name), 'utf8')) as Key[]) keys.set(key.id, key)
+	for (const keyDir of [dir, ...readOptions(argv, '--keys')])
+		for (const name of (keyDir === dir ? files : readdirSync(keyDir)).filter((file) => file.startsWith('key-') && file.endsWith('.json')))
+			for (const key of JSON.parse(readFileSync(join(keyDir, name), 'utf8')) as Key[]) keys.set(key.id, key)
+	const seen = new Map<string, string>()
 	const tallies = new Map<string, Tally>()
 	for (const name of files.filter((file) => file.startsWith('verdicts-') && file.endsWith('.json'))) {
 		for (const verdict of JSON.parse(readFileSync(join(dir, name), 'utf8')) as Verdict[]) {
 			const key = keys.get(verdict.id)
-			if (key === undefined) continue
+			if (key === undefined) {
+				process.stderr.write(`${name}: verdict id ${verdict.id} has no key\n`)
+				return 1
+			}
+			const earlier = seen.get(verdict.id)
+			if (earlier !== undefined) {
+				process.stderr.write(`${name}: verdict id ${verdict.id} appears twice (also in ${earlier})\n`)
+				return 1
+			}
+			seen.set(verdict.id, name)
 			const tally = tallies.get(key.run) ?? { scorer: 0, falsePass: 0, ambiguousPass: 0, misread: 0, ambiguousFail: 0, rows: 0 }
 			tally.rows += 1
 			if (key.passed) {
@@ -99,6 +113,12 @@ function main(): number {
 			if (a === undefined || b === undefined) {
 				process.stderr.write(`${a === undefined ? left : right}-v${copy}: no audited rows\n`)
 				return 1
+			}
+			for (const [label, tally] of [[`${left}-v${copy}`, a], [`${right}-v${copy}`, b]] as const) {
+				if (tally.rows !== ROWS) {
+					process.stderr.write(`${label}: ${tally.rows} audited rows where ${ROWS} are required\n`)
+					return 1
+				}
 			}
 			ends.low.push(low(a) - low(b))
 			ends.high.push(high(a) - high(b))

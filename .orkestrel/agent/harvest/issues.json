@@ -3868,9 +3868,9 @@
    "id": "I-213",
    "title": "Thresholds fitted in-sample",
    "area": "judge and selection",
-   "issue": "0.90, the 0.96 fit (margin 0.0015), and the records fits (m29 0.717 against 0.7) come from the same 48-message seed.",
-   "fix": "None yet. A held-out goal set is still required, and none has been labeled.",
    "status": "open",
+   "issue": "0.90, the 0.96 fit (margin 0.0015), and the records fits (m29 0.717 against 0.7) come from the same 48-message seed. The records arm's `LEDGER_FIT` and refined profile were fitted on the seed every reworded copy shares, so every v9 and v10 records reading is in-sample; the full view has no fitted parameter (attack round, records-harness C).",
+   "fix": "None yet. A held-out goal set is required, and none has been labeled. `FINAL-CHECK.md` § In-sample fit states the limit beside every v10 band.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/JUDGE.md:71",
@@ -3883,6 +3883,16 @@
      "note": "defect 4"
     },
     {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:829",
+     "exists": true,
+     "note": "LEDGER_FIT"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "In-sample fit"
+    },
+    {
      "path": "scaffold:.orkestrel/agent/rejected.md:21",
      "exists": true,
      "note": ""
@@ -3890,7 +3900,7 @@
     {
      "path": "scaffold:.orkestrel/agent/ideas.md:450",
      "exists": true,
-     "note": ""
+     "note": "Thresholds fitted on a held-out goal set"
     }
    ]
   },
@@ -5272,9 +5282,9 @@
    "id": "I-289",
    "title": "Delivery-date rule ignored",
    "area": "briefing and records method",
-   "issue": "The 2B quotes Kenji's date in 27 of 27 probe replies and 9 of 9 rewrites.",
-   "fix": "Measurement dropped the fixes on purpose. Every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9, so the date is ruled a model limit. The reopen condition is a larger model or thinking. The v10 runs under the 4B and under thinking have not reversed it.",
    "status": "rejected",
+   "issue": "The 2B quotes Kenji's date in 27 of 27 probe replies and 9 of 9 rewrites. In v10 the 4B with thinking off fails g06 in 4 of 4 records copies, and the full view fails 11 of 12 runs.",
+   "fix": "Measurement dropped the fixes on purpose: every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9. The method deep dive of 2026-10-09 found the rule and the 2026-10-12 date in the same answer request in 17 of 17 records runs, with nothing cut, so each loss is the model's, not the method's. The reopen condition is a larger model or thinking; the 4B with thinking on (`t4`) is the one untested case.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:44",
@@ -5282,12 +5292,12 @@
      "note": "probe"
     },
     {
-     "path": "scaffold:.orkestrel/agent/rejected.md",
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
      "exists": true,
-     "note": ""
+     "note": "Trace g06"
     },
     {
-     "path": "scaffold:.orkestrel/agent/ideas.md",
+     "path": "scaffold:.orkestrel/agent/rejected.md",
      "exists": true,
      "note": ""
     },
@@ -5297,14 +5307,9 @@
      "note": ""
     },
     {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/f4-records-v3/ledger.md",
+     "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
      "exists": true,
-     "note": ""
-    },
-    {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/t2a-records-v1/ledger.md",
-     "exists": true,
-     "note": ""
+     "note": "g06 scoring, LH-81660 lookup"
     }
    ]
   },
@@ -5336,9 +5341,9 @@
    "id": "I-292",
    "title": "$289 read as below $200",
    "area": "briefing and records method",
-   "issue": "One copy omitted the approval code.",
-   "fix": "None yet. The `compareAmounts` comparison line ('$289.00 is over $200.') exists in the harness but has never been measured, and the port does not include it.",
    "status": "open",
+   "issue": "One copy omitted the approval code. The deep dive of 2026-10-09 found that in `t2a-records-v3` the thinking read $289 as over $200 and the reply skipped the code line, so the omission is not a misread amount.",
+   "fix": "None in the method. The deep dive ruled out the `compareAmounts` line for g05. Records passes g05 in 13 of 17 runs against 1 of 8 for the 2B full view, and the 4B records passes 4 of 4; the 3 records failures are 2B omissions of a code that sat verbatim and current in the system message.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md",
@@ -5346,19 +5351,9 @@
      "note": "findings"
     },
     {
-     "path": "scaffold:.orkestrel/agent/ideas.md",
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
      "exists": true,
-     "note": ""
-    },
-    {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b2.json",
-     "exists": true,
-     "note": ""
-    },
-    {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/key-b2-fail.json",
-     "exists": true,
-     "note": ""
+     "note": "Trace g05"
     },
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/t2a-records-v3/ledger.md",
@@ -5371,9 +5366,9 @@
    "id": "I-293",
    "title": "Approval-code rule omitted; claims conflict",
    "area": "briefing and records method",
-   "issue": "Request 5 omitted MX-4486 in several arms, and two reports disagree about the briefing.",
-   "fix": "None yet. Request 5 still omits MX-4486 in at least one v10 records copy. The conflict between the two copies of the briefing design record is unresolved.",
    "status": "open",
+   "issue": "Request 5 omitted MX-4486 in several arms, and two reports disagree about the briefing.",
+   "fix": "The deep dive of 2026-10-09 rules the records g05 losses as model variance: `a5-records-v2`, `a5-records-v7`, and `t2a-records-v3` omit MX-4486 that sat verbatim and current in the request, and `a5-records-v8` is a scorer false fail on MX-4471 named as replaced (I-327). The conflict between the two copies of the briefing design record is unresolved.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v8/TRACE-ledger.md",
@@ -5381,12 +5376,12 @@
      "note": "trace"
     },
     {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b2.json",
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
      "exists": true,
-     "note": ""
+     "note": "Trace g05"
     },
     {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/key-b2-fail.json",
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b2.json",
      "exists": true,
      "note": ""
     },
@@ -5410,14 +5405,19 @@
    "id": "I-295",
    "title": "Credit check lost",
    "area": "briefing and records method",
-   "issue": "Refined 0 of 8, records 2 of 8, full view 8 of 8; pins bury the question.",
-   "fix": "None yet. The relevance filter on pinned and record lines has not been built in the harness or the port. Only the probe exists.",
    "status": "open",
+   "issue": "On the 2B, records passes g08 in 2 of 8 copies (`a5`) and 2 of 5 under thinking (`t2a`, `t2w`), while the full view passes 8 of 8. The 4B records passes 1 of 4 and the 4B full view 2 of 4, with the same omission. Every failure states the account and leaves out the fit verdict the request asks for.",
+   "fix": "None yet. The deep dive of 2026-10-09 found no stage of the pipeline losing a fact in 17 of 17 records runs, and in `t2a-records-v1` the verdict and the content that drops it come from one thinking-on response. Ranked next steps: a cold replay of the 12 failing requests (U3) picks between cleaning account records of request sentences and fragments (I-329) and a verdict-first sentence in the application's system text; the relevance filter on pinned and record lines comes last.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:93",
      "exists": true,
      "note": "probe"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
+     "exists": true,
+     "note": "Trace g08, Ranking"
     },
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v9/probes/judge-relevance.ts",
@@ -5430,24 +5430,9 @@
      "note": ""
     },
     {
-     "path": "scaffold:.orkestrel/agent/records-series-verdict.md",
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/records.mjs",
      "exists": true,
-     "note": ""
-    },
-    {
-     "path": "scaffold:.orkestrel/agent/instruments/units/agent/records-port-planner.md",
-     "exists": true,
-     "note": ""
-    },
-    {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/t2a-records-v1/ledger.md",
-     "exists": true,
-     "note": ""
-    },
-    {
-     "path": "scaffold:.orkestrel/agent/instruments/results/v10/f4-records-v3/ledger.md",
-     "exists": true,
-     "note": ""
+     "note": "account-record build"
     }
    ]
   },
@@ -5930,7 +5915,7 @@
    "area": "thinking",
    "status": "fixed",
    "issue": "The main harness's tool-free answer run also ran with thinking on: in `t2w-control-v2`, g07 got no reply after its first call and its answer run both thought to the 2,048 cap with no content, so the records arm had the thinking-off fix and the full view did not. The per-call inspection found it.",
-   "fix": "The main harness runs its answer run with thinking off under `--think` (sha `b5c49ee4`, 2026-10-09), and the four full-view thinking copies rerun as `t2a-control` so both arms compare on the same footing.",
+   "fix": "The main harness runs its answer run with thinking off under `--think` (sha `b5c49ee4`, 2026-10-09), and the four full-view thinking copies reran as `t2a-control`. They replied on 40 of 40 goals and cut 1 of 64 agent calls, a first pass whose answer run replied.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/bench/bench.mjs",
@@ -5959,8 +5944,8 @@
    "title": "The 4B think-off band sits on its bound at four copies",
    "area": "measurement method",
    "status": "open",
-   "issue": "After the blind audit, 4B records read 7.50\u20138.00 passes per copy against 5.50\u20137.00 for the full view over copies 1 to 4; the band clears at the high end (0.18) and sits at 0.00 at the low end.",
-   "fix": "None yet. Copies 5 to 8 of records and the full view run in stage 2, as the final-check plan prescribes for a condition whose pair does not clear at both ends.",
+   "issue": "Under the corrected audit, 4B records read 7.50–8.00 passes per copy against 5.50–7.25 for the full view over copies 1 to 4; the band clears at the high end (bound 0.25) and sits at 0.00 at the low end. The 4B lifts the full view more than records: records reaches 30 of 40 cells at the low end, the full view's who-is-who errors on g03 and g07 mostly go away, and g05, g06, and g08 fail in both arms.",
+   "fix": "None yet. Copies 5 to 8 of records and the full view run in stage 2, as the final-check plan prescribes for a pair that does not clear at the low end.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts",
@@ -5968,9 +5953,524 @@
      "note": "band"
     },
     {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/tally.json",
+     "exists": true,
+     "note": "bands"
+    },
+    {
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
      "exists": true,
-     "note": "Plan"
+     "note": "The 4B read, stage 1"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/INVESTIGATE-4B.md",
+     "exists": true,
+     "note": "cause"
+    }
+   ]
+  },
+  {
+   "id": "I-314",
+   "title": "The thinking band paired records with an unequal full view",
+   "area": "measurement method",
+   "status": "fixed",
+   "issue": "The first thinking table paired `t2a-records`, whose answer pass ran with thinking off, with `t2w-control`, whose answer run still thought, so the full view kept a defect records no longer had (attack round of 2026-10-09: records-harness A, main-harness F1, machinery F1).",
+   "fix": "`t2a-control` v1 to v4 reran on the fixed main harness and were audited blind. The pair `t2a-records` against `t2a-control` clears at every end: low 1.29, high 0.49, across 0.21. `FINAL-CHECK.md` was restated from that pair.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "Thinking read"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/tally.json",
+     "exists": true,
+     "note": "bands"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-c1.json",
+     "exists": true,
+     "note": "t2a-control verdicts"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/attack.json",
+     "exists": true,
+     "note": "confirmed findings"
+    }
+   ]
+  },
+  {
+   "id": "I-315",
+   "title": "The failure audit brief was asymmetric",
+   "area": "scoring and audit",
+   "status": "fixed",
+   "issue": "The failure items carried a `toolsOk` field and the failure brief named a tool failure as a point, which the pass brief did not; and a misread stood on the flagged points alone, while a pass had to be right on every point (attack round, machinery F2 and F3).",
+   "fix": "`items.ts` drops `toolsOk`. The failure brief in `audit.js` rules a misread only when every flagged point is a misread and the whole reply meets the pass standard, and rules real whenever the reply would be a false pass. All 70 audited failures were re-audited: 64 real, 4 ambiguous, 2 misread, 0 unresolved. The first readings sit in `audit/superseded/`.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/items.ts",
+     "exists": true,
+     "note": "failure items"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/audit.js",
+     "exists": true,
+     "note": "failBrief"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-r1.json",
+     "exists": true,
+     "note": "re-audit"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/audit-fix-brief.md",
+     "exists": true,
+     "note": "brief"
+    }
+   ]
+  },
+  {
+   "id": "I-316",
+   "title": "Audit ids were guessable and dropped verdicts went unnoticed",
+   "area": "scoring and audit",
+   "status": "fixed",
+   "issue": "Item ids could be traced to their run, the key files sat in the directory the auditors read, an item no auditor returned vanished from the tally, and the tally accepted a missing key or a duplicate id (attack round, machinery F6 and F7).",
+   "fix": "Ids are salted and the keys sit in `audit-keys/`. `audit.js` takes each chunk's ids and rules any id no auditor returns unresolved. `tally.ts` exits 1 on a verdict with no key, an id in two verdict files, or a paired run without 10 audited rows.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/items.ts",
+     "exists": true,
+     "note": "--keys"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/audit.js",
+     "exists": true,
+     "note": "ids, unresolved"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts",
+     "exists": true,
+     "note": "integrity checks"
+    }
+   ]
+  },
+  {
+   "id": "I-317",
+   "title": "The call inspection misread calibration and summarizer calls",
+   "area": "bench harness",
+   "status": "fixed",
+   "issue": "The per-call inspection judged calibration and summarizer calls by the agent's think and cap rules and compared a loose call count with the harness log (attack round, machinery F5).",
+   "fix": "`inspect.ts` classes a call with `num_predict` 1 as calibration and a tool-free call with the summarizer's system text as a summary, whatever the condition, leaves both out of the think, cap, and empty checks, and requires the agent-call count to equal the harness log exactly. Over the 16 stage 1 runs on 2026-10-09: 292 calls, 1 cut, 6 empty first passes, every count equal.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/inspect.ts",
+     "exists": true,
+     "note": "classification"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/inspect.json",
+     "exists": true,
+     "note": "findings"
+    }
+   ]
+  },
+  {
+   "id": "I-318",
+   "title": "The series could start over a running or finished run",
+   "area": "bench harness",
+   "status": "open",
+   "issue": "`series.ts` started with a run still open in `run.log`, and `run-one.ts` wrote into an output directory, log, or wire directory that already existed (attack round, machinery F4).",
+   "fix": "Staged as `series.ts.next` and `run-one.ts.next` beside the originals: the series refuses (exit 2) a start line with no end line, and a run refuses (exit 2) an existing output. They install between runs after stage 2.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts",
+     "exists": true,
+     "note": "staged .next"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/run-one.ts",
+     "exists": true,
+     "note": "staged .next"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/harness-tooling-fix-brief.md",
+     "exists": true,
+     "note": "brief"
+    }
+   ]
+  },
+  {
+   "id": "I-319",
+   "title": "A run did not record the harness it ran on",
+   "area": "bench harness",
+   "status": "open",
+   "issue": "`run.log` named each run's arguments but not the harness file's hash, so a report had to infer which harness a run used from install times (attack round, machinery F8).",
+   "fix": "Staged in `run-one.ts.next`: the start line ends with ` harness-sha256 HEX`. Until it installs, `FINAL-CHECK.md` names each condition's harness sha by hand.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/run-one.ts",
+     "exists": true,
+     "note": "staged .next"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/run-log.txt",
+     "exists": true,
+     "note": "start lines, a copy of run.log"
+    }
+   ]
+  },
+  {
+   "id": "I-320",
+   "title": "The records self-check skipped the run path's think setting",
+   "area": "bench harness",
+   "status": "open",
+   "issue": "`--check-ledger` built its arm outside the path `runLedger` uses, so it could pass while a live run sent the wrong `think` on the answer pass (attack round, records-harness C6).",
+   "fix": "Staged in `bench3/bench.mjs.next`: `runLedger` passes `think: flags.think` explicitly, and the answer-pass check builds its arm through that path with thinking on and asserts `think: false` on the answer pass and `think: true` on the first pass. It installs after stage 2.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/bench.mjs",
+     "exists": true,
+     "note": "runLedger, --check-ledger; staged .next"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/harness-tooling-fix-brief.md",
+     "exists": true,
+     "note": "brief"
+    }
+   ]
+  },
+  {
+   "id": "I-321",
+   "title": "The harness READMEs misstated the thinking flags",
+   "area": "bench harness",
+   "status": "fixed",
+   "issue": "The records README said the answer pass thinks, and neither README listed `--think-predict` or said that `num_predict` comes from it (attack round, records-harness B, main-harness F4).",
+   "fix": "Both READMEs state that the tool-free answer pass sends `think: false` and keeps the `num_predict` cap, that `num_predict` is the `--think-predict` value (default 1,024), and list the flag.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/README.md",
+     "exists": true,
+     "note": "answer pass, flag table"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/README.md",
+     "exists": true,
+     "note": "flag table"
+    }
+   ]
+  },
+  {
+   "id": "I-322",
+   "title": "Rescore read every row against the default scenario",
+   "area": "scoring and audit",
+   "status": "open",
+   "issue": "`rescore.mjs` scored each row with `scenario.json`'s scoring fields even when the row named a variant file, so a variant whose fields differ would be misscored (attack round, main-harness F5).",
+   "fix": "Staged as `rescore.mjs.next`: it exits 2 naming the goal and field when a row's scenario file has scoring fields that differ from `scenario.json`'s.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/rescore.mjs",
+     "exists": true,
+     "note": "staged .next"
+    }
+   ]
+  },
+  {
+   "id": "I-323",
+   "title": "Three readers of the leftover window, not one",
+   "area": "briefing and records method",
+   "status": "worked around",
+   "issue": "The final-check record said only the recall room reads the leftover window. The records harness also reads it to close the arm tools and to price an unpinned reply at the deny gate, and its reply reserve counts thinking tokens, so under thinking the tools can close sooner (attack round, records-harness C2).",
+   "fix": "`FINAL-CHECK.md` names all three readers. No records request in the v10 thinking or 4B runs carries the closure or narrowing text, so no closure fired. The port counts only carried thinking in the reserve (I-307).",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:1341",
+     "exists": true,
+     "note": "closed"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:1351",
+     "exists": true,
+     "note": "affords"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "Leftover window and generation room"
+    }
+   ]
+  },
+  {
+   "id": "I-324",
+   "title": "The full view's generation room shrinks as the shift grows",
+   "area": "measurement method",
+   "status": "worked around",
+   "issue": "The full view's prompt grows across the shift while `num_ctx` stays fixed, so late calls have less room than the thinking cap; a `t2w-control-v2` g10 call left 1,463 tokens against the 2,048 cap (attack round, main-harness F2).",
+   "fix": "`FINAL-CHECK.md` states it. The largest `t2a-control` prompts left 2,496 to 4,037 tokens, and no full-view call came within 64 tokens of `num_ctx`, so no result changed.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/bench.mjs:544",
+     "exists": true,
+     "note": "num_ctx, num_predict"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "Leftover window and generation room"
+    }
+   ]
+  },
+  {
+   "id": "I-325",
+   "title": "Thinking tests asserted the implementation and missed two paths",
+   "area": "agent docs and tests",
+   "status": "fixed",
+   "issue": "The package's thinking tests counted getter reads instead of observing requests, no test showed the first pass and budgets unchanged with `think` absent, no test stripped thinking from the tail before the plan's cap, and the guide said every owner sends the messages it would send with no thinking recorded (attack round, package F1, F3, F4, F5).",
+   "fix": "Commit 1117e23 adds the absent-think test, replaces the read counts with a getter switched after construction, adds the tail-strip test with a non-empty briefing, and narrows the guide sentence with an executed assertion for the ledger case. No `src/` change.",
+   "files": [
+    {
+     "path": "agent:tests/src/core/ledgers/Ledger.test.ts",
+     "exists": true,
+     "note": "F1, F3, F4"
+    },
+    {
+     "path": "agent:tests/src/core/providers/RelayStream.test.ts",
+     "exists": true,
+     "note": "F3"
+    },
+    {
+     "path": "agent:guides/agent.md",
+     "exists": true,
+     "note": "F5"
+    },
+    {
+     "path": "agent:tests/guides.test.ts",
+     "exists": true,
+     "note": "F5"
+    },
+    {
+     "path": "commit 1117e23 (agent)",
+     "exists": false,
+     "note": "commit"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/t7-attack-fix-brief.md",
+     "exists": true,
+     "note": "brief"
+    }
+   ]
+  },
+  {
+   "id": "I-326",
+   "title": "Port thinking behavior no measured arm ran",
+   "area": "agent package code",
+   "status": "open",
+   "issue": "The port reserves `predict` from the plan, the recall room, and the close rule, subtracts recorded thinking from `left` under replay `'none'`, keeps thinking out of the reply reserve, guards the rate's sign, and turns thinking off on every answer pass; no measured thinking arm ran this code (attack round, package F2).",
+   "fix": "`records-port-plan.md` § Thinking departures lists them and rules that a live port series under thinking measures them before any claim of parity with a measured thinking arm.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/records-port-plan.md",
+     "exists": true,
+     "note": "Thinking departures"
+    },
+    {
+     "path": "agent:src/core/ledgers/Gauge.ts",
+     "exists": true,
+     "note": "left, reserve"
+    },
+    {
+     "path": "agent:src/core/ledgers/Ledger.ts",
+     "exists": true,
+     "note": "plan, answer pass"
+    }
+   ]
+  },
+  {
+   "id": "I-327",
+   "title": "Scorer rules misfire on four goals",
+   "area": "scoring and audit",
+   "status": "open",
+   "issue": "The scorer fails a reply that names MX-4471 as the replaced code on g03 and g05; fails any written date on g06, the 2026-10-07 ship date included, though the rule forbids only a promised delivery date; passes any available-credit figure on g08, $3,860 and $4,240 included; and misses the scrapped restocking fee on g01 (method deep dive; attack round, main-harness F3).",
+   "fix": "None yet. Scorer unit U2: a lookbehind for 'original' and 'rotated from' on MX-4471, a g06 pattern that allows a ship date, a g08 check that fails any figure but $3,760, and the g05 restocking patterns in g01's `forbiddenPatterns` across the 18 scenario files, then a rescore of every v9 and v10 row that lists each changed verdict.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
+     "exists": true,
+     "note": "g01, g03, g05, g06, g08 scoring"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/variants",
+     "exists": true,
+     "note": "18 scenario files"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/rescore.mjs",
+     "exists": true,
+     "note": "rescore"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
+     "exists": true,
+     "note": "Findings outside the claims"
+    }
+   ]
+  },
+  {
+   "id": "I-328",
+   "title": "The delivery-date rule is filed off the delivery topic",
+   "area": "briefing and records method",
+   "status": "open",
+   "issue": "Seed 6, the rule that forbids a written delivery date, reads delivery at 0.444 against the 0.60 topic threshold, so it ranks off-topic for g06 and would be the first Rules line a consolidation cut drops. It cost nothing in v9 or v10: no g06 request cut a line.",
+   "fix": "None; deferred while no Rules line is cut. Judge topics per sentence for a split record line, or refit the delivery criterion.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v3/cal-categories.jsonl:105",
+     "exists": true,
+     "note": "seed 6 delivery 0.444"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/records.mjs:124",
+     "exists": true,
+     "note": "Rules ranking"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
+     "exists": true,
+     "note": "Trace g06"
+    }
+   ]
+  },
+  {
+   "id": "I-329",
+   "title": "Account records carry request sentences and fragments",
+   "area": "briefing and records method",
+   "status": "open",
+   "issue": "The Halvorsen record lists 'Anyway, can you check where the Halvorsen shipment actually is?' and 'I transposed the digits.' as facts, and the late $1,240 order total twice beside the $1,240 outstanding. On the 2B, this noise sits in every failing g08 briefing.",
+   "fix": "None yet. Ranked fourth in the deep dive: drop user-request sentences and lines with no id, number, or name from account records, conditional on the cold replay (U3) showing the noise causes the omission.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/records.mjs",
+     "exists": true,
+     "note": "account-record build"
+    },
+    {
+     "path": "agent:src/core/ledgers/helpers.ts",
+     "exists": true,
+     "note": "port record build"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
+     "exists": true,
+     "note": "Trace g08"
+    }
+   ]
+  },
+  {
+   "id": "I-330",
+   "title": "A made-up gift-note action goes unscored",
+   "area": "scoring and audit",
+   "status": "open",
+   "issue": "`f4-records` v1, v3, v4 and `f4-control-v4` claim to have added a gift note, while the lookup says gift note text is not recorded on the order. No goal scores it.",
+   "fix": "None yet. Add a g06 forbidden pattern for a claimed gift-note action in scorer unit U2, or rule it out of scope.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
+     "exists": true,
+     "note": "g06"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md",
+     "exists": true,
+     "note": "Trace g06, finding 3"
+    }
+   ]
+  },
+  {
+   "id": "I-331",
+   "title": "The 4B with thinking on needs a sized cap",
+   "area": "thinking",
+   "status": "open",
+   "issue": "The 2B's thinking cap was sized on 10 calls and the tail bound it, so the 4B with thinking on (`t4`) needs a cap sized on the calls its runs make, without letting a run go on for hours.",
+   "fix": "None yet. `think-probe.ts` replays the 66 agent calls of `f4-records` v1 and v3 and `f4-control` v1 and v3 on the 4B with thinking on, `num_predict` 4,096, `num_ctx` 10,240, a 900-second timeout, and a stop after 3 cut calls. The cap is the smallest multiple of 256 at or over 1.5 times the largest self-stopped completion; no run starts when it exceeds 4,096.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/probes/think-probe.ts",
+     "exists": true,
+     "note": "probe"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/INVESTIGATE-4B.md",
+     "exists": true,
+     "note": "Condition t4"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/think-probe-4b-brief.md",
+     "exists": true,
+     "note": "brief"
+    }
+   ]
+  },
+  {
+   "id": "I-332",
+   "title": "The ported ledger sends requests the measured arm never sent",
+   "area": "agent package code",
+   "status": "open",
+   "issue": "The offline replay of the 8 `a5-records` runs through the port (U8, 2026-10-09) matched every judge body and the first request of all 80 goals, but 50 later agent bodies differ: recall and the answer note leave out seed assistant statements, ended pin lines, and repeated readings; the answer note keeps the call text on lookup lines; an earlier answer note is missing from a recall. The port plan lists none of these.",
+   "fix": "None yet. Two blind lanes, the planner on Opus and the analyst on Astra, rule each departure a port fix or a listed departure under the rule that the package publishes the measured method; the port fixes follow, then the replay reruns.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/u8-report.md",
+     "exists": true,
+     "note": "causes C1 to C5"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/fidelity-rulings-brief.md",
+     "exists": true,
+     "note": "design brief"
+    },
+    {
+     "path": "agent:src/core/ledgers/helpers.ts:633",
+     "exists": true,
+     "note": "collectLive"
+    },
+    {
+     "path": "agent:src/core/ledgers/Ledger.ts",
+     "exists": true,
+     "note": "#recall, #buildDigest, #renderSource"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench3/bench.mjs",
+     "exists": true,
+     "note": "recall 2490-2590, digest 1919-1941"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts",
+     "exists": false,
+     "note": "probe"
+    }
+   ]
+  },
+  {
+   "id": "I-333",
+   "title": "The replay probe over-accepted on four paths",
+   "area": "agent docs and tests",
+   "status": "open",
+   "issue": "The review of the U8 probe found it labels stale removals on recall and digest routes as R2a, answers a re-asked held judgment with a body it built itself, serves the last twin again when a body repeats, reads two setup values back from the recording, and drops `schema` and non-text message members before comparing.",
+   "fix": "None yet. Unit u8b fixes each path and labels every unlisted body by cause; the review runs again after it.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/u8-review.md",
+     "exists": true,
+     "note": "claims 2 to 5, findings A and B"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/u8b-probe-fix-brief.md",
+     "exists": true,
+     "note": "brief"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/probes/ledger-replay-compare.ts",
+     "exists": false,
+     "note": "probe"
     }
    ]
   }

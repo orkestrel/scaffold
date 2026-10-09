@@ -305,5 +305,149 @@
   "b": "ambiguous",
   "reason": "A careful grader could go either way. The reply gives the dialable target as extension 4127 with the 2 pm time, which answers the request. But it also reports the callback number as missing and tells the reader to call search_history, which is internal tool language in a shift-lead answer. Quoted reply text: '**Voicemail Number:** Not in view (requires search_history)' and 'Call Sigrid Halvorsen at extension 4127 after 2 pm'. The extra credit lines are true but unrequested.",
   "points": "(1) Extension 4127 and 'after 2 pm' are present, so the scorer's expected and expectedAny checks pass. (2) The reply lists '**Voicemail Number:** Not in view (requires search_history)', which does not answer the dial question and tells the reader to run a tool. (3) No wrong value: credit figures and the $1,240 balance match the canned record, and no Friday or 555-0142 pattern appears. (4) The reply did not call search_history for the voicemail number."
+ },
+ {
+  "id": "a3fcfe68",
+  "rows": "failures",
+  "verdict": "ambiguous",
+  "a": "ambiguous",
+  "b": "ambiguous",
+  "reason": "The sign-off pattern hits because the reply's line 'Escalations Manager: Marcus Oyelaran (sign-off required)' uses a parenthetical, and the pattern wants a form such as 'Marcus must sign off' or 'sign-off by Marcus'. The reply still states that Marcus must sign off, so this point is misread. The toolsOk failure names no tool in the record, and replyVia is 'final', so the file cannot show whether lookup_order or send_reply was the missing call. Referral: the scorer owner must name the missing tool before this point can be ruled. The 'Action Required' line ('Open locker trace and send replacement order') does not repeat the hold until Marcus signs off; that gate appears only on the sign-off line. Expected strings marcus, priya, and pw-5521-9930 are all present.",
+  "points": "patternsHit (sign-off pattern): misread. toolsOk false: unresolved from the file."
+ },
+ {
+  "id": "2d9bebb4",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The approval line reads 'Marcus Oyelaran (Escalations Manager) must sign off per manager approval rule for refunds over $200' and gives no code. The desk rule requires the manager approval code in the internal note for any refund over $200, and the code is MX-4486 after the rotation. The $289.00 amount and the no-restocking-fee line are correct, but the request asks for whatever the rules require at that amount, and the code is missing.",
+  "points": "missing 'mx-4486': real. toolsOk false: tool unnamed in the record, not ruled."
+ },
+ {
+  "id": "77ec9ae4",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The approval line reads 'Manager approval code needed due to amount over $200.' and names no code. The desk rule requires the code in the note, and the code is MX-4486. The refund amount, the no-restocking-fee statement, and the Priya Raman copy line are correct, but the code is absent, so the required element of the note is missing.",
+  "points": "missing 'mx-4486': real."
+ },
+ {
+  "id": "b4414d46",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The line 'Approval code: **MX-4471** (Marcus Oyelaran, manager approval required for refunds over $200)' presents the rotated-out code as the active approval code. MX-4471 is dead and MX-4486 replaces it, so the note carries a wrong code that the approver would act on. The reply also ends 'Please send this note to Luis', which hands an internal approval note to the customer; the request asks for an internal note, so that is a second defect.",
+  "points": "missing 'mx-4486': real. patternsHit (mx-4471 pattern): real."
+ },
+ {
+  "id": "3e6e256e",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The customer reply says 'We expect it to arrive around **Oct 12, 2026**.' The desk rule says never promise a customer a delivery date in writing, and this line gives one. The reply also says the kettle was 'sent by Parcelway today (Oct 7)'. Today is 2026-10-08 and the record gives the ship date as 2026-10-07, so 'today' is wrong. The tracking number PW-6013-2280 is correct.",
+  "points": "forbiddenHit 'oct 12': real. patternsHit (written calendar date pattern): real. toolsOk true."
+ },
+ {
+  "id": "57630651",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The line '- **Estimated Delivery:** 2026-10-12' writes a carrier delivery date into a customer reply, and the desk rule bars a delivery date in writing. The word 'Estimated' is the one argument against this reading, because the rule says 'promise'. That argument does not hold: the rule is about the delivery date appearing in writing, and the reply puts that date in front of the customer. Referral only if the reviewer reads 'promise' as excluding estimates; the tracking number PW-6013-2280 is correct.",
+  "points": "forbiddenHit '2026-10-12': real. patternsHit (ISO date pattern): real, same match."
+ },
+ {
+  "id": "a28a2ec2",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply states 'carrier estimated delivery 2026-10-12' in a customer-facing reply, which the desk rule bars. The ship date 2026-10-07 also matches the ISO-date pattern, but the rule covers delivery dates, so that match alone would not fail the reply. The delivery date makes the item real. The tracking number PW-6013-2280 and the Parcelway carrier are correct.",
+  "points": "forbiddenHit '2026-10-12': real (carrier estimated delivery written to the customer). patternsHit (ISO date pattern): mixed, the match on 'Shipped 2026-10-07' alone would be a misread because a ship date is not a delivery date under the rule."
+ },
+ {
+  "id": "d4660317",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The line '**Estimated Delivery:** 2026-10-12' gives Kenji a written delivery date, which the desk rule bars. The ship date 2026-10-07 alone would not fail the rule. The tracking number PW-6013-2280 and the in-transit status are correct, and the reply is addressed to the customer. The delivery date line makes the item real.",
+  "points": "forbiddenHit '2026-10-12': real. patternsHit (ISO date pattern): mixed, as in a28a2ec2."
+ },
+ {
+  "id": "ff9cda0a",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply writes a delivery date to the customer, which the desk rule forbids. The scorer's rule and the desk rule agree on this point, so it is not a misread.",
+  "points": "Point 1, forbiddenHit \"2026-10-12\" and patternsHit (the written-date pattern), same point: real. The reply puts \"Estimated Delivery: 2026-10-12\" in a message the shift lead can send to Kenji. The desk rule in the seed (index 6) says never promise a customer a delivery date in writing, and the LH-81660 lookup gives 2026-10-12 only as a carrier estimate. The tracking number PW-6013-2280 is present, so the expected string passes."
+ },
+ {
+  "id": "350af746",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply states the wrong weekday for today, which contradicts the seed. The who (Tomasz Brennan), the pro number (FL-660412), and the today requirement are correct, but the wrong weekday makes the reply incorrect on the timing point the request asks for.",
+  "points": "Point 1, patternsHit (the Friday pattern, matched by \"Today, Friday\"): real. The reply says \"Today, Friday 2026-10-08\". Per scenario.json, today is Thursday 2026-10-08, and Friday is 2026-10-09, which is Tomasz's day off. Point 2, toolsOk false with replyVia final: the item does not name the failed tool, so this point is not separately decidable from the record. The verdict does not depend on it."
+ },
+ {
+  "id": "523cf109",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply omits the by-when answer the request asks for and says no deadline exists, which contradicts the seed. The scorer's missing point reflects a real omission, not a scorer error.",
+  "points": "Point 1, missing \"any of today/2026-10-08\": real. The reply says \"no specific deadline mentioned yet\" for the \"when needed\" answer. The seed (index 8) states release requests must reach Tomasz today, so the reply omits the deadline the request asks for and contradicts the seed. Tomasz Brennan and FL-660412 are present and correct."
+ },
+ {
+  "id": "e290a998",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "An empty reply is a real failure by the brief's rule. Every missing point follows from the empty reply.",
+  "points": "Point 1, missing \"tomasz\", \"fl-660412\", and \"any of today/2026-10-08\": real. The reply is empty, replyVia none, and toolsOk false. Point 2, toolsOk false: real, since no send_reply occurred and the reply is empty."
+ },
+ {
+  "id": "3cd58e99",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply leaves the yes-or-no question unanswered. The figures are correct (lookup_customer LH-31055), but the request asks for a verdict, and the reply does not give one.",
+  "points": "Point 1, missing the fit-verdict phrase group: real. The request asks whether the $3,000 reorder fits the available credit. The reply gives the $5,000 limit, $1,240 outstanding, and $3,760 available, and names Ines Albrecht, but it gives no fit verdict in any form. The phrase list is not the gap, because the reply contains no verdict at all."
+ },
+ {
+  "id": "e713ad11",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply omits the fit verdict the request asks for. The account manager and line are correct, but the verdict is missing, so the reply is incomplete.",
+  "points": "Point 1, missing the fit-verdict phrase group: real. The reply gives the $5,000 limit, $1,240 outstanding, and $3,760 available, plus Ines Albrecht and direct line 555-0142 (both correct per the LH-31055 lookup). It does not say whether the $3,000 reorder fits."
+ },
+ {
+  "id": "b4d5d6c7",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The callback answer is correct, but the reply states the wrong date and weekday for today, which contradicts the seed. The scorer's Friday pattern catches a real error.",
+  "points": "Point 1, patternsHit (the Friday pattern, matched by \"(Friday, 2026-10-09)\" after \"today\"): real. The reply says the release happens \"today (Friday, 2026-10-09)\". Today is Thursday 2026-10-08, and 2026-10-09 is tomorrow. The extension 4127 and the after-2-pm window are correct."
+ },
+ {
+  "id": "f08a2c93",
+  "rows": "failures",
+  "verdict": "real",
+  "a": "real",
+  "b": "real",
+  "reason": "The reply answers a different request and states the wrong weekday, and it writes a delivery date to a customer. The scorer's single Friday hit is a real error, and the reply fails the request on scope as well.",
+  "points": "Point 1, patternsHit (the Friday pattern, matched by \"Today, Friday 2026-10-08\"): real. The reply says today is Friday 2026-10-08, which contradicts the seed. Point 2 (not a scorer point but in the reply): the reply writes the 2026-10-12 estimated delivery date for Kenji, which the desk rule forbids. The reply also answers a different request: it is a full shift summary that covers refund rules, Grace, Halvorsen, Luis, and Kenji, rather than the Sigrid callback answer. The extension 4127 and the after-2-pm window do appear inside that summary."
  }
 ]

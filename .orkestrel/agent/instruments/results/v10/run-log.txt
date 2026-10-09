@@ -1,0 +1,57 @@
+===== f4-records-v1 start 2026-10-09T10:47:41Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v1.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v1 end 2026-10-09T11:07:11Z exit 0
+===== f4-control-v1 start 2026-10-09T11:07:12Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v1 end 2026-10-09T11:11:17Z exit 0
+===== f4-compaction-v1 start 2026-10-09T11:11:17Z [bench --mode compaction --ctx 3072 --search words --summary tuned --window 1600 --keep 6 --sections 3 --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --summary-model qwen3.5:4b-q4_K_M --model qwen3.5:4b-q4_K_M]
+===== f4-compaction-v1 end 2026-10-09T11:53:42Z exit 0
+===== t2-records-v1 start 2026-10-09T11:53:55Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v1.json --ctx 4096 --budget 0.525 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:2b-q4_K_M --think]
+===== t2-records-v1 end 2026-10-09T12:11:51Z exit 0
+===== t2-control-v1 start 2026-10-09T12:11:51Z [bench --mode none --ctx 7168 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --model qwen3.5:2b-q4_K_M --think]
+===== t2-control-v1 end 2026-10-09T12:18:59Z exit 0
+===== t2-compaction-v1 start 2026-10-09T12:19:00Z [bench --mode compaction --ctx 4096 --search words --summary tuned --window 1600 --keep 6 --sections 3 --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --summary-model qwen3.5:2b-q4_K_M --model qwen3.5:2b-q4_K_M --think]
+===== t2-compaction-v1 end 2026-10-09T12:53:18Z exit 0
+===== f4-records-v2 start 2026-10-09T12:53:19Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v2.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v2 end 2026-10-09T13:05:33Z exit 0
+===== f4-control-v2 start 2026-10-09T13:05:33Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v2.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v2 end 2026-10-09T13:08:27Z exit 0
+===== t2w-records-v1 start 2026-10-09T13:09:01Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v1.json --ctx 5120 --budget 0.42 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2w-records-v1 end 2026-10-09T13:27:51Z exit 0
+===== t2w-control-v1 start 2026-10-09T13:27:52Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2w-control-v1 end 2026-10-09T13:32:28Z exit 0
+===== t2w-compaction-v1 start 2026-10-09T13:32:28Z [bench --mode compaction --ctx 5120 --search words --summary tuned --window 1600 --keep 6 --sections 3 --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --summary-model qwen3.5:2b-q4_K_M --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2w-compaction-v1 end 2026-10-09T14:52:01Z exit 0
+===== t2a-records-v1 start 2026-10-09T15:09:00Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v1.json --ctx 5120 --budget 0.42 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:2b-q4_K_M --think --think-predict 2048 --answer-think off]
+===== t2a-records-v1 end 2026-10-09T15:20:47Z exit 0
+===== t2a-records-v2 start 2026-10-09T15:20:47Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v2.json --ctx 5120 --budget 0.42 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:2b-q4_K_M --think --think-predict 2048 --answer-think off]
+===== t2a-records-v2 end 2026-10-09T15:37:02Z exit 0
+===== t2w-control-v2 start 2026-10-09T15:37:03Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v2.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2w-control-v2 end 2026-10-09T15:47:59Z exit 0
+===== t2a-records-v3 start 2026-10-09T15:48:00Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v3.json --ctx 5120 --budget 0.42 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:2b-q4_K_M --think --think-predict 2048 --answer-think off]
+===== t2a-records-v3 end 2026-10-09T15:59:20Z exit 0
+===== t2w-control-v3 start 2026-10-09T15:59:20Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v3.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2w-control-v3 end 2026-10-09T16:05:28Z exit 0
+===== t2a-records-v4 start 2026-10-09T16:05:29Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v4.json --ctx 5120 --budget 0.42 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:2b-q4_K_M --think --think-predict 2048 --answer-think off]
+===== t2a-records-v4 end 2026-10-09T16:16:14Z exit 0
+===== t2w-control-v4 start 2026-10-09T16:16:14Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v4.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2w-control-v4 end 2026-10-09T16:22:07Z exit 0
+===== f4-records-v3 start 2026-10-09T16:22:07Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v3.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v3 end 2026-10-09T16:33:34Z exit 0
+===== f4-control-v3 start 2026-10-09T16:33:34Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v3.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v3 end 2026-10-09T16:37:30Z exit 0
+===== f4-records-v4 start 2026-10-09T16:37:39Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v4.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v4 end 2026-10-09T16:48:50Z exit 0
+===== f4-control-v4 start 2026-10-09T16:48:50Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v4.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v4 end 2026-10-09T16:51:53Z exit 0
+===== t2a-control-v1 start 2026-10-09T17:00:14Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v1.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2a-control-v1 end 2026-10-09T17:05:05Z exit 0
+===== t2a-control-v2 start 2026-10-09T17:05:05Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v2.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2a-control-v2 end 2026-10-09T17:14:20Z exit 0
+===== t2a-control-v3 start 2026-10-09T17:14:21Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v3.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2a-control-v3 end 2026-10-09T17:21:14Z exit 0
+===== t2a-control-v4 start 2026-10-09T17:21:15Z [bench --mode none --ctx 8192 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v4.json --model qwen3.5:2b-q4_K_M --think --think-predict 2048]
+===== t2a-control-v4 end 2026-10-09T17:30:45Z exit 0
+===== f4-records-v5 start 2026-10-09T17:30:45Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v5.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v5 end 2026-10-09T17:41:57Z exit 0
+===== f4-control-v5 start 2026-10-09T17:41:58Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v5.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v5 end 2026-10-09T17:45:57Z exit 0
+===== f4-records-v6 start 2026-10-09T17:45:57Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v6.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]

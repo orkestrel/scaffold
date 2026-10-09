@@ -46,6 +46,18 @@ Both lanes rule each of these fixed:
 - The scenario literals at `tmp/bench3/bench.mjs:774`, `:842`, and `:1369`.
 - R6, the tight-budget stub: the stub reads the projected briefing.
 
+## Thinking departures
+
+No measured thinking arm ran the following port behavior:
+
+- The `predict` option reserves generation tokens from the plan budget, the recall room, and the recall close rule.
+- Under replay `'none'`, the gauge subtracts recorded thinking from the tokens used when computing `left`.
+- The reply reserve excludes thinking under every replay policy.
+- The marginal rate falls back to the gauge scale when its fitted slope is undefined, nonfinite, or not positive.
+- The answer pass always sends `think: false`, including when the first pass leaves the provider's thinking default in effect.
+
+Run a live port series under thinking that measures these departures before claiming parity with a measured thinking arm. The measured arms do not establish that parity.
+
 ## Units
 
 Every unit runs serially in the worktree `/home/user/agent-port`, one writer at a time. No unit runs `npm run build` before U9, and none touches `/home/user/agent/dist`, which the live harnesses import. A `verifier` on Haiku 5.5 runs each unit's gates.
