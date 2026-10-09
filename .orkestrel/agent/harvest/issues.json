@@ -5923,6 +5923,56 @@
      "note": "buildDateSentence, scenario.ledger.clock"
     }
    ]
+  },
+  {
+   "id": "I-312",
+   "title": "The full view's answer run thought to the cap under thinking",
+   "area": "thinking",
+   "status": "fixed",
+   "issue": "The main harness's tool-free answer run also ran with thinking on: in `t2w-control-v2`, g07 got no reply after its first call and its answer run both thought to the 2,048 cap with no content, so the records arm had the thinking-off fix and the full view did not. The per-call inspection found it.",
+   "fix": "The main harness runs its answer run with thinking off under `--think` (sha `b5c49ee4`, 2026-10-09), and the four full-view thinking copies rerun as `t2a-control` so both arms compare on the same footing.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/bench.mjs",
+     "exists": true,
+     "note": "attempt, finishGoal"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/inspect.ts",
+     "exists": true,
+     "note": "per-call inspection"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/control-answer-think-brief.md",
+     "exists": true,
+     "note": "brief"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/plan-stage2.json",
+     "exists": true,
+     "note": "t2a-control runs"
+    }
+   ]
+  },
+  {
+   "id": "I-313",
+   "title": "The 4B think-off band sits on its bound at four copies",
+   "area": "measurement method",
+   "status": "open",
+   "issue": "After the blind audit, 4B records read 7.50\u20138.00 passes per copy against 5.50\u20137.00 for the full view over copies 1 to 4; the band clears at the high end (0.18) and sits at 0.00 at the low end.",
+   "fix": "None yet. Copies 5 to 8 of records and the full view run in stage 2, as the final-check plan prescribes for a condition whose pair does not clear at both ends.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts",
+     "exists": true,
+     "note": "band"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "Plan"
+    }
+   ]
   }
  ]
 }

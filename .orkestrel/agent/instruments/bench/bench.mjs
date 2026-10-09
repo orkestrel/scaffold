@@ -511,6 +511,8 @@ class OllamaChatProvider extends AgentProvider {
 	body(request) {
 		const toolEstimate = estimateTools(request.tools)
 		const messages = mapMessages(request.messages)
+		const overridden = this.#think && request.options?.think === false
+		const think = request.options?.think ?? this.#think
 		this.#current = {
 			call: this.#log.length,
 			label: this.#label,
@@ -528,14 +530,15 @@ class OllamaChatProvider extends AgentProvider {
 			called: false,
 			// The daemon's done record counts thinking and content together in eval_count, so a thinking
 			// call records the thinking text's length in characters.
-			...(this.#think ? { thinking: 0, cut: false } : {}),
+			...(this.#think && !overridden ? { thinking: 0, cut: false } : {}),
+			...(overridden ? { think: false } : {}),
 		}
 		this.#log.push(this.#current)
 		return {
 			model: this.#model,
 			messages,
 			stream: true,
-			think: this.#think,
+			think,
 			truncate: false,
 			keep_alive: '30m',
 			options: { num_ctx: this.#ctx, ...OPTIONS, ...(this.#think ? { num_predict: thinkPredict } : {}) },
@@ -2428,12 +2431,12 @@ function score(goal, text) {
 }
 
 // One agent run: its result or its error, and how it ended: `natural`, `exhausted`, `aborted`, or `error`.
-async function attempt(agent, run) {
+async function attempt(agent, run, think) {
 	agentRun = run
 	events.ending = undefined
 	events.reason = undefined
 	try {
-		const result = await agent.generate()
+		const result = await (think === undefined ? agent.generate() : agent.generate({ think }))
 		return { result, end: events.ending ?? (result.partial ? 'aborted' : 'natural'), reason: events.reason }
 	} catch (caught) {
 		return { error: describe(caught), end: 'error' }
@@ -2453,12 +2456,13 @@ function unlabel(text) {
 /**
  * Ends the goal under the `reply` design and returns its runs, the follow-up when one ran, the reply
  * route, and the delivered reply. Under `terminal`, a natural end with text is the reply, and an empty
- * natural end or an exhausted run gets `ANSWER_CUE` and one more run under `ANSWER`. Under `tool`,
+ * natural end or an exhausted run gets `ANSWER_CUE` and one more run under `ANSWER`, which runs with
+ * thinking off when `think` is set. Under `tool`,
  * `send_reply` is the reply, and a natural end with text gets `REMINDER` and one more run, after which
  * the last non-empty natural plain text is delivered through `unlabel`. An error, an abort, or an
  * overflow ends the goal with no follow-up. No branch reads the goal's facts or scoring rules.
  */
-async function finishGoal(agent, conversation, reply, request) {
+async function finishGoal(agent, conversation, reply, request, think) {
 	const runs = [await attempt(agent, 1)]
 	const natural = (run) => (run.end === 'natural' ? run.result.content : '')
 	const repeated = runs[0].end === 'aborted' && runs[0].reason === 'repeat'
@@ -2471,7 +2475,8 @@ async function finishGoal(agent, conversation, reply, request) {
 			const previous = agent.context.scope
 			agent.context.apply(ANSWER)
 			try {
-				runs.push(await attempt(agent, 2))
+				// A thinking model asked for a reply with no tools might end its turn inside its reasoning or think to the cap, so the answer run runs with thinking off.
+				runs.push(await attempt(agent, 2, think ? false : undefined))
 			} finally {
 				agent.context.apply(previous)
 			}
@@ -2494,7 +2499,7 @@ async function finishGoal(agent, conversation, reply, request) {
  * Poses one goal's request, ends the goal through `finishGoal`, and returns its record. `bench` holds
  * the agent, its conversation, the `--reply` design, and, in `compaction` and `both`, the seed folds.
  */
-async function runGoal(goal, { agent, conversation, reply, seedFolds, seedFaults }) {
+async function runGoal(goal, { agent, conversation, reply, seedFolds, seedFaults, think = flags.think }) {
 	dumpTag = goal.id.slice(0, 3)
 	events = {
 		tools: [],
@@ -2518,7 +2523,7 @@ async function runGoal(goal, { agent, conversation, reply, seedFolds, seedFaults
 	const judgeBefore = judgeLog.length
 	const guardBefore = guardLog.length
 	const start = performance.now()
-	const { runs, followup, replyVia, replyText } = await finishGoal(agent, conversation, reply, request)
+	const { runs, followup, replyVia, replyText } = await finishGoal(agent, conversation, reply, request, think)
 	const wall = Math.round(performance.now() - start)
 	const calls = log.slice(first)
 	const agentCalls = calls.filter((call) => call.label === 'agent')
@@ -2714,17 +2719,17 @@ async function probeReply() {
 	const advertised = Object.fromEntries(REPLIES.map((reply) => [reply, createTools(reply).definitions().map((tool) => tool.name)]))
 	const plan = 'Luis paid $289.00 for the mixer, so I check the order first. '
 	const settle = 'The order confirms the card, so the answer is ready. '
-	// Thinking reaches no later request: no message carries a thinking field or the thinking text, and every request asks for thinking.
-	const thoughtless = (bodies) =>
-		bodies.some((body) => body.think !== true)
-			? 'a request did not ask for thinking'
+	// Thinking reaches no later request: no message carries a thinking field or the thinking text, and every request but the answer run's asks for thinking.
+	const thoughtless = (bodies, answers = []) =>
+		bodies.some((body, at) => body.think !== !answers.includes(at))
+			? 'a request did not ask for thinking, or an answer-scope request did'
 			: bodies.some((body) => body.messages.some((message) => Object.hasOwn(message, 'thinking') || [plan, settle].some((text) => message.content.includes(text.trim()))))
 				? 'a request carried thinking text'
 				: undefined
 	const thought = (row, lengths, cut) =>
 		JSON.stringify(row.calls.map((call) => call.thinking)) !== JSON.stringify(lengths)
 			? `thinking ${JSON.stringify(row.calls.map((call) => call.thinking))}, expected ${JSON.stringify(lengths)}`
-			: row.cut !== cut || row.thinking !== lengths.reduce((sum, length) => sum + length, 0) || row.think !== true
+			: row.cut !== cut || row.thinking !== lengths.reduce((sum, length) => sum + (length ?? 0), 0) || row.think !== true
 				? `think ${row.think}, cut ${row.cut}, thinking ${row.thinking}, expected cut ${cut}`
 				: undefined
 	const mixer = answer('lookup_order', 'LH-79215')
@@ -2948,16 +2953,19 @@ async function probeReply() {
 			think: true,
 			script: [
 				{ thinking: plan, reason: 'length' },
-				{ thinking: settle, text: luis },
+				{ text: luis },
 			],
 			via: 'answered',
 			text: luis,
 			turns: 2,
 			tools: [advertised.terminal, []],
-			check: (row, bodies) =>
-				thoughtless(bodies) ??
+			check: (row, bodies, judged, request, entries) =>
+				thoughtless(bodies, [1]) ??
 				(bodies[1].messages.at(-1).content === ANSWER_CUE ? undefined : 'request 2 does not end with the answer cue') ??
-				thought(row, [plan.length, settle.length], 1),
+				(bodies[0].think === true && bodies[0].options.num_predict === thinkPredict ? undefined : 'request 1 did not ask for thinking with the think cap') ??
+				(bodies[1].think === false && bodies[1].options.num_predict === thinkPredict ? undefined : 'the answer-scope request did not send think false with the think cap') ??
+				(entries[0].think === undefined && entries[1].think === false && entries[1].thinking === undefined ? undefined : 'the answer-scope call did not log think false with no thinking tally') ??
+				thought(row, [plan.length, undefined], 1),
 		},
 		...UNITS.map((selectUnit) => ({
 			label: `tool: text, then send_reply after the reminder, under ${selectUnit}-unit selection`,
@@ -3053,7 +3061,7 @@ async function probeReply() {
 					)
 		agent = createBenchAgent({ provider: stub, conversations: manager, conversation: current, reply: probe.reply, tools: createTools(probe.reply), select, seedIndex })
 		const before = log.length
-		const row = await runGoal(goal, { agent, conversation: current, reply: probe.reply })
+		const row = await runGoal(goal, { agent, conversation: current, reply: probe.reply, think: probe.think === true })
 		const entries = log.slice(before)
 		const perRun = []
 		for (const [at, entry] of entries.entries()) (perRun[entry.run - 1] ??= []).push(bodies[at]?.tools?.map((tool) => tool.function.name) ?? [])
@@ -3066,7 +3074,7 @@ async function probeReply() {
 		if (row.runs !== probe.tools.length) differs.push(`runs ${row.runs}, expected ${probe.tools.length}`)
 		for (const [run, names] of probe.tools.entries())
 			if (perRun[run] === undefined || perRun[run].some((one) => one.join() !== names.join())) differs.push(`run ${run + 1} advertised other tools`)
-		const extra = probe.check?.(row, bodies, judged, state.request)
+		const extra = probe.check?.(row, bodies, judged, state.request, entries)
 		if (extra !== undefined) differs.push(extra)
 		const unpinned = bodies.filter((body) => JSON.stringify(body.options) !== (probe.think === true ? thinkOptions : options)).length
 		if (unpinned > 0) differs.push(`${unpinned} requests carried other options`)

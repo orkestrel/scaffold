@@ -3383,7 +3383,7 @@ function createLedgerArm({ provider, judge, ledger, conversations, instructions,
 		events.exhausted = undefined
 		events.aborted = undefined
 		try {
-			// A thinking model asked for a reply with no tools can end its turn inside its reasoning or think to the cap, so the answer pass runs with thinking off.
+			// A thinking model asked for a reply with no tools might end its turn inside its reasoning or think to the cap, so the answer pass runs with thinking off.
 			pass.result = await (kind === 'answer' && think ? agent.generate({ think: false }) : agent.generate())
 		} catch (caught) {
 			pass.error = describe(caught)
