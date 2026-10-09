@@ -13,6 +13,11 @@ Every dispatch, its engine, and every substitution, newest first. The briefing b
 
 | Unit | Role and engine | Required by `.agents/orchestration.md` | Remedy |
 | --- | --- | --- | --- |
+| Blind pass audit of `v9` (162 scorer passes, 9 chunks) | workflow nodes as `checker` on Haiku 5.5, effort high, run `wf_e1b4eff3-968` | as required | Astra checks its verdicts after it returns |
+| `records-port` design round | `planner` on Opus 5.5 (native) and `analyst` driver on Haiku 5.5 with the lane on GPT-6 Astra, session `01a12049-5172-71e0-833d-81517acdb0a9`, 940.3 s; one brief, blind to each other | as required | none |
+| Final check stage 1 (`f4-*`, `t2-*`, copies 1 to 4) | live runs through `launch.ts` under a 7,100 s cap, `series.ts` over `run-one.ts`, budget 5,400 s per launch | as required | none |
+| Thinking probe | the Orchestrator's instrument `probes/think-probe.ts` on the 2B through `launch.ts`; 10 calls, completions 69 to 666 tokens | as required | none |
+| Records port reconnaissance | `scout` on Haiku 5.5, read-only map of the bench3 ledger, `records.mjs`, `@orkestrel/agent` seams, and the desk | as required | none |
 | `score-audit-2` check (batches 2 and 3) | `analyst` driver on Haiku 5.5; lane on GPT-6 Astra, session `01a12025-2e72-7552-9c5b-ee74c2930137`, 129.1 s, `VERDICT: PASS`; verdict `records-series-verdict.md` | as required | none |
 | Blind scorer audit, batch 3 | workflow nodes as `checker` on Haiku 5.5, effort high, run `wf_ba6a53a7-759`; 18 items, 0 splits | as required | none |
 | Records series `a5-records-v1`–`v8` | live runs through `launch.ts` under a 1,200 s cap, `run-one.ts`; 415.8 s to 472.5 s each | as required | none |
