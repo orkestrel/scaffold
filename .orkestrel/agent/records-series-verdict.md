@@ -1,5 +1,47 @@
 # Records series verdict, 2026-10-09
 
+## Correction, 2026-10-09: two-sided audit
+
+The Result and Ruling sections that follow adjudicated scorer failures alone, and a scorer pass can be false: `f4-control-v1` g08 passed with "$3,860" available, where $5,000 less $1,240 is $3,760. Every one of the 162 scorer passes of the three designs was then judged blind by two Claude Haiku 5.5 auditors on the `checker` role with a tiebreak (run `wf_e1b4eff3-968`, `tmp/bench/results/v9/audit/verdicts-pass.json`). GPT-6 Astra checked that batch (`score-audit-3`, `tmp/codex/score-audit-3-last.md`, 439.8 s): `VERDICT: FAIL 1, 3, 4, 5`. Its patch replaced 22 verdicts:
+
+- hedged language ruled false;
+- complete answers ruled ambiguous for their form;
+- an invented prerequisite ruled ambiguous;
+- unequal rulings on equivalent replies.
+
+The patched verdicts are `tmp/bench/results/v9/audit/verdicts-pass-checked.json`, with 128 correct, 25 false passes, and 9 ambiguous. A row passes when the scorer passes it and the checked pass audit does not rule it false, or when the scorer fails it and the failure audit rules it a misread. An ambiguous row counts as a fail at the low end and a pass at the high end (`tmp/bench/results/v9/tools/adjudicated.ts --override 64952363=ambiguous`).
+
+| Design | Passes per copy, low to high |
+| --- | --- |
+| Records | 6.50–6.75 |
+| Refined briefing | 5.63–6.13 |
+| Full view | 4.38–5.13 |
+
+| Pair | Mean d | Lower bound | Fix bar |
+| --- | --- | --- | --- |
+| Records against the full view | 1.63 to 2.13 | 0.12 to 0.90 | clears |
+| Refined against the full view | 1.00 to 1.25 | 0.07 to 0.43 | clears |
+| Records against refined | 0.63 to 0.88 | −0.57 to −0.08 | does not clear |
+
+Passes per request over the 8 copies, records / refined / full view:
+
+| Request | Records | Refined | Full view |
+| --- | --- | --- | --- |
+| Refund amount | 8 | 8 | 6 |
+| Card | 8 | 8 | 8 |
+| Grace escalation | 1 | 4–5 | 0–1 |
+| Halvorsen ticket | 7 | 7–8 | 6 |
+| Approval note | 4 | 4 | 0 |
+| Kenji shipping | 1–2 | 1 | 1 |
+| Depot release | 5 | 3–4 | 3 |
+| Credit check | 2–3 | 1–2 | 6 |
+| Gift note | 8 | 8 | 4–6 |
+| Sigrid callback | 8 | 1 | 1–4 |
+
+Both briefing designs clear the fix bar against the full view, and the records hold the highest mean. The records' lead over the refined briefing is inside the noise. The full view lost the most to false passes: 8 of its 48 passes. Its replies stated wrong credit headroom, wrong gift-note placement, and the superseded approval code.
+
+The records lose the Grace escalation to their copy lists. Five of the 8 records replies copy a wrong recipient on the internal note: the customer, Kenji, or the carrier. The ruling to keep the per-topic records stands. They are the design with the highest adjudicated mean, and they win the requests they were built for: the Sigrid callback, 8 against 1. The superseded rows follow for the record.
+
 The comparison asks which context design lets the 2B Qwen (`qwen3.5:2b-q4_K_M`, thinking off, temperature 0) answer the Larkspur support shift best: the full view (control), the event-sourced briefing with the refined profile, or that briefing with per-topic records. Each design ran the same 8 reworded copies of the 10 requests, one run per copy from a cold daemon with its wire recorded (agent checkout, `tmp/bench/results/v9/`).
 
 ## Runs

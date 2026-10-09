@@ -13,6 +13,9 @@ Every dispatch, its engine, and every substitution, newest first. The briefing b
 
 | Unit | Role and engine | Required by `.agents/orchestration.md` | Remedy |
 | --- | --- | --- | --- |
+| `score-audit-3` check (the `v9` pass audit) | the lane on GPT-6 Astra through `launch.ts`, read-only, cap 3,000 s; the command form the `analyst` driver resolved for `records-port`, reused by the Orchestrator with the brief and journal names changed | `analyst` driver resolves the command | none: the form is the driver's, unchanged |
+| Port U2 `ledger-types` | workflow `wf_b1a13877-b7f`: `opus` on Opus 5.5 writes, `verifier` on Haiku 5.5 gates, `checker` on Haiku 5.5 reviews the diff file | as required | none |
+| Port U1 `selection-briefing` | workflow `wf_1a34815e-920`: `builder` on Sonnet 5.5, `verifier` and `checker` on Haiku 5.5; the checker found an `as never[]` assertion, and a second `verifier` found two root-typecheck failures the unit's gates did not cover; the Orchestrator applied the three test-line fixes and the formatter, commit `99cdca6` | as required, except the Orchestrator's test-line edits | every later unit's gates add `tsc --project tsconfig.json`, `lint:check`, and `format:check` |
 | Blind pass audit of `v9` (162 scorer passes, 9 chunks) | workflow nodes as `checker` on Haiku 5.5, effort high, run `wf_e1b4eff3-968` | as required | Astra checks its verdicts after it returns |
 | `records-port` design round | `planner` on Opus 5.5 (native) and `analyst` driver on Haiku 5.5 with the lane on GPT-6 Astra, session `01a12049-5172-71e0-833d-81517acdb0a9`, 940.3 s; one brief, blind to each other | as required | none |
 | Final check stage 1 (`f4-*`, `t2-*`, copies 1 to 4) | live runs through `launch.ts` under a 7,100 s cap, `series.ts` over `run-one.ts`, budget 5,400 s per launch | as required | none |
