@@ -34,3 +34,24 @@ The window growth gives every arm the same generation room and keeps each prompt
 Stage 1 runs copies 1 to 4 of both conditions, interleaved by copy. After stage 1, each condition's pairs (records against the full view, records against compaction) take the band rule of `v9`: a pair clears when mean(d) − 2·sd(d)/√n > 0. A condition whose pairs both clear stops at 4 copies; any other condition runs copies 5 to 8. Scoring is the strict scorer at run time, then a blind double audit of every row, passes and failures alike, on the Haiku `checker` role, checked by the Astra `analyst` lane. The `v9` audit read failures alone; `f4-control-v1` g08 passes the scorer with "$3,860" available, where $5,000 less $1,240 is $3,760, so a pass can be false and every row is read.
 
 The 152-message scenario stays out of this check: it has no ledger section, no reworded copies, and no audited scoring fields. Within each run the conversation grows across the 10 requests, so the per-request results read the lead against conversation length.
+
+## Thinking read, 2026-10-09
+
+On the user's instruction of 2026-10-09, compaction left the series and the 2B thinking-on condition came first (`plan-thinking.json`).
+
+- **Answer pass.** The records' tool-free answer pass runs with thinking off.
+  - `t2a-records` v1 to v4 ran under `--think --think-predict 2048 --answer-think off`, on records harness sha `4d07e56a…`.
+  - Since sha `5342e209…`, the harness does this under `--think` with the flag removed.
+  - The four runs replied on 40 of 40 goals and cut 0 of 78 agent calls.
+- **Full view.** It ran as `t2w-control` v1 to v4. Every row was audited blind on both sides (`audit/verdicts-b1.json` to `-b3.json`).
+
+| Copy | Records, answer pass thinking off | Full view |
+| --- | --- | --- |
+| 1 | 7 | 3–4 |
+| 2 | 8 | 5–6 |
+| 3 | 6 | 4–6 |
+| 4 | 7 | 4–5 |
+| Mean | 7.00 | 4.00–5.25 |
+
+- **Band.** The pair d at the low end is 4, 3, 2, 3; at the high end it is 3, 2, 0, 2. The lower bound of mean(d) − 2·sd(d)/√n is 2.18 at the low end and 0.49 at the high end, so the pair clears at both.
+- **Against the think-off 2B.** The 2B with thinking off (`v9`, 8 copies) read 6.50–6.75 for records and 4.38–5.13 for the full view (`records-series-verdict.md`, Correction). With the answer pass fixed, thinking raises the records by about half a pass per copy and leaves the full view where it was.

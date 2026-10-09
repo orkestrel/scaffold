@@ -91,7 +91,6 @@ const RESULTS_NOTE = '[Desk] What your lookups and recalls returned in this requ
 const OVERFLOW = 'exceed_context_size_error'
 // Under --think an agent call's generation, thinking and content together, stops here, so a model that
 // thinks without end still returns and the goal moves on; the main harness sends the same cap.
-// The --think-predict flag overrides this default.
 const THINK_PREDICT = 1024
 // The generic instruction names no category a goal scores, so compaction gains nothing from the scorer.
 const SUMMARY_INSTRUCTIONS = {
@@ -169,10 +168,9 @@ const PROFILE_CHOICES = {
 	records: ['off', 'on'],
 }
 
-const { values: flags } = parseFlags({
+const { values: flags } = parseArgs({
 	options: {
 		mode: { type: 'string' },
-		'think-predict': { type: 'string', default: String(THINK_PREDICT) },
 		goals: { type: 'string' },
 		judge: { type: 'string', default: 'mica' },
 		summary: { type: 'string', default: 'generic' },
@@ -249,8 +247,6 @@ if (flags.model.trim() === '') fail('--model must name a model')
 const agentModel = flags.model
 const summaryInstruction = SUMMARY_INSTRUCTIONS[flags.summary]
 const ctx = integer('ctx', flags.ctx)
-const thinkPredict = integer('think-predict', flags['think-predict'])
-if (thinkPredict < 1) fail('--think-predict must be a positive integer')
 const windowMax = integer('window', flags.window)
 const keep = integer('keep', flags.keep)
 // Pins sampling so a difference between modes is not sampling noise; a nonzero --temperature samples with --seed.
@@ -289,15 +285,6 @@ const renderState = { stock: renderSelectionState, plain: renderPlainState, boun
 function fail(message) {
 	process.stderr.write(`bench: ${message}\n`)
 	process.exit(2)
-}
-
-// parseArgs throws on an undeclared flag, and the catch keeps that refusal at exit 2 like the others.
-function parseFlags(config) {
-	try {
-		return parseArgs(config)
-	} catch (error) {
-		return fail(error.message)
-	}
 }
 
 function hashText(text) {
@@ -416,8 +403,6 @@ class OllamaChatProvider extends AgentProvider {
 	}
 
 	body(request) {
-		// A run that passes `think` overrides the provider's setting for that call alone.
-		const think = request.options?.think ?? this.#think
 		this.#current = {
 			call: this.#log.length,
 			label: this.#label,
@@ -429,9 +414,7 @@ class OllamaChatProvider extends AgentProvider {
 			overflow: false,
 			// The daemon's done record counts thinking and content together in eval_count, so a thinking
 			// call records the thinking text's length in characters beside it.
-			...(think ? { thinking: 0, cut: false, produced: false } : {}),
-			// A call that overrides the setting records it, and with thinking off it carries no thinking tally.
-			...(think === this.#think ? {} : { think }),
+			...(this.#think ? { thinking: 0, cut: false, produced: false } : {}),
 		}
 		this.#content = ''
 		this.#calls = []
@@ -440,10 +423,10 @@ class OllamaChatProvider extends AgentProvider {
 			model: this.#model,
 			messages: mapMessages(request.messages),
 			stream: true,
-			think,
+			think: this.#think,
 			truncate: false,
 			keep_alive: '30m',
-			options: { num_ctx: this.#ctx, ...OPTIONS, ...(this.#think ? { num_predict: thinkPredict } : {}) },
+			options: { num_ctx: this.#ctx, ...OPTIONS, ...(this.#think ? { num_predict: THINK_PREDICT } : {}) },
 			...(request.options?.schema !== undefined ? { format: request.options.schema } : {}),
 			...(request.tools !== undefined && request.tools.length > 0
 				? {
@@ -3300,7 +3283,7 @@ function readRecordsRow(plan) {
 // stub provider and judge. `log` receives one entry per provider call, and the goal's `agent` entries price the
 // recall room, the reply reserve, the closing of the arm tools, and the gate; `requests` receives each request's
 // messages, which the separation count reads.
-function createLedgerArm({ provider, judge, ledger, conversations, instructions, system, gate: gateMode, log, requests, timeout, think = flags.think }) {
+function createLedgerArm({ provider, judge, ledger, conversations, instructions, system, gate: gateMode, log, requests, timeout }) {
 	const conversation = ledger.conversation
 	const replies = []
 	let goalStart = log.length
@@ -3383,8 +3366,7 @@ function createLedgerArm({ provider, judge, ledger, conversations, instructions,
 		events.exhausted = undefined
 		events.aborted = undefined
 		try {
-			// A thinking model asked for a reply with no tools can end its turn inside its reasoning or think to the cap, so the answer pass runs with thinking off.
-			pass.result = await (kind === 'answer' && think ? agent.generate({ think: false }) : agent.generate())
+			pass.result = await agent.generate()
 		} catch (caught) {
 			pass.error = describe(caught)
 		}
@@ -3604,7 +3586,7 @@ async function runLedger() {
 			judge: flags.judge,
 			wall,
 			turns: agentCalls.length,
-			calls: calls.map(({ call, label, messages, estimate, tools, hash, replyHash, prompt, completion, reason, ms, load_duration, prompt_eval_duration, eval_duration, cached, truncated, overflow, status, requested, thinking, cut, think }) => ({
+			calls: calls.map(({ call, label, messages, estimate, tools, hash, replyHash, prompt, completion, reason, ms, load_duration, prompt_eval_duration, eval_duration, cached, truncated, overflow, status, requested, thinking, cut }) => ({
 				call,
 				label,
 				messages,
@@ -3626,7 +3608,6 @@ async function runLedger() {
 				requested,
 				thinking,
 				cut,
-				think,
 			})),
 			maxPrompt: maxPrompt(agentCalls),
 			maxEstimate: Math.max(0, ...agentCalls.map((call) => call.estimate)),
@@ -3751,7 +3732,7 @@ async function runLedger() {
 	const table = [
 		`# ${scenario.title}: ${mode}`,
 		'',
-		`mode ${mode}, model ${agentModel}, think ${flags.think ? `on (cap ${thinkPredict})` : 'off'}${flags.think ? ', answer pass think off' : ''}, reply ${settings.reply}, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, categories ${flags.categories}, budget ${settings.budget}, tail ${settings.tail}, ctx ${ctx}, ${describeSettings(settings)}, ${sampler}. Seed pass: ${seedLine.questions.category + seedLine.questions.topic + seedLine.questions.amends + seedLine.questions.supersedes} questions, ${(seedLine.wall / 1000).toFixed(1)} s. Passed ${passed} of ${rows.length}; ok any ${passedAny} of ${rows.length}. Reply via: ${vias}. Lookup repeats ${lookupRepeats}. Goal facts at entry: ${factSlots.covered} of ${factSlots.slots} slots; goal facts plus the date line: ${datedSlots.covered} of ${datedSlots.slots} slots.${thinkNote(rows)}`,
+		`mode ${mode}, model ${agentModel}, think ${flags.think ? 'on' : 'off'}, reply ${settings.reply}, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, categories ${flags.categories}, budget ${settings.budget}, tail ${settings.tail}, ctx ${ctx}, ${describeSettings(settings)}, ${sampler}. Seed pass: ${seedLine.questions.category + seedLine.questions.topic + seedLine.questions.amends + seedLine.questions.supersedes} questions, ${(seedLine.wall / 1000).toFixed(1)} s. Passed ${passed} of ${rows.length}; ok any ${passedAny} of ${rows.length}. Reply via: ${vias}. Lookup repeats ${lookupRepeats}. Goal facts at entry: ${factSlots.covered} of ${factSlots.slots} slots; goal facts plus the date line: ${datedSlots.covered} of ${datedSlots.slots} slots.${thinkNote(rows)}`,
 		'',
 		...ledgerHeader,
 		...ledgerLines,
@@ -5612,7 +5593,7 @@ async function checkLedgerReplies(check) {
 		},
 	}
 	// With `transport`, the real provider under think on answers from the transport instead of the stub.
-	const fixture = (reply, gate, script, transport, think = transport !== undefined) => {
+	const fixture = (reply, gate, script, transport) => {
 		const conversations = createConversationManager()
 		const conversation = conversations.add()
 		conversations.switch(conversation.id)
@@ -5632,7 +5613,7 @@ async function checkLedgerReplies(check) {
 				return super.body(request)
 			}
 		}
-		const provider = transport !== undefined ? new Recording({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: 60_000, transport, think }, requests) : {
+		const provider = transport !== undefined ? new Recording({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: 60_000, transport, think: true }, requests) : {
 			async *stream(messages, signal, tools) {
 				log.push({ call: log.length, label: 'agent', messages: messages.length, estimate: estimateMessages(messages), tools: tools?.length ?? 0, overflow: false })
 				// The loop appends to the array it passes, so each call keeps a copy of what it was sent.
@@ -5647,7 +5628,7 @@ async function checkLedgerReplies(check) {
 				return { content: step.content ?? '', tools: step.calls ?? [] }
 			},
 		}
-		const arm = createLedgerArm({ provider, judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, timeout: 60_000, think })
+		const arm = createLedgerArm({ provider, judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, timeout: 60_000 })
 		const goal = async (request) => {
 			const outcome = await arm.runGoal({ request })
 			const added = conversation.messages().slice(ledger.position(outcome.request.id) + 1)
@@ -5914,7 +5895,7 @@ async function checkLedgerReplies(check) {
 	check(
 		'think on: every agent request asks for thinking under the num_predict cap, with the --model agent model and the sampler options',
 		thinkBodies.length === 4 &&
-			thinkBodies.every((wire) => wire.think === true && wire.model === agentModel && JSON.stringify(wire.options) === JSON.stringify({ num_ctx: ctx, ...OPTIONS, num_predict: thinkPredict })),
+			thinkBodies.every((wire) => wire.think === true && wire.model === agentModel && JSON.stringify(wire.options) === JSON.stringify({ num_ctx: ctx, ...OPTIONS, num_predict: THINK_PREDICT })),
 		JSON.stringify(thinkBodies.map((wire) => [wire.model, wire.think, wire.options])),
 	)
 	check(
@@ -5954,35 +5935,11 @@ async function checkLedgerReplies(check) {
 			spentOutcome.reply === 'It ships by Parcelway.' &&
 			JSON.stringify(spentOutcome.kinds) === '["first","answer"]' &&
 			JSON.stringify(spentOutcome.advertised) === JSON.stringify([terminalTools, '']) &&
-			spent.log[0].cut === true &&
-			spent.log[1].cut === undefined &&
+			JSON.stringify(spent.log.map((call) => call.cut)) === '[true,false]' &&
 			thinkFields(spent.log).cut === 1 &&
-			JSON.stringify(cutBodies.map((wire) => wire.think)) === '[true,false]' &&
-			cutBodies.every((wire) => wire.options.num_predict === thinkPredict) &&
+			cutBodies.every((wire) => wire.think === true && wire.options.num_predict === THINK_PREDICT) &&
 			carried(cutBodies).length === 0,
 		`${show(spentOutcome)} cut ${JSON.stringify(spent.log.map((call) => call.cut))} carried ${JSON.stringify(carried(cutBodies))}`,
-	)
-
-	const onBodies = []
-	const on = fixture('terminal', 'admit', [], createStubTransport(cutScript, onBodies), true)
-	const onOutcome = await on.goal(asking)
-	const offBodies = []
-	const off = fixture('terminal', 'admit', [], createStubTransport(cutScript, offBodies), false)
-	const offOutcome = await off.goal(asking)
-	check(
-		'think on: the answer pass sends think false and the first pass think true, the answer call logs think false with no thinking tally, and think off sends think true on neither pass',
-		JSON.stringify(onOutcome.kinds) === '["first","answer"]' &&
-			JSON.stringify(onBodies.map((wire) => wire.think)) === '[true,false]' &&
-			onBodies.every((wire) => wire.options.num_predict === thinkPredict) &&
-			on.log[0].think === undefined &&
-			on.log[1].think === false &&
-			on.log[1].thinking === undefined &&
-			thinkFields(on.log).cut === 1 &&
-			JSON.stringify(offOutcome.kinds) === '["first","answer"]' &&
-			offBodies.length === 2 &&
-			offBodies.every((wire) => wire.think !== true) &&
-			off.log.every((call) => call.think === undefined && call.thinking === undefined),
-		`on ${JSON.stringify(onBodies.map((wire) => wire.think))} off ${JSON.stringify(offBodies.map((wire) => wire.think))} ${JSON.stringify(on.log.map((call) => [call.think, call.thinking]))}`,
 	)
 
 	const body = new LedgerChatProvider({ url: OLLAMA_URL, model: AGENT_MODEL, ctx, label: 'agent', log: [], timeout: 60_000 }, []).body({ messages: [{ id: 'request', role: 'user', content: asking }] })
@@ -6968,7 +6925,7 @@ function thinkNote(rows) {
 
 // One per-call log line of a smoke run.
 function callLine(call) {
-	return `#${call.call} ${call.label} messages=${call.messages} estimate=${call.estimate} tools=${call.tools} prompt=${call.prompt} completion=${call.completion} reason=${call.reason} ms=${call.ms} truncated=${call.truncated} overflow=${call.overflow}${call.requested === undefined ? '' : ` requested=${call.requested}`}${call.thinking === undefined ? '' : ` thinking=${call.thinking} cut=${call.cut}`}${call.think === false ? ' think=false' : ''}\n`
+	return `#${call.call} ${call.label} messages=${call.messages} estimate=${call.estimate} tools=${call.tools} prompt=${call.prompt} completion=${call.completion} reason=${call.reason} ms=${call.ms} truncated=${call.truncated} overflow=${call.overflow}${call.requested === undefined ? '' : ` requested=${call.requested}`}${call.thinking === undefined ? '' : ` thinking=${call.thinking} cut=${call.cut}`}\n`
 }
 
 mkdirSync(flags.out, { recursive: true })
@@ -7110,7 +7067,7 @@ const lines = rows.map(
 const passed = rows.filter((row) => row.success).length
 const passedAny = rows.filter((row) => row.successAnswer).length
 const stateSetting = `, state ${flags.state}${flags.state === 'bounded' ? ` (neighbors ${neighbors})` : ''}, candidates ${flags.candidates}`
-const settings = `mode ${mode}, model ${agentModel}, think ${flags.think ? `on (cap ${thinkPredict})` : 'off'}${useSelect ? `, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, threshold ${threshold}, limit ${flags.limit}${stateSetting}, criterion ${flags.criterion}` : ''}${useWindow ? `, window ${windowMax}, keep ${keep}${sectionsCap === undefined ? '' : `, sections ${sectionsCap}`}, summary ${flags.summary}` : ''}, ctx ${ctx}, search ${flags.search}`
+const settings = `mode ${mode}, model ${agentModel}, think ${flags.think ? 'on' : 'off'}${useSelect ? `, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, threshold ${threshold}, limit ${flags.limit}${stateSetting}, criterion ${flags.criterion}` : ''}${useWindow ? `, window ${windowMax}, keep ${keep}${sectionsCap === undefined ? '' : `, sections ${sectionsCap}`}, summary ${flags.summary}` : ''}, ctx ${ctx}, search ${flags.search}`
 const table = [
 	`# ${scenario.title}: ${mode}`,
 	'',

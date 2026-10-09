@@ -3,8 +3,10 @@
 //   node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a [--arms records,control,compaction] --out PLAN.json
 // Condition f4 runs the 4B agent with thinking off at the think-off windows. Conditions t2 and t2w run the 2B agent
 // with thinking on: t2 under the harness's default cap of 1,024 tokens (the pilot), t2w under `--think-predict 2048`.
-// Condition t2a is t2w with the records answer pass run with thinking off (`--answer-think off`); its full view and
-// compaction arms equal t2w's. `--arms` limits the arms, in the order given; the default is all three.
+// Condition t2a is t2w with the records answer pass run with thinking off. The runs of 2026-10-09 passed
+// `--answer-think off`; the records harness since sha 5342e209 runs that pass with thinking off under `--think` and
+// refuses the flag, so t2a and t2w write the same arguments and differ only by the harness they ran on.
+// `--arms` limits the arms, in the order given; the default is all three.
 // Each arm's window grows by the cap, and the records briefing's budget share shrinks so its prompt budget stays
 // the think-off 0.7 of 3,072 tokens.
 // Exit: 0; 64 on usage.
@@ -66,7 +68,7 @@ function main(): number {
 		f4: { model: AGENT_4B, think: false, grow: 0, predict: undefined, estimates: { records: 1600, control: 400, compaction: 3300 } },
 		t2: { model: AGENT_2B, think: true, grow: 1024, predict: undefined, estimates: { records: 1700, control: 1200, compaction: 2400 } },
 		t2w: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1900, control: 1400, compaction: 2700 } },
-		t2a: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1500, control: 400, compaction: 6200 }, records: ['--answer-think', 'off'] },
+		t2a: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1500, control: 400, compaction: 6200 } },
 	}
 	if (names.some((name) => !Object.hasOwn(conditions, name))) {
 		process.stderr.write('--conditions names f4, t2, t2w, t2a, or several\n')

@@ -30,8 +30,6 @@ import { isArray, isNumber, isRecord, isString, parseJSONAs } from '@orkestrel/c
 import { createTool, createToolManager } from '@orkestrel/tool'
 // The main harness's scorer, so the ledger arm reads a reply exactly as the other arms do.
 import { clean, compileRules, scoreText } from '../bench/rescore.mjs'
-// The sentence and token rules live in records.mjs alone, so a record line and a briefing line split alike.
-import { buildRecords, checkRecords, extractTokens, linkAccounts, renderPinned, renderRecord, selectRecords, splitSentences } from './records.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const OLLAMA_URL = 'http://127.0.0.1:11434'
@@ -85,13 +83,9 @@ const REPEAT_NOTICE = {
 }
 // The main harness's text, which its terminal answer run reads as the last user message.
 const ANSWER_CUE = '[Desk] Give your complete answer now as your final message, from what you already have.'
-// Under `--answer-view collapsed` the desk note that carries the request's results opens with this line, in place of
-// the calls and results the answer run no longer reads.
-const RESULTS_NOTE = '[Desk] What your lookups and recalls returned in this request:'
 const OVERFLOW = 'exceed_context_size_error'
 // Under --think an agent call's generation, thinking and content together, stops here, so a model that
 // thinks without end still returns and the goal moves on; the main harness sends the same cap.
-// The --think-predict flag overrides this default.
 const THINK_PREDICT = 1024
 // The generic instruction names no category a goal scores, so compaction gains nothing from the scorer.
 const SUMMARY_INSTRUCTIONS = {
@@ -120,11 +114,6 @@ const PROFILES = {
 		'request-questions': 'all',
 		'answer-cue': 'off',
 		'recall-budget': 'unlimited',
-		'repeat-stop': 'lookups',
-		'answer-view': 'raw',
-		'recall-split': 'off',
-		'recall-category': 'on',
-		records: 'off',
 	},
 	refined: {
 		gate: 'admit',
@@ -142,11 +131,6 @@ const PROFILES = {
 		'request-questions': 'topics',
 		'answer-cue': 'on',
 		'recall-budget': '2',
-		'repeat-stop': 'all',
-		'answer-view': 'collapsed',
-		'recall-split': 'on',
-		'recall-category': 'off',
-		records: 'off',
 	},
 }
 const PROFILE_CHOICES = {
@@ -162,17 +146,11 @@ const PROFILE_CHOICES = {
 	tally: ['roundA', 'once', 'off'],
 	'request-questions': ['all', 'topics'],
 	'answer-cue': ['on', 'off'],
-	'repeat-stop': ['lookups', 'all'],
-	'answer-view': ['raw', 'collapsed'],
-	'recall-split': ['off', 'on'],
-	'recall-category': ['on', 'off'],
-	records: ['off', 'on'],
 }
 
-const { values: flags } = parseFlags({
+const { values: flags } = parseArgs({
 	options: {
 		mode: { type: 'string' },
-		'think-predict': { type: 'string', default: String(THINK_PREDICT) },
 		goals: { type: 'string' },
 		judge: { type: 'string', default: 'mica' },
 		summary: { type: 'string', default: 'generic' },
@@ -213,11 +191,6 @@ const { values: flags } = parseFlags({
 		'request-questions': { type: 'string' },
 		'answer-cue': { type: 'string' },
 		'recall-budget': { type: 'string' },
-		'repeat-stop': { type: 'string' },
-		'answer-view': { type: 'string' },
-		'recall-split': { type: 'string' },
-		'recall-category': { type: 'string' },
-		records: { type: 'string' },
 		scenario: { type: 'string' },
 		'probe-filing': { type: 'boolean', default: false },
 		categories: { type: 'string', default: 'choice' },
@@ -249,8 +222,6 @@ if (flags.model.trim() === '') fail('--model must name a model')
 const agentModel = flags.model
 const summaryInstruction = SUMMARY_INSTRUCTIONS[flags.summary]
 const ctx = integer('ctx', flags.ctx)
-const thinkPredict = integer('think-predict', flags['think-predict'])
-if (thinkPredict < 1) fail('--think-predict must be a positive integer')
 const windowMax = integer('window', flags.window)
 const keep = integer('keep', flags.keep)
 // Pins sampling so a difference between modes is not sampling noise; a nonzero --temperature samples with --seed.
@@ -289,15 +260,6 @@ const renderState = { stock: renderSelectionState, plain: renderPlainState, boun
 function fail(message) {
 	process.stderr.write(`bench: ${message}\n`)
 	process.exit(2)
-}
-
-// parseArgs throws on an undeclared flag, and the catch keeps that refusal at exit 2 like the others.
-function parseFlags(config) {
-	try {
-		return parseArgs(config)
-	} catch (error) {
-		return fail(error.message)
-	}
 }
 
 function hashText(text) {
@@ -416,8 +378,6 @@ class OllamaChatProvider extends AgentProvider {
 	}
 
 	body(request) {
-		// A run that passes `think` overrides the provider's setting for that call alone.
-		const think = request.options?.think ?? this.#think
 		this.#current = {
 			call: this.#log.length,
 			label: this.#label,
@@ -429,9 +389,7 @@ class OllamaChatProvider extends AgentProvider {
 			overflow: false,
 			// The daemon's done record counts thinking and content together in eval_count, so a thinking
 			// call records the thinking text's length in characters beside it.
-			...(think ? { thinking: 0, cut: false, produced: false } : {}),
-			// A call that overrides the setting records it, and with thinking off it carries no thinking tally.
-			...(think === this.#think ? {} : { think }),
+			...(this.#think ? { thinking: 0, cut: false, produced: false } : {}),
 		}
 		this.#content = ''
 		this.#calls = []
@@ -440,10 +398,10 @@ class OllamaChatProvider extends AgentProvider {
 			model: this.#model,
 			messages: mapMessages(request.messages),
 			stream: true,
-			think,
+			think: this.#think,
 			truncate: false,
 			keep_alive: '30m',
-			options: { num_ctx: this.#ctx, ...OPTIONS, ...(this.#think ? { num_predict: thinkPredict } : {}) },
+			options: { num_ctx: this.#ctx, ...OPTIONS, ...(this.#think ? { num_predict: THINK_PREDICT } : {}) },
 			...(request.options?.schema !== undefined ? { format: request.options.schema } : {}),
 			...(request.tools !== undefined && request.tools.length > 0
 				? {
@@ -800,10 +758,6 @@ const CATEGORY_CRITERIA = {
 	distractor: "A statement about something outside the desk's work",
 }
 const RECALL_CATEGORIES = ['fact', 'rule', 'correction', 'opinion']
-// The joints `--recall-split on` cuts a recall topic at: a comma, a semicolon, a slash, or the word `and`.
-const RECALL_JOINS = /\s*[,;/]\s*|\s+and\s+/i
-// The last line of a recall cut to its room, which `#cut` writes.
-const CUT_LINE = /^\d+ older items? not shown; /
 const QUIET = ['chatter', 'distractor']
 const DECISIVE = ['fact', 'rule', 'correction']
 const CATEGORY_QUESTION = 'Which category best describes what this support-desk message states?'
@@ -837,6 +791,8 @@ const STALE = [
 	{ pattern: /restocking fee/i, governing: [44, 45] },
 ]
 const RESULT_PREFIX = /^\[r\d+\] /
+const ID_SHAPE = /\b[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+\b/g
+const NUMERIC = /(?<![\w.])\d[\d,]*(?:\.\d+)?/g
 // The separation check skips result texts this short, such as `sent`, which ordinary prose repeats.
 const SEPARATION_MINIMUM = 24
 // The largest rise of a goal's first-call tokens per estimate unit over the scale its plan priced with, across
@@ -903,6 +859,19 @@ const REPLAY_REQUEST_TOPICS = {
 
 function readText(value) {
 	return typeof value === 'string' ? value : JSON.stringify(value)
+}
+
+function extractTokens(text) {
+	const source = String(text ?? '')
+	const ids = new Set()
+	for (const [token] of source.matchAll(ID_SHAPE)) if (/\d/.test(token)) ids.add(token.toUpperCase())
+	const rest = source.replace(ID_SHAPE, (token) => (/\d/.test(token) ? ' ' : token))
+	const numbers = new Set()
+	for (const [token] of rest.matchAll(NUMERIC)) {
+		const value = Number(token.replace(/,/g, ''))
+		if (Number.isFinite(value)) numbers.add(value)
+	}
+	return { ids, numbers }
 }
 
 function listMissingTokens(value, source) {
@@ -1018,6 +987,15 @@ function buildLedgerSystem(gate, reply, { date = 'off', clock = scenario.ledger.
 	return handles === 'bare' ? `${out} ${HANDLE_SENTENCE}` : out
 }
 
+// The sentences of a message: a sentence ends at a period, question mark, or exclamation mark followed by a space
+// and a capital, a digit, or a quote, so a decimal point, an id, or an amount never splits one.
+function splitSentences(text) {
+	return String(text ?? '')
+		.split(/(?<=[.!?])\s+(?=[\p{Lu}\d"'“])/u)
+		.map((sentence) => sentence.trim())
+		.filter((sentence) => sentence !== '')
+}
+
 // Whether a text carries an id, a number, or a name, the test `--autopin named` applies before a pin.
 function carriesSpecifics(text) {
 	const tokens = extractTokens(text)
@@ -1091,12 +1069,6 @@ class Ledger {
 	answerCue
 	// The `recall` calls a request runs before the arm tools close; Round A sets no bound.
 	recallBudget
-	repeatStop
-	answerView
-	recallSplit
-	recallCategory
-	// Under `on` the request's account records and the `Rules` record stand in for their sources in the briefing.
-	records
 	// Set while the answer run of `--cache stable` refuses every tool in its result.
 	answering = false
 	scale = 1
@@ -1142,19 +1114,9 @@ class Ledger {
 		requestQuestions = 'all',
 		answerCue = 'off',
 		recallBudget = Infinity,
-		repeatStop = 'lookups',
-		answerView = 'raw',
-		recallSplit = 'off',
-		recallCategory = 'on',
-		records = 'off',
 	}) {
-		this.records = records
 		this.answerCue = answerCue
 		this.recallBudget = recallBudget
-		this.repeatStop = repeatStop
-		this.answerView = answerView
-		this.recallSplit = recallSplit
-		this.recallCategory = recallCategory
 		this.tailAnswers = tailAnswers
 		this.tailRequests = tailRequests
 		this.rules = rules
@@ -1245,8 +1207,7 @@ class Ledger {
 			stats.faults.push(describe(error))
 		}
 		this.autoPin(request)
-		const records = this.records === 'on' ? this.projectRecords(request) : undefined
-		const plan = this.plan(request, records)
+		const plan = this.plan(request)
 		for (const problem of assertPlan(this, plan)) stats.faults.push(`assert: ${problem}`)
 		this.adopt(plan)
 		return { plan, stats }
@@ -1508,7 +1469,10 @@ class Ledger {
 	line(id, marks) {
 		const message = this.message(id)
 		if (message === undefined) return ''
-		if (message.role === 'tool') return `${this.#resultLead(id)}${this.text(id)}`
+		if (message.role === 'tool') {
+			const call = this.call(message)
+			return `${this.handle(id)} ${call?.name ?? 'tool'} ${JSON.stringify(call?.arguments ?? {})}: ${this.text(id)}`
+		}
 		return `${this.lead(id)}${message.content}${this.mark(id, marks)}`
 	}
 
@@ -1887,7 +1851,7 @@ class Ledger {
 	// because handles appear only inside the briefing (AUDIT.md A7). A lookup names its call, because its
 	// arguments name the record; another tool's arguments are the model's own text, which the tail never
 	// repeats. Without `shown`, a lookup takes the longer form, so a tail measured before the briefing never
-	// grows when re-projected. A result a record shows sits under `## Pinned`, so its stub reads as refined's.
+	// grows when re-projected.
 	#stub(message, shown) {
 		const result = this.results.get(message.call)
 		const call = this.call(message)
@@ -1908,41 +1872,6 @@ class Ledger {
 			.list.slice(this.position(id) + 1)
 			.filter((message) => message.role !== 'assistant' || (message.calls?.length ?? 0) > 0 || message.content.trim() !== '')
 			.map((message) => ({ ...message }))
-	}
-
-	// The desk note of a collapsed answer run: the distinct lines of the successful results after `id`, in call
-	// order, or undefined when there are none. The answer run cannot call, so the note keeps nothing that reads as a
-	// call to make: a recall or read that found nothing or pointed at an earlier result carries no record and drops
-	// out, the cut line that offers a narrower recall drops out, and a result line keeps its text without the
-	// `rN NAME ARGUMENTS: ` lead, which writes the call out.
-	digest(id) {
-		const lines = []
-		for (const message of this.after(id)) {
-			const result = message.role === 'tool' ? this.results.get(message.call) : undefined
-			if (result?.success !== true) continue
-			const text = readText(result.value)
-			const listing = result.name === 'recall' || result.name === 'read'
-			if (listing && /^(nothing on |same as )/.test(text)) continue
-			for (const line of text.split('\n')) {
-				const kept = listing ? this.#noteLine(line) : line
-				if (kept !== undefined && !lines.includes(kept)) lines.push(kept)
-			}
-		}
-		return lines.length === 0 ? undefined : `${RESULTS_NOTE}\n${lines.join('\n')}`
-	}
-
-	// A recall or read line as the desk note carries it, or undefined for the cut line.
-	#noteLine(line) {
-		if (CUT_LINE.test(line)) return undefined
-		const handle = /^r\d+(?= )/.exec(line)?.[0]
-		const source = handle === undefined ? undefined : this.resolve(handle)
-		const lead = source === undefined ? undefined : this.#resultLead(source)
-		return lead !== undefined && line.startsWith(lead) ? line.slice(lead.length) : line
-	}
-
-	#resultLead(id) {
-		const call = this.call(this.message(id))
-		return `${this.handle(id)} ${call?.name ?? 'tool'} ${JSON.stringify(call?.arguments ?? {})}: `
 	}
 
 	// A tail message keeps its stored content; a tool message shows its stub.
@@ -2032,62 +1961,8 @@ class Ledger {
 		}
 	}
 
-	// The input of `buildRecords` as RECORDS-PLAN.md's integration table states it, keyed by message id.
-	recordInput() {
-		const { list } = this.#messages()
-		const marks = this.marks()
-		const pairs = (map) => Object.fromEntries([...map].map(([earlier, later]) => [earlier, [...later]]))
-		const read = (reader) => Object.fromEntries(list.map((message) => [message.id, reader(message.id)]).filter(([, value]) => value !== undefined && (!isArray(value) || value.length > 0)))
-		// Each account with its holder names in learn order, so a record's title takes the first name learned.
-		const accounts = new Map([...this.registry.accounts].map((account) => [account, []]))
-		for (const [name, owners] of this.registry.aliases) for (const owner of owners) accounts.set(owner, [...(accounts.get(owner) ?? []), name])
-		const results = list.flatMap((message) => {
-			const call = this.call(message)
-			const result = this.result(message.id)
-			if (call === undefined || !LOOKUPS.has(call.name) || result?.success !== true || this.empty(result)) return []
-			return [{ id: message.id, name: call.name, arguments: call.arguments, text: this.text(message.id) }]
-		})
-		return {
-			today: this.clock,
-			system: this.system,
-			exclude: [...this.runs.map((run) => run.request).filter((id) => id !== undefined), ...this.notes],
-			accounts: Object.fromEntries(accounts),
-			messages: list.map((message) => ({ id: message.id, role: message.role, content: this.text(message.id) })),
-			results,
-			entities: read((id) => [...this.entities(this.text(id))]),
-			judgments: {
-				quiet: list.filter((message) => this.quiet(message.id)).map((message) => message.id),
-				categories: read((id) => this.category(id)),
-				desk: read((id) => [...this.deskTopics(id)]),
-				amended: pairs(marks.amended),
-				superseded: pairs(marks.superseded),
-			},
-		}
-	}
-
-	// The records a request reads under `--records on`, built after `autoPin` and before `plan`: the build, the
-	// request's accounts (each entity topic that is an account or links to one) and desk topics, the selected views,
-	// the faults `checkRecords` finds, and the milliseconds the step took.
-	projectRecords(request) {
-		const started = performance.now()
-		const input = this.recordInput()
-		const built = buildRecords(input)
-		const links = linkAccounts(input)
-		const accounts = []
-		const desk = []
-		for (const topic of this.topics(request)) {
-			if (Object.hasOwn(this.desk, topic)) desk.push(topic)
-			const account = Object.hasOwn(input.accounts, topic) ? topic : links[topic]
-			if (account !== undefined && !accounts.includes(account)) accounts.push(account)
-		}
-		const views = selectRecords(built, { accounts, desk })
-		const faults = checkRecords(built, input)
-		return { input, built, request: { accounts, desk }, views, faults, ms: Number((performance.now() - started).toFixed(1)) }
-	}
-
-	// Steps 4 and 5 of the run: ends, order, consolidation, the briefing text, and the projected tail. Under
-	// `--records on`, `records` is the output of `projectRecords`.
-	plan(request, records = this.records === 'on' ? this.projectRecords(request) : undefined) {
+	// Steps 4 and 5 of the run: ends, order, consolidation, the briefing text, and the projected tail.
+	plan(request) {
 		const marks = this.marks()
 		const ends = this.ends(marks)
 		const live = this.pins.filter((pin) => !ends.has(pin.id))
@@ -2124,17 +1999,9 @@ class Ledger {
 			unit.group = intersects(unit.topics, near) ? 1 : ruling ? 2 : relevance.named(unit.source) ? 3 : 4
 			if (unit.loose && unit.group === 4) units.delete(unit.source)
 		}
-		// Under `--records on` every request reads the `Rules` record, and a unit a record holds renders only through its
-		// record, so another account's unit leaves the briefing. A request that names no account with a record keeps the
-		// account units refined would pin under `## Pinned`, because no record of its own takes their place.
-		const scoped = records !== undefined && records.views.some((view) => view.key !== 'rules')
-		const reads = records !== undefined && records.views.length > 0
-		const held = new Set(reads ? records.built.records.flatMap((record) => record.members) : [])
-		const ruleMembers = new Set(reads ? records.built.records.filter((record) => record.key === 'rules').flatMap((record) => record.members) : [])
-		const recorded = new Set([...held].filter((source) => scoped || ruleMembers.has(source) || (units.has(source) && this.#ruled(units.get(source)))))
 		const byPosition = (left, right) => left.position - right.position
 		const byScore = (left, right) => right.score - left.score || byPosition(left, right)
-		const all = [...units.values()].filter((unit) => !recorded.has(unit.source))
+		const all = [...units.values()]
 		const first = all.filter((unit) => unit.group === 1 && !unit.loose).sort(byPosition)
 		const loose = all.filter((unit) => unit.group === 1 && unit.loose).sort(byScore)
 		const second = all.filter((unit) => unit.group === 2).sort(byPosition)
@@ -2150,31 +2017,13 @@ class Ledger {
 			...[...first].sort(byScore).reverse(),
 		]
 		const included = new Set([...first, ...loose, ...second, ...third])
-		const views = reads ? records.views : []
-		const kept = views.map((view) => view.lines.length)
-		const ruleAt = views.findIndex((view) => view.key === 'rules')
-		const meets = (line) => line.desk.some((topic) => records.request.desk.includes(topic))
-		const cuts = (at, lines) => lines.map(() => ({ view: at }))
-		// Each record loses lines from its end: the `Rules` lines off the request's desk topics go first, then the units
-		// refined would cut, then the other `Rules` lines, and the account lines last, the last record first. Cutting a
-		// `Rules` line on the request's desk topics sets `over`, as cutting a rule unit on its topics does under refined.
-		const steps = reads
-			? [
-					...(ruleAt < 0 ? [] : cuts(ruleAt, views[ruleAt].lines.filter((line) => !meets(line)))),
-					...sequence.map((unit) => ({ unit })),
-					...(ruleAt < 0 ? [] : cuts(ruleAt, views[ruleAt].lines.filter(meets))),
-					...views.flatMap((view, at) => (at === ruleAt ? [] : cuts(at, view.lines))).reverse(),
-				]
-			: sequence.map((unit) => ({ unit }))
-		const scope = () => ({ views: views.map((view, at) => ({ ...view, lines: view.lines.slice(0, kept[at]) })), full: views, members: recorded, held })
 		const sizeOf = (text) => this.measure([{ id: 'system', role: 'system', content: text === '' ? this.system : `${this.system}\n\n\n\n${text}` }])
 		let rows = Number.POSITIVE_INFINITY
-		const render = () => this.#render(order.filter((unit) => included.has(unit)), order.filter((unit) => !included.has(unit)), request, near, tailIds, marks, units, rows, reads ? scope() : undefined)
+		const render = () => this.#render(order.filter((unit) => included.has(unit)), order.filter((unit) => !included.has(unit)), request, near, tailIds, marks, units, rows)
 		let rendered = render()
-		for (const step of steps) {
+		for (const unit of sequence) {
 			if (sizeOf(rendered.text) <= systemCap) break
-			if (step.unit === undefined) kept[step.view] -= 1
-			else included.delete(step.unit)
+			included.delete(unit)
 			rendered = render()
 		}
 		// The tally is bounded by the topic count, not by the room; past the last unit it loses rows from its end.
@@ -2184,21 +2033,15 @@ class Ledger {
 		const tail = chosen.map((entry) => (entry.view.role === 'tool' ? this.project(entry.message, shown) : entry.view))
 		const lines = [...rendered.lines, ...tail.map((message) => ({ text: message.content, source: message.id }))]
 		const system = rendered.text === '' ? this.system : `${this.system}\n\n\n\n${rendered.text}`
-		// A record member's pins render when every line of its source renders, and count as omitted when a line of it is cut.
-		const selected = new Set(views.flatMap((view) => view.lines.map((line) => line.source)))
-		const members = [...units.values()].filter((unit) => selected.has(unit.source))
-		const cutAccount = views.some((view, at) => at !== ruleAt && kept[at] < view.lines.length)
-		// `selectRecords` puts the `Rules` lines on the request's desk topics first, so the slice reaches them last.
-		const cutMeeting = ruleAt >= 0 && kept[ruleAt] < views[ruleAt].lines.filter(meets).length
 		return {
 			briefing: rendered.text === '' ? undefined : rendered.text,
 			system,
 			tail,
 			tailIds,
 			rulesText: rendered.rulesText,
-			rendered: [...order.filter((unit) => included.has(unit) || visible.has(unit.source)), ...members.filter((unit) => visible.has(unit.source))].flatMap((unit) => unit.pins),
-			omitted: [...rendered.omitted, ...members.filter((unit) => !visible.has(unit.source))].flatMap((unit) => unit.pins),
-			over: cutAccount || cutMeeting || order.some((unit) => unit.group === 1 && !unit.loose && !included.has(unit) && !visible.has(unit.source)),
+			rendered: order.filter((unit) => included.has(unit) || visible.has(unit.source)).flatMap((unit) => unit.pins),
+			omitted: rendered.omitted.flatMap((unit) => unit.pins),
+			over: order.some((unit) => unit.group === 1 && !unit.loose && !included.has(unit) && !visible.has(unit.source)),
 			tokens: rendered.text === '' ? 0 : Math.round(this.measure([{ id: 'briefing', role: 'system', content: rendered.text }])),
 			room: Math.max(0, Math.round(systemCap - sizeOf(''))),
 			// The first call's prompt as the plan prices it: the fixed cost, the system message, and the tail.
@@ -2210,43 +2053,12 @@ class Ledger {
 			lines,
 			ends,
 			live,
-			...(records === undefined ? {} : { records: this.#recordsReport(records, scoped, rendered, tail, marks, views, kept) }),
 		}
-	}
-
-	// The plan's record fields: the record text and its tokens, the version of each record the request reads a line of,
-	// the build's faults, each old token a briefing or tail line holds outside its correcting message, the build time,
-	// the record lines in view with their sources, and the record lines consolidation cut, each as its record and the
-	// handle of its source.
-	#recordsReport(records, scoped, rendered, tail, marks, views, kept) {
-		const text = rendered.recordsText ?? ''
-		const hashes = new Map(records.built.records.map((record) => [record.key, record.hash]))
-		const cutFrom = views.flatMap((view, at) => view.lines.slice(kept[at]).map((line) => `${view.key} ${this.handle(line.source)}`))
-		return {
-			scoped,
-			text,
-			tokens: text === '' ? 0 : Math.round(this.measure([{ id: 'records', role: 'system', content: text }])),
-			versions: Object.fromEntries(views.filter((view, at) => kept[at] > 0).map((view) => [view.key, hashes.get(view.key).slice(0, 12)])),
-			faults: records.faults,
-			stale: listOldTokens(this, rendered.lines, records.built, marks),
-			tail: listOldTokens(this, tail.map((message) => ({ text: message.content, source: message.id })), records.built, marks),
-			ms: records.ms,
-			lines: rendered.recordLines ?? [],
-			cut: cutFrom.length,
-			cutFrom,
-		}
-	}
-
-	// Whether `unit` renders in the `## Rules` block, which `--rules last` gives every rule a user stated.
-	#ruled(unit) {
-		return this.rules === 'last' && this.message(unit.source)?.role === 'user' && unit.category === 'rule'
 	}
 
 	// Under `--rules last` every rule a user stated renders one sentence a line in a block after the pinned facts,
 	// the end of the system message, so the rules sit nearest the request; its corrections render beside it there.
-	// With `scope`, the records of `--records on` take the places of their members: under `## Pinned` the account
-	// records, then the loose units, and under `## Rules` the `Rules` record, then the loose rules.
-	#render(kept, dropped, request, near, tailIds, marks, units, limit, scope) {
+	#render(kept, dropped, request, near, tailIds, marks, units, limit) {
 		const values = []
 		const pinned = []
 		const ruled = []
@@ -2276,16 +2088,14 @@ class Ledger {
 			// The tail carries a message source verbatim, but a value line needs its source's handle in view.
 			const valued = unit.pins.some((pin) => pin.value !== undefined)
 			if (done.has(unit.source) || (message.role !== 'tool' && !valued && tailIds.has(unit.source))) continue
-			const rule = this.#ruled(unit)
+			const rule = this.rules === 'last' && message.role === 'user' && unit.category === 'rule'
 			const block = rule ? ruled : pinned
 			add(unit.source, block, rule)
 			// Each correction renders beside the source it amends, so the mark names a line in this block.
 			const queue = [...(marks.amended.get(unit.source) ?? [])]
 			while (queue.length > 0) {
 				const later = queue.shift()
-				// A record member renders only in its record, so a correction never shows outside its account's scope, and
-				// the `## Rules` block holds no account's unit.
-				if (done.has(later) || scope?.members.has(later) || (rule && scope?.held.has(later))) continue
+				if (done.has(later)) continue
 				add(later, block, false)
 				queue.push(...(marks.amended.get(later) ?? []))
 			}
@@ -2293,51 +2103,12 @@ class Ledger {
 		const omitted = dropped.filter((unit) => !done.has(unit.source))
 		const rows = this.tally === 'off' ? [] : this.#tally(omitted, request, near, tailIds, units, done)
 		const listed = rows.slice(0, limit)
-		if (scope !== undefined) return this.#renderRecords(scope, { values, pinned, ruled, lines, pinnedSources, shown, omitted, listed, request })
 		const parts = []
 		if (values.length > 0) parts.push([`## Values (as of ${this.handle(request)})`, ...values].join('\n'))
 		if (pinned.length > 0) parts.push(['## Pinned', ...pinned].join('\n'))
 		if (listed.length > 0) parts.push(['## Not shown', ...listed].join('\n'))
 		if (ruled.length > 0) parts.push(['## Rules', ...ruled].join('\n'))
 		return { text: parts.join('\n\n'), pinnedText: pinned.join('\n'), rulesText: ruled.join('\n'), lines, pinnedSources, omitted, shown: [...shown], rows: listed.length }
-	}
-
-	// The briefing of a request that reads records. Each record renders as `renderRecord` builds it, and a record line
-	// carries its source; a source shows only with every line of it in view, so a cut line leaves its fact to `recall`.
-	#renderRecords(scope, { values, pinned, ruled, lines, pinnedSources, shown, omitted, listed, request }) {
-		const left = new Map()
-		for (const view of scope.full) for (const line of view.lines) left.set(line.source, (left.get(line.source) ?? 0) + 1)
-		const recordLines = []
-		for (const view of scope.views)
-			for (const line of view.lines) {
-				recordLines.push({ text: `- ${line.text}`, source: line.source })
-				left.set(line.source, left.get(line.source) - 1)
-			}
-		for (const [source, count] of left) if (count === 0) pinnedSources.push(source)
-		lines.push(...recordLines)
-		const accounts = scope.views.filter((view) => view.key !== 'rules' && view.lines.length > 0)
-		const rules = scope.views.find((view) => view.key === 'rules' && view.lines.length > 0)
-		// One `## Pinned` line heads the account records, each under a `###` heading and joined as records.mjs joins them, and the loose units after them.
-		const pinnedBody = [accounts.map(renderPinned).join('\n\n'), pinned.join('\n')].filter((text) => text !== '').join('\n\n')
-		const pinnedPart = pinnedBody === '' ? '' : `## Pinned\n${pinnedBody}`
-		const rulesPart = rules === undefined ? (ruled.length > 0 ? ['## Rules', ...ruled].join('\n') : '') : [renderRecord(rules), ...ruled].join('\n')
-		const parts = []
-		if (values.length > 0) parts.push([`## Values (as of ${this.handle(request)})`, ...values].join('\n'))
-		if (pinnedPart !== '') parts.push(pinnedPart)
-		if (listed.length > 0) parts.push(['## Not shown', ...listed].join('\n'))
-		if (rulesPart !== '') parts.push(rulesPart)
-		return {
-			text: parts.join('\n\n'),
-			pinnedText: pinnedPart,
-			rulesText: rulesPart.slice('## Rules\n'.length),
-			recordsText: [...accounts.map(renderPinned), ...(rules === undefined ? [] : [renderRecord(rules)])].join('\n\n'),
-			recordLines,
-			lines,
-			pinnedSources,
-			omitted,
-			shown: [...shown],
-			rows: listed.length,
-		}
 	}
 
 	// One row per topic: the omitted pins and the remainder messages on it, never their handles.
@@ -2482,7 +2253,7 @@ class Ledger {
 	}
 
 	#recallKey(args) {
-		return JSON.stringify([String(args?.topic ?? '').trim().toLowerCase(), this.recallCategory === 'off' ? '' : String(args?.category ?? '')])
+		return JSON.stringify([String(args?.topic ?? '').trim().toLowerCase(), String(args?.category ?? '')])
 	}
 
 	// The `recall` tool: pins, messages, and results on a topic, newest first, cut to `room` estimate units.
@@ -2493,7 +2264,7 @@ class Ledger {
 		const query = String(args?.topic ?? '').trim()
 		const topics = `a customer name, an order or account id, a handle such as m12 or r5, or one of ${Object.keys(this.desk).join(', ')}`
 		if (query === '') throw new Error(`recall needs a topic: ${topics}`)
-		const category = this.recallCategory === 'off' || args?.category === undefined || args.category === '' ? undefined : String(args.category)
+		const category = args?.category === undefined || args.category === '' ? undefined : String(args.category)
 		if (category !== undefined && !RECALL_CATEGORIES.includes(category)) throw new Error(`category must be one of ${RECALL_CATEGORIES.join(', ')}`)
 		const earlier = run?.recalls.get(this.#recallKey(args))
 		const message = earlier === undefined ? undefined : this.#messages().tools.get(earlier)
@@ -2520,22 +2291,14 @@ class Ledger {
 			for (const later of marks.amended.get(source) ?? []) lines.push(this.line(later, marks))
 			return this.#cut([lines.join('\n')], room - this.#callSize(args))
 		}
+		const words = query
+			.split(/\s+/)
+			.map((word) => word.replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, '').toLowerCase())
+			.filter((word) => word !== '')
+		const exact = extractTokens(query).ids
 		const { orders, accounts, tickets } = this.registry
 		const candidates = [...orders, ...accounts, ...tickets, ...Object.keys(this.desk)]
-		// Under `--recall-split on` each part of a joined topic is recalled alone, and a message any part reaches is
-		// listed once, in the order one recall lists; a model joins a name and an id that no single topic matches.
-		const pieces = this.recallSplit === 'on' ? query.split(RECALL_JOINS).map((part) => part.trim()).filter((part) => part !== '') : []
-		const parts = pieces.length > 1 ? pieces : [query]
-		const searches = parts.map((part) => {
-			const words = part
-				.split(/\s+/)
-				.map((word) => word.replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, '').toLowerCase())
-				.filter((word) => word !== '')
-			const exact = extractTokens(part).ids
-			const matched = new Set(candidates.filter((topic) => exact.has(topic) || words.every((word) => this.label(topic).toLowerCase().includes(word))))
-			return { words, matched }
-		})
-		const matched = new Set(searches.flatMap((search) => [...search.matched]))
+		const matched = new Set(candidates.filter((topic) => exact.has(topic) || words.every((word) => this.label(topic).toLowerCase().includes(word))))
 		for (const topic of matched) run?.recall.add(topic)
 		const { list } = this.#messages()
 		const fits = (id) => category === undefined || this.category(id) === category
@@ -2560,34 +2323,33 @@ class Ledger {
 			}
 			if (lines.length > 0) items.push(lines.join('\n'))
 		}
-		// A part that matches a registry or desk topic lists the messages on it; a part that matches none lists the
-		// user messages and lookup results that carry every one of its words.
-		const wordings = searches.filter((search) => search.matched.size === 0 && search.words.length > 0).map((search) => search.words)
-		const onTopic = (message) => {
-			if (matched.size === 0) return false
-			if (message.role === 'tool') {
-				const result = this.results.get(message.call)
-				if (result?.success !== true || !LOOKUPS.has(result.name) || this.empty(result)) return false
-			} else if ((message.calls?.length ?? 0) > 0 || this.quiet(message.id)) return false
-			return intersects(this.topics(message.id), matched)
+		if (matched.size > 0) {
+			for (const pin of [...this.pins].reverse()) {
+				if (!intersects(this.topics(pin.source), matched) || !fits(pin.source)) continue
+				// A live reference pin and a retired pin add nothing the source's own line lacks.
+				const end = ends.get(pin.id)
+				if (end === undefined ? pin.value === undefined : end.cause === 'retired') continue
+				items.push(pinLine(pin))
+			}
+			for (const message of [...list].reverse()) {
+				if (message.role === 'tool') {
+					const result = this.results.get(message.call)
+					if (result?.success !== true || !LOOKUPS.has(result.name) || this.empty(result)) continue
+				} else if ((message.calls?.length ?? 0) > 0 || this.quiet(message.id)) continue
+				if (!listable(message) || !intersects(this.topics(message.id), matched) || !fits(message.id)) continue
+				add(message.id)
+			}
+		} else {
+			for (const message of [...list].reverse()) {
+				if (message.role === 'tool') {
+					const result = this.results.get(message.call)
+					if (result?.success !== true || !LOOKUPS.has(result.name)) continue
+				} else if (message.role !== 'user') continue
+				const text = this.text(message.id).toLowerCase()
+				if (!listable(message) || words.length === 0 || !words.every((word) => text.includes(word)) || !fits(message.id)) continue
+				add(message.id)
+			}
 		}
-		const worded = (message) => {
-			if (wordings.length === 0) return false
-			if (message.role === 'tool') {
-				const result = this.results.get(message.call)
-				if (result?.success !== true || !LOOKUPS.has(result.name)) return false
-			} else if (message.role !== 'user') return false
-			const text = this.text(message.id).toLowerCase()
-			return wordings.some((words) => words.every((word) => text.includes(word)))
-		}
-		for (const pin of [...this.pins].reverse()) {
-			if (matched.size === 0 || !intersects(this.topics(pin.source), matched) || !fits(pin.source)) continue
-			// A live reference pin and a retired pin add nothing the source's own line lacks.
-			const end = ends.get(pin.id)
-			if (end === undefined ? pin.value === undefined : end.cause === 'retired') continue
-			items.push(pinLine(pin))
-		}
-		for (const message of [...list].reverse()) if (listable(message) && fits(message.id) && (onTopic(message) || worded(message))) add(message.id)
 		if (items.length === 0) return `nothing on "${query}"; recall ${topics}`
 		return this.#cut(items, room - this.#callSize(args))
 	}
@@ -2605,7 +2367,7 @@ class Ledger {
 			out.push(item)
 		}
 		const left = items.length - out.length
-		if (left > 0) out.push(`${plural(left, 'older item')} not shown; ${this.recallCategory === 'off' ? 'name a narrower topic' : 'add a category'} to narrow the recall`)
+		if (left > 0) out.push(`${plural(left, 'older item')} not shown; add a category to narrow the recall`)
 		return out.join('\n')
 	}
 
@@ -2689,35 +2451,13 @@ function readLedgerSettings(values = flags) {
 		requestQuestions: values['request-questions'],
 		answerCue: values['answer-cue'],
 		recallBudget,
-		repeatStop: values['repeat-stop'],
-		answerView: values['answer-view'],
-		recallSplit: values['recall-split'],
-		recallCategory: values['recall-category'],
-		records: values.records,
 	}
 }
 
 // The Ledger options the change flags set.
 function ledgerOptions(settings) {
-	const { tailAnswers, tailRequests, rules, handles, cache, autopin, tally, armTools, requestQuestions, answerCue, repeatStop, answerView, recallSplit, recallCategory, records } = settings
-	return {
-		tailAnswers,
-		tailRequests,
-		rules,
-		handles,
-		cache,
-		autopin,
-		tally,
-		armTools,
-		requestQuestions,
-		answerCue,
-		recallBudget: settings.recallBudget === 'unlimited' ? Infinity : settings.recallBudget,
-		repeatStop,
-		answerView,
-		recallSplit,
-		recallCategory,
-		records,
-	}
+	const { tailAnswers, tailRequests, rules, handles, cache, autopin, tally, armTools, requestQuestions, answerCue } = settings
+	return { tailAnswers, tailRequests, rules, handles, cache, autopin, tally, armTools, requestQuestions, answerCue, recallBudget: settings.recallBudget === 'unlimited' ? Infinity : settings.recallBudget }
 }
 
 // The system text options the change flags set.
@@ -2738,30 +2478,12 @@ function requestSettings(settings) {
 	return settings.tailRequests === PROFILES.roundA['tail-requests'] ? {} : { tailRequests: settings.tailRequests }
 }
 
-// The answer-run flags whose value differs from Round A, each alone, so a run at the Round A values writes the
-// settings line and the `changes` record of the earlier runs, which name none of them.
-const ANSWER_RUN_FLAGS = [
-	['repeatStop', 'repeat-stop'],
-	['answerView', 'answer-view'],
-	['recallSplit', 'recall-split'],
-	['recallCategory', 'recall-category'],
-]
-function answerRunSettings(settings) {
-	return Object.fromEntries(ANSWER_RUN_FLAGS.filter(([key, flag]) => settings[key] !== PROFILES.roundA[flag]).map(([key]) => [key, settings[key]]))
-}
-
 // Every effective ledger setting, as the md settings line and the run's stdout name it.
 function describeSettings(settings) {
 	const answer = answerSettings(settings)
 	const named = answer.answerCue === undefined ? '' : `, answer-cue ${answer.answerCue}, recall-budget ${answer.recallBudget}`
 	const requests = requestSettings(settings).tailRequests === undefined ? '' : `, tail-requests ${settings.tailRequests}`
-	const changed = answerRunSettings(settings)
-	const runs = ANSWER_RUN_FLAGS.filter(([key]) => changed[key] !== undefined)
-		.map(([key, flag]) => `, ${flag} ${changed[key]}`)
-		.join('')
-	// `--records off` names nothing, so a run at the default writes the settings line of the runs before the flag.
-	const records = settings.records === 'on' ? ', records on' : ''
-	return `profile ${settings.profile}, gate ${settings.gate}, horizon ${settings.horizon}, date ${settings.date}, tail-answers ${settings.tailAnswers}${requests}, rules ${settings.rules}, handles ${settings.handles}, cache ${settings.cache}, autopin ${settings.autopin}, report ${settings.report}, arm-tools ${settings.armTools}, tally ${settings.tally}, request-questions ${settings.requestQuestions}${named}${runs}${records}, scenario ${scenarioPath}`
+	return `profile ${settings.profile}, gate ${settings.gate}, horizon ${settings.horizon}, date ${settings.date}, tail-answers ${settings.tailAnswers}${requests}, rules ${settings.rules}, handles ${settings.handles}, cache ${settings.cache}, autopin ${settings.autopin}, report ${settings.report}, arm-tools ${settings.armTools}, tally ${settings.tally}, request-questions ${settings.requestQuestions}${named}, scenario ${scenarioPath}`
 }
 
 function createLedger(conversation, model, settings, system) {
@@ -2792,21 +2514,17 @@ function createLedgerTools(ledger, replies, room, closed) {
 	}
 	// A lookup that repeats the name and arguments of one the request already answered gets the design's
 	// `REPEAT_NOTICE` as its error: the tool message reads as the main harness's, and the notice is never
-	// numbered, stored as a record, owed, or pinned. Under `--repeat-stop all` an arm tool gets the same notice, and
-	// its key sits outside the closed check, because a model that repeats a closed recall repeats it to the turn limit.
+	// numbered, stored as a record, owed, or pinned.
 	const once = (name, action) => (args) => {
 		const run = ledger.current
-		const key = argumentKey(name, name === 'recall' && ledger.recallCategory === 'off' && isRecord(args) ? { ...args, category: undefined } : args)
+		const key = argumentKey(name, args)
 		if (run?.answered.has(key)) {
-			if (LOOKUPS.has(name)) run.stats.lookupRepeats += 1
-			else run.stats.repeats += 1
+			run.stats.lookupRepeats += 1
 			throw new Error(REPEAT_NOTICE[ledger.replyMode])
 		}
 		run?.answered.add(key)
 		return action(args)
 	}
-	const guard = (name, action) => (ledger.repeatStop === 'all' ? once(name, open(name, action)) : open(name, action))
-	const category = ledger.recallCategory === 'on' ? { category: { type: 'string', enum: RECALL_CATEGORIES, description: 'Only this category of message' } } : {}
 	const manager = createToolManager()
 	const tools = [
 		createTool({
@@ -2833,7 +2551,7 @@ function createLedgerTools(ledger, replies, room, closed) {
 				},
 				required: ['source'],
 			},
-			execute: guard('pin', (args) => ledger.pin(args)),
+			execute: open('pin', (args) => ledger.pin(args)),
 		}),
 		createTool({
 			name: 'recall',
@@ -2842,17 +2560,17 @@ function createLedgerTools(ledger, replies, room, closed) {
 				type: 'object',
 				properties: {
 					topic: { type: 'string', description: 'A customer name, an order or account id, a desk topic, or a handle' },
-					...category,
+					category: { type: 'string', enum: RECALL_CATEGORIES, description: 'Only this category of message' },
 				},
 				required: ['topic'],
 			},
-			execute: guard('recall', (args) => ledger.recall(args, room())),
+			execute: open('recall', (args) => ledger.recall(args, room())),
 		}),
 		createTool({
 			name: 'read',
 			description: 'Read the full text of one message or result by its handle, such as m12 or r5.',
 			parameters: { type: 'object', properties: { handle: { type: 'string', description: 'The handle, such as m12 or r5' } }, required: ['handle'] },
-			execute: guard('read', (args) => ledger.readHandle(args)),
+			execute: open('read', (args) => ledger.readHandle(args)),
 		}),
 	]
 	manager.add(ledger.armTools === 'recall' ? tools.filter((tool) => !PIN_TOOLS.has(tool.name)) : tools)
@@ -3126,21 +2844,6 @@ function countStale(lines, seedIds, plan, report) {
 	return stale
 }
 
-// Each old token of a records build that a line holds, as `TOKEN HANDLE`: a token `stale` lists for a sentence that
-// a decided correction replaced, in a line whose source is not that correction.
-function listOldTokens(ledger, lines, built, marks) {
-	const found = []
-	for (const entry of built.stale) {
-		const correcting = new Set(marks.amended.get(entry.source) ?? [])
-		for (const line of lines) {
-			if (correcting.has(line.source)) continue
-			const tokens = extractTokens(line.text)
-			for (const token of entry.tokens) if (tokens.ids.has(token) || tokens.numbers.has(Number(token))) found.push(`${token} ${ledger.handle(line.source) ?? line.source}`)
-		}
-	}
-	return [...new Set(found)]
-}
-
 // The lines of a run's successful recall results, each with the source its leading handle names.
 function listRecallLines(ledger, request) {
 	return ledger
@@ -3247,8 +2950,7 @@ function checkSeedAcceptance(ledger, seedIds) {
 	}
 }
 
-// Every build asserts that no ended pin renders and that every rendered pin's source resolves. A record line carries
-// its source, which must resolve to a user message or a lookup result that no later message replaced.
+// Every build asserts that no ended pin renders and that every rendered pin's source resolves.
 function assertPlan(ledger, plan) {
 	const problems = []
 	for (const pin of plan.rendered) {
@@ -3256,16 +2958,6 @@ function assertPlan(ledger, plan) {
 		if (ledger.message(pin.source) === undefined) problems.push(`${ledger.pinHandle(pin)} source does not resolve`)
 	}
 	for (const pin of ledger.pins) if (ledger.message(pin.source) === undefined) problems.push(`${ledger.pinHandle(pin)} source does not resolve`)
-	const marks = plan.records === undefined ? undefined : ledger.marks()
-	for (const line of plan.records?.lines ?? []) {
-		const message = ledger.message(line.source)
-		const head = `record line "${line.text.slice(0, 40)}"`
-		if (message === undefined) problems.push(`${head} source does not resolve`)
-		else if (message.role !== 'user' && message.role !== 'tool') problems.push(`${head} comes from ${ledger.handle(line.source)}, which is no user message or lookup result`)
-		else if (ledger.replaced(line.source, marks) !== undefined) problems.push(`${head} comes from ${ledger.handle(line.source)}, which ${ledger.handle(ledger.replaced(line.source, marks))} replaced`)
-	}
-	// Every briefing that reads records must hold no old token; refined's view keeps them beside their amended marks.
-	for (const token of plan.records?.stale ?? []) problems.push(`old token ${token} in the briefing`)
 	return problems
 }
 
@@ -3281,8 +2973,7 @@ function countSeparation(ledger, requests, run, plan) {
 	let failures = 0
 	for (const messages of requests) {
 		for (const message of messages) {
-			// The collapsed answer run's desk note carries this request's results, which a recall result can share with an earlier one.
-			if ((message.role === 'tool' || message.content.startsWith(RESULTS_NOTE)) && (ledger.position(message.id) ?? -1) > run.start) continue
+			if (message.role === 'tool' && (ledger.position(message.id) ?? -1) > run.start) continue
 			const content = message.role === 'system' && plan !== undefined && plan.pinnedText !== '' ? message.content.replace(plan.pinnedText, '') : message.content
 			for (const text of earlier) if (content.includes(text)) failures += 1
 		}
@@ -3290,17 +2981,11 @@ function countSeparation(ledger, requests, run, plan) {
 	return failures
 }
 
-// The row fields of `--records on` from the plan a goal entered with, or null when the goal entered with no plan.
-function readRecordsRow(plan) {
-	const records = plan?.records
-	return records === undefined ? null : { tokens: records.tokens, versions: records.versions, cut: records.cut, cutFrom: records.cutFrom, faults: records.faults, stale: records.stale, tail: records.tail, ms: records.ms }
-}
-
 // The arm's agent and its goal loop with the daemon left out, so `--check-ledger` drives the same loop with a
 // stub provider and judge. `log` receives one entry per provider call, and the goal's `agent` entries price the
 // recall room, the reply reserve, the closing of the arm tools, and the gate; `requests` receives each request's
 // messages, which the separation count reads.
-function createLedgerArm({ provider, judge, ledger, conversations, instructions, system, gate: gateMode, log, requests, timeout, think = flags.think }) {
+function createLedgerArm({ provider, judge, ledger, conversations, instructions, system, gate: gateMode, log, requests, timeout }) {
 	const conversation = ledger.conversation
 	const replies = []
 	let goalStart = log.length
@@ -3383,8 +3068,7 @@ function createLedgerArm({ provider, judge, ledger, conversations, instructions,
 		events.exhausted = undefined
 		events.aborted = undefined
 		try {
-			// A thinking model asked for a reply with no tools can end its turn inside its reasoning or think to the cap, so the answer pass runs with thinking off.
-			pass.result = await (kind === 'answer' && think ? agent.generate({ think: false }) : agent.generate())
+			pass.result = await agent.generate()
 		} catch (caught) {
 			pass.error = describe(caught)
 		}
@@ -3401,17 +3085,10 @@ function createLedgerArm({ provider, judge, ledger, conversations, instructions,
 	// The package selects only when the view ends on a user message, so the answer run reads a scratch
 	// conversation that holds what a continuing run reads, and the messages it writes are copied back.
 	// Under `--answer-cue on` the run reads `ANSWER_CUE` last, a desk note like the reminder and the hold.
-	// Under `--answer-view collapsed` the request's calls and results leave the run's view and one desk note before
-	// the cue carries the results, because a model that reads a row of its own calls writes another call.
 	const answer = async (request) => {
-		const collapsed = ledger.answerView === 'collapsed'
-		const cue = ledger.answerCue === 'on' || collapsed
-		const digest = collapsed ? ledger.digest(request.id) : undefined
-		if (digest !== undefined) ledger.notes.add(conversation.add({ role: 'user', content: digest }).id)
+		const cue = ledger.answerCue === 'on'
 		if (cue) ledger.notes.add(conversation.add({ role: 'user', content: ANSWER_CUE }).id)
-		const prepared = await prepare(request, AbortSignal.timeout(timeout), true)
-		const start = ledger.position(request.id)
-		const messages = collapsed ? prepared.messages.filter((message) => !(ledger.position(message.id) > start && (message.role === 'tool' || (message.calls?.length ?? 0) > 0))) : prepared.messages
+		const { messages } = await prepare(request, AbortSignal.timeout(timeout), true)
 		const scratch = conversations.add()
 		const copies = new Map(messages.map((message) => [scratch.add(message).id, message.id]))
 		const previous = agent.context.scope
@@ -3423,7 +3100,6 @@ function createLedgerArm({ provider, judge, ledger, conversations, instructions,
 		if (stable) ledger.answering = true
 		else agent.context.apply(ANSWER_SCOPE)
 		const pass = await generate('answer', cue ? ANSWER_CUE : undefined)
-		if (digest !== undefined) pass.digest = digest
 		ledger.answering = false
 		if (!stable) agent.context.apply(previous)
 		conversations.switch(conversation.id)
@@ -3522,7 +3198,6 @@ async function runLedger() {
 	await ledger.categorize(judge, seedSignal, second).catch((error) => second.faults.push(describe(error)))
 	ledger.pinWhole(ledger.seedLookups(), 'settle')
 	ledger.autoPin(undefined)
-	const seedRecords = settings.records === 'on' ? ledger.projectRecords(undefined) : undefined
 	const acceptance = checkSeedAcceptance(ledger, seedIds)
 	let measured
 	try {
@@ -3546,12 +3221,11 @@ async function runLedger() {
 		pins: { ...seedStats.pins, routes: seedStats.routes },
 		measured,
 		acceptance,
-		...(seedRecords === undefined ? {} : { records: { versions: Object.fromEntries(seedRecords.built.records.map((record) => [record.key, record.hash.slice(0, 12)])), faults: seedRecords.faults, ms: seedRecords.ms } }),
 		wall: Math.round(performance.now() - seedStarted),
 	}
 	writeFileSync(join(flags.out, 'seed.json'), `${JSON.stringify(seedLine)}\n`)
 	process.stdout.write(
-		`seed: ${imported} records imported; ${seedLine.questions.category} category, ${seedLine.questions.topic} topic, ${seedLine.questions.amends} amends, ${seedLine.questions.supersedes} supersedes questions in ${seedLine.questions.seconds} s (${seedLine.questions.reused} reused); second pass ${seedLine.secondPass.asked} asked, ${seedLine.secondPass.answered} answered, ${seedLine.secondPass.failed} judge errors; undecided ${seedLine.undecided.map((item) => item.item).join(', ') || 'none'}; pins ${seedLine.pins.loop} loop; scale ${measured.error ?? `${ledger.scale.toFixed(3)} beside ${ledger.fixed} fixed tokens`}; registry mismatches ${acceptance.registry.length}; untopiced facts [${acceptance.untopicedFacts}], members [${acceptance.untopicedMembers}], unshared pairs ${JSON.stringify(acceptance.unsharedPairs)}; faults ${seedLine.faults.length}${seedLine.records === undefined ? '' : `; records ${Object.keys(seedLine.records.versions).length} built, ${seedLine.records.faults.length} faults`}\n`,
+		`seed: ${imported} records imported; ${seedLine.questions.category} category, ${seedLine.questions.topic} topic, ${seedLine.questions.amends} amends, ${seedLine.questions.supersedes} supersedes questions in ${seedLine.questions.seconds} s (${seedLine.questions.reused} reused); second pass ${seedLine.secondPass.asked} asked, ${seedLine.secondPass.answered} answered, ${seedLine.secondPass.failed} judge errors; undecided ${seedLine.undecided.map((item) => item.item).join(', ') || 'none'}; pins ${seedLine.pins.loop} loop; scale ${measured.error ?? `${ledger.scale.toFixed(3)} beside ${ledger.fixed} fixed tokens`}; registry mismatches ${acceptance.registry.length}; untopiced facts [${acceptance.untopicedFacts}], members [${acceptance.untopicedMembers}], unshared pairs ${JSON.stringify(acceptance.unsharedPairs)}; faults ${seedLine.faults.length}\n`,
 	)
 
 	const jsonl = join(flags.out, `${mode}.jsonl`)
@@ -3604,7 +3278,7 @@ async function runLedger() {
 			judge: flags.judge,
 			wall,
 			turns: agentCalls.length,
-			calls: calls.map(({ call, label, messages, estimate, tools, hash, replyHash, prompt, completion, reason, ms, load_duration, prompt_eval_duration, eval_duration, cached, truncated, overflow, status, requested, thinking, cut, think }) => ({
+			calls: calls.map(({ call, label, messages, estimate, tools, hash, replyHash, prompt, completion, reason, ms, load_duration, prompt_eval_duration, eval_duration, cached, truncated, overflow, status, requested, thinking, cut }) => ({
 				call,
 				label,
 				messages,
@@ -3626,7 +3300,6 @@ async function runLedger() {
 				requested,
 				thinking,
 				cut,
-				think,
 			})),
 			maxPrompt: maxPrompt(agentCalls),
 			maxEstimate: Math.max(0, ...agentCalls.map((call) => call.estimate)),
@@ -3655,7 +3328,6 @@ async function runLedger() {
 				kind: pass.kind,
 				turns: log.slice(pass.first, passes[at + 1]?.first ?? log.length).filter((call) => call.label === 'agent').length,
 				...(pass.note === undefined ? {} : { note: pass.note }),
-				...(pass.digest === undefined ? {} : { digest: pass.digest }),
 				content: pass.result?.content ?? '',
 				partial: pass.result?.partial ?? false,
 				exhausted: pass.exhausted,
@@ -3684,7 +3356,7 @@ async function runLedger() {
 			sectionsHeld: [],
 			gate: settings.gate,
 			profile: settings.profile,
-			changes: { date: settings.date, tailAnswers: settings.tailAnswers, ...requestSettings(settings), rules: settings.rules, handles: settings.handles, cache: settings.cache, autopin: settings.autopin, report: settings.report, armTools: settings.armTools, tally: settings.tally, requestQuestions: settings.requestQuestions, ...answerSettings(settings), ...answerRunSettings(settings), ...(settings.records === 'on' ? { records: 'on' } : {}) },
+			changes: { date: settings.date, tailAnswers: settings.tailAnswers, ...requestSettings(settings), rules: settings.rules, handles: settings.handles, cache: settings.cache, autopin: settings.autopin, report: settings.report, armTools: settings.armTools, tally: settings.tally, requestQuestions: settings.requestQuestions, ...answerSettings(settings) },
 			scenario: scenarioPath,
 			clock: ledger.clock,
 			budget: settings.budget,
@@ -3694,7 +3366,6 @@ async function runLedger() {
 			scale: Number(ledger.scale.toFixed(3)),
 			fixed: ledger.fixed,
 			briefing,
-			...(settings.records === 'on' ? { records: readRecordsRow(outcome.entered) } : {}),
 			pins: {
 				...stats.pins,
 				routes: stats.routes,
@@ -3726,7 +3397,7 @@ async function runLedger() {
 		appendFileSync(jsonl, `${JSON.stringify(row)}\n`)
 		await captureMemory(memory, goal.id)
 		process.stdout.write(
-			`${goal.id}: ${row.success ? 'PASS' : 'FAIL'} in ${(wall / 1000).toFixed(1)} s, reply ${outcome.via}, answer ${answerVia} ${row.successAnswer ? 'ok' : 'not ok'}${(error ?? followError) ? ` (${error ?? followError})` : ''}; briefing recall ${briefing.recall}, with the date line ${briefing.dated.covered} of ${briefing.dated.slots}, stale ${briefing.stale}, ${briefing.tokens} of ${briefing.room} tokens${briefing.over ? ' (over)' : ''}; first prompt ${agentCalls[0]?.prompt ?? '-'} tokens (projected ${briefing.projected}); repeats ${stats.repeats}; lookup repeats ${stats.lookupRepeats}; separation ${row.separation}${row.records === undefined ? '' : row.records === null ? '; records none' : `; records ${row.records.tokens} tokens, ${row.records.faults.length} faults, stale ${row.records.stale.length}, tail ${row.records.tail.length}`}\n`,
+			`${goal.id}: ${row.success ? 'PASS' : 'FAIL'} in ${(wall / 1000).toFixed(1)} s, reply ${outcome.via}, answer ${answerVia} ${row.successAnswer ? 'ok' : 'not ok'}${(error ?? followError) ? ` (${error ?? followError})` : ''}; briefing recall ${briefing.recall}, with the date line ${briefing.dated.covered} of ${briefing.dated.slots}, stale ${briefing.stale}, ${briefing.tokens} of ${briefing.room} tokens${briefing.over ? ' (over)' : ''}; first prompt ${agentCalls[0]?.prompt ?? '-'} tokens (projected ${briefing.projected}); repeats ${stats.repeats}; lookup repeats ${stats.lookupRepeats}; separation ${row.separation}\n`,
 		)
 	}
 
@@ -3751,7 +3422,7 @@ async function runLedger() {
 	const table = [
 		`# ${scenario.title}: ${mode}`,
 		'',
-		`mode ${mode}, model ${agentModel}, think ${flags.think ? `on (cap ${thinkPredict})` : 'off'}${flags.think ? ', answer pass think off' : ''}, reply ${settings.reply}, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, categories ${flags.categories}, budget ${settings.budget}, tail ${settings.tail}, ctx ${ctx}, ${describeSettings(settings)}, ${sampler}. Seed pass: ${seedLine.questions.category + seedLine.questions.topic + seedLine.questions.amends + seedLine.questions.supersedes} questions, ${(seedLine.wall / 1000).toFixed(1)} s. Passed ${passed} of ${rows.length}; ok any ${passedAny} of ${rows.length}. Reply via: ${vias}. Lookup repeats ${lookupRepeats}. Goal facts at entry: ${factSlots.covered} of ${factSlots.slots} slots; goal facts plus the date line: ${datedSlots.covered} of ${datedSlots.slots} slots.${thinkNote(rows)}`,
+		`mode ${mode}, model ${agentModel}, think ${flags.think ? 'on' : 'off'}, reply ${settings.reply}, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, categories ${flags.categories}, budget ${settings.budget}, tail ${settings.tail}, ctx ${ctx}, ${describeSettings(settings)}, ${sampler}. Seed pass: ${seedLine.questions.category + seedLine.questions.topic + seedLine.questions.amends + seedLine.questions.supersedes} questions, ${(seedLine.wall / 1000).toFixed(1)} s. Passed ${passed} of ${rows.length}; ok any ${passedAny} of ${rows.length}. Reply via: ${vias}. Lookup repeats ${lookupRepeats}. Goal facts at entry: ${factSlots.covered} of ${factSlots.slots} slots; goal facts plus the date line: ${datedSlots.covered} of ${datedSlots.slots} slots.${thinkNote(rows)}`,
 		'',
 		...ledgerHeader,
 		...ledgerLines,
@@ -4301,218 +3972,9 @@ async function checkLedger() {
 	await checkLedgerReplies(check)
 	await checkLedgerChanges(check)
 	checkLedgerScoring(check)
-	checkLedgerRecords(check)
 	if (flags.replay !== '') await replayRecord(check, settings)
 	process.stdout.write(`\n${failures === 0 ? 'every ledger check held' : `${failures} ledger checks failed`} (profile ${settings.profile}, horizon ${settings.horizon})\n`)
 	return failures === 0
-}
-
-// `--records on` over the seed and the lookups of records-fixtures.json, under the refined profile whatever the
-// command line names: each fixture point renders the records records.mjs builds from that point's input, scope drops
-// another account's unit and leaves it to `recall`, the two sentences a decided correction replaced render nowhere,
-// the account records render under one `## Pinned` heading, a request that names no registered account keeps
-// refined's `## Pinned` and reads the `Rules` record, consolidation cuts in the stated order, and `assertPlan`,
-// `measureBriefing`, and `countStale` read the source a record line carries.
-function checkLedgerRecords(check) {
-	const fixtures = JSON.parse(readFileSync(join(HERE, 'records-fixtures.json'), 'utf8')).points
-	const settings = readLedgerSettings({ ...flags, ...PROFILES.refined })
-	const system = buildLedgerSystem(settings.gate, 'terminal', systemOptions(settings))
-	const g05 = scenario.goals.find((goal) => goal.id.startsWith('g05'))
-	// The ledger at a fixture point: the seed, then each goal's request and the point's lookups, the entering goal's
-	// own lookups only for a point that names them, with the request's desk topics decided as the point states them.
-	const enter = (name, records, ctx = 3072) => {
-		const point = fixtures[name]
-		const conversation = createConversation()
-		const seedIds = conversation.add(seedMessages).map((message) => message.id)
-		const ledger = new Ledger({ conversation, model: FIXTURE_MODEL, desk: scenario.ledger.topics, fit: LEDGER_FIT, form: 'choice', horizon: settings.horizon, ctx, budget: settings.budget, tail: settings.tail, system, clock: scenario.ledger.clock, replyMode: 'terminal', ...ledgerOptions(settings), records })
-		ledger.load()
-		importJudgments(ledger, seedIds, FIXTURE_MODEL, SEED_JUDGMENTS)
-		ledger.pinWhole(ledger.seedLookups(), 'settle')
-		ledger.autoPin(undefined)
-		const count = Number(point.request.goal.slice(1, 3))
-		let next = 1
-		let request
-		for (const [at, goal] of scenario.goals.slice(0, count).entries()) {
-			const key = goal.id.slice(0, 3)
-			const last = at === count - 1
-			request = conversation.add({ role: 'user', content: goal.request })
-			ledger.beginRun(request.id)
-			for (const topic of fixtures[`${key}-entry`].request.desk) {
-				const spec = ledger.specTopic(request.id, topic)
-				conversation.judgments.add({ id: spec.key, question: spec.question, model: FIXTURE_MODEL, sources: spec.sources, state: spec.state, answer: { form: 'noul', noul: 0.99 } })
-			}
-			for (const lookup of last && !point.own ? [] : (point.lookups[key] ?? [])) {
-				const call = { id: `call_${String(next++).padStart(8, '0')}`, ...lookup }
-				const value = scenario.tools[call.name][Object.values(call.arguments)[0]]
-				conversation.add({ role: 'assistant', content: '', calls: [call] })
-				ledger.record(call, { success: true, id: call.id, name: call.name, value })
-				conversation.add({ role: 'tool', content: value, call: call.id })
-			}
-			if (last) break
-			ledger.settle()
-			conversation.add({ role: 'assistant', content: `Reply to ${goal.id}.` })
-		}
-		ledger.autoPin(request.id)
-		const projected = records === 'on' ? ledger.projectRecords(request.id) : undefined
-		return { ledger, seedIds, request, projected, plan: ledger.plan(request.id, projected) }
-	}
-	// The views records.mjs selects from the point's stored input, the input records-check.mjs proves byte for byte.
-	const moduleViews = (name) => {
-		const { input, request } = fixtures[name]
-		const links = linkAccounts(input)
-		const accounts = [...new Set(request.entities.map((entity) => (Object.hasOwn(input.accounts, entity) ? entity : links[entity])).filter((account) => account !== undefined))]
-		return selectRecords(buildRecords(input), { accounts, desk: request.desk })
-	}
-	const sentence = (index, at) => splitSentences(scenario.seed[index].content)[at]
-	const replaced = [sentence(2, 1), sentence(22, 1)]
-	const holds = (plan, text) => (plan.briefing ?? '').includes(text)
-	// The briefing's top-level sections in order, each its heading line through the line before the next; an account
-	// record's own heading is no top-level heading, so its block stays inside `## Pinned`.
-	const sectionsOf = (plan) => {
-		const out = []
-		for (const line of (plan.briefing ?? '').split('\n')) {
-			if (/^## (?:Values \(|Pinned$|Not shown$|Rules$)/.test(line)) out.push({ heading: line, lines: [line] })
-			else out.at(-1)?.lines.push(line)
-		}
-		return out.map(({ heading, lines }) => ({ heading, text: lines.join('\n').replace(/\n+$/, '') }))
-	}
-	const section = (plan, heading) => sectionsOf(plan).find((one) => one.heading === heading)?.text
-	const accountViews = (projected) => projected.views.filter((view) => view.key !== 'rules' && view.lines.length > 0)
-
-	for (const [name, title] of [['g03-entry', 'Grace'], ['g05-entry', 'Luis and the Rules'], ['g06-lookup', 'Kenji'], ['g10-entry', 'Halvorsen']]) {
-		const { plan, projected } = enter(name, 'on')
-		const briefed = (view) => (view.key === 'rules' ? renderRecord(view) : renderPinned(view))
-		const expected = moduleViews(name).map(briefed)
-		check(
-			`records on: the ${title} fixture renders as records.mjs builds it from the stored input`,
-			JSON.stringify(projected.views.map(briefed)) === JSON.stringify(expected) && expected.every((text) => holds(plan, text)) && plan.records.cut === 0 && plan.records.faults.length === 0,
-			`${JSON.stringify(projected.views.map(briefed))} | ${plan.briefing}`,
-		)
-	}
-
-	const off = enter('g05-entry', 'off')
-	const on = enter('g05-entry', 'on')
-	const others = on.projected.built.records.filter((record) => !on.projected.views.some((view) => view.key === record.key))
-	const m18 = sentence(18, 1)
-	check(
-		"records on: another account's unit leaves the briefing, which refined's view shows",
-		holds(off.plan, m18) && !holds(on.plan, m18) && others.length > 0 && others.every((record) => record.lines.every((line) => !holds(on.plan, line.text))),
-		on.plan.briefing,
-	)
-	check('records on: recall still returns the out-of-scope unit', on.ledger.recall({ topic: 'Grace Okafor' }, 10_000).includes(m18), on.ledger.recall({ topic: 'Grace Okafor' }, 10_000))
-
-	const scoped = Object.keys(fixtures).map((name) => ({ name, ...enter(name, 'on') }))
-	check(
-		"records on: m2's MX-4471 sentence and m22's ESC-2291 sentence are in no record and in no briefing",
-		scoped.every(({ projected, plan }) => projected.built.records.every((record) => record.lines.every((line) => !replaced.includes(line.text))) && replaced.every((text) => !holds(plan, text))) &&
-			scoped.filter(({ plan }) => plan.records.scoped).length === Object.keys(fixtures).length - 1,
-		scoped.map(({ name, plan }) => `${name} scoped ${plan.records.scoped}, ${replaced.filter((text) => holds(plan, text)).length} replaced`).join('; '),
-	)
-
-	check(
-		'records on: the account records render under one ## Pinned heading, each as renderPinned builds it under a ### heading, before the loose units',
-		scoped
-			.filter(({ plan }) => plan.records.scoped)
-			.every(({ plan, projected }) => {
-				const pinned = section(plan, '## Pinned') ?? ''
-				const head = ['## Pinned', accountViews(projected).map(renderPinned).join('\n\n')].join('\n')
-				const rest = pinned.slice(head.length)
-				return sectionsOf(plan).filter((one) => one.heading === '## Pinned').length === 1 && pinned.startsWith(head) && (rest === '' || (rest.startsWith('\n\n') && rest.slice(2).split('\n').every((line) => line !== '' && !line.startsWith('#') && !line.startsWith('- '))))
-			}) &&
-			scoped.some(({ plan }) => plan.records.scoped && (section(plan, '## Pinned') ?? '').includes('\n\nm')),
-		scoped.map(({ name, plan }) => `${name}: ${section(plan, '## Pinned')}`).join(' | '),
-	)
-
-	const g06 = { off: enter('g06-entry', 'off'), on: enter('g06-entry', 'on') }
-	const rulesView = g06.on.projected.views.find((view) => view.key === 'rules')
-	check(
-		"records on: a request that names no registered account keeps refined's ## Pinned and reads the Rules record as its ## Rules",
-		!g06.on.plan.records.scoped &&
-			section(g06.off.plan, '## Pinned') !== undefined &&
-			section(g06.on.plan, '## Pinned') === section(g06.off.plan, '## Pinned') &&
-			rulesView !== undefined &&
-			section(g06.on.plan, '## Rules') === renderRecord(rulesView) &&
-			holds(g06.off.plan, replaced[0]) &&
-			!holds(g06.on.plan, replaced[0]),
-		g06.on.plan.briefing,
-	)
-
-	// Consolidation over a shrinking window: every plan cuts the off-desk `Rules` lines before any unit no record holds,
-	// those units before the other `Rules` lines, every `Rules` line before an account line, and reads over exactly
-	// when a `Rules` line on the request's desk topics, an account line, or a pinned unit on the request's topics that
-	// renders through no record goes, as under refined. `## Pinned` heads its section at most
-	// once and never stands alone, and it heads every account line that renders.
-	const stages = []
-	for (const { name } of scoped)
-		for (let ctx = 1280; ctx >= 512; ctx -= 16) {
-			const { ledger, request, plan, projected } = enter(name, 'on', ctx)
-			const viewed = new Set(projected.views.flatMap((view) => view.lines.map((line) => line.source)))
-			const pinnedCut = plan.omitted.some((pin) => !viewed.has(pin.source) && intersects(ledger.topics(pin.source), ledger.topics(request.id)))
-			const shown = new Set(plan.records.lines.map((line) => line.text.slice(2)))
-			const sources = new Set(plan.records.lines.map((line) => line.source))
-			const rules = projected.views.find((view) => view.key === 'rules').lines
-			const account = projected.views.filter((view) => view.key !== 'rules').flatMap((view) => view.lines)
-			const meets = (line) => line.desk.some((topic) => projected.request.desk.includes(topic))
-			const gone = (lines) => lines.filter((line) => !shown.has(line.text)).length
-			const units = new Set(plan.lines.filter((line) => !sources.has(line.source) && !plan.tailIds.has(line.source)).map((line) => line.source)).size
-			const headed = sectionsOf(plan).filter((one) => one.heading === '## Pinned')
-			stages.push({ name, ctx, other: gone(rules.filter((line) => !meets(line))), others: rules.filter((line) => !meets(line)).length, units, meeting: gone(rules.filter(meets)), rules: rules.length, account: gone(account), pinnedCut, over: plan.over, headings: headed.length, bare: headed.some((one) => one.text === '## Pinned'), headless: account.length > gone(account) && headed.length === 0 })
-		}
-	const most = new Map()
-	for (const stage of stages) most.set(stage.name, Math.max(most.get(stage.name) ?? 0, stage.units))
-	check(
-		'records on: consolidation cuts off-desk Rules lines first, then the loose units, then the other Rules lines, and account lines last, a desk Rules, account, or request-topic unit cut sets over, and an empty ## Pinned leaves its heading out',
-		stages.every(
-			(stage) =>
-				(stage.units === most.get(stage.name) || stage.other === stage.others) &&
-				(stage.meeting + stage.account === 0 || (stage.other === stage.others && stage.units === 0)) &&
-				(stage.account === 0 || stage.other + stage.meeting === stage.rules) &&
-				stage.over === (stage.meeting + stage.account > 0 || stage.pinnedCut) &&
-				stage.headings <= 1 &&
-				!stage.bare &&
-				!stage.headless,
-		) &&
-			stages.some((stage) => stage.other > 0 && stage.units === most.get(stage.name)) &&
-			stages.some((stage) => stage.units < most.get(stage.name) && stage.meeting === 0) &&
-			stages.some((stage) => stage.meeting > 0 && stage.account === 0) &&
-			stages.some((stage) => stage.account > 0) &&
-			stages.some((stage) => stage.headings === 0),
-		JSON.stringify(stages.filter((stage) => stage.units < most.get(stage.name) || stage.over).map(({ name, ctx, other, units, meeting, account, over }) => [name, ctx, other, units, meeting, account, over])),
-	)
-
-	// Every lookup stub reads as refined writes it, so the tail of a request equals refined's tail for the same history.
-	const stubs = scoped.flatMap(({ plan }) => {
-		const inRecord = new Set(plan.records.lines.map((line) => line.source))
-		return plan.tail.filter((message) => message.role === 'tool' && /: result shown/.test(message.content)).map((message) => ({ message, recorded: inRecord.has(message.id) }))
-	})
-	check(
-		'records on: a lookup stub reads as refined writes it, also when a record shows the result',
-		stubs.every(({ message }) => message.content.endsWith(': result shown under Pinned in the system message')) && stubs.some(({ recorded }) => recorded),
-		stubs.map(({ message, recorded }) => `${message.content.slice(message.content.lastIndexOf('}: ') + 3)} recorded ${recorded}`).join(' | '),
-	)
-
-	const facts = measureBriefing(on.ledger, on.plan, g05, on.seedIds, { report: 'full' })
-	check('records on: measureBriefing counts a goal fact through the source its record line carries', facts.facts.covered === facts.facts.slots && facts.stale === 0, JSON.stringify(facts))
-	const correction = sentence(29, 1)
-	check(
-		'records on: countStale reads a record line by its source, so the correcting line counts no old token and a replaced line does',
-		countStale([{ text: `- ${correction}`, source: on.seedIds[29] }], on.seedIds, on.plan, 'full') === 0 && countStale([{ text: `- ${replaced[0]}`, source: on.seedIds[2] }], on.seedIds, on.plan, 'full') === 1,
-	)
-	const lookup = on.seedIds[42]
-	const faulty = { ...on.plan, records: { ...on.plan.records, lines: [...on.plan.records.lines, { text: '- placeholder', source: on.seedIds[3] }, { text: '- placeholder', source: lookup }], stale: ['MX-4471 m2'] } }
-	const problems = assertPlan(on.ledger, faulty)
-	check(
-		'records on: assertPlan passes the built plan and names a record line from an assistant message, from a replaced lookup, and an old token',
-		assertPlan(on.ledger, on.plan).length === 0 && problems.length === 3 && problems.some((problem) => problem.includes('no user message')) && problems.some((problem) => problem.includes('replaced')) && problems.some((problem) => problem.startsWith('old token')),
-		problems.join('; '),
-	)
-	// The unscoped g06 plan reads records too, so an old token there must be reported as in a scoped plan.
-	const unscoped = assertPlan(g06.on.ledger, { ...g06.on.plan, records: { ...g06.on.plan.records, stale: ['ESC-2291 m22'] } })
-	check(
-		'records on: assertPlan reports an old token in a plan of a request that names no registered account',
-		!g06.on.plan.records.scoped && assertPlan(g06.on.ledger, g06.on.plan).length === 0 && unscoped.length === 1 && unscoped[0].startsWith('old token ESC-2291 m22'),
-		unscoped.join('; '),
-	)
 }
 
 // Handmade cases for the change flags, each with its Round A default beside it: the system text, cache-stable
@@ -4623,8 +4085,7 @@ async function checkLedgerChanges(check) {
 	check('--recall-budget reads unlimited or plain decimal digits and refuses every other form', JSON.stringify(budgetForms) === JSON.stringify(['unlimited', 0, 2, 12, ...Array(7).fill(null)]), JSON.stringify(budgetForms))
 	const cuedOptions = optionsOf('refined')
 	const roundOptions = optionsOf('roundA')
-	// The collapsed answer view reads the cue too, so the uncued run keeps the raw view.
-	const uncuedOptions = { ...cuedOptions, answerCue: 'off', answerView: 'raw' }
+	const uncuedOptions = { ...cuedOptions, answerCue: 'off' }
 	const step = (id, name, args) => ({ calls: [{ id, name, arguments: args }] })
 	const answerText = 'The kettle on LH-81660 ships by Parcelway.'
 	const endsOnCue = (body) => JSON.stringify(body?.messages.at(-1)) === JSON.stringify({ role: 'user', content: ANSWER_CUE })
@@ -4759,161 +4220,6 @@ async function checkLedgerChanges(check) {
 		`${JSON.stringify([...spentTexts, ...nextTexts].map((text) => text.slice(0, 40)))} recalls ${stopped.ledger.runs.slice(1).map((run) => run.stats.recalls).join(', ')}`,
 	)
 
-	// The answer-run fixes, each under the refined flags beside the value that keeps the earlier behavior: the
-	// repeat stop over every tool, the collapsed answer view, the split recall topic, and recall without a category.
-	const repeatedRecall = step('call_e2', 'recall', { topic: 'LH-81660', category: 'rule' })
-	const closedRepeatScript = (turns) => [step('call_e1', 'recall', { topic: 'Zanzibar' }), ...Array.from({ length: turns - 1 }, (_, at) => ({ calls: [{ ...repeatedRecall.calls[0], id: `call_e${at + 2}` }] })), { text: answerText }]
-	const stopAll = await runArm(cuedOptions.cache, 'admit', closedRepeatScript(3), { ...cuedOptions, seed: walkSeed })
-	const stopLookups = await runArm(cuedOptions.cache, 'admit', closedRepeatScript(8), { ...cuedOptions, repeatStop: 'lookups', seed: walkSeed })
-	const stopTexts = toolTexts(stopAll)
-	check(
-		'repeat stop all: under the refined flags the first repeat of an identical recall, made after the recall budget closed, gets the repeat notice, ends the run with reason repeat, and the cued answer run replies',
-		cuedOptions.repeatStop === 'all' &&
-			stopTexts.length === 3 &&
-			/^\[r\d+\] /.test(stopTexts[1]) &&
-			stopTexts[2] === REPEAT_NOTICE.terminal &&
-			stopAll.outcome.events.tools[2]?.repeat === true &&
-			stopAll.outcome.run.stats.repeats === 1 &&
-			stopAll.outcome.run.stats.lookupRepeats === 0 &&
-			stopAll.outcome.passes[0].aborted === 'repeat' &&
-			cuedAnswer(stopAll, 3) &&
-			stopAll.outcome.via === 'answered' &&
-			stopAll.outcome.reply === answerText,
-		`${shape(stopAll)} ${JSON.stringify(stopTexts.map((text) => text.slice(0, 40)))}`,
-	)
-	check(
-		'repeat stop lookups: the same identical recall reads the closed recall to the turn limit, as the installed refined harness does',
-		roundOptions.repeatStop === 'lookups' && toolTexts(stopLookups).slice(2).every((text) => text === closedRecall) && toolTexts(stopLookups).length === 8 && stopLookups.outcome.passes[0].exhausted === 8,
-		shape(stopLookups),
-	)
-	// The answer run's messages after its request, in the body the daemon read.
-	const answerTail = (arm, at, request = 'Has order LH-81660 shipped yet?') => {
-		const messages = arm.bodies[at]?.messages ?? []
-		return messages.slice(messages.findIndex((message) => message.role === 'user' && message.content === request) + 1)
-	}
-	const resultText = (arm, id) => readText(arm.ledger.results.get(id)?.value)
-	// A call written out as a recall or read line shows it: a tool name, then its arguments.
-	const NOTE_CALL = /\b(?:lookup_order|lookup_customer|recall|read|pin) [{[]/
-	const collapsedTail = answerTail(repeatCued, 3)
-	check(
-		'answer view collapsed: the refined answer run holds no tool-call message and no tool message of its request, reads one desk note with the distinct successful results, and ends on the cue with no tool',
-		cuedOptions.answerView === 'collapsed' &&
-			collapsedTail.length === 2 &&
-			collapsedTail.every((message) => message.role === 'user' && message.tool_calls === undefined) &&
-			resultText(repeatCued, 'call_s2').split('\n').some((line) => line.endsWith(`: ${resultText(repeatCued, 'call_s1')}`)) &&
-			collapsedTail[0].content === `${RESULTS_NOTE}\n${resultText(repeatCued, 'call_s1')}` &&
-			!NOTE_CALL.test(collapsedTail[0].content) &&
-			endsOnCue(repeatCued.bodies[3]) &&
-			repeatCued.bodies[3].tools === undefined &&
-			repeatCued.outcome.passes.at(-1).digest === collapsedTail[0].content,
-		JSON.stringify(collapsedTail.map((message) => [message.role, message.content.slice(0, 60)])),
-	)
-	const rawCued = await runArm(cuedOptions.cache, 'admit', repeatScript(), { ...cuedOptions, answerView: 'raw' })
-	const rawTail = answerTail(rawCued, 3)
-	check(
-		'answer view raw: the same answer run reads every call and result of its request, then the cue',
-		rawTail.filter((message) => message.role === 'tool').length === 3 && rawTail.filter((message) => message.tool_calls !== undefined).length === 3 && endsOnCue(rawCued.bodies[3]) && !rawTail.some((message) => message.content.startsWith(RESULTS_NOTE)),
-		JSON.stringify(rawTail.map((message) => [message.role, message.content.slice(0, 30)])),
-	)
-	const emptyScript = [step('call_f1', 'recall', { topic: '' }), step('call_f2', 'recall', { topic: '' }), { text: answerText }]
-	const bare = await runArm(cuedOptions.cache, 'admit', emptyScript, cuedOptions)
-	check(
-		'answer view collapsed: a request with no successful result reads the cue alone after the request',
-		JSON.stringify(answerTail(bare, 2)) === JSON.stringify([{ role: 'user', content: ANSWER_CUE }]) && bare.outcome.via === 'answered' && bare.outcome.passes.at(-1).digest === undefined,
-		`${shape(bare)} ${JSON.stringify(answerTail(bare, 2))}`,
-	)
-	check(
-		'answer view collapsed: the note after a repeat stop leaves out the recall that found nothing and the refused repeat, and carries the recall that listed messages',
-		stopAll.outcome.passes.at(-1).digest === `${RESULTS_NOTE}\n${resultText(stopAll, 'call_e2')}` && !resultText(stopAll, 'call_e2').startsWith('nothing on'),
-		JSON.stringify(stopAll.outcome.passes.at(-1).digest),
-	)
-	// A note built on a stored request: an earlier request's lookup, then this request's lookup, a recall that lists
-	// a message and both results and is cut, a recall that found nothing, a read that points at the recall, a read of
-	// the lookup, and a failed lookup.
-	const noteConversation = createConversation()
-	const [noteFact, , noteAccount, noteRequest] = noteConversation.add([
-		{ role: 'user', content: 'Order LH-81660 is a kettle for Grace Okafor, shipping by Parcelway.' },
-		{ role: 'assistant', content: '', calls: [{ id: 'call_n0', name: 'lookup_customer', arguments: { account: 'LH-20417' } }] },
-		{ role: 'tool', call: 'call_n0', content: 'Account LH-20417 (Grace Okafor): no open balance.' },
-		{ role: 'user', content: 'Has order LH-81660 shipped yet?' },
-	])
-	const noteLedger = make(noteConversation)
-	noteLedger.load()
-	const noteResult = (id, name, args, content, success = true) => {
-		noteConversation.add({ role: 'assistant', content: '', calls: [{ id, name, arguments: args }] })
-		const message = noteConversation.add({ role: 'tool', call: id, content })
-		noteLedger.record({ id, name, arguments: args }, success ? { success, id, name, value: content } : { success, id, name, error: content })
-		return message
-	}
-	const noteOrder = 'Order LH-81660: kettle for Grace Okafor, ships 2026-10-12 by Parcelway.'
-	const noteLookup = noteResult('call_n1', 'lookup_order', { id: 'LH-81660' }, noteOrder)
-	const noteRecall = [noteLedger.line(noteFact.id, noteLedger.marks()), noteLedger.line(noteLookup.id), noteLedger.line(noteAccount.id), '2 older items not shown; name a narrower topic to narrow the recall'].join('\n')
-	noteResult('call_n2', 'recall', { topic: 'LH-81660' }, noteRecall)
-	noteResult('call_n3', 'recall', { topic: 'Zanzibar' }, 'nothing on "Zanzibar"; recall a customer name')
-	noteResult('call_n4', 'read', { handle: 'r3' }, `same as r3 in this request; ${ANSWER_NOW.terminal}`)
-	noteResult('call_n5', 'read', { handle: noteLedger.handle(noteLookup.id) }, noteLedger.line(noteLookup.id))
-	noteResult('call_n6', 'lookup_order', { id: 'LH-99999' }, 'no order LH-99999', false)
-	const noteText = noteLedger.digest(noteRequest.id)
-	check(
-		'answer view collapsed: the desk note writes no call, lists each line once, gives a result a recall or read names as its text alone, and leaves out the cut line, a recall that found nothing, a read that points at an earlier result, and a failed lookup',
-		noteRecall.includes('lookup_order {"id":"LH-81660"}: ') &&
-			noteText === `${RESULTS_NOTE}\n${noteOrder}\n${noteLedger.line(noteFact.id, noteLedger.marks())}\nAccount LH-20417 (Grace Okafor): no open balance.` &&
-			!NOTE_CALL.test(noteText),
-		JSON.stringify(noteText),
-	)
-
-	const splitLedger = (options) => {
-		const conversation = createConversation()
-		conversation.add(walkSeed)
-		const ledger = make(conversation, options)
-		ledger.load()
-		return (topic, category) => ledger.recall({ topic, ...(category === undefined ? {} : { category }) }, 100_000)
-	}
-	const splitOn = splitLedger({ recallSplit: cuedOptions.recallSplit })
-	const splitOff = splitLedger({ recallSplit: roundOptions.recallSplit })
-	const joined = ['Grace Okafor, 2026-10-12', 'Grace Okafor; 2026-10-12', 'Grace Okafor and 2026-10-12', 'Grace Okafor / 2026-10-12'].map((topic) => splitOn(topic))
-	check(
-		'recall split on: a topic joined by a comma, a semicolon, and, or a slash recalls each part, unioned newest first with no line twice; a part that matches nothing adds nothing, and only a topic whose every part matches nothing reads nothing',
-		cuedOptions.recallSplit === 'on' &&
-			joined.every((text) => text === `${splitOn('2026-10-12')}\n${splitOn('Grace Okafor')}`) &&
-			splitOn('LH-81660, Grace Okafor') === splitOn('LH-81660') &&
-			splitOn('LH-81660').split('\n').length === 2 &&
-			splitOn('Grace Okafor, Zanzibar') === splitOn('Grace Okafor') &&
-			splitOn('Zanzibar, Timbuktu').startsWith('nothing on "Zanzibar, Timbuktu"'),
-		JSON.stringify([...joined, splitOn('LH-81660, Grace Okafor'), splitOn('Zanzibar, Timbuktu')].map((text) => text.slice(0, 80))),
-	)
-	check('recall split off: the comma-joined topic reads nothing, as the installed harness does', splitOff('Grace Okafor, 2026-10-12').startsWith('nothing on "Grace Okafor, 2026-10-12"'), splitOff('Grace Okafor, 2026-10-12'))
-	const recallSchema = (options) => {
-		const conversation = createConversation()
-		const ledger = make(conversation, options)
-		return createLedgerTools(ledger, [], () => 100_000, () => false)
-			.definitions()
-			.find((definition) => definition.name === 'recall')?.parameters
-	}
-	const noCategory = splitLedger({ recallCategory: cuedOptions.recallCategory })
-	const withCategory = splitLedger({ recallCategory: roundOptions.recallCategory })
-	check(
-		'recall category off: the refined recall schema has no category parameter and a call that sends one reads the same result as one that does not',
-		cuedOptions.recallCategory === 'off' &&
-			JSON.stringify(Object.keys(recallSchema(cuedOptions).properties)) === '["topic"]' &&
-			noCategory('Grace Okafor', 'rule') === noCategory('Grace Okafor') &&
-			noCategory('Grace Okafor', 'no such category') === noCategory('Grace Okafor') &&
-			!noCategory('Grace Okafor').startsWith('nothing on'),
-		JSON.stringify({ schema: recallSchema(cuedOptions), sent: noCategory('Grace Okafor', 'rule').slice(0, 60) }),
-	)
-	check(
-		'recall category on: the Round A schema keeps the category, and a category the message lacks narrows the recall to nothing',
-		JSON.stringify(Object.keys(recallSchema(roundOptions).properties)) === '["topic","category"]' && withCategory('Grace Okafor', 'rule').startsWith('nothing on'),
-		JSON.stringify(recallSchema(roundOptions)),
-	)
-	const refinedLine = describeSettings(readLedgerSettings({ ...flags, ...PROFILES.refined }))
-	const roundLine = describeSettings(readLedgerSettings({ ...flags, ...PROFILES.roundA }))
-	check(
-		'answer-run flags: the refined settings line names the 4 flags, and the Round A line names none of them',
-		refinedLine.includes(', repeat-stop all, answer-view collapsed, recall-split on, recall-category off,') && !/repeat-stop|answer-view|recall-split|recall-category/.test(roundLine),
-		`${refinedLine} | ${roundLine}`,
-	)
-
 	// The tail of a later goal: goal 1 writes text beside a lookup call, text beside a recall call, and a final
 	// answer; goal 2 ends quiet, so its answer run writes the reply; goal 3 recalls the goal 1 lookup.
 	const tailScript = () => [
@@ -4972,11 +4278,11 @@ async function checkLedgerChanges(check) {
 		JSON.stringify(recalled.map((text) => text.slice(0, 80))),
 	)
 
-	// Recalls, then lookups of other ids, to the turn limit; no call repeats an earlier one, so no repeat stop ends it.
+	// Recalls, then lookups of other ids, to the turn limit.
 	const limitScript = () => [
 		step('call_t1', 'recall', { topic: 'm4' }),
 		step('call_t2', 'recall', { topic: 'LH-81660' }),
-		step('call_t3', 'recall', { topic: 'm2' }),
+		step('call_t3', 'recall', { topic: 'm4' }),
 		step('call_t4', 'lookup_order', { id: 'LH-81660' }),
 		step('call_t5', 'lookup_customer', { account: 'LH-20418' }),
 		step('call_t6', 'lookup_order', { id: 'LH-79215' }),
@@ -5612,7 +4918,7 @@ async function checkLedgerReplies(check) {
 		},
 	}
 	// With `transport`, the real provider under think on answers from the transport instead of the stub.
-	const fixture = (reply, gate, script, transport, think = transport !== undefined) => {
+	const fixture = (reply, gate, script, transport) => {
 		const conversations = createConversationManager()
 		const conversation = conversations.add()
 		conversations.switch(conversation.id)
@@ -5632,7 +4938,7 @@ async function checkLedgerReplies(check) {
 				return super.body(request)
 			}
 		}
-		const provider = transport !== undefined ? new Recording({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: 60_000, transport, think }, requests) : {
+		const provider = transport !== undefined ? new Recording({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: 60_000, transport, think: true }, requests) : {
 			async *stream(messages, signal, tools) {
 				log.push({ call: log.length, label: 'agent', messages: messages.length, estimate: estimateMessages(messages), tools: tools?.length ?? 0, overflow: false })
 				// The loop appends to the array it passes, so each call keeps a copy of what it was sent.
@@ -5647,7 +4953,7 @@ async function checkLedgerReplies(check) {
 				return { content: step.content ?? '', tools: step.calls ?? [] }
 			},
 		}
-		const arm = createLedgerArm({ provider, judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, timeout: 60_000, think })
+		const arm = createLedgerArm({ provider, judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, timeout: 60_000 })
 		const goal = async (request) => {
 			const outcome = await arm.runGoal({ request })
 			const added = conversation.messages().slice(ledger.position(outcome.request.id) + 1)
@@ -5914,7 +5220,7 @@ async function checkLedgerReplies(check) {
 	check(
 		'think on: every agent request asks for thinking under the num_predict cap, with the --model agent model and the sampler options',
 		thinkBodies.length === 4 &&
-			thinkBodies.every((wire) => wire.think === true && wire.model === agentModel && JSON.stringify(wire.options) === JSON.stringify({ num_ctx: ctx, ...OPTIONS, num_predict: thinkPredict })),
+			thinkBodies.every((wire) => wire.think === true && wire.model === agentModel && JSON.stringify(wire.options) === JSON.stringify({ num_ctx: ctx, ...OPTIONS, num_predict: THINK_PREDICT })),
 		JSON.stringify(thinkBodies.map((wire) => [wire.model, wire.think, wire.options])),
 	)
 	check(
@@ -5954,35 +5260,11 @@ async function checkLedgerReplies(check) {
 			spentOutcome.reply === 'It ships by Parcelway.' &&
 			JSON.stringify(spentOutcome.kinds) === '["first","answer"]' &&
 			JSON.stringify(spentOutcome.advertised) === JSON.stringify([terminalTools, '']) &&
-			spent.log[0].cut === true &&
-			spent.log[1].cut === undefined &&
+			JSON.stringify(spent.log.map((call) => call.cut)) === '[true,false]' &&
 			thinkFields(spent.log).cut === 1 &&
-			JSON.stringify(cutBodies.map((wire) => wire.think)) === '[true,false]' &&
-			cutBodies.every((wire) => wire.options.num_predict === thinkPredict) &&
+			cutBodies.every((wire) => wire.think === true && wire.options.num_predict === THINK_PREDICT) &&
 			carried(cutBodies).length === 0,
 		`${show(spentOutcome)} cut ${JSON.stringify(spent.log.map((call) => call.cut))} carried ${JSON.stringify(carried(cutBodies))}`,
-	)
-
-	const onBodies = []
-	const on = fixture('terminal', 'admit', [], createStubTransport(cutScript, onBodies), true)
-	const onOutcome = await on.goal(asking)
-	const offBodies = []
-	const off = fixture('terminal', 'admit', [], createStubTransport(cutScript, offBodies), false)
-	const offOutcome = await off.goal(asking)
-	check(
-		'think on: the answer pass sends think false and the first pass think true, the answer call logs think false with no thinking tally, and think off sends think true on neither pass',
-		JSON.stringify(onOutcome.kinds) === '["first","answer"]' &&
-			JSON.stringify(onBodies.map((wire) => wire.think)) === '[true,false]' &&
-			onBodies.every((wire) => wire.options.num_predict === thinkPredict) &&
-			on.log[0].think === undefined &&
-			on.log[1].think === false &&
-			on.log[1].thinking === undefined &&
-			thinkFields(on.log).cut === 1 &&
-			JSON.stringify(offOutcome.kinds) === '["first","answer"]' &&
-			offBodies.length === 2 &&
-			offBodies.every((wire) => wire.think !== true) &&
-			off.log.every((call) => call.think === undefined && call.thinking === undefined),
-		`on ${JSON.stringify(onBodies.map((wire) => wire.think))} off ${JSON.stringify(offBodies.map((wire) => wire.think))} ${JSON.stringify(on.log.map((call) => [call.think, call.thinking]))}`,
 	)
 
 	const body = new LedgerChatProvider({ url: OLLAMA_URL, model: AGENT_MODEL, ctx, label: 'agent', log: [], timeout: 60_000 }, []).body({ messages: [{ id: 'request', role: 'user', content: asking }] })
@@ -6014,7 +5296,7 @@ function checkLedgerScoring(check) {
 		{ goal: 'g03', text: '| Sign-off | Marcus Oyelaran |\n| --- | --- |\n| Copy | Priya Raman |\n| Tracking | PW-5521-9930 |', outcome: 'pass' },
 		{ goal: 'g04', text: '| Current ticket | Superseded |\n| --- | --- |\n| ESC-2291 | ESC-2219 |', outcome: 'pattern' },
 		{ goal: 'g10', text: '| Line | Detail |\n| --- | --- |\n| Do not use | extension 4127 |\n| Dial | 555-0142 |\n| Hours | after 2 pm |', outcome: 'pattern' },
-		{ goal: 'g08', text: 'Halvorsen Interiors has no room for the $3,000 reorder on credit. Their account manager is Ines Albrecht.', outcome: 'pattern' },
+		{ goal: 'g08', text: 'Halvorsen Interiors has no room for the $3,000 reorder on credit. Their account manager is Ines Albrecht.', outcome: 'missing' },
 		{ goal: 'g08', text: 'The $3,000 reorder doesn’t fit within their available credit; account manager Ines Albrecht.', outcome: 'pattern' },
 		{ goal: 'g08', text: 'Halvorsen cannot add another $3,000 on credit; Ines Albrecht manages the account.', outcome: 'missing' },
 		{ goal: 'g08', text: '| Check | Result |\n| --- | --- |\n| Fits within available credit? | No |\n| Account manager | Ines Albrecht |', outcome: 'pattern' },
@@ -6336,7 +5618,6 @@ async function replayRecord(check, settings) {
 			let holdAt = 0
 			let held
 			for (const [index, pass] of row.passes.entries()) {
-				if (pass.kind === 'answer' && pass.digest !== undefined) ledger.notes.add(conversation.add({ role: 'user', content: pass.digest }).id)
 				if (pass.kind === 'answer' && pass.note !== undefined) ledger.notes.add(conversation.add({ role: 'user', content: pass.note }).id)
 				const toolCount = Math.min(row.tools.length - toolAt, pass.exhausted !== undefined || pass.aborted === 'repeat' ? pass.turns : Math.max(0, pass.turns - 1))
 				for (let count = 0; count < toolCount; count += 1) {
@@ -6420,12 +5701,10 @@ async function replayRecord(check, settings) {
 		settings.requestQuestions === 'topics' ? Object.keys(ledger.desk).filter((topic) => !UNASKED_REQUEST_TOPICS.has(topic)).length : 1 + Object.keys(ledger.desk).length
 	check(`replay: each goal asks only its ${requestQuestions} request questions`, replayed.every((entry) => entry.fresh.length === requestQuestions), replayed.map((entry) => `${entry.goal.id.slice(0, 3)} ${entry.fresh.length}`).join(', '))
 	const recalls = replayed.flatMap((entry) => entry.results.filter(({ call }) => call.name === 'recall').map((one) => ({ ...one, goal: entry.goal.id })))
-	// A recall the closed tools or the repeat stop refused never ran, so it says nothing about handle resolution.
-	// Under `--handles bare` a topic that opens on a handle names it.
+	// A recall the closed tools refused never ran, so it says nothing about handle resolution. Under `--handles bare`
+	// a topic that opens on a handle names it.
 	const handleTopic = settings.handles === 'bare' ? /^\[?[mrp]\d+\]?(?:\s|$)/i : /^\[?[mrp]\d+\]?$/i
-	const handleRecalls = recalls.filter(
-		({ call, result }) => handleTopic.test(String(call.arguments.topic ?? '').trim()) && !String(result.error ?? '').includes(' is closed for the rest of this request') && result.error !== REPEAT_NOTICE[replyMode],
-	)
+	const handleRecalls = recalls.filter(({ call, result }) => handleTopic.test(String(call.arguments.topic ?? '').trim()) && !String(result.error ?? '').includes(' is closed for the rest of this request'))
 	if (handleRecalls.length > 0)
 		check(
 			'replay: a recall that names a handle returns that source, never an empty or repeat notice',
@@ -6480,8 +5759,7 @@ async function replayRecord(check, settings) {
 	check(`replay: every goal's first call leaves the ${growth} tokens the longest replied goal of the record grew by`, replayed.every((entry) => REPLAY_CTX - entry.projected >= growth), projections)
 
 	// The repeats: an identical recall or read the record repeats in one goal gets a pointer and the order to
-	// answer, or the closed refusal, which carries the same order, and the advertised tools narrow after it. Under
-	// `--repeat-stop all` a call with the same arguments gets the repeat notice instead.
+	// answer, or the closed refusal, which carries the same order, and the advertised tools narrow after it.
 	const repeatKey = (tool) => (tool.name === 'recall' ? JSON.stringify([String(tool.arguments?.topic ?? '').trim().toLowerCase(), String(tool.arguments?.category ?? '')]) : normalizeHandle(tool.arguments?.handle))
 	const repeats = replayed.flatMap((entry) =>
 		entry.row.tools.flatMap((tool, at) =>
@@ -6490,8 +5768,8 @@ async function replayRecord(check, settings) {
 	)
 	if (repeats.length > 0) {
 		check(
-			'replay: every repeated recall or read in the record gets a pointer or a closed refusal that says to answer, or under --repeat-stop all the repeat notice',
-			repeats.every(({ result }) => readText(result.success ? result.value : result.error).endsWith(ledger.answerNow) || (ledger.repeatStop === 'all' && result.error === REPEAT_NOTICE[replyMode])),
+			'replay: every repeated recall or read in the record gets a pointer or a closed refusal that says to answer',
+			repeats.every(({ result }) => readText(result.success ? result.value : result.error).endsWith(ledger.answerNow)),
 			repeats.map(({ entry, at, result }) => `${entry.goal.id.slice(0, 3)}#${at} ${readText(result.success ? result.value : result.error).slice(0, 70)}`).join(' | '),
 		)
 		const all = tools.definitions().map((definition) => definition.name)
@@ -6968,7 +6246,7 @@ function thinkNote(rows) {
 
 // One per-call log line of a smoke run.
 function callLine(call) {
-	return `#${call.call} ${call.label} messages=${call.messages} estimate=${call.estimate} tools=${call.tools} prompt=${call.prompt} completion=${call.completion} reason=${call.reason} ms=${call.ms} truncated=${call.truncated} overflow=${call.overflow}${call.requested === undefined ? '' : ` requested=${call.requested}`}${call.thinking === undefined ? '' : ` thinking=${call.thinking} cut=${call.cut}`}${call.think === false ? ' think=false' : ''}\n`
+	return `#${call.call} ${call.label} messages=${call.messages} estimate=${call.estimate} tools=${call.tools} prompt=${call.prompt} completion=${call.completion} reason=${call.reason} ms=${call.ms} truncated=${call.truncated} overflow=${call.overflow}${call.requested === undefined ? '' : ` requested=${call.requested}`}${call.thinking === undefined ? '' : ` thinking=${call.thinking} cut=${call.cut}`}\n`
 }
 
 mkdirSync(flags.out, { recursive: true })
@@ -7110,7 +6388,7 @@ const lines = rows.map(
 const passed = rows.filter((row) => row.success).length
 const passedAny = rows.filter((row) => row.successAnswer).length
 const stateSetting = `, state ${flags.state}${flags.state === 'bounded' ? ` (neighbors ${neighbors})` : ''}, candidates ${flags.candidates}`
-const settings = `mode ${mode}, model ${agentModel}, think ${flags.think ? `on (cap ${thinkPredict})` : 'off'}${useSelect ? `, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, threshold ${threshold}, limit ${flags.limit}${stateSetting}, criterion ${flags.criterion}` : ''}${useWindow ? `, window ${windowMax}, keep ${keep}${sectionsCap === undefined ? '' : `, sections ${sectionsCap}`}, summary ${flags.summary}` : ''}, ctx ${ctx}, search ${flags.search}`
+const settings = `mode ${mode}, model ${agentModel}, think ${flags.think ? 'on' : 'off'}${useSelect ? `, judge ${flags.judge}${flags.judge === 'mica' ? ` (num_ctx ${judgeCtx})` : ''}, threshold ${threshold}, limit ${flags.limit}${stateSetting}, criterion ${flags.criterion}` : ''}${useWindow ? `, window ${windowMax}, keep ${keep}${sectionsCap === undefined ? '' : `, sections ${sectionsCap}`}, summary ${flags.summary}` : ''}, ctx ${ctx}, search ${flags.search}`
 const table = [
 	`# ${scenario.title}: ${mode}`,
 	'',
