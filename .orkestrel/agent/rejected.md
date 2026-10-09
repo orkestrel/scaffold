@@ -54,7 +54,7 @@ The full harvest, with every citation, is `.orkestrel/agent/harvest/rejected.jso
 | --- | --- | --- | --- |
 | `send_reply` as the default reply route | With compaction: 2 of 10 against 5 for a terminal reply. | Fewer passes. | One run per design. |
 | Greedy sampling for the thinking 2B | Search 4 of 8 at 15.1 s, against 16 of 16 at 7.2 s with the model card's sampler. | The model loops back to reading. | None. |
-| A 1,024-token thinking cap on the Larkspur bench | 1 of 19 calls spent the cap with no content, and the 90th percentile was 1,010 tokens. | It measures the cap; the final check uses 2,048. | None. |
+| Raising the thinking cap to fix the records' no-reply requests | At 1,024 tokens, 2 of 22 calls spent the cap with no content. At 2,048 tokens the same two calls, the tool-free answer passes of g01 and g10 with byte-identical prompts, spent the cap again. | The loop is in the answer pass, not the cap; a thinking-off answer pass is the open arm (`ideas.md`). | None. |
 | An optional `from` argument on `read` | Search fell from 16 of 16 to 6, and paging from 16 to 0. | Any regression rejects it. | None. |
 | Rewording tool descriptions for the reflexive 2B | Byte-identical rewordings flipped the first call on 3 of 4 ports. | Copy tuning is a lottery for the 2B. | With thinking on, the same bytes read as instructions. |
 | Refusal copy that names two exits or addresses the user | Two refusals that pointed at each other made a 36-call loop. | A refusal names the one next call. | None. |
