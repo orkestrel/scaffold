@@ -5284,7 +5284,7 @@
    "area": "briefing and records method",
    "status": "rejected",
    "issue": "The 2B quotes Kenji's date in 27 of 27 probe replies and 9 of 9 rewrites. In v10 the 4B with thinking off fails g06 in 4 of 4 records copies, and the full view fails 11 of 12 runs.",
-   "fix": "Measurement dropped the fixes on purpose: every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9. The method deep dive of 2026-10-09 found the rule and the 2026-10-12 date in the same answer request in 17 of 17 records runs, with nothing cut, so each loss is the model's, not the method's. The reopen condition is a larger model or thinking; the 4B with thinking on (`t4`) is the one untested case.",
+   "fix": "Measurement dropped the fixes on purpose: every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9. The method deep dive of 2026-10-09 found the rule and the 2026-10-12 date in the same answer request in 17 of 17 records runs, with nothing cut, so each loss is the model's, not the method's. The reopen condition is a larger model or thinking; the 4B with thinking on (`t4`) is the one untested case. The g06 forensics of 2026-10-09 (`G06.md`) found the goal a poor instrument: g06 passed 5 of 99 recorded replies, 3 of them clean, all on the 2B with thinking off; 88 of 94 failures relay the 2026-10-12 estimate the required lookup returns; the rule says \"promise\", which the 4B with thinking read as allowing a hedged estimate, and the records and briefing arms never show the acknowledgment that widens it. The scorer fix and the rule wording are I-341.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:44",
@@ -5310,6 +5310,16 @@
      "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
      "exists": true,
      "note": "g06 scoring, LH-81660 lookup"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/G06.md",
+     "exists": true,
+     "note": "forensics"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md",
+     "exists": true,
+     "note": "lanes"
     }
    ]
   },
@@ -6639,6 +6649,186 @@
     },
     {
      "path": "scaffold:.orkestrel/agent/instruments/units/port/u9-driver-brief.md",
+     "exists": true,
+     "note": "brief"
+    }
+   ]
+  },
+  {
+   "id": "I-338",
+   "title": "The release failed its first falsify round",
+   "area": "agent package code",
+   "status": "fixed",
+   "issue": "The first pre-publish round over `f28d222` to `7f346b5` found: a cancel after the final text reported a complete result; a refused judge question was asked again on every request; the ledger tail sent a tool result without its call across an interleaved user message; a direct agent run planned for the previous request; three different exchange splitters; duplicated plan code; and false or uncheckable guide sentences.",
+   "fix": "Commits c3c654d (code) and 6981e2d (guide) apply the rulings: one exchange splitter, `collectExchanges`, serves compaction, selection, and the ledger tail; a refused question holds its item; an unowned run faults; the guide states the ledger limits. Over-reaching claims (the budget bound on every request, calibration without thinking) were restated, not coded.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/port-release-claims.md",
+     "exists": true,
+     "note": "claims"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/port-release-rulings.md",
+     "exists": true,
+     "note": "rulings"
+    },
+    {
+     "path": "agent:src/core/conversations/helpers.ts",
+     "exists": true,
+     "note": "collectExchanges"
+    },
+    {
+     "path": "commit c3c654d (agent)",
+     "exists": false,
+     "note": "commit"
+    },
+    {
+     "path": "commit 6981e2d (agent)",
+     "exists": false,
+     "note": "commit"
+    }
+   ]
+  },
+  {
+   "id": "I-339",
+   "title": "The second falsify round found pairing, hold, pricing, ownership, and calibration defects",
+   "area": "agent package code",
+   "status": "fixed",
+   "issue": "Round 2 found tool results paired with calls by position, a hold forgotten when the judge model alternates, a tail priced with a shorter stub than it renders, direct runs during calibration or a first pass escaping the fault, and calibration carrying thinking the next request drops.",
+   "fix": "Commits 33a5e67 and c5dbac9: pairing by call id (`resolveLedgerCall`), a set of held fingerprints with the model, tail pricing at the longer stub, a `LedgerError` code `REQUEST` for a run no `respond` call owns, calibration replay at the next user boundary, and a named `LedgerPlanningGroup`.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/port-release-2-claims.md",
+     "exists": true,
+     "note": "claims"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/port-release-2-rulings.md",
+     "exists": true,
+     "note": "rulings"
+    },
+    {
+     "path": "agent:src/core/ledgers/Ledger.ts",
+     "exists": true,
+     "note": "#selectTail, #select, calibrate"
+    },
+    {
+     "path": "agent:src/core/ledgers/helpers.ts",
+     "exists": true,
+     "note": "resolveLedgerCall"
+    },
+    {
+     "path": "commit 33a5e67 (agent)",
+     "exists": false,
+     "note": "commit"
+    },
+    {
+     "path": "commit c5dbac9 (agent)",
+     "exists": false,
+     "note": "commit"
+    }
+   ]
+  },
+  {
+   "id": "I-340",
+   "title": "The third falsify round closed on two edge cases",
+   "area": "agent package code",
+   "status": "fixed",
+   "issue": "Round 3 found a call group that mixes id-carrying and idless results keeping a call without its result, a repeated call id reading the wrong arguments, and a direct run started during a request sharing that request's gauge readings and repeat stop; two guide claims had no executed assertion, and measured-series citations remained.",
+   "fix": "Commit 8f5098b applies the lanes' prescriptions verbatim and a mutation probe closes the chain: each change's mutation fails its test. The shared accounting of a concurrent run is a documented limit. At 8f5098b the core tests pass 1,250 of 1,250, the guide 120 of 120, and the replay 108 of 108 with 0 unlisted bodies.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/port-release-3-claims.md",
+     "exists": true,
+     "note": "claims"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/f5-release-fix-brief.md",
+     "exists": true,
+     "note": "fix brief"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/port-release-audit-verdict.md",
+     "exists": true,
+     "note": "audit verdict"
+    },
+    {
+     "path": "commit 8f5098b (agent)",
+     "exists": false,
+     "note": "commit"
+    }
+   ]
+  },
+  {
+   "id": "I-341",
+   "title": "g06 measures relaying a forbidden lookup value, not context",
+   "area": "scoring and audit",
+   "status": "open",
+   "issue": "g06 asks whether an order shipped; its required lookup returns the carrier's estimated delivery date, which the desk rule forbids in a customer reply. Every arm and model sits at the floor (0 of 38 in v10), so g06 caps each run at 9 of 10 and separates no arms. The rule says \"promise\"; the acknowledgment that widens it to \"no delivery dates\" reaches only the full view; the scorer fails any date, a ship date included, and passes an invented \"arrived today\".",
+   "fix": "None yet. Scorer unit U2, after the series: reword seed 6 to forbid a delivery date, a carrier estimate included, in a customer reply, in every arm; score only the customer draft; fail a reply with no draft or a claimed delivery; limit the date pattern to a date about arrival, delivery, or an estimate. Read no arm comparison from g06 until then.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/G06.md",
+     "exists": true,
+     "note": "ruling"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md",
+     "exists": true,
+     "note": "lanes"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
+     "exists": true,
+     "note": "g06, seed 6 and 7"
+    }
+   ]
+  },
+  {
+   "id": "I-342",
+   "title": "A series stopped at the shell job's 30-minute background limit",
+   "area": "session and dispatch",
+   "status": "worked around",
+   "issue": "The t4 series was launched as a background shell job without a timeout, so the job ran under the default 30-minute background limit and stopped mid-run, though the launcher's own cap was 17,000 seconds.",
+   "fix": "The partial run moved to `results/v10/aborted/`, `run.log` gained a truthful end line, and the series relaunched with the 2-hour background limit and a series budget below it. Launch any command that outlives 30 minutes with an explicit background timeout.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/run.log",
+     "exists": true,
+     "note": "killed end lines"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts",
+     "exists": true,
+     "note": "budget"
+    }
+   ]
+  },
+  {
+   "id": "I-343",
+   "title": "A container restart stopped the series and the daemon",
+   "area": "environment",
+   "status": "worked around",
+   "issue": "The container restarted during t4 copy 3, which stopped the series, the falsify lanes, and the Ollama daemon.",
+   "fix": "The daemon restarted with the same settings (models under /opt/ollama/models, one loaded model); the partial run moved to `aborted/` with an end line; the series and both falsify lanes relaunched.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/run.log",
+     "exists": true,
+     "note": "killed end lines"
+    }
+   ]
+  },
+  {
+   "id": "I-344",
+   "title": "Verifier lanes gated the wrong worktree",
+   "area": "session and dispatch",
+   "status": "worked around",
+   "issue": "Workflow verifiers ran their gates in the session's working directory, the replay worktree, even when the brief named `/home/user/agent-port` and the command carried a `cd` prefix, so they reported red on an unedited tree.",
+   "fix": "The Orchestrator ran the gates itself in the named worktree before each commit. A verifier brief carries the absolute path in every command, and the Orchestrator re-runs a red gate in the named tree before acting on it.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/g3-release-guide-brief.md",
      "exists": true,
      "note": "brief"
     }

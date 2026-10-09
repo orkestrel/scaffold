@@ -11,7 +11,7 @@ Paths name their checkout:
 
 The benchmark scenario fixes its own date: the Larkspur shift happens on Thursday 2026-10-08, whatever the calendar says. Judge a reply's date against that line, not the day a run happened.
 
-Status counts: 47 open, 188 fixed, 76 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
+Status counts: 48 open, 191 fixed, 79 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
 
 Add an item when an issue is found, and update its status and files when it is fixed.
 
@@ -66,6 +66,7 @@ The following items have no fix yet:
 - I-328 The delivery-date rule is filed off the delivery topic (briefing and records method)
 - I-329 Account records carry request sentences and fragments (briefing and records method)
 - I-330 A made-up gift-note action goes unscored (scoring and audit)
+- I-341 g06 measures relaying a forbidden lookup value, not context (scoring and audit)
 
 ## Thinking
 
@@ -187,8 +188,8 @@ The following items have no fix yet:
 
 - **Status:** rejected.
 - **Issue:** The 2B quotes Kenji's date in 27 of 27 probe replies and 9 of 9 rewrites. In v10 the 4B with thinking off fails g06 in 4 of 4 records copies, and the full view fails 11 of 12 runs.
-- **Fix:** Measurement dropped the fixes on purpose: every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9. The method deep dive of 2026-10-09 found the rule and the 2026-10-12 date in the same answer request in 17 of 17 records runs, with nothing cut, so each loss is the model's, not the method's. The reopen condition is a larger model or thinking; the 4B with thinking on (`t4`) is the one untested case.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:44`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/rejected.md`, `scaffold:.orkestrel/agent/records-series-verdict.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`.
+- **Fix:** Measurement dropped the fixes on purpose: every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9. The method deep dive of 2026-10-09 found the rule and the 2026-10-12 date in the same answer request in 17 of 17 records runs, with nothing cut, so each loss is the model's, not the method's. The reopen condition is a larger model or thinking; the 4B with thinking on (`t4`) is the one untested case. The g06 forensics of 2026-10-09 (`G06.md`) found the goal a poor instrument: g06 passed 5 of 99 recorded replies, 3 of them clean, all on the 2B with thinking off; 88 of 94 failures relay the 2026-10-12 estimate the required lookup returns; the rule says "promise", which the 4B with thinking read as allowing a hedged estimate, and the records and briefing arms never show the acknowledgment that widens it. The scorer fix and the rule wording are I-341.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:44`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/rejected.md`, `scaffold:.orkestrel/agent/records-series-verdict.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`.
 
 ### I-290 Release owner named wrongly
 
@@ -968,6 +969,13 @@ The following items have no fix yet:
 - **Fix:** The run was stopped and relaunched with the ids printed by `items.ts`, copied whole. `tally.ts` refuses a verdict whose id has no key, so a wrong id cannot enter a tally; the relaunched audit returned 60 verdicts, 0 unresolved.
 - **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/tools/items.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-d1.json`.
 
+### I-341 g06 measures relaying a forbidden lookup value, not context
+
+- **Status:** open.
+- **Issue:** g06 asks whether an order shipped; its required lookup returns the carrier's estimated delivery date, which the desk rule forbids in a customer reply. Every arm and model sits at the floor (0 of 38 in v10), so g06 caps each run at 9 of 10 and separates no arms. The rule says "promise"; the acknowledgment that widens it to "no delivery dates" reaches only the full view; the scorer fails any date, a ship date included, and passes an invented "arrived today".
+- **Fix:** None yet. Scorer unit U2, after the series: reword seed 6 to forbid a delivery date, a carrier estimate included, in a customer reply, in every arm; score only the customer draft; fail a reply with no draft or a claimed delivery; limit the date pattern to a date about arrival, delivery, or an estimate. Read no arm comparison from g06 until then.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`.
+
 ## Measurement method
 
 ### I-313 The 4B think-off band sat on its bound at four copies
@@ -1223,6 +1231,27 @@ The following items have no fix yet:
 - **Issue:** After the fidelity fix, 13 replay bodies still differed: in g04 the port's recall kept 9 candidates where the measured kept 8, its answer note carried the extra item, and in v7 g07 the shift cascaded through a recalled note.
 - **Fix:** On identical inputs the port's gauge equals the measured room formula to within 1e-10, and the candidate sets are equal. The port's lines carry no handle or amended mark and its prompt is shorter, so its items are smaller and its room larger (263.98 against 274.35 units in v1). Listed departure N10 under T1; U9 measures the effect.
 - **Files:** `scaffold:.orkestrel/agent/instruments/units/port/f2-recall-residue-rooms.json`, `scaffold:.orkestrel/agent/instruments/units/port/f2-recall-residue-brief.md`, `scaffold:.orkestrel/agent/instruments/units/agent/records-port-plan.md`.
+
+### I-338 The release failed its first falsify round
+
+- **Status:** fixed.
+- **Issue:** The first pre-publish round over `f28d222` to `7f346b5` found: a cancel after the final text reported a complete result; a refused judge question was asked again on every request; the ledger tail sent a tool result without its call across an interleaved user message; a direct agent run planned for the previous request; three different exchange splitters; duplicated plan code; and false or uncheckable guide sentences.
+- **Fix:** Commits c3c654d (code) and 6981e2d (guide) apply the rulings: one exchange splitter, `collectExchanges`, serves compaction, selection, and the ledger tail; a refused question holds its item; an unowned run faults; the guide states the ledger limits. Over-reaching claims (the budget bound on every request, calibration without thinking) were restated, not coded.
+- **Files:** `scaffold:.orkestrel/agent/instruments/units/port/port-release-claims.md`, `scaffold:.orkestrel/agent/instruments/units/port/port-release-rulings.md`, `agent:src/core/conversations/helpers.ts`, `commit c3c654d (agent)`, `commit 6981e2d (agent)`.
+
+### I-339 The second falsify round found pairing, hold, pricing, ownership, and calibration defects
+
+- **Status:** fixed.
+- **Issue:** Round 2 found tool results paired with calls by position, a hold forgotten when the judge model alternates, a tail priced with a shorter stub than it renders, direct runs during calibration or a first pass escaping the fault, and calibration carrying thinking the next request drops.
+- **Fix:** Commits 33a5e67 and c5dbac9: pairing by call id (`resolveLedgerCall`), a set of held fingerprints with the model, tail pricing at the longer stub, a `LedgerError` code `REQUEST` for a run no `respond` call owns, calibration replay at the next user boundary, and a named `LedgerPlanningGroup`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/units/port/port-release-2-claims.md`, `scaffold:.orkestrel/agent/instruments/units/port/port-release-2-rulings.md`, `agent:src/core/ledgers/Ledger.ts`, `agent:src/core/ledgers/helpers.ts`, `commit 33a5e67 (agent)`, `commit c5dbac9 (agent)`.
+
+### I-340 The third falsify round closed on two edge cases
+
+- **Status:** fixed.
+- **Issue:** Round 3 found a call group that mixes id-carrying and idless results keeping a call without its result, a repeated call id reading the wrong arguments, and a direct run started during a request sharing that request's gauge readings and repeat stop; two guide claims had no executed assertion, and measured-series citations remained.
+- **Fix:** Commit 8f5098b applies the lanes' prescriptions verbatim and a mutation probe closes the chain: each change's mutation fails its test. The shared accounting of a concurrent run is a documented limit. At 8f5098b the core tests pass 1,250 of 1,250, the guide 120 of 120, and the replay 108 of 108 with 0 unlisted bodies.
+- **Files:** `scaffold:.orkestrel/agent/instruments/units/port/port-release-3-claims.md`, `scaffold:.orkestrel/agent/instruments/units/port/f5-release-fix-brief.md`, `scaffold:.orkestrel/agent/port-release-audit-verdict.md`, `commit 8f5098b (agent)`.
 
 ## Agent docs and tests
 
@@ -2130,6 +2159,20 @@ The following items have no fix yet:
 - **Fix:** Refused, because amending rewrites published history.
 - **Files:** `commit 35e4b3a (ollama)`.
 
+### I-342 A series stopped at the shell job's 30-minute background limit
+
+- **Status:** worked around.
+- **Issue:** The t4 series was launched as a background shell job without a timeout, so the job ran under the default 30-minute background limit and stopped mid-run, though the launcher's own cap was 17,000 seconds.
+- **Fix:** The partial run moved to `results/v10/aborted/`, `run.log` gained a truthful end line, and the series relaunched with the 2-hour background limit and a series budget below it. Launch any command that outlives 30 minutes with an explicit background timeout.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/run.log`, `scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts`.
+
+### I-344 Verifier lanes gated the wrong worktree
+
+- **Status:** worked around.
+- **Issue:** Workflow verifiers ran their gates in the session's working directory, the replay worktree, even when the brief named `/home/user/agent-port` and the command carried a `cd` prefix, so they reported red on an unedited tree.
+- **Fix:** The Orchestrator ran the gates itself in the named worktree before each commit. A verifier brief carries the absolute path in every command, and the Orchestrator re-runs a red gate in the named tree before acting on it.
+- **Files:** `scaffold:.orkestrel/agent/instruments/units/port/g3-release-guide-brief.md`.
+
 ## Records and process
 
 ### I-062 Ollama checkout was on main
@@ -2456,6 +2499,13 @@ The following items have no fix yet:
 - **Fix:** They are copied into the scaffold record under .orkestrel/agent/instruments with the same layout.
 - **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md`, `scaffold:.orkestrel/agent/small-models.md`, `commit b8e180b (scaffold)`.
 
+### I-343 A container restart stopped the series and the daemon
+
+- **Status:** worked around.
+- **Issue:** The container restarted during t4 copy 3, which stopped the series, the falsify lanes, and the Ollama daemon.
+- **Fix:** The daemon restarted with the same settings (models under /opt/ollama/models, one loaded model); the partial run moved to `aborted/` with an end line; the series and both falsify lanes relaunched.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/run.log`.
+
 ## File map
 
 Each file the items name, with the items that name it:
@@ -2480,7 +2530,7 @@ Each file the items name, with the items that name it:
 | `agent:src/core/conversations/Conversation.ts` | I-097, I-241, I-242, I-306 |
 | `agent:src/core/conversations/ConversationManager.ts` | I-132, I-243 |
 | `agent:src/core/conversations/factories.ts` | I-132 |
-| `agent:src/core/conversations/helpers.ts` | I-220 |
+| `agent:src/core/conversations/helpers.ts` | I-220, I-338 |
 | `agent:src/core/conversations/JudgmentManager.ts` | I-224, I-226 |
 | `agent:src/core/conversations/types.ts` | I-132, I-238 |
 | `agent:src/core/errors.ts` | I-111 |
@@ -2489,8 +2539,8 @@ Each file the items name, with the items that name it:
 | `agent:src/core/ledgers/constants.ts` | I-081, I-272 |
 | `agent:src/core/ledgers/factories.ts` | I-081 |
 | `agent:src/core/ledgers/Gauge.ts` | I-120, I-307, I-326 |
-| `agent:src/core/ledgers/helpers.ts` | I-091, I-121, I-297, I-298, I-300, I-307, I-329, I-332 |
-| `agent:src/core/ledgers/Ledger.ts` | I-081, I-123, I-274, I-296, I-300, I-304, I-307, I-326, I-332 |
+| `agent:src/core/ledgers/helpers.ts` | I-091, I-121, I-297, I-298, I-300, I-307, I-329, I-332, I-339 |
+| `agent:src/core/ledgers/Ledger.ts` | I-081, I-123, I-274, I-296, I-300, I-304, I-307, I-326, I-332, I-339 |
 | `agent:src/core/ledgers/types.ts` | I-091, I-304 |
 | `agent:src/core/providers/AgentJudge.ts` | I-104, I-105 |
 | `agent:src/core/providers/AgentProvider.ts` | I-105, I-306 |
@@ -2554,7 +2604,7 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/bench/README.md` | I-014, I-228, I-239, I-240, I-248, I-256, I-321 |
 | `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs` | I-279, I-280, I-322, I-327 |
 | `scaffold:.orkestrel/agent/instruments/bench/scenario-long.json` | I-273 |
-| `scaffold:.orkestrel/agent/instruments/bench/scenario.json` | I-289, I-311, I-327, I-330 |
+| `scaffold:.orkestrel/agent/instruments/bench/scenario.json` | I-289, I-311, I-327, I-330, I-341 |
 | `scaffold:.orkestrel/agent/instruments/bench/variants` | I-327 |
 | `scaffold:.orkestrel/agent/instruments/bench/variants/check.mjs` | I-044 |
 | `scaffold:.orkestrel/agent/instruments/bench/variants/ledger/v1.json` | I-264 |
@@ -2585,6 +2635,8 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/results/v10/f4-control-v3/none.md` | I-285 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/f4-records-v3/ledger.md` | I-285 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md` | I-048, I-093, I-213, I-238, I-258, I-273, I-274, I-305, I-313, I-314, I-323, I-324 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md` | I-289, I-341 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/G06.md` | I-289, I-341 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/INVESTIGATE-4B.md` | I-313, I-331 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md` | I-289, I-292, I-293, I-295, I-327, I-328, I-329, I-330 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/plan-stage2.json` | I-312 |
@@ -2598,6 +2650,7 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/results/v10/probes/think-4b-on.jsonl` | I-331 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/probes/think-probe.ts` | I-331 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/run-log.txt` | I-319 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/run.log` | I-342, I-343 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/t2a-records-v1/ledger.md` | I-285 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/t2a-records-v3/ledger.md` | I-292 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/THINKING.md` | I-304, I-306 |
@@ -2618,7 +2671,7 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/results/v7/tools/plan.ts` | I-331 |
 | `scaffold:.orkestrel/agent/instruments/results/v7/tools/record-fetch.mjs` | I-278 |
 | `scaffold:.orkestrel/agent/instruments/results/v7/tools/run-one.ts` | I-042, I-043, I-278, I-318, I-319 |
-| `scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts` | I-276, I-318, I-335 |
+| `scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts` | I-276, I-318, I-335, I-342 |
 | `scaffold:.orkestrel/agent/instruments/results/v8/ATTACK-BRIEFING.md` | I-285, I-288, I-291 |
 | `scaffold:.orkestrel/agent/instruments/results/v8/DIVERGENCE.md` | I-278 |
 | `scaffold:.orkestrel/agent/instruments/results/v8/TRACE-ledger.md` | I-293 |
@@ -2639,11 +2692,18 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/units/port/f-fidelity-brief.md` | I-332 |
 | `scaffold:.orkestrel/agent/instruments/units/port/f2-recall-residue-brief.md` | I-336 |
 | `scaffold:.orkestrel/agent/instruments/units/port/f2-recall-residue-rooms.json` | I-336 |
+| `scaffold:.orkestrel/agent/instruments/units/port/f5-release-fix-brief.md` | I-340 |
 | `scaffold:.orkestrel/agent/instruments/units/port/fidelity-planner.md` | I-332 |
 | `scaffold:.orkestrel/agent/instruments/units/port/fidelity-rulings-brief.md` | I-332 |
+| `scaffold:.orkestrel/agent/instruments/units/port/g3-release-guide-brief.md` | I-344 |
 | `scaffold:.orkestrel/agent/instruments/units/port/p1-review.md` | I-333 |
 | `scaffold:.orkestrel/agent/instruments/units/port/p3-review.md` | I-333 |
 | `scaffold:.orkestrel/agent/instruments/units/port/p4-review.md` | I-333 |
+| `scaffold:.orkestrel/agent/instruments/units/port/port-release-2-claims.md` | I-339 |
+| `scaffold:.orkestrel/agent/instruments/units/port/port-release-2-rulings.md` | I-339 |
+| `scaffold:.orkestrel/agent/instruments/units/port/port-release-3-claims.md` | I-340 |
+| `scaffold:.orkestrel/agent/instruments/units/port/port-release-claims.md` | I-338 |
+| `scaffold:.orkestrel/agent/instruments/units/port/port-release-rulings.md` | I-338 |
 | `scaffold:.orkestrel/agent/instruments/units/port/t5-thinking-fix-brief.md` | I-308 |
 | `scaffold:.orkestrel/agent/instruments/units/port/t5-thinking-fix-last.md` | I-076 |
 | `scaffold:.orkestrel/agent/instruments/units/port/t6-answer-think-brief.md` | I-304 |
@@ -2659,6 +2719,7 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/units/port/u9-driver-brief.md` | I-337 |
 | `scaffold:.orkestrel/agent/ledger.md` | I-046, I-047, I-054, I-092 |
 | `scaffold:.orkestrel/agent/plan.md` | I-011, I-066, I-072, I-075, I-077, I-078, I-100, I-105, I-112, I-118, I-119, I-158, I-160, I-161, I-162, I-194, I-202, I-207, I-232, I-238 |
+| `scaffold:.orkestrel/agent/port-release-audit-verdict.md` | I-340 |
 | `scaffold:.orkestrel/agent/records-candidate-audit-verdict.md` | I-277, I-297, I-300 |
 | `scaffold:.orkestrel/agent/records-series-verdict.md` | I-289, I-299 |
 | `scaffold:.orkestrel/agent/refine.md` | I-072, I-073, I-079, I-113, I-138, I-139, I-141, I-160, I-194, I-206, I-233, I-236 |
