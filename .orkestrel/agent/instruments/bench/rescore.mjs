@@ -1,6 +1,6 @@
 // Re-scores recorded bench result lines with the scoring rules in scenario.json, without the daemon.
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -146,6 +146,36 @@ function rescoreLine(line, goal, rules) {
 	}
 }
 
+const SCORING_FIELDS = ['expected', 'expectedAny', 'forbidden', 'forbiddenPatterns', 'tools']
+const namedGoals = new Map()
+
+// The goals of the scenario file a row names, or undefined when the field is no readable file or is scenario.json itself.
+function namedScenario(name) {
+	if (typeof name !== 'string' || name === '') return undefined
+	const file = resolve(name)
+	if (file === SCENARIO) return undefined
+	if (!namedGoals.has(file)) {
+		let goals
+		try {
+			goals = existsSync(file) ? new Map(JSON.parse(readFileSync(file, 'utf8')).goals.map((goal) => [goal.id, goal])) : undefined
+		} catch {
+			goals = undefined
+		}
+		namedGoals.set(file, goals)
+	}
+	return namedGoals.get(file)
+}
+
+// Scoring uses scenario.json's rules alone, so a row whose own scenario file scores differently is refused.
+function refuseOtherRules(path, line, goal) {
+	const other = namedScenario(line.scenario)?.get(goal.id)
+	if (other === undefined) return
+	const field = SCORING_FIELDS.find((name) => JSON.stringify(other[name] ?? null) !== JSON.stringify(goal[name] ?? null))
+	if (field === undefined) return
+	process.stderr.write(`rescore: ${path}: goal ${goal.id} names ${line.scenario}, whose ${field} differs from scenario.json\n`)
+	process.exit(2)
+}
+
 function rescoreFile(path, scenario, scenarioHash, outDir) {
 	const goals = new Map(scenario.goals.map((goal) => [goal.id, goal]))
 	const rules = new Map(scenario.goals.map((goal) => [goal.id, compileRules(goal)]))
@@ -161,6 +191,7 @@ function rescoreFile(path, scenario, scenarioHash, outDir) {
 			skipped += 1
 			continue
 		}
+		refuseOtherRules(path, line, goal)
 		const result = rescoreLine(line, goal, rules.get(goal.id))
 		result.row.rescore.scenario = scenarioHash
 		rows.push(result.row)

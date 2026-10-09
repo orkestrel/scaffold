@@ -73,9 +73,9 @@ The adjudicated passes per copy read as follows, low to high.
 - **Superseded pair.** This file's earlier table paired records with `t2w-control`, the full view whose answer pass still thought, under the first audit, and read a low-end bound of 2.18. It is superseded.
 - **Against the think-off 2B.** The 2B with thinking off (`v9`, 8 copies) read 6.50–6.75 for records and 4.38–5.13 for the full view (`records-series-verdict.md`, Correction). With the answer pass fixed, thinking raises records by about a quarter of a pass per copy and the full view by about an eighth, so the gap stays near 2 passes per copy. The `v9` audit read failures alone, under the first brief, so this comparison reads direction only.
 
-## The 4B read, stage 1
+## The 4B read
 
-The pair is `f4-records` against `f4-control`, copies 1 to 4, read under the same audit.
+The pair is `f4-records` against `f4-control`, copies 1 to 8, read under the same audit. Copies 5 to 8 ran in stage 2 (`plan-stage2.json`, and `plan-stage2b.json` for copy 8 after the series stopped on its time budget); copy 8's start line carries the records harness sha `df0c0595…`, the sha copies 1 to 7 ran on.
 
 | Copy | Records | Full view |
 | --- | --- | --- |
@@ -83,13 +83,18 @@ The pair is `f4-records` against `f4-control`, copies 1 to 4, read under the sam
 | 2 | 6–8 | 7–8 |
 | 3 | 8 | 5–7 |
 | 4 | 8 | 5–7 |
-| Mean | 7.50–8.00 | 5.50–7.25 |
+| 5 | 7 | 7–8 |
+| 6 | 8 | 9 |
+| 7 | 8–9 | 5–7 |
+| 8 | 8 | 6–8 |
+| Mean | 7.63–8.00 | 6.13–7.63 |
 
-- **Band.** The low end does not clear: d is 3, −1, 3, 3, and the lower bound is 0.00. The high end clears: d is 1, 0, 1, 1, and the lower bound is 0.25. Across, the lower bound is −1.25. Stage 2 runs copies 5 to 8 (`plan-stage2.json`).
-- **Cause.** The 4B lifts the full view more than records. Records reaches 30 of 40 cells at the low end; the full view's who-is-who errors on g03 and g07 mostly go away, and g05, g06, and g08 fail in both arms (`INVESTIGATE-4B.md`, `METHOD-DEEP-DIVE.md`).
+- **Band.** The low end clears: d is 3, −1, 3, 3, 0, −1, 3, 2, and the lower bound is 0.19. The high end does not: d is 1, 0, 1, 1, −1, −1, 2, 0, and the lower bound is −0.37. Across, the lower bound is −0.85.
+- **Reading.** On the 4B with thinking off, records leads by 1.50 passes per copy when an ambiguous reply counts as a fail and by 0.38 when it counts as a pass. The full view's spread rests on replies the auditors could not rule, so the 4B lead is real at the strict end and unproven at the lenient end.
+- **Cause.** The 4B lifts the full view more than records. Records reaches 61 of 80 cells at the low end; the full view's who-is-who errors on g03 and g07 mostly go away, and g05, g06, and g08 fail in both arms (`INVESTIGATE-4B.md`, `METHOD-DEEP-DIVE.md`).
 
 ## Plan
 
-Stage 1 ran copies 1 to 4 of each condition. A condition whose pair clears at the low end stops at 4 copies; any other condition runs copies 5 to 8. `t2a` clears and stops. `f4` runs copies 5 to 8, then takes the band over copies 1 to 8. `t4` runs copies 1 to 4 of records and the full view after its sizing probe, and reads two bands: the `t4` pair, and each arm against its `f4` copy.
+Stage 1 ran copies 1 to 4 of each condition. A condition whose pair clears at the low end stops at 4 copies; any other condition runs copies 5 to 8. `t2a` clears and stops. `f4` ran copies 5 to 8 and takes the band over copies 1 to 8. `t4` runs copies 1 to 4 of records and the full view after its sizing probe, and reads two bands: the `t4` pair, and each arm against its `f4` copy.
 
 The 152-message scenario stays out of this check: it has no ledger section, no reworded copies, and no audited scoring fields. Within each run the conversation grows across the 10 requests, so the per-request results read the lead against conversation length.

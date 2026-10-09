@@ -5941,11 +5941,11 @@
   },
   {
    "id": "I-313",
-   "title": "The 4B think-off band sits on its bound at four copies",
+   "title": "The 4B think-off band sat on its bound at four copies",
    "area": "measurement method",
-   "status": "open",
+   "status": "fixed",
    "issue": "Under the corrected audit, 4B records read 7.50–8.00 passes per copy against 5.50–7.25 for the full view over copies 1 to 4; the band clears at the high end (bound 0.25) and sits at 0.00 at the low end. The 4B lifts the full view more than records: records reaches 30 of 40 cells at the low end, the full view's who-is-who errors on g03 and g07 mostly go away, and g05, g06, and g08 fail in both arms.",
-   "fix": "None yet. Copies 5 to 8 of records and the full view run in stage 2, as the final-check plan prescribes for a pair that does not clear at the low end.",
+   "fix": "Copies 5 to 8 ran in stage 2 (copy 8 through `plan-stage2b.json`). Over 8 copies records read 7.63–8.00 passes per copy against 6.13–7.63 for the full view: the low end clears (bound 0.19, d mean 1.50), the high end does not (bound −0.37, d mean 0.38). The 4B lead holds at the strict end and rests on ambiguous full-view replies at the lenient end; `FINAL-CHECK.md` § The 4B read states it.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts",
@@ -5966,6 +5966,21 @@
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/INVESTIGATE-4B.md",
      "exists": true,
      "note": "cause"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-d1.json",
+     "exists": true,
+     "note": "copies 5 to 7"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-d2.json",
+     "exists": true,
+     "note": "copy 8"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/plan-stage2b.json",
+     "exists": true,
+     "note": "copy 8"
     }
    ]
   },
@@ -6078,9 +6093,9 @@
    "id": "I-318",
    "title": "The series could start over a running or finished run",
    "area": "bench harness",
-   "status": "open",
+   "status": "fixed",
    "issue": "`series.ts` started with a run still open in `run.log`, and `run-one.ts` wrote into an output directory, log, or wire directory that already existed (attack round, machinery F4).",
-   "fix": "Staged as `series.ts.next` and `run-one.ts.next` beside the originals: the series refuses (exit 2) a start line with no end line, and a run refuses (exit 2) an existing output. They install between runs after stage 2.",
+   "fix": "Installed between runs on 2026-10-09 after copy 7 of stage 2, with no run active (series.ts sha `a1c297ca…`, run-one.ts sha `abfc4080…`); the originals stay as `.pre-tooling-fix`. The series refuses (exit 2) a start line with no end line, and a run refuses (exit 2) an existing output.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts",
@@ -6103,9 +6118,9 @@
    "id": "I-319",
    "title": "A run did not record the harness it ran on",
    "area": "bench harness",
-   "status": "open",
+   "status": "fixed",
    "issue": "`run.log` named each run's arguments but not the harness file's hash, so a report had to infer which harness a run used from install times (attack round, machinery F8).",
-   "fix": "Staged in `run-one.ts.next`: the start line ends with ` harness-sha256 HEX`. Until it installs, `FINAL-CHECK.md` names each condition's harness sha by hand.",
+   "fix": "Installed with `run-one.ts` sha `abfc4080…` on 2026-10-09: every start line from `f4-records-v8` on ends with ` harness-sha256 HEX`. Earlier runs keep the shas `FINAL-CHECK.md` names by hand.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/run-one.ts",
@@ -6123,9 +6138,9 @@
    "id": "I-320",
    "title": "The records self-check skipped the run path's think setting",
    "area": "bench harness",
-   "status": "open",
+   "status": "fixed",
    "issue": "`--check-ledger` built its arm outside the path `runLedger` uses, so it could pass while a live run sent the wrong `think` on the answer pass (attack round, records-harness C6).",
-   "fix": "Staged in `bench3/bench.mjs.next`: `runLedger` passes `think: flags.think` explicitly, and the answer-pass check builds its arm through that path with thinking on and asserts `think: false` on the answer pass and `think: true` on the first pass. It installs after stage 2.",
+   "fix": "Installed after copy 8 of stage 2 with no run active (records harness sha `67c863b1…`; the earlier file stays as `bench.mjs.pre-tooling-fix`): `runLedger` passes `think: flags.think`, and `--check-ledger` builds its answer-pass arm through that path and asserts `think: false` on the answer pass. `--check-ledger` under `--profile refined`, `--profile roundA`, and `--think --profile refined` exits 0. The `t4` runs start on this sha.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/bench3/bench.mjs",
@@ -6163,9 +6178,9 @@
    "id": "I-322",
    "title": "Rescore read every row against the default scenario",
    "area": "scoring and audit",
-   "status": "open",
+   "status": "fixed",
    "issue": "`rescore.mjs` scored each row with `scenario.json`'s scoring fields even when the row named a variant file, so a variant whose fields differ would be misscored (attack round, main-harness F5).",
-   "fix": "Staged as `rescore.mjs.next`: it exits 2 naming the goal and field when a row's scenario file has scoring fields that differ from `scenario.json`'s.",
+   "fix": "Installed after copy 7 of stage 2 (sha `6019bdd2…`): `rescore.mjs` exits 2 naming the goal and field when a row's scenario file has scoring fields that differ from `scenario.json`'s.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/bench/rescore.mjs",
@@ -6388,9 +6403,9 @@
    "id": "I-331",
    "title": "The 4B with thinking on needs a sized cap",
    "area": "thinking",
-   "status": "open",
+   "status": "fixed",
    "issue": "The 2B's thinking cap was sized on 10 calls and the tail bound it, so the 4B with thinking on (`t4`) needs a cap sized on the calls its runs make, without letting a run go on for hours.",
-   "fix": "None yet. `think-probe.ts` replays the 66 agent calls of `f4-records` v1 and v3 and `f4-control` v1 and v3 on the 4B with thinking on, `num_predict` 4,096, `num_ctx` 10,240, a 900-second timeout, and a stop after 3 cut calls. The cap is the smallest multiple of 256 at or over 1.5 times the largest self-stopped completion; no run starts when it exceeds 4,096.",
+   "fix": "The sizing probe replayed 32 calls, 8 spaced through each of `f4-records` v1 and v3 and `f4-control` v1 and v3, on 2026-10-09: all stopped on their own with content or a call, completion 72 to 566 tokens (median 206, 90th percentile 494). The cap is 1,024 (1.5 × 566 = 849, rounded up to a multiple of 256): records `--ctx 4096 --budget 0.525`, full view `--ctx 7168`. `t4` copies 1 to 4 run under `plan-t4.json`.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/probes/think-probe.ts",
@@ -6406,6 +6421,26 @@
      "path": "scaffold:.orkestrel/agent/instruments/units/agent/think-probe-4b-brief.md",
      "exists": true,
      "note": "brief"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/cap.md",
+     "exists": true,
+     "note": "cap record"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/probes/think-4b-on.jsonl",
+     "exists": true,
+     "note": "32 rows"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/plan-t4.json",
+     "exists": true,
+     "note": "t4 plan"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/plan.ts",
+     "exists": true,
+     "note": "t4 condition, --cap"
     }
    ]
   },
@@ -6413,9 +6448,9 @@
    "id": "I-332",
    "title": "The ported ledger sends requests the measured arm never sent",
    "area": "agent package code",
-   "status": "open",
+   "status": "fixed",
    "issue": "The offline replay of the 8 `a5-records` runs through the port (U8, 2026-10-09) matched every judge body and the first request of all 80 goals, but 50 later agent bodies differ: recall and the answer note leave out seed assistant statements, ended pin lines, and repeated readings; the answer note keeps the call text on lookup lines; an earlier answer note is missing from a recall. The port plan lists none of these.",
-   "fix": "None yet. Two blind lanes, the planner on Opus and the analyst on Astra, rule each departure a port fix or a listed departure under the rule that the package publishes the measured method; the port fixes follow, then the replay reruns.",
+   "fix": "Two blind lanes ruled each departure (`records-port-plan.md` § Replay fidelity rulings): C1, C3, C4, C5, and C6 are port fixes, commits 4ceab14 (recall, answer note, and seed tail as measured) and 7f346b5 (the guide); C2 ended pin lines and C7 held judgments are listed departures (N8, N9; the `hold` seam is refused under the first-real-consumer law). The 13 bodies left after 4ceab14 are recall cut points that T1's shorter lines and prompt move at an equal room (N10, I-336). The replay over the 8 `a5-records` copies reports 0 unlisted bodies. The live series U9 measures behavior.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/units/port/u8-report.md",
@@ -6444,8 +6479,28 @@
     },
     {
      "path": "scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts",
-     "exists": false,
+     "exists": true,
      "note": "probe"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/fidelity-planner.md",
+     "exists": true,
+     "note": "planner lane"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/f-fidelity-brief.md",
+     "exists": true,
+     "note": "port fix brief"
+    },
+    {
+     "path": "commit 4ceab14 (agent)",
+     "exists": false,
+     "note": "commit"
+    },
+    {
+     "path": "commit 7f346b5 (agent)",
+     "exists": false,
+     "note": "commit"
     }
    ]
   },
@@ -6453,9 +6508,9 @@
    "id": "I-333",
    "title": "The replay probe over-accepted on four paths",
    "area": "agent docs and tests",
-   "status": "open",
+   "status": "fixed",
    "issue": "The review of the U8 probe found it labels stale removals on recall and digest routes as R2a, answers a re-asked held judgment with a body it built itself, serves the last twin again when a body repeats, reads two setup values back from the recording, and drops `schema` and non-text message members before comparing.",
-   "fix": "None yet. Unit u8b fixes each path and labels every unlisted body by cause; the review runs again after it.",
+   "fix": "Units u8b, p1, p2, and p3 closed each finding: R2a on the briefing only, staleness from the run's decided corrections, a held second ask matched by its exact rebuilt body and answered with the recorded failure (N9), no twin reuse, controls for every acceptance path, setup values read from the run, every message member compared, and labels tied to their cause. p4 ties N10 to the candidate sequence, the exact cut notice, and each shift counted once (the last two closed by the Orchestrator with a control each that fails its mutation). The probe passes 108 of 108 at 7f346b5 with 0 unlisted bodies over the 8 copies.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/units/port/u8-review.md",
@@ -6469,8 +6524,123 @@
     },
     {
      "path": "scaffold:.orkestrel/agent/instruments/probes/ledger-replay-compare.ts",
-     "exists": false,
+     "exists": true,
      "note": "probe"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/p1-review.md",
+     "exists": true,
+     "note": "review"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/p3-review.md",
+     "exists": true,
+     "note": "review"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/p4-review.md",
+     "exists": true,
+     "note": "review"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts",
+     "exists": true,
+     "note": "controls"
+    }
+   ]
+  },
+  {
+   "id": "I-334",
+   "title": "An audit launched with hand-copied chunk ids",
+   "area": "scoring and audit",
+   "status": "fixed",
+   "issue": "The copies 5 to 7 audit was launched with chunk ids typed from a truncated listing: two chunks went empty and one id was guessed (`90a0d3c5` for `90a0d33a`).",
+   "fix": "The run was stopped and relaunched with the ids printed by `items.ts`, copied whole. `tally.ts` refuses a verdict whose id has no key, so a wrong id cannot enter a tally; the relaunched audit returned 60 verdicts, 0 unresolved.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/items.ts",
+     "exists": true,
+     "note": "last output line: the ids"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts",
+     "exists": true,
+     "note": "key check"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-d1.json",
+     "exists": true,
+     "note": "relaunched audit"
+    }
+   ]
+  },
+  {
+   "id": "I-335",
+   "title": "The series stopped before copy 8 on its time budget",
+   "area": "bench harness",
+   "status": "worked around",
+   "issue": "Stage 2 ran copies 5 to 7 and stopped: `f4-records-v8` needed about 1,521 seconds and 1,494 remained of the 6,400-second budget.",
+   "fix": "Copy 8 ran alone under `plan-stage2b.json` on the same records harness sha as copies 1 to 7, before the staged harness fix was installed.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/plan-stage2b.json",
+     "exists": true,
+     "note": "copy 8"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v7/tools/series.ts",
+     "exists": true,
+     "note": "budget stop"
+    }
+   ]
+  },
+  {
+   "id": "I-336",
+   "title": "Recall cut points shift under T1",
+   "area": "agent package code",
+   "status": "worked around",
+   "issue": "After the fidelity fix, 13 replay bodies still differed: in g04 the port's recall kept 9 candidates where the measured kept 8, its answer note carried the extra item, and in v7 g07 the shift cascaded through a recalled note.",
+   "fix": "On identical inputs the port's gauge equals the measured room formula to within 1e-10, and the candidate sets are equal. The port's lines carry no handle or amended mark and its prompt is shorter, so its items are smaller and its room larger (263.98 against 274.35 units in v1). Listed departure N10 under T1; U9 measures the effect.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/f2-recall-residue-rooms.json",
+     "exists": true,
+     "note": "rooms, items, cuts"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/f2-recall-residue-brief.md",
+     "exists": true,
+     "note": "brief"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/agent/records-port-plan.md",
+     "exists": true,
+     "note": "Replay fidelity rulings"
+    }
+   ]
+  },
+  {
+   "id": "I-337",
+   "title": "The live driver scored stripped and partial replies",
+   "area": "bench harness",
+   "status": "fixed",
+   "issue": "The U9 driver stripped quotes and a send-reply label from the reply, which the measured terminal route never did, and scored a partial pass's text where the measured harness scored no reply; a recovered daemon fault left no trace in the row, and two dry checks could not fail.",
+   "fix": "The reply is the last pass's trimmed content and a partial pass scores as no reply; each row lists its daemon faults; `run.json` names the wire overrides; the topics check parses the harness's unasked set and the seed check digests every message in wire shape. Copies 1 and 8 pass the dry check.",
+   "files": [
+    {
+     "path": "agent:tmp/bench4/Driver.mjs",
+     "exists": true,
+     "note": "reply, faults, checks"
+    },
+    {
+     "path": "agent:tmp/bench4/helpers.mjs",
+     "exists": true,
+     "note": "stripReply removed"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/units/port/u9-driver-brief.md",
+     "exists": true,
+     "note": "brief"
     }
    ]
   }

@@ -6,7 +6,9 @@
 // skipped. Before each run the series stops when the elapsed time plus the run's estimate would pass the
 // budget; after a run of an arm finishes, that arm's estimate becomes 1.3 times its longest finished run.
 // An arm is the run name without its `-vN` copy suffix.
-// Exit: 0 when the plan finishes or the budget stops it; 1 when a run exits nonzero; 64 on usage.
+// The series refuses to start when run.log holds a start line with no end line, because that run might still be
+// going or have left a partial output; remove the line only after you confirm the run is gone.
+// Exit: 0 when the plan finishes or the budget stops it; 1 when a run exits nonzero; 2 when a run is unfinished; 64 on usage.
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -53,6 +55,19 @@ function readFinished(log: string): ReadonlyMap<string, number> {
 	return finished
 }
 
+// The names whose start line has no end line after it.
+function readOpen(log: string): readonly string[] {
+	const open = new Set<string>()
+	if (!existsSync(log)) return []
+	for (const line of readFileSync(log, 'utf8').split(/\r\n|\n/)) {
+		const start = /^===== (\S+) start /.exec(line)
+		if (start !== null) open.add(start[1])
+		const end = /^===== (\S+) end /.exec(line)
+		if (end !== null) open.delete(end[1])
+	}
+	return [...open]
+}
+
 function armOf(name: string): string {
 	return name.replace(/-v\d+$/, '')
 }
@@ -69,6 +84,11 @@ function main(): number {
 	}
 	const began = Date.now()
 	const log = join(base, 'run.log')
+	const open = readOpen(log)
+	if (open.length > 0) {
+		process.stderr.write(`series: ${log} holds a start line with no end line for ${open.join(', ')}; confirm the run is gone, then remove its start line\n`)
+		return 2
+	}
 	for (const run of plan) {
 		const finished = readFinished(log)
 		if (finished.has(run.name)) continue

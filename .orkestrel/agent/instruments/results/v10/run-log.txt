@@ -55,3 +55,15 @@
 ===== f4-control-v5 start 2026-10-09T17:41:58Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v5.json --model qwen3.5:4b-q4_K_M]
 ===== f4-control-v5 end 2026-10-09T17:45:57Z exit 0
 ===== f4-records-v6 start 2026-10-09T17:45:57Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v6.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v6 end 2026-10-09T17:58:46Z exit 0
+===== f4-control-v6 start 2026-10-09T17:58:46Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v6.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v6 end 2026-10-09T18:03:09Z exit 0
+===== f4-records-v7 start 2026-10-09T18:03:10Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v7.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M]
+===== f4-records-v7 end 2026-10-09T18:14:24Z exit 0
+===== f4-control-v7 start 2026-10-09T18:14:25Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v7.json --model qwen3.5:4b-q4_K_M]
+===== f4-control-v7 end 2026-10-09T18:22:00Z exit 0
+===== f4-records-v8 start 2026-10-09T18:22:26Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v8.json --ctx 3072 --budget 0.7 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M] harness-sha256 df0c059547fb11d75c7edd70cdb1e6ef0df89d0ab704739047427f4ae0b58e1a
+===== f4-records-v8 end 2026-10-09T18:35:34Z exit 0
+===== f4-control-v8 start 2026-10-09T18:35:35Z [bench --mode none --ctx 6144 --search words --reply terminal --scenario /home/user/agent/tmp/bench/variants/v8.json --model qwen3.5:4b-q4_K_M] harness-sha256 b5c49ee4c16b31c849ddceb68c93296da360e2271a4a5a5cd076ca791c04e0a5
+===== f4-control-v8 end 2026-10-09T18:40:24Z exit 0
+===== t4-records-v1 start 2026-10-09T19:09:49Z [bench3 --mode ledger --profile refined --scenario /home/user/agent/tmp/bench/variants/ledger/v1.json --ctx 4096 --budget 0.525 --judge mica --judge-ctx 4096 --tail 0.35 --judgments /home/user/agent/tmp/bench/results/v3/cal-categories.jsonl --reply terminal --records on --model qwen3.5:4b-q4_K_M --think --think-predict 1024] harness-sha256 67c863b179dcd56d9d096b930c7794264743635c1f75367157d0cb45bf5ce611

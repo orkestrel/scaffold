@@ -1,11 +1,13 @@
 // Writes the final-check plan for series.ts: the records briefing, the full view, and compaction, interleaved
 // by copy so a series stopped early still holds whole copies, under each named condition:
-//   node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a [--arms records,control,compaction] --out PLAN.json
+//   node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a,t4 [--arms records,control,compaction] [--cap N] --out PLAN.json
 // Condition f4 runs the 4B agent with thinking off at the think-off windows. Conditions t2 and t2w run the 2B agent
 // with thinking on: t2 under the harness's default cap of 1,024 tokens (the pilot), t2w under `--think-predict 2048`.
 // Condition t2a is t2w with the records answer pass run with thinking off. The runs of 2026-10-09 passed
 // `--answer-think off`; the records harness since sha 5342e209 runs that pass with thinking off under `--think` and
 // refuses the flag, so t2a and t2w write the same arguments and differ only by the harness they ran on.
+// Condition t4 runs the 4B agent with thinking on under `--think-predict N`, where N is the cap `--cap` gives, a
+// multiple of 256 no greater than 4,096 that the sizing probe set (`results/v10/probes/think-4b-on.jsonl`).
 // `--arms` limits the arms, in the order given; the default is all three.
 // Each arm's window grows by the cap, and the records briefing's budget share shrinks so its prompt budget stays
 // the think-off 0.7 of 3,072 tokens.
@@ -60,8 +62,10 @@ function main(): number {
 	const names = (readFlag(argv, '--conditions') ?? '').split(',').filter((name) => name !== '')
 	const out = readFlag(argv, '--out')
 	const arms = (readFlag(argv, '--arms') ?? 'records,control,compaction').split(',').filter((arm) => arm !== '')
-	if (copies === null || names.length === 0 || out === undefined || arms.length === 0 || arms.some((arm) => !['records', 'control', 'compaction'].includes(arm))) {
-		process.stderr.write('usage: node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a [--arms records,control,compaction] --out PLAN.json\n')
+	const cap = Number(readFlag(argv, '--cap') ?? 'NaN')
+	const capped = Number.isInteger(cap) && cap > 0 && cap <= 4096 && cap % 256 === 0
+	if (copies === null || names.length === 0 || out === undefined || arms.length === 0 || arms.some((arm) => !['records', 'control', 'compaction'].includes(arm)) || (names.includes('t4') && !capped)) {
+		process.stderr.write('usage: node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a,t4 [--arms records,control,compaction] [--cap N] --out PLAN.json\n')
 		return 64
 	}
 	const conditions: Readonly<Record<string, Condition>> = {
@@ -69,9 +73,10 @@ function main(): number {
 		t2: { model: AGENT_2B, think: true, grow: 1024, predict: undefined, estimates: { records: 1700, control: 1200, compaction: 2400 } },
 		t2w: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1900, control: 1400, compaction: 2700 } },
 		t2a: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1500, control: 400, compaction: 6200 } },
+		t4: { model: AGENT_4B, think: true, grow: cap, predict: cap, estimates: { records: 2400, control: 1500, compaction: 6200 } },
 	}
 	if (names.some((name) => !Object.hasOwn(conditions, name))) {
-		process.stderr.write('--conditions names f4, t2, t2w, t2a, or several\n')
+		process.stderr.write('--conditions names f4, t2, t2w, t2a, t4, or several\n')
 		return 64
 	}
 	const plan = []

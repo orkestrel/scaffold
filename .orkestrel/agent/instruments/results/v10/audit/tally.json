@@ -259,52 +259,144 @@
    "rows": 10,
    "low": 5,
    "high": 6
+  },
+  "f4-records-v7": {
+   "scorer": 8,
+   "falsePass": 0,
+   "ambiguousPass": 0,
+   "misread": 0,
+   "ambiguousFail": 1,
+   "rows": 10,
+   "low": 8,
+   "high": 9
+  },
+  "f4-control-v6": {
+   "scorer": 9,
+   "falsePass": 0,
+   "ambiguousPass": 0,
+   "misread": 0,
+   "ambiguousFail": 0,
+   "rows": 10,
+   "low": 9,
+   "high": 9
+  },
+  "f4-control-v7": {
+   "scorer": 6,
+   "falsePass": 0,
+   "ambiguousPass": 1,
+   "misread": 0,
+   "ambiguousFail": 1,
+   "rows": 10,
+   "low": 5,
+   "high": 7
+  },
+  "f4-records-v5": {
+   "scorer": 8,
+   "falsePass": 1,
+   "ambiguousPass": 0,
+   "misread": 0,
+   "ambiguousFail": 0,
+   "rows": 10,
+   "low": 7,
+   "high": 7
+  },
+  "f4-control-v5": {
+   "scorer": 8,
+   "falsePass": 1,
+   "ambiguousPass": 0,
+   "misread": 0,
+   "ambiguousFail": 1,
+   "rows": 10,
+   "low": 7,
+   "high": 8
+  },
+  "f4-records-v6": {
+   "scorer": 9,
+   "falsePass": 1,
+   "ambiguousPass": 0,
+   "misread": 0,
+   "ambiguousFail": 0,
+   "rows": 10,
+   "low": 8,
+   "high": 8
+  },
+  "f4-records-v8": {
+   "scorer": 8,
+   "falsePass": 0,
+   "ambiguousPass": 0,
+   "misread": 0,
+   "ambiguousFail": 0,
+   "rows": 10,
+   "low": 8,
+   "high": 8
+  },
+  "f4-control-v8": {
+   "scorer": 8,
+   "falsePass": 0,
+   "ambiguousPass": 2,
+   "misread": 0,
+   "ambiguousFail": 0,
+   "rows": 10,
+   "low": 6,
+   "high": 8
   }
  },
  "bands": [
   {
    "left": "f4-records",
    "right": "f4-control",
-   "range": "1-4",
+   "range": "1-8",
    "end": "low",
    "d": [
     3,
     -1,
     3,
-    3
-   ],
-   "mean": 2,
-   "bound": 0,
-   "clears": false
-  },
-  {
-   "left": "f4-records",
-   "right": "f4-control",
-   "range": "1-4",
-   "end": "high",
-   "d": [
-    1,
+    3,
     0,
-    1,
-    1
+    -1,
+    3,
+    2
    ],
-   "mean": 0.75,
-   "bound": 0.25,
+   "mean": 1.5,
+   "bound": 0.19069265858404583,
    "clears": true
   },
   {
    "left": "f4-records",
    "right": "f4-control",
-   "range": "1-4",
+   "range": "1-8",
+   "end": "high",
+   "d": [
+    1,
+    0,
+    1,
+    1,
+    -1,
+    -1,
+    2,
+    0
+   ],
+   "mean": 0.375,
+   "bound": -0.3749999999999999,
+   "clears": false
+  },
+  {
+   "left": "f4-records",
+   "right": "f4-control",
+   "range": "1-8",
    "end": "across",
    "d": [
     1,
     -2,
     1,
-    1
+    1,
+    -1,
+    -1,
+    1,
+    0
    ],
-   "mean": 0.25,
-   "bound": -1.25,
+   "mean": 0,
+   "bound": -0.8451542547285165,
    "clears": false
   },
   {
@@ -340,51 +432,6 @@
   {
    "left": "t2a-records",
    "right": "t2a-control",
-   "range": "1-4",
-   "end": "across",
-   "d": [
-    3,
-    2,
-    0,
-    1
-   ],
-   "mean": 1.5,
-   "bound": 0.2090055512641944,
-   "clears": true
-  },
-  {
-   "left": "t2a-records",
-   "right": "t2w-control",
-   "range": "1-4",
-   "end": "low",
-   "d": [
-    4,
-    3,
-    2,
-    2
-   ],
-   "mean": 2.75,
-   "bound": 1.792572892243662,
-   "clears": true
-  },
-  {
-   "left": "t2a-records",
-   "right": "t2w-control",
-   "range": "1-4",
-   "end": "high",
-   "d": [
-    3,
-    2,
-    0,
-    2
-   ],
-   "mean": 1.75,
-   "bound": 0.49169426078820844,
-   "clears": true
-  },
-  {
-   "left": "t2a-records",
-   "right": "t2w-control",
    "range": "1-4",
    "end": "across",
    "d": [

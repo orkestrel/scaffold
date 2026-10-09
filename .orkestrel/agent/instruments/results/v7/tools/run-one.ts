@@ -5,8 +5,11 @@
 // record-fetch preload writing OUT_BASE/NAME-wire, sends the harness output to OUT_BASE/NAME.log,
 // appends an end line, and prints the pass count, the median seconds per answer, the largest
 // prompt, and one line per goal. It supersedes run-one.sh, which ran the same steps in bash.
-// Exit: the harness's exit code; 3 when the cold start fails; 64 on usage.
+// It refuses, before the cold start, when OUT_BASE/NAME, OUT_BASE/NAME.log, or OUT_BASE/NAME-wire exists, and
+// ends the start line with the harness file's SHA-256 as `harness-sha256 HEX`.
+// Exit: the harness's exit code; 2 when an output already exists; 3 when the cold start fails; 64 on usage.
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { appendFileSync, closeSync, existsSync, openSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -69,9 +72,15 @@ function main(): number {
 	const args = argv.slice(split + 1)
 	const out = join(base, name)
 	const log = join(base, 'run.log')
+	const taken = [out, `${out}.log`, `${out}-wire`].filter((path) => existsSync(path))
+	if (taken.length > 0) {
+		process.stderr.write(`run-one: ${name} already has output, which a rerun would overwrite: ${taken.join(', ')}\n`)
+		return 2
+	}
+	const sha = createHash('sha256').update(readFileSync(join('/home/user/agent/tmp', harness, 'bench.mjs'))).digest('hex')
 	const cold = spawnSync(process.execPath, [join(TOOLS, 'cold-start.mjs')], { stdio: 'inherit' })
 	if (cold.status !== 0) return 3
-	appendFileSync(log, `===== ${name} start ${new Date().toISOString().replace(/\.\d+Z$/, 'Z')} [${harness} ${args.join(' ')}]\n`)
+	appendFileSync(log, `===== ${name} start ${new Date().toISOString().replace(/\.\d+Z$/, 'Z')} [${harness} ${args.join(' ')}] harness-sha256 ${sha}\n`)
 	const sink = openSync(`${out}.log`, 'w')
 	const run = spawnSync(process.execPath, ['--import', join(TOOLS, 'record-fetch.mjs'), 'bench.mjs', ...args, '--out', out], {
 		cwd: join('/home/user/agent/tmp', harness),

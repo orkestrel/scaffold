@@ -3492,6 +3492,15 @@ function createLedgerArm({ provider, judge, ledger, conversations, instructions,
 	return { agent, manager, gate, runGoal }
 }
 
+// The provider and arm of one ledger run, built the same way for the daemon run and for `--check-ledger`, so the
+// arm's answer-pass setting and the provider's setting both come from `flags.think`; `transport` and `Provider`
+// let a check answer from a script and record the bodies.
+function createRunArm({ judge, ledger, conversations, instructions, system, gate, log, requests, transport, Provider = LedgerChatProvider }) {
+	const provider = new Provider({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: goalTimeout, transport, think: flags.think }, requests)
+	const arm = createLedgerArm({ provider, judge, ledger, conversations, instructions, system, gate, log, requests, timeout: goalTimeout, think: flags.think })
+	return { provider, arm }
+}
+
 async function runLedger() {
 	const settings = readLedgerSettings()
 	const tracing = createTracingFetch()
@@ -3510,8 +3519,7 @@ async function runLedger() {
 	const memory = join(flags.out, 'memory.log')
 	writeFileSync(memory, '')
 	const requests = []
-	const ledgerProvider = new LedgerChatProvider({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: goalTimeout, think: flags.think }, requests)
-	const arm = createLedgerArm({ provider: ledgerProvider, judge, ledger, conversations, instructions, system, gate: settings.gate, log, requests, timeout: goalTimeout })
+	const { provider: ledgerProvider, arm } = createRunArm({ judge, ledger, conversations, instructions, system, gate: settings.gate, log, requests })
 	process.stdout.write(`settings: ${describeSettings(settings)}\n`)
 
 	const seedStarted = performance.now()
@@ -5612,7 +5620,8 @@ async function checkLedgerReplies(check) {
 		},
 	}
 	// With `transport`, the real provider under think on answers from the transport instead of the stub.
-	const fixture = (reply, gate, script, transport, think = transport !== undefined) => {
+	// With `shared`, the provider and arm come from `createRunArm`, as `runLedger` builds them, and `flags.think` decides both.
+	const fixture = (reply, gate, script, transport, think = transport !== undefined, shared = false) => {
 		const conversations = createConversationManager()
 		const conversation = conversations.add()
 		conversations.switch(conversation.id)
@@ -5632,7 +5641,7 @@ async function checkLedgerReplies(check) {
 				return super.body(request)
 			}
 		}
-		const provider = transport !== undefined ? new Recording({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: 60_000, transport, think }, requests) : {
+		const provider = shared ? undefined : transport !== undefined ? new Recording({ url: OLLAMA_URL, model: agentModel, ctx, label: 'agent', log, timeout: 60_000, transport, think }, requests) : {
 			async *stream(messages, signal, tools) {
 				log.push({ call: log.length, label: 'agent', messages: messages.length, estimate: estimateMessages(messages), tools: tools?.length ?? 0, overflow: false })
 				// The loop appends to the array it passes, so each call keeps a copy of what it was sent.
@@ -5647,7 +5656,10 @@ async function checkLedgerReplies(check) {
 				return { content: step.content ?? '', tools: step.calls ?? [] }
 			},
 		}
-		const arm = createLedgerArm({ provider, judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, timeout: 60_000, think })
+		const made = shared
+			? createRunArm({ judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, transport, Provider: Recording })
+			: undefined
+		const arm = made?.arm ?? createLedgerArm({ provider, judge, ledger, conversations, instructions: createInstructionManager({ format: { open: '' } }), system, gate, log, requests, timeout: 60_000, think })
 		const goal = async (request) => {
 			const outcome = await arm.runGoal({ request })
 			const added = conversation.messages().slice(ledger.position(outcome.request.id) + 1)
@@ -5983,6 +5995,24 @@ async function checkLedgerReplies(check) {
 			offBodies.every((wire) => wire.think !== true) &&
 			off.log.every((call) => call.think === undefined && call.thinking === undefined),
 		`on ${JSON.stringify(onBodies.map((wire) => wire.think))} off ${JSON.stringify(offBodies.map((wire) => wire.think))} ${JSON.stringify(on.log.map((call) => [call.think, call.thinking]))}`,
+	)
+
+	// The arm built as `runLedger` builds it, with `flags.think` forced true for the check: the answer pass reads the
+	// setting `createRunArm` hands it, so a default or an override that drops it sends think true on the answer pass.
+	const runThink = flags.think
+	flags.think = true
+	const runBodies = []
+	let runOutcome
+	try {
+		const through = fixture('terminal', 'admit', [], createStubTransport(cutScript, runBodies), true, true)
+		runOutcome = await through.goal(asking)
+	} finally {
+		flags.think = runThink
+	}
+	check(
+		'think on, built as runLedger builds it: the answer-pass request sends think false and the first-pass request think true',
+		JSON.stringify(runOutcome.kinds) === '["first","answer"]' && JSON.stringify(runBodies.map((wire) => wire.think)) === '[true,false]',
+		`${show(runOutcome)} ${JSON.stringify(runBodies.map((wire) => wire.think))}`,
 	)
 
 	const body = new LedgerChatProvider({ url: OLLAMA_URL, model: AGENT_MODEL, ctx, label: 'agent', log: [], timeout: 60_000 }, []).body({ messages: [{ id: 'request', role: 'user', content: asking }] })

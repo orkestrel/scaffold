@@ -1,8 +1,8 @@
 // Inspects every recorded daemon call of the v10 runs and reports what departs from the run's condition:
-//   node inspect.ts --dir RESULTS_DIR --out FILE.json [RUN...]
+//   node inspect.ts --dir RESULTS_DIR --out FILE.json [--cap N] [RUN...]
 // With no RUN, every run directory that has a `-wire` sibling is read. For each call it checks the HTTP status, the
 // model, `think`, `num_ctx`, `num_predict`, temperature, seed, and `truncate`, against the condition the run name
-// carries (f4: 4B, thinking off; t2: 2B, thinking on, cap 1,024; t2w and t2a: 2B, thinking on, cap 2,048); then the
+// carries (f4: 4B, thinking off; t2: 2B, thinking on, cap 1,024; t2w and t2a: 2B, thinking on, cap 2,048; t4: 4B, thinking on, the cap `--cap` gives); then the
 // done reason, a cap hit, a prompt plus completion within 64 tokens of `num_ctx`, an empty reply with no tool call,
 // and thinking on a call that asked for none. A calibration call (`num_predict` 1) and a summarizer call (no tools and
 // the summarizer's system text, whatever the condition) are counted apart and leave the think, predict, empty, and
@@ -36,10 +36,11 @@ function readFlag(argv: readonly string[], name: string): string | undefined {
 	return value === undefined || value.startsWith('--') ? undefined : value
 }
 
-function expectFor(run: string): Expect | undefined {
+function expectFor(run: string, cap: number | undefined): Expect | undefined {
 	if (run.startsWith('f4-')) return { model: 'qwen3.5:4b-q4_K_M', think: false, predict: undefined }
 	if (run.startsWith('t2-')) return { model: 'qwen3.5:2b-q4_K_M', think: true, predict: 1024 }
 	if (run.startsWith('t2w-') || run.startsWith('t2a-')) return { model: 'qwen3.5:2b-q4_K_M', think: true, predict: 2048 }
+	if (run.startsWith('t4-')) return { model: 'qwen3.5:4b-q4_K_M', think: true, predict: cap }
 	return undefined
 }
 
@@ -74,8 +75,8 @@ function harnessCalls(dir: string): number | undefined {
 	return count
 }
 
-function inspectRun(dir: string, run: string, findings: Finding[]): Record<string, unknown> {
-	const expect = expectFor(run)
+function inspectRun(dir: string, run: string, findings: Finding[], cap: number | undefined): Record<string, unknown> {
+	const expect = expectFor(run, cap)
 	const wire = join(dir, `${run}-wire`)
 	const requests = readdirSync(wire).filter((name) => name.endsWith('_api_chat-request.json')).sort()
 	let agent = 0
@@ -105,7 +106,7 @@ function inspectRun(dir: string, run: string, findings: Finding[]): Record<strin
 			// The answer pass is the agent's tool-free call with thinking off.
 			const answerPass = isAgent && expect.think && body.think === false && tools === 0
 			if (isAgent && !answerPass && Boolean(body.think) !== expect.think) add('think', `think ${String(body.think)} where the condition runs ${String(expect.think)}`)
-			if (answerPass && !run.startsWith('t2a-')) add('think', 'a tool-free call with thinking off outside t2a')
+			if (answerPass && !run.startsWith('t2a-') && !run.startsWith('t4-')) add('think', 'a tool-free call with thinking off outside t2a and t4')
 			if (isAgent && expect.think && options.num_predict !== expect.predict) add('predict', `num_predict ${String(options.num_predict)} where the condition caps ${String(expect.predict)}`)
 		}
 		if (options.temperature !== 0) add('sampler', `temperature ${String(options.temperature)}`)
@@ -149,13 +150,15 @@ function main(): number {
 	const dir = readFlag(argv, '--dir')
 	const out = readFlag(argv, '--out')
 	if (dir === undefined || out === undefined) {
-		process.stderr.write('usage: node inspect.ts --dir RESULTS_DIR --out FILE.json [RUN...]\n')
+		process.stderr.write('usage: node inspect.ts --dir RESULTS_DIR --out FILE.json [--cap N] [RUN...]\n')
 		return 64
 	}
+	const capFlag = readFlag(argv, '--cap')
+	const cap = capFlag === undefined ? undefined : Number(capFlag)
 	const named = argv.filter((arg, at) => !arg.startsWith('--') && !argv[at - 1]?.startsWith('--'))
 	const runs = named.length > 0 ? named : readdirSync(dir).filter((name) => existsSync(join(dir, `${name}-wire`)) && !name.endsWith('-wire')).sort()
 	const findings: Finding[] = []
-	const summary = runs.map((run) => inspectRun(dir, run, findings))
+	const summary = runs.map((run) => inspectRun(dir, run, findings, cap))
 	writeFileSync(out, `${JSON.stringify({ summary, findings }, null, 1)}\n`)
 	const kinds = new Map<string, number>()
 	for (const finding of findings) kinds.set(finding.kind, (kinds.get(finding.kind) ?? 0) + 1)
