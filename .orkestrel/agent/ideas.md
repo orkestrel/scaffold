@@ -2,7 +2,7 @@
 
 Each entry is an idea, arm, or mechanism the campaign proposed, built, deferred, or measured without a verdict, and that might still work with the machinery the campaign left. That machinery is two harnesses, the categorizing judge, the strict scorer with a blind two-sided audit, the recorded wires and probes, the 152-message long scenario, and the ledger port in `@orkestrel/agent`. Read `rejected.md` first for what was measured and dropped.
 
-The catalog was harvested on 2026-10-09 by workflow `wf_7824d8e7-559`. Seven blind Haiku `distiller` lanes read the campaign records; an Opus `planner` deduplicated the results and verified every status against its citations; a Haiku completeness critic re-read every source and added 30 missed items. It holds 106 ideas. The full record, with every citation, is `harvest/ideas.json`.
+The catalog was harvested on 2026-10-09 by workflow `wf_7824d8e7-559`. Seven blind Haiku `distiller` lanes read the campaign records; an Opus `planner` deduplicated the results and verified every status against its citations; a Haiku completeness critic re-read every source and added 30 missed items. It holds 106 ideas; one more, the thinking-off answer pass, was added on 2026-10-09 from the final check. The full record, with every citation, is `harvest/ideas.json`.
 
 Citations name their checkout: `agent:` is `@orkestrel/agent`, `scaffold:` is this checkout, and `desk:` is the desk. A path under `agent:tmp/` is local to the session that ran the campaign and is not tracked; the facts each entry needs are in the entry.
 
@@ -88,6 +88,7 @@ Each status is one of the following:
 
 ### Answer pass and reply route
 
+- Answer pass with thinking off under a thinking agent (partially measured)
 - Bounded answer recovery after a local first-pass failure (unmeasured)
 - Terminal hold gate and its F9 repairs (measured, no verdict)
 - send_reply route and a nudge turn (measured negative, reopenable)
@@ -692,6 +693,15 @@ Each status is one of the following:
 - **Evidence:** `agent:tmp/bench/results/v8/ATTACK-BRIEFING.md:202-206`, `agent:tmp/bench/results/v4/GRADES-4.md:36`, `scaffold:.orkestrel/agent/rejected.md:61`.
 
 ## Answer pass and reply route
+
+### Answer pass with thinking off under a thinking agent
+
+- **Status:** partially measured.
+- **Idea:** Under thinking, the ledger's tool-free answer pass (the digest, the cue, and no tools) sent the 2B into thinking without end on g01 and g10 of copy 1. It did so at both a 1,024-token and a 2,048-token cap, with byte-identical prompts, while every other call finished at 507 tokens or fewer (the 90th percentile). Run the answer pass with thinking off, or with a small separate cap, while the first pass keeps thinking.
+- **Machinery:** the harness `--think` flag sets thinking for every agent call. A per-pass setting needs code in `agent:tmp/bench3/bench.mjs` (the answer run at line 3388) and, in the port, a thinking option on the answer pass (`agent:src/core/ledgers/Ledger.ts`). The recorded answer-pass bodies in `agent:tmp/bench/results/v10/t2w-records-v1-wire` replay offline.
+- **Hypothesis:** an answer pass without thinking answers the two looping requests, as the think-off answer pass rescues g04 on 7 of 8 copies, and lifts the records arm under thinking by up to 2 passes per copy.
+- **Why it might still work:** the loop sits in one prompt shape, the think-off answer pass already works, and the change is one option on one pass.
+- **Evidence:** `agent:tmp/bench/results/v10/FINAL-CHECK.md`, `agent:tmp/bench/results/v10/t2-records-v1`, `agent:tmp/bench/results/v10/t2w-records-v1`.
 
 ### Bounded answer recovery after a local first-pass failure
 
