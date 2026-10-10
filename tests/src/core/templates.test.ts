@@ -650,7 +650,7 @@ describe('configuration templates', () => {
 		expect(coreConfig?.content).toContain('"lib": ["ESNext", "WebWorker"]')
 		expect(coreConfig?.content).toContain('"types": []')
 		expect(browserConfig?.content).toContain('"types": ["vite/client"]')
-		expect(blueprintToDevDependencies(blueprint)['vite-plugin-singlefile']).toBe('^2.3.3')
+		expect(blueprintToDevDependencies(blueprint)['vite-plugin-singlefile']).toBe('2.3.3')
 	})
 
 	it('fills browser types for the selected Vue extension', () => {
