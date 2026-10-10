@@ -7228,6 +7228,136 @@
      "note": "dist import"
     }
    ]
+  },
+  {
+   "id": "I-362",
+   "title": "The benchmark harness lived untracked outside any repository",
+   "area": "measurement method",
+   "status": "fixed",
+   "issue": "The harness, the scenario, the scorer, the series tools, and the audit kit lived under the agent checkout's ignored tmp/ tree and imported the agent and judge builds by absolute path from other checkouts, so a lost container or a rebuilt checkout would lose or silently change the instrument.",
+   "fix": "The harness lives at `scaffold:.orkestrel/agent/instruments/harness` with every path relative, the agent and ollama builds every measured run imported vendored byte for byte, and its dependencies pinned. MIGRATION.md maps each file to its source. A live run from there matches the original on every call: 83 of 83 records calls and 13 of 13 full-view calls, with the same verdicts.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/README.md",
+     "exists": true,
+     "note": "layout and use"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/MIGRATION.md",
+     "exists": true,
+     "note": "file map and reproduction"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/tools/compare-wires.mjs",
+     "exists": true,
+     "note": "wire comparison"
+    }
+   ]
+  },
+  {
+   "id": "I-363",
+   "title": "The judge samples its one-token answer at temperature 1",
+   "area": "measurement method",
+   "status": "open",
+   "issue": "The records judge calls Mica with num_predict 1 at temperature 1 and reads its decision from the returned log-probabilities. Between two identical runs, 4 of 51 judge calls sampled a different token while the log-probabilities matched byte for byte.",
+   "fix": "None needed for the method, which decides from the log-probabilities. `tools/compare-wires.mjs` compares the log-probabilities, not the sampled token, on a call sampled above temperature 0.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/tools/compare-wires.mjs",
+     "exists": true,
+     "note": "sampled calls"
+    }
+   ]
+  },
+  {
+   "id": "I-364",
+   "title": "The records lead depends on the model's long-context reading",
+   "area": "measurement",
+   "status": "open",
+   "issue": "With only the agent model changed, thinking off, 8 copies, audited on both sides: records read 5.50–6.38 (Qwen 3.5 2B) and 5.88–6.88 (Gemma 4 E2B), 7.63–8.00 (Qwen 3.5 4B) and 7.75–8.38 (Gemma 4 E4B); the full view reads 3.50–4.13, 4.75–6.00, 6.13–7.63, and 7.38–8.63. The lead clears at every end only on the Qwen 2B.",
+   "fix": "Recorded in `results/v11/REPORT.md` and `results/v12/REPORT.md`. Records hold the same level per size on both families; their remaining advantage on a strong model is the prompt size (1,904 against 4,962 tokens at the tenth Gemma 4 E4B request).",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v11/REPORT.md",
+     "exists": true,
+     "note": "Gemma 4 E2B"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v12/REPORT.md",
+     "exists": true,
+     "note": "Gemma 4 E4B and the four bands"
+    }
+   ]
+  },
+  {
+   "id": "I-365",
+   "title": "Gemma 4 commits the desk to actions the record does not allow",
+   "area": "model behavior",
+   "status": "open",
+   "issue": "The blind audit rules 18 of Gemma 4 E2B's 120 scorer passes false, many for a commitment such as \"I will process this refund now\" on a refund over $200 that needs an approval code, or \"I have completed all requests for this shift\". Gemma 4 E4B has 6 false passes in 134.",
+   "fix": "None. The audit catches them; the bands use the audit.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v11/audit/verdicts-g2a.json",
+     "exists": true,
+     "note": "false passes"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v12/audit/verdicts-g4.json",
+     "exists": true,
+     "note": "false passes"
+    }
+   ]
+  },
+  {
+   "id": "I-366",
+   "title": "A compound goal hides which requirement a reply fails",
+   "area": "scoring and audit",
+   "status": "fixed",
+   "issue": "Eight of the ten goals ask for several things at once (the analysis in `bench/goals/anatomy.json`), so a pass or fail does not say which part decided it or which arm loses which part.",
+   "fix": "The goals stay compound. `bench/goals/` scores every requirement of every goal over the recorded replies: 25 requirement scorers, 238 fixtures, every pattern mutation-checked, and an Opus attack round with its 7 findings closed. It reads the Qwen and Gemma series per requirement; the requirements that need an audit carry their questions in `children.json`.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/bench/goals/children.json",
+     "exists": true,
+     "note": "requirements"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/bench/goals/read.mjs",
+     "exists": true,
+     "note": "reader"
+    }
+   ]
+  },
+  {
+   "id": "I-367",
+   "title": "Removed candidate models left converted copies in the model store",
+   "area": "environment",
+   "status": "worked around",
+   "issue": "After `ollama rm` of the pilot candidates, two entries named `llamacpp:<sha>` (3.0 GB and 731 MB) stayed in `ollama list` and held disk the series needed.",
+   "fix": "Removing them by name freed 3.7 GB. List the store after a candidate sweep and remove leftovers.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/harness/models/sweep.sh",
+     "exists": true,
+     "note": "candidate sweep"
+    }
+   ]
+  },
+  {
+   "id": "I-368",
+   "title": "The release commit and push were refused by the permission check",
+   "area": "session and dispatch",
+   "status": "open",
+   "issue": "In the full release clone, the 0.0.30 bump passed every gate under prepublishOnly, but the permission check refused both the release commit and the push to the session branch as a publication step.",
+   "fix": "The bump stays uncommitted in `/home/user/agent-release`; the commit, push, and npm upload wait on the owner's go-ahead.",
+   "files": [
+    {
+     "path": "agent:package.json",
+     "exists": true,
+     "note": "version"
+    }
+   ]
   }
  ]
 }

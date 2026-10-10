@@ -11,7 +11,7 @@ Paths name their checkout:
 
 The benchmark scenario fixes its own date: the Larkspur shift happens on Thursday 2026-10-08, whatever the calendar says. Judge a reply's date against that line, not the day a run happened.
 
-Status counts: 54 open, 199 fixed, 82 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
+Status counts: 58 open, 201 fixed, 83 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
 
 Add an item when an issue is found, and update its status and files when it is fixed.
 
@@ -73,6 +73,10 @@ The following items have no fix yet:
 - I-355 Near-identical contexts flip 1 goal outcome in 6 (measurement method)
 - I-358 Small models call the ship date today (model behavior)
 - I-359 Without thinking, the small models relay a value the request forbids (model behavior)
+- I-363 The judge samples its one-token answer at temperature 1 (measurement method)
+- I-364 The records lead depends on the model's long-context reading (measurement)
+- I-365 Gemma 4 commits the desk to actions the record does not allow (model behavior)
+- I-368 The release commit and push were refused by the permission check (session and dispatch)
 
 ## Thinking
 
@@ -1003,6 +1007,13 @@ The following items have no fix yet:
 - **Fix:** Each item states the wording its run's scenario carries; `tools/probe-items.mjs` does the same for replays and states only the facts each change leaves.
 - **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/tools/items.mjs`, `scaffold:.orkestrel/agent/instruments/results/g06/tools/probe-items.mjs`.
 
+### I-366 A compound goal hides which requirement a reply fails
+
+- **Status:** fixed.
+- **Issue:** Eight of the ten goals ask for several things at once (the analysis in `bench/goals/anatomy.json`), so a pass or fail does not say which part decided it or which arm loses which part.
+- **Fix:** The goals stay compound. `bench/goals/` scores every requirement of every goal over the recorded replies: 25 requirement scorers, 238 fixtures, every pattern mutation-checked, and an Opus attack round with its 7 findings closed. It reads the Qwen and Gemma series per requirement; the requirements that need an audit carry their questions in `children.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/goals/children.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/goals/read.mjs`.
+
 ## Measurement method
 
 ### I-313 The 4B think-off band sat on its bound at four copies
@@ -1053,6 +1064,20 @@ The following items have no fix yet:
 - **Issue:** `results/g06/tools/replay.mjs` took only agent calls that offer tools, so a 2B-with-thinking run that answers through its answer pass had no answering call, and `noest` edited only tool messages while that pass carries the lookup in a user message.
 - **Fix:** The replay takes every generating agent call, and `noest` edits tool and user messages; the dry run over the before, after, and records-plain runs finds each change exactly once, and 16 of 16 base replays reproduce their record byte for byte.
 - **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/tools/replay.mjs`.
+
+### I-362 The benchmark harness lived untracked outside any repository
+
+- **Status:** fixed.
+- **Issue:** The harness, the scenario, the scorer, the series tools, and the audit kit lived under the agent checkout's ignored tmp/ tree and imported the agent and judge builds by absolute path from other checkouts, so a lost container or a rebuilt checkout would lose or silently change the instrument.
+- **Fix:** The harness lives at `scaffold:.orkestrel/agent/instruments/harness` with every path relative, the agent and ollama builds every measured run imported vendored byte for byte, and its dependencies pinned. MIGRATION.md maps each file to its source. A live run from there matches the original on every call: 83 of 83 records calls and 13 of 13 full-view calls, with the same verdicts.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/README.md`, `scaffold:.orkestrel/agent/instruments/harness/MIGRATION.md`, `scaffold:.orkestrel/agent/instruments/harness/tools/compare-wires.mjs`.
+
+### I-363 The judge samples its one-token answer at temperature 1
+
+- **Status:** open.
+- **Issue:** The records judge calls Mica with num_predict 1 at temperature 1 and reads its decision from the returned log-probabilities. Between two identical runs, 4 of 51 judge calls sampled a different token while the log-probabilities matched byte for byte.
+- **Fix:** None needed for the method, which decides from the log-probabilities. `tools/compare-wires.mjs` compares the log-probabilities, not the sampled token, on a call sampled above temperature 0.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/tools/compare-wires.mjs`.
 
 ## Agent package code
 
@@ -2249,6 +2274,13 @@ The following items have no fix yet:
 - **Fix:** The release visit runs in a full clone, `/home/user/agent-release`, at the release candidate 8f5098b: re-pin to scaffold 0.0.99, overwrite, and every gate pass, and the comparison rules a bump (dist moved, ranges same).
 - **Files:** `scaffold:.orkestrel/agent/instruments/bench/bench.mjs`.
 
+### I-368 The release commit and push were refused by the permission check
+
+- **Status:** open.
+- **Issue:** In the full release clone, the 0.0.30 bump passed every gate under prepublishOnly, but the permission check refused both the release commit and the push to the session branch as a publication step.
+- **Fix:** The bump stays uncommitted in `/home/user/agent-release`; the commit, push, and npm upload wait on the owner's go-ahead.
+- **Files:** `agent:package.json`.
+
 ## Records and process
 
 ### I-062 Ollama checkout was on main
@@ -2589,6 +2621,13 @@ The following items have no fix yet:
 - **Fix:** A shim at `/home/user/desk-npm11/bin/npm` runs the npx-cached npm 11.6.2; desk work puts it first on PATH.
 - **Files:** `desk:package.json`.
 
+### I-367 Removed candidate models left converted copies in the model store
+
+- **Status:** worked around.
+- **Issue:** After `ollama rm` of the pilot candidates, two entries named `llamacpp:<sha>` (3.0 GB and 731 MB) stayed in `ollama list` and held disk the series needed.
+- **Fix:** Removing them by name freed 3.7 GB. List the store after a candidate sweep and remove leftovers.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/models/sweep.sh`.
+
 ## Measurement
 
 ### I-345 With the 4B thinking, the full view catches up to records
@@ -2604,6 +2643,13 @@ The following items have no fix yet:
 - **Issue:** Scored by the corrected rules alone, the live port (`p1-ledger`, `createLedger` at 8f5098b) trailed the measured `a5-records` runs with a lower bound of −1.73, outside the trim tolerance of −1.
 - **Fix:** Both sides audited blind under one brief (`bench4/audit/verdicts-u9.json`, `verdicts-a1.json`; 0 unresolved). The audit removes 12 false passes from `a5-records` and 6 from the port: the port reads 5.75–6.50 against 5.50–6.38 (lower bounds −0.57 and −0.91) and clears the full view at every end (1.43, 1.13, 0.70). Recorded in `FINAL-CHECK.md` § The live port.
 - **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`, `scaffold:.orkestrel/agent/instruments/results/port/audit/tally-u9.json`.
+
+### I-364 The records lead depends on the model's long-context reading
+
+- **Status:** open.
+- **Issue:** With only the agent model changed, thinking off, 8 copies, audited on both sides: records read 5.50–6.38 (Qwen 3.5 2B) and 5.88–6.88 (Gemma 4 E2B), 7.63–8.00 (Qwen 3.5 4B) and 7.75–8.38 (Gemma 4 E4B); the full view reads 3.50–4.13, 4.75–6.00, 6.13–7.63, and 7.38–8.63. The lead clears at every end only on the Qwen 2B.
+- **Fix:** Recorded in `results/v11/REPORT.md` and `results/v12/REPORT.md`. Records hold the same level per size on both families; their remaining advantage on a strong model is the prompt size (1,904 against 4,962 tokens at the tenth Gemma 4 E4B request).
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v11/REPORT.md`, `scaffold:.orkestrel/agent/instruments/results/v12/REPORT.md`.
 
 ## Model behavior
 
@@ -2628,6 +2674,13 @@ The following items have no fix yet:
 - **Fix:** None in the context strategy. `ideas.md` § Judge draft check against a rule before the reply already measured the check pass: the judge separates date-breaking drafts (AUC 0.98), but a rewrite that named the rule kept the date in 9 of 9 runs, which this probe confirms from the request side.
 - **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/probes-rule-audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/probes-rule/rows.json`.
 
+### I-365 Gemma 4 commits the desk to actions the record does not allow
+
+- **Status:** open.
+- **Issue:** The blind audit rules 18 of Gemma 4 E2B's 120 scorer passes false, many for a commitment such as "I will process this refund now" on a refund over $200 that needs an approval code, or "I have completed all requests for this shift". Gemma 4 E4B has 6 false passes in 134.
+- **Fix:** None. The audit catches them; the bands use the audit.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v11/audit/verdicts-g2a.json`, `scaffold:.orkestrel/agent/instruments/results/v12/audit/verdicts-g4.json`.
+
 ## Records method
 
 ### I-349 The records briefing splits a rule into a bare fragment
@@ -2646,7 +2699,7 @@ Each file the items name, with the items that name it:
 | `agent:.claude/agents/orkestrel.md` | I-039 |
 | `agent:guides/agent.md` | I-066, I-126, I-127, I-128, I-131, I-132, I-134, I-137, I-297, I-298, I-306, I-325 |
 | `agent:guides/README.md` | I-130 |
-| `agent:package.json` | I-038, I-075 |
+| `agent:package.json` | I-038, I-075, I-368 |
 | `agent:src/core/agents/Agent.ts` | I-099, I-106, I-114, I-116, I-244, I-306 |
 | `agent:src/core/agents/helpers.ts` | I-102 |
 | `agent:src/core/agents/types.ts` | I-134 |
@@ -2750,6 +2803,12 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/bench3/README.md` | I-159, I-235, I-262, I-271, I-286, I-287, I-321 |
 | `scaffold:.orkestrel/agent/instruments/bench3/records-check.mjs` | I-302 |
 | `scaffold:.orkestrel/agent/instruments/bench3/records.mjs` | I-284, I-295, I-328, I-329, I-349 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/goals/children.json` | I-366 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/goals/read.mjs` | I-366 |
+| `scaffold:.orkestrel/agent/instruments/harness/MIGRATION.md` | I-362 |
+| `scaffold:.orkestrel/agent/instruments/harness/models/sweep.sh` | I-367 |
+| `scaffold:.orkestrel/agent/instruments/harness/README.md` | I-362 |
+| `scaffold:.orkestrel/agent/instruments/harness/tools/compare-wires.mjs` | I-362, I-363 |
 | `scaffold:.orkestrel/agent/instruments/probes/ledger-replay-compare.ts` | I-333 |
 | `scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts` | I-332, I-333 |
 | `scaffold:.orkestrel/agent/instruments/results/AUDIT.md` | I-153, I-220, I-231, I-241, I-245, I-254, I-267, I-269 |
@@ -2815,6 +2874,10 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/results/v10/tools/inspect.ts` | I-312, I-317 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/tools/items.ts` | I-315, I-316, I-334 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/tools/tally.ts` | I-313, I-316, I-334 |
+| `scaffold:.orkestrel/agent/instruments/results/v11/audit/verdicts-g2a.json` | I-365 |
+| `scaffold:.orkestrel/agent/instruments/results/v11/REPORT.md` | I-364 |
+| `scaffold:.orkestrel/agent/instruments/results/v12/audit/verdicts-g4.json` | I-365 |
+| `scaffold:.orkestrel/agent/instruments/results/v12/REPORT.md` | I-364 |
 | `scaffold:.orkestrel/agent/instruments/results/v2/cal-mica-bounded/calibration.md` | I-212 |
 | `scaffold:.orkestrel/agent/instruments/results/v3/cal-categories.jsonl` | I-328 |
 | `scaffold:.orkestrel/agent/instruments/results/v4/` | I-252 |
