@@ -1,0 +1,6 @@
+===== l5-q2-control-v1 start 2026-10-10T17:27:19Z [bench5 --run --live --copy 1 --model qwen3.5:2b-q4_K_M --arm control --cache tmp/l5/cache --goals g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12] harness-sha256 0c8663a00dfdd3a91c39f54b0a6e093c3f2f294f17b4c3a1c1c56fec096ffbb2
+===== l5-q2-control-v1 end 2026-10-10T17:28:21Z exit 0
+===== l5-q2-aggregatefill-v1 start 2026-10-10T17:30:23Z [bench5 --run --live --copy 1 --model qwen3.5:2b-q4_K_M --arm aggregate --cache tmp/l5/cache --goals g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12 --allowance 555 --retry 2 --predict 160] harness-sha256 0c8663a00dfdd3a91c39f54b0a6e093c3f2f294f17b4c3a1c1c56fec096ffbb2
+===== l5-q2-aggregatefill-v1 end 2026-10-10T17:33:41Z exit 0
+===== l5-q2-aggregate-v1 start 2026-10-10T17:36:05Z [bench5 --run --live --copy 1 --model qwen3.5:2b-q4_K_M --arm aggregate --cache tmp/l5/cache --goals g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12] harness-sha256 0c8663a00dfdd3a91c39f54b0a6e093c3f2f294f17b4c3a1c1c56fec096ffbb2
+===== l5-q2-aggregate-v1 end 2026-10-10T17:37:08Z exit 0

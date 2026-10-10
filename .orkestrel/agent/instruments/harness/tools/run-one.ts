@@ -14,6 +14,7 @@ import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { appendFileSync, closeSync, existsSync, openSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const ROOT = dirname(import.meta.dirname)
 const TOOLS = join(ROOT, 'tools')
@@ -114,7 +115,7 @@ function main(): number {
 	if (cold.status !== 0) return 3
 	appendFileSync(log, `===== ${name} start ${new Date().toISOString().replace(/\.\d+Z$/, 'Z')} [${harness} ${args.join(' ')}] harness-sha256 ${sha}\n`)
 	const sink = openSync(`${out}.log`, 'w')
-	const run = spawnSync(process.execPath, ['--import', join(TOOLS, 'record-fetch.mjs'), entry.entry, ...args, '--out', out], {
+	const run = spawnSync(process.execPath, ['--import', pathToFileURL(join(TOOLS, 'record-fetch.mjs')).href, entry.entry, ...args, '--out', out], {
 		cwd: join(ROOT, harness),
 		env: { ...process.env, RECORD_DIR: `${out}-wire` },
 		stdio: ['ignore', sink, sink],
