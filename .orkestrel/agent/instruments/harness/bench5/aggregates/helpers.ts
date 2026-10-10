@@ -374,7 +374,7 @@ export function buildRefs(
  * @param title - The topic title that fills the `TOPIC` slot
  * @param asOf - The date that fills the `DATE` slot
  * @param sources - The lines to summarize
- * @param failures - The failures of the previous attempt; a retry adds a note that names their kinds, because a repeated prompt returns the cached output
+ * @param failures - The failures of the previous attempt; a retry includes exact kinds and tokens encoded as JSON data
  * @returns The system message and the user message of one source line per row
  */
 export function buildSummaryPrompt(
@@ -384,7 +384,7 @@ export function buildSummaryPrompt(
 	sources: readonly AggregateSource[],
 	failures: readonly AggregateFailure[] = [],
 ): readonly Message[] {
-	const kinds = [...new Set(failures.map((failure) => failure.kind))].join(', ')
+	const kinds = JSON.stringify(failures.map(({ kind, token }) => ({ kind, token })))
 	const lines = sources.map(renderSource).join('\n')
 	return [
 		{ id: `${topic}:system`, role: 'system', content: fillSlots(SUMMARY_SYSTEM, title, asOf) },
