@@ -1,5 +1,7 @@
 # Rulings on the aggregate arm design (2026-10-10)
 
+The authorized resumption protocol is [revision.md](revision.md). It replaces T4 and the dependent admission, calibration, exposure, cache, and evaluation rules. The rulings below remain the record of the archived pilot; its STOP is unchanged.
+
 The design round's plan is in `design.md` and `aggregate.md`, its surveys in `readiness.md` and `cost.md`, and the three attacks (fairness, feasibility, cost) in `attacks.md`. These rulings amend the plan. Where a ruling and the plan disagree, the ruling holds. Every unit brief reads this file first.
 
 ## Tensions
