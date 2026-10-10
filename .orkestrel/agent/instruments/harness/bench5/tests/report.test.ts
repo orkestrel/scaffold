@@ -2,8 +2,8 @@ import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { HARNESS } from '../constants.ts'
 
 type Table = Readonly<Record<string, unknown>>
@@ -70,7 +70,9 @@ const NEGATIVE: Passes = {
 	],
 }
 
-const directory = mkdtempSync(join(tmpdir(), 'bench5-report-'))
+const scratch = join(HARNESS, '..', '..', '..', '..', 'tmp', 'units')
+mkdirSync(scratch, { recursive: true })
+const directory = mkdtempSync(join(scratch, 'bench5-report-'))
 const blocker = join(directory, 'blocker.ts')
 const copies = join(directory, 'copies')
 let bases = 0
@@ -303,14 +305,14 @@ function buildGoal(spec: GoalSpec): Table {
 	}
 }
 
-function writeCopy(): void {
+function writeCopy(target = copies, replacement?: Table): void {
 	const scenario = {
 		ledger: { system: 'You help the support desk.', topics: { refunds: 'Refund rules' } },
 		days: [{ date: '2026-10-08', from: 0 }],
 		seed: SEED_KINDS,
 		tools: {},
 		lookups: [],
-		goals: GOAL_SPECS.map(buildGoal),
+		goals: GOAL_SPECS.map((spec) => (spec.id === 'g11-gamma' && replacement !== undefined ? replacement : buildGoal(spec))),
 		cases: [
 			{ case: 'expiry', goal: 'g11-gamma' },
 			{ case: 'amend', goal: 'g12-delta' },
@@ -318,22 +320,22 @@ function writeCopy(): void {
 			{ case: 'unscored', goal: 'g12-delta', scored: false },
 		],
 	}
-	mkdirSync(copies)
-	for (let copy = 1; copy <= 4; copy += 1) writeFileSync(join(copies, `v${copy}.json`), JSON.stringify(scenario))
+	mkdirSync(target)
+	for (let copy = 1; copy <= 4; copy += 1) writeFileSync(join(target, `v${copy}.json`), JSON.stringify(scenario))
 }
 
 function runReport(args: readonly string[]): Outcome {
-	const run = spawnSync(process.execPath, ['--import', blocker, REPORT, ...args], { cwd: HARNESS, encoding: 'utf8' })
+	const run = spawnSync(process.execPath, ['--import', pathToFileURL(blocker).href, REPORT, ...args], { cwd: HARNESS, encoding: 'utf8' })
 	return { status: run.status, stdout: run.stdout, stderr: run.stderr }
 }
 
-function runPair(base: string, range = '1-4', extra: readonly string[] = []): Outcome {
-	return runReport(['--base', base, '--copies', copies, '--pair', `q2,${range}`, ...extra])
+function runPair(base: string, range = '1-4', extra: readonly string[] = [], scenario = copies): Outcome {
+	return runReport(['--base', base, '--copies', scenario, '--pair', `q2,${range}`, ...extra])
 }
 
-function readPair(base: string, range = '1-4'): unknown {
+function readPair(base: string, range = '1-4', scenario = copies): unknown {
 	const json = join(base, 'report.json')
-	const outcome = runPair(base, range, ['--json', json])
+	const outcome = runPair(base, range, ['--json', json], scenario)
 	assert.equal(outcome.status, 0, outcome.stderr)
 	return dig(JSON.parse(readFileSync(json, 'utf8')), 'pairs', 0)
 }
@@ -536,6 +538,57 @@ describe('report.ts', () => {
 	})
 
 	describe('invariants', () => {
+		describe('g03 stale-carrier regression', () => {
+			const scenario = join(directory, 'g03-copies')
+			const source: unknown = JSON.parse(readFileSync(join(HARNESS, 'bench', 'scenario.json'), 'utf8'))
+			const goals = dig(source, 'goals')
+			assert.ok(Array.isArray(goals))
+			const goal: unknown = goals.find((entry) => dig(entry, 'id') === 'g03-grace-escalation')
+			assert.ok(isRecord(goal))
+			const shown = dig(source, 'seed', 18, 'content')
+			assert.ok(typeof shown === 'string')
+			const briefing = shown
+			assert.match(briefing, /Marcus to sign off first/)
+			assert.doesNotMatch(briefing, /ESC-2291/i)
+
+			before(() => writeCopy(scenario, { ...goal, after: 2, facts: [], stale: [] }))
+
+			for (const summary of ['', 'The carrier trace is open.', 'Use ESC-2291.']) {
+				it(`g03 stale-carrier regression: ${summary === '' ? 'empty summary' : summary}`, () => {
+					const base = writeBase(POSITIVE, onArms(1, (data, arm) => ({
+						...data,
+						info: { ...data.info, goals: GOALS.map((id) => (id === 'g11-gamma' ? 'g03-grace-escalation' : id)) },
+						rows: data.rows.map((row) => (row['goal'] === 'g11-gamma' ? { ...row, goal: 'g03-grace-escalation' } : row)),
+						picks: data.picks.map((pick) => (pick['goal'] === 'g11-gamma' ? {
+							...pick,
+							goal: 'g03-grace-escalation',
+							briefing,
+							instructions: { date: 'Today is Thursday 2026-10-08.', ...(arm === 'aggregate' && summary !== '' ? { summaries: summary } : {}) },
+						} : pick)),
+						calls: data.calls.map((call) => (call['goal'] === 'g11-gamma' ? { ...call, goal: 'g03-grace-escalation' } : call)),
+						events: data.events.map((event) => (event['goal'] === 'g11-gamma' ? { ...event, goal: 'g03-grace-escalation' } : event)),
+					})))
+					const pair = readPair(base, '1-1', scenario)
+					const leakage = dig(pair, 'copies', 0, 'aggregate', 'aggregate', 'goals')
+					assert.ok(Array.isArray(leakage))
+					const actual: unknown = leakage.find((entry) => dig(entry, 'goal') === 'g03-grace-escalation')
+					const stale = summary === 'Use ESC-2291.'
+					if (stale) {
+						assert.ok(readNumberAt(actual, 'soleStale') > 0)
+						assert.match(String(listFailures(pair, 'soleStale')[0]), /^v1 g03-grace-escalation: soleStale [1-9]\d*$/)
+					} else {
+						assert.equal(dig(actual, 'soleStale'), 0)
+						assert.deepEqual(listFailures(pair, 'soleStale'), [])
+					}
+					assert.equal(dig(pair, 'verdict'), stale ? 'STOP' : 'CONTINUE')
+					const outcome = runPair(base, '1-1', [], scenario)
+					assert.equal(outcome.status, 0, outcome.stderr)
+					if (stale) assert.match(outcome.stdout, /^verdict STOP \(invariant soleStale\)$/m)
+					else assert.match(outcome.stdout, /^invariant soleStale PASS$/m)
+				})
+			}
+		})
+
 		it('stops on a token that only the summaries carry', () => {
 			const sole = onCopy(2, 'aggregate', (data) => editRows(data, 'g11-gamma', { sole: 2 }))
 			const base = writeBase(POSITIVE, sole)

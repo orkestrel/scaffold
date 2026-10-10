@@ -31,7 +31,7 @@ import { join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import { LEDGER_SCALE_DRIFT } from '../vendor/agent-0.0.30/index.js'
-import { compileRules, scoreText } from '../bench/rescore.mjs'
+import { compileRules, plainText, scoreText } from '../bench/rescore.mjs'
 import { INSTRUCTION_SUMMARIES } from './aggregates/constants.ts'
 import { readTokens } from './aggregates/helpers.ts'
 import { COPIES_DIR, MODELS, SAMPLER } from './constants.ts'
@@ -608,7 +608,12 @@ function listMatches(goal: CopyGoal, text: string): Matches {
 	const expected = goal.expected.filter((phrase) => !missing.has(phrase))
 	const choice = `any of ${goal.expectedAny.join('/')}`
 	if (goal.expectedAny.length > 0 && !missing.has(choice)) expected.push(choice)
-	return { expected, stale: [...readTexts(scored, 'violations', 'score'), ...readTexts(scored, 'patterns', 'score')] }
+	const plain = plainText(text)
+	// Absence predicates can fail answer scoring without carrying forbidden text.
+	const patterns = readTexts(scored, 'patterns', 'score').filter((source) =>
+		[...plain.matchAll(new RegExp(source, 'gi'))].some((match) => match[0].length > 0),
+	)
+	return { expected, stale: [...readTexts(scored, 'violations', 'score'), ...patterns] }
 }
 
 function listTokens(text: string): ReadonlySet<string> {
