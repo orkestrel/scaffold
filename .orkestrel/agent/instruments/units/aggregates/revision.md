@@ -1,5 +1,7 @@
 # Aggregate protocol revision
 
+The living-summary and thinking-mode comparison is specified in [the matrix revision](matrix.md). That revision replaces the conflicting lifecycle, resource, full-view, and evaluation rules in this document. The original pilot remains STOP.
+
 The user authorized this revision on 2026-10-10 after the pilot exposed a conflict between T4 and F2. The archived pilot remains STOP under its original protocol. No revised result replaces that evidence.
 
 ## Question and comparison
