@@ -31,4 +31,3 @@ The before-and-after SHA256 checks match the original returned hashes:
 - Original report: `1cd43d38becb9396f4bcadf0af2bea00b435dae1506c1f7677e9b0bc5c22a588`.
 
 Supplement complete. No scores, mapping, service results, or calibration evidence were accessed.
-

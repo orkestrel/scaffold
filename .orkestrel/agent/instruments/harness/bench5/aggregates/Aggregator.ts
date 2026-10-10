@@ -1,6 +1,7 @@
 import type { JudgeQuestion, Message, Selection } from '../../vendor/agent-0.0.30/index.js'
 import type {
 	AggregateAsked,
+	AggregateAdmission,
 	AggregateContext,
 	AggregateDrop,
 	AggregateEntry,
@@ -44,13 +45,13 @@ import {
  * Keeps one summary per desk topic and per owner, rebuilds it when its sources change, and renders the summaries that the control arm's text already carries.
  *
  * @remarks
- * `maintain` runs after the ledger files the request and before the agent reads the prompt. A desk topic is maintained at every read point. An owner is maintained only when the request names it. The class never throws: it logs an error, withholds the topic for that read point, and drops the topic's version, so the next read point builds it again.
+ * `maintain` runs after the ledger files the request and before the agent reads the prompt. A desk topic is maintained at every read point. An owner is maintained only when the request names it. Construction refuses a fit that does not separate its negatives. A maintenance error logs and withholds the topic for that read point.
  *
  * @example
  * ```ts
  * const aggregator = new Aggregator({ mirror, summarizer, judge, fit, settings, days, seeds, path, log })
  * await aggregator.maintain(request, 'g01', 47, signal)
- * const { text } = aggregator.render(selection, request, system, 'Today is Thursday 2026-10-08.', scale)
+ * const { text } = aggregator.render(selection, request, system, 'Today is Thursday 2026-10-08.', scale, admit)
  * ```
  */
 export class Aggregator {
@@ -62,10 +63,11 @@ export class Aggregator {
 	readonly #withheld = new Set<string>()
 
 	/**
-	 * Creates the rows directory.
+	 * Refuses a failed fit and creates the rows directory.
 	 * @param options - The mirror, summarizer, judge, cutoffs, settings, days, seed indices, rows file, and logger
 	 */
 	constructor(options: AggregatorOptions) {
+		if (!options.fit.separated) throw new Error('aggregate execution requires a separating fit')
 		this.#options = options
 		mkdirSync(dirname(options.path), { recursive: true })
 	}
@@ -80,7 +82,12 @@ export class Aggregator {
 	 * @remarks
 	 * A first build, a removed source line, an arriving message that CHANGE reads as a change, and a failed code check each build the topic. A removed line rebuilds without asking. AGREE runs after a build only. A build that fails the code check or AGREE is marked stale and built again, up to `settings.retry` more times, and then the topic is withheld.
 	 */
-	async maintain(request: Message, goal: string, lastSeed: number, signal: AbortSignal): Promise<void> {
+	async maintain(
+		request: Message,
+		goal: string,
+		lastSeed: number,
+		signal: AbortSignal,
+	): Promise<void> {
 		this.#withheld.clear()
 		try {
 			const { mirror, days, seeds } = this.#options
@@ -116,6 +123,7 @@ export class Aggregator {
 	 * @param systemText - The system text of the prompt
 	 * @param dateText - The date line of the prompt
 	 * @param scale - The tokens one estimate unit costs, from the ledger's gauge
+	 * @param admit - Checks the complete built request without removing selected evidence
 	 * @returns The block text, the topics rendered, the topics cut by the allowance, the topics withheld, the topics left without prose, the sentences filtered, the count of tokens that only the block carries, and the block price
 	 * @remarks
 	 * The request's owners come first, then the desk topics it names. A sentence renders only when every id, number, and name candidate occurs in the shown text, and an entry renders only when its title does. Whole entries are cut from the end until the block fits `settings.allowance`.
@@ -126,11 +134,20 @@ export class Aggregator {
 		systemText: string,
 		dateText: string,
 		scale: number,
+		admit: AggregateAdmission,
 	): AggregateRendering {
 		const { mirror, settings } = this.#options
-		const shown = [selection.briefing ?? '', ...selection.messages.map((message) => message.content), systemText, dateText].join('\n')
+		const shown = [
+			selection.briefing ?? '',
+			...selection.messages.map((message) => message.content),
+			systemText,
+			dateText,
+		].join('\n')
 		const order = [
-			...new Set([...mirror.owners(request).map((id) => `${LEDGER_OWNER_PREFIX}${id}`), ...mirror.near(request)]),
+			...new Set([
+				...mirror.owners(request).map((id) => `${LEDGER_OWNER_PREFIX}${id}`),
+				...mirror.near(request),
+			]),
 		]
 		const entries: AggregateEntry[] = []
 		const emptied: string[] = []
@@ -145,9 +162,21 @@ export class Aggregator {
 			const kept = filterProse(version.prose, version.ids, shown)
 			filtered.push(...kept.dropped.map((sentence): AggregateDrop => ({ topic: key, sentence })))
 			if (kept.prose === '') emptied.push(key)
-			else entries.push({ key, title: version.title, date: version.asOf, ids: kept.ids, prose: kept.prose })
+			else
+				entries.push({
+					key,
+					title: version.title,
+					date: version.asOf,
+					ids: kept.ids,
+					prose: kept.prose,
+				})
 		}
-		const block = renderSummaries(entries, settings.allowance, (text) => priceText(text, scale))
+		const block = renderSummaries(
+			selection.fault === undefined ? entries : [],
+			settings.allowance,
+			(text) => priceText(text, scale),
+			admit,
+		)
 		return {
 			text: block.text,
 			topics: block.kept.map((entry) => entry.key),
@@ -236,7 +265,7 @@ export class Aggregator {
 					context.signal,
 				)
 				const { fit } = this.#options
-				const agreed = !fit.separated || asked.noul >= fit.agree
+				const agreed = asked.noul >= fit.agree
 				answers = { [AGREE_HEAD]: asked.noul }
 				failures = agreed ? [] : [{ kind: 'agree', token: '' }]
 				this.#append(
@@ -327,8 +356,13 @@ export class Aggregator {
 		const started = performance.now()
 		const result = await judge.ask({ state, questions: { [id]: question } }, signal)
 		const answer = result.answers[id]
-		if (answer === undefined || answer.form !== 'noul') throw new Error(`the judge returned no noul answer for ${id}`)
-		return { noul: answer.noul, cached: (judge.stats().hits[head] ?? 0) > before, wall: performance.now() - started }
+		if (answer === undefined || answer.form !== 'noul')
+			throw new Error(`the judge returned no noul answer for ${id}`)
+		return {
+			noul: answer.noul,
+			cached: (judge.stats().hits[head] ?? 0) > before,
+			wall: performance.now() - started,
+		}
 	}
 
 	// Runs the code check against the topic's sources, the stale tokens of its messages, and the lines that left it.
@@ -340,7 +374,9 @@ export class Aggregator {
 	): readonly AggregateFailure[] {
 		const { input, projection } = context
 		const members = new Set(collectTopicMembers(projection, input, topic))
-		const listed = projection.stale.filter((line) => members.has(line.source)).flatMap((line) => line.tokens)
+		const listed = projection.stale
+			.filter((line) => members.has(line.source))
+			.flatMap((line) => line.tokens)
 		const stale = collectStaleTokens(
 			this.#gone.get(topic.key) ?? [],
 			listed,

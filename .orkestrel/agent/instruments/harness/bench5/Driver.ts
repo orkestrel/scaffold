@@ -11,6 +11,7 @@ import type {
 import type { ToolCall, ToolResult } from '@orkestrel/tool'
 import type {
 	AggregateRendering,
+	AggregatePrefix,
 	BriefingReading,
 	CacheRow,
 	CallRecord,
@@ -38,7 +39,15 @@ import type {
 	Settings,
 	TailMessage,
 } from './types.ts'
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	appendFileSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { isAbsolute, join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
@@ -57,6 +66,7 @@ import {
 	estimateMessages,
 	extractTokens,
 	matchEntities,
+	stripThinking,
 } from '../vendor/agent-0.0.30/index.js'
 import { createOllama, createOllamaJudge } from '../vendor/ollama/index.js'
 import { clean, compileRules, scoreText } from '../bench/rescore.mjs'
@@ -64,6 +74,7 @@ import { INSTRUCTION_DATE, INSTRUCTION_SUMMARIES } from './aggregates/constants.
 import { Aggregator } from './aggregates/Aggregator.ts'
 import {
 	CORPUS,
+	ADMISSION_LIMIT,
 	COPIES_DIR,
 	DAEMON,
 	FIT,
@@ -135,7 +146,8 @@ const LOOKUP_TOOLS = Object.freeze([
 		name: 'lookup_customer',
 		key: 'account',
 		summary: 'The account number',
-		description: 'Look up a Larkspur Home customer account by its account number, such as LH-12345.',
+		description:
+			'Look up a Larkspur Home customer account by its account number, such as LH-12345.',
 	}),
 ])
 const FILES = Object.freeze({
@@ -170,7 +182,8 @@ function readText(value: unknown, key: string): string {
 
 function readNumber(value: unknown, key: string): number {
 	const field = readField(value, key)
-	if (typeof field !== 'number' || !Number.isFinite(field)) throw new Error(`the scenario field ${key} is not a number`)
+	if (typeof field !== 'number' || !Number.isFinite(field))
+		throw new Error(`the scenario field ${key} is not a number`)
 	return field
 }
 
@@ -183,14 +196,16 @@ function readList(value: unknown, key: string): readonly unknown[] {
 
 function readTexts(value: unknown, key: string): readonly string[] {
 	return readList(value, key).map((entry) => {
-		if (typeof entry !== 'string') throw new Error(`the scenario list ${key} holds a value that is not text`)
+		if (typeof entry !== 'string')
+			throw new Error(`the scenario list ${key} holds a value that is not text`)
 		return entry
 	})
 }
 
 function readNumbers(value: unknown, key: string): readonly number[] {
 	return readList(value, key).map((entry) => {
-		if (typeof entry !== 'number') throw new Error(`the scenario list ${key} holds a value that is not a number`)
+		if (typeof entry !== 'number')
+			throw new Error(`the scenario list ${key} holds a value that is not a number`)
 		return entry
 	})
 }
@@ -200,7 +215,11 @@ function readSeedMessage(value: unknown): SeedMessage {
 	if (!isMessageRole(role)) throw new Error(`a seed message has the role ${String(role)}`)
 	const calls = readList(value, 'calls').map((call) => {
 		const args = readField(call, 'arguments')
-		return { id: readText(call, 'id'), name: readText(call, 'name'), arguments: isRecord(args) ? { ...args } : {} }
+		return {
+			id: readText(call, 'id'),
+			name: readText(call, 'name'),
+			arguments: isRecord(args) ? { ...args } : {},
+		}
 	})
 	const call = readField(value, 'call')
 	return {
@@ -272,10 +291,16 @@ function isFit(value: unknown): value is Fit {
 	)
 }
 
-function readCount(text: string | undefined, label: string, minimum: number, problems: string[]): number | undefined {
+function readCount(
+	text: string | undefined,
+	label: string,
+	minimum: number,
+	problems: string[],
+): number | undefined {
 	if (text === undefined) return undefined
 	const value = Number(text)
-	if (!Number.isInteger(value) || value < minimum) problems.push(`--${label} must be an integer of at least ${minimum}`)
+	if (!Number.isInteger(value) || value < minimum)
+		problems.push(`--${label} must be an integer of at least ${minimum}`)
 	return value
 }
 
@@ -310,7 +335,8 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	const problems: string[] = []
 	const modes = [values.run === true, values.dry === true, values.seed === true]
 	const mode = values.run === true ? 'run' : values.dry === true ? 'dry' : 'seed'
-	if (modes.filter(Boolean).length !== 1) problems.push('exactly one of --run, --dry, and --seed is required')
+	if (modes.filter(Boolean).length !== 1)
+		problems.push('exactly one of --run, --dry, and --seed is required')
 	const copy = /^[1-8]$/.test(values.copy ?? '') ? Number(values.copy) : 0
 	if (copy === 0) problems.push('--copy must be an integer from 1 to 8')
 	const model = values.model ?? MODELS.q2
@@ -326,10 +352,12 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	} catch {
 		problems.push('--url must be a URL')
 	}
-	if (mode === 'dry' && (live || values.out !== undefined)) problems.push('--dry takes neither --live nor --out')
+	if (mode === 'dry' && (live || values.out !== undefined))
+		problems.push('--dry takes neither --live nor --out')
 	if (mode !== 'dry' && values.out === undefined) problems.push(`--${mode} requires --out DIR`)
 	if (mode === 'seed' && !live) problems.push('--seed requires --live')
-	if (mode === 'run' && !live && port === DAEMON_PORT) problems.push('--run without --live refuses the daemon URL')
+	if (mode === 'run' && !live && port === DAEMON_PORT)
+		problems.push('--run without --live refuses the daemon URL')
 	const allowance = readCount(values.allowance, 'allowance', 1, problems)
 	const retry = readCount(values.retry, 'retry', 0, problems)
 	const predict = readCount(values.predict, 'predict', 1, problems)
@@ -379,7 +407,10 @@ export function readCopy(path: string): Copy {
 			criterion: String(criterion),
 			requested: name !== 'warehouse',
 		})),
-		days: readList(scenario, 'days').map((day): ScenarioDay => ({ date: readText(day, 'date'), from: readNumber(day, 'from') })),
+		days: readList(scenario, 'days').map((day): ScenarioDay => ({
+			date: readText(day, 'date'),
+			from: readNumber(day, 'from'),
+		})),
 		seed: readList(scenario, 'seed').map(readSeedMessage),
 		tables: readTables(scenario),
 		goals: readList(scenario, 'goals').map(readGoal),
@@ -414,36 +445,19 @@ export function readFit(path: string): Fit {
 }
 
 /**
- * Computes the prompt share of the aggregate arm.
- *
- * @param allowance - The summaries allowance in tokens
- * @param capacity - The context capacity in tokens
- * @param fixed - The tokens every request carries beyond its messages, from the calibrated gauge
- * @returns The default prompt share less the allowance as a share of the window the messages can use
- * @remarks Thrown when the allowance leaves no share for the prompt.
- *
- * @example
- * ```ts
- * resolveShare(300, 3072, 500) // 0.7 - 300 / 2572
- * ```
- */
-export function resolveShare(allowance: number, capacity: number, fixed: number): number {
-	const share = DEFAULT_LEDGER_SHARE.prompt - allowance / (capacity - fixed)
-	if (!Number.isFinite(share) || share <= 0) {
-		throw new Error(`an allowance of ${allowance} tokens leaves no prompt share at capacity ${capacity} and fixed cost ${fixed}`)
-	}
-	return share
-}
-
-/**
  * Selects the goals that match the prefixes.
  *
  * @param goals - The goals in scenario order
  * @param prefixes - The goal id prefixes; empty selects every goal
  * @returns The matching goals in scenario order
  */
-export function selectGoals(goals: readonly CopyGoal[], prefixes: readonly string[]): readonly CopyGoal[] {
-	return prefixes.length === 0 ? goals : goals.filter((goal) => prefixes.some((prefix) => goal.id.startsWith(prefix)))
+export function selectGoals(
+	goals: readonly CopyGoal[],
+	prefixes: readonly string[],
+): readonly CopyGoal[] {
+	return prefixes.length === 0
+		? goals
+		: goals.filter((goal) => prefixes.some((prefix) => goal.id.startsWith(prefix)))
 }
 
 /**
@@ -473,8 +487,15 @@ export function appendSeed(
  * @param seeds - The map from message id to seed index
  * @returns One record per message; a message that is not a seed message has no index
  */
-export function buildTail(messages: readonly Message[], seeds: ReadonlyMap<string, number>): readonly TailMessage[] {
-	return messages.map((message) => ({ index: seeds.get(message.id), role: message.role, content: message.content }))
+export function buildTail(
+	messages: readonly Message[],
+	seeds: ReadonlyMap<string, number>,
+): readonly TailMessage[] {
+	return messages.map((message) => ({
+		index: seeds.get(message.id),
+		role: message.role,
+		content: message.content,
+	}))
 }
 
 /**
@@ -484,7 +505,10 @@ export function buildTail(messages: readonly Message[], seeds: ReadonlyMap<strin
  * @param after - The cache counters at its end
  * @returns For each head that asked, the questions the cache missed and the questions its rows answered
  */
-export function buildQuestions(before: JudgeStats, after: JudgeStats): Readonly<Record<string, QuestionCount>> {
+export function buildQuestions(
+	before: JudgeStats,
+	after: JudgeStats,
+): Readonly<Record<string, QuestionCount>> {
 	const heads = new Set([...Object.keys(after.hits), ...Object.keys(after.misses)])
 	const counts: Record<string, QuestionCount> = {}
 	for (const head of heads) {
@@ -547,14 +571,18 @@ export function sumCounts(counts: Readonly<Record<string, number>>): number {
  * @param requests - The ids of the request messages
  * @returns The misses by head, the count of missed questions about the seed alone, and the count that name a request
  */
-export function classifyMisses(missed: ReadonlySet<string>, requests: ReadonlySet<string>): Coverage {
+export function classifyMisses(
+	missed: ReadonlySet<string>,
+	requests: ReadonlySet<string>,
+): Coverage {
 	const misses: Record<string, number> = {}
 	let named = 0
 	for (const id of missed) {
 		const head = extractHead(id)
 		misses[head] = (misses[head] ?? 0) + 1
 		const key: unknown = JSON.parse(id)
-		if (Array.isArray(key) && key.some((part) => typeof part === 'string' && requests.has(part))) named += 1
+		if (Array.isArray(key) && key.some((part) => typeof part === 'string' && requests.has(part)))
+			named += 1
 	}
 	return { misses, seed: missed.size - named, requests: named }
 }
@@ -570,7 +598,9 @@ export function describeLookups(tables: ScenarioLookups, position: number): stri
 	const ids = [...new Set(tables.lookups.map((entry) => entry.id))]
 	return ids
 		.map((id) => {
-			const started = tables.lookups.filter((entry) => entry.id === id && entry.from <= position).map((entry) => entry.from)
+			const started = tables.lookups
+				.filter((entry) => entry.id === id && entry.from <= position)
+				.map((entry) => entry.from)
 			return `${id}@${started.length === 0 ? 'base' : Math.max(...started)}`
 		})
 		.join(', ')
@@ -580,7 +610,7 @@ export function describeLookups(tables: ScenarioLookups, position: number): stri
  * Runs the long-scenario benchmark for one arm, one copy, and one model, or covers its judge questions without a model call.
  *
  * @remarks
- * A run calibrates the gauge on a ledger of its own, builds the arm's ledger with that gauge, adds the seed up to each goal's read point, writes the date instruction, serves the goal, scores the reply, and appends the row. Both arms send the prefix flush after the aggregate stage. The aggregate arm sets `share.prompt` to the default less the allowance over the window the messages can use.
+ * A run calibrates the gauge on a ledger of its own, builds the arm's ledger with that gauge, adds the seed up to each goal's read point, writes the date instruction, serves the goal, scores the reply, and appends the row. Both arms keep the default shares and send the prefix flush after the aggregate stage. Admission prices the complete built request without removing selected evidence.
  *
  * @example
  * ```ts
@@ -615,6 +645,10 @@ export class Driver {
 	#flushed = 0
 	#rendering: AggregateRendering | undefined
 	#shown: Selection | undefined
+	#prefix: AggregatePrefix | undefined
+	#selected: Selection | undefined
+	#boundary = 0
+	#estimate: number | undefined
 
 	/**
 	 * Holds the validated configuration.
@@ -634,7 +668,8 @@ export class Driver {
 		const prepared = this.#prepare()
 		const failed = prepared.checks.filter((check) => !check.equal)
 		if (this.#config.mode === 'dry') return await this.#dry(prepared, failed)
-		if (failed.length > 0) throw new Error(`settings differ: ${failed.map((check) => check.name).join(', ')}`)
+		if (failed.length > 0)
+			throw new Error(`settings differ: ${failed.map((check) => check.name).join(', ')}`)
 		if (this.#config.mode === 'seed') return await this.#seed(prepared)
 		return await this.#run(prepared)
 	}
@@ -650,16 +685,24 @@ export class Driver {
 			predict: this.#config.predict ?? stored.predict,
 		}
 		const goals = selectGoals(copy.goals, prefixes)
-		if (goals.length === 0) throw new Error(`--goals ${prefixes.join(',')} matches no goal of ${path}`)
+		if (goals.length === 0)
+			throw new Error(`--goals ${prefixes.join(',')} matches no goal of ${path}`)
 		const base = readJSON(SCENARIO_LONG)
 		const raw = readJSON(path)
-		const checks = GOAL_ROOT.map((name) => this.#compare(`copy.${name}`, readField(raw, name), readField(base, name)))
+		const checks = GOAL_ROOT.map((name) =>
+			this.#compare(`copy.${name}`, readField(raw, name), readField(base, name)),
+		)
 		checks.push(
-			this.#compare('copy.goals', readList(raw, 'goals').map(stripRequest), readList(base, 'goals').map(stripRequest)),
+			this.#compare(
+				'copy.goals',
+				readList(raw, 'goals').map(stripRequest),
+				readList(base, 'goals').map(stripRequest),
+			),
 			this.#compare('capacity', SAMPLER.num_ctx, 3072),
 		)
-		if (arm === 'aggregate') checks.push(this.#compare('share', resolveShare(settings.allowance, SAMPLER.num_ctx, 0) > 0, true))
-		return { copy, settings, fit: readFit(fitPath), goals, checks }
+		const fit = readFit(fitPath)
+		if (arm === 'aggregate') checks.push(this.#compare('fit.separated', fit.separated, true))
+		return { copy, settings, fit, goals, checks }
 	}
 
 	#compare(name: string, actual: unknown, expected: unknown): Check {
@@ -668,11 +711,16 @@ export class Driver {
 
 	#record(call: CallRecord): void {
 		this.#walls.set(call.role, (this.#walls.get(call.role) ?? 0) + call.wall)
-		if (call.role === 'agent' && (call.error !== undefined || (call.status ?? 0) >= 400)) this.#faults += 1
+		if (call.role === 'agent' && (call.error !== undefined || (call.status ?? 0) >= 400))
+			this.#faults += 1
 		if (this.#path !== undefined) appendFileSync(this.#path, `${JSON.stringify(call)}\n`)
 	}
 
-	async #fetch(role: CallRole, input: Parameters<typeof fetch>[0], init?: RequestInit): Promise<Response> {
+	async #fetch(
+		role: CallRole,
+		input: Parameters<typeof fetch>[0],
+		init?: RequestInit,
+	): Promise<Response> {
 		this.#sequence += 1
 		const sequence = this.#sequence
 		const goal = this.#current?.id
@@ -681,8 +729,11 @@ export class Driver {
 		let error: string | undefined
 		try {
 			const request = new Request(input, init)
-			const blocked = this.#config.mode === 'dry' || (!this.#config.live && new URL(request.url).port === DAEMON_PORT)
-			if (blocked) throw new Error(`fetch guard: request ${sequence} (${role}) refused; --live is required`)
+			const blocked =
+				this.#config.mode === 'dry' ||
+				(!this.#config.live && new URL(request.url).port === DAEMON_PORT)
+			if (blocked)
+				throw new Error(`fetch guard: request ${sequence} (${role}) refused; --live is required`)
 			const body = shapeBody(role, await request.text(), this.#calibrating)
 			const response = await globalThis.fetch(request.url, {
 				method: request.method,
@@ -709,20 +760,53 @@ export class Driver {
 				wall: Date.now() - started,
 				status,
 				...(error === undefined ? {} : { error }),
+				...(role === 'agent' && this.#estimate !== undefined ? { estimate: this.#estimate } : {}),
 			})
 		}
 	}
 
 	#createProvider(role: CallRole, options: Readonly<Record<string, number>>): ProviderInterface {
-		return createOllama({
+		const provider: ProviderInterface = createOllama({
 			url: this.#config.url,
 			model: this.#config.model,
 			think: false,
 			keepAlive: '30m',
 			timeout: TIMEOUT,
 			options: { ...options },
-			fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) => this.#fetch(role, input, init),
+			fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
+				this.#fetch(role, input, init),
 		})
+		if (role !== 'agent') return provider
+		return {
+			id: provider.id,
+			name: provider.name,
+			replay: provider.replay,
+			generate: (messages, signal, tools, streamOptions) =>
+				provider.generate(this.#contain(messages), signal, tools, streamOptions),
+			stream: (messages, signal, tools, streamOptions) =>
+				provider.stream(this.#contain(messages), signal, tools, streamOptions),
+		}
+	}
+
+	#contain(messages: readonly Message[]): readonly Message[] {
+		const prefix = this.#prefix
+		if (
+			prefix !== undefined &&
+			prefix.previous.some(
+				(message, at) =>
+					message.role !== messages[at]?.role || message.content !== messages[at]?.content,
+			)
+		) {
+			throw new Error('the provider request does not carry the observed selection prefix')
+		}
+		const current =
+			prefix === undefined
+				? messages
+				: [...prefix.current, ...messages.slice(prefix.previous.length)]
+		if (this.#estimate !== undefined && estimateMessages(current) !== this.#estimate) {
+			throw new Error('the provider request differs from the context priced at the ledger turn')
+		}
+		return current
 	}
 
 	#createJudge(): JudgeInterface {
@@ -734,12 +818,16 @@ export class Driver {
 			options: { num_ctx: MICA_CONTEXT },
 			keepAlive: '5m',
 			timeout: TIMEOUT,
-			fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) => this.#fetch('judge', input, init),
+			fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
+				this.#fetch('judge', input, init),
 		})
 	}
 
 	// Writes the corpus rows under the judge's identity the first time a cache directory is used; a dry run reads them from a scratch file instead.
-	#prepareCache(model: string, copy: Copy): { readonly path: string; readonly scratch: string | undefined } {
+	#prepareCache(
+		model: string,
+		copy: Copy,
+	): { readonly path: string; readonly scratch: string | undefined } {
 		const path = join(this.#config.cache, FILES.judge)
 		if (existsSync(path)) return { path, scratch: undefined }
 		const rows: readonly CacheRow[] = importCorpus(readRows(CORPUS), copy.seed, copy.topics, model)
@@ -754,15 +842,32 @@ export class Driver {
 		return { path, scratch: undefined }
 	}
 
-	#createCache(copy: Copy, settings: Settings, live: boolean, abort: AbortController): { readonly cache: JudgeCache; readonly scratch: string | undefined } {
+	#createCache(
+		copy: Copy,
+		settings: Settings,
+		live: boolean,
+		abort: AbortController,
+	): { readonly cache: JudgeCache; readonly scratch: string | undefined } {
 		const judge = this.#createJudge()
 		const { path, scratch } = this.#prepareCache(judge.model, copy)
-		const cache = new JudgeCache({ judge, path, live, retry: settings.retry, abort: (fault) => abort.abort(fault) })
+		const cache = new JudgeCache({
+			judge,
+			path,
+			live,
+			retry: settings.retry,
+			abort: (fault) => abort.abort(fault),
+		})
 		this.#cache = cache
 		return { cache, scratch }
 	}
 
-	#assemble(copy: Copy, system: string, cache: JudgeCache, share: LedgerShare, gauge: LedgerGauge | undefined): LedgerInterface {
+	#assemble(
+		copy: Copy,
+		system: string,
+		cache: JudgeCache,
+		share: LedgerShare,
+		gauge: LedgerGauge | undefined,
+	): LedgerInterface {
 		const lookups = LOOKUP_TOOLS.map((spec) => ({
 			tool: createTool({
 				name: spec.name,
@@ -772,7 +877,8 @@ export class Driver {
 					properties: { [spec.key]: { type: 'string', description: spec.summary } },
 					required: [spec.key],
 				},
-				execute: (args) => resolveLookup(copy.tables, spec.name, String(args[spec.key] ?? ''), this.#position),
+				execute: (args) =>
+					resolveLookup(copy.tables, spec.name, String(args[spec.key] ?? ''), this.#position),
 			}),
 			read: readLookup,
 		}))
@@ -804,8 +910,14 @@ export class Driver {
 		})
 	}
 
-	// Prices a prompt on a ledger of its own, because the aggregate arm's share needs the fixed cost before its ledger exists.
-	async #calibrate(copy: Copy, system: string, cache: JudgeCache, after: number, signal: AbortSignal): Promise<LedgerGauge> {
+	// Measures one common initial gauge before either arm's ledger exists.
+	async #calibrate(
+		copy: Copy,
+		system: string,
+		cache: JudgeCache,
+		after: number,
+		signal: AbortSignal,
+	): Promise<LedgerGauge> {
 		const ledger = this.#assemble(copy, system, cache, { ...DEFAULT_LEDGER_SHARE }, undefined)
 		appendSeed(ledger.conversation, copy.seed, 0, after, new Map())
 		this.#calibrating = true
@@ -822,7 +934,15 @@ export class Driver {
 		this.#position = to
 	}
 
-	#build(prepared: Preparation, system: string, cache: JudgeCache, gauge: LedgerGauge, share: LedgerShare, abort: AbortController, out: string): Rig {
+	#build(
+		prepared: Preparation,
+		system: string,
+		cache: JudgeCache,
+		gauge: LedgerGauge,
+		share: LedgerShare,
+		abort: AbortController,
+		out: string,
+	): Rig {
 		const { copy, settings, fit } = prepared
 		const ledger = this.#assemble(copy, system, cache, share, gauge)
 		const mirror = this.#createMirror(ledger, copy, system, cache)
@@ -832,7 +952,10 @@ export class Driver {
 				? new Aggregator({
 						mirror,
 						summarizer: new Summarizer({
-							provider: this.#createProvider('summarizer', { ...SAMPLER, num_predict: settings.predict }),
+							provider: this.#createProvider('summarizer', {
+								...SAMPLER,
+								num_predict: settings.predict,
+							}),
 							model: this.#config.model,
 							sampler: SAMPLER,
 							predict: settings.predict,
@@ -861,17 +984,34 @@ export class Driver {
 		}
 		const { agent } = ledger
 		agent.emitter.on('select', (selection) => this.#observe(rig, selection, out))
+		agent.emitter.on('turn', () => {
+			// The ledger reads this same builder and suffix in its earlier listener on this event.
+			this.#estimate = estimateMessages(
+				stripThinking(
+					[
+						...agent.context.build(this.#selected),
+						...ledger.conversation.messages().slice(this.#boundary),
+					],
+					'none',
+				),
+			)
+		})
 		agent.emitter.on('usage', (usage) => {
 			this.#prompts.push(usage.prompt)
 		})
 		agent.emitter.on('tool', (call, result) => this.#count(rig, call, result))
-		agent.context.apply(createScope({ name: 'aggregate', select: (_conversation, request, signal) => this.#intercept(rig, request, signal) }))
+		agent.context.apply(
+			createScope({
+				name: 'aggregate',
+				select: (_conversation, request, signal) => this.#intercept(rig, request, signal),
+			}),
+		)
 		return rig
 	}
 
 	async #run(prepared: Preparation): Promise<number> {
 		const { copy, settings, goals } = prepared
-		const { out, arm } = this.#config
+		const { out } = this.#config
 		if (out === undefined) throw new Error('--run requires --out DIR')
 		if (existsSync(out)) throw new Error(`run output already exists: ${out}`)
 		mkdirSync(out, { recursive: true })
@@ -886,10 +1026,7 @@ export class Driver {
 			if (first === undefined) throw new Error('no goal to serve')
 			const gauge = await this.#calibrate(copy, system, cache, first.after, abort.signal)
 			this.#gauge = gauge
-			this.#share =
-				arm === 'aggregate'
-					? { ...DEFAULT_LEDGER_SHARE, prompt: resolveShare(settings.allowance, SAMPLER.num_ctx, gauge.fixed) }
-					: { ...DEFAULT_LEDGER_SHARE }
+			this.#share = { ...DEFAULT_LEDGER_SHARE }
 			this.#report(out, prepared, 'calibrated', undefined)
 			rig = this.#build(prepared, system, cache, gauge, this.#share, abort, out)
 			this.#advance(rig, first.after)
@@ -918,13 +1055,28 @@ export class Driver {
 		}
 		if (this.#size === undefined && result.success) {
 			const text = typeof result.value === 'string' ? result.value : JSON.stringify(result.value)
-			this.#size = estimateMessages([{ id: 'recall', role: 'tool', content: text }]) * (rig.ledger.gauge?.scale ?? 1)
+			this.#size =
+				estimateMessages([{ id: 'recall', role: 'tool', content: text }]) *
+				(rig.ledger.gauge?.scale ?? 1)
 		}
 	}
 
 	#observe(rig: Rig, selection: Selection, out: string): void {
 		const goal = this.#current?.id
 		if (goal === undefined) return
+		this.#selected = selection
+		this.#boundary = rig.ledger.conversation.messages().length
+		const context = rig.ledger.agent.context
+		this.#prefix = undefined
+		this.#estimate = undefined
+		if (
+			context.scope?.name === 'answer' &&
+			context.instructions.instruction(INSTRUCTION_SUMMARIES.name) !== undefined
+		) {
+			const previous = context.build(selection)
+			context.instructions.remove(INSTRUCTION_SUMMARIES.name)
+			this.#prefix = { previous, current: context.build(selection) }
+		}
 		const briefing = selection.briefing ?? ''
 		const record: SelectionRecord = {
 			goal,
@@ -933,7 +1085,9 @@ export class Driver {
 			briefing,
 			digest: computeDigest(briefing),
 			tail: buildTail(selection.messages, rig.seeds),
-			instructions: Object.fromEntries(rig.ledger.agent.context.instructions.instructions().map((one) => [one.name, one.content])),
+			instructions: Object.fromEntries(
+				rig.ledger.agent.context.instructions.instructions().map((one) => [one.name, one.content]),
+			),
 			scale: rig.ledger.gauge?.scale,
 		}
 		this.#picks.push(record)
@@ -943,6 +1097,7 @@ export class Driver {
 	// Wraps the ledger's selection: files the request, runs the aggregate stage, and sends the prefix flush before the agent builds its prompt.
 	async #intercept(rig: Rig, request: Message, signal: AbortSignal): Promise<Selection> {
 		const { context } = rig.ledger.agent
+		context.instructions.remove(INSTRUCTION_SUMMARIES.name)
 		const scope = context.scope
 		rig.mirror.note(request)
 		this.#requests.add(request.id)
@@ -963,23 +1118,51 @@ export class Driver {
 		return selection
 	}
 
-	async #summarize(rig: Rig, request: Message, selection: Selection, signal: AbortSignal): Promise<void> {
+	async #summarize(
+		rig: Rig,
+		request: Message,
+		selection: Selection,
+		signal: AbortSignal,
+	): Promise<void> {
 		const { instructions } = rig.ledger.agent.context
 		let text = ''
 		this.#rendering = undefined
 		if (rig.aggregator !== undefined) {
 			try {
 				await rig.aggregator.maintain(request, this.#current?.id ?? '', this.#position, signal)
-				const rendering = rig.aggregator.render(selection, request, rig.system, this.#date, rig.ledger.gauge?.scale ?? 1)
+				const rendering = rig.aggregator.render(
+					selection,
+					request,
+					rig.system,
+					this.#date,
+					rig.ledger.gauge?.scale ?? 1,
+					(candidate) => this.#admit(rig, selection, candidate),
+				)
 				this.#rendering = rendering
 				// A faulted selection drops the briefing, but the build renders instructions anyway, so the block must go too.
 				text = selection.fault === undefined ? rendering.text : ''
 			} catch (error) {
-				process.stderr.write(`aggregate stage ${this.#current?.id ?? ''}: ${describeError(error)}\n`)
+				process.stderr.write(
+					`aggregate stage ${this.#current?.id ?? ''}: ${describeError(error)}\n`,
+				)
 			}
 		}
 		if (text === '') instructions.remove(INSTRUCTION_SUMMARIES.name)
-		else instructions.add({ name: INSTRUCTION_SUMMARIES.name, content: text, priority: INSTRUCTION_SUMMARIES.priority })
+		else
+			instructions.add({
+				name: INSTRUCTION_SUMMARIES.name,
+				content: text,
+				priority: INSTRUCTION_SUMMARIES.priority,
+			})
+	}
+
+	#admit(rig: Rig, selection: Selection, text: string): boolean {
+		const { context } = rig.ledger.agent
+		const gauge = rig.ledger.gauge
+		if (gauge === undefined) throw new Error('summary admission requires a calibrated gauge')
+		context.instructions.add({ ...INSTRUCTION_SUMMARIES, content: text })
+		const tokens = estimateMessages(context.build(selection)) * gauge.scale + gauge.fixed
+		return tokens <= ADMISSION_LIMIT
 	}
 
 	async #flush(rig: Rig, signal: AbortSignal): Promise<void> {
@@ -1014,13 +1197,20 @@ export class Driver {
 		this.#flushed = 0
 		this.#rendering = undefined
 		this.#shown = undefined
+		this.#prefix = undefined
+		this.#selected = undefined
+		this.#estimate = undefined
 	}
 
 	async #serve(rig: Rig, goal: CopyGoal, prepared: Preparation, out: string): Promise<void> {
 		this.#begin(goal)
 		this.#advance(rig, goal.after)
 		this.#date = renderDate(findDay(rig.copy.days, goal.after)?.date ?? '')
-		rig.ledger.agent.context.instructions.add({ name: INSTRUCTION_DATE.name, content: this.#date, priority: INSTRUCTION_DATE.priority })
+		rig.ledger.agent.context.instructions.add({
+			name: INSTRUCTION_DATE.name,
+			content: this.#date,
+			priority: INSTRUCTION_DATE.priority,
+		})
 		const before = rig.cache.stats()
 		const scale = rig.ledger.gauge?.scale ?? 0
 		const first = this.#sequence + 1
@@ -1029,12 +1219,16 @@ export class Driver {
 		let result: LedgerResult | undefined
 		let error: string | undefined
 		try {
-			result = await rig.ledger.respond(goal.request, AbortSignal.any([AbortSignal.timeout(TIMEOUT), rig.abort.signal]))
+			result = await rig.ledger.respond(
+				goal.request,
+				AbortSignal.any([AbortSignal.timeout(TIMEOUT), rig.abort.signal]),
+			)
 		} catch (fault) {
 			error = describeError(fault)
 		}
 		const total = Date.now() - started
-		for (const message of rig.ledger.conversation.messages().slice(length)) this.#tags.set(message.id, goal.id)
+		for (const message of rig.ledger.conversation.messages().slice(length))
+			this.#tags.set(message.id, goal.id)
 		if (rig.cache.fault !== undefined) throw rig.cache.fault
 		const reply = result === undefined || result.partial ? '' : result.content.trim()
 		const score = this.#score(goal, reply)
@@ -1080,7 +1274,9 @@ export class Driver {
 		}
 		appendFileSync(join(out, FILES.rows), `${JSON.stringify(row)}\n`)
 		this.#report(out, prepared, 'running', undefined)
-		console.log(`${goal.id}: ${row.success ? 'PASS' : 'FAIL'}; wall=${row.wall}ms stage=${Math.round(row.stage)}ms`)
+		console.log(
+			`${goal.id}: ${row.success ? 'PASS' : 'FAIL'}; wall=${row.wall}ms stage=${Math.round(row.stage)}ms`,
+		)
 	}
 
 	#score(goal: CopyGoal, reply: string): Score {
@@ -1116,10 +1312,18 @@ export class Driver {
 		const projection = rig.mirror.projection(input)
 		const facts = goal.facts.filter((index) => {
 			const id = ids.get(index)
-			return id !== undefined && (tail.has(id) || rig.mirror.lines(id, input, projection).some((line) => text.includes(line.text)))
+			return (
+				id !== undefined &&
+				(tail.has(id) ||
+					rig.mirror.lines(id, input, projection).some((line) => text.includes(line.text)))
+			)
 		})
 		const carried = new Set(goal.facts.flatMap((index) => this.#tokens(rig, index)))
-		const stale = new Set(goal.stale.flatMap((index) => this.#tokens(rig, index)).filter((token) => !carried.has(token) && text.includes(token)))
+		const stale = new Set(
+			goal.stale
+				.flatMap((index) => this.#tokens(rig, index))
+				.filter((token) => !carried.has(token) && text.includes(token)),
+		)
 		const lower = text.toLowerCase()
 		const forbidden = goal.forbidden.filter((phrase) => lower.includes(phrase.toLowerCase()))
 		return {
@@ -1223,7 +1427,8 @@ export class Driver {
 						try {
 							return await cache.ask(request, signal)
 						} finally {
-							if (sumCounts(cache.stats().misses) > before) for (const id of Object.keys(request.questions)) missed.add(id)
+							if (sumCounts(cache.stats().misses) > before)
+								for (const id of Object.keys(request.questions)) missed.add(id)
 						}
 					},
 				},
@@ -1231,7 +1436,8 @@ export class Driver {
 				topics: copy.topics,
 				thresholds: FIT,
 				assign: (message: Message) => mirror.assign(message),
-				entities: (text: string, partial: boolean) => matchEntities(collectRegistry(mirror.readings()), text, partial),
+				entities: (text: string, partial: boolean) =>
+					matchEntities(collectRegistry(mirror.readings()), text, partial),
 			})
 			const requests = new Set<string>()
 			let position = -1
@@ -1268,7 +1474,9 @@ export class Driver {
 		console.log(
 			`coverage: misses ${JSON.stringify(coverage.misses)}; seed-only ${coverage.seed}; request ${coverage.requests} (pair coverage is a lower bound)`,
 		)
-		console.log(`Dry v${this.#config.copy}: ${failed.length === 0 ? 'PASS' : 'FAIL'}; fetches ${this.#sequence}`)
+		console.log(
+			`Dry v${this.#config.copy}: ${failed.length === 0 ? 'PASS' : 'FAIL'}; fetches ${this.#sequence}`,
+		)
 		return failed.length === 0 ? 0 : 1
 	}
 
@@ -1282,7 +1490,9 @@ export class Driver {
 		try {
 			const coverage = await this.#cover(prepared, true, out)
 			this.#report(out, prepared, 'complete', undefined)
-			console.log(`seed pass: misses ${JSON.stringify(coverage.misses)}; requests ${this.#sequence}`)
+			console.log(
+				`seed pass: misses ${JSON.stringify(coverage.misses)}; requests ${this.#sequence}`,
+			)
 			return 0
 		} catch (error) {
 			this.#report(out, prepared, 'failed', describeError(error))

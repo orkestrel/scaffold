@@ -18,12 +18,24 @@ import type {
 	SummarizerOptions,
 	SummaryRow,
 	TopicSpec,
+	WireReading,
+	WireRun,
 } from './types.ts'
+import { isFiniteNumber, isRecord } from '@orkestrel/contract'
+import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from './aggregates/constants.ts'
+import { collectSummaryBodies, countSoleTokens } from './aggregates/helpers.ts'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
-import { DETERMINISTIC_JUDGE_ERROR, LEDGER_CATEGORIES, LEDGER_QUESTIONS, MESSAGE_ROLES } from '../vendor/agent-0.0.30/index.js'
 import {
+	DETERMINISTIC_JUDGE_ERROR,
+	LEDGER_CATEGORIES,
+	LEDGER_QUESTIONS,
+	MESSAGE_ROLES,
+} from '../vendor/agent-0.0.30/index.js'
+import {
+	COMPLETION_LIMIT,
+	SAMPLER,
 	CORPUS_FIELD_TYPES,
 	JUDGE_HEAD_OTHER,
 	LOOKUP_ORDER_ID,
@@ -32,6 +44,73 @@ import {
 	SYSTEM_PIN_SENTENCE,
 	SYSTEM_REPLACEMENTS,
 } from './constants.ts'
+
+/**
+ * Reads terminal usage and request content from recorded Ollama wire envelopes.
+ * @param request - The recorder's request envelope
+ * @param response - The recorder's response envelope
+ * @returns The available evidence; malformed or missing usage remains absent
+ */
+export function readWireReading(request: unknown, response: unknown): WireReading {
+	let terminal: Readonly<Record<string, unknown>> | undefined
+	let malformed = false
+	if (isRecord(response) && typeof response.text === 'string') {
+		for (const line of response.text.split(/\r\n|\n/)) {
+			if (line.trim() === '') continue
+			try {
+				const value: unknown = JSON.parse(line)
+				if (!isRecord(value)) malformed = true
+				else if (value.done === true) terminal = value
+			} catch {
+				malformed = true
+			}
+		}
+	}
+	const prompt = terminal?.prompt_eval_count
+	const completion = terminal?.eval_count
+	const body = isRecord(request) && isRecord(request.body) ? request.body : undefined
+	return {
+		prompt:
+			isFiniteNumber(prompt) && Number.isSafeInteger(prompt) && prompt >= 0 ? prompt : undefined,
+		completion:
+			isFiniteNumber(completion) && Number.isSafeInteger(completion) && completion >= 0
+				? completion
+				: undefined,
+		reason: typeof terminal?.done_reason === 'string' ? terminal.done_reason : undefined,
+		complete: terminal !== undefined && !malformed,
+		messages: Array.isArray(body?.messages)
+			? body.messages.flatMap((message: unknown) =>
+					isRecord(message) &&
+					typeof message.role === 'string' &&
+					typeof message.content === 'string'
+						? [{ role: message.role, content: message.content }]
+						: [],
+				)
+			: [],
+	}
+}
+
+/**
+ * Lists violations of the per-completion usage boundary.
+ * @param reading - The recorded request and terminal response evidence
+ * @returns Missing or malformed evidence, excessive completion, length termination, and context exhaustion
+ */
+export function listUsageFailures(reading: WireReading | undefined): readonly string[] {
+	if (reading === undefined) return ['missing wire usage']
+	const { prompt, completion, reason, complete } = reading
+	return [
+		...(!complete || prompt === undefined || completion === undefined
+			? ['missing or malformed wire usage']
+			: []),
+		...(completion !== undefined && completion > COMPLETION_LIMIT
+			? [`completion ${completion} exceeds ${COMPLETION_LIMIT}`]
+			: []),
+		...(reason === 'length' ? ['length-limited completion'] : []),
+		...(prompt !== undefined && completion !== undefined && prompt + completion >= SAMPLER.num_ctx
+			? [`prompt plus completion ${prompt + completion} reaches ${SAMPLER.num_ctx}`]
+			: []),
+	]
+}
 
 /**
  * Reads one JSON file.
@@ -80,7 +159,9 @@ export function describeError(error: unknown): string {
 	let current: unknown = error
 	while (current !== undefined && !seen.has(current)) {
 		seen.add(current)
-		messages.push(current instanceof Error ? `${current.name}: ${current.message}` : String(current))
+		messages.push(
+			current instanceof Error ? `${current.name}: ${current.message}` : String(current),
+		)
 		current = current instanceof Error ? current.cause : undefined
 	}
 	return messages.join(' <- ')
@@ -143,7 +224,10 @@ export function findDay(days: readonly ScenarioDay[], index: number): ScenarioDa
  * @param text - The lookup result text
  * @returns The ids and owner names, or `undefined` when the result reports no record
  */
-export function readLookup(args: Readonly<Record<string, unknown>>, text: string): LookupReading | undefined {
+export function readLookup(
+	args: Readonly<Record<string, unknown>>,
+	text: string,
+): LookupReading | undefined {
 	if (/^no record\b/i.test(text)) return undefined
 	const ids = new Set<string>()
 	const argument = String(args['id'] ?? args['account'] ?? '')
@@ -177,7 +261,12 @@ export function readLookup(args: Readonly<Record<string, unknown>>, text: string
  * @param position - The index of the last seed message added
  * @returns The versioned text with the greatest `from` that is at most the position, else the base text, else `no record for ID`
  */
-export function resolveLookup(scenario: ScenarioLookups, name: string, id: string, position: number): string {
+export function resolveLookup(
+	scenario: ScenarioLookups,
+	name: string,
+	id: string,
+	position: number,
+): string {
 	const key = id.trim().toUpperCase()
 	let latest: ScenarioLookup | undefined
 	for (const entry of scenario.lookups) {
@@ -245,9 +334,14 @@ export function renderPairState(earlier: StateMessage, later: StateMessage): str
 export function buildCategoryQuestion(questions: QuestionSet): JudgeQuestion {
 	return {
 		form: 'choice',
-		...(questions.category.instructions === undefined ? {} : { instructions: questions.category.instructions }),
+		...(questions.category.instructions === undefined
+			? {}
+			: { instructions: questions.category.instructions }),
 		criteria: Object.fromEntries(
-			LEDGER_CATEGORIES.map((category: string) => [category, questions.category.criteria[category]]),
+			LEDGER_CATEGORIES.map((category: string) => [
+				category,
+				questions.category.criteria[category],
+			]),
 		),
 	}
 }
@@ -280,7 +374,8 @@ export function isCorpusRow(value: unknown): value is CorpusRow {
 	if (typeof value !== 'object' || value === null) return false
 	if (typeof Reflect.get(value, 'question') !== 'string') return false
 	const probabilities: unknown = Reflect.get(value, 'probabilities')
-	if (probabilities !== undefined && (typeof probabilities !== 'object' || probabilities === null)) return false
+	if (probabilities !== undefined && (typeof probabilities !== 'object' || probabilities === null))
+		return false
 	return Object.entries(CORPUS_FIELD_TYPES).every(([key, type]) => {
 		const field: unknown = Reflect.get(value, key)
 		return field === undefined || typeof field === type
@@ -313,7 +408,9 @@ export function isCacheRow(value: unknown): value is CacheRow {
 		typeof Reflect.get(value, 'wall') === 'number' &&
 		typeof Reflect.get(value, 'at') === 'number' &&
 		(origin === 'corpus' || origin === 'live') &&
-		(outcomes.length === 1 ? error === undefined : outcomes.length === 0 && typeof error === 'string')
+		(outcomes.length === 1
+			? error === undefined
+			: outcomes.length === 0 && typeof error === 'string')
 	)
 }
 
@@ -341,7 +438,11 @@ export function buildCorpusQuery(
 		const topic = topics.find((one) => one.name === row.topic)
 		if (topic !== undefined)
 			query = { state: renderMessageState(message), question: buildTopicQuestion(topic, questions) }
-	} else if ((row.question === 'amends' || row.question === 'supersedes') && earlier !== undefined && later !== undefined) {
+	} else if (
+		(row.question === 'amends' || row.question === 'supersedes') &&
+		earlier !== undefined &&
+		later !== undefined
+	) {
 		query = { state: renderPairState(earlier, later), question: questions[row.question] }
 	}
 	if (query === undefined) return undefined
@@ -401,17 +502,20 @@ export function importCorpus(
  */
 export function assignCategory(
 	message: AssignMessage,
-	messages: readonly { readonly id: string }[],
+	messages: ReadonlyArray<{ readonly id: string }>,
 	requests: ReadonlySet<string>,
 	annotations: ReadonlySet<string>,
 	results: ReadonlyMap<string, AssignResult>,
 ): AssignCategory | undefined {
 	if (annotations.has(message.id)) return 'chatter'
-	if (message.role === 'tool') return results.get(message.id)?.success === false ? 'chatter' : 'fact'
+	if (message.role === 'tool')
+		return results.get(message.id)?.success === false ? 'chatter' : 'fact'
 	if (message.role !== 'assistant') return undefined
 	if ((message.calls?.length ?? 0) > 0) return 'chatter'
 	const first = messages.findIndex((one) => requests.has(one.id))
-	return first >= 0 && messages.findIndex((one) => one.id === message.id) > first ? 'chatter' : undefined
+	return first >= 0 && messages.findIndex((one) => one.id === message.id) > first
+		? 'chatter'
+		: undefined
 }
 
 /**
@@ -435,7 +539,12 @@ export function buildSummaryKey(
 	options: Pick<SummarizerOptions, 'model' | 'sampler' | 'predict'>,
 	messages: readonly Message[],
 ): string {
-	return computeDigest([options.model, options.sampler, options.predict, messages.map((message) => [message.role, message.content])])
+	return computeDigest([
+		options.model,
+		options.sampler,
+		options.predict,
+		messages.map((message) => [message.role, message.content]),
+	])
 }
 
 /**
@@ -473,4 +582,81 @@ export function isSummaryRow(value: unknown): value is SummaryRow {
 		(origin === 'corpus' || origin === 'live') &&
 		(usage === undefined || isUsage(usage))
 	)
+}
+
+/**
+ * Checks whether the system messages contain exactly one matching recorded summaries block.
+ * @param summary - The summaries instruction recorded for the selection
+ * @param messages - The actual request messages
+ * @returns True if only the recorded block is present; false if it is absent, repeated, or accompanied by another block
+ */
+export function matchesSummaryBlock(summary: string, messages: WireReading['messages']): boolean {
+	const system = messages
+		.filter((message) => message.role === 'system')
+		.map((message) => message.content)
+	return (
+		summary.startsWith(SUMMARIES_HEADING) &&
+		system.some((text) => text.includes(summary)) &&
+		system.reduce((count, text) => count + text.split(SUMMARIES_HEADING).length - 1, 0) === 1
+	)
+}
+
+/**
+ * Checks whether a goal sent a recorded nonempty topic body to the provider.
+ * @param run - The run evidence
+ * @param goal - The served goal
+ * @returns True if a request carries the recorded topic body; false otherwise
+ */
+export function matchesExposure(run: WireRun, goal: string): boolean {
+	return run.calls.some((call) => {
+		if (call.role !== 'agent' || call.goal !== goal) return false
+		const pick = run.picks.findLast((one) => one.goal === goal && one.sequence < call.sequence)
+		const summary = pick?.instructions[INSTRUCTION_SUMMARIES.name] ?? ''
+		return (
+			collectSummaryBodies(summary).length > 0 &&
+			matchesSummaryBlock(summary, run.wire.get(call.sequence)?.messages ?? [])
+		)
+	})
+}
+
+/**
+ * Lists missing usage, completion-limit failures, and stale or sole-token request content.
+ * @param run - The run evidence
+ * @returns The per-request failures, including tool continuations and answer passes
+ */
+export function listWireFailures(run: WireRun): readonly string[] {
+	return run.calls
+		.filter((call) => call.role === 'agent')
+		.flatMap((call) => {
+			const reading = run.wire.get(call.sequence)
+			const failures = [...listUsageFailures(reading)]
+			if (reading === undefined || reading.messages.length === 0)
+				failures.push('missing wire request')
+			const pick = run.picks.findLast(
+				(one) => one.goal === call.goal && one.sequence < call.sequence,
+			)
+			const summary = pick?.instructions[INSTRUCTION_SUMMARIES.name] ?? ''
+			const system =
+				reading?.messages
+					.filter((message) => message.role === 'system')
+					.map((message) => message.content)
+					.join('\n') ?? ''
+			const matched = matchesSummaryBlock(summary, reading?.messages ?? [])
+			if (system.includes(SUMMARIES_HEADING) && !matched)
+				failures.push('unrecorded or stale summaries block')
+			if (collectSummaryBodies(summary).length > 0 && matched) {
+				const shown =
+					reading?.messages
+						.map((message) =>
+							message.role === 'system' ? message.content.replace(summary, '') : message.content,
+						)
+						.join('\n') ?? ''
+				const sole = countSoleTokens(collectSummaryBodies(summary).join('\n'), shown)
+				if (sole > 0) failures.push(`${sole} sole-carried tokens on the actual request`)
+			}
+			return failures.map(
+				(failure) =>
+					`${run.info.arm} ${call.goal ?? 'calibration'} request ${call.sequence}: ${failure}`,
+			)
+		})
 }

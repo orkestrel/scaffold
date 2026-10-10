@@ -6,7 +6,16 @@ import type {
 	Selection,
 } from '../../vendor/agent-0.0.30/index.js'
 import type { Fixture } from './fixture.ts'
-import type { AggregateRow, AggregateSource, CacheRow, Fit, MirrorLine, ScenarioDay, SeedMessage } from '../types.ts'
+import type {
+	AggregatorOptions,
+	AggregateRow,
+	AggregateSource,
+	CacheRow,
+	Fit,
+	MirrorLine,
+	ScenarioDay,
+	SeedMessage,
+} from '../types.ts'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { appendFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -18,6 +27,8 @@ import {
 	LEDGER_QUESTIONS,
 	collectRegistry,
 	createLedger,
+	createAgentContext,
+	estimateMessages,
 	matchEntities,
 } from '../../vendor/agent-0.0.30/index.js'
 import { createOllama } from '../../vendor/ollama/index.js'
@@ -39,6 +50,7 @@ import {
 	buildSummaryPrompt,
 	checkProse,
 	collectStaleTokens,
+	collectSummaryBodies,
 	collectTopicSources,
 	collectTopics,
 	compareSources,
@@ -49,7 +61,16 @@ import {
 	renderSource,
 	renderSummaries,
 } from '../aggregates/helpers.ts'
-import { CORPUS, FIT, HARNESS, MICA_MODEL, MODELS, SAMPLER, SCENARIO_LONG } from '../constants.ts'
+import {
+	ADMISSION_LIMIT,
+	CORPUS,
+	FIT,
+	HARNESS,
+	MICA_MODEL,
+	MODELS,
+	SAMPLER,
+	SCENARIO_LONG,
+} from '../constants.ts'
 import {
 	buildCacheKey,
 	buildCategoryQuestion,
@@ -163,7 +184,11 @@ function readDays(scenario: unknown): readonly ScenarioDay[] {
 	}))
 }
 
-function readTopics(): ReadonlyArray<{ readonly name: string; readonly criterion: string; readonly requested: boolean }> {
+function readTopics(): ReadonlyArray<{
+	readonly name: string
+	readonly criterion: string
+	readonly requested: boolean
+}> {
 	const topics = readField(readField(readJSON(COPY), 'ledger'), 'topics')
 	assert.ok(typeof topics === 'object' && topics !== null)
 	return Object.entries(topics).map(([name, criterion]) => ({
@@ -188,7 +213,16 @@ function readAggregates(path: string): readonly AggregateRow[] {
 }
 
 function buildRow(state: string, question: JudgeQuestion, answer: JudgeAnswer): CacheRow {
-	return { key: buildCacheKey(MICA_MODEL, state, question), model: MICA_MODEL, state, question, answer, wall: 0, origin: 'corpus', at: 0 }
+	return {
+		key: buildCacheKey(MICA_MODEL, state, question),
+		model: MICA_MODEL,
+		state,
+		question,
+		answer,
+		wall: 0,
+		origin: 'corpus',
+		at: 0,
+	}
 }
 
 function buildNoul(probability: number): JudgeAnswer {
@@ -198,7 +232,9 @@ function buildNoul(probability: number): JudgeAnswer {
 function buildChoice(top: string): JudgeAnswer {
 	return {
 		form: 'choice',
-		probabilities: Object.fromEntries(LEDGER_CATEGORIES.map((category: string) => [category, category === top ? 0.94 : 0.01])),
+		probabilities: Object.fromEntries(
+			LEDGER_CATEGORIES.map((category: string) => [category, category === top ? 0.94 : 0.01]),
+		),
 	}
 }
 
@@ -207,7 +243,13 @@ function buildMessageRows(content: string, category: string, topic: string): rea
 	const state = renderMessageState({ role: 'user', content })
 	return [
 		buildRow(state, buildCategoryQuestion(LEDGER_QUESTIONS), buildChoice(category)),
-		...readTopics().map((one) => buildRow(state, buildTopicQuestion(one, LEDGER_QUESTIONS), buildNoul(one.name === topic ? 0.95 : 0.04))),
+		...readTopics().map((one) =>
+			buildRow(
+				state,
+				buildTopicQuestion(one, LEDGER_QUESTIONS),
+				buildNoul(one.name === topic ? 0.95 : 0.04),
+			),
+		),
 	]
 }
 
@@ -231,7 +273,9 @@ async function createRig(classify: string): Promise<Rig> {
 	const scenario = readJSON(SCENARIO_LONG)
 	const seed = readSeed(scenario)
 	const topics = readTopics()
-	const system = buildSystem({ ledger: { system: readText(readField(readJSON(COPY), 'ledger'), 'system') } })
+	const system = buildSystem({
+		ledger: { system: readText(readField(readJSON(COPY), 'ledger'), 'system') },
+	})
 	const asked: unknown[] = []
 	const inner: JudgeInterface = {
 		id: 'inert',
@@ -259,12 +303,24 @@ async function createRig(classify: string): Promise<Rig> {
 		['lookup_order', readLookup],
 		['lookup_customer', readLookup],
 	])
-	const mirror = new Mirror(ledger, { judge: cache, questions: LEDGER_QUESTIONS, topics, thresholds: FIT, system, reads })
+	const mirror = new Mirror(ledger, {
+		judge: cache,
+		questions: LEDGER_QUESTIONS,
+		topics,
+		thresholds: FIT,
+		system,
+		reads,
+	})
 	const seeds = new Map<string, number>()
-	for (const [index, message] of ledger.conversation.add(seed.slice(0, SEEDED).map((one) => ({ ...one }))).entries()) {
+	for (const [index, message] of ledger.conversation
+		.add(seed.slice(0, SEEDED).map((one) => ({ ...one })))
+		.entries()) {
 		seeds.set(message.id, index)
 	}
-	const request = ledger.conversation.add({ role: 'user', content: readText(readList(scenario, 'goals')[0], 'request') })
+	const request = ledger.conversation.add({
+		role: 'user',
+		content: readText(readList(scenario, 'goals')[0], 'request'),
+	})
 	mirror.note(request)
 	const classifier = new Classifier({
 		conversation: ledger.conversation,
@@ -273,7 +329,8 @@ async function createRig(classify: string): Promise<Rig> {
 		topics,
 		thresholds: FIT,
 		assign: (message: Message) => mirror.assign(message),
-		entities: (text: string, partial: boolean) => matchEntities(collectRegistry(mirror.readings()), text, partial),
+		entities: (text: string, partial: boolean) =>
+			matchEntities(collectRegistry(mirror.readings()), text, partial),
 	})
 	const requests = new Set([request.id])
 	await classifier.classify(requests, AbortSignal.timeout(60000))
@@ -298,28 +355,51 @@ async function createRig(classify: string): Promise<Rig> {
 
 function mapDays(rig: Rig): ReadonlyMap<string, string> {
 	return new Map(
-		rig.mirror.input().messages.map((message) => [message.id, findDay(rig.days, rig.seeds.get(message.id) ?? LAST)?.date ?? '']),
+		rig.mirror
+			.input()
+			.messages.map((message) => [
+				message.id,
+				findDay(rig.days, rig.seeds.get(message.id) ?? LAST)?.date ?? '',
+			]),
 	)
 }
 
-function readSources(rig: Rig, key: string): { readonly sources: readonly AggregateSource[]; readonly title: string } {
+function readSources(
+	rig: Rig,
+	key: string,
+): { readonly sources: readonly AggregateSource[]; readonly title: string } {
 	const input = rig.mirror.input()
 	const projection = rig.mirror.projection(input)
-	const topic = collectTopics(projection, input, rig.mirror.owners(rig.request)).find((one) => one.key === key)
+	const topic = collectTopics(projection, input, rig.mirror.owners(rig.request)).find(
+		(one) => one.key === key,
+	)
 	assert.ok(topic !== undefined, key)
-	return { sources: collectTopicSources(projection, input, topic, mapDays(rig)), title: topic.title }
+	return {
+		sources: collectTopicSources(projection, input, topic, mapDays(rig)),
+		title: topic.title,
+	}
 }
 
 function listKeys(rig: Rig): readonly string[] {
 	const input = rig.mirror.input()
-	return collectTopics(rig.mirror.projection(input), input, rig.mirror.owners(rig.request)).map((topic) => topic.key)
+	return collectTopics(rig.mirror.projection(input), input, rig.mirror.owners(rig.request)).map(
+		(topic) => topic.key,
+	)
 }
 
 function buildAgreeRow(rig: Rig, key: string, prose: string, agree: number): CacheRow {
-	return buildRow(buildAgreeState({ prose }, readSources(rig, key).sources), AGREE_QUESTION, buildNoul(agree))
+	return buildRow(
+		buildAgreeState({ prose }, readSources(rig, key).sources),
+		AGREE_QUESTION,
+		buildNoul(agree),
+	)
 }
 
-function buildAgreeRows(rig: Rig, summaries: Readonly<Record<string, string>>, plan: Plan): readonly CacheRow[] {
+function buildAgreeRows(
+	rig: Rig,
+	summaries: Readonly<Record<string, string>>,
+	plan: Plan,
+): readonly CacheRow[] {
 	return listKeys(rig)
 		.filter((key) => !(plan.skip ?? []).includes(key))
 		.map((key) => buildAgreeRow(rig, key, summaries[key] ?? '', plan.agree ?? AGREED))
@@ -350,9 +430,20 @@ async function computeRows(plan: Plan): Promise<readonly CacheRow[]> {
 	if (plan.kind === 'news') {
 		const news = await rig.advance(NEWS)
 		const lines = readSources(rig, 'contacts').sources.filter((source) => source.id === news.id)
-		const version = { title: contacts.title, asOf: findDay(rig.days, LAST)?.date ?? '', prose: summaries['contacts'] ?? '' }
-		rows.push(buildRow(buildChangeState(version, lines), buildChangeQuestion(version.title), buildNoul(plan.change ?? 0)))
-		if ((plan.change ?? 0) >= FITS.change) rows.push(buildAgreeRow(rig, 'contacts', CONTACTS_AFTER, plan.agree ?? AGREED))
+		const version = {
+			title: contacts.title,
+			asOf: findDay(rig.days, LAST)?.date ?? '',
+			prose: summaries['contacts'] ?? '',
+		}
+		rows.push(
+			buildRow(
+				buildChangeState(version, lines),
+				buildChangeQuestion(version.title),
+				buildNoul(plan.change ?? 0),
+			),
+		)
+		if ((plan.change ?? 0) >= FITS.change)
+			rows.push(buildAgreeRow(rig, 'contacts', CONTACTS_AFTER, plan.agree ?? AGREED))
 	}
 	return rows
 }
@@ -370,7 +461,13 @@ function classifyRows(): readonly CacheRow[] {
 		...importCorpus(readRows(CORPUS), seed, readTopics(), MICA_MODEL),
 		...readTopics()
 			.filter((topic) => topic.requested)
-			.map((topic) => buildRow(state, buildTopicQuestion(topic, LEDGER_QUESTIONS), buildNoul(['refunds', 'returns'].includes(topic.name) ? 0.95 : 0.04))),
+			.map((topic) =>
+				buildRow(
+					state,
+					buildTopicQuestion(topic, LEDGER_QUESTIONS),
+					buildNoul(['refunds', 'returns'].includes(topic.name) ? 0.95 : 0.04),
+				),
+			),
 		...buildMessageRows(CORRECTION, 'correction', 'refunds'),
 		buildRow(renderPairState(marcus, later), LEDGER_QUESTIONS.amends, buildNoul(0.95)),
 		buildRow(renderPairState(marcus, later), LEDGER_QUESTIONS.supersedes, buildNoul(0.99)),
@@ -379,6 +476,7 @@ function classifyRows(): readonly CacheRow[] {
 }
 
 interface Run {
+	readonly options: AggregatorOptions
 	readonly rig: Rig
 	readonly aggregator: Aggregator
 	readonly judge: JudgeCache
@@ -413,11 +511,17 @@ async function createRun(plan: Plan, retry = 1, fit: Fit = FITS): Promise<Run> {
 		name: 'inert judge',
 		model: MICA_MODEL,
 		ask(request) {
-			return Promise.reject(new Error(`the inert judge was asked: ${JSON.stringify(request.questions)}`))
+			return Promise.reject(
+				new Error(`the inert judge was asked: ${JSON.stringify(request.questions)}`),
+			)
 		},
 	}
 	const judge = new JudgeCache({ judge: inert, path: judgePath, live: false, retry: 0 })
-	const provider = createOllama({ url: fixture.url, model: MODELS.q2, options: { ...SAMPLER, num_predict: PREDICT } })
+	const provider = createOllama({
+		url: fixture.url,
+		model: MODELS.q2,
+		options: { ...SAMPLER, num_predict: PREDICT },
+	})
 	const summarizer = new Summarizer({
 		provider,
 		model: MODELS.q2,
@@ -429,7 +533,7 @@ async function createRun(plan: Plan, retry = 1, fit: Fit = FITS): Promise<Run> {
 	const settings = { allowance: 100000, retry, predict: PREDICT }
 	const path = join(directory, `aggregates-${files}.jsonl`)
 	const logged: string[] = []
-	const aggregator = new Aggregator({
+	const options: AggregatorOptions = {
 		mirror: rig.mirror,
 		summarizer,
 		judge,
@@ -439,8 +543,10 @@ async function createRun(plan: Plan, retry = 1, fit: Fit = FITS): Promise<Run> {
 		seeds: rig.seeds,
 		path,
 		log: (line) => logged.push(line),
-	})
+	}
+	const aggregator = new Aggregator(options)
 	return {
+		options,
 		rig,
 		aggregator,
 		judge,
@@ -455,12 +561,19 @@ async function createRun(plan: Plan, retry = 1, fit: Fit = FITS): Promise<Run> {
 		summarizing: () =>
 			fixture.requests.filter((body) => {
 				const first = readList(body, 'messages')[0]
-				return readField(first, 'role') === 'system' && readText(first, 'content').startsWith(SUMMARY_PREFIX)
+				return (
+					readField(first, 'role') === 'system' &&
+					readText(first, 'content').startsWith(SUMMARY_PREFIX)
+				)
 			}),
 	}
 }
 
-function pick(rows: readonly AggregateRow[], event: AggregateRow['event'], topic?: string): readonly AggregateRow[] {
+function pick(
+	rows: readonly AggregateRow[],
+	event: AggregateRow['event'],
+	topic?: string,
+): readonly AggregateRow[] {
 	return rows.filter((row) => row.event === event && (topic === undefined || row.topic === topic))
 }
 
@@ -473,7 +586,13 @@ function select(run: Run, shown: string): Selection {
 }
 
 describe('aggregate helpers', () => {
-	const first: AggregateSource = { id: 'a', sentence: 0, role: 'user', text: 'Refunds over $200 need approval code MX-4486.', day: '2026-10-08' }
+	const first: AggregateSource = {
+		id: 'a',
+		sentence: 0,
+		role: 'user',
+		text: 'Refunds over $200 need approval code MX-4486.',
+		day: '2026-10-08',
+	}
 	const second: AggregateSource = {
 		id: 'b',
 		sentence: 0,
@@ -485,7 +604,10 @@ describe('aggregate helpers', () => {
 
 	it('names the summarizer prefix and fills its slots in one pass', () => {
 		assert.ok(SUMMARY_SYSTEM.startsWith(SUMMARY_PREFIX))
-		assert.equal(SUMMARY_PREFIX, "You maintain a short summary of what a support desk's messages establish about ")
+		assert.equal(
+			SUMMARY_PREFIX,
+			"You maintain a short summary of what a support desk's messages establish about ",
+		)
 		assert.equal(
 			fillSlots(SUMMARY_SYSTEM, 'a DATE and a TOPIC', '2026-10-08'),
 			"You maintain a short summary of what a support desk's messages establish about a DATE and a TOPIC as of 2026-10-08. A later message replaces what an earlier message said. Copy every id, amount, date, and name exactly as the messages write it. Write only the summary, in at most three sentences.",
@@ -511,7 +633,8 @@ describe('aggregate helpers', () => {
 			instructions: 'Does the summary agree with its source messages?',
 			criteria: {
 				true: 'Every statement in the summary matches the source messages, a later message replacing an earlier one',
-				false: 'The summary states something the source messages contradict, replace, or do not state',
+				false:
+					'The summary states something the source messages contradict, replace, or do not state',
 			},
 		})
 		assert.equal(SUMMARIES_HEADING, '### Topic summaries')
@@ -539,7 +662,10 @@ describe('aggregate helpers', () => {
 			buildAgreeState(version, sources.slice(0, 1)),
 			'Refunds need MX-4486.\nSource messages:\n(2026-10-08) user: Refunds over $200 need approval code MX-4486.',
 		)
-		assert.equal(renderSource(first), '(2026-10-08) user: Refunds over $200 need approval code MX-4486.')
+		assert.equal(
+			renderSource(first),
+			'(2026-10-08) user: Refunds over $200 need approval code MX-4486.',
+		)
 	})
 
 	it('adds a note that names the failed kinds to a retry prompt, so the prompt differs from the first', () => {
@@ -558,7 +684,10 @@ describe('aggregate helpers', () => {
 	it('reads a letter-and-digit run as an id and a capitalized word in any position as a name candidate', () => {
 		const tokens = readTokens('WKND15 applies. Adeyemi signs off on LH-44870 for 2pm, $1,240.00.')
 		assert.deepEqual([...tokens.ids].sort(), ['2PM', 'LH-44870', 'WKND15'])
-		assert.deepEqual([...tokens.numbers].sort((left, right) => left - right), [2, 1240])
+		assert.deepEqual(
+			[...tokens.numbers].sort((left, right) => left - right),
+			[2, 1240],
+		)
 		assert.deepEqual([...tokens.names], ['adeyemi'])
 		assert.ok(!tokens.names.has('lh'))
 		assert.ok(tokens.words.has('signs'))
@@ -571,7 +700,10 @@ describe('aggregate helpers', () => {
 		assert.equal(countSoleTokens('WKND15 applies. Adeyemi signs off today.', shown), 2)
 		assert.equal(countSoleTokens('Dana asked about the weekend coupon for LH-44870.', shown), 0)
 		assert.equal(countSoleTokens('The coupon is worth 15 dollars.', shown), 1)
-		assert.equal(countSoleTokens('The coupon is worth 15 dollars.', `${shown} It saves 15 dollars.`), 0)
+		assert.equal(
+			countSoleTokens('The coupon is worth 15 dollars.', `${shown} It saves 15 dollars.`),
+			0,
+		)
 	})
 
 	it('drops the sentences whose tokens the shown text lacks and keeps the ids it shows', () => {
@@ -588,17 +720,38 @@ describe('aggregate helpers', () => {
 	})
 
 	it('fails a summary by kind: empty, id, number, name, and stale', () => {
-		const known = ['(2026-10-08) user: Refunds over $200 need approval code MX-4486 from Marcus Oyelaran.', 'refunds', '2026-10-09']
+		const known = [
+			'(2026-10-08) user: Refunds over $200 need approval code MX-4486 from Marcus Oyelaran.',
+			'refunds',
+			'2026-10-09',
+		]
 		const owners = ['Luis Ferreira']
 		assert.deepEqual(checkProse('  ', known, owners, []), [{ kind: 'empty', token: '' }])
-		assert.deepEqual(checkProse('Refunds over $200 need MX-4486 from Marcus Oyelaran and Luis Ferreira.', known, owners, []), [])
-		assert.deepEqual(checkProse('Refunds need MX-4468.', known, owners, []), [{ kind: 'id', token: 'MX-4468' }])
-		assert.deepEqual(checkProse('Refunds over $250 need approval.', known, owners, []), [{ kind: 'number', token: '250' }])
-		assert.deepEqual(checkProse('Refunds are signed by Marcus Okafor today.', known, owners, []), [{ kind: 'name', token: 'okafor' }])
-		assert.deepEqual(checkProse('Refunds over $200 need MX-4486 and $300.', known, owners, ['300', 'MX-4471']), [
-			{ kind: 'number', token: '300' },
-			{ kind: 'stale', token: '300' },
+		assert.deepEqual(
+			checkProse(
+				'Refunds over $200 need MX-4486 from Marcus Oyelaran and Luis Ferreira.',
+				known,
+				owners,
+				[],
+			),
+			[],
+		)
+		assert.deepEqual(checkProse('Refunds need MX-4468.', known, owners, []), [
+			{ kind: 'id', token: 'MX-4468' },
 		])
+		assert.deepEqual(checkProse('Refunds over $250 need approval.', known, owners, []), [
+			{ kind: 'number', token: '250' },
+		])
+		assert.deepEqual(checkProse('Refunds are signed by Marcus Okafor today.', known, owners, []), [
+			{ kind: 'name', token: 'okafor' },
+		])
+		assert.deepEqual(
+			checkProse('Refunds over $200 need MX-4486 and $300.', known, owners, ['300', 'MX-4471']),
+			[
+				{ kind: 'number', token: '300' },
+				{ kind: 'stale', token: '300' },
+			],
+		)
 		assert.deepEqual(checkProse('Refunds use WKND15 and the code 2pm.', known, owners, []), [
 			{ kind: 'id', token: 'WKND15' },
 			{ kind: 'id', token: '2PM' },
@@ -622,36 +775,89 @@ describe('aggregate helpers', () => {
 			{ id: 'c', sentence: 1, role: 'user', text: 'Another new line.', day: '2026-10-09' },
 		]
 		const compared = compareSources(sources, current)
-		assert.deepEqual(compared.removed.map((source) => source.id), ['b'])
+		assert.deepEqual(
+			compared.removed.map((source) => source.id),
+			['b'],
+		)
 		assert.deepEqual(compared.arrived, ['c'])
 		const edited = compareSources(sources, [{ ...first, text: 'Changed.' }, second])
-		assert.deepEqual(edited.removed.map((source) => source.id), ['a'])
+		assert.deepEqual(
+			edited.removed.map((source) => source.id),
+			['a'],
+		)
 		assert.deepEqual(edited.arrived, [])
 	})
 
 	it('puts the tool name and arguments before a tool line and nothing before another line', () => {
-		const line: MirrorLine = { text: 'Order LH-79215 ships.', source: 'm1', sentence: 1, topics: [], role: 'tool' }
-		const reading = { id: 'm1', name: 'lookup_order', arguments: { id: 'LH-79215' }, text: '', result: undefined }
-		assert.equal(buildSource(line, [reading], '2026-10-08').text, 'lookup_order {"id":"LH-79215"}: Order LH-79215 ships.')
-		assert.equal(buildSource({ ...line, role: 'user' }, [reading], '2026-10-08').text, 'Order LH-79215 ships.')
+		const line: MirrorLine = {
+			text: 'Order LH-79215 ships.',
+			source: 'm1',
+			sentence: 1,
+			topics: [],
+			role: 'tool',
+		}
+		const reading = {
+			id: 'm1',
+			name: 'lookup_order',
+			arguments: { id: 'LH-79215' },
+			text: '',
+			result: undefined,
+		}
+		assert.equal(
+			buildSource(line, [reading], '2026-10-08').text,
+			'lookup_order {"id":"LH-79215"}: Order LH-79215 ships.',
+		)
+		assert.equal(
+			buildSource({ ...line, role: 'user' }, [reading], '2026-10-08').text,
+			'Order LH-79215 ships.',
+		)
 		assert.equal(buildSource(line, [], '2026-10-08').text, 'Order LH-79215 ships.')
 	})
 
 	it('cuts whole entries from the end until the block price fits the allowance', () => {
-		const entries = ['alpha', 'bravo', 'charlie'].map((key) => ({ key, title: key, date: '2026-10-08', ids: ['AB-12'], prose: `${key} prose.` }))
+		const entries = ['alpha', 'bravo', 'charlie'].map((key) => ({
+			key,
+			title: key,
+			date: '2026-10-08',
+			ids: ['AB-12'],
+			prose: `${key} prose.`,
+		}))
 		const price = (text: string): number => text.length
-		const all = renderSummaries(entries, 10000, price)
-		assert.deepEqual(all.kept.map((entry) => entry.key), ['alpha', 'bravo', 'charlie'])
+		const all = renderSummaries(entries, 10000, price, () => true)
+		assert.deepEqual(
+			all.kept.map((entry) => entry.key),
+			['alpha', 'bravo', 'charlie'],
+		)
 		assert.deepEqual(all.cut, [])
-		assert.ok(all.text.startsWith(`${SUMMARIES_HEADING}\n\n#### alpha, as of 2026-10-08\nIds: AB-12\nalpha prose.`))
-		const fewer = renderSummaries(entries, all.tokens - 1, price)
-		assert.deepEqual(fewer.kept.map((entry) => entry.key), ['alpha', 'bravo'])
-		assert.deepEqual(fewer.cut.map((entry) => entry.key), ['charlie'])
+		assert.ok(
+			all.text.startsWith(
+				`${SUMMARIES_HEADING}\n\n#### alpha, as of 2026-10-08\nIds: AB-12\nalpha prose.`,
+			),
+		)
+		const fewer = renderSummaries(entries, all.tokens - 1, price, () => true)
+		assert.deepEqual(
+			fewer.kept.map((entry) => entry.key),
+			['alpha', 'bravo'],
+		)
+		assert.deepEqual(
+			fewer.cut.map((entry) => entry.key),
+			['charlie'],
+		)
 		assert.ok(fewer.tokens <= all.tokens - 1)
-		const none = renderSummaries(entries, 1, price)
+		const none = renderSummaries(entries, 1, price, () => true)
 		assert.deepEqual([none.text, none.kept, none.tokens], ['', [], 0])
-		assert.deepEqual(none.cut.map((entry) => entry.key), ['alpha', 'bravo', 'charlie'])
-		assert.ok(!renderSummaries([{ key: 'alpha', title: 'alpha', date: '2026-10-08', ids: [], prose: 'alpha prose.' }], 10000, price).text.includes('Ids:'))
+		assert.deepEqual(
+			none.cut.map((entry) => entry.key),
+			['alpha', 'bravo', 'charlie'],
+		)
+		assert.ok(
+			!renderSummaries(
+				[{ key: 'alpha', title: 'alpha', date: '2026-10-08', ids: [], prose: 'alpha prose.' }],
+				10000,
+				price,
+				() => true,
+			).text.includes('Ids:'),
+		)
 	})
 })
 
@@ -693,9 +899,15 @@ describe('Aggregator', () => {
 				assert.equal(row.goal, 'g01')
 				assert.equal(row.lastSeed, LAST)
 				assert.ok(row.sources.length > 0, row.topic)
-				assert.ok(row.sources.every((source) => source.seed !== undefined && source.seed < SEEDED), row.topic)
+				assert.ok(
+					row.sources.every((source) => source.seed !== undefined && source.seed < SEEDED),
+					row.topic,
+				)
 			}
-			assert.equal(builds.find((row) => row.topic === OWNER)?.title, 'Luis Ferreira (account LH-44870)')
+			assert.equal(
+				builds.find((row) => row.topic === OWNER)?.title,
+				'Luis Ferreira (account LH-44870)',
+			)
 			assert.match(builds.find((row) => row.topic === 'refunds')?.ids ?? '', /MX-4486/)
 		})
 
@@ -704,7 +916,10 @@ describe('Aggregator', () => {
 			await run.maintain('g01', LAST)
 			assert.ok(run.rig.mirror.input().owners.size > 1)
 			const rows = run.rows()
-			assert.deepEqual(rows.filter((row) => row.topic.startsWith('owner:') && row.topic !== OWNER), [])
+			assert.deepEqual(
+				rows.filter((row) => row.topic.startsWith('owner:') && row.topic !== OWNER),
+				[],
+			)
 			const agrees = pick(rows, 'agree')
 			assert.equal(agrees.length, DESK.length + 1)
 			for (const row of agrees) {
@@ -713,7 +928,11 @@ describe('Aggregator', () => {
 				assert.equal(row.status, 'current')
 			}
 			assert.deepEqual(pick(rows, 'change'), [])
-			assert.deepEqual(run.judge.stats(), { hits: { agree: DESK.length + 1 }, misses: {}, transient: 0 })
+			assert.deepEqual(run.judge.stats(), {
+				hits: { agree: DESK.length + 1 },
+				misses: {},
+				transient: 0,
+			})
 			assert.deepEqual(run.rig.asked, [])
 		})
 
@@ -747,14 +966,19 @@ describe('Aggregator', () => {
 			const correction = await run.rig.advance(CORRECTION)
 			const marcus = [...run.rig.seeds].find(([, index]) => index === MARCUS)?.[0]
 			assert.ok(marcus !== undefined)
-			assert.ok(run.rig.mirror.input().classification.superseded.get(marcus)?.includes(correction.id))
+			assert.ok(
+				run.rig.mirror.input().classification.superseded.get(marcus)?.includes(correction.id),
+			)
 			await run.maintain('g02', SEEDED)
 			assert.deepEqual(run.judge.stats().hits['change'] ?? 0, stats.hits['change'] ?? 0)
 			assert.deepEqual(run.judge.stats().misses, {})
 			const rows = run.rows()
 			assert.deepEqual(pick(rows, 'change'), [])
 			const rebuilt = pick(rows, 'build').filter((row) => row.version > 1)
-			assert.deepEqual(rebuilt.map((row) => [row.topic, row.version, row.trigger, row.status]), [['refunds', 2, 'removed', 'current']])
+			assert.deepEqual(
+				rebuilt.map((row) => [row.topic, row.version, row.trigger, row.status]),
+				[['refunds', 2, 'removed', 'current']],
+			)
 			const [second] = rebuilt
 			assert.equal(second?.prose, REFUNDS_AFTER)
 			assert.ok(second?.sources.some((source) => source.seed === SEEDED))
@@ -768,7 +992,10 @@ describe('Aggregator', () => {
 			await run.rig.advance(CORRECTION)
 			await run.maintain('g02', SEEDED)
 			const versions = pick(run.rows(), 'build', 'refunds')
-			assert.deepEqual(versions.map((row) => row.version), [1, 2])
+			assert.deepEqual(
+				versions.map((row) => row.version),
+				[1, 2],
+			)
 			assert.equal(versions[0]?.prose, SUMMARIES['refunds'])
 			assert.match(versions[0]?.ids ?? '', /MX-4471/)
 			assert.equal(versions[1]?.prose, REFUNDS_AFTER)
@@ -785,11 +1012,20 @@ describe('Aggregator', () => {
 			await run.rig.advance(NEWS)
 			await run.maintain('g02', SEEDED)
 			const changes = pick(run.rows(), 'change')
-			assert.deepEqual(changes.map((row) => [row.topic, row.version, row.answers['change'], row.cached]), [['contacts', 1, 0.1, true]])
-			assert.deepEqual(changes[0]?.sources.map((source) => source.seed), [SEEDED])
+			assert.deepEqual(
+				changes.map((row) => [row.topic, row.version, row.answers['change'], row.cached]),
+				[['contacts', 1, 0.1, true]],
+			)
+			assert.deepEqual(
+				changes[0]?.sources.map((source) => source.seed),
+				[SEEDED],
+			)
 			assert.equal(run.summarizing().length, requests)
 			assert.equal(run.judge.stats().hits['agree'], agrees)
-			assert.deepEqual(pick(run.rows(), 'build').filter((row) => row.version > 1), [])
+			assert.deepEqual(
+				pick(run.rows(), 'build').filter((row) => row.version > 1),
+				[],
+			)
 			await run.maintain('g03', SEEDED)
 			assert.equal(pick(run.rows(), 'change').length, 1)
 			assert.equal(run.judge.stats().hits['change'], 1)
@@ -801,30 +1037,59 @@ describe('Aggregator', () => {
 			await run.rig.advance(NEWS)
 			await run.maintain('g02', SEEDED)
 			const rows = run.rows()
-			assert.deepEqual(pick(rows, 'change').map((row) => [row.topic, row.answers['change']]), [['contacts', 0.9]])
+			assert.deepEqual(
+				pick(rows, 'change').map((row) => [row.topic, row.answers['change']]),
+				[['contacts', 0.9]],
+			)
 			const rebuilt = pick(rows, 'build').filter((row) => row.version > 1)
-			assert.deepEqual(rebuilt.map((row) => [row.topic, row.version, row.trigger, row.status]), [['contacts', 2, 'change', 'current']])
+			assert.deepEqual(
+				rebuilt.map((row) => [row.topic, row.version, row.trigger, row.status]),
+				[['contacts', 2, 'change', 'current']],
+			)
 			assert.equal(rebuilt[0]?.prose, CONTACTS_AFTER)
-			assert.deepEqual(pick(rows, 'agree', 'contacts').map((row) => row.version), [1, 2])
+			assert.deepEqual(
+				pick(rows, 'agree', 'contacts').map((row) => row.version),
+				[1, 2],
+			)
 			assert.deepEqual(run.judge.stats().misses, {})
 		})
 	})
 
 	describe('consistency failure', () => {
 		it('marks a mistyped id stale, retries with a different prompt, and withholds the topic after the retry bound', async () => {
-			const run = await start({ kind: 'first', summaries: { returns: MISTYPED }, skip: ['returns'] })
+			const run = await start({
+				kind: 'first',
+				summaries: { returns: MISTYPED },
+				skip: ['returns'],
+			})
 			await run.maintain('g01', LAST)
 			const rows = run.rows()
 			const builds = pick(rows, 'build', 'returns')
-			assert.deepEqual(builds.map((row) => [row.version, row.status, row.trigger]), [[1, 'stale', 'first'], [2, 'stale', 'retry']])
+			assert.deepEqual(
+				builds.map((row) => [row.version, row.status, row.trigger]),
+				[
+					[1, 'stale', 'first'],
+					[2, 'stale', 'retry'],
+				],
+			)
 			for (const row of builds) assert.deepEqual(row.failures, [{ kind: 'id', token: 'LH-79251' }])
 			assert.deepEqual(pick(rows, 'agree', 'returns'), [])
-			assert.deepEqual(pick(rows, 'withhold', 'returns').map((row) => [row.version, row.status]), [[2, 'withheld']])
-			const prompts = run.summarizing().filter((body) => JSON.stringify(body).includes('about returns as of'))
+			assert.deepEqual(
+				pick(rows, 'withhold', 'returns').map((row) => [row.version, row.status]),
+				[[2, 'withheld']],
+			)
+			const prompts = run
+				.summarizing()
+				.filter((body) => JSON.stringify(body).includes('about returns as of'))
 			assert.equal(prompts.length, 2)
 			assert.ok(JSON.stringify(prompts[1]).includes('failed these checks: id.'))
 			assert.ok(!JSON.stringify(prompts[0]).includes('failed these checks'))
-			assert.deepEqual(pick(rows, 'build').filter((row) => row.topic !== 'returns').map((row) => row.status), Array(DESK.length).fill('current'))
+			assert.deepEqual(
+				pick(rows, 'build')
+					.filter((row) => row.topic !== 'returns')
+					.map((row) => row.status),
+				Array(DESK.length).fill('current'),
+			)
 		})
 
 		it('fails a build that AGREE reads below the cutoff when the cutoff separates, and withholds the topic', async () => {
@@ -836,31 +1101,46 @@ describe('Aggregator', () => {
 				assert.deepEqual(row.failures, [{ kind: 'agree', token: '' }], row.topic)
 			}
 			assert.equal(pick(rows, 'withhold').length, DESK.length + 1)
-			assert.deepEqual(pick(rows, 'agree').map((row) => row.status), Array(DESK.length + 1).fill('stale'))
-			const rendered = run.aggregator.render(select(run, 'Luis Ferreira LH-44870'), run.rig.request, run.rig.system, '', 1)
+			assert.deepEqual(
+				pick(rows, 'agree').map((row) => row.status),
+				Array(DESK.length + 1).fill('stale'),
+			)
+			const rendered = run.aggregator.render(
+				select(run, 'Luis Ferreira LH-44870'),
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
 			assert.deepEqual(rendered.topics, [])
 			assert.deepEqual(rendered.withheld, [OWNER, 'refunds', 'returns'])
 		})
 
-		it('only logs a low AGREE answer when the cutoff does not separate', async () => {
-			const run = await start({ kind: 'first', agree: 0.1 }, 0, { ...FITS, separated: false })
-			await run.maintain('g01', LAST)
-			const rows = run.rows()
-			for (const row of pick(rows, 'build')) {
-				assert.equal(row.status, 'current', row.topic)
-				assert.deepEqual(row.failures, [], row.topic)
-				assert.equal(row.answers['agree'], 0.1, row.topic)
-			}
-			assert.deepEqual(pick(rows, 'withhold'), [])
+		it('refuses a failed fit instead of accepting lexical-only summaries', async () => {
+			const run = await start({ kind: 'first', agree: 0.1 }, 0)
+			assert.throws(
+				() => new Aggregator({ ...run.options, fit: { ...FITS, separated: false } }),
+				/requires a separating fit/,
+			)
 		})
 
 		it('withholds at once when the retry bound is zero, and builds the topic again at the next read point', async () => {
-			const run = await start({ kind: 'first', summaries: { returns: MISTYPED }, skip: ['returns'] }, 0)
+			const run = await start(
+				{ kind: 'first', summaries: { returns: MISTYPED }, skip: ['returns'] },
+				0,
+			)
 			await run.maintain('g01', LAST)
 			assert.equal(pick(run.rows(), 'build', 'returns').length, 1)
 			await run.maintain('g02', LAST)
 			const builds = pick(run.rows(), 'build', 'returns')
-			assert.deepEqual(builds.map((row) => [row.version, row.trigger]), [[1, 'first'], [2, 'first']])
+			assert.deepEqual(
+				builds.map((row) => [row.version, row.trigger]),
+				[
+					[1, 'first'],
+					[2, 'first'],
+				],
+			)
 		})
 	})
 
@@ -868,19 +1148,37 @@ describe('Aggregator', () => {
 		async function prepare(): Promise<{ run: Run; shown: string }> {
 			const run = await start({ kind: 'first' })
 			await run.maintain('g01', LAST)
-			const lines = ['refunds', 'returns', OWNER].flatMap((key) => readSources(run.rig, key).sources)
+			const lines = ['refunds', 'returns', OWNER].flatMap(
+				(key) => readSources(run.rig, key).sources,
+			)
 			// The briefing shows the user lines of the topics and owner, and omits the lookup result with its amount.
-			const shown = [...new Set(lines.filter((source) => source.role === 'user').map((source) => source.text))].join('\n')
+			const shown = [
+				...new Set(lines.filter((source) => source.role === 'user').map((source) => source.text)),
+			].join('\n')
 			return { run, shown }
 		}
 
 		it('orders the request owners before its desk topics and renders the heading, ids, and prose', async () => {
 			const { run, shown } = await prepare()
-			const rendered = run.aggregator.render(select(run, shown), run.rig.request, run.rig.system, 'Today is Thursday 2026-10-08.', 1)
+			const rendered = run.aggregator.render(
+				select(run, shown),
+				run.rig.request,
+				run.rig.system,
+				'Today is Thursday 2026-10-08.',
+				1,
+				() => true,
+			)
 			assert.deepEqual(rendered.topics, [OWNER, 'refunds', 'returns'])
 			assert.deepEqual([rendered.cut, rendered.withheld, rendered.emptied], [[], [], []])
-			assert.ok(rendered.text.startsWith(`${SUMMARIES_HEADING}\n\n#### Luis Ferreira (account LH-44870), as of 2026-10-08\nIds: `))
-			assert.ok(rendered.text.indexOf('#### Luis Ferreira') < rendered.text.indexOf('#### refunds, as of 2026-10-08'))
+			assert.ok(
+				rendered.text.startsWith(
+					`${SUMMARIES_HEADING}\n\n#### Luis Ferreira (account LH-44870), as of 2026-10-08\nIds: `,
+				),
+			)
+			assert.ok(
+				rendered.text.indexOf('#### Luis Ferreira') <
+					rendered.text.indexOf('#### refunds, as of 2026-10-08'),
+			)
 			assert.ok(rendered.text.indexOf('#### refunds') < rendered.text.indexOf('#### returns'))
 			assert.ok(rendered.text.includes(REFUNDS.join(' ')))
 			assert.ok(rendered.text.includes(RETURNS.join(' ')))
@@ -889,14 +1187,28 @@ describe('Aggregator', () => {
 
 		it('drops a sentence whose amount the selection lacks, keeps the others, and reads no sole token', async () => {
 			const { run, shown } = await prepare()
-			const rendered = run.aggregator.render(select(run, shown), run.rig.request, run.rig.system, 'Today is Thursday 2026-10-08.', 1)
+			const rendered = run.aggregator.render(
+				select(run, shown),
+				run.rig.request,
+				run.rig.system,
+				'Today is Thursday 2026-10-08.',
+				1,
+				() => true,
+			)
 			assert.deepEqual(rendered.filtered, [{ topic: OWNER, sentence: OWNER_PROSE[1] }])
 			assert.ok(rendered.text.includes(OWNER_PROSE[0] ?? ''))
 			assert.ok(!rendered.text.includes('289'))
 			assert.ok(!rendered.text.includes('2026-10-21'))
 			assert.match(rendered.text, /Ids: LH-44870, LH-79215\n/)
 			assert.equal(rendered.sole, 0)
-			const withAmount = run.aggregator.render(select(run, `${shown}\nThe tool says $289.00 until 2026-10-21.`), run.rig.request, run.rig.system, 'Today is Thursday 2026-10-08.', 1)
+			const withAmount = run.aggregator.render(
+				select(run, `${shown}\nThe tool says $289.00 until 2026-10-21.`),
+				run.rig.request,
+				run.rig.system,
+				'Today is Thursday 2026-10-08.',
+				1,
+				() => true,
+			)
 			assert.deepEqual(withAmount.filtered, [])
 			assert.ok(withAmount.text.includes(OWNER_PROSE.join(' ')))
 			assert.equal(withAmount.sole, 0)
@@ -904,7 +1216,7 @@ describe('Aggregator', () => {
 
 		it('renders nothing for a topic whose title or prose the selection cannot carry', async () => {
 			const { run } = await prepare()
-			const bare = run.aggregator.render(select(run, ''), run.rig.request, '', '', 1)
+			const bare = run.aggregator.render(select(run, ''), run.rig.request, '', '', 1, () => true)
 			assert.equal(bare.text, '')
 			assert.deepEqual(bare.topics, [])
 			assert.ok(bare.emptied.includes(OWNER))
@@ -915,7 +1227,14 @@ describe('Aggregator', () => {
 		it('withholds the title with the prose, so a title never carries an id or a name that the selection lacks', async () => {
 			const { run } = await prepare()
 			const shown = OWNER_PROSE[1] ?? ''
-			const rendered = run.aggregator.render(select(run, shown), run.rig.request, '', '', 1)
+			const rendered = run.aggregator.render(
+				select(run, shown),
+				run.rig.request,
+				'',
+				'',
+				1,
+				() => true,
+			)
 			assert.ok(rendered.emptied.includes(OWNER))
 			assert.ok(!rendered.text.includes('LH-44870'))
 			assert.ok(!rendered.text.includes('Luis Ferreira (account'))
@@ -925,26 +1244,161 @@ describe('Aggregator', () => {
 		it('cuts whole topics from the end to fit the allowance at the supplied scale', async () => {
 			const { run, shown } = await prepare()
 			const selection = select(run, shown)
-			const full = run.aggregator.render(selection, run.rig.request, run.rig.system, '', 1)
-			const doubled = run.aggregator.render(selection, run.rig.request, run.rig.system, '', 2)
+			const full = run.aggregator.render(
+				selection,
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
+			const doubled = run.aggregator.render(
+				selection,
+				run.rig.request,
+				run.rig.system,
+				'',
+				2,
+				() => true,
+			)
 			assert.ok(Math.abs(doubled.tokens - full.tokens * 2) < 1e-9)
 			run.settings.allowance = full.tokens - 0.5
-			const fewer = run.aggregator.render(selection, run.rig.request, run.rig.system, '', 1)
+			const fewer = run.aggregator.render(
+				selection,
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
 			assert.deepEqual(fewer.topics, [OWNER, 'refunds'])
 			assert.deepEqual(fewer.cut, ['returns'])
 			assert.ok(fewer.tokens <= full.tokens - 0.5)
 			assert.ok(!fewer.text.includes('#### returns'))
 			run.settings.allowance = 0
-			const none = run.aggregator.render(selection, run.rig.request, run.rig.system, '', 1)
+			const none = run.aggregator.render(
+				selection,
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
 			assert.deepEqual([none.text, none.topics, none.cut], ['', [], [OWNER, 'refunds', 'returns']])
 		})
 
 		it('lists a withheld topic that the request names and renders its siblings', async () => {
-			const run = await start({ kind: 'first', summaries: { returns: MISTYPED }, skip: ['returns'] })
+			const run = await start({
+				kind: 'first',
+				summaries: { returns: MISTYPED },
+				skip: ['returns'],
+			})
 			await run.maintain('g01', LAST)
-			const rendered = run.aggregator.render(select(run, 'Luis Ferreira LH-44870 refunds'), run.rig.request, run.rig.system, '', 1)
+			const rendered = run.aggregator.render(
+				select(run, 'Luis Ferreira LH-44870 refunds'),
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
 			assert.deepEqual(rendered.withheld, ['returns'])
 			assert.ok(!rendered.topics.includes('returns'))
 		})
+	})
+})
+
+describe('summary body validation', () => {
+	it('requires prose after an optional IDs header without backtracking the header into prose', () => {
+		const heading = `${SUMMARIES_HEADING}\n\n#### Refunds, as of 2026-10-08\n`
+		for (const body of ['Ids: LH-100', 'Ids: LH-100\n', 'Ids: LH-100\n  \n', 'Ids:\n', '\n  ']) {
+			assert.deepEqual(collectSummaryBodies(heading + body), [], JSON.stringify(body))
+		}
+	})
+
+	it('preserves valid prose with and without an IDs header', () => {
+		const heading = `${SUMMARIES_HEADING}\n\n#### Refunds, as of 2026-10-08\n`
+		assert.deepEqual(collectSummaryBodies(`${heading}Ids: LH-100\nRefund 40.`), [
+			'Refunds\nLH-100\nRefund 40.',
+		])
+		assert.deepEqual(collectSummaryBodies(`${heading}Refund 40.`), ['Refunds\n\nRefund 40.'])
+		assert.deepEqual(collectSummaryBodies(`${heading}Refund 40.\nIds: LH-100`), [
+			'Refunds\n\nRefund 40.\nIds: LH-100',
+		])
+	})
+})
+
+describe('complete request admission', () => {
+	it('prices the real builder framing, scale, fixed tool cost, and selected evidence while cutting whole entries in order', () => {
+		const context = createAgentContext({ system: 'Support desk rules.' })
+		context.instructions.add({
+			name: 'date',
+			content: 'Today is Thursday 2026-10-08.',
+			priority: 10,
+		})
+		const selection = {
+			messages: [{ id: 'question', role: 'user' as const, content: 'alpha bravo charlie' }],
+			briefing: 'Selected evidence.',
+			judgments: [],
+		}
+		const entries = ['alpha', 'bravo', 'charlie'].map((key) => ({
+			key,
+			title: key,
+			date: '2026-10-08',
+			ids: [],
+			prose: `${key} details.`,
+		}))
+		const seen: string[] = []
+		const all = renderSummaries(
+			entries,
+			10000,
+			(text) => text.length,
+			() => true,
+		)
+		context.instructions.add({ ...INSTRUCTION_SUMMARIES, content: all.text })
+		const scale = 2
+		const fixed = ADMISSION_LIMIT - estimateMessages(context.build(selection)) * scale + 1
+		const block = renderSummaries(
+			entries,
+			10000,
+			(text) => text.length,
+			(text) => {
+				seen.push(text)
+				context.instructions.add({ ...INSTRUCTION_SUMMARIES, content: text })
+				return estimateMessages(context.build(selection)) * scale + fixed <= ADMISSION_LIMIT
+			},
+		)
+		assert.deepEqual(
+			block.kept.map((entry) => entry.key),
+			['alpha', 'bravo'],
+		)
+		assert.deepEqual(
+			block.cut.map((entry) => entry.key),
+			['charlie'],
+		)
+		assert.equal(seen.length, 2)
+		assert.equal(context.build(selection).at(-1), selection.messages[0])
+		assert.ok(context.build(selection)[0]?.content.endsWith(selection.briefing))
+		assert.ok(estimateMessages(context.build(selection)) * scale + fixed <= ADMISSION_LIMIT)
+		const none = renderSummaries(
+			entries,
+			10000,
+			(text) => text.length,
+			() => false,
+		)
+		assert.deepEqual([none.text, none.kept, none.cut], ['', [], entries])
+	})
+
+	it('counts nonempty rendered topic prose and rejects a heading-only exposure control', () => {
+		assert.deepEqual(collectSummaryBodies(SUMMARIES_HEADING), [])
+		assert.deepEqual(
+			collectSummaryBodies(`${SUMMARIES_HEADING}\n\n#### Refunds, as of 2026-10-08\n`),
+			[],
+		)
+		assert.deepEqual(
+			collectSummaryBodies(
+				`${SUMMARIES_HEADING}\n\n#### Refunds, as of 2026-10-08\nIds: LH-100\nRefund 40.`,
+			),
+			['Refunds\nLH-100\nRefund 40.'],
+		)
 	})
 })

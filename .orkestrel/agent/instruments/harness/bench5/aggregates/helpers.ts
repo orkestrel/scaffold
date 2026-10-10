@@ -1,6 +1,7 @@
 import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30/index.js'
 import type {
 	AggregateBlock,
+	AggregateAdmission,
 	AggregateEntry,
 	AggregateFailure,
 	AggregateFilter,
@@ -90,7 +91,9 @@ export function readTokens(text: string): AggregateTokens {
 export function listMissing(own: AggregateTokens, shown: AggregateTokens): readonly string[] {
 	return [
 		...[...own.ids].filter((id) => !shown.ids.has(id)).map((id) => `id ${id}`),
-		...[...own.numbers].filter((number) => !shown.numbers.has(number)).map((number) => `number ${number}`),
+		...[...own.numbers]
+			.filter((number) => !shown.numbers.has(number))
+			.map((number) => `number ${number}`),
 		...[...own.names].filter((name) => !shown.words.has(name)).map((name) => `name ${name}`),
 	]
 }
@@ -114,7 +117,11 @@ export function countSoleTokens(text: string, shownText: string): number {
  * @param shownText - The text the control arm shows
  * @returns The kept sentences joined by a space, the ids that occur in the shown text, and the sentences dropped
  */
-export function filterProse(prose: string, ids: readonly string[], shownText: string): AggregateFilter {
+export function filterProse(
+	prose: string,
+	ids: readonly string[],
+	shownText: string,
+): AggregateFilter {
 	const shown = readTokens(shownText)
 	const sentences = splitSentences(prose)
 	const flags = sentences.map((sentence) => listMissing(readTokens(sentence), shown).length === 0)
@@ -147,13 +154,19 @@ export function checkProse(
 	const own = readTokens(prose)
 	const known = readTokens([...sources, ...ownerNames].join('\n'))
 	const stale = new Set(staleTokens)
-	const names = new Set(collectNames(prose).flatMap((run) => run.split(' ').map((word) => word.toLowerCase())))
+	const names = new Set(
+		collectNames(prose).flatMap((run) => run.split(' ').map((word) => word.toLowerCase())),
+	)
 	return [
-		...[...own.ids].filter((id) => !known.ids.has(id)).map((token): AggregateFailure => ({ kind: 'id', token })),
+		...[...own.ids]
+			.filter((id) => !known.ids.has(id))
+			.map((token): AggregateFailure => ({ kind: 'id', token })),
 		...[...own.numbers]
 			.filter((number) => !known.numbers.has(number))
 			.map((number): AggregateFailure => ({ kind: 'number', token: String(number) })),
-		...[...names].filter((word) => !known.words.has(word)).map((token): AggregateFailure => ({ kind: 'name', token })),
+		...[...names]
+			.filter((word) => !known.words.has(word))
+			.map((token): AggregateFailure => ({ kind: 'name', token })),
 		...[...own.ids, ...[...own.numbers].map(String)]
 			.filter((token) => stale.has(token))
 			.map((token): AggregateFailure => ({ kind: 'stale', token })),
@@ -199,7 +212,9 @@ export function collectTopics(
 		...owners.flatMap((id): readonly AggregateTopic[] => {
 			const key = `${LEDGER_OWNER_PREFIX}${id}`
 			const record = projection.records.find((one) => one.key === key)
-			return record === undefined || record.lines.length === 0 ? [] : [{ key, title: record.title, owner: true }]
+			return record === undefined || record.lines.length === 0
+				? []
+				: [{ key, title: record.title, owner: true }]
 		}),
 	]
 }
@@ -217,8 +232,11 @@ export function collectTopicMembers(
 	input: MirrorInput,
 	topic: AggregateTopic,
 ): readonly string[] {
-	if (topic.owner) return projection.records.find((record) => record.key === topic.key)?.members ?? []
-	return collectLive(input).filter((id) => input.classification.topics.get(id)?.includes(topic.key) === true)
+	if (topic.owner)
+		return projection.records.find((record) => record.key === topic.key)?.members ?? []
+	return collectLive(input).filter(
+		(id) => input.classification.topics.get(id)?.includes(topic.key) === true,
+	)
 }
 
 /**
@@ -229,13 +247,20 @@ export function collectTopicMembers(
  * @param day - The date of the line's message
  * @returns The source; a tool line opens with the tool name and arguments that the ledger renders before a lookup result
  */
-export function buildSource(line: MirrorLine, readings: readonly MirrorReading[], day: string): AggregateSource {
+export function buildSource(
+	line: MirrorLine,
+	readings: readonly MirrorReading[],
+	day: string,
+): AggregateSource {
 	const reading = line.role === 'tool' ? readings.find((one) => one.id === line.source) : undefined
 	return {
 		id: line.source,
 		sentence: line.sentence,
 		role: line.role,
-		text: reading === undefined ? line.text : `${reading.name} ${JSON.stringify(reading.arguments)}: ${line.text}`,
+		text:
+			reading === undefined
+				? line.text
+				: `${reading.name} ${JSON.stringify(reading.arguments)}: ${line.text}`,
 		day,
 	}
 }
@@ -260,7 +285,9 @@ export function collectTopicSources(
 ): readonly AggregateSource[] {
 	if (topic.owner) {
 		const record = projection.records.find((one) => one.key === topic.key)
-		return (record?.lines ?? []).map((line) => buildSource(line, input.readings, days.get(line.source) ?? ''))
+		return (record?.lines ?? []).map((line) =>
+			buildSource(line, input.readings, days.get(line.source) ?? ''),
+		)
 	}
 	const byId = new Map(input.messages.map((message) => [message.id, message]))
 	const dead = new Set(projection.stale.map((line) => `${line.source} ${line.sentence}`))
@@ -306,7 +333,9 @@ export function compareSources(
 	const before = new Set(previous.map((source) => source.id))
 	return {
 		removed: previous.filter((source) => !present.has(buildSourceKey(source))),
-		arrived: [...new Set(current.filter((source) => !before.has(source.id)).map((source) => source.id))],
+		arrived: [
+			...new Set(current.filter((source) => !before.has(source.id)).map((source) => source.id)),
+		],
 	}
 }
 
@@ -327,8 +356,15 @@ export function collectIds(sources: readonly AggregateSource[]): readonly string
  * @param seeds - The seed index of each message id
  * @returns One reference per source; the seed index is `undefined` for a message the seed does not hold
  */
-export function buildRefs(sources: readonly AggregateSource[], seeds: ReadonlyMap<string, number>): readonly AggregateRef[] {
-	return sources.map((source) => ({ id: source.id, seed: seeds.get(source.id), sentence: source.sentence }))
+export function buildRefs(
+	sources: readonly AggregateSource[],
+	seeds: ReadonlyMap<string, number>,
+): readonly AggregateRef[] {
+	return sources.map((source) => ({
+		id: source.id,
+		seed: seeds.get(source.id),
+		sentence: source.sentence,
+	}))
 }
 
 /**
@@ -355,7 +391,10 @@ export function buildSummaryPrompt(
 		{
 			id: `${topic}:user`,
 			role: 'user',
-			content: failures.length === 0 ? lines : `${lines}\n\n${RETRY_NOTE.replace(RETRY_SLOT, () => kinds)}`,
+			content:
+				failures.length === 0
+					? lines
+					: `${lines}\n\n${RETRY_NOTE.replace(RETRY_SLOT, () => kinds)}`,
 		},
 	]
 }
@@ -396,7 +435,10 @@ export function buildChangeState(
  * @param sources - The sources the version was built from
  * @returns The prose, then `Source messages:` and one source line per row
  */
-export function buildAgreeState(version: Pick<AggregateVersion, 'prose'>, sources: readonly AggregateSource[]): string {
+export function buildAgreeState(
+	version: Pick<AggregateVersion, 'prose'>,
+	sources: readonly AggregateSource[],
+): string {
 	return `${version.prose}\n${AGREE_STATE_SOURCES}\n${sources.map(renderSource).join('\n')}`
 }
 
@@ -407,7 +449,32 @@ export function buildAgreeState(version: Pick<AggregateVersion, 'prose'>, source
  * @returns The three parts joined by newlines; the ids line is absent when the entry holds no id
  */
 export function renderBody(entry: AggregateEntry): string {
-	return [entry.title, entry.ids.join(IDS_SEPARATOR), entry.prose].filter((part) => part !== '').join('\n')
+	return [entry.title, entry.ids.join(IDS_SEPARATOR), entry.prose]
+		.filter((part) => part !== '')
+		.join('\n')
+}
+
+/**
+ * Reads rendered topic bodies without their framing dates or the summaries heading.
+ * @param text - A recorded summaries instruction
+ * @returns The title, ids, and nonempty prose of each complete rendered entry
+ */
+export function collectSummaryBodies(text: string): readonly string[] {
+	if (!text.startsWith(`${SUMMARIES_HEADING}\n\n`)) return []
+	return text
+		.split(/\n\n(?=#### )/)
+		.slice(1)
+		.flatMap((entry) => {
+			const match = /^#### (.+), as of [^\n]*\n([\s\S]*)$/.exec(entry)
+			if (match === null) return []
+			const lines = (match[2] ?? '').split('\n')
+			const header = lines[0] ?? ''
+			const labeled = header.startsWith(IDS_LABEL)
+			const prose = (labeled ? lines.slice(1) : lines).join('\n').trim()
+			return prose === ''
+				? []
+				: [[match[1] ?? '', labeled ? header.slice(IDS_LABEL.length).trim() : '', prose].join('\n')]
+		})
 }
 
 /**
@@ -441,17 +508,22 @@ export function priceText(text: string, scale: number): number {
  * @param entries - The entries in render order
  * @param allowance - The most tokens the block can cost
  * @param price - Prices the block text in tokens
+ * @param admit - Checks the complete built request against the admission ceiling
  * @returns The block text, the entries kept, the entries cut, and the block price; with every entry cut the text is empty and the price is `0`
  */
 export function renderSummaries(
 	entries: readonly AggregateEntry[],
 	allowance: number,
 	price: (text: string) => number,
+	admit: AggregateAdmission,
 ): AggregateBlock {
 	for (let count = entries.length; count > 0; count -= 1) {
-		const text = [SUMMARIES_HEADING, ...entries.slice(0, count).map(renderEntry)].join(ENTRY_SEPARATOR)
+		const text = [SUMMARIES_HEADING, ...entries.slice(0, count).map(renderEntry)].join(
+			ENTRY_SEPARATOR,
+		)
 		const tokens = price(text)
-		if (tokens <= allowance) return { text, kept: entries.slice(0, count), cut: entries.slice(count), tokens }
+		if (tokens <= allowance && admit(text))
+			return { text, kept: entries.slice(0, count), cut: entries.slice(count), tokens }
 	}
 	return { text: '', kept: [], cut: entries, tokens: 0 }
 }

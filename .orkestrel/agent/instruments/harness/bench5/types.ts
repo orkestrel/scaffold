@@ -102,6 +102,8 @@ export interface CallRecord {
 	/** Holds the HTTP status, or `undefined` when the request threw before a response. */
 	readonly status: number | undefined
 	readonly error?: string
+	/** Holds the estimate read from the context at the ledger's turn event, before the provider call. */
+	readonly estimate?: number
 }
 
 /** Holds one message of a selection's tail as seed index, role, and content, because message ids differ between runs. */
@@ -356,7 +358,10 @@ export interface SummarizerInterface {
 }
 
 /** Reads the ids and owners that one lookup result names. */
-export type MirrorRead = (args: Readonly<Record<string, unknown>>, text: string) => LookupReading | undefined
+export type MirrorRead = (
+	args: Readonly<Record<string, unknown>>,
+	text: string,
+) => LookupReading | undefined
 
 export type MirrorTopic = LedgerTopic
 
@@ -483,6 +488,32 @@ export interface AggregateBlock {
 	readonly kept: readonly AggregateEntry[]
 	readonly cut: readonly AggregateEntry[]
 	readonly tokens: number
+}
+
+/** Prices admission of the complete built request without changing its selection. */
+export type AggregateAdmission = (text: string) => boolean
+
+/** Holds a built prefix before and after removing a stale summary instruction. */
+export interface AggregatePrefix {
+	readonly previous: readonly Message[]
+	readonly current: readonly Message[]
+}
+
+/** Holds the usage and termination evidence of one recorded agent completion. */
+export interface WireReading {
+	readonly prompt: number | undefined
+	readonly completion: number | undefined
+	readonly reason: string | undefined
+	readonly complete: boolean
+	readonly messages: ReadonlyArray<{ readonly role: string; readonly content: string }>
+}
+
+/** Holds the recorded run evidence needed to check exposure and completion boundaries. */
+export interface WireRun {
+	readonly info: { readonly arm: RunArm }
+	readonly picks: readonly SelectionRecord[]
+	readonly calls: readonly CallRecord[]
+	readonly wire: ReadonlyMap<number, WireReading>
 }
 
 /** Holds a sentence that the render filter dropped from a topic's prose. */
@@ -655,7 +686,6 @@ export interface Score {
 	readonly violations: readonly string[]
 	readonly patterns: readonly string[]
 }
-
 
 /** Names the judge head that an item asks. */
 export type CalibrateHead = 'change' | 'agree'
@@ -891,7 +921,7 @@ export interface ShadowItem {
 	readonly id: string
 	readonly head: ShadowHead
 	/** Holds the seed index of each message the question names, `undefined` for a message that is no seed message. */
-	readonly seeds: readonly (number | undefined)[]
+	readonly seeds: ReadonlyArray<number | undefined>
 	/** Holds the seed index of the later message, whose arrival is the read point. */
 	readonly point: number
 	/** Lists the topic keys whose aggregates the state carries. */

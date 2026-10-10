@@ -1,4 +1,5 @@
 import type { Message } from '../../vendor/agent-0.0.30/index.js'
+import type { WireRun } from '../types.ts'
 import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
@@ -6,6 +7,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CORPUS, HARNESS, MICA_MODEL, SCENARIO_LONG } from '../constants.ts'
+import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.ts'
 import {
 	assignCategory,
 	buildCacheKey,
@@ -23,7 +25,11 @@ import {
 	isSummaryRow,
 	isUsage,
 	matchesDeterministic,
+	matchesExposure,
 	readJSON,
+	readWireReading,
+	listUsageFailures,
+	listWireFailures,
 	readLookup,
 	readRows,
 	renderDate,
@@ -68,7 +74,7 @@ function readSeed(path: string): readonly Seeded[] {
 	}))
 }
 
-function readTopics(): readonly { readonly name: string; readonly criterion: string }[] {
+function readTopics(): ReadonlyArray<{ readonly name: string; readonly criterion: string }> {
 	const topics = readField(readField(readJSON(COPY), 'ledger'), 'topics')
 	assert.ok(typeof topics === 'object' && topics !== null)
 	return Object.entries(topics).map(([name, criterion]) => ({ name, criterion: String(criterion) }))
@@ -115,7 +121,10 @@ describe('helpers.ts', () => {
 
 		it('digests text as given and any other value as JSON', () => {
 			assert.equal(computeDigest('abc'), createHash('sha256').update('abc').digest('hex'))
-			assert.equal(computeDigest(['abc', 1]), createHash('sha256').update('["abc",1]').digest('hex'))
+			assert.equal(
+				computeDigest(['abc', 1]),
+				createHash('sha256').update('["abc",1]').digest('hex'),
+			)
 		})
 
 		it('describes an error chain outermost first and stops at a cycle', () => {
@@ -129,7 +138,9 @@ describe('helpers.ts', () => {
 		})
 
 		it('matches the deterministic judge error anywhere in the chain', () => {
-			const deterministic = new Error('wrapped', { cause: new Error('invalid or duplicate top logprob token') })
+			const deterministic = new Error('wrapped', {
+				cause: new Error('invalid or duplicate top logprob token'),
+			})
 			assert.equal(matchesDeterministic(deterministic), true)
 			assert.equal(matchesDeterministic(new Error('socket hang up')), false)
 		})
@@ -174,7 +185,15 @@ describe('helpers.ts', () => {
 			}))
 			assert.deepEqual(
 				[0, 47, 77, 78, 119, 120, 151].map((index) => findDay(days, index)?.date),
-				['2026-10-08', '2026-10-08', '2026-10-08', '2026-10-09', '2026-10-09', '2026-10-10', '2026-10-10'],
+				[
+					'2026-10-08',
+					'2026-10-08',
+					'2026-10-08',
+					'2026-10-09',
+					'2026-10-09',
+					'2026-10-10',
+					'2026-10-10',
+				],
 			)
 			assert.equal(findDay(days, -1), undefined)
 			assert.equal(findDay([], 5), undefined)
@@ -191,7 +210,10 @@ describe('helpers.ts', () => {
 				ids: ['LH-80941', 'LH-31055'],
 				owners: [{ id: 'LH-31055', names: ['Halvorsen Interiors'] }],
 			})
-			const account = readLookup({ account: 'LH-71592' }, 'Account LH-71592: Copperline Cafes, wholesale tier.')
+			const account = readLookup(
+				{ account: 'LH-71592' },
+				'Account LH-71592: Copperline Cafes, wholesale tier.',
+			)
 			assert.deepEqual(account, {
 				ids: ['LH-71592'],
 				owners: [{ id: 'LH-71592', names: ['Copperline Cafes'] }],
@@ -203,7 +225,10 @@ describe('helpers.ts', () => {
 		})
 
 		it('skips an owner whose name holds no letter', () => {
-			assert.deepEqual(readLookup({}, 'Account LH-10: 4421, closed'), { ids: ['LH-10'], owners: [] })
+			assert.deepEqual(readLookup({}, 'Account LH-10: 4421, closed'), {
+				ids: ['LH-10'],
+				owners: [],
+			})
 		})
 
 		it('resolves the base text before a version starts and the versioned text from its index', () => {
@@ -224,9 +249,15 @@ describe('helpers.ts', () => {
 
 		it('keeps a version to its own tool and falls back to a no-record text', () => {
 			const lookups = readLookups()
-			assert.equal(resolveLookup(lookups, 'lookup_customer', 'LH-80941', 151), 'no record for LH-80941')
+			assert.equal(
+				resolveLookup(lookups, 'lookup_customer', 'LH-80941', 151),
+				'no record for LH-80941',
+			)
 			assert.equal(resolveLookup(lookups, 'lookup_order', '', 151), 'no record for an empty id')
-			assert.equal(resolveLookup(lookups, 'lookup_missing', 'LH-80941', 151), 'no record for LH-80941')
+			assert.equal(
+				resolveLookup(lookups, 'lookup_missing', 'LH-80941', 151),
+				'no record for LH-80941',
+			)
 		})
 
 		it('takes the latest of two versions that both start at or before the position', () => {
@@ -248,7 +279,12 @@ describe('helpers.ts', () => {
 			const question = { form: 'noul' as const, instructions: 'Q?' }
 			const key = buildCacheKey('m', 'user: hi', question)
 			assert.match(key, /^[0-9a-f]{64}$/)
-			assert.equal(key, createHash('sha256').update('["m","user: hi",{"form":"noul","instructions":"Q?"}]').digest('hex'))
+			assert.equal(
+				key,
+				createHash('sha256')
+					.update('["m","user: hi",{"form":"noul","instructions":"Q?"}]')
+					.digest('hex'),
+			)
 			assert.notEqual(key, buildCacheKey('n', 'user: hi', question))
 			assert.notEqual(key, buildCacheKey('m', 'user: ho', question))
 			assert.notEqual(key, buildCacheKey('m', 'user: hi', { form: 'noul', instructions: 'Q!' }))
@@ -321,15 +357,25 @@ describe('helpers.ts', () => {
 		})
 
 		it('imports the answers the corpus recorded', () => {
-			const category = rows.find((row) => readField(row, 'question') === 'category' && readField(row, 'order') === 'forward')
+			const category = rows.find(
+				(row) => readField(row, 'question') === 'category' && readField(row, 'order') === 'forward',
+			)
 			assert.ok(category !== undefined)
-			const state = renderMessageState(seed[Number(readField(category, 'index'))] ?? { role: '', content: '' })
+			const state = renderMessageState(
+				seed[Number(readField(category, 'index'))] ?? { role: '', content: '' },
+			)
 			const found = imported.find((row) => row.state === state && row.question.form === 'choice')
 			assert.ok(found?.answer?.form === 'choice')
 			assert.deepEqual(found.answer.probabilities, readField(category, 'probabilities'))
-			const noul = rows.find((row) => readField(row, 'question') === 'topic' && readField(row, 'p') !== undefined)
+			const noul = rows.find(
+				(row) => readField(row, 'question') === 'topic' && readField(row, 'p') !== undefined,
+			)
 			assert.ok(noul !== undefined)
-			assert.ok(imported.some((row) => row.answer?.form === 'noul' && row.answer.noul === readField(noul, 'p')))
+			assert.ok(
+				imported.some(
+					(row) => row.answer?.form === 'noul' && row.answer.noul === readField(noul, 'p'),
+				),
+			)
 		})
 
 		it('imports a deterministic error as an error row and skips another error', () => {
@@ -349,15 +395,29 @@ describe('helpers.ts', () => {
 		})
 
 		it('skips reversed category rows, unknown topics, missing messages, and a changed question', () => {
-			const forward = rows.find((row) => readField(row, 'question') === 'category' && readField(row, 'order') === 'forward')
+			const forward = rows.find(
+				(row) => readField(row, 'question') === 'category' && readField(row, 'order') === 'forward',
+			)
 			assert.ok(isCorpusRow(forward))
 			assert.equal(buildCorpusQuery({ ...forward, order: 'reverse' }, seed, topics), undefined)
 			assert.equal(buildCorpusQuery({ ...forward, index: 9999 }, seed, topics), undefined)
-			assert.equal(buildCorpusQuery({ question: 'topic', index: 0, topic: 'nowhere' }, seed, topics), undefined)
-			assert.equal(buildCorpusQuery({ ...forward, asked: '{"form":"choice"}' }, seed, topics), undefined)
+			assert.equal(
+				buildCorpusQuery({ question: 'topic', index: 0, topic: 'nowhere' }, seed, topics),
+				undefined,
+			)
+			assert.equal(
+				buildCorpusQuery({ ...forward, asked: '{"form":"choice"}' }, seed, topics),
+				undefined,
+			)
 			assert.equal(buildCorpusQuery({ question: 'amends', earlier: 1 }, seed, topics), undefined)
 			assert.equal(buildCorpusQuery({ question: 'unknown', index: 0 }, seed, topics), undefined)
-			assert.ok(buildCorpusQuery({ question: 'category', order: 'forward', index: forward.index ?? 0 }, seed, topics) !== undefined)
+			assert.ok(
+				buildCorpusQuery(
+					{ question: 'category', order: 'forward', index: forward.index ?? 0 },
+					seed,
+					topics,
+				) !== undefined,
+			)
 		})
 
 		it('narrows cache rows to those that carry exactly one outcome', () => {
@@ -389,7 +449,11 @@ describe('helpers.ts', () => {
 			['t2', { success: false }],
 		])
 		const none = new Set<string>()
-		function assign(id: string, requests: ReadonlySet<string>, annotations: ReadonlySet<string> = none) {
+		function assign(
+			id: string,
+			requests: ReadonlySet<string>,
+			annotations: ReadonlySet<string> = none,
+		) {
 			const message = messages.find((one) => one.id === id)
 			assert.ok(message !== undefined)
 			return assignCategory(message, messages, requests, annotations, results)
@@ -432,7 +496,15 @@ describe('helpers.ts', () => {
 		]
 
 		it('digests the model, sampler, cap, and the role and content of each message', () => {
-			const expected = computeDigest(['model-a', { temperature: 0, seed: 7 }, 160, [['system', 'Summarize Marcus Halvorsen.'], ['user', 'Marcus got the refund.']]])
+			const expected = computeDigest([
+				'model-a',
+				{ temperature: 0, seed: 7 },
+				160,
+				[
+					['system', 'Summarize Marcus Halvorsen.'],
+					['user', 'Marcus got the refund.'],
+				],
+			])
 			assert.equal(buildSummaryKey(options, messages), expected)
 		})
 
@@ -445,7 +517,10 @@ describe('helpers.ts', () => {
 				buildSummaryKey({ ...options, sampler: { temperature: 0, seed: 8 } }, messages),
 				buildSummaryKey({ ...options, predict: 161 }, messages),
 				buildSummaryKey(options, messages.slice(0, 1)),
-				buildSummaryKey(options, [{ id: 's1', role: 'system', content: 'Summarize Dana Ostrow.' }, ...messages.slice(1)]),
+				buildSummaryKey(options, [
+					{ id: 's1', role: 'system', content: 'Summarize Dana Ostrow.' },
+					...messages.slice(1),
+				]),
 			])
 			assert.equal(keys.size, 6)
 		})
@@ -458,14 +533,33 @@ describe('helpers.ts', () => {
 		})
 
 		it('refuses a non-object, a missing member, and a member of another type', () => {
-			for (const value of [undefined, null, 14, 'usage', [], {}, { prompt: 10, completion: 4 }, { prompt: '10', completion: 4, total: 14 }]) {
+			for (const value of [
+				undefined,
+				null,
+				14,
+				'usage',
+				[],
+				{},
+				{ prompt: 10, completion: 4 },
+				{ prompt: '10', completion: 4, total: 14 },
+			]) {
 				assert.equal(isUsage(value), false, JSON.stringify(value))
 			}
 		})
 	})
 
 	describe('isSummaryRow', () => {
-		const row = { key: 'k', model: 'model-a', sampler: {}, predict: 160, prose: 'Marcus was refunded.', raw: ' Marcus was refunded.\n', wall: 12.5, origin: 'live', at: 1 }
+		const row = {
+			key: 'k',
+			model: 'model-a',
+			sampler: {},
+			predict: 160,
+			prose: 'Marcus was refunded.',
+			raw: ' Marcus was refunded.\n',
+			wall: 12.5,
+			origin: 'live',
+			at: 1,
+		}
 
 		it('accepts a row with or without a usage', () => {
 			assert.equal(isSummaryRow(row), true)
@@ -487,8 +581,164 @@ describe('helpers.ts', () => {
 
 	describe('isMessageRole', () => {
 		it('accepts the four roles of a message and refuses every other value', () => {
-			for (const role of ['system', 'user', 'assistant', 'tool']) assert.equal(isMessageRole(role), true, role)
-			for (const value of ['developer', 'User', '', undefined, null, 1]) assert.equal(isMessageRole(value), false, String(value))
+			for (const role of ['system', 'user', 'assistant', 'tool'])
+				assert.equal(isMessageRole(role), true, role)
+			for (const value of ['developer', 'User', '', undefined, null, 1])
+				assert.equal(isMessageRole(value), false, String(value))
 		})
+	})
+})
+
+describe('wire summary validation', () => {
+	const summary = `${SUMMARIES_HEADING}\n\n#### Refunds, as of 2026-10-08\nIds: LH-100\nRefund 40.`
+	const support = 'Refunds LH-100 Refund 40.'
+	const run: WireRun = {
+		info: { arm: 'aggregate' },
+		picks: [
+			{
+				goal: 'g01',
+				pass: 1,
+				sequence: 1,
+				briefing: '',
+				digest: '',
+				tail: [],
+				instructions: { [INSTRUCTION_SUMMARIES.name]: summary },
+				scale: 1,
+			},
+		],
+		calls: [{ goal: 'g01', role: 'agent', sequence: 2, started: 0, wall: 0, status: 200 }],
+		wire: new Map([
+			[
+				2,
+				readWireReading(
+					{ body: { messages: [{ role: 'system', content: `${summary}\n\n${support}` }] } },
+					{
+						text: JSON.stringify({
+							done: true,
+							done_reason: 'stop',
+							prompt_eval_count: 100,
+							eval_count: 10,
+						}),
+					},
+				),
+			],
+		]),
+	}
+
+	it('preserves a single supported block and refuses a single unsupported block', () => {
+		assert.equal(matchesExposure(run, 'g01'), true)
+		assert.deepEqual(listWireFailures(run), [])
+		const reading = run.wire.get(2)
+		assert.ok(reading !== undefined)
+		const unsupported = {
+			...run,
+			wire: new Map([[2, { ...reading, messages: [{ role: 'system', content: summary }] }]]),
+		}
+		assert.ok(listWireFailures(unsupported).some((failure) => failure.includes('sole-carried')))
+	})
+
+	it('refuses duplicate summaries instead of allowing treatment to support itself', () => {
+		const reading = run.wire.get(2)
+		assert.ok(reading !== undefined)
+		for (const messages of [
+			[{ role: 'system', content: `${summary}\n\n${summary}` }],
+			[
+				{ role: 'system', content: summary },
+				{ role: 'system', content: summary },
+			],
+		]) {
+			const duplicate: WireRun = { ...run, wire: new Map([[2, { ...reading, messages }]]) }
+			assert.ok(listWireFailures(duplicate).some((failure) => failure.includes('summaries block')))
+			assert.equal(matchesExposure(duplicate, 'g01'), false)
+		}
+	})
+
+	it('refuses extra unrecorded blocks beside an otherwise supported recorded block', () => {
+		const reading = run.wire.get(2)
+		assert.ok(reading !== undefined)
+		const extra = summary.replaceAll('LH-100', 'LH-999').replace('40.', '900.')
+		for (const messages of [
+			[{ role: 'system', content: `${summary}\n${support}\n${extra}` }],
+			[
+				{ role: 'system', content: `${summary}\n${support}` },
+				{ role: 'system', content: extra },
+			],
+		]) {
+			const unrecorded: WireRun = { ...run, wire: new Map([[2, { ...reading, messages }]]) }
+			assert.ok(listWireFailures(unrecorded).some((failure) => failure.includes('summaries block')))
+			assert.equal(matchesExposure(unrecorded, 'g01'), false)
+		}
+	})
+
+	it('does not count an IDs-only entry as nonempty wire exposure', () => {
+		const reading = run.wire.get(2)
+		assert.ok(reading !== undefined)
+		const empty = `${SUMMARIES_HEADING}\n\n#### Refunds, as of 2026-10-08\nIds: LH-100\n`
+		const noProse = {
+			...run,
+			picks: run.picks.map((pick) => ({
+				...pick,
+				instructions: { [INSTRUCTION_SUMMARIES.name]: empty },
+			})),
+			wire: new Map([
+				[
+					2,
+					{ ...reading, messages: [{ role: 'system', content: `${empty}\nRefunds Ids: LH-100` }] },
+				],
+			]),
+		}
+		assert.equal(matchesExposure(noProse, 'g01'), false)
+	})
+})
+
+describe('raw completion evidence', () => {
+	it('requires usage on agent calibration calls before the first served goal too', () => {
+		const failures = listWireFailures({
+			info: { arm: 'control' },
+			picks: [],
+			wire: new Map(),
+			calls: [{ sequence: 1, role: 'agent', goal: undefined, started: 0, wall: 0, status: 200 }],
+		})
+		assert.deepEqual(failures, [
+			'control calibration request 1: missing wire usage',
+			'control calibration request 1: missing wire request',
+		])
+	})
+
+	it('refuses absent, malformed, incomplete, and invalid usage instead of substituting zero', () => {
+		assert.deepEqual(listUsageFailures(undefined), ['missing wire usage'])
+		for (const response of [
+			undefined,
+			{ text: '{broken' },
+			{ text: '{"done":false,"prompt_eval_count":12,"eval_count":1}' },
+			{ text: '{"done":true,"prompt_eval_count":12}' },
+			{ text: '{"done":true,"prompt_eval_count":12,"eval_count":-1}' },
+			{ text: '{"done":true,"prompt_eval_count":"12","eval_count":1}' },
+		]) {
+			assert.deepEqual(listUsageFailures(readWireReading(undefined, response)), [
+				'missing or malformed wire usage',
+			])
+		}
+	})
+
+	it('checks the completion ceiling, length reason, and strict total boundary with adjacent passing controls', () => {
+		for (const [prompt, completion, reason, failure] of [
+			[2559, 512, 'stop', ''],
+			[2560, 512, 'stop', 'prompt plus completion'],
+			[12, 513, 'stop', 'completion 513'],
+			[12, 1, 'length', 'length-limited'],
+		] as const) {
+			const reading = readWireReading(
+				{ body: { messages: [{ role: 'user', content: 'Question' }] } },
+				{
+					text: `${JSON.stringify({ done: true, done_reason: reason, prompt_eval_count: prompt, eval_count: completion })}\r\n`,
+				},
+			)
+			assert.deepEqual(reading.messages, [{ role: 'user', content: 'Question' }])
+			assert.equal(
+				listUsageFailures(reading).some((entry) => entry.startsWith(failure)),
+				failure !== '',
+			)
+		}
 	})
 })

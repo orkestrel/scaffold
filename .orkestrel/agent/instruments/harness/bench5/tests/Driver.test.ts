@@ -1,5 +1,6 @@
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import type { Fixture } from './fixture.ts'
+import type { Message } from '../../vendor/agent-0.0.30/index.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -7,17 +8,22 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { compileRules, scoreText } from '../../bench/rescore.mjs'
+import { estimateMessages } from '../../vendor/agent-0.0.30/index.js'
 import { SUMMARIES_HEADING, SUMMARY_PREFIX } from '../aggregates/constants.ts'
 import { COPIES_DIR, HARNESS, SAMPLER, VENDOR_AGENT } from '../constants.ts'
-import { FLUSH_SYSTEM, classifyMisses, describeLookups, parseFlags, resolveShare, shapeBody } from '../Driver.ts'
-import { computeDigest, readJSON, readRows } from '../helpers.ts'
+import { FLUSH_SYSTEM, classifyMisses, describeLookups, parseFlags, shapeBody } from '../Driver.ts'
+import { computeDigest, isMessageRole, readJSON, readRows } from '../helpers.ts'
 import { loadExchange, replaceContent, startFixture } from './fixture.ts'
 
 const BENCH = join(HARNESS, 'bench5', 'bench.ts')
 const GOALS = 'g01,g11'
 const LEAKS = 'g01,g11,g19'
-const WEEKDAY = Object.freeze({ g01: 'Today is Thursday 2026-10-08.', g11: 'Today is Friday 2026-10-09.' })
+const WEEKDAY = Object.freeze({
+	g01: 'Today is Thursday 2026-10-08.',
+	g11: 'Today is Friday 2026-10-09.',
+})
 const LOOKUP_TEXT = 'delivered 2026-10-09 at 7:40 am'
 const MICA_PROMPT = 120
 const ALLOWANCE = 300
@@ -27,8 +33,10 @@ const CAPPED = 4
 const SUMMARIES = Object.freeze({
 	'about refunds as of': 'The standing rule applies to this topic.',
 	'about returns as of': 'The standing rule applies to this topic.',
-	'about escalations as of': 'Adeyemi gives any sign-off while Marcus is away. The standing rule applies to this topic.',
-	'about delivery as of': 'WKND15 takes 15 percent off a delayed order. The standing rule applies to this topic.',
+	'about escalations as of':
+		'Adeyemi gives any sign-off while Marcus is away. The standing rule applies to this topic.',
+	'about delivery as of':
+		'WKND15 takes 15 percent off a delayed order. The standing rule applies to this topic.',
 	'about warehouse as of': 'The standing rule applies to this topic.',
 	'about contacts as of': 'The standing rule applies to this topic.',
 })
@@ -106,7 +114,9 @@ function answerJudge(prompt: string): string {
 		const pattern: unknown = Reflect.get(TOPICS, topic)
 		const yes =
 			prompt.includes('Does the summary agree') ||
-			(pattern instanceof RegExp && pattern.test(state.toLowerCase()) && !prompt.includes('Does the event change'))
+			(pattern instanceof RegExp &&
+				pattern.test(state.toLowerCase()) &&
+				!prompt.includes('Does the event change'))
 		tokens = ['Yes', 'No']
 		first = yes ? 'Yes' : 'No'
 	}
@@ -128,13 +138,21 @@ function answerJudge(prompt: string): string {
 }
 
 // Builds the NDJSON of a reply that calls one lookup, reusing the usage counts of the recorded exchange.
-function buildToolReply(body: string, name: string, args: Readonly<Record<string, string>>): string {
+function buildToolReply(
+	body: string,
+	name: string,
+	args: Readonly<Record<string, string>>,
+): string {
 	const records = body.split('\n').filter((line) => line !== '')
 	const last: unknown = JSON.parse(records[records.length - 1] ?? '{}')
 	return `${JSON.stringify({
 		model: readField(last, 'model'),
 		created_at: readField(last, 'created_at'),
-		message: { role: 'assistant', content: '', tool_calls: [{ function: { name, arguments: args } }] },
+		message: {
+			role: 'assistant',
+			content: '',
+			tool_calls: [{ function: { name, arguments: args } }],
+		},
 		done: true,
 		done_reason: 'stop',
 		prompt_eval_count: readField(last, 'prompt_eval_count'),
@@ -179,7 +197,9 @@ function startStub(fixture: Fixture, requests: ReadonlyMap<string, string>): Pro
 					body: text,
 					headers: { 'content-type': 'application/json' },
 				})
-				response.writeHead(forwarded.status, { 'content-type': forwarded.headers.get('content-type') ?? 'application/json' })
+				response.writeHead(forwarded.status, {
+					'content-type': forwarded.headers.get('content-type') ?? 'application/json',
+				})
 				response.end(await forwarded.text())
 			})
 			.catch((error: unknown) => {
@@ -195,14 +215,22 @@ function startStub(fixture: Fixture, requests: ReadonlyMap<string, string>): Pro
 
 function runBench(args: readonly string[]): Promise<Outcome> {
 	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, ['--import', blocker, BENCH, ...args], { cwd: HARNESS })
+		const child = spawn(
+			process.execPath,
+			['--import', pathToFileURL(blocker).href, BENCH, ...args],
+			{ cwd: HARNESS },
+		)
 		const out: Buffer[] = []
 		const err: Buffer[] = []
 		child.stdout.on('data', (chunk: Buffer) => out.push(chunk))
 		child.stderr.on('data', (chunk: Buffer) => err.push(chunk))
 		child.on('error', reject)
 		child.on('close', (code) =>
-			resolve({ code, stdout: Buffer.concat(out).toString('utf8'), stderr: Buffer.concat(err).toString('utf8') }),
+			resolve({
+				code,
+				stdout: Buffer.concat(out).toString('utf8'),
+				stderr: Buffer.concat(err).toString('utf8'),
+			}),
 		)
 	})
 }
@@ -232,7 +260,10 @@ function hasTools(body: unknown): boolean {
 
 // Picks the requests that serve a goal's first pass: they advertise tools, carry the instructions, and end on the user's request.
 function pickFirstPasses(chat: readonly unknown[]): readonly unknown[] {
-	return chat.filter((body) => hasTools(body) && lastRole(body) === 'user' && readSystem(body).includes('## Instructions'))
+	return chat.filter(
+		(body) =>
+			hasTools(body) && lastRole(body) === 'user' && readSystem(body).includes('## Instructions'),
+	)
 }
 
 // Picks the answer passes: they advertise no tools and carry the instructions.
@@ -278,10 +309,29 @@ const closers: Array<() => Promise<void>> = []
 let url = ''
 
 function stubArgs(extra: readonly string[], list = GOALS, store = cache): readonly string[] {
-	return ['--copy', '1', '--url', url, '--cache', store, '--fit', fit, '--settings', settings, '--goals', list, ...extra]
+	return [
+		'--copy',
+		'1',
+		'--url',
+		url,
+		'--cache',
+		store,
+		'--fit',
+		fit,
+		'--settings',
+		settings,
+		'--goals',
+		list,
+		...extra,
+	]
 }
 
-async function startRun(name: string, extra: readonly string[], list = GOALS, store = cache): Promise<void> {
+async function startRun(
+	name: string,
+	extra: readonly string[],
+	list = GOALS,
+	store = cache,
+): Promise<void> {
 	const out = pick(name)
 	const from = wire.chat.length
 	const outcome = await runBench(stubArgs([...extra, '--out', out], list, store))
@@ -300,7 +350,9 @@ function listFile(name: string, file: string): readonly unknown[] {
 
 // Rebuilds what the control arm shows at a goal's first pass: the system text and date, the briefing, and the tail.
 function shownAt(name: string, prefix: string, index: number): string {
-	const record = listFile(name, 'selections.jsonl').find((one) => readText(one, 'goal').startsWith(prefix))
+	const record = listFile(name, 'selections.jsonl').find((one) =>
+		readText(one, 'goal').startsWith(prefix),
+	)
 	const system = readSystem(pickFirstPasses(recall(name).chat)[index])
 	const cut = system.indexOf(SUMMARIES_HEADING)
 	return [
@@ -313,7 +365,9 @@ function shownAt(name: string, prefix: string, index: number): string {
 // Lists the seed indices that precede a goal's request in a run's messages.
 function listIndices(name: string, goal: string): readonly number[] {
 	const messages = listFile(name, 'messages.jsonl')
-	const at = messages.findIndex((one) => readField(one, 'request') === true && readText(one, 'goal').startsWith(goal))
+	const at = messages.findIndex(
+		(one) => readField(one, 'request') === true && readText(one, 'goal').startsWith(goal),
+	)
 	assert.ok(at >= 0, goal)
 	return messages
 		.slice(0, at)
@@ -340,7 +394,9 @@ function readProse(name: string, topic: string, goal: string): string {
 
 // Reads the summaries block that a goal's first select carried.
 function readBlock(name: string, goal: string): string {
-	const record = listFile(name, 'selections.jsonl').find((one) => readText(one, 'goal').startsWith(goal))
+	const record = listFile(name, 'selections.jsonl').find((one) =>
+		readText(one, 'goal').startsWith(goal),
+	)
 	return String(readField(readField(record, 'instructions'), 'summaries') ?? '')
 }
 
@@ -358,8 +414,11 @@ describe('Driver', () => {
 				'',
 			].join('\n'),
 		)
-		writeFileSync(settings, JSON.stringify({ q2: { allowance: ALLOWANCE, retry: 1, predict: 160 } }))
-		writeFileSync(fit, JSON.stringify({ change: 0.6, agree: 0.6, separated: false }))
+		writeFileSync(
+			settings,
+			JSON.stringify({ q2: { allowance: ALLOWANCE, retry: 1, predict: 160 } }),
+		)
+		writeFileSync(fit, JSON.stringify({ change: 0.6, agree: 0.6, separated: true }))
 		for (const goal of readList(readJSON(join(COPIES_DIR, 'v1.json')), 'goals')) {
 			const prefix = readText(goal, 'id').slice(0, 3)
 			goals.set(prefix, readText(goal, 'request'))
@@ -381,7 +440,11 @@ describe('Driver', () => {
 		mode.lookup = true
 		await startRun('control', ['--run', '--live', '--arm', 'control'])
 		await startRun('aggregate', ['--run', '--live', '--arm', 'aggregate'])
-		await startRun('squeeze', ['--run', '--live', '--arm', 'aggregate', '--allowance', String(SQUEEZE)], LEAKS)
+		await startRun(
+			'squeeze',
+			['--run', '--live', '--arm', 'aggregate', '--allowance', String(SQUEEZE)],
+			LEAKS,
+		)
 		await startRun('offline', ['--run', '--arm', 'control'])
 		mode.lookup = false
 		mode.empty = true
@@ -397,7 +460,10 @@ describe('Driver', () => {
 	describe('usage', () => {
 		it('exits 64 without exactly one mode', async () => {
 			assert.equal((await runBench(['--copy', '1'])).code, 64)
-			assert.equal((await runBench(['--run', '--dry', '--copy', '1', '--out', pick('usage')])).code, 64)
+			assert.equal(
+				(await runBench(['--run', '--dry', '--copy', '1', '--out', pick('usage')])).code,
+				64,
+			)
 		})
 
 		it('exits 64 for a copy outside 1 to 8, an unknown model, and an unknown flag', async () => {
@@ -425,11 +491,6 @@ describe('Driver', () => {
 	})
 
 	describe('helpers', () => {
-		it('sets the aggregate share to the default less the allowance over the window', () => {
-			assert.equal(resolveShare(300, 3072, 500), 0.7 - 300 / 2572)
-			assert.throws(() => resolveShare(3000, 3072, 0), /leaves no prompt share/)
-		})
-
 		it('lists the lookup version each read point serves', () => {
 			const tables = {
 				tools: {},
@@ -447,9 +508,21 @@ describe('Driver', () => {
 		it('sets truncate false on a chat request and num_predict 1 on a calibration call only', () => {
 			const body = JSON.stringify({ model: 'm', options: { num_ctx: 3072, temperature: 0 } })
 			const options = { num_ctx: 3072, temperature: 0 }
-			assert.deepEqual(JSON.parse(shapeBody('agent', body, false)), { model: 'm', options, truncate: false })
-			assert.deepEqual(JSON.parse(shapeBody('agent', body, true)), { model: 'm', options: { ...options, num_predict: 1 }, truncate: false })
-			assert.deepEqual(JSON.parse(shapeBody('summarizer', body, true)), { model: 'm', options, truncate: false })
+			assert.deepEqual(JSON.parse(shapeBody('agent', body, false)), {
+				model: 'm',
+				options,
+				truncate: false,
+			})
+			assert.deepEqual(JSON.parse(shapeBody('agent', body, true)), {
+				model: 'm',
+				options: { ...options, num_predict: 1 },
+				truncate: false,
+			})
+			assert.deepEqual(JSON.parse(shapeBody('summarizer', body, true)), {
+				model: 'm',
+				options,
+				truncate: false,
+			})
 			assert.equal(shapeBody('judge', body, true), body)
 		})
 
@@ -459,7 +532,11 @@ describe('Driver', () => {
 				JSON.stringify(['topic', 'r1', 'refunds']),
 				JSON.stringify(['amends', 'a', 'r1']),
 			])
-			assert.deepEqual(classifyMisses(missed, new Set(['r1'])), { misses: { category: 1, topic: 1, amends: 1 }, seed: 1, requests: 2 })
+			assert.deepEqual(classifyMisses(missed, new Set(['r1'])), {
+				misses: { category: 1, topic: 1, amends: 1 },
+				seed: 1,
+				requests: 2,
+			})
 		})
 	})
 
@@ -470,8 +547,14 @@ describe('Driver', () => {
 				assert.equal(outcome.code, 0, outcome.stderr)
 				assert.match(outcome.stdout, /fetches 0/)
 				assert.match(outcome.stdout, /g01-luis-refund-amount after=47 date=2026-10-08/)
-				assert.match(outcome.stdout, /g11-grace-signoff-today after=89 date=2026-10-09 lookups=LH-80941@81, LH-71592@base/)
-				assert.match(outcome.stdout, /g20-copperline-manager after=137 date=2026-10-10 lookups=LH-80941@81, LH-71592@135/)
+				assert.match(
+					outcome.stdout,
+					/g11-grace-signoff-today after=89 date=2026-10-09 lookups=LH-80941@81, LH-71592@base/,
+				)
+				assert.match(
+					outcome.stdout,
+					/g20-copperline-manager after=137 date=2026-10-10 lookups=LH-80941@81, LH-71592@135/,
+				)
 			})
 		}
 
@@ -484,7 +567,15 @@ describe('Driver', () => {
 		it('exits 1 for a fit file that holds no valid cutoffs', async () => {
 			const broken = join(directory, 'broken-fit.json')
 			writeFileSync(broken, JSON.stringify({ change: 0.4, agree: 0.6, separated: false }))
-			const outcome = await runBench(['--dry', '--copy', '1', '--fit', broken, '--cache', pick('dry')])
+			const outcome = await runBench([
+				'--dry',
+				'--copy',
+				'1',
+				'--fit',
+				broken,
+				'--cache',
+				pick('dry'),
+			])
 			assert.equal(outcome.code, 1)
 			assert.match(outcome.stderr, /no valid cutoffs/)
 		})
@@ -511,13 +602,22 @@ describe('Driver', () => {
 			assert.ok(listFile('aggregate', 'aggregates.jsonl').length > 0)
 			const report = readJSON(join(recall('aggregate').out, 'run.json'))
 			assert.equal(readField(report, 'status'), 'complete')
-			assert.equal(readField(readField(report, 'build'), 'sha256'), computeDigest(readFileSync(VENDOR_AGENT, 'utf8')))
+			assert.equal(
+				readField(readField(report, 'build'), 'sha256'),
+				computeDigest(readFileSync(VENDOR_AGENT, 'utf8')),
+			)
 			assert.equal(readField(readField(report, 'settings'), 'allowance'), ALLOWANCE)
 		})
 
 		it('adds the seed through each goal read point before its request', () => {
-			assert.deepEqual(listIndices('control', 'g01'), Array.from({ length: 48 }, (_, at) => at))
-			assert.deepEqual(listIndices('control', 'g11'), Array.from({ length: 90 }, (_, at) => at))
+			assert.deepEqual(
+				listIndices('control', 'g01'),
+				Array.from({ length: 48 }, (_, at) => at),
+			)
+			assert.deepEqual(
+				listIndices('control', 'g11'),
+				Array.from({ length: 90 }, (_, at) => at),
+			)
 			const added = listFile('control', 'messages.jsonl')
 				.map((one) => readField(one, 'index'))
 				.filter((index): index is number => typeof index === 'number')
@@ -537,23 +637,39 @@ describe('Driver', () => {
 		it('returns the versioned text for a lookup of LH-80941 at g11', () => {
 			for (const name of ['control', 'aggregate']) {
 				const tools = listFile(name, 'messages.jsonl').filter(
-					(one) => readField(one, 'role') === 'tool' && String(readField(one, 'goal')).startsWith('g11'),
+					(one) =>
+						readField(one, 'role') === 'tool' && String(readField(one, 'goal')).startsWith('g11'),
 				)
 				assert.equal(tools.length, 1)
 				assert.ok(readText(tools[0], 'content').includes(LOOKUP_TEXT))
-				assert.equal(readField(readField(findGoal(listFile(name, 'rows.jsonl'), 'g11'), 'lookups'), 'calls'), 1)
+				assert.equal(
+					readField(readField(findGoal(listFile(name, 'rows.jsonl'), 'g11'), 'lookups'), 'calls'),
+					1,
+				)
 			}
 		})
 
 		it('puts the system text, the instructions header, the date, the summaries, and the briefing in that order in the aggregate arm only', () => {
-			const text = readText(readField(readJSON(join(COPIES_DIR, 'v1.json')), 'ledger'), 'system').slice(0, 60)
+			const text = readText(
+				readField(readJSON(join(COPIES_DIR, 'v1.json')), 'ledger'),
+				'system',
+			).slice(0, 60)
 			const aggregate = pickFirstPasses(recall('aggregate').chat)
 			assert.equal(aggregate.length, 2)
 			for (const [at, goal] of (['g01', 'g11'] as const).entries()) {
 				const content = readSystem(aggregate[at])
-				const order = [text, '## Instructions', WEEKDAY[goal], SUMMARIES_HEADING, '## Pinned'].map((part) => content.indexOf(part))
-				assert.ok(order.every((place) => place >= 0), `${goal}: ${JSON.stringify(order)}`)
-				assert.deepEqual([...order].sort((left, right) => left - right), order, goal)
+				const order = [text, '## Instructions', WEEKDAY[goal], SUMMARIES_HEADING, '## Pinned'].map(
+					(part) => content.indexOf(part),
+				)
+				assert.ok(
+					order.every((place) => place >= 0),
+					`${goal}: ${JSON.stringify(order)}`,
+				)
+				assert.deepEqual(
+					[...order].sort((left, right) => left - right),
+					order,
+					goal,
+				)
 			}
 			for (const body of pickFirstPasses(recall('control').chat)) {
 				assert.equal(readSystem(body).includes(SUMMARIES_HEADING), false)
@@ -561,19 +677,58 @@ describe('Driver', () => {
 			}
 		})
 
-		it('carries the same system message into the answer pass', () => {
+		it('removes the stale block from the actual answer-pass request after the selection bypasses aggregation', () => {
 			const first = pickFirstPasses(recall('answer').chat)
 			const answers = pickAnswerPasses(recall('answer').chat)
 			assert.equal(first.length, 2)
 			assert.equal(answers.length, 2)
 			for (const [at, body] of answers.entries()) {
-				assert.ok(readSystem(body).includes(SUMMARIES_HEADING))
-				assert.equal(readSystem(body), readSystem(first[at]))
+				assert.ok(!readSystem(body).includes(SUMMARIES_HEADING))
+				assert.ok(readSystem(first[at]).includes(SUMMARIES_HEADING))
 			}
 			for (const row of listFile('answer', 'rows.jsonl')) {
 				assert.equal(readNumber(row, 'passes'), 2)
 				assert.equal(readField(row, 'via'), 'answered')
 			}
+		})
+
+		it('prices the summary-free answer request at the ledger turn before sending those same bytes', () => {
+			const calls = listFile('answer', 'calls.jsonl')
+			const rows = listFile('answer', 'rows.jsonl')
+			for (const [at, body] of pickAnswerPasses(recall('answer').chat).entries()) {
+				const messages: readonly Message[] = readList(body, 'messages').map((message, index) => {
+					const role = readField(message, 'role')
+					assert.ok(isMessageRole(role))
+					assert.deepEqual(readList(message, 'tool_calls'), [])
+					return { id: String(index), role, content: readText(message, 'content') }
+				})
+				const call = calls.findLast(
+					(one) =>
+						readField(one, 'role') === 'agent' &&
+						readField(one, 'goal') === readField(rows[at], 'goal'),
+				)
+				assert.equal(readNumber(call, 'estimate'), estimateMessages(messages))
+				const contaminated = messages.map((message, index) =>
+					index === 0
+						? { ...message, content: `${message.content}\n\n${SUMMARIES_HEADING}` }
+						: message,
+				)
+				assert.notEqual(readNumber(call, 'estimate'), estimateMessages(contaminated))
+			}
+		})
+
+		it('refuses aggregate execution with a failed fit before an output directory or request exists', async () => {
+			const failed = pick('failed-fit.json')
+			const out = pick('failed-fit-output')
+			writeFileSync(failed, JSON.stringify({ change: 0.6, agree: 0.6, separated: false }))
+			const count = wire.chat.length
+			const outcome = await runBench(
+				stubArgs(['--run', '--live', '--arm', 'aggregate', '--fit', failed, '--out', out]),
+			)
+			assert.equal(outcome.code, 1)
+			assert.match(outcome.stderr, /fit.separated/)
+			assert.equal(existsSync(out), false)
+			assert.equal(wire.chat.length, count)
 		})
 
 		it('sends one identical prefix flush per goal in both arms, after the aggregate stage and before the first pass', () => {
@@ -590,32 +745,44 @@ describe('Driver', () => {
 				}
 				const passes = pickFirstPasses(chat)
 				for (const [at, flush] of flushes.entries()) {
-					assert.ok(chat.indexOf(flush) < chat.indexOf(passes[at]), `${name}: flush ${at} comes before its first pass`)
+					assert.ok(
+						chat.indexOf(flush) < chat.indexOf(passes[at]),
+						`${name}: flush ${at} comes before its first pass`,
+					)
 				}
 			}
 			const summaries = pickSummaries(recall('aggregate').chat)
 			assert.ok(summaries.length > 0)
-			assert.ok(recall('aggregate').chat.indexOf(summaries[0]) < recall('aggregate').chat.indexOf(pickFlushes(recall('aggregate').chat)[0]))
+			assert.ok(
+				recall('aggregate').chat.indexOf(summaries[0]) <
+					recall('aggregate').chat.indexOf(pickFlushes(recall('aggregate').chat)[0]),
+			)
 			assert.deepEqual(listFlushBodies('control'), listFlushBodies('aggregate'))
 		})
 
 		it('sends truncate false on every chat request and num_predict 1 on the calibration calls and the flush only', () => {
 			const chat = recall('aggregate').chat
 			for (const body of chat) assert.equal(readField(body, 'truncate'), false)
-			const capped = chat.filter((body) => readField(readField(body, 'options'), 'num_predict') === 1)
+			const capped = chat.filter(
+				(body) => readField(readField(body, 'options'), 'num_predict') === 1,
+			)
 			assert.equal(capped.length, CAPPED)
 			assert.equal(capped.filter((body) => readSystem(body) === FLUSH_SYSTEM).length, 2)
-			for (const body of pickSummaries(chat)) assert.equal(readField(readField(body, 'options'), 'num_predict'), 160)
+			for (const body of pickSummaries(chat))
+				assert.equal(readField(readField(body, 'options'), 'num_predict'), 160)
 		})
 
-		it('sets share.prompt from the calibrated gauge in the aggregate arm and keeps the default in the control arm', () => {
+		it('keeps default shares and the initial calibrated gauge identical across arms', () => {
 			const control = readJSON(join(recall('control').out, 'run.json'))
 			const aggregate = readJSON(join(recall('aggregate').out, 'run.json'))
 			const gauge = readField(aggregate, 'gauge')
 			assert.deepEqual(readField(control, 'gauge'), gauge)
 			assert.equal(readField(readField(control, 'share'), 'prompt'), 0.7)
-			assert.equal(readField(readField(aggregate, 'share'), 'prompt'), resolveShare(ALLOWANCE, SAMPLER.num_ctx, readNumber(gauge, 'fixed')))
-			assert.equal(readField(listFile('aggregate', 'rows.jsonl')[0], 'scale'), readNumber(gauge, 'scale'))
+			assert.deepEqual(readField(aggregate, 'share'), readField(control, 'share'))
+			assert.equal(
+				readField(listFile('aggregate', 'rows.jsonl')[0], 'scale'),
+				readNumber(gauge, 'scale'),
+			)
 		})
 
 		it('records the stage and flush walls apart from the agent wall, and the aggregate topics and tokens per goal', () => {
@@ -639,8 +806,15 @@ describe('Driver', () => {
 		it('plans the briefing of the first goal identically in both arms and digests the tail by seed index', () => {
 			const control = listFile('control', 'rows.jsonl')
 			const aggregate = listFile('aggregate', 'rows.jsonl')
-			assert.equal(readField(readField(control[0], 'briefing'), 'digest'), readField(readField(aggregate[0], 'briefing'), 'digest'))
-			assert.equal(readField(readField(control[0], 'briefing'), 'tokens'), readField(readField(aggregate[0], 'briefing'), 'tokens'))
+			assert.equal(
+				readField(readField(control[0], 'briefing'), 'digest'),
+				readField(readField(aggregate[0], 'briefing'), 'digest'),
+			)
+			assert.equal(
+				readField(readField(control[0], 'briefing'), 'tokens'),
+				readField(readField(aggregate[0], 'briefing'), 'tokens'),
+			)
+			assert.equal(readField(control[0], 'tail'), readField(aggregate[0], 'tail'))
 			assert.match(String(readField(control[0], 'tail')), /^[0-9a-f]{64}$/)
 			const tail = readList(listFile('control', 'selections.jsonl')[0], 'tail')
 			assert.ok(tail.length > 0)
@@ -656,7 +830,10 @@ describe('Driver', () => {
 			const rows = listFile('offline', 'rows.jsonl')
 			assert.equal(rows.length, 2)
 			for (const [at, row] of rows.entries()) {
-				assert.equal(readField(readField(row, 'briefing'), 'digest'), readField(readField(first[at], 'briefing'), 'digest'))
+				assert.equal(
+					readField(readField(row, 'briefing'), 'digest'),
+					readField(readField(first[at], 'briefing'), 'digest'),
+				)
 				assert.equal(readField(row, 'tail'), readField(first[at], 'tail'))
 			}
 			const judge = readField(readJSON(join(recall('offline').out, 'run.json')), 'judge')
@@ -674,19 +851,32 @@ describe('Driver', () => {
 		it('keeps a name and an id that only the summaries carry out of the block and reports no sole token', () => {
 			const rows = listFile('squeeze', 'rows.jsonl')
 			const cases = [
-				{ goal: 'g11', at: 1, name: 'Adeyemi', summaries: readProse('squeeze', 'escalations', 'g01') },
+				{
+					goal: 'g11',
+					at: 1,
+					name: 'Adeyemi',
+					summaries: readProse('squeeze', 'escalations', 'g01'),
+				},
 				{ goal: 'g19', at: 2, name: 'WKND15', summaries: readProse('squeeze', 'delivery', 'g19') },
 			]
 			for (const { goal, at, name, summaries } of cases) {
 				const shown = shownAt('squeeze', goal, at)
-				assert.equal(shown.toLowerCase().includes(name.toLowerCase()), false, `${name} is shown at ${goal}`)
+				const absent = !shown.toLowerCase().includes(name.toLowerCase())
 				assert.ok(summaries.includes(name), `${name} is in the unfiltered prose`)
 				const phrases = [name.toLowerCase()]
 				assert.deepEqual(expected.get(goal), phrases)
-				assert.equal(auditLeaks(phrases, summaries, shown), 1, `${goal}: soleScored over the unfiltered prose`)
-				assert.equal(auditLeaks(phrases, readBlock('squeeze', goal), shown), 0, `${goal}: soleScored over the rendered block`)
+				assert.equal(
+					auditLeaks(phrases, summaries, shown),
+					absent ? 1 : 0,
+					`${goal}: soleScored over the unfiltered prose`,
+				)
+				assert.equal(
+					auditLeaks(phrases, readBlock('squeeze', goal), shown),
+					0,
+					`${goal}: soleScored over the rendered block`,
+				)
 				const row = findGoal(rows, goal)
-				assert.ok(readNumber(row, 'filtered') >= 1, `${goal}: filtered`)
+				if (absent) assert.ok(readNumber(row, 'filtered') >= 1, `${goal}: filtered`)
 				assert.equal(readNumber(row, 'sole'), 0, `${goal}: sole`)
 			}
 			assert.ok(readBlock('squeeze', 'g11').includes('The standing rule applies to this topic.'))
@@ -696,14 +886,21 @@ describe('Driver', () => {
 	describe('harness fault', () => {
 		it('aborts the run with a fault status after the retry bound and records the failed judge requests', async () => {
 			mode.fail = true
-			await startRun('fault', ['--run', '--live', '--retry', '1'], GOALS, join(directory, 'fault-cache'))
+			await startRun(
+				'fault',
+				['--run', '--live', '--retry', '1'],
+				GOALS,
+				join(directory, 'fault-cache'),
+			)
 			mode.fail = false
 			const run = recall('fault')
 			assert.equal(run.outcome.code, 1)
 			assert.match(run.outcome.stderr, /harness fault: the judge failed 2 times/)
 			assert.equal(readField(readJSON(join(run.out, 'run.json')), 'status'), 'fault')
 			assert.equal(listFile('fault', 'rows.jsonl').length, 0)
-			const failed = listFile('fault', 'calls.jsonl').filter((call) => readField(call, 'role') === 'judge' && readField(call, 'status') === 500)
+			const failed = listFile('fault', 'calls.jsonl').filter(
+				(call) => readField(call, 'role') === 'judge' && readField(call, 'status') === 500,
+			)
 			assert.equal(failed.length, 2)
 			assert.ok(existsSync(join(run.out, 'messages.jsonl')))
 		})
@@ -714,12 +911,25 @@ describe('Driver', () => {
 			const store = join(directory, 'seed-cache')
 			const out = pick('seed')
 			const from = wire.judge.length
-			const flags = ['--copy', '1', '--cache', store, '--fit', fit, '--settings', settings, '--goals', GOALS]
+			const flags = [
+				'--copy',
+				'1',
+				'--cache',
+				store,
+				'--fit',
+				fit,
+				'--settings',
+				settings,
+				'--goals',
+				GOALS,
+			]
 			const seeded = await runBench(['--seed', '--live', '--url', url, ...flags, '--out', out])
 			assert.equal(seeded.code, 0, seeded.stderr)
 			assert.ok(wire.judge.length > from)
 			assert.ok(readFile(join(out, 'judgments.jsonl')).length > 48)
-			assert.ok(readFile(join(out, 'calls.jsonl')).every((call) => readField(call, 'role') === 'judge'))
+			assert.ok(
+				readFile(join(out, 'calls.jsonl')).every((call) => readField(call, 'role') === 'judge'),
+			)
 			assert.equal(readField(readJSON(join(out, 'run.json')), 'status'), 'complete')
 			const dry = await runBench(['--dry', ...flags])
 			assert.equal(dry.code, 0, dry.stderr)

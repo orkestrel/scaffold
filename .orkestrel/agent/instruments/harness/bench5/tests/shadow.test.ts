@@ -4,14 +4,38 @@ import type { AggregateRow, CacheRow, ShadowAggregate, ShadowItem, ShadowTruth }
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { LEDGER_QUESTIONS } from '../../vendor/agent-0.0.30/index.js'
 import { createOllamaJudge } from '../../vendor/ollama/index.js'
-import { FIT, HARNESS, MICA_CALIBRATION, MICA_CONTEXT, MICA_MODEL, MICA_SYSTEM, MODELS, TIMEOUT } from '../constants.ts'
-import { buildCacheKey, buildCategoryQuestion, buildTopicQuestion, readJSON, readRows } from '../helpers.ts'
+import {
+	FIT,
+	HARNESS,
+	MICA_CALIBRATION,
+	MICA_CONTEXT,
+	MICA_MODEL,
+	MICA_SYSTEM,
+	MODELS,
+	TIMEOUT,
+} from '../constants.ts'
+import {
+	buildCacheKey,
+	buildCategoryQuestion,
+	buildTopicQuestion,
+	readJSON,
+	readRows,
+} from '../helpers.ts'
 import {
 	Shadow,
 	buildPairKey,
@@ -39,7 +63,7 @@ globalThis.fetch = async (input) => {
 	fetched.push(String(input instanceof Request ? input.url : input))
 	throw new Error('fetch is blocked in this proof')
 }
-const closers: (() => Promise<void>)[] = []
+const closers: Array<() => Promise<void>> = []
 let outputs = 0
 
 const MODEL = MODELS.q2
@@ -66,21 +90,50 @@ interface Seed {
 	readonly category: string
 	readonly amends?: readonly number[]
 	readonly supersedes?: readonly number[]
-	readonly calls?: readonly { readonly id: string; readonly name: string; readonly arguments: Readonly<Record<string, string>> }[]
+	readonly calls?: ReadonlyArray<{
+		readonly id: string
+		readonly name: string
+		readonly arguments: Readonly<Record<string, string>>
+	}>
 	readonly call?: string
 }
 
 // The seed has the shape of the long scenario's first read point: indices 0 to 3 precede the first request, and a tool group sits among them. Message 3 sits at the first read point, so the shadow leaves it out.
 const SEED: readonly Seed[] = [
 	{ role: 'user', content: 'Morning, I am Dana on the Larkspur desk.', category: 'fact' },
-	{ role: 'assistant', content: '', category: 'chatter', calls: [{ id: 'c1', name: 'lookup_order', arguments: { id: 'LH-5001' } }] },
-	{ role: 'tool', content: 'Order LH-5001: account AC-77 (Halvorsen Studio), shipped Tuesday.', category: 'fact', call: 'c1' },
+	{
+		role: 'assistant',
+		content: '',
+		category: 'chatter',
+		calls: [{ id: 'c1', name: 'lookup_order', arguments: { id: 'LH-5001' } }],
+	},
+	{
+		role: 'tool',
+		content: 'Order LH-5001: account AC-77 (Halvorsen Studio), shipped Tuesday.',
+		category: 'fact',
+		call: 'c1',
+	},
 	// The amends mark stands in for a pair whose later message is the first read point's last message; the shadow leaves it out.
-	{ role: 'user', content: 'Halvorsen asked for refund code MX-1000 on orders over 100.', category: 'fact', amends: [0] },
+	{
+		role: 'user',
+		content: 'Halvorsen asked for refund code MX-1000 on orders over 100.',
+		category: 'fact',
+		amends: [0],
+	},
 	{ role: 'user', content: 'Thanks, that is all for now.', category: 'chatter' },
-	{ role: 'user', content: 'Correction: the refund code is MX-2000, not MX-1000.', category: 'correction', amends: [3] },
+	{
+		role: 'user',
+		content: 'Correction: the refund code is MX-2000, not MX-1000.',
+		category: 'correction',
+		amends: [3],
+	},
 	{ role: 'user', content: 'Lunch is at noon today.', category: 'distractor' },
-	{ role: 'user', content: 'Correction: refund code MX-3000, and forget the lunch plan.', category: 'correction', supersedes: [5, 6] },
+	{
+		role: 'user',
+		content: 'Correction: refund code MX-3000, and forget the lunch plan.',
+		category: 'correction',
+		supersedes: [5, 6],
+	},
 	{ role: 'user', content: 'I think we should be friendlier.', category: 'opinion' },
 ]
 const REQUESTS = Object.freeze({
@@ -91,7 +144,20 @@ const REQUESTS = Object.freeze({
 const AFTER = Object.freeze({ g01: 3, g02: 5, g03: 8 })
 
 // Lists the conversation as the driver adds it: each goal's seed messages, then its request.
-const ORDER: readonly string[] = ['s0', 's1', 's2', 's3', 'q1', 's4', 's5', 'q2', 's6', 's7', 's8', 'q3']
+const ORDER: readonly string[] = [
+	's0',
+	's1',
+	's2',
+	's3',
+	'q1',
+	's4',
+	's5',
+	'q2',
+	's6',
+	's7',
+	's8',
+	'q3',
+]
 
 function readField(value: unknown, key: string): unknown {
 	return typeof value === 'object' && value !== null ? Reflect.get(value, key) : undefined
@@ -141,8 +207,21 @@ function cacheRow(state: string, question: JudgeQuestion, answer: JudgeAnswer): 
 	}
 }
 
-function buildJudgment(id: readonly string[], question: JudgeQuestion, state: string, answer: JudgeAnswer): unknown {
-	return { id: JSON.stringify(id), question, answer, model: JUDGE, sources: id.slice(1), state, time: 1 }
+function buildJudgment(
+	id: readonly string[],
+	question: JudgeQuestion,
+	state: string,
+	answer: JudgeAnswer,
+): unknown {
+	return {
+		id: JSON.stringify(id),
+		question,
+		answer,
+		model: JUDGE,
+		sources: id.slice(1),
+		state,
+		time: 1,
+	}
 }
 
 function buildAggregate(
@@ -202,7 +281,10 @@ function writeFixture(): void {
 			goals: Object.entries(AFTER).map(([id, point]) => ({ id, after: point })),
 		}),
 	)
-	writeFileSync(join(run, 'run.json'), JSON.stringify({ status: 'complete', mode: 'run', copy: 1, model: MODEL, arm: 'aggregate' }))
+	writeFileSync(
+		join(run, 'run.json'),
+		JSON.stringify({ status: 'complete', mode: 'run', copy: 1, model: MODEL, arm: 'aggregate' }),
+	)
 	writeRows(
 		join(run, 'messages.jsonl'),
 		ORDER.map((id) => {
@@ -221,12 +303,42 @@ function writeFixture(): void {
 	)
 	writeRows(join(run, 'judgments.jsonl'), [
 		buildJudgment(['category', 's0'], CATEGORY, renderState('s0'), buildChoice({ fact: 0.9 })),
-		buildJudgment(['category', 's3'], CATEGORY, renderState('s3'), buildChoice({ fact: 0.9, rule: 0.1 })),
-		buildJudgment(['category', 's4'], CATEGORY, renderState('s4'), buildChoice({ chatter: 0.8, fact: 0.2 })),
-		buildJudgment(['category', 's5'], CATEGORY, renderState('s5'), buildChoice({ correction: 0.8, fact: 0.2 })),
-		buildJudgment(['category', 's6'], CATEGORY, renderState('s6'), buildChoice({ distractor: 0.75, fact: 0.25 })),
-		buildJudgment(['category', 's7'], CATEGORY, renderState('s7'), buildChoice({ correction: 0.9, rule: 0.1 })),
-		buildJudgment(['category', 's8'], CATEGORY, renderState('s8'), buildChoice({ opinion: 0.9, chatter: 0.1 })),
+		buildJudgment(
+			['category', 's3'],
+			CATEGORY,
+			renderState('s3'),
+			buildChoice({ fact: 0.9, rule: 0.1 }),
+		),
+		buildJudgment(
+			['category', 's4'],
+			CATEGORY,
+			renderState('s4'),
+			buildChoice({ chatter: 0.8, fact: 0.2 }),
+		),
+		buildJudgment(
+			['category', 's5'],
+			CATEGORY,
+			renderState('s5'),
+			buildChoice({ correction: 0.8, fact: 0.2 }),
+		),
+		buildJudgment(
+			['category', 's6'],
+			CATEGORY,
+			renderState('s6'),
+			buildChoice({ distractor: 0.75, fact: 0.25 }),
+		),
+		buildJudgment(
+			['category', 's7'],
+			CATEGORY,
+			renderState('s7'),
+			buildChoice({ correction: 0.9, rule: 0.1 }),
+		),
+		buildJudgment(
+			['category', 's8'],
+			CATEGORY,
+			renderState('s8'),
+			buildChoice({ opinion: 0.9, chatter: 0.1 }),
+		),
 		buildTopicJudgment('s3', 'refunds', 0.9),
 		buildTopicJudgment('s3', 'escalations', 0.2),
 		buildTopicJudgment('s5', 'refunds', 0.8),
@@ -236,13 +348,48 @@ function writeFixture(): void {
 		buildTopicJudgment('q1', 'escalations', 0.8),
 		buildTopicJudgment('q2', 'refunds', 0.9),
 		buildTopicJudgment('q3', 'delivery', 0.8),
-		buildJudgment(['amends', 's3', 's5'], LEDGER_QUESTIONS.amends, renderPair('s3', 's5'), buildNoul(0.9)),
-		buildJudgment(['amends', 's4', 's5'], LEDGER_QUESTIONS.amends, renderPair('s4', 's5'), buildNoul(0.2)),
-		buildJudgment(['amends', 'q1', 's5'], LEDGER_QUESTIONS.amends, renderPair('q1', 's5'), buildNoul(0.1)),
-		buildJudgment(['amends', 's5', 's7'], LEDGER_QUESTIONS.amends, renderPair('s5', 's7'), buildNoul(0.9)),
-		buildJudgment(['amends', 's3', 's7'], LEDGER_QUESTIONS.amends, renderPair('s3', 's7'), buildNoul(0.3)),
-		buildJudgment(['supersedes', 's5', 's7'], LEDGER_QUESTIONS.supersedes, renderPair('s5', 's7'), buildNoul(0.97)),
-		buildJudgment(['supersedes', 's3', 's5'], LEDGER_QUESTIONS.supersedes, renderPair('s3', 's5'), buildNoul(0.4)),
+		buildJudgment(
+			['amends', 's3', 's5'],
+			LEDGER_QUESTIONS.amends,
+			renderPair('s3', 's5'),
+			buildNoul(0.9),
+		),
+		buildJudgment(
+			['amends', 's4', 's5'],
+			LEDGER_QUESTIONS.amends,
+			renderPair('s4', 's5'),
+			buildNoul(0.2),
+		),
+		buildJudgment(
+			['amends', 'q1', 's5'],
+			LEDGER_QUESTIONS.amends,
+			renderPair('q1', 's5'),
+			buildNoul(0.1),
+		),
+		buildJudgment(
+			['amends', 's5', 's7'],
+			LEDGER_QUESTIONS.amends,
+			renderPair('s5', 's7'),
+			buildNoul(0.9),
+		),
+		buildJudgment(
+			['amends', 's3', 's7'],
+			LEDGER_QUESTIONS.amends,
+			renderPair('s3', 's7'),
+			buildNoul(0.3),
+		),
+		buildJudgment(
+			['supersedes', 's5', 's7'],
+			LEDGER_QUESTIONS.supersedes,
+			renderPair('s5', 's7'),
+			buildNoul(0.97),
+		),
+		buildJudgment(
+			['supersedes', 's3', 's5'],
+			LEDGER_QUESTIONS.supersedes,
+			renderPair('s3', 's5'),
+			buildNoul(0.4),
+		),
 	])
 	writeRows(join(run, 'aggregates.jsonl'), [
 		buildAggregate('owner:AC-77', 'Halvorsen Studio', 3, 'build', 'current', OWNER),
@@ -255,20 +402,52 @@ function writeFixture(): void {
 		buildAggregate('escalations', 'escalations', 5, 'withhold', 'withheld', undefined),
 		buildAggregate('refunds', 'refunds', 8, 'build', 'current', 'Refund code is MX-3000.'),
 	])
-	const states: readonly (readonly [string, JudgeQuestion, JudgeAnswer])[] = [
-		[`${renderBlock(`refunds: ${REFUNDS_FIRST}`)}\n\nMessage: ${renderState('s4')}`, CATEGORY, buildChoice({ chatter: 0.4, fact: 0.5, rule: 0.1 })],
-		[`${renderBlock(`refunds: ${REFUNDS_FIRST}`)}\n\nMessage: ${renderState('s5')}`, CATEGORY, buildChoice({ chatter: 0.7, correction: 0.3 })],
-		[`${renderBlock(`refunds: ${REFUNDS_SECOND}`)}\n\nMessage: ${renderState('s7')}`, CATEGORY, buildChoice({ correction: 0.9, rule: 0.1 })],
-		[`${renderBlock(`Halvorsen Studio: ${OWNER}`, `refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('s3', 's5')}`, LEDGER_QUESTIONS.amends, buildNoul(0.9)],
-		[`${renderBlock(`refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('s4', 's5')}`, LEDGER_QUESTIONS.amends, buildNoul(0.8)],
+	const states: ReadonlyArray<readonly [string, JudgeQuestion, JudgeAnswer]> = [
+		[
+			`${renderBlock(`refunds: ${REFUNDS_FIRST}`)}\n\nMessage: ${renderState('s4')}`,
+			CATEGORY,
+			buildChoice({ chatter: 0.4, fact: 0.5, rule: 0.1 }),
+		],
+		[
+			`${renderBlock(`refunds: ${REFUNDS_FIRST}`)}\n\nMessage: ${renderState('s5')}`,
+			CATEGORY,
+			buildChoice({ chatter: 0.7, correction: 0.3 }),
+		],
+		[
+			`${renderBlock(`refunds: ${REFUNDS_SECOND}`)}\n\nMessage: ${renderState('s7')}`,
+			CATEGORY,
+			buildChoice({ correction: 0.9, rule: 0.1 }),
+		],
+		[
+			`${renderBlock(`Halvorsen Studio: ${OWNER}`, `refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('s3', 's5')}`,
+			LEDGER_QUESTIONS.amends,
+			buildNoul(0.9),
+		],
+		[
+			`${renderBlock(`refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('s4', 's5')}`,
+			LEDGER_QUESTIONS.amends,
+			buildNoul(0.8),
+		],
 		[
 			`${renderBlock(`Halvorsen Studio: ${OWNER}`, `escalations: ${ESCALATIONS}`, `refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('q1', 's5')}`,
 			LEDGER_QUESTIONS.amends,
 			buildNoul(0.1),
 		],
-		[`${renderBlock(`refunds: ${REFUNDS_SECOND}`)}\n\n${renderPair('s5', 's7')}`, LEDGER_QUESTIONS.amends, buildNoul(0.9)],
-		[`${renderBlock(`refunds: ${REFUNDS_SECOND}`)}\n\n${renderPair('s5', 's7')}`, LEDGER_QUESTIONS.supersedes, buildNoul(0.5)],
-		[`${renderBlock(`Halvorsen Studio: ${OWNER}`, `refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('s3', 's5')}`, LEDGER_QUESTIONS.supersedes, buildNoul(0.4)],
+		[
+			`${renderBlock(`refunds: ${REFUNDS_SECOND}`)}\n\n${renderPair('s5', 's7')}`,
+			LEDGER_QUESTIONS.amends,
+			buildNoul(0.9),
+		],
+		[
+			`${renderBlock(`refunds: ${REFUNDS_SECOND}`)}\n\n${renderPair('s5', 's7')}`,
+			LEDGER_QUESTIONS.supersedes,
+			buildNoul(0.5),
+		],
+		[
+			`${renderBlock(`Halvorsen Studio: ${OWNER}`, `refunds: ${REFUNDS_FIRST}`)}\n\n${renderPair('s3', 's5')}`,
+			LEDGER_QUESTIONS.supersedes,
+			buildNoul(0.4),
+		],
 	]
 	writeRows(
 		join(cache, 'judge.jsonl'),
@@ -284,14 +463,22 @@ interface Outcome {
 
 function runScript(args: readonly string[]): Promise<Outcome> {
 	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, ['--import', blocker, SCRIPT, ...args], { cwd: HARNESS })
+		const child = spawn(
+			process.execPath,
+			['--import', pathToFileURL(blocker).href, SCRIPT, ...args],
+			{ cwd: HARNESS },
+		)
 		const out: Buffer[] = []
 		const err: Buffer[] = []
 		child.stdout.on('data', (chunk: Buffer) => out.push(chunk))
 		child.stderr.on('data', (chunk: Buffer) => err.push(chunk))
 		child.on('error', reject)
 		child.on('close', (code) =>
-			resolve({ code, stdout: Buffer.concat(out).toString('utf8'), stderr: Buffer.concat(err).toString('utf8') }),
+			resolve({
+				code,
+				stdout: Buffer.concat(out).toString('utf8'),
+				stderr: Buffer.concat(err).toString('utf8'),
+			}),
 		)
 	})
 }
@@ -380,11 +567,22 @@ after(async () => {
 
 function buildItem(
 	head: ShadowItem['head'],
-	seeds: readonly (number | undefined)[],
+	seeds: ReadonlyArray<number | undefined>,
 	plain: boolean | undefined,
 	shadow: boolean | undefined,
 ): ShadowItem {
-	return { id: JSON.stringify([head, ...seeds]), head, seeds, point: 9, topics: [], absent: [], state: '', outcome: 'asked', plain, shadow }
+	return {
+		id: JSON.stringify([head, ...seeds]),
+		head,
+		seeds,
+		point: 9,
+		topics: [],
+		absent: [],
+		state: '',
+		outcome: 'asked',
+		plain,
+		shadow,
+	}
 }
 
 describe('shadow', () => {
@@ -394,14 +592,38 @@ describe('shadow', () => {
 				{ topic: 'a', title: 'A', lastSeed: 2, event: 'build', status: 'current', prose: 'first' },
 				{ topic: 'b', title: 'B', lastSeed: 2, event: 'build', status: 'current', prose: 'kept' },
 				{ topic: 'a', title: 'A', lastSeed: 5, event: 'build', status: 'stale', prose: 'stale' },
-				{ topic: 'a', title: 'A', lastSeed: 5, event: 'agree', status: 'current', prose: undefined },
-				{ topic: 'a', title: 'A', lastSeed: 5, event: 'change', status: 'current', prose: undefined },
-				{ topic: 'b', title: 'B', lastSeed: 5, event: 'withhold', status: 'withheld', prose: undefined },
+				{
+					topic: 'a',
+					title: 'A',
+					lastSeed: 5,
+					event: 'agree',
+					status: 'current',
+					prose: undefined,
+				},
+				{
+					topic: 'a',
+					title: 'A',
+					lastSeed: 5,
+					event: 'change',
+					status: 'current',
+					prose: undefined,
+				},
+				{
+					topic: 'b',
+					title: 'B',
+					lastSeed: 5,
+					event: 'withhold',
+					status: 'withheld',
+					prose: undefined,
+				},
 				{ topic: 'a', title: 'A', lastSeed: 8, event: 'build', status: 'current', prose: 'second' },
 			]
 			const timeline = buildTimeline(rows)
 			assert.deepEqual(
-				timeline.map((one) => [one.seed, [...one.topics].map(([key, entry]) => `${key}=${entry.prose}`)]),
+				timeline.map((one) => [
+					one.seed,
+					[...one.topics].map(([key, entry]) => `${key}=${entry.prose}`),
+				]),
 				[
 					[2, ['a=first', 'b=kept']],
 					[5, ['a=first']],
@@ -441,7 +663,10 @@ describe('shadow', () => {
 			assert.equal(renderShadow('category', 'user: hi', []), 'user: hi')
 			assert.equal(renderShadow('amends', 'Earlier message: a', []), 'Earlier message: a')
 			assert.equal(
-				renderShadow('category', 'user: hi', [{ title: 'refunds', prose: 'One.' }, { title: 'Ana', prose: 'Two.' }]),
+				renderShadow('category', 'user: hi', [
+					{ title: 'refunds', prose: 'One.' },
+					{ title: 'Ana', prose: 'Two.' },
+				]),
 				'Topic summaries:\nrefunds: One.\nAna: Two.\n\nMessage: user: hi',
 			)
 			assert.equal(
@@ -470,7 +695,11 @@ describe('shadow', () => {
 				amends: new Set(['3:5', '4:5', '6:7']),
 				supersedes: new Set(),
 			}
-			const items = [buildItem('amends', [3, 5], true, true), buildItem('amends', [4, 5], true, undefined), buildItem('amends', [1, 5], false, true)]
+			const items = [
+				buildItem('amends', [3, 5], true, true),
+				buildItem('amends', [4, 5], true, undefined),
+				buildItem('amends', [1, 5], false, true),
+			]
 			const rates = computeRates(items, truth, (one) => one.shadow)
 			assert.deepEqual(rates.amends.recall, { hits: 1, total: 2, rate: 0.5 })
 			assert.deepEqual(rates.amends.falsedrop, { hits: 1, total: 1, rate: 1 })
@@ -483,7 +712,10 @@ describe('shadow', () => {
 			assert.equal(truth.first, 3)
 			assert.equal(truth.categories.get(5), 'correction')
 			assert.deepEqual([...truth.amends].sort(), ['3:5', '5:7', '6:7'])
-			assert.ok(!truth.amends.has('0:3'), 'a truth pair that ends at the first read point stays out')
+			assert.ok(
+				!truth.amends.has('0:3'),
+				'a truth pair that ends at the first read point stays out',
+			)
 			assert.deepEqual([...truth.supersedes].sort(), ['5:7', '6:7'])
 			assert.throws(() => readTruth({ seed: [], goals: [] }), /no goal/)
 			assert.throws(() => readTruth({}), /no seed/)
@@ -497,7 +729,10 @@ describe('shadow', () => {
 			assert.ok(truth.supersedes.has('50:94'))
 			assert.ok(truth.amends.has('50:94'), 'a truth supersedes pair is also an amends pair')
 			assert.ok(truth.supersedes.has('93:138'))
-			assert.ok(!truth.amends.has('22:27'), 'a truth pair at or before the first read point stays out')
+			assert.ok(
+				!truth.amends.has('22:27'),
+				'a truth pair at or before the first read point stays out',
+			)
 			assert.ok(!truth.supersedes.has('4:44'))
 		})
 	})
@@ -506,7 +741,8 @@ describe('shadow', () => {
 		it('refuses a call without the required flags', () => {
 			const outcome = parseFlags([])
 			assert.equal(outcome.success, false)
-			if (!outcome.success) assert.match(outcome.error, /--run is required\n--out is required\nusage:/)
+			if (!outcome.success)
+				assert.match(outcome.error, /--run is required\n--out is required\nusage:/)
 		})
 
 		it('refuses an unknown flag and a bad URL', () => {
@@ -529,16 +765,30 @@ describe('shadow', () => {
 	describe('offline', () => {
 		it('reproduces the hand-computed counts and rates, asks nobody, and fetches nothing', async () => {
 			const out = pickPath('offline')
-			const before = readFileSync(join(cache, 'judge.jsonl'), 'utf8')
-			const code = await new Shadow({ run, cache, out, live: false, url: 'http://127.0.0.1:11434', copies }).execute()
+			const cached = readFileSync(join(cache, 'judge.jsonl'), 'utf8')
+			const code = await new Shadow({
+				run,
+				cache,
+				out,
+				live: false,
+				url: 'http://127.0.0.1:11434',
+				copies,
+			}).execute()
 			assert.equal(code, 0)
 			assert.deepEqual(fetched, [])
-			assert.equal(readFileSync(join(cache, 'judge.jsonl'), 'utf8'), before)
+			assert.equal(readFileSync(join(cache, 'judge.jsonl'), 'utf8'), cached)
 			const report = readJSON(out)
 			assert.equal(readField(report, 'copy'), 1)
 			assert.equal(readField(report, 'model'), MODEL)
 			assert.equal(readField(report, 'arm'), 'aggregate')
-			assert.deepEqual(readField(report, 'counts'), { items: 12, plain: 2, asked: 9, missed: 1, failed: 0, absent: 7 })
+			assert.deepEqual(readField(report, 'counts'), {
+				items: 12,
+				plain: 2,
+				asked: 9,
+				missed: 1,
+				failed: 0,
+				absent: 7,
+			})
 			assert.deepEqual(readField(report, 'plain'), {
 				keep: { hits: 2, total: 2, rate: 1 },
 				drop: { hits: 2, total: 2, rate: 1 },
@@ -568,7 +818,14 @@ describe('shadow', () => {
 
 		it('leaves the state plain where no aggregate is current, and counts the missing topics', async () => {
 			const out = pickPath('plain')
-			await new Shadow({ run, cache, out, live: false, url: 'http://127.0.0.1:11434', copies }).execute()
+			await new Shadow({
+				run,
+				cache,
+				out,
+				live: false,
+				url: 'http://127.0.0.1:11434',
+				copies,
+			}).execute()
 			const items = readField(readJSON(out), 'items')
 			assert.ok(Array.isArray(items))
 			const unseen = findItem(items, ['category', 's6'])
@@ -589,7 +846,14 @@ describe('shadow', () => {
 
 		it('reads the aggregates current before the message, the owner link, and the request topics', async () => {
 			const out = pickPath('states')
-			await new Shadow({ run, cache, out, live: false, url: 'http://127.0.0.1:11434', copies }).execute()
+			await new Shadow({
+				run,
+				cache,
+				out,
+				live: false,
+				url: 'http://127.0.0.1:11434',
+				copies,
+			}).execute()
 			const items = readField(readJSON(out), 'items')
 			assert.ok(Array.isArray(items))
 			const owner = findItem(items, ['amends', 's3', 's5'])
@@ -606,7 +870,10 @@ describe('shadow', () => {
 				'the rows of the read point at seed 5 stay out of the state of message 5',
 			)
 			const later = findItem(items, ['category', 's7'])
-			assert.equal(readField(later, 'state'), `Topic summaries:\nrefunds: ${REFUNDS_SECOND}\n\nMessage: ${renderState('s7')}`)
+			assert.equal(
+				readField(later, 'state'),
+				`Topic summaries:\nrefunds: ${REFUNDS_SECOND}\n\nMessage: ${renderState('s7')}`,
+			)
 			const request = findItem(items, ['amends', 'q1', 's5'])
 			assert.deepEqual(readField(request, 'seeds'), [null, 5])
 			assert.deepEqual(readField(request, 'topics'), ['owner:AC-77', 'escalations', 'refunds'])
@@ -618,12 +885,25 @@ describe('shadow', () => {
 
 		it('leaves out the judgments at or before the first read point', async () => {
 			const out = pickPath('first')
-			await new Shadow({ run, cache, out, live: false, url: 'http://127.0.0.1:11434', copies }).execute()
+			await new Shadow({
+				run,
+				cache,
+				out,
+				live: false,
+				url: 'http://127.0.0.1:11434',
+				copies,
+			}).execute()
 			const items = readField(readJSON(out), 'items')
 			assert.ok(Array.isArray(items))
-			assert.equal(items.some((one) => readField(one, 'id') === JSON.stringify(['category', 's0'])), false)
+			assert.equal(
+				items.some((one) => readField(one, 'id') === JSON.stringify(['category', 's0'])),
+				false,
+			)
 			assert.ok(items.every((one) => readCount(one, 'point') > 3))
-			assert.equal(items.some((one) => readField(one, 'id') === JSON.stringify(['category', 's3'])), false)
+			assert.equal(
+				items.some((one) => readField(one, 'id') === JSON.stringify(['category', 's3'])),
+				false,
+			)
 		})
 	})
 
@@ -637,9 +917,21 @@ describe('shadow', () => {
 
 		it('exits 0, prints the rates, and writes the report', async () => {
 			const out = pickPath('cli')
-			const outcome = await runScript(['--run', run, '--cache', cache, '--out', out, '--copies', copies])
+			const outcome = await runScript([
+				'--run',
+				run,
+				'--cache',
+				cache,
+				'--out',
+				out,
+				'--copies',
+				copies,
+			])
 			assert.equal(outcome.code, 0, outcome.stderr)
-			assert.match(outcome.stdout, /items 12 \(plain 2, asked 9, missed 1, failed 0\); topics without an aggregate 7/)
+			assert.match(
+				outcome.stdout,
+				/items 12 \(plain 2, asked 9, missed 1, failed 0\); topics without an aggregate 7/,
+			)
 			assert.match(outcome.stdout, /keep\s+plain 2\/2 1\.000 \| shadow 1\/2 0\.500/)
 			assert.match(outcome.stdout, /flips\s+category 2, amends 1, supersedes 1/)
 			assert.equal(readField(readJSON(out), 'counts') !== undefined, true)
@@ -648,9 +940,19 @@ describe('shadow', () => {
 		it('exits 1 and names the file when the run lacks its aggregates', async () => {
 			const control = join(directory, 'control')
 			mkdirSync(control, { recursive: true })
-			for (const name of ['run.json', 'messages.jsonl', 'judgments.jsonl']) copyFileSync(join(run, name), join(control, name))
+			for (const name of ['run.json', 'messages.jsonl', 'judgments.jsonl'])
+				copyFileSync(join(run, name), join(control, name))
 			const out = pickPath('control')
-			const outcome = await runScript(['--run', control, '--cache', cache, '--out', out, '--copies', copies])
+			const outcome = await runScript([
+				'--run',
+				control,
+				'--cache',
+				cache,
+				'--out',
+				out,
+				'--copies',
+				copies,
+			])
 			assert.equal(outcome.code, 1)
 			assert.match(outcome.stderr, /missing input: .*aggregates\.jsonl/)
 			assert.equal(existsSync(out), false)
@@ -660,16 +962,43 @@ describe('shadow', () => {
 			const out = pickPath('nocache')
 			const empty = join(directory, 'empty-cache')
 			mkdirSync(empty, { recursive: true })
-			const outcome = await runScript(['--run', run, '--cache', empty, '--out', out, '--copies', copies])
+			const outcome = await runScript([
+				'--run',
+				run,
+				'--cache',
+				empty,
+				'--out',
+				out,
+				'--copies',
+				copies,
+			])
 			assert.equal(outcome.code, 1)
 			assert.match(outcome.stderr, /missing input: .*judge\.jsonl/)
-			const nothing = await runScript(['--run', join(directory, 'nowhere'), '--cache', cache, '--out', out, '--copies', copies])
+			const nothing = await runScript([
+				'--run',
+				join(directory, 'nowhere'),
+				'--cache',
+				cache,
+				'--out',
+				out,
+				'--copies',
+				copies,
+			])
 			assert.equal(nothing.code, 1)
 			assert.match(nothing.stderr, /missing input: .*run\.json/)
 		})
 
 		it('exits 1 when the copy of the run is absent', async () => {
-			const outcome = await runScript(['--run', run, '--cache', cache, '--out', pickPath('nocopy'), '--copies', join(directory, 'no-copies')])
+			const outcome = await runScript([
+				'--run',
+				run,
+				'--cache',
+				cache,
+				'--out',
+				pickPath('nocopy'),
+				'--copies',
+				join(directory, 'no-copies'),
+			])
 			assert.equal(outcome.code, 1)
 			assert.match(outcome.stderr, /missing input: .*v1\.json/)
 		})
@@ -691,18 +1020,48 @@ describe('shadow', () => {
 			mkdirSync(live, { recursive: true })
 			copyFileSync(join(cache, 'judge.jsonl'), join(live, 'judge.jsonl'))
 			const out = pickPath('live')
-			const outcome = await runScript(['--run', run, '--cache', live, '--out', out, '--copies', copies, '--live', '--url', `http://127.0.0.1:${address.port}`])
+			const outcome = await runScript([
+				'--run',
+				run,
+				'--cache',
+				live,
+				'--out',
+				out,
+				'--copies',
+				copies,
+				'--live',
+				'--url',
+				`http://127.0.0.1:${address.port}`,
+			])
 			assert.equal(outcome.code, 0, outcome.stderr)
 			assert.equal(prompts.length, 1)
-			assert.match(prompts[0] ?? '', /Halvorsen Studio: Halvorsen Studio uses refund code MX-1000\./)
+			assert.match(
+				prompts[0] ?? '',
+				/Halvorsen Studio: Halvorsen Studio uses refund code MX-1000\./,
+			)
 			const rows = readRows(join(live, 'judge.jsonl'))
 			assert.equal(rows.length, 10)
 			assert.equal(readField(rows[9], 'origin'), 'live')
 			const report = readJSON(out)
-			assert.deepEqual(readField(report, 'counts'), { items: 12, plain: 2, asked: 10, missed: 0, failed: 0, absent: 7 })
+			assert.deepEqual(readField(report, 'counts'), {
+				items: 12,
+				plain: 2,
+				asked: 10,
+				missed: 0,
+				failed: 0,
+				absent: 7,
+			})
 			assert.deepEqual(readField(report, 'flips'), { category: 2, amends: 2, supersedes: 1 })
-			assert.deepEqual(readField(readField(readField(report, 'shadow'), 'amends'), 'falsedrop'), { hits: 2, total: 3, rate: 2 / 3 })
-			assert.deepEqual(readField(readField(readField(report, 'plain'), 'amends'), 'falsedrop'), { hits: 0, total: 3, rate: 0 })
+			assert.deepEqual(readField(readField(readField(report, 'shadow'), 'amends'), 'falsedrop'), {
+				hits: 2,
+				total: 3,
+				rate: 2 / 3,
+			})
+			assert.deepEqual(readField(readField(readField(report, 'plain'), 'amends'), 'falsedrop'), {
+				hits: 0,
+				total: 3,
+				rate: 0,
+			})
 		})
 	})
 })

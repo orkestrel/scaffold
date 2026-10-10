@@ -21,7 +21,13 @@ export const MICA_SYSTEM =
 export const MICA_CALIBRATION = 1.1244734010661372
 export const MICA_CONTEXT = 4096
 
-export const FIT = Object.freeze({ category: 0.7, topic: 0.6, amends: 0.75, supersedes: 0.95, correction: 0.3 })
+export const FIT = Object.freeze({
+	category: 0.7,
+	topic: 0.6,
+	amends: 0.75,
+	supersedes: 0.95,
+	correction: 0.3,
+})
 export const SAMPLER = Object.freeze({
 	temperature: 0,
 	seed: 7,
@@ -31,6 +37,10 @@ export const SAMPLER = Object.freeze({
 	num_ctx: 3072,
 })
 export const TIMEOUT = 3600000
+/** Holds the observed-completion ceiling and the reserve used for first-request admission. */
+export const COMPLETION_LIMIT = 512
+/** Holds the largest predicted complete request admitted with a summaries block. */
+export const ADMISSION_LIMIT = SAMPLER.num_ctx - COMPLETION_LIMIT
 export const DAEMON = 'http://127.0.0.1:11434'
 
 // The scenario's system text carries the send_reply and pin protocol of the full-view harness; the ledger arm answers in its final message.

@@ -6,7 +6,7 @@
 // (default: bench/variants/long); a proof points it at a fixture.
 // A pair reads d per copy as the aggregate arm's passes less the control arm's over the goals without the g06 prefix, at the
 // scorer end only; the audited ends come from audit/tally.ts. The verdict is STOP when an invariant fails or
-// mean(d) + 2·sd(d)/√n < 0, REFUSED when it would be CONTINUE but most goals of the aggregate arm rendered no topic, else CONTINUE.
+// mean(d) + 2·sd(d)/√n < 0, REFUSED when it would be CONTINUE but at most half the aggregate goals have nonempty wire exposure, else CONTINUE.
 // A pair is refused, with no statistics, when a run is missing or short, did not complete, or counts a transient judge error.
 // Exit: 0; 1 when a run is missing or short or a pair is refused; 64 on usage.
 import type {
@@ -25,18 +25,27 @@ import type {
 	RunArm,
 	SelectionRecord,
 	TailMessage,
+	WireReading,
 } from './types.ts'
 import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
-import { LEDGER_SCALE_DRIFT } from '../vendor/agent-0.0.30/index.js'
+import { LEDGER_SCALE_DRIFT, matchesCutLine } from '../vendor/agent-0.0.30/index.js'
 import { compileRules, plainText, scoreText } from '../bench/rescore.mjs'
 import { INSTRUCTION_SUMMARIES } from './aggregates/constants.ts'
 import { readTokens } from './aggregates/helpers.ts'
 import { COPIES_DIR, MODELS, SAMPLER } from './constants.ts'
 import { readCopy } from './Driver.ts'
-import { buildSystem, describeError, readJSON, readRows } from './helpers.ts'
+import {
+	buildSystem,
+	describeError,
+	listWireFailures,
+	matchesExposure,
+	readJSON,
+	readRows,
+	readWireReading,
+} from './helpers.ts'
 
 type Reading = Pick<
 	Row,
@@ -65,7 +74,10 @@ type Reading = Pick<
 	| 'sole'
 >
 
-type AggregateReading = Pick<AggregateRow, 'topic' | 'goal' | 'event' | 'status' | 'trigger' | 'answers' | 'failures' | 'wall' | 'cached'>
+type AggregateReading = Pick<
+	AggregateRow,
+	'topic' | 'goal' | 'event' | 'status' | 'trigger' | 'answers' | 'failures' | 'wall' | 'cached'
+>
 
 type Verdict = 'STOP' | 'CONTINUE' | 'REFUSED'
 
@@ -104,7 +116,7 @@ interface Run {
 	readonly calls: readonly CallRecord[]
 	readonly events: readonly AggregateReading[]
 	/** Maps a request sequence to the prompt token count its wire response reports. */
-	readonly wire: ReadonlyMap<number, number>
+	readonly wire: ReadonlyMap<number, WireReading>
 }
 
 interface Matches {
@@ -154,12 +166,14 @@ interface AggregateReport {
 	readonly stale: number
 	readonly summarizer: { readonly calls: number; readonly hits: number; readonly seconds: number }
 	readonly mica: { readonly change: number; readonly agree: number; readonly ledger: number }
-	readonly goals: readonly (Leak & {
-		readonly rendered: number
-		readonly summary: number
-		readonly filtered: number
-		readonly sole: number
-	})[]
+	readonly goals: ReadonlyArray<
+		Leak & {
+			readonly rendered: number
+			readonly summary: number
+			readonly filtered: number
+			readonly sole: number
+		}
+	>
 }
 
 interface RunReport {
@@ -171,7 +185,12 @@ interface RunReport {
 	readonly faults: number
 	readonly overflows: number
 	readonly prompt: number
-	readonly recalls: { readonly calls: number; readonly closed: number; readonly limit: number; readonly room: number }
+	readonly recalls: {
+		readonly calls: number
+		readonly closed: number
+		readonly limit: number
+		readonly room: number
+	}
 	readonly lookups: LookupCount
 	readonly questions: Readonly<Record<string, QuestionCount>>
 	readonly briefing: { readonly tokens: number; readonly facts: number; readonly stale: number }
@@ -181,6 +200,8 @@ interface RunReport {
 	readonly transient: number
 	readonly gauge: unknown
 	readonly aggregate: AggregateReport | undefined
+	/** Counts answer selections and distinct shortened recall texts visible on the wire. */
+	readonly observations: { readonly answers: number; readonly shortened: number }
 }
 
 /** Holds how one goal's prompt differs between the arms of a copy. */
@@ -193,6 +214,8 @@ interface Plan {
 	readonly scale: number
 	/** Holds the first-call prompt difference over the control's, or `undefined` when an arm reported none. */
 	readonly entry: number | undefined
+	/** Reports whether an earlier goal exposed treatment before this plan was selected. */
+	readonly treated: boolean
 }
 
 interface Partition {
@@ -247,7 +270,8 @@ const OPTIONS = {
 	copies: { type: 'string' },
 } as const
 
-const USAGE = 'usage: node bench5/report.ts --base DIR --pair SHORT,A-B [--pair SHORT,A-B]... [--json FILE] [--copies DIR]'
+const USAGE =
+	'usage: node bench5/report.ts --base DIR --pair SHORT,A-B [--pair SHORT,A-B]... [--json FILE] [--copies DIR]'
 const RUN_PREFIX = 'l5'
 const FILL_ARM = 'aggregatefill'
 const SKIPPED_GOAL = 'g06'
@@ -280,7 +304,8 @@ function readText(value: unknown, key: string, label: string): string {
 
 function readNumber(value: unknown, key: string, label: string): number {
 	const field = readField(value, key)
-	if (typeof field !== 'number' || !Number.isFinite(field)) throw new Error(`${label}: ${key} is not a number`)
+	if (typeof field !== 'number' || !Number.isFinite(field))
+		throw new Error(`${label}: ${key} is not a number`)
 	return field
 }
 
@@ -298,7 +323,8 @@ function readList(value: unknown, key: string, label: string): readonly unknown[
 
 function readTexts(value: unknown, key: string, label: string): readonly string[] {
 	return readList(value, key, label).map((entry) => {
-		if (typeof entry !== 'string') throw new Error(`${label}: ${key} holds a value that is not text`)
+		if (typeof entry !== 'string')
+			throw new Error(`${label}: ${key} holds a value that is not text`)
 		return entry
 	})
 }
@@ -308,7 +334,8 @@ function readNumbers(value: unknown, key: string, label: string): Readonly<Recor
 	if (!isRecord(field)) throw new Error(`${label}: ${key} is not a table`)
 	return Object.fromEntries(
 		Object.entries(field).map(([name, count]) => {
-			if (typeof count !== 'number' || !Number.isFinite(count)) throw new Error(`${label}: ${key}.${name} is not a number`)
+			if (typeof count !== 'number' || !Number.isFinite(count))
+				throw new Error(`${label}: ${key}.${name} is not a number`)
 			return [name, count]
 		}),
 	)
@@ -320,7 +347,10 @@ function readCounts(value: unknown, label: string): Readonly<Record<string, Ques
 	return Object.fromEntries(
 		Object.entries(field).map(([head, count]) => [
 			head,
-			{ fresh: readNumber(count, 'fresh', `${label} ${head}`), hits: readNumber(count, 'hits', `${label} ${head}`) },
+			{
+				fresh: readNumber(count, 'fresh', `${label} ${head}`),
+				hits: readNumber(count, 'hits', `${label} ${head}`),
+			},
 		]),
 	)
 }
@@ -376,7 +406,8 @@ function parseFlags(argv: readonly string[]): Flags | undefined {
 	} catch {
 		return undefined
 	}
-	if (values.base === undefined || values.pair === undefined || values.pair.length === 0) return undefined
+	if (values.base === undefined || values.pair === undefined || values.pair.length === 0)
+		return undefined
 	const pairs = values.pair.map(parsePair)
 	const parsed = pairs.filter((pair) => pair !== undefined)
 	if (parsed.length !== pairs.length) return undefined
@@ -412,7 +443,10 @@ function readReading(value: unknown, label: string): Reading {
 			size: readOptional(recalls, 'size'),
 			cause: cause === 'limit' || cause === 'room' ? cause : undefined,
 		},
-		lookups: { calls: readNumber(lookups, 'calls', label), repeats: readNumber(lookups, 'repeats', label) },
+		lookups: {
+			calls: readNumber(lookups, 'calls', label),
+			repeats: readNumber(lookups, 'repeats', label),
+		},
 		questions: readCounts(value, label),
 		briefing: {
 			tokens: readNumber(briefing, 'tokens', label),
@@ -433,7 +467,11 @@ function readReading(value: unknown, label: string): Reading {
 }
 
 function readTail(value: unknown, label: string): TailMessage {
-	return { index: readOptional(value, 'index'), role: readText(value, 'role', label), content: readText(value, 'content', label) }
+	return {
+		index: readOptional(value, 'index'),
+		role: readText(value, 'role', label),
+		content: readText(value, 'content', label),
+	}
 }
 
 function readPick(value: unknown, label: string): SelectionRecord {
@@ -446,7 +484,9 @@ function readPick(value: unknown, label: string): SelectionRecord {
 		briefing: readText(value, 'briefing', label),
 		digest: readText(value, 'digest', label),
 		tail: readList(value, 'tail', label).map((message) => readTail(message, label)),
-		instructions: Object.fromEntries(Object.entries(instructions).map(([name, content]) => [name, String(content)])),
+		instructions: Object.fromEntries(
+			Object.entries(instructions).map(([name, content]) => [name, String(content)]),
+		),
 		scale: readOptional(value, 'scale'),
 	}
 }
@@ -471,7 +511,8 @@ function readEvent(value: unknown, label: string): AggregateReading {
 	const event = readField(value, 'event')
 	const status = readField(value, 'status')
 	const trigger = readField(value, 'trigger')
-	if (!isEvent(event) || !isStatus(status)) throw new Error(`${label}: event or status is not a member of its set`)
+	if (!isEvent(event) || !isStatus(status))
+		throw new Error(`${label}: event or status is not a member of its set`)
 	return {
 		topic: readText(value, 'topic', label),
 		goal: readText(value, 'goal', label),
@@ -507,40 +548,36 @@ function readInfo(path: string): Info {
 	}
 }
 
-function parseLine(line: string): unknown {
-	try {
-		return JSON.parse(line)
-	} catch {
-		return undefined
-	}
-}
-
-function readPrompt(response: unknown): number | undefined {
-	const text = readField(response, 'text')
-	if (typeof text !== 'string') return undefined
-	let found: number | undefined
-	for (const line of text.split('\n')) found = readOptional(parseLine(line), 'prompt_eval_count') ?? found
-	return found
-}
-
-function readWire(dir: string): ReadonlyMap<number, number> {
-	const prompts = new Map<number, number>()
+function readWire(dir: string): ReadonlyMap<number, WireReading> {
+	const prompts = new Map<number, WireReading>()
 	if (!existsSync(dir)) return prompts
 	for (const name of readdirSync(dir)) {
 		const match = WIRE_FILE.exec(name)
-		const count = match === null ? undefined : readPrompt(readJSON(join(dir, name)))
-		if (match !== null && count !== undefined) prompts.set(Number(match[1]), count)
+		if (match === null) continue
+		const request = join(dir, name.replace('-response.json', '-request.json'))
+		prompts.set(
+			Number(match[1]),
+			readWireReading(
+				existsSync(request) ? readJSON(request) : undefined,
+				readJSON(join(dir, name)),
+			),
+		)
 	}
 	return prompts
 }
 
-function readLines<Entry>(path: string, read: (value: unknown, label: string) => Entry): readonly Entry[] {
+function readLines<Entry>(
+	path: string,
+	read: (value: unknown, label: string) => Entry,
+): readonly Entry[] {
 	return readRows(path).map((value, at) => read(value, `${path} line ${at + 1}`))
 }
 
 function locateRun(base: string, short: string, arm: RunArm, copy: number): string | undefined {
 	const names = arm === 'control' ? ['control'] : ['aggregate', FILL_ARM]
-	return names.map((name) => `${RUN_PREFIX}-${short}-${name}-v${copy}`).find((name) => existsSync(join(base, name)))
+	return names
+		.map((name) => `${RUN_PREFIX}-${short}-${name}-v${copy}`)
+		.find((name) => existsSync(join(base, name)))
 }
 
 function readRun(base: string, short: string, model: string, arm: RunArm, copy: number): Run {
@@ -549,13 +586,17 @@ function readRun(base: string, short: string, model: string, arm: RunArm, copy: 
 	const dir = join(base, name)
 	const info = readInfo(join(dir, 'run.json'))
 	if (info.arm !== arm || info.copy !== copy || info.model !== model) {
-		throw new Error(`${name}: run.json names arm ${info.arm}, copy ${info.copy}, and model ${info.model}`)
+		throw new Error(
+			`${name}: run.json names arm ${info.arm}, copy ${info.copy}, and model ${info.model}`,
+		)
 	}
 	if (info.status !== 'complete') throw new Error(`${name}: run.json status is ${info.status}`)
 	const rows = readLines(join(dir, 'rows.jsonl'), readReading)
-	if (rows.length < info.goals.length) throw new Error(`${name}: ${rows.length} rows where run.json names ${info.goals.length} goals`)
+	if (rows.length < info.goals.length)
+		throw new Error(`${name}: ${rows.length} rows where run.json names ${info.goals.length} goals`)
 	const events = join(dir, 'aggregates.jsonl')
-	if (arm === 'aggregate' && !existsSync(events)) throw new Error(`${name}: aggregates.jsonl is missing`)
+	if (arm === 'aggregate' && !existsSync(events))
+		throw new Error(`${name}: aggregates.jsonl is missing`)
 	return {
 		name,
 		info,
@@ -573,8 +614,11 @@ function computeMean(values: readonly number[]): number {
 
 function computeStats(values: readonly number[]): Stats {
 	const mean = computeMean(values)
-	if (values.length < 2) return { n: values.length, mean, deviation: undefined, low: undefined, high: undefined }
-	const deviation = Math.sqrt(values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (values.length - 1))
+	if (values.length < 2)
+		return { n: values.length, mean, deviation: undefined, low: undefined, high: undefined }
+	const deviation = Math.sqrt(
+		values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (values.length - 1),
+	)
 	const half = (2 * deviation) / Math.sqrt(values.length)
 	return { n: values.length, mean, deviation, low: mean - half, high: mean + half }
 }
@@ -587,7 +631,7 @@ function computePrompt(run: Run, row: Reading): number {
 	const counts = run.calls
 		.filter((call) => call.role === 'agent' && call.goal === row.goal)
 		.flatMap((call) => {
-			const count = run.wire.get(call.sequence)
+			const count = run.wire.get(call.sequence)?.prompt
 			return count === undefined ? [] : [count]
 		})
 	return counts.length === 0 ? row.prompt : Math.max(...counts)
@@ -618,7 +662,10 @@ function listMatches(goal: CopyGoal, text: string): Matches {
 
 function listTokens(text: string): ReadonlySet<string> {
 	const { ids, numbers } = readTokens(text)
-	return new Set([...[...ids].map((id) => `id ${id}`), ...[...numbers].map((number) => `number ${number}`)])
+	return new Set([
+		...[...ids].map((id) => `id ${id}`),
+		...[...numbers].map((number) => `number ${number}`),
+	])
 }
 
 function listSeedTokens(scenario: Copy, index: number): readonly string[] {
@@ -626,7 +673,9 @@ function listSeedTokens(scenario: Copy, index: number): readonly string[] {
 }
 
 function collectSummaries(picks: readonly SelectionRecord[]): string {
-	return [...new Set(picks.flatMap((pick) => pick.instructions[INSTRUCTION_SUMMARIES.name] ?? []))].join('\n')
+	return [
+		...new Set(picks.flatMap((pick) => pick.instructions[INSTRUCTION_SUMMARIES.name] ?? [])),
+	].join('\n')
 }
 
 // The shown text is what the control arm's prompt carries: the system text, every instruction but the summaries, the briefing, and the tail of each pass.
@@ -651,13 +700,19 @@ function auditLeak(goal: CopyGoal, scenario: Copy, summaries: string, shown: str
 	const tokens = goal.facts.map((index) => listSeedTokens(scenario, index))
 	const held = new Set(tokens.flat())
 	const lower = summaries.toLowerCase()
-	const stale = new Set(goal.stale.flatMap((index) => listSeedTokens(scenario, index)).filter((token) => !held.has(token) && carried.has(token)))
+	const stale = new Set(
+		goal.stale
+			.flatMap((index) => listSeedTokens(scenario, index))
+			.filter((token) => !held.has(token) && carried.has(token)),
+	)
 	return {
 		goal: goal.id,
 		soleScored: own.expected.filter((phrase) => !seen.expected.includes(phrase)).length,
 		soleStale: own.stale.filter((phrase) => !seen.stale.includes(phrase)).length,
-		facts: tokens.filter((fact) => fact.length > 0 && fact.every((token) => carried.has(token))).length,
-		stale: stale.size + goal.forbidden.filter((phrase) => lower.includes(phrase.toLowerCase())).length,
+		facts: tokens.filter((fact) => fact.length > 0 && fact.every((token) => carried.has(token)))
+			.length,
+		stale:
+			stale.size + goal.forbidden.filter((phrase) => lower.includes(phrase.toLowerCase())).length,
 	}
 }
 
@@ -671,7 +726,12 @@ function auditRun(run: Run, scenario: Copy): readonly Leak[] {
 	const system = buildSystem({ ledger: { system: scenario.system } })
 	return run.rows.map((row) => {
 		const picks = run.picks.filter((pick) => pick.goal === row.goal)
-		return auditLeak(findGoal(scenario, row.goal), scenario, collectSummaries(picks), collectShown(system, picks))
+		return auditLeak(
+			findGoal(scenario, row.goal),
+			scenario,
+			collectSummaries(picks),
+			collectShown(system, picks),
+		)
 	})
 }
 
@@ -701,7 +761,11 @@ function sumQuestions(rows: readonly Reading[]): Readonly<Record<string, Questio
 }
 
 function sumSeconds(events: readonly AggregateReading[], kind: AggregateEvent): number {
-	return events.filter((event) => event.event === kind && !event.cached).reduce((sum, event) => sum + event.wall, 0) / 1000
+	return (
+		events
+			.filter((event) => event.event === kind && !event.cached)
+			.reduce((sum, event) => sum + event.wall, 0) / 1000
+	)
 }
 
 function measureAggregate(run: Run, leaks: readonly Leak[]): AggregateReport {
@@ -715,8 +779,14 @@ function measureAggregate(run: Run, leaks: readonly Leak[]): AggregateReport {
 	return {
 		builds: builds.length,
 		triggers: countBy(builds.flatMap((event) => event.trigger ?? [])),
-		change: { asked: asked.length, yes: asked.filter((event) => (event.answers['change'] ?? 0) >= info.change).length },
-		agree: { asked: agreed.length, failed: agreed.filter((event) => event.status === 'stale').length },
+		change: {
+			asked: asked.length,
+			yes: asked.filter((event) => (event.answers['change'] ?? 0) >= info.change).length,
+		},
+		agree: {
+			asked: agreed.length,
+			failed: agreed.filter((event) => event.status === 'stale').length,
+		},
 		failures: countBy(builds.flatMap((event) => event.failures.map((failure) => failure.kind))),
 		failed: failed.length,
 		consistency: builds.length === 0 ? undefined : failed.length / builds.length,
@@ -732,7 +802,15 @@ function measureAggregate(run: Run, leaks: readonly Leak[]): AggregateReport {
 			const leak = leaks.find((one) => one.goal === row.goal)
 			return leak === undefined
 				? []
-				: [{ ...leak, rendered: row.rendered.length, summary: row.summary, filtered: row.filtered, sole: row.sole }]
+				: [
+						{
+							...leak,
+							rendered: row.rendered.length,
+							summary: row.summary,
+							filtered: row.filtered,
+							sole: row.sole,
+						},
+					]
 		}),
 	}
 }
@@ -755,7 +833,10 @@ function measureRun(run: Run, leaks: readonly Leak[] | undefined): RunReport {
 			limit: causes.filter((cause) => cause === 'limit').length,
 			room: causes.filter((cause) => cause === 'room').length,
 		},
-		lookups: { calls: sumBy(rows, (row) => row.lookups.calls), repeats: sumBy(rows, (row) => row.lookups.repeats) },
+		lookups: {
+			calls: sumBy(rows, (row) => row.lookups.calls),
+			repeats: sumBy(rows, (row) => row.lookups.repeats),
+		},
 		questions: sumQuestions(rows),
 		briefing: {
 			tokens: sumBy(rows, (row) => row.briefing.tokens),
@@ -767,11 +848,26 @@ function measureRun(run: Run, leaks: readonly Leak[] | undefined): RunReport {
 		transient: info.transient,
 		gauge: info.gauge,
 		aggregate: leaks === undefined ? undefined : measureAggregate(run, leaks),
+		observations: {
+			answers: run.picks.filter((pick) => pick.pass > 1).length,
+			shortened: new Set(
+				run.calls
+					.filter((call) => call.role === 'agent' && call.goal !== undefined)
+					.flatMap((call) => run.wire.get(call.sequence)?.messages ?? [])
+					.filter(
+						(message) =>
+							message.role === 'tool' && message.content.split(/\r\n|\n/).some(matchesCutLine),
+					)
+					.map((message) => message.content),
+			).size,
+		},
 	}
 }
 
 function listSoleFailures(aggregate: Run): readonly string[] {
-	return aggregate.rows.filter((row) => row.sole > 0).map((row) => `${row.goal}: ${row.sole} sole-carried tokens`)
+	return aggregate.rows
+		.filter((row) => row.sole > 0)
+		.map((row) => `${row.goal}: ${row.sole} sole-carried tokens`)
 }
 
 function listCheckFailures(aggregate: Run): readonly string[] {
@@ -787,7 +883,8 @@ function listCheckFailures(aggregate: Run): readonly string[] {
 		for (const topic of row.rendered) {
 			const event = latest.get(topic)
 			if (event === undefined) failures.push(`${row.goal}: ${topic} rendered with no build`)
-			else if (event.event === 'withhold' || event.status !== 'current') failures.push(`${row.goal}: ${topic} rendered after a failed check`)
+			else if (event.event === 'withhold' || event.status !== 'current')
+				failures.push(`${row.goal}: ${topic} rendered after a failed check`)
 		}
 	}
 	return failures
@@ -797,9 +894,14 @@ function listOverflowFailures(control: Run, aggregate: Run): readonly string[] {
 	return aggregate.rows
 		.filter((row) => {
 			const paired = control.rows.find((one) => one.goal === row.goal)
-			return matchesOverflow(aggregate, row) && paired !== undefined && !matchesOverflow(control, paired)
+			return (
+				matchesOverflow(aggregate, row) && paired !== undefined && !matchesOverflow(control, paired)
+			)
 		})
-		.map((row) => `${row.goal}: overflow at ${computePrompt(aggregate, row)} tokens with no control overflow`)
+		.map(
+			(row) =>
+				`${row.goal}: overflow at ${computePrompt(aggregate, row)} tokens with no control overflow`,
+		)
 }
 
 function findFirstPick(run: Run): SelectionRecord | undefined {
@@ -811,8 +913,12 @@ function listPlanFailures(control: Run, aggregate: Run): readonly string[] {
 	const other = findFirstPick(aggregate)
 	if (own === undefined || other === undefined) return []
 	return [
-		...(own.briefing === other.briefing ? [] : [`${own.goal}: the first select's briefing differs`]),
-		...(isDeepStrictEqual(own.tail, other.tail) ? [] : [`${own.goal}: the first select's tail differs`]),
+		...(own.briefing === other.briefing
+			? []
+			: [`${own.goal}: the first select's briefing differs`]),
+		...(isDeepStrictEqual(own.tail, other.tail)
+			? []
+			: [`${own.goal}: the first select's tail differs`]),
 	]
 }
 
@@ -824,7 +930,8 @@ function computeDrift(control: number, aggregate: number): number {
 function listScaleFailures(control: Run, aggregate: Run): readonly string[] {
 	return aggregate.rows.flatMap((row) => {
 		const paired = control.rows.find((one) => one.goal === row.goal)
-		if (paired === undefined || computeDrift(paired.scale, row.scale) <= LEDGER_SCALE_DRIFT) return []
+		if (paired === undefined || computeDrift(paired.scale, row.scale) <= LEDGER_SCALE_DRIFT)
+			return []
 		return [`${row.goal}: gauge scale ${row.scale} against ${paired.scale}`]
 	})
 }
@@ -832,8 +939,16 @@ function listScaleFailures(control: Run, aggregate: Run): readonly string[] {
 function listTimeoutFailures(control: Run, aggregate: Run): readonly string[] {
 	return aggregate.rows.flatMap((row) => {
 		const paired = control.rows.find((one) => one.goal === row.goal)
-		if (paired === undefined || !matchesTimeout(row) || matchesTimeout(paired) || row.stage <= row.wall) return []
-		return [`${row.goal}: aggregate stage ${Math.round(row.stage)} ms exceeds agent wall ${Math.round(row.wall)} ms`]
+		if (
+			paired === undefined ||
+			!matchesTimeout(row) ||
+			matchesTimeout(paired) ||
+			row.stage <= row.wall
+		)
+			return []
+		return [
+			`${row.goal}: aggregate stage ${Math.round(row.stage)} ms exceeds agent wall ${Math.round(row.wall)} ms`,
+		]
 	})
 }
 
@@ -847,7 +962,13 @@ function listPlans(control: Run, aggregate: Run): readonly Plan[] {
 				equal: row.briefing.digest === paired.briefing.digest && row.tail === paired.tail,
 				tokens: row.briefing.tokens - paired.briefing.tokens,
 				scale: computeDrift(paired.scale, row.scale),
-				entry: row.entry === undefined || paired.entry === undefined ? undefined : computeDrift(paired.entry, row.entry),
+				entry:
+					row.entry === undefined || paired.entry === undefined
+						? undefined
+						: computeDrift(paired.entry, row.entry),
+				treated: aggregate.rows
+					.slice(0, aggregate.rows.indexOf(row))
+					.some((prior) => matchesExposure(aggregate, prior.goal)),
 			},
 		]
 	})
@@ -873,7 +994,12 @@ function readCases(path: string): ReadonlyMap<string, ReadonlySet<string>> {
 	for (const entry of Array.isArray(list) ? list : []) {
 		const kind = readField(entry, 'case')
 		const goal = readField(entry, 'goal')
-		if (typeof kind !== 'string' || typeof goal !== 'string' || readField(entry, 'scored') === false) continue
+		if (
+			typeof kind !== 'string' ||
+			typeof goal !== 'string' ||
+			readField(entry, 'scored') === false
+		)
+			continue
 		cases.set(kind, (cases.get(kind) ?? new Set<string>()).add(goal))
 	}
 	return cases
@@ -881,12 +1007,20 @@ function readCases(path: string): ReadonlyMap<string, ReadonlySet<string>> {
 
 function addTally(tally: Tally, run: Run, goals: ReadonlySet<string>): Tally {
 	const rows = run.rows.filter((row) => goals.has(row.goal))
-	return { passes: tally.passes + rows.filter((row) => row.success).length, total: tally.total + rows.length }
+	return {
+		passes: tally.passes + rows.filter((row) => row.success).length,
+		total: tally.total + rows.length,
+	}
 }
 
-function groupGoals(goals: readonly string[], key: (goal: string) => readonly string[]): ReadonlyMap<string, ReadonlySet<string>> {
+function groupGoals(
+	goals: readonly string[],
+	key: (goal: string) => readonly string[],
+): ReadonlyMap<string, ReadonlySet<string>> {
 	const groups = new Map<string, Set<string>>()
-	for (const goal of goals) for (const name of key(goal)) groups.set(name, (groups.get(name) ?? new Set<string>()).add(goal))
+	for (const goal of goals)
+		for (const name of key(goal))
+			groups.set(name, (groups.get(name) ?? new Set<string>()).add(goal))
 	return groups
 }
 
@@ -897,7 +1031,11 @@ function describeRange(goal: string): readonly string[] {
 }
 
 function tallyGroups(
-	pairs: readonly { readonly control: Run; readonly aggregate: Run; readonly groups: ReadonlyMap<string, ReadonlySet<string>> }[],
+	pairs: ReadonlyArray<{
+		readonly control: Run
+		readonly aggregate: Run
+		readonly groups: ReadonlyMap<string, ReadonlySet<string>>
+	}>,
 ): Readonly<Record<string, { readonly control: Tally; readonly aggregate: Tally }>> {
 	const names = new Set(pairs.flatMap((pair) => [...pair.groups.keys()]))
 	const none: Tally = { passes: 0, total: 0 }
@@ -914,11 +1052,15 @@ function tallyGroups(
 	return Object.fromEntries(rates.filter(([, rate]) => rate.control.total > 0))
 }
 
-function mergeInvariants(parts: readonly (readonly Invariant[])[]): readonly Invariant[] {
+function mergeInvariants(parts: ReadonlyArray<readonly Invariant[]>): readonly Invariant[] {
 	const names = [...new Set(parts.flatMap((part) => part.map((invariant) => invariant.name)))]
 	return names.map((name) => ({
 		name,
-		failures: parts.flatMap((part) => part.filter((invariant) => invariant.name === name).flatMap((invariant) => invariant.failures)),
+		failures: parts.flatMap((part) =>
+			part
+				.filter((invariant) => invariant.name === name)
+				.flatMap((invariant) => invariant.failures),
+		),
 	}))
 }
 
@@ -927,12 +1069,22 @@ function labelFailures(copy: number, failures: readonly string[]): Invariant['fa
 }
 
 function listLeaked(leaks: readonly Leak[], label: 'soleScored' | 'soleStale'): readonly string[] {
-	return leaks.filter((leak) => leak[label] > 0).map((leak) => `${leak.goal}: ${label} ${leak[label]}`)
+	return leaks
+		.filter((leak) => leak[label] > 0)
+		.map((leak) => `${leak.goal}: ${label} ${leak[label]}`)
 }
 
-function buildInvariants(control: Run, aggregate: Run, leaks: readonly Leak[]): readonly Invariant[] {
+function buildInvariants(
+	control: Run,
+	aggregate: Run,
+	leaks: readonly Leak[],
+): readonly Invariant[] {
 	const { copy } = aggregate.info
 	return [
+		{
+			name: 'wire',
+			failures: labelFailures(copy, [...listWireFailures(control), ...listWireFailures(aggregate)]),
+		},
 		{ name: 'sole', failures: labelFailures(copy, listSoleFailures(aggregate)) },
 		{ name: 'soleScored', failures: labelFailures(copy, listLeaked(leaks, 'soleScored')) },
 		{ name: 'soleStale', failures: labelFailures(copy, listLeaked(leaks, 'soleStale')) },
@@ -946,26 +1098,45 @@ function buildInvariants(control: Run, aggregate: Run, leaks: readonly Leak[]): 
 
 function computeShare(aggregates: readonly Run[]): Share {
 	const rows = aggregates.flatMap((run) => run.rows)
-	const zero = rows.filter((row) => row.rendered.length === 0)
+	const zero = aggregates.flatMap((run) =>
+		run.rows.filter((row) => !matchesExposure(run, row.goal)),
+	)
 	return {
 		goals: rows.length,
 		zero: zero.length,
 		withheld: zero.filter((row) => row.withheld.length > 0).length,
 		cut: zero.filter((row) => row.cut.length > 0).length,
-		majority: zero.length * 2 > rows.length,
+		majority: zero.length * 2 >= rows.length,
 	}
 }
 
-function decideVerdict(stats: Stats, invariants: readonly Invariant[], share: Share): { readonly verdict: Verdict; readonly reason: string } {
-	const failed = invariants.filter((invariant) => invariant.failures.length > 0).map((invariant) => invariant.name)
+function decideVerdict(
+	stats: Stats,
+	invariants: readonly Invariant[],
+	share: Share,
+): { readonly verdict: Verdict; readonly reason: string } {
+	const failed = invariants
+		.filter((invariant) => invariant.failures.length > 0)
+		.map((invariant) => invariant.name)
 	if (failed.length > 0) return { verdict: 'STOP', reason: `invariant ${failed.join(', ')}` }
-	if (stats.high !== undefined && stats.high < 0) return { verdict: 'STOP', reason: 'mean(d) + 2·sd(d)/√n is below 0' }
-	if (share.majority) return { verdict: 'REFUSED', reason: `${share.zero} of ${share.goals} goals rendered no topic` }
-	return { verdict: 'CONTINUE', reason: stats.high === undefined ? 'one copy gives no bound' : 'mean(d) + 2·sd(d)/√n is not below 0' }
+	if (stats.high !== undefined && stats.high < 0)
+		return { verdict: 'STOP', reason: 'mean(d) + 2·sd(d)/√n is below 0' }
+	if (share.majority)
+		return {
+			verdict: 'REFUSED',
+			reason: `${share.zero} of ${share.goals} goals have no nonempty wire exposure`,
+		}
+	return {
+		verdict: 'CONTINUE',
+		reason:
+			stats.high === undefined ? 'one copy gives no bound' : 'mean(d) + 2·sd(d)/√n is not below 0',
+	}
 }
 
 function listRefusals(pair: PairFlag, runs: readonly Run[]): readonly string[] {
-	return runs.filter((run) => run.info.transient > 0).map((run) => `${run.name}: ${run.info.transient} transient judge errors; rerun the pair`)
+	return runs
+		.filter((run) => run.info.transient > 0)
+		.map((run) => `${run.name}: ${run.info.transient} transient judge errors; rerun the pair`)
 }
 
 function buildPair(flags: Flags, pair: PairFlag): PairReport | Refusal {
@@ -985,16 +1156,29 @@ function buildPair(flags: Flags, pair: PairFlag): PairReport | Refusal {
 	const reasons = listRefusals(pair, [...controls, ...aggregates])
 	if (reasons.length > 0) return { pair: label, reasons }
 	const copies: CopyReport[] = []
-	const invariants: (readonly Invariant[])[] = []
-	const cells: { readonly control: Run; readonly aggregate: Run; readonly goals: readonly string[]; readonly path: string }[] = []
+	const invariants: Array<readonly Invariant[]> = []
+	const cells: Array<{
+		readonly control: Run
+		readonly aggregate: Run
+		readonly goals: readonly string[]
+		readonly path: string
+	}> = []
 	for (const [at, control] of controls.entries()) {
 		const aggregate = aggregates[at]
 		const scenario = scenarios[at]
 		const goals = compareGoals(control, aggregate)
-		if (goals.length === 0) return { pair: label, reasons: [`${aggregate.name}: the arms served different goals`] }
+		if (goals.length === 0)
+			return { pair: label, reasons: [`${aggregate.name}: the arms served different goals`] }
 		const scored = new Set(goals.filter(isScored))
 		const closed = new Set(
-			aggregate.rows.filter((row) => scored.has(row.goal) && row.recalls.closed > 0 && (control.rows.find((one) => one.goal === row.goal)?.recalls.closed ?? 0) === 0).map((row) => row.goal),
+			aggregate.rows
+				.filter(
+					(row) =>
+						scored.has(row.goal) &&
+						row.recalls.closed > 0 &&
+						(control.rows.find((one) => one.goal === row.goal)?.recalls.closed ?? 0) === 0,
+				)
+				.map((row) => row.goal),
 		)
 		const rest = new Set([...scored].filter((goal) => !closed.has(goal)))
 		let leaks: readonly Leak[]
@@ -1013,7 +1197,12 @@ function buildPair(flags: Flags, pair: PairFlag): PairReport | Refusal {
 			plans: listPlans(control, aggregate),
 		})
 		invariants.push(buildInvariants(control, aggregate, leaks))
-		cells.push({ control, aggregate, goals: [...scored], path: join(flags.copies, `v${aggregate.info.copy}.json`) })
+		cells.push({
+			control,
+			aggregate,
+			goals: [...scored],
+			path: join(flags.copies, `v${aggregate.info.copy}.json`),
+		})
 	}
 	const stats = computeStats(copies.map((copy) => copy.d))
 	const merged = mergeInvariants(invariants)
@@ -1026,13 +1215,30 @@ function buildPair(flags: Flags, pair: PairFlag): PairReport | Refusal {
 		last: pair.last,
 		copies,
 		stats,
-		closed: copies.some((copy) => copy.closed.goals > 0) ? computeStats(copies.map((copy) => copy.closed.d)) : undefined,
+		closed: copies.some((copy) => copy.closed.goals > 0)
+			? computeStats(copies.map((copy) => copy.closed.d))
+			: undefined,
 		rest: computeStats(copies.map((copy) => copy.rest.d)),
-		rates: tallyGroups(cells.map((cell) => ({ control: cell.control, aggregate: cell.aggregate, groups: groupGoals(cell.goals, describeRange) }))),
+		rates: tallyGroups(
+			cells.map((cell) => ({
+				control: cell.control,
+				aggregate: cell.aggregate,
+				groups: groupGoals(cell.goals, describeRange),
+			})),
+		),
 		cases: tallyGroups(
 			cells.map((cell) => {
 				const cases = readCases(cell.path)
-				return { control: cell.control, aggregate: cell.aggregate, groups: new Map([...cases].map(([kind, goals]) => [kind, new Set([...goals].filter((goal) => cell.goals.includes(goal)))])) }
+				return {
+					control: cell.control,
+					aggregate: cell.aggregate,
+					groups: new Map(
+						[...cases].map(([kind, goals]) => [
+							kind,
+							new Set([...goals].filter((goal) => cell.goals.includes(goal))),
+						]),
+					),
+				}
 			}),
 		),
 		share,
@@ -1057,23 +1263,40 @@ function formatSeconds(run: RunReport, role: CallRole): string {
 function renderRun(run: RunReport): readonly string[] {
 	const lines = [
 		`run ${run.name} passes ${run.passes}/${run.goals} faults ${run.faults} overflow ${run.overflows} prompt ${run.prompt} recalls ${run.recalls.calls} (closed ${run.recalls.closed}: limit ${run.recalls.limit}, room ${run.recalls.room}) lookups ${run.lookups.calls} (repeats ${run.lookups.repeats})`,
-		`  wall s agent ${formatSeconds(run, 'agent')} judge ${formatSeconds(run, 'judge')} summarizer ${formatSeconds(run, 'summarizer')} flush ${formatSeconds(run, 'flush')}; briefing tokens ${formatNumber(run.briefing.tokens)} facts ${run.briefing.facts} stale ${run.briefing.stale}; questions ${Object.entries(run.questions).map(([head, count]) => `${head} ${count.fresh} fresh ${count.hits} hit`).join(', ')}`,
+		`  answer selections ${run.observations.answers}; distinct shortened recall listings ${run.observations.shortened}`,
+		`  wall s agent ${formatSeconds(run, 'agent')} judge ${formatSeconds(run, 'judge')} summarizer ${formatSeconds(run, 'summarizer')} flush ${formatSeconds(run, 'flush')}; briefing tokens ${formatNumber(run.briefing.tokens)} facts ${run.briefing.facts} stale ${run.briefing.stale}; questions ${Object.entries(
+			run.questions,
+		)
+			.map(([head, count]) => `${head} ${count.fresh} fresh ${count.hits} hit`)
+			.join(', ')}`,
 	]
 	const { aggregate } = run
 	if (aggregate === undefined) return lines
 	return [
 		...lines,
-		`  builds ${aggregate.builds} (${Object.entries(aggregate.triggers).map(([name, count]) => `${name} ${count}`).join(', ')}) failed ${aggregate.failed} consistency ${formatNumber(aggregate.consistency)} failures ${Object.entries(aggregate.failures).map(([kind, count]) => `${kind} ${count}`).join(', ')} withheld ${aggregate.withheld} stale ${aggregate.stale}`,
+		`  builds ${aggregate.builds} (${Object.entries(aggregate.triggers)
+			.map(([name, count]) => `${name} ${count}`)
+			.join(
+				', ',
+			)}) failed ${aggregate.failed} consistency ${formatNumber(aggregate.consistency)} failures ${Object.entries(
+			aggregate.failures,
+		)
+			.map(([kind, count]) => `${kind} ${count}`)
+			.join(', ')} withheld ${aggregate.withheld} stale ${aggregate.stale}`,
 		`  change asked ${aggregate.change.asked} yes ${aggregate.change.yes}; agree asked ${aggregate.agree.asked} failed ${aggregate.agree.failed}; summarizer calls ${aggregate.summarizer.calls} hits ${aggregate.summarizer.hits} s ${formatNumber(aggregate.summarizer.seconds)}; mica s change ${formatNumber(aggregate.mica.change)} agree ${formatNumber(aggregate.mica.agree)} ledger ${formatNumber(aggregate.mica.ledger)}`,
 		...aggregate.goals.map(
-			(goal) => `  goal ${goal.goal} rendered ${goal.rendered} tokens ${formatNumber(goal.summary)} filtered ${goal.filtered} sole ${goal.sole} soleScored ${goal.soleScored} soleStale ${goal.soleStale} facts ${goal.facts} stale ${goal.stale}`,
+			(goal) =>
+				`  goal ${goal.goal} rendered ${goal.rendered} tokens ${formatNumber(goal.summary)} filtered ${goal.filtered} sole ${goal.sole} soleScored ${goal.soleScored} soleStale ${goal.soleStale} facts ${goal.facts} stale ${goal.stale}`,
 		),
 	]
 }
 
 function renderPair(report: PairReport): string {
 	const { stats, share } = report
-	const lines = [`pair ${report.short} ${report.model} copies ${report.first}-${report.last}`]
+	const lines = [
+		`pair ${report.short} ${report.model} copies ${report.first}-${report.last}`,
+		'Later plan, recall, and answer-pass differences are observations of the method, not independent treatment effects.',
+	]
 	for (const copy of report.copies) {
 		const equal = copy.plans.filter((plan) => plan.equal).length
 		const entries = copy.plans.flatMap((plan) => plan.entry ?? [])
@@ -1087,10 +1310,19 @@ function renderPair(report: PairReport): string {
 		`d ${report.copies.map((copy) => copy.d).join(', ')}`,
 		`n ${stats.n} mean ${formatNumber(stats.mean)} sd ${formatNumber(stats.deviation)} bounds [${formatNumber(stats.low)}, ${formatNumber(stats.high)}] scorer end, goals without ${SKIPPED_GOAL}`,
 		`split closed-only mean ${formatNumber(report.closed?.mean)} rest mean ${formatNumber(report.rest?.mean)}`,
-		...Object.entries(report.rates).map(([name, rate]) => `rate ${name} control ${formatTally(rate.control)} aggregate ${formatTally(rate.aggregate)}`),
-		...Object.entries(report.cases).map(([name, rate]) => `case ${name} control ${formatTally(rate.control)} aggregate ${formatTally(rate.aggregate)}`),
+		...Object.entries(report.rates).map(
+			([name, rate]) =>
+				`rate ${name} control ${formatTally(rate.control)} aggregate ${formatTally(rate.aggregate)}`,
+		),
+		...Object.entries(report.cases).map(
+			([name, rate]) =>
+				`case ${name} control ${formatTally(rate.control)} aggregate ${formatTally(rate.aggregate)}`,
+		),
 		`zero rendered ${share.zero}/${share.goals} (withheld ${share.withheld}, cut ${share.cut}) majority ${share.majority}`,
-		...report.invariants.map((invariant) => `invariant ${invariant.name} ${invariant.failures.length === 0 ? 'PASS' : `FAIL ${invariant.failures.join('; ')}`}`),
+		...report.invariants.map(
+			(invariant) =>
+				`invariant ${invariant.name} ${invariant.failures.length === 0 ? 'PASS' : `FAIL ${invariant.failures.join('; ')}`}`,
+		),
 		`verdict ${report.verdict} (${report.reason})`,
 	)
 	return lines.join('\n')
@@ -1111,7 +1343,11 @@ function main(argv: readonly string[]): number {
 		if (isRefusal(report)) console.error(`REFUSED ${report.pair}: ${report.reasons.join('; ')}`)
 		else console.log(renderPair(report))
 	}
-	if (flags.json !== undefined) writeFileSync(flags.json, `${JSON.stringify({ pairs: reports.filter((report) => !isRefusal(report)), refused: reports.filter(isRefusal) }, null, 1)}\n`)
+	if (flags.json !== undefined)
+		writeFileSync(
+			flags.json,
+			`${JSON.stringify({ pairs: reports.filter((report) => !isRefusal(report)), refused: reports.filter(isRefusal) }, null, 1)}\n`,
+		)
 	return reports.some(isRefusal) ? 1 : 0
 }
 
