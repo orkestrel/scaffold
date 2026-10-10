@@ -1,5 +1,7 @@
 # Handoff: 0.0.30 release and the aggregate arm (2026-10-10)
 
+For the Codex resumption state, see [the resumption plan](../plan.md#resume-from-the-verified-state-of-2026-10-10) and [the progress and results record](../progress.md). The release is verified on agent main; publication is pending. The aggregate protocol has an authorized revision and remains in instrument verification. The remaining-step lists in this historical handoff are superseded by that plan. Preserve the handoff's evidence and artifacts.
+
 The next session resumes two lines of work from this file. Read it whole before acting.
 
 ## Goals

@@ -1,5 +1,36 @@
 # The context and selection campaign for `@orkestrel/agent`
 
+## Resume from the verified state of 2026-10-10
+
+Agent 0.0.30 is verified and pushed to agent main. Publication and published-artifact consumer checks remain pending. The aggregate instrument is implemented but its integrated audit remains open; no accepted living-summary matrix or sustained-work model comparison exists. See [the progress and results record](progress.md) for measured runs, evidence locations, and their limits.
+
+This section owns the resumption order and status. The earlier handoff and the historical plan following this section retain their evidence; their unfinished-unit lists do not override this section. The accepted experiment contracts remain [the living-summary matrix](instruments/units/aggregates/matrix.md) and [the sustained-work plan](instruments/units/aggregates/endurance-plan.md).
+
+The work stands as follows.
+
+| Work | State | Next action |
+| --- | --- | --- |
+| Agent release | Verified commit `ee734c30151c7d431e480aff7a0d54306d387f13` is on agent main; phase 2, integration, release audit, replay, and raw comparison are complete. | When the operator is at the keyboard, run the authorized `npm publish --ignore-scripts --browser=false` from the agent checkout. Complete browser authentication through the operator, verify the registry artifact, and record publication. No publish attempt has run in this resumption. |
+| Desk X1 | Gauge migration pushed on the desk session branch at `29c7f6bf919a50c830ea9d07a34209fd69ddbf23`; packed-consumer checks passed. | After agent publication, re-pin to `^0.0.30`, refresh the lock, verify against the published artifact, and push the desk session branch. |
+| Ollama X2 | Patch and packed-consumer proof retained in scaffold main. | Deliver the patch to its owner. Published-agent re-pin, release checks, and Ollama publication remain that owner's work; this session has no Ollama publication authority. |
+| Harness X3 and release records | Release vendor and harness consumer changes are integrated. Release records and archived-driver relocation are on scaffold main at `68060778df1e737e51ab083e90af81683c49671c`. | Keep aggregate changes on the scaffold session branch. Carry publication and consumer outcomes into release records after those operations finish. |
+| Aggregate lifecycle, matrix, and sustained runtime | Integrated source is checkpointed locally at `168aaa05729ef1aad82a3e6871449aa948951fcd`; acceptance is withheld after the independent objective and subjective audits. | Finish the bounded repairs in the following sequence. Do not freeze or evaluate the open instrument. |
+
+Complete the aggregate work in this order.
+
+1. Close the integrated audit findings. Review and integrate the returned request-accounting and failed-preparation patch and the returned receipt-only repaired-work correction. Integrate obligation-specific completion evidence, packet-wide audit controls, and inconclusive recommendation handling. Review the returned subjective control-text proposal against the frozen workload. Repair the reproduced transport-failure classification defect with a distinguishing control; preserve the frozen retry contract and refuse infrastructure faults as feasibility evidence.
+2. Verify the composed source with the independent verifier. Run the full emitted harness, source/build custody checks, and scaffold gates. Close exact review prescriptions with their distinguishing mutation proofs. Preserve historical results and the original STOP. Commit and push only after the integrated acceptance checks pass.
+3. Freeze the verified source, workload, models, role settings, resource rules, and cache ancestry. Generate runtime-matched development calibration, obtain independent blind labels, and fit the declared cutoffs. A nonseparating or insufficient-support fit refuses that configuration; never lower a cutoff to force exposure.
+4. Run resource preflight, full-view admission, and the revised pilot for each requested Qwen and Gemma size with decision thinking disabled and enabled. Require identical initial records selection and nonempty aggregate exposure on more than half the served goals. Preserve refusal evidence and preparation cost. Follow [the matrix commands](instruments/units/aggregates/matrix-commands.md).
+5. Before reading matrix evaluation quality, complete sustained-work development and select the first feasible candidate in the frozen rank. Freeze the selected configuration. Follow [the sustained-work commands](instruments/units/aggregates/endurance-commands.md). Infrastructure errors must not become evidence that a model configuration is infeasible.
+6. Run matrix Stages A, B, and C over every feasible configured cell: records, records plus maintained aggregate, and full-view reference. Keep thinking conditions separate. Follow the frozen stopping rule; retain unavailable and infeasible cells explicitly. Run the separate judge shadow and blind answer audit.
+7. Run the mandatory held-out continuous comparison: verified records on agent main against the same build with maintained aggregates. Carry actual earlier products, corrections, tools, and obligations through the full workload without resetting state between checkpoints. Audit work products blind and report quality by history interval with preparation, maintenance, decision, and judge cost.
+8. Write the comparison report and update the result artifact and issue record. Rule adoption only from the matrix and the final continuous pair together. Preserve negative and inconclusive outcomes. Complete the campaign debrief and authorized cleanup after acceptance.
+
+Publication can proceed independently of aggregate verification when the operator returns. Isolated repairs and read-only review can proceed in parallel. Shared integration, final gates, and model execution remain serial at their resource and custody boundaries. No additional design round or feature expansion is planned.
+
+## Historical plan and evidence
+
 Plan of record for the live campaign under `.orkestrel/agent/`, written 2026-10-07 against agent 0.0.28 (release commit `7784837`, fix commit `c8ab2c5`) on the branch `claude/confident-maxwell-6nd0f3` of every checkout it names. This file is the one home of unit order and status. [context.md](context.md) is the verdict of the refactor seam and [refine.md](refine.md) is the verdict of the judge, judgments, selection, and scope seams; each carries its design and points here for order, acceptance, and status, so no second plan table can drift. A line citation in either record resolves by symbol, because the judge and the scope-dispatch commits moved lines after they were written. The folder is deleted in the acceptance commit; git history is the archive.
 
 Two kinds of sentence appear, as in the records: a measured fact names the file, test, command, or run it came from; a ruling is a decision for this codebase.

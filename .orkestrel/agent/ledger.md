@@ -60,6 +60,23 @@ Every dispatch, its engine, and every substitution, newest first. The briefing b
 
 Substitution not recorded at the time: Opus 5.5 held the objective review and implementation lanes while the Astra bench was live and unprobed; no bench reading made Astra dark. Gates that ran on Opus 5.5 in place of Haiku 5.5 report exit codes and need no re-run.
 
+## Codex resumption checkpoint, 2026-10-10
+
+For status, results, and the remaining order, see [the resumption plan](plan.md#resume-from-the-verified-state-of-2026-10-10) and [the progress record](progress.md). The user waived the Claude-specific mode switch, directed Codex attribution without a Claude session trailer, and authorized the publish command while reporting that they were not yet at the keyboard. Publication remains unattempted.
+
+The integrated aggregate audit and its repair routes are retained as follows.
+
+| Work | Route | State at this checkpoint |
+| --- | --- | --- |
+| Objective integrated audit | Native analyst on Astra, independent of the writer | Returned failure findings for request accounting and authentic failed-preparation consumption; root reproduced them |
+| Subjective integrated audit | Cursor Opus 5.5, session `441d6b9a-a212-418f-9eb7-5fd05fc719ff`, by explicit user authorization | Returned findings for completion evidence, blind control presentation, and recommendation interpretation; root also reproduced the bounded transport-classification finding |
+| Failure-path repair | Native Astra in isolated `aggregate-failure-repair` checkout | Patch returned; writer's final touched run passed; root integration and final verifier remain owed |
+| Audit repair | Native Astra in isolated `aggregate-audit-repair` checkout | Initial patch returned; root proved receipt-only repair had been narrowed; successor correction returned with a failing source-only mutation and passing restored tests |
+| Control-product proposal | Cursor Opus 5.5, session `17f44e78-d378-4dc0-8920-1efd18918f5c` | Read-only subjective proposal returned; root review pending |
+| Final integrated verification | Native verifier on Luna | Driver prepared; gates await root's integration and release |
+
+The source checkpoint `168aaa05729ef1aad82a3e6871449aa948951fcd` preserves the reviewed implementation without claiming acceptance. Aggregate work stays on the session branch. Source writers remain isolated; root owns shared integration and acceptance.
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.
