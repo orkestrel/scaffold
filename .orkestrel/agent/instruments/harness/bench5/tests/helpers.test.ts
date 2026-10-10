@@ -1,4 +1,4 @@
-import type { Message } from '../../vendor/agent-0.0.30/index.js'
+import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { WireRun } from '../types.ts'
 import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'

@@ -1,4 +1,4 @@
-import type { JudgeInterface, Message } from '../../vendor/agent-0.0.30/index.js'
+import type { JudgeInterface, Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { Fixture } from './fixture.ts'
 import type { MirrorRead, ScenarioLookups, SeedMessage } from '../types.ts'
 import type { ToolResult } from '@orkestrel/tool'
@@ -14,7 +14,7 @@ import {
 	LEDGER_QUESTIONS,
 	LEDGER_RULES_KEY,
 	createLedger,
-} from '../../vendor/agent-0.0.30/index.js'
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama } from '../../vendor/ollama/index.js'
 import { CORPUS, FIT, HARNESS, MICA_MODEL, MODELS, SAMPLER, SCENARIO_LONG } from '../constants.ts'
 import { buildSystem, importCorpus, isMessageRole, readJSON, readLookup, readRows, resolveLookup } from '../helpers.ts'
@@ -278,7 +278,7 @@ describe('Mirror', () => {
 
 		it('excludes the request from the projection input and files the reply after it as chatter', () => {
 			const input = rig.mirror.input()
-			assert.deepEqual(input.exclude, [request.id])
+			assert.deepEqual(input.exclusions, [request.id])
 			const reply = input.messages.at(-1)
 			assert.ok(reply !== undefined && reply.role === 'assistant')
 			assert.equal(rig.mirror.assign(reply), 'chatter')
@@ -357,7 +357,7 @@ describe('Mirror', () => {
 			const [first] = own.ledger.conversation.add([{ role: 'user', content: LEDGER_NOTES.cue }])
 			assert.ok(first !== undefined)
 			assert.equal(own.mirror.assign(first), undefined)
-			assert.deepEqual(own.mirror.input().exclude, [])
+			assert.deepEqual(own.mirror.input().exclusions, [])
 			const [asked, cue, digest, plain] = own.ledger.conversation.add([
 				{ role: 'user', content: 'Where is order LH-79215?' },
 				{ role: 'user', content: LEDGER_NOTES.cue },
@@ -370,7 +370,7 @@ describe('Mirror', () => {
 			assert.equal(own.mirror.assign(cue), 'chatter')
 			assert.equal(own.mirror.assign(digest), 'chatter')
 			assert.equal(own.mirror.assign(plain), undefined)
-			assert.deepEqual(own.mirror.input().exclude, [asked.id, cue.id, digest.id])
+			assert.deepEqual(own.mirror.input().exclusions, [asked.id, cue.id, digest.id])
 		})
 
 		it('files an assistant call as chatter and an assistant reply as chatter only after the first request', () => {

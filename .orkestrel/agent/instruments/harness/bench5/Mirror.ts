@@ -1,4 +1,4 @@
-import type { Message } from '../vendor/agent-0.0.30/index.js'
+import type { Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AssignCategory,
 	AssignResult,
@@ -24,8 +24,8 @@ import {
 	extractTokens,
 	linkOwners,
 	matchEntities,
-	resolveLedgerCall,
-} from '../vendor/agent-0.0.30/index.js'
+	findLedgerCall,
+} from '../vendor/agent-0.0.30-trimmed/index.js'
 import { assignCategory } from './helpers.ts'
 
 /**
@@ -99,7 +99,7 @@ export class Mirror implements MirrorInterface {
 		const readings: MirrorReading[] = []
 		for (const group of collectToolGroups(this.#ledger.conversation.messages())) {
 			for (const message of group.slice(1)) {
-				const call = resolveLedgerCall(group, message)
+				const call = findLedgerCall(group, message)
 				const read = call === undefined ? undefined : this.#options.reads.get(call.name)
 				if (call === undefined || read === undefined || this.#results.get(message.id)?.success === false) continue
 				let result: LookupReading | undefined
@@ -134,7 +134,7 @@ export class Mirror implements MirrorInterface {
 		const messages = this.#ledger.conversation.messages()
 		return {
 			system: this.#options.system,
-			exclude: [...this.#requests, ...this.#annotate(messages)],
+			exclusions: [...this.#requests, ...this.#annotate(messages)],
 			owners: registry.owners,
 			messages,
 			readings,

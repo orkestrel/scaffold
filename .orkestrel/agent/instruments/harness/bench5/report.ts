@@ -31,7 +31,7 @@ import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
-import { LEDGER_SCALE_DRIFT, matchesCutLine } from '../vendor/agent-0.0.30/index.js'
+import { LEDGER_SCALE_DRIFT, matchesCutLine } from '../vendor/agent-0.0.30-trimmed/index.js'
 import { compileRules, plainText, scoreText } from '../bench/rescore.mjs'
 import { INSTRUCTION_SUMMARIES } from './aggregates/constants.ts'
 import { readTokens } from './aggregates/helpers.ts'

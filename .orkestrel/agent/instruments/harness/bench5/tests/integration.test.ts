@@ -1,11 +1,11 @@
-import type { Message } from '../../vendor/agent-0.0.30/index.js'
+import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { isRecord } from '@orkestrel/contract'
 import { mkdirSync, mkdtempSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { ADMISSION_LIMIT, HARNESS } from '../constants.ts'
-import { estimateMessages } from '../../vendor/agent-0.0.30/index.js'
+import { estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { isMessageRole } from '../helpers.ts'
 import { replayAdmission } from './setupAdmission.ts'
 
@@ -100,7 +100,7 @@ describe('archived control request identity', () => {
 			)
 			return { id: String(at), role: message.role, content: message.content }
 		})
-		assert.ok(estimateMessages(messages) * run.gauge.scale + run.gauge.fixed <= ADMISSION_LIMIT)
+		assert.ok(estimateMessages(messages) * run.gauge.scale + run.gauge.overhead <= ADMISSION_LIMIT)
 		const candidate = [
 			...messages,
 			{
@@ -109,6 +109,6 @@ describe('archived control request identity', () => {
 				content: 'The standing rule applies to this topic. '.repeat(40),
 			},
 		]
-		assert.ok(estimateMessages(candidate) * run.gauge.scale + run.gauge.fixed > ADMISSION_LIMIT)
+		assert.ok(estimateMessages(candidate) * run.gauge.scale + run.gauge.overhead > ADMISSION_LIMIT)
 	})
 })

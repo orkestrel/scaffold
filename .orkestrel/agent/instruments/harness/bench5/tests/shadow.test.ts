@@ -1,5 +1,5 @@
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
-import type { JudgeAnswer, JudgeQuestion } from '../../vendor/agent-0.0.30/index.js'
+import type { JudgeAnswer, JudgeQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { AggregateRow, CacheRow, ShadowAggregate, ShadowItem, ShadowTruth } from '../types.ts'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -17,7 +17,7 @@ import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { LEDGER_QUESTIONS } from '../../vendor/agent-0.0.30/index.js'
+import { LEDGER_QUESTIONS } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllamaJudge } from '../../vendor/ollama/index.js'
 import {
 	FIT,

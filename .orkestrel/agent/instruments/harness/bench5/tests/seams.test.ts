@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url'
 
 const HARNESS = dirname(dirname(import.meta.dirname))
 const PROBE = join(HARNESS, 'bench5', 'seams.ts')
-const VENDORED = join(HARNESS, 'vendor', 'agent-0.0.30', 'index.js')
+const VENDORED = join(HARNESS, 'vendor', 'agent-0.0.30-trimmed', 'index.js')
 const VENDORED_URL = pathToFileURL(VENDORED).href
 const README = join(HARNESS, 'README.md')
 const scratch = mkdtempSync(join(tmpdir(), 'seams-'))
@@ -57,12 +57,12 @@ describe('seams.ts', () => {
 		const digest = createHash('sha256').update(readFileSync(VENDORED)).digest('hex')
 		assert.match(outcome.stdout, new RegExp(`^sha256 ${digest}$`, 'm'))
 		const readme = readFileSync(README, 'utf8')
-		const row = readme.split('\n').find((line) => line.startsWith('| `vendor/agent-0.0.30/index.js`'))
+		const row = readme.split('\n').find((line) => line.startsWith('| `vendor/agent-0.0.30-trimmed/index.js`'))
 		assert.ok(row !== undefined && row.includes(digest), 'README row for the vendored 0.0.30 build')
 	})
 
 	it('resolves a relative build path against the working directory', () => {
-		const outcome = probeBuild(['--build', 'vendor/agent-0.0.30/index.js'])
+		const outcome = probeBuild(['--build', 'vendor/agent-0.0.30-trimmed/index.js'])
 		assert.equal(outcome.status, 0, outcome.stdout)
 	})
 

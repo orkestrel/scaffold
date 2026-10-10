@@ -7,7 +7,7 @@ import type {
 	Message,
 	ProviderInterface,
 	Selection,
-} from '../vendor/agent-0.0.30/index.js'
+} from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { ToolCall, ToolResult } from '@orkestrel/tool'
 import type {
 	AggregateRendering,
@@ -67,7 +67,7 @@ import {
 	extractTokens,
 	matchEntities,
 	stripThinking,
-} from '../vendor/agent-0.0.30/index.js'
+} from '../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../vendor/ollama/index.js'
 import { clean, compileRules, scoreText } from '../bench/rescore.mjs'
 import { INSTRUCTION_DATE, INSTRUCTION_SUMMARIES } from './aggregates/constants.ts'
@@ -1049,7 +1049,7 @@ export class Driver {
 			return
 		}
 		this.#recalls += 1
-		if (!result.success && result.error === LEDGER_NOTES.closed) {
+		if (!result.success && result.error === LEDGER_NOTES.closure) {
 			this.#closed += 1
 			return
 		}
@@ -1161,7 +1161,7 @@ export class Driver {
 		const gauge = rig.ledger.gauge
 		if (gauge === undefined) throw new Error('summary admission requires a calibrated gauge')
 		context.instructions.add({ ...INSTRUCTION_SUMMARIES, content: text })
-		const tokens = estimateMessages(context.build(selection)) * gauge.scale + gauge.fixed
+		const tokens = estimateMessages(context.build(selection)) * gauge.scale + gauge.overhead
 		return tokens <= ADMISSION_LIMIT
 	}
 

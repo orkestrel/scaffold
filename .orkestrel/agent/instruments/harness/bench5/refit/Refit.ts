@@ -21,7 +21,7 @@ import {
 	collectRegistry,
 	createLedger,
 	matchEntities,
-} from '../../vendor/agent-0.0.30/index.js'
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../../vendor/ollama/index.js'
 import { AGREE_QUESTION } from '../aggregates/constants.ts'
 import {

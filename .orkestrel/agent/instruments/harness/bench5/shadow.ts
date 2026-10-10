@@ -1,6 +1,6 @@
 // Reads what the judge would file if the summaries were in its state: node bench5/shadow.ts --run DIR --cache DIR --out FILE [--live] [--url URL] [--copies DIR]
 // Exit: 0 on success, 1 on a missing input or a failed read, 64 on usage.
-import type { JudgeAnswer, JudgeInterface, Message } from '../vendor/agent-0.0.30/index.js'
+import type { JudgeAnswer, JudgeInterface, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { ToolCall } from '@orkestrel/tool'
 import type {
 	MirrorReading,
@@ -41,8 +41,8 @@ import {
 	isMessage,
 	linkOwners,
 	matchEntities,
-	resolveLedgerCall,
-} from '../vendor/agent-0.0.30/index.js'
+	findLedgerCall,
+} from '../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllamaJudge } from '../vendor/ollama/index.js'
 import {
 	COPIES_DIR,
@@ -322,7 +322,7 @@ export function buildEntities(messages: readonly Message[]): ShadowEntities {
 	const readings: MirrorReading[] = []
 	for (const group of collectToolGroups(messages)) {
 		for (const message of group.slice(1)) {
-			const call = resolveLedgerCall(group, message)
+			const call = findLedgerCall(group, message)
 			if (call === undefined || !LOOKUPS.has(call.name)) continue
 			const result = readLookup(call.arguments, message.content)
 			const named = Object.values(call.arguments)

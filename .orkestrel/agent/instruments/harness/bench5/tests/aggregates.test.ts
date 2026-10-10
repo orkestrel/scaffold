@@ -4,7 +4,7 @@ import type {
 	JudgeQuestion,
 	Message,
 	Selection,
-} from '../../vendor/agent-0.0.30/index.js'
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { Fixture } from './fixture.ts'
 import type {
 	AggregatorOptions,
@@ -30,7 +30,7 @@ import {
 	createAgentContext,
 	estimateMessages,
 	matchEntities,
-} from '../../vendor/agent-0.0.30/index.js'
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama } from '../../vendor/ollama/index.js'
 import { Aggregator } from '../aggregates/Aggregator.ts'
 import {
@@ -297,7 +297,7 @@ async function createRig(classify: string): Promise<Rig> {
 		capacity: SAMPLER.num_ctx,
 		predict: 0,
 		think: false,
-		gauge: { scale: 1.1, fixed: 100 },
+		gauge: { scale: 1.1, overhead: 100 },
 	})
 	const reads = new Map([
 		['lookup_order', readLookup],
@@ -971,7 +971,7 @@ describe('Aggregator', () => {
 			const marcus = [...run.rig.seeds].find(([, index]) => index === MARCUS)?.[0]
 			assert.ok(marcus !== undefined)
 			assert.ok(
-				run.rig.mirror.input().classification.superseded.get(marcus)?.includes(correction.id),
+				run.rig.mirror.input().classification.supersessions.get(marcus)?.includes(correction.id),
 			)
 			await run.maintain('g02', SEEDED)
 			assert.deepEqual(run.judge.stats().hits['change'] ?? 0, stats.hits['change'] ?? 0)

@@ -1,5 +1,5 @@
 import type { TokenUsage } from '@orkestrel/budget'
-import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30/index.js'
+import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateFailure,
 	AggregateSource,

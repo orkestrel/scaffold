@@ -1,4 +1,4 @@
-import type { JudgeQuestion, Message, Selection } from '../../vendor/agent-0.0.30/index.js'
+import type { JudgeQuestion, Message, Selection } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateAsked,
 	AggregateAdmission,
@@ -17,7 +17,7 @@ import type {
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
-import { LEDGER_OWNER_PREFIX } from '../../vendor/agent-0.0.30/index.js'
+import { LEDGER_OWNER_PREFIX } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { describeError, findDay } from '../helpers.ts'
 import { AGREE_HEAD, AGREE_QUESTION, CHANGE_HEAD } from './constants.ts'
 import {

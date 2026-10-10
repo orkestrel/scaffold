@@ -22,7 +22,7 @@ import type {
 	MessageRole,
 	ProviderInterface,
 	Refusal,
-} from '../vendor/agent-0.0.30/index.js'
+} from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { Aggregator } from './aggregates/Aggregator.ts'
 import type { JudgeCache } from './JudgeCache.ts'
 

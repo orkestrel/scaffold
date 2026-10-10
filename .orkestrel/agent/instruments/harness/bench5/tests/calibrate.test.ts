@@ -1,4 +1,4 @@
-import type { JudgeQuestion } from '../../vendor/agent-0.0.30/index.js'
+import type { JudgeQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { CacheRow, CalibrateAsked, CalibrateConfig, CalibrateItem, CalibrateSummary } from '../types.ts'
 import type { Fixture } from './fixture.ts'
 import { after, before, describe, it } from 'node:test'

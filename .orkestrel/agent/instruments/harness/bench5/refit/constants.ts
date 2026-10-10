@@ -30,6 +30,6 @@ export const REFIT_IMPLEMENTATION = Object.freeze([
 	'bench5/aggregates/Aggregator.ts',
 	'bench5/aggregates/helpers.ts',
 	'bench5/aggregates/constants.ts',
-	'vendor/agent-0.0.30/index.js',
+	'vendor/agent-0.0.30-trimmed/index.js',
 	'vendor/ollama/index.js',
 ])

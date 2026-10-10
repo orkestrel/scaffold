@@ -1,4 +1,4 @@
-import type { Message } from '../../vendor/agent-0.0.30/index.js'
+import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { Fixture, FixtureOptions } from './fixture.ts'
 import { after, afterEach, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'

@@ -1,4 +1,4 @@
-import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30/index.js'
+import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateBlock,
 	AggregateAdmission,
@@ -24,7 +24,7 @@ import {
 	estimateMessages,
 	extractTokens,
 	splitSentences,
-} from '../../vendor/agent-0.0.30/index.js'
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
 import {
 	AGREE_STATE_SOURCES,
 	ANY_WORD,

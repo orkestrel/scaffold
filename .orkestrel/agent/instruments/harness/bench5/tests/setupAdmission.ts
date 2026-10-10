@@ -165,11 +165,11 @@ export async function replayAdmission(
 			!isRecord(run) ||
 			!isRecord(run.gauge) ||
 			typeof run.gauge.scale !== 'number' ||
-			typeof run.gauge.fixed !== 'number'
+			typeof run.gauge.overhead !== 'number'
 		)
 			throw new Error('missing gauge')
 		return {
-			gauge: { scale: run.gauge.scale, fixed: run.gauge.fixed },
+			gauge: { scale: run.gauge.scale, overhead: run.gauge.overhead },
 			requests,
 			expected,
 			rows: readRows(join(out, 'rows.jsonl')),

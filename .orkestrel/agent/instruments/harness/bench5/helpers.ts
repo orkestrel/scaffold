@@ -1,4 +1,4 @@
-import type { JudgeQuestion, Message, MessageRole } from '../vendor/agent-0.0.30/index.js'
+import type { JudgeQuestion, Message, MessageRole } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { TokenUsage } from '@orkestrel/budget'
 import type {
 	AssignCategory,
@@ -32,7 +32,7 @@ import {
 	LEDGER_CATEGORIES,
 	LEDGER_QUESTIONS,
 	MESSAGE_ROLES,
-} from '../vendor/agent-0.0.30/index.js'
+} from '../vendor/agent-0.0.30-trimmed/index.js'
 import {
 	COMPLETION_LIMIT,
 	SAMPLER,

@@ -35,7 +35,7 @@ const SYSTEM = 'You are the Larkspur Home support assistant.'
 const CAPACITY = 3072
 // The thresholds of bench4/constants.mjs, which the long scenario's ledger runs under.
 const FIT = Object.freeze({ category: 0.7, topic: 0.6, amends: 0.75, supersedes: 0.95, correction: 0.3 })
-const NOTES = Object.freeze(['cue', 'results', 'repeat', 'closed'])
+const NOTES = Object.freeze(['cue', 'results', 'repeat', 'closure'])
 const QUESTIONS = Object.freeze(['category', 'topic', 'amends', 'supersedes'])
 const CATEGORIES = Object.freeze(['fact', 'rule', 'correction', 'request', 'opinion', 'chatter', 'distractor'])
 const OPEN = '## Instructions'
@@ -58,7 +58,7 @@ const EXPORTS: readonly ExportShape[] = Object.freeze([
 	{ name: 'collectToolGroups', shape: 'function' },
 	{ name: 'matchEntities', shape: 'function' },
 	{ name: 'linkOwners', shape: 'function' },
-	{ name: 'resolveLedgerCall', shape: 'function' },
+	{ name: 'findLedgerCall', shape: 'function' },
 	{ name: 'identifyLookup', shape: 'function' },
 	{ name: 'extractTokens', shape: 'function' },
 	{ name: 'splitSentences', shape: 'function' },

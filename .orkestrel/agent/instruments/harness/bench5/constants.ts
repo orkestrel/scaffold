@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 
 export const HARNESS = dirname(import.meta.dirname)
-export const VENDOR_AGENT = join(HARNESS, 'vendor', 'agent-0.0.30', 'index.js')
+export const VENDOR_AGENT = join(HARNESS, 'vendor', 'agent-0.0.30-trimmed', 'index.js')
 export const VENDOR_OLLAMA = join(HARNESS, 'vendor', 'ollama', 'index.js')
 export const SCENARIO_LONG = join(HARNESS, 'bench', 'scenario-long.json')
 export const COPIES_DIR = join(HARNESS, 'bench', 'variants', 'long')

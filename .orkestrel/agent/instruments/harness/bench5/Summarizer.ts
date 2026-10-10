@@ -1,4 +1,4 @@
-import type { Message } from '../vendor/agent-0.0.30/index.js'
+import type { Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { SummarizerInterface, SummarizerOptions, SummaryResult, SummaryRow } from './types.ts'
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'

@@ -1,6 +1,6 @@
 // Fits the CHANGE and AGREE cutoffs from seed truth: node bench5/calibrate.ts --cache DIR --model TAG --out DIR [--live] [--url URL]
 // Exit: 0 on success, 1 on a failed run, 64 on usage.
-import type { JudgeInterface, JudgeQuestion, Message } from '../vendor/agent-0.0.30/index.js'
+import type { JudgeInterface, JudgeQuestion, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateSource,
 	CalibrateAsked,
@@ -27,7 +27,7 @@ import { join, isAbsolute, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { isArray, isNumber, isRecord, isString } from '@orkestrel/contract'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
-import { splitSentences } from '../vendor/agent-0.0.30/index.js'
+import { splitSentences } from '../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../vendor/ollama/index.js'
 import {
 	AGREE_HEAD,
