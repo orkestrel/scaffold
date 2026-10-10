@@ -15,6 +15,7 @@ import type {
 	LedgerProjection,
 	LedgerProjectionInput,
 	LedgerQuestion,
+	LedgerRegistry,
 	LedgerThreshold,
 	LedgerTopic,
 	Message,
@@ -653,4 +654,305 @@ export interface Score {
 	readonly missing: readonly string[]
 	readonly violations: readonly string[]
 	readonly patterns: readonly string[]
+}
+
+
+/** Names the judge head that an item asks. */
+export type CalibrateHead = 'change' | 'agree'
+
+/** Names how an item was built from the scenario. */
+export type CalibrateVariant = 'next' | 'foreign' | 'repeat' | 'summary' | 'stale' | 'cross'
+
+/** Names how the judge answered an item. */
+export type CalibrateOutcome = 'answered' | 'refused' | 'failed'
+
+/** Holds the flags of one calibration invocation after validation, with every path resolved. */
+export interface CalibrateConfig {
+	readonly cache: string
+	/** Holds the model tag, a `MODELS` value. */
+	readonly model: string
+	/** Holds the `MODELS` key of the tag, which names the model's entry in the settings file. */
+	readonly key: string
+	readonly out: string
+	readonly live: boolean
+	readonly url: string
+	/** Holds the path of the scenario whose seed truth labels the items. */
+	readonly scenario: string
+	readonly settings: string
+}
+
+/** Holds the flags that parsed, or the reason that none did. */
+export type CalibrateConfigOutcome =
+	| { readonly success: true; readonly value: CalibrateConfig }
+	| { readonly success: false; readonly error: string }
+
+/** Holds one seed message with the truth that labels it. */
+export interface CalibrateMessage {
+	readonly index: number
+	readonly role: MessageRole
+	readonly content: string
+	readonly category: string
+	readonly topics: readonly string[]
+	/** Lists the earlier seed indices that this message amends. */
+	readonly amends: readonly number[]
+	/** Lists the earlier seed indices that this message supersedes. */
+	readonly supersedes: readonly number[]
+}
+
+/** Holds the parts of the long scenario that the calibration reads. */
+export interface CalibrateScenario {
+	readonly topics: readonly TopicSpec[]
+	readonly days: readonly ScenarioDay[]
+	readonly messages: readonly CalibrateMessage[]
+	/** Lists the distinct read points in ascending order. */
+	readonly points: readonly number[]
+}
+
+/** Holds the carriers of a topic at a read point, split by whether truth has replaced them. */
+export interface CalibrateSelection {
+	readonly live: readonly CalibrateMessage[]
+	readonly stale: readonly CalibrateMessage[]
+}
+
+/** Holds a summary that passes the code check, with the sources it was built from. */
+export interface CalibrateSummary {
+	readonly topic: string
+	readonly after: number
+	readonly asOf: string
+	readonly prose: string
+	readonly sources: readonly AggregateSource[]
+	/** Lists the seed indices of the live carriers. */
+	readonly live: readonly number[]
+	/** Lists the seed indices of the stale carriers. */
+	readonly stale: readonly number[]
+}
+
+/** Holds a summary with one value replaced by code. */
+export interface CalibrateSwap {
+	readonly variant: 'stale' | 'cross'
+	readonly from: string
+	readonly to: string
+	readonly prose: string
+}
+
+/** Holds one labelled judge item. */
+export interface CalibrateItem {
+	readonly id: string
+	readonly head: CalibrateHead
+	readonly variant: CalibrateVariant
+	/** Holds `true` for an item the judge must answer yes. */
+	readonly label: boolean
+	readonly topic: string
+	readonly after: number
+	/** Lists the seed indices of the event messages that a CHANGE item drew. */
+	readonly events: readonly number[]
+	/** Holds `FROM -> TO` for an AGREE item whose summary had a value replaced. */
+	readonly swap: string | undefined
+	readonly state: string
+	readonly question: JudgeQuestion
+}
+
+/** Holds an item with the judge's answer. */
+export interface CalibrateAsked {
+	readonly item: CalibrateItem
+	readonly noul: number | undefined
+	readonly outcome: CalibrateOutcome
+	readonly cached: boolean
+	readonly wall: number
+}
+
+/** Holds a fitted cutoff and whether it gives no yes on the negatives. */
+export interface CalibrateCutoff {
+	readonly cutoff: number
+	readonly separated: boolean
+}
+
+/** Counts one head's items at its fitted cutoff. */
+export interface CalibrateTally {
+	readonly positives: number
+	readonly negatives: number
+	readonly refused: number
+	readonly failed: number
+	readonly cached: number
+	/** Counts the positives at or above the cutoff. */
+	readonly recalled: number
+	/** Counts the negatives at or above the cutoff. */
+	readonly leaked: number
+	readonly separated: boolean
+}
+
+/** Counts the summaries and the items of a calibration. */
+export interface CalibrateCounts {
+	readonly summaries: { readonly asked: number; readonly passed: number; readonly failed: number }
+	readonly change: CalibrateTally
+	readonly agree: CalibrateTally
+}
+
+/** Holds the content of `fit.json`: the two cutoffs, whether both separated, and the counts. */
+export interface CalibrateFit extends Fit {
+	readonly counts: CalibrateCounts
+}
+
+/** Names the ledger head that a shadowed judgment asked. */
+export type ShadowHead = 'category' | 'amends' | 'supersedes'
+
+/** Names how a shadowed item was decided. */
+export type ShadowOutcome = 'plain' | 'asked' | 'missed' | 'failed'
+
+/** Holds the flags of one shadow invocation after validation, with every path resolved. */
+export interface ShadowConfig {
+	readonly run: string
+	readonly cache: string
+	readonly out: string
+	readonly live: boolean
+	readonly url: string
+	/** Holds the directory of the scenario copies, `vN.json`. */
+	readonly copies: string
+}
+
+/** Holds the flags that parsed, or the reason that none did. */
+export type ShadowConfigOutcome =
+	| { readonly success: true; readonly value: ShadowConfig }
+	| { readonly success: false; readonly error: string }
+
+/** Holds what a run's `run.json` names about the run. */
+export interface ShadowRun {
+	readonly copy: number
+	readonly model: string
+	readonly arm: string
+}
+
+/** Holds one line of a run's `messages.jsonl`. */
+export interface ShadowMessage {
+	readonly message: Message
+	/** Holds the seed index, or `undefined` for a request, a reply, and a message the run added. */
+	readonly index: number | undefined
+	readonly request: boolean
+}
+
+/** Holds one line of a run's `judgments.jsonl`: the question the ledger asked and the answer it recorded. */
+export interface ShadowJudgment {
+	readonly id: string
+	/** Holds the parsed question id: the head, then the message ids. */
+	readonly key: readonly string[]
+	readonly question: JudgeQuestion
+	readonly state: string
+	/** Holds the recorded answer, or `undefined` for a refusal. */
+	readonly answer: JudgeAnswer | undefined
+}
+
+/** Holds the members of an aggregate row that the shadow reads. */
+export interface ShadowAggregate {
+	readonly topic: string
+	readonly title: string
+	readonly lastSeed: number
+	readonly event: string
+	readonly status: string
+	readonly prose: string | undefined
+}
+
+/** Holds the title and prose of one current aggregate. */
+export interface ShadowEntry {
+	readonly title: string
+	readonly prose: string
+}
+
+/** Holds the aggregates that were current after the rows of one read point. */
+export interface ShadowSnapshot {
+	readonly seed: number
+	readonly topics: ReadonlyMap<string, ShadowEntry>
+}
+
+/** Holds the registry and the owner links that the lookups of a conversation prefix give. */
+export interface ShadowEntities {
+	readonly registry: LedgerRegistry
+	readonly links: ReadonlyMap<string, string>
+}
+
+/** Holds the seed truth of a copy: the first read point, each seed index's category, and the truth pairs after the first read point as `EARLIER:LATER` seed indices. */
+export interface ShadowTruth {
+	readonly first: number
+	readonly categories: ReadonlyMap<number, string>
+	readonly amends: ReadonlySet<string>
+	readonly supersedes: ReadonlySet<string>
+}
+
+/** Holds what the shadow reads from one run directory. */
+export interface ShadowInputs {
+	readonly run: ShadowRun
+	readonly messages: readonly ShadowMessage[]
+	readonly judgments: readonly ShadowJudgment[]
+	readonly timeline: readonly ShadowSnapshot[]
+	readonly truth: ShadowTruth
+}
+
+/** Holds one judgment that the shadow re-asked, with the plain and the shadow decision. */
+export interface ShadowItem {
+	readonly id: string
+	readonly head: ShadowHead
+	/** Holds the seed index of each message the question names, `undefined` for a message that is no seed message. */
+	readonly seeds: readonly (number | undefined)[]
+	/** Holds the seed index of the later message, whose arrival is the read point. */
+	readonly point: number
+	/** Lists the topic keys whose aggregates the state carries. */
+	readonly topics: readonly string[]
+	/** Lists the topic keys that had no aggregate current at the read point. */
+	readonly absent: readonly string[]
+	/** Holds the state that was asked: the plain state when no aggregate applied. */
+	readonly state: string
+	readonly outcome: ShadowOutcome
+	/** Holds the recorded decision: for `category`, filed quiet; for a pair head, read at the cutoff; `undefined` when there is no answer. */
+	readonly plain: boolean | undefined
+	/** Holds the same decision from the shadow answer, which equals `plain` when the state stayed plain. */
+	readonly shadow: boolean | undefined
+}
+
+/** Reads one side's decision from an item. */
+export type ShadowVerdict = (item: ShadowItem) => boolean | undefined
+
+/** Holds a count of hits over a total and their ratio, which is `undefined` for a total of 0. */
+export interface ShadowRate {
+	readonly hits: number
+	readonly total: number
+	readonly rate: number | undefined
+}
+
+/** Holds the recall of the truth pairs and the false-drop rate of the screened pairs outside the truth, for one pair head. */
+export interface ShadowPairs {
+	readonly recall: ShadowRate
+	readonly falsedrop: ShadowRate
+}
+
+/** Holds the keep, drop, and pair rates of one side of the reading. */
+export interface ShadowRates {
+	readonly keep: ShadowRate
+	readonly drop: ShadowRate
+	readonly amends: ShadowPairs
+	readonly supersedes: ShadowPairs
+}
+
+/** Counts the items whose decision differs between the plain and the shadow answer, per head. */
+export interface ShadowFlips {
+	readonly category: number
+	readonly amends: number
+	readonly supersedes: number
+}
+
+/** Counts the shadowed items by outcome, and the named topics that had no aggregate. */
+export interface ShadowCounts {
+	readonly items: number
+	readonly plain: number
+	readonly asked: number
+	readonly missed: number
+	readonly failed: number
+	readonly absent: number
+}
+
+/** Holds the shadow reading of one run: the file `--out` names. */
+export interface ShadowReport extends ShadowRun {
+	readonly counts: ShadowCounts
+	readonly plain: ShadowRates
+	readonly shadow: ShadowRates
+	readonly flips: ShadowFlips
+	readonly items: readonly ShadowItem[]
 }

@@ -1,12 +1,14 @@
 // One benchmark run from a cold daemon with its wire recorded. Run it under the dispatch skill's
 // launch.ts so the harness tracks it and a cap ends it:
-//   node run-one.ts NAME bench|bench3 OUT_BASE -- HARNESS_ARGS...
+//   node run-one.ts NAME bench|bench3|bench5 OUT_BASE -- HARNESS_ARGS...
 // It unloads every model, appends a start line to OUT_BASE/run.log, runs the harness with the
 // record-fetch preload writing OUT_BASE/NAME-wire, sends the harness output to OUT_BASE/NAME.log,
 // appends an end line, and prints the pass count, the median seconds per answer, the largest
 // prompt, and one line per goal. It supersedes run-one.sh, which ran the same steps in bash.
 // It refuses, before the cold start, when OUT_BASE/NAME, OUT_BASE/NAME.log, or OUT_BASE/NAME-wire exists, and
-// ends the start line with the harness file's SHA-256 as `harness-sha256 HEX`.
+// ends the start line with the harness file's SHA-256 as `harness-sha256 HEX`. The bench and bench3 harnesses run
+// their `bench.mjs`; bench5 runs `bench.ts`, its hash covers the sorted contents of `bench5/*.ts` and
+// `bench5/aggregates/*.ts` less the tests, and its rows come from `rows.jsonl`.
 // Exit: the harness's exit code; 2 when an output already exists; 3 when the cold start fails; 64 on usage.
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -15,7 +17,17 @@ import { dirname, join, resolve } from 'node:path'
 
 const ROOT = dirname(import.meta.dirname)
 const TOOLS = join(ROOT, 'tools')
-const HARNESSES: ReadonlySet<string> = new Set(['bench', 'bench3'])
+
+interface Harness {
+	readonly entry: string
+	readonly rows: string | undefined
+}
+
+const HARNESSES: ReadonlyMap<string, Harness> = new Map([
+	['bench', { entry: 'bench.mjs', rows: undefined }],
+	['bench3', { entry: 'bench.mjs', rows: undefined }],
+	['bench5', { entry: 'bench.ts', rows: 'rows.jsonl' }],
+])
 
 interface Row {
 	readonly goal: string
@@ -37,23 +49,41 @@ function readRow(line: string): Row | undefined {
 	return {
 		goal: value.goal,
 		success: 'success' in value && value.success === true,
-		replyVia: 'replyVia' in value && typeof value.replyVia === 'string' ? value.replyVia : '',
+		replyVia: 'replyVia' in value && typeof value.replyVia === 'string' ? value.replyVia : 'via' in value && typeof value.via === 'string' ? value.via : '',
 		reply: 'reply' in value && typeof value.reply === 'string' ? value.reply : '',
 		wall: 'wall' in value && typeof value.wall === 'number' ? value.wall : 0,
-		maxPrompt: 'maxPrompt' in value && typeof value.maxPrompt === 'number' ? value.maxPrompt : 0,
+		maxPrompt: 'maxPrompt' in value && typeof value.maxPrompt === 'number' ? value.maxPrompt : 'prompt' in value && typeof value.prompt === 'number' ? value.prompt : 0,
 	}
 }
 
-function readRows(out: string): readonly Row[] {
+function readRows(out: string, rows: string | undefined): readonly Row[] {
 	if (!existsSync(out)) return []
-	const file = readdirSync(out).find((name) => name.endsWith('.jsonl') && !name.startsWith('memory'))
-	if (file === undefined) return []
+	const file = rows ?? readdirSync(out).find((name) => name.endsWith('.jsonl') && !name.startsWith('memory'))
+	if (file === undefined || !existsSync(join(out, file))) return []
 	return readFileSync(join(out, file), 'utf8')
 		.split(/\r\n|\n/)
 		.flatMap((line) => {
 			const row = readRow(line)
 			return row === undefined ? [] : [row]
 		})
+}
+
+// The bench5 sources in path order, tests excluded, so the hash moves when a file the arm runs moves.
+function listSources(): readonly string[] {
+	return ['bench5', join('bench5', 'aggregates')]
+		.flatMap((directory) =>
+			readdirSync(join(ROOT, directory), { withFileTypes: true })
+				.filter((entry) => entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.test.ts'))
+				.map((entry) => join(ROOT, directory, entry.name)),
+		)
+		.sort()
+}
+
+function hashHarness(name: string, harness: Harness): string {
+	const hash = createHash('sha256')
+	if (name !== 'bench5') return hash.update(readFileSync(join(ROOT, name, harness.entry))).digest('hex')
+	for (const file of listSources()) hash.update(readFileSync(file))
+	return hash.digest('hex')
 }
 
 function median(values: readonly number[]): number {
@@ -66,8 +96,9 @@ function main(): number {
 	const argv = process.argv.slice(2)
 	const split = argv.indexOf('--')
 	const [name, harness, base] = argv
-	if (split !== 3 || name === undefined || harness === undefined || base === undefined || !HARNESSES.has(harness)) {
-		process.stderr.write('usage: node run-one.ts NAME bench|bench3 OUT_BASE -- HARNESS_ARGS...\n')
+	const entry = harness === undefined ? undefined : HARNESSES.get(harness)
+	if (split !== 3 || name === undefined || harness === undefined || base === undefined || entry === undefined) {
+		process.stderr.write('usage: node run-one.ts NAME bench|bench3|bench5 OUT_BASE -- HARNESS_ARGS...\n')
 		return 64
 	}
 	const args = argv.slice(split + 1)
@@ -78,12 +109,12 @@ function main(): number {
 		process.stderr.write(`run-one: ${name} already has output, which a rerun would overwrite: ${taken.join(', ')}\n`)
 		return 2
 	}
-	const sha = createHash('sha256').update(readFileSync(join(ROOT, harness, 'bench.mjs'))).digest('hex')
+	const sha = hashHarness(harness, entry)
 	const cold = spawnSync(process.execPath, [join(TOOLS, 'cold-start.mjs')], { stdio: 'inherit' })
 	if (cold.status !== 0) return 3
 	appendFileSync(log, `===== ${name} start ${new Date().toISOString().replace(/\.\d+Z$/, 'Z')} [${harness} ${args.join(' ')}] harness-sha256 ${sha}\n`)
 	const sink = openSync(`${out}.log`, 'w')
-	const run = spawnSync(process.execPath, ['--import', join(TOOLS, 'record-fetch.mjs'), 'bench.mjs', ...args, '--out', out], {
+	const run = spawnSync(process.execPath, ['--import', join(TOOLS, 'record-fetch.mjs'), entry.entry, ...args, '--out', out], {
 		cwd: join(ROOT, harness),
 		env: { ...process.env, RECORD_DIR: `${out}-wire` },
 		stdio: ['ignore', sink, sink],
@@ -91,7 +122,7 @@ function main(): number {
 	closeSync(sink)
 	const code = run.status ?? 1
 	appendFileSync(log, `===== ${name} end ${new Date().toISOString().replace(/\.\d+Z$/, 'Z')} exit ${code}\n`)
-	const rows = readRows(out)
+	const rows = readRows(out, entry.rows)
 	process.stdout.write(`exit ${code}\n`)
 	if (rows.length === 0) {
 		process.stdout.write('no rows\n')
