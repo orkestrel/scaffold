@@ -1,6 +1,6 @@
 import type { JudgeInterface, Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { Fixture } from './fixture.ts'
-import type { MirrorRead, ScenarioLookups, SeedMessage } from '../types.ts'
+import type { Fixture } from './fixture.js'
+import type { MirrorRead, ScenarioLookups, SeedMessage } from '../types.js'
 import type { ToolResult } from '@orkestrel/tool'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -16,11 +16,19 @@ import {
 	createLedger,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama } from '../../vendor/ollama/index.js'
-import { CORPUS, FIT, HARNESS, MICA_MODEL, MODELS, SAMPLER, SCENARIO_LONG } from '../constants.ts'
-import { buildSystem, importCorpus, isMessageRole, readJSON, readLookup, readRows, resolveLookup } from '../helpers.ts'
-import { JudgeCache } from '../JudgeCache.ts'
-import { Mirror } from '../Mirror.ts'
-import { startFixture } from './fixture.ts'
+import { CORPUS, FIT, HARNESS, MICA_MODEL, MODELS, SAMPLER, SCENARIO_LONG } from '../constants.js'
+import {
+	buildSystem,
+	importCorpus,
+	isMessageRole,
+	readJSON,
+	readLookup,
+	readRows,
+	resolveLookup,
+} from '../helpers.js'
+import { JudgeCache } from '../JudgeCache.js'
+import { Mirror } from '../Mirror.js'
+import { startFixture } from './fixture.js'
 
 const COPY = join(HARNESS, 'bench', 'variants', 'ledger', 'v1.json')
 const SEEDED = 48
@@ -88,7 +96,11 @@ function readTables(scenario: unknown): ScenarioLookups {
 	return { tools, lookups }
 }
 
-function readTopics(): ReadonlyArray<{ readonly name: string; readonly criterion: string; readonly requested: boolean }> {
+function readTopics(): ReadonlyArray<{
+	readonly name: string
+	readonly criterion: string
+	readonly requested: boolean
+}> {
 	const topics = readField(readField(readJSON(COPY), 'ledger'), 'topics')
 	assert.ok(typeof topics === 'object' && topics !== null)
 	return Object.entries(topics).map(([name, criterion]) => ({
@@ -118,7 +130,12 @@ function parseOwners(briefing: string): ReadonlyMap<string, readonly string[]> {
 function weighQuiet(judgment: unknown): number {
 	const answer = readField(judgment, 'answer')
 	const probabilities = readField(answer, 'probabilities')
-	if (readField(answer, 'form') !== 'choice' || typeof probabilities !== 'object' || probabilities === null) return 0
+	if (
+		readField(answer, 'form') !== 'choice' ||
+		typeof probabilities !== 'object' ||
+		probabilities === null
+	)
+		return 0
 	return ['chatter', 'distractor'].reduce((sum, category) => {
 		const weight: unknown = Reflect.get(probabilities, category)
 		return sum + (typeof weight === 'number' ? weight : 0)
@@ -135,12 +152,19 @@ interface Rig {
 }
 
 // Builds a ledger on the fixture with the offline cache and a mirror over it, and adds the first 48 seed messages.
-function createRig(fixture: Fixture, reads: ReadonlyMap<string, MirrorRead> = new Map(Object.keys(LOOKUPS).map((name) => [name, readLookup]))): Rig {
+function createRig(
+	fixture: Fixture,
+	reads: ReadonlyMap<string, MirrorRead> = new Map(
+		Object.keys(LOOKUPS).map((name) => [name, readLookup]),
+	),
+): Rig {
 	const scenario = readJSON(SCENARIO_LONG)
 	const seed = readSeed(scenario)
 	const tables = readTables(scenario)
 	const topics = readTopics()
-	const system = buildSystem({ ledger: { system: readText(readField(readJSON(COPY), 'ledger'), 'system') } })
+	const system = buildSystem({
+		ledger: { system: readText(readField(readJSON(COPY), 'ledger'), 'system') },
+	})
 	files += 1
 	const path = join(directory, `judge-${files}.jsonl`)
 	writeFileSync(
@@ -181,14 +205,23 @@ function createRig(fixture: Fixture, reads: ReadonlyMap<string, MirrorRead> = ne
 		think: false,
 		lookups,
 	})
-	const mirror = new Mirror(ledger, { judge: cache, questions: LEDGER_QUESTIONS, topics, thresholds: FIT, system, reads })
+	const mirror = new Mirror(ledger, {
+		judge: cache,
+		questions: LEDGER_QUESTIONS,
+		topics,
+		thresholds: FIT,
+		system,
+		reads,
+	})
 	ledger.conversation.add(seed.slice(0, SEEDED).map((message) => ({ ...message })))
 	const goals = readList(scenario, 'goals')
 	return { ledger, mirror, cache, asked, seed, request: readText(goals[0], 'request') }
 }
 
 function findRequest(rig: Rig): Message {
-	const request = rig.ledger.conversation.messages().find((message: Message) => message.role === 'user' && message.content === rig.request)
+	const request = rig.ledger.conversation
+		.messages()
+		.find((message: Message) => message.role === 'user' && message.content === rig.request)
 	assert.ok(request !== undefined)
 	return request
 }
@@ -227,7 +260,9 @@ describe('Mirror', () => {
 			const projection = rig.mirror.projection()
 			const titles = rig.mirror
 				.owners(request)
-				.map((id) => projection.records.find((record) => record.key === `${LEDGER_OWNER_PREFIX}${id}`))
+				.map((id) =>
+					projection.records.find((record) => record.key === `${LEDGER_OWNER_PREFIX}${id}`),
+				)
 				.filter((record) => record !== undefined && record.lines.length > 0)
 				.map((record) => record?.title)
 			assert.ok(titles.length > 0, 'the briefing renders no owner record')
@@ -244,7 +279,11 @@ describe('Mirror', () => {
 				assert.ok(record !== undefined, title)
 				assert.ok(rendered.length > 0, title)
 				const raw = new Set(record.lines.map((line) => `- ${line.text}`))
-				const members = new Set(record.members.flatMap((id) => rig.mirror.lines(id, input, projection)).map((line) => `- ${line.text}`))
+				const members = new Set(
+					record.members
+						.flatMap((id) => rig.mirror.lines(id, input, projection))
+						.map((line) => `- ${line.text}`),
+				)
 				for (const line of rendered) {
 					assert.ok(raw.has(line), `${title}: ${line} is not a line of the record`)
 					assert.ok(members.has(line), `${title}: ${line} is not a line of a member`)
@@ -257,11 +296,18 @@ describe('Mirror', () => {
 			const open = input.messages.filter((message) => rig.mirror.assign(message) === undefined)
 			assert.ok(open.length > SEEDED / 2)
 			const expected = open
-				.filter((message) => weighQuiet(rig.ledger.conversation.judgments.judgment(JSON.stringify(['category', message.id]))) >= FIT.category)
+				.filter(
+					(message) =>
+						weighQuiet(
+							rig.ledger.conversation.judgments.judgment(JSON.stringify(['category', message.id])),
+						) >= FIT.category,
+				)
 				.map((message) => message.id)
 			assert.ok(expected.length > 0, 'the corpus recorded no quiet message')
 			assert.deepEqual(
-				open.filter((message) => input.classification.quiet.has(message.id)).map((message) => message.id),
+				open
+					.filter((message) => input.classification.quiet.has(message.id))
+					.map((message) => message.id),
 				expected,
 			)
 		})
@@ -272,7 +318,11 @@ describe('Mirror', () => {
 			assert.ok(decided.some((message) => rig.mirror.assign(message) === 'fact'))
 			assert.ok(decided.some((message) => rig.mirror.assign(message) === 'chatter'))
 			for (const message of decided) {
-				assert.equal(input.classification.quiet.has(message.id), rig.mirror.assign(message) === 'chatter', message.id)
+				assert.equal(
+					input.classification.quiet.has(message.id),
+					rig.mirror.assign(message) === 'chatter',
+					message.id,
+				)
 			}
 		})
 
@@ -299,7 +349,9 @@ describe('Mirror', () => {
 	describe('projection', () => {
 		it('reads one reading per seed lookup result with the argument ids added', () => {
 			const readings = rig.mirror.readings()
-			const results = rig.ledger.conversation.messages().filter((message: Message) => message.role === 'tool')
+			const results = rig.ledger.conversation
+				.messages()
+				.filter((message: Message) => message.role === 'tool')
 			assert.deepEqual(
 				readings.map((reading) => reading.id),
 				results.map((message: Message) => message.id),
@@ -327,24 +379,41 @@ describe('Mirror', () => {
 		})
 
 		it('selects the owner a request names by name, by id, and by a linked order id', () => {
-			const named = rig.mirror.owners({ id: 'stub-name', role: 'user', content: 'Has Luis Ferreira called back?' })
+			const named = rig.mirror.owners({
+				id: 'stub-name',
+				role: 'user',
+				content: 'Has Luis Ferreira called back?',
+			})
 			assert.deepEqual(named, ['LH-44870'])
 			const id: Message = { id: 'stub-id', role: 'user', content: 'Anything on account LH-44870?' }
 			assert.deepEqual(rig.mirror.owners(id), ['LH-44870'])
-			const order: Message = { id: 'stub-order', role: 'user', content: 'Any news on order LH-79215?' }
+			const order: Message = {
+				id: 'stub-order',
+				role: 'user',
+				content: 'Any news on order LH-79215?',
+			}
 			assert.ok(rig.mirror.near(order).has('LH-79215'))
 			assert.deepEqual(rig.mirror.owners(order), ['LH-44870'])
-			assert.deepEqual(rig.mirror.owners({ id: 'stub-none', role: 'user', content: 'Good morning.' }), [])
+			assert.deepEqual(
+				rig.mirror.owners({ id: 'stub-none', role: 'user', content: 'Good morning.' }),
+				[],
+			)
 		})
 
 		it('selects an owner by the first name alone, because a request matches names partially', () => {
-			const partial: Message = { id: 'stub-partial', role: 'user', content: 'Has Luis called back?' }
+			const partial: Message = {
+				id: 'stub-partial',
+				role: 'user',
+				content: 'Has Luis called back?',
+			}
 			assert.ok(rig.mirror.near(partial).has('LH-44870'))
 			assert.deepEqual(rig.mirror.owners(partial), ['LH-44870'])
 		})
 
 		it('adds the ids that the call arguments carry to the ids that the reader returned', () => {
-			const bare = new Map<string, MirrorRead>(Object.keys(LOOKUPS).map((name) => [name, () => ({ ids: [], owners: [] })]))
+			const bare = new Map<string, MirrorRead>(
+				Object.keys(LOOKUPS).map((name) => [name, () => ({ ids: [], owners: [] })]),
+			)
 			const own = createRig(fixture, bare)
 			const order = own.mirror.readings().find((reading) => reading.arguments['id'] === 'LH-79215')
 			assert.deepEqual(order?.result?.ids, ['LH-79215'])
@@ -364,7 +433,9 @@ describe('Mirror', () => {
 				{ role: 'user', content: `${LEDGER_NOTES.results}\nOrder LH-79215 ships soon.` },
 				{ role: 'user', content: 'A plain follow-up.' },
 			])
-			assert.ok(asked !== undefined && cue !== undefined && digest !== undefined && plain !== undefined)
+			assert.ok(
+				asked !== undefined && cue !== undefined && digest !== undefined && plain !== undefined,
+			)
 			own.mirror.note(asked)
 			assert.equal(own.mirror.assign(asked), undefined)
 			assert.equal(own.mirror.assign(cue), 'chatter')
@@ -377,11 +448,17 @@ describe('Mirror', () => {
 			const own = createRig(fixture)
 			const [early, calling, asked, late] = own.ledger.conversation.add([
 				{ role: 'assistant', content: 'Noted.' },
-				{ role: 'assistant', content: 'Checking.', calls: [{ id: 'c1', name: 'lookup_order', arguments: { id: 'LH-79215' } }] },
+				{
+					role: 'assistant',
+					content: 'Checking.',
+					calls: [{ id: 'c1', name: 'lookup_order', arguments: { id: 'LH-79215' } }],
+				},
 				{ role: 'user', content: 'Where is order LH-79215?' },
 				{ role: 'assistant', content: 'It ships soon.' },
 			])
-			assert.ok(early !== undefined && calling !== undefined && asked !== undefined && late !== undefined)
+			assert.ok(
+				early !== undefined && calling !== undefined && asked !== undefined && late !== undefined,
+			)
 			assert.equal(own.mirror.assign(early), undefined)
 			assert.equal(own.mirror.assign(late), undefined)
 			own.mirror.note(asked)
@@ -400,15 +477,38 @@ describe('Mirror', () => {
 				{ id: 'c3', name: 'lookup_order', arguments: { id: 'LH-80941' } },
 			]
 			own.ledger.conversation.add([{ role: 'assistant', content: 'Checking.', calls }])
-			const failed: ToolResult = { success: false, id: 'c1', name: 'lookup_order', error: 'the desk system timed out' }
+			const failed: ToolResult = {
+				success: false,
+				id: 'c1',
+				name: 'lookup_order',
+				error: 'the desk system timed out',
+			}
 			const worked: ToolResult = { success: true, id: 'c2', name: 'lookup_order', value: 'ok' }
 			emitter.emit('tool', calls[0], failed)
-			const [lost] = own.ledger.conversation.add([{ role: 'tool', content: 'Order LH-79215 for account LH-44870 (Luis Ferreira): stand mixer.', call: 'c1' }])
+			const [lost] = own.ledger.conversation.add([
+				{
+					role: 'tool',
+					content: 'Order LH-79215 for account LH-44870 (Luis Ferreira): stand mixer.',
+					call: 'c1',
+				},
+			])
 			emitter.emit('tool', calls[1], worked)
-			const [found] = own.ledger.conversation.add([{ role: 'tool', content: 'Order LH-77302 for account LH-20418 (Grace Okafor): duvet set.', call: 'c2' }])
-			const [bare] = own.ledger.conversation.add([{ role: 'tool', content: 'Order LH-80941 for account LH-31055 (Halvorsen Interiors): pendant lights.', call: 'c3' }])
+			const [found] = own.ledger.conversation.add([
+				{
+					role: 'tool',
+					content: 'Order LH-77302 for account LH-20418 (Grace Okafor): duvet set.',
+					call: 'c2',
+				},
+			])
+			const [bare] = own.ledger.conversation.add([
+				{
+					role: 'tool',
+					content: 'Order LH-80941 for account LH-31055 (Halvorsen Interiors): pendant lights.',
+					call: 'c3',
+				},
+			])
 			assert.ok(lost !== undefined && found !== undefined && bare !== undefined)
-						assert.equal(own.mirror.assign(lost), 'chatter')
+			assert.equal(own.mirror.assign(lost), 'chatter')
 			assert.equal(own.mirror.assign(found), 'fact')
 			assert.equal(own.mirror.assign(bare), 'fact')
 			const ids = own.mirror.readings().map((reading) => reading.id)
@@ -428,13 +528,17 @@ describe('Mirror', () => {
 				],
 			])
 			const own = createRig(fixture, reads)
-			const results = own.ledger.conversation.messages().filter((message: Message) => message.role === 'tool')
+			const results = own.ledger.conversation
+				.messages()
+				.filter((message: Message) => message.role === 'tool')
 			const customers = results.filter((message: Message) => message.content.startsWith('Account '))
 			assert.ok(customers.length > 0)
 			// Assign runs first, so it must read the lookups itself to learn that the reader throws.
-			for (const message of customers) assert.equal(own.mirror.assign(message), 'chatter', message.id)
+			for (const message of customers)
+				assert.equal(own.mirror.assign(message), 'chatter', message.id)
 			const readings = own.mirror.readings()
-			for (const message of customers) assert.ok(!readings.some((reading) => reading.id === message.id), message.id)
+			for (const message of customers)
+				assert.ok(!readings.some((reading) => reading.id === message.id), message.id)
 			assert.equal(readings.length, results.length - customers.length)
 		})
 	})

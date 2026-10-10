@@ -1,6 +1,6 @@
-import type { TransitionOpportunity } from '../types.ts'
+import type { TransitionOpportunity } from '../types.js'
 import { isArray, isNumber, isRecord, isString } from '@orkestrel/contract'
-import { TRANSITION_ANNOTATIONS } from './constants.ts'
+import { TRANSITION_ANNOTATIONS } from './constants.js'
 
 /**
  * Enumerates copy-1 source opportunities before any scoring or live coverage claim.

@@ -7,8 +7,8 @@ import type {
 	MatrixPilot,
 	MatrixResource,
 	MatrixRun,
-} from './types.ts'
-import type { PlanEntry } from '../types.ts'
+} from './types.js'
+import type { PlanEntry } from '../types.js'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -22,12 +22,12 @@ import {
 	MICA_MODEL,
 	MODELS,
 	SAMPLER,
-} from '../constants.ts'
-import { Driver, parseFlags, readCopy, readSettings } from '../Driver.ts'
-import { buildSystem, describeError, readJSON } from '../helpers.ts'
-import { hashFile } from '../refit/helpers.ts'
-import { collectTransitions } from '../transitions/helpers.ts'
-import { MATRIX_RESERVES, MATRIX_STAGES } from './constants.ts'
+} from '../constants.js'
+import { Driver, parseFlags, readCopy, readSettings } from '../Driver.js'
+import { buildSystem, describeError, readJSON } from '../helpers.js'
+import { hashFile } from '../refit/helpers.js'
+import { collectTransitions } from '../transitions/helpers.js'
+import { MATRIX_RESERVES, MATRIX_STAGES } from './constants.js'
 import {
 	buildBudget,
 	listMatrixPairFailures,
@@ -40,8 +40,9 @@ import {
 	readModelDigest,
 	readResource,
 	readSeedCache,
-} from './helpers.ts'
-import { parseMatrixRun } from './parsers.ts'
+} from './helpers.js'
+import { parseMatrixRun } from './parsers.js'
+import { readBuild } from '../build/helpers.js'
 
 /** Executes frozen l6 preparation and unscored admission phases. */
 export class Matrix {
@@ -50,6 +51,7 @@ export class Matrix {
 	 * @returns Exit 0 for success or 3 for explicit infeasibility
 	 */
 	static async execute(argv: readonly string[]): Promise<number> {
+		readBuild()
 		const { values, positionals } = parseArgs({
 			args: [...argv],
 			allowPositionals: true,
@@ -385,18 +387,17 @@ export class Matrix {
 			budget: accepted.budget,
 		}
 		const attempt = await this.#attempt(execution, join(out, 'development'), url)
-		const run = parseMatrixRun(attempt.run)
-		if (run === undefined) throw new Error('pilot has no readable l6 run')
-		const exposed = run.rows.filter((row) => matchesMatrixExposure(run, row.goal)).length
+		const run = existsSync(join(attempt.run, 'run.json')) ? parseMatrixRun(attempt.run) : undefined
+		const exposed = run?.rows.filter((row) => matchesMatrixExposure(run, row.goal)).length ?? 0
 		const failures = [...attempt.failures]
 		const records = accepted.attempts.at(-1)
 		const baseline = records === undefined ? undefined : parseMatrixRun(records.run)
 		failures.push(
-			...(baseline === undefined
+			...(baseline === undefined || run === undefined
 				? ['missing paired development evidence']
 				: listMatrixPairFailures(baseline, run)),
 		)
-		if (exposed <= run.rows.length / 2)
+		if (exposed <= (run?.rows.length ?? 0) / 2)
 			failures.push('nonempty wire body exposure is not a majority of served development goals')
 		const manifest: MatrixPilot = {
 			protocol: 'l6',
@@ -404,7 +405,7 @@ export class Matrix {
 			resource,
 			fit,
 			attempt,
-			served: run.rows.length,
+			served: run?.rows.length ?? 0,
 			exposed,
 			accepted: failures.length === 0,
 			failures,

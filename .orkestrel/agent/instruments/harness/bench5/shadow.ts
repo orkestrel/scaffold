@@ -2,7 +2,7 @@
 // Exit: 0 on success, 1 on a missing input or a failed read, 64 on usage.
 import type { JudgeAnswer, JudgeInterface, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { ToolCall } from '@orkestrel/tool'
-import type { MatrixRequest } from './matrix/types.ts'
+import type { MatrixRequest } from './matrix/types.js'
 import type {
 	AggregateMaintenance,
 	MirrorReading,
@@ -27,7 +27,7 @@ import type {
 	ShadowSnapshot,
 	ShadowTruth,
 	ShadowVerdict,
-} from './types.ts'
+} from './types.js'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
@@ -58,12 +58,12 @@ import {
 	MICA_SYSTEM,
 	MODELS,
 	TIMEOUT,
-} from './constants.ts'
-import { describeError, readJSON, readLookup, readRows, readWireReading } from './helpers.ts'
-import { JudgeCache } from './JudgeCache.ts'
-import { isAggregateState } from './aggregates/validators.ts'
-import { nameMatrix, readModelDigest } from './matrix/helpers.ts'
-import { parseMatrixRun } from './matrix/parsers.ts'
+} from './constants.js'
+import { describeError, readJSON, readLookup, readRows, readWireReading } from './helpers.js'
+import { JudgeCache } from './JudgeCache.js'
+import { isAggregateState } from './aggregates/validators.js'
+import { nameMatrix, readModelDigest } from './matrix/helpers.js'
+import { parseMatrixRun } from './matrix/parsers.js'
 
 const OPTIONS = {
 	run: { type: 'string' },

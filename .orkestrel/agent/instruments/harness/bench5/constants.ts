@@ -1,6 +1,8 @@
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
+import { BUILD, SOURCE } from './build/helpers.js'
 
-export const HARNESS = dirname(import.meta.dirname)
+export { BUILD }
+export const HARNESS = SOURCE
 export const VENDOR_AGENT = join(HARNESS, 'vendor', 'agent-0.0.30-trimmed', 'index.js')
 export const VENDOR_OLLAMA = join(HARNESS, 'vendor', 'ollama', 'index.js')
 export const SCENARIO_LONG = join(HARNESS, 'bench', 'scenario-long.json')

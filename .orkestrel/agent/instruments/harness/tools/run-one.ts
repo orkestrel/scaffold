@@ -15,7 +15,8 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, closeSync, existsSync, openSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { listMatrixSources, nameMatrix, readExecution } from '../bench5/matrix/helpers.ts'
+import { listMatrixSources, nameMatrix, readExecution } from '../bench5/matrix/helpers.js'
+import { readBuild } from '../bench5/build/helpers.js'
 
 const ROOT = dirname(import.meta.dirname)
 const TOOLS = join(ROOT, 'tools')
@@ -28,7 +29,7 @@ interface Harness {
 const HARNESSES: ReadonlyMap<string, Harness> = new Map([
 	['bench', { entry: 'bench.mjs', rows: undefined }],
 	['bench3', { entry: 'bench.mjs', rows: undefined }],
-	['bench5', { entry: 'bench.ts', rows: 'rows.jsonl' }],
+	['bench5', { entry: 'bench.js', rows: 'rows.jsonl' }],
 ])
 
 interface Row {
@@ -104,6 +105,7 @@ function median(values: readonly number[]): number {
 }
 
 function main(): number {
+	readBuild()
 	const argv = process.argv.slice(2)
 	const split = argv.indexOf('--')
 	const [name, harness, base] = argv

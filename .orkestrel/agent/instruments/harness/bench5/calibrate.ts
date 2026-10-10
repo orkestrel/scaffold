@@ -1,6 +1,6 @@
 // Fits the CHANGE and AGREE cutoffs from seed truth: node bench5/calibrate.ts --cache DIR --model TAG --out DIR [--live] [--url URL]
 // Exit: 0 on success, 1 on a failed run, 64 on usage.
-import type { JudgeInterface, JudgeQuestion, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
+import type { JudgeInterface, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateSource,
 	CalibrateAsked,
@@ -21,7 +21,7 @@ import type {
 	Settings,
 	SummarizerInterface,
 	TopicSpec,
-} from './types.ts'
+} from './types.js'
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, isAbsolute, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -29,11 +29,7 @@ import { isArray, isNumber, isRecord, isString } from '@orkestrel/contract'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import { splitSentences } from '../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../vendor/ollama/index.js'
-import {
-	AGREE_HEAD,
-	AGREE_QUESTION,
-	CHANGE_HEAD,
-} from './aggregates/constants.ts'
+import { AGREE_HEAD, AGREE_QUESTION, CHANGE_HEAD } from './aggregates/constants.js'
 import {
 	buildAgreeState,
 	buildChangeQuestion,
@@ -42,7 +38,7 @@ import {
 	checkProse,
 	collectStaleTokens,
 	renderSource,
-} from './aggregates/helpers.ts'
+} from './aggregates/helpers.js'
 import {
 	DAEMON,
 	HARNESS,
@@ -54,11 +50,18 @@ import {
 	SAMPLER,
 	SCENARIO_LONG,
 	TIMEOUT,
-} from './constants.ts'
-import { readSettings } from './Driver.ts'
-import { describeError, extractHead, findDay, isMessageRole, matchesDeterministic, readJSON } from './helpers.ts'
-import { JudgeCache } from './JudgeCache.ts'
-import { Summarizer } from './Summarizer.ts'
+} from './constants.js'
+import { readSettings } from './Driver.js'
+import {
+	describeError,
+	extractHead,
+	findDay,
+	isMessageRole,
+	matchesDeterministic,
+	readJSON,
+} from './helpers.js'
+import { JudgeCache } from './JudgeCache.js'
+import { Summarizer } from './Summarizer.js'
 
 const OPTIONS = {
 	cache: { type: 'string' },
@@ -69,7 +72,8 @@ const OPTIONS = {
 } as const
 
 const OFFLINE = 'calibration reads the caches only without --live'
-const USAGE = 'usage: node bench5/calibrate.ts --cache DIR --model TAG --out DIR [--live] [--url URL]'
+const USAGE =
+	'usage: node bench5/calibrate.ts --cache DIR --model TAG --out DIR [--live] [--url URL]'
 const FILES = Object.freeze({
 	judge: 'judge.jsonl',
 	summary: 'summary.jsonl',
@@ -81,7 +85,9 @@ const DECISIVE: readonly string[] = Object.freeze(['fact', 'rule', 'correction']
 // The sampling seed is fixed so that a rerun draws the same negatives; each item logs the message indices it drew.
 const RANDOM_SEED = 7
 // Every cutoff from 0.51 to 1 in steps of 0.01, so that a fit is "the lowest value above 0.5".
-const GRID: readonly number[] = Object.freeze(Array.from({ length: 50 }, (_unused, at) => (51 + at) / 100))
+const GRID: readonly number[] = Object.freeze(
+	Array.from({ length: 50 }, (_unused, at) => (51 + at) / 100),
+)
 // A value is a date, an id, an amount, or a number; the alternation order keeps the digits of an id or a date inside one value.
 const VALUE = /\d{4}-\d{2}-\d{2}|\b[A-Za-z]{2,}-\d+\b|\$\d[\d,]*(?:\.\d+)?|\d+(?:\.\d+)?/g
 
@@ -117,12 +123,14 @@ export function parseFlags(argv: readonly string[]): CalibrateConfigOutcome {
 	const key = Object.entries(MODELS).find(([, tag]) => tag === model)?.[0]
 	if (key === undefined) problems.push(`--model must be one of ${Object.values(MODELS).join(', ')}`)
 	const url = values.url ?? DAEMON
-	try {
-		new URL(url)
-	} catch {
-		problems.push('--url must be a URL')
-	}
-	if (problems.length > 0 || values.cache === undefined || values.out === undefined || model === undefined || key === undefined) {
+	if (!URL.canParse(url)) problems.push('--url must be a URL')
+	if (
+		problems.length > 0 ||
+		values.cache === undefined ||
+		values.out === undefined ||
+		model === undefined ||
+		key === undefined
+	) {
 		return { success: false, error: `${problems.join('\n')}\n${USAGE}` }
 	}
 	return {
@@ -159,14 +167,21 @@ export function readScenario(raw: unknown): CalibrateScenario {
 	const days = isRecord(raw) ? raw.days : undefined
 	if (!isRecord(topics)) throw new Error('the scenario field ledger.topics is not a table')
 	if (!isArray(seed) || !isArray(goals)) throw new Error('the scenario has no seed or no goals')
-	const points = [...new Set(goals.flatMap((goal) => (isRecord(goal) && isNumber(goal.after) ? [goal.after] : [])))].sort(
-		(left, right) => left - right,
-	)
+	const points = [
+		...new Set(
+			goals.flatMap((goal) => (isRecord(goal) && isNumber(goal.after) ? [goal.after] : [])),
+		),
+	].sort((left, right) => left - right)
 	if (points.length === 0) throw new Error('the scenario has no goal with a read point')
 	return {
-		topics: Object.entries(topics).map(([name, criterion]): TopicSpec => ({ name, criterion: String(criterion) })),
+		topics: Object.entries(topics).map(([name, criterion]): TopicSpec => ({
+			name,
+			criterion: String(criterion),
+		})),
 		days: (isArray(days) ? days : []).flatMap((day) =>
-			isRecord(day) && isString(day.date) && isNumber(day.from) ? [{ date: day.date, from: day.from }] : [],
+			isRecord(day) && isString(day.date) && isNumber(day.from)
+				? [{ date: day.date, from: day.from }]
+				: [],
 		),
 		messages: seed.map((entry, index): CalibrateMessage => {
 			const truth = isRecord(entry) && isRecord(entry.truth) ? entry.truth : {}
@@ -196,12 +211,21 @@ export function readScenario(raw: unknown): CalibrateScenario {
  * @returns The live carriers of the topic and the stale carriers, in message order
  * @remarks A carrier is a message up to the read point with a decisive truth category whose truth topics include the topic. A carrier is stale when a truth `amends` or `supersedes` pair of a message up to the read point names it as the earlier side; the pair's later message can have any category.
  */
-export function selectSources(messages: readonly CalibrateMessage[], topic: string, point: number): CalibrateSelection {
+export function selectSources(
+	messages: readonly CalibrateMessage[],
+	topic: string,
+	point: number,
+): CalibrateSelection {
 	const replaced = new Set(
-		messages.filter((message) => message.index <= point).flatMap((message) => [...message.amends, ...message.supersedes]),
+		messages
+			.filter((message) => message.index <= point)
+			.flatMap((message) => [...message.amends, ...message.supersedes]),
 	)
 	const carriers = messages.filter(
-		(message) => message.index <= point && DECISIVE.includes(message.category) && message.topics.includes(topic),
+		(message) =>
+			message.index <= point &&
+			DECISIVE.includes(message.category) &&
+			message.topics.includes(topic),
 	)
 	return {
 		live: carriers.filter((message) => !replaced.has(message.index)),
@@ -217,9 +241,16 @@ export function selectSources(messages: readonly CalibrateMessage[], topic: stri
  * @param point - The index of the last seed message added
  * @returns The first message after the read point with a decisive truth category and the topic, or `undefined` when none follows
  */
-export function findNext(messages: readonly CalibrateMessage[], topic: string, point: number): CalibrateMessage | undefined {
+export function findNext(
+	messages: readonly CalibrateMessage[],
+	topic: string,
+	point: number,
+): CalibrateMessage | undefined {
 	return messages.find(
-		(message) => message.index > point && DECISIVE.includes(message.category) && message.topics.includes(topic),
+		(message) =>
+			message.index > point &&
+			DECISIVE.includes(message.category) &&
+			message.topics.includes(topic),
 	)
 }
 
@@ -230,7 +261,10 @@ export function findNext(messages: readonly CalibrateMessage[], topic: string, p
  * @param days - The scenario's days
  * @returns One source per sentence, with the message's date
  */
-export function buildSources(message: CalibrateMessage, days: CalibrateScenario['days']): readonly AggregateSource[] {
+export function buildSources(
+	message: CalibrateMessage,
+	days: CalibrateScenario['days'],
+): readonly AggregateSource[] {
 	const day = findDay(days, message.index)?.date ?? ''
 	return splitSentences(message.content).map((text, sentence) => ({
 		id: `m${message.index}`,
@@ -300,10 +334,21 @@ export function replaceValue(text: string, from: string, to: string): string {
 	return text.replace(VALUE, (match) => (match === from ? to : match))
 }
 
-function findSwap(prose: string, variant: CalibrateSwap['variant'], candidates: readonly string[], taken: ReadonlySet<string>): CalibrateSwap | undefined {
+function findSwap(
+	prose: string,
+	variant: CalibrateSwap['variant'],
+	candidates: readonly string[],
+	taken: ReadonlySet<string>,
+): CalibrateSwap | undefined {
 	const own = extractValues(prose)
 	for (const from of own) {
-		const to = candidates.find((value) => value !== from && !own.includes(value) && !taken.has(value) && computeShape(value) === computeShape(from))
+		const to = candidates.find(
+			(value) =>
+				value !== from &&
+				!own.includes(value) &&
+				!taken.has(value) &&
+				computeShape(value) === computeShape(from),
+		)
 		if (to !== undefined) return { variant, from, to, prose: replaceValue(prose, from, to) }
 	}
 	return undefined
@@ -326,14 +371,12 @@ export function buildSwaps(
 ): readonly CalibrateSwap[] {
 	const current = new Set(extractValues(live.join('\n')))
 	const old = extractValues(stale.join('\n')).filter((value) => !current.has(value))
-	const other = extractValues(foreign.join('\n')).filter((value) => !current.has(value) && !old.includes(value))
-	return [findSwap(prose, 'stale', old, current), findSwap(prose, 'cross', other, current)].flatMap((swap) =>
-		swap === undefined ? [] : [swap],
+	const other = extractValues(foreign.join('\n')).filter(
+		(value) => !current.has(value) && !old.includes(value),
 	)
-}
-
-function renderEvents(lines: readonly AggregateSource[]): string {
-	return lines.map((line) => line.text).join(' ')
+	return [findSwap(prose, 'stale', old, current), findSwap(prose, 'cross', other, current)].flatMap(
+		(swap) => (swap === undefined ? [] : [swap]),
+	)
 }
 
 /**
@@ -344,17 +387,27 @@ function renderEvents(lines: readonly AggregateSource[]): string {
  * @param random - The random source that draws the CHANGE negatives
  * @returns The CHANGE items, then the AGREE items. CHANGE: the next decisive message that carries the topic is the positive; a decisive message with later index that lacks the topic, and a message among the summary's live sources, are the negatives, one drawn each, and a summary with no next message has no CHANGE item. AGREE: the summary is the positive; each swap of `buildSwaps` is a negative.
  */
-export function buildItems(summary: CalibrateSummary, scenario: CalibrateScenario, random: () => number): readonly CalibrateItem[] {
+export function buildItems(
+	summary: CalibrateSummary,
+	scenario: CalibrateScenario,
+	random: () => number,
+): readonly CalibrateItem[] {
 	const { topic, after, asOf, prose, sources } = summary
 	const { messages, days } = scenario
 	const items: CalibrateItem[] = []
 	const next = findNext(messages, topic, after)
 	if (next !== undefined) {
 		const foreign = messages.filter(
-			(message) => message.index > after && message.index !== next.index && DECISIVE.includes(message.category) && !message.topics.includes(topic),
+			(message) =>
+				message.index > after &&
+				message.index !== next.index &&
+				DECISIVE.includes(message.category) &&
+				!message.topics.includes(topic),
 		)
 		const repeats = messages.filter((message) => summary.live.includes(message.index))
-		const events: readonly (readonly [CalibrateVariant, CalibrateMessage | undefined, boolean])[] = [
+		const events: ReadonlyArray<
+			readonly [CalibrateVariant, CalibrateMessage | undefined, boolean]
+		> = [
 			['next', next, true],
 			['foreign', pickOne(foreign, random), false],
 			['repeat', pickOne(repeats, random), false],
@@ -375,17 +428,29 @@ export function buildItems(summary: CalibrateSummary, scenario: CalibrateScenari
 			})
 		}
 	}
-	const texts = (list: readonly CalibrateMessage[]): readonly string[] => list.map((message) => message.content)
+	const texts = (list: readonly CalibrateMessage[]): readonly string[] =>
+		list.map((message) => message.content)
 	const selection = selectSources(messages, topic, after)
 	const swaps = buildSwaps(
 		prose,
 		sources.map((source) => source.text),
 		texts(selection.stale),
-		texts(messages.filter((message) => DECISIVE.includes(message.category) && !message.topics.includes(topic))),
+		texts(
+			messages.filter(
+				(message) => DECISIVE.includes(message.category) && !message.topics.includes(topic),
+			),
+		),
 	)
-	const agrees: readonly (readonly [CalibrateVariant, boolean, string, CalibrateSwap | undefined])[] = [
+	const agrees: ReadonlyArray<
+		readonly [CalibrateVariant, boolean, string, CalibrateSwap | undefined]
+	> = [
 		['summary', true, prose, undefined],
-		...swaps.map((swap): readonly [CalibrateVariant, boolean, string, CalibrateSwap] => [swap.variant, false, swap.prose, swap]),
+		...swaps.map((swap): readonly [CalibrateVariant, boolean, string, CalibrateSwap] => [
+			swap.variant,
+			false,
+			swap.prose,
+			swap,
+		]),
 	]
 	for (const [variant, label, text, swap] of agrees) {
 		items.push({
@@ -404,9 +469,17 @@ export function buildItems(summary: CalibrateSummary, scenario: CalibrateScenari
 	return items
 }
 
-function computeBalance(positives: readonly number[], negatives: readonly number[], cutoff: number): number {
-	const recall = positives.length === 0 ? 0 : positives.filter((noul) => noul >= cutoff).length / positives.length
-	const rejection = negatives.length === 0 ? 0 : negatives.filter((noul) => noul < cutoff).length / negatives.length
+function computeBalance(
+	positives: readonly number[],
+	negatives: readonly number[],
+	cutoff: number,
+): number {
+	const recall =
+		positives.length === 0
+			? 0
+			: positives.filter((noul) => noul >= cutoff).length / positives.length
+	const rejection =
+		negatives.length === 0 ? 0 : negatives.filter((noul) => noul < cutoff).length / negatives.length
 	return (recall + rejection) / 2
 }
 
@@ -418,9 +491,13 @@ function computeBalance(positives: readonly number[], negatives: readonly number
  * @returns The lowest cutoff from 0.51 to 1 in steps of 0.01 that gives no yes on the negatives, with `separated` true; when no such cutoff exists, or either list is empty, the cutoff with the best balanced accuracy (the lowest one on a tie) and `separated` false
  * @remarks A yes is an answer at or above the cutoff, the reading `Aggregator` applies.
  */
-export function fitCutoff(positives: readonly number[], negatives: readonly number[]): CalibrateCutoff {
+export function fitCutoff(
+	positives: readonly number[],
+	negatives: readonly number[],
+): CalibrateCutoff {
 	const lowest = GRID.find((cutoff) => negatives.every((noul) => noul < cutoff))
-	if (lowest !== undefined && positives.length > 0 && negatives.length > 0) return { cutoff: lowest, separated: true }
+	if (lowest !== undefined && positives.length > 0 && negatives.length > 0)
+		return { cutoff: lowest, separated: true }
 	let best = GRID[0] ?? 1
 	let score = -1
 	for (const cutoff of GRID) {
@@ -441,7 +518,11 @@ export function fitCutoff(positives: readonly number[], negatives: readonly numb
  * @param separated - Whether the fit separated the negatives
  * @returns The positives and negatives answered, the items refused and failed, the answers from the cache, the positives at or above the cutoff, and the negatives at or above it
  */
-export function countTally(asked: readonly CalibrateAsked[], cutoff: number, separated: boolean): CalibrateTally {
+export function countTally(
+	asked: readonly CalibrateAsked[],
+	cutoff: number,
+	separated: boolean,
+): CalibrateTally {
 	const answered = asked.filter((one) => one.noul !== undefined)
 	const yes = (one: CalibrateAsked): boolean => one.noul !== undefined && one.noul >= cutoff
 	return {
@@ -456,8 +537,14 @@ export function countTally(asked: readonly CalibrateAsked[], cutoff: number, sep
 	}
 }
 
-function collectNouls(asked: readonly CalibrateAsked[], head: CalibrateHead, label: boolean): readonly number[] {
-	return asked.flatMap((one) => (one.item.head === head && one.item.label === label && one.noul !== undefined ? [one.noul] : []))
+function collectNouls(
+	asked: readonly CalibrateAsked[],
+	head: CalibrateHead,
+	label: boolean,
+): readonly number[] {
+	return asked.flatMap((one) =>
+		one.item.head === head && one.item.label === label && one.noul !== undefined ? [one.noul] : [],
+	)
 }
 
 /**
@@ -467,17 +554,34 @@ function collectNouls(asked: readonly CalibrateAsked[], head: CalibrateHead, lab
  * @param counts - The summary counts of the run
  * @returns The CHANGE and AGREE cutoffs, the combined `separated` flag, and the counts
  */
-export function fitAsked(asked: readonly CalibrateAsked[], counts: CalibrateCounts['summaries']): CalibrateFit {
-	const change = fitCutoff(collectNouls(asked, CHANGE_HEAD, true), collectNouls(asked, CHANGE_HEAD, false))
-	const agree = fitCutoff(collectNouls(asked, AGREE_HEAD, true), collectNouls(asked, AGREE_HEAD, false))
+export function fitAsked(
+	asked: readonly CalibrateAsked[],
+	counts: CalibrateCounts['summaries'],
+): CalibrateFit {
+	const change = fitCutoff(
+		collectNouls(asked, CHANGE_HEAD, true),
+		collectNouls(asked, CHANGE_HEAD, false),
+	)
+	const agree = fitCutoff(
+		collectNouls(asked, AGREE_HEAD, true),
+		collectNouls(asked, AGREE_HEAD, false),
+	)
 	return {
 		change: change.cutoff,
 		agree: agree.cutoff,
 		separated: change.separated && agree.separated,
 		counts: {
 			summaries: counts,
-			change: countTally(asked.filter((one) => one.item.head === CHANGE_HEAD), change.cutoff, change.separated),
-			agree: countTally(asked.filter((one) => one.item.head === AGREE_HEAD), agree.cutoff, agree.separated),
+			change: countTally(
+				asked.filter((one) => one.item.head === CHANGE_HEAD),
+				change.cutoff,
+				change.separated,
+			),
+			agree: countTally(
+				asked.filter((one) => one.item.head === AGREE_HEAD),
+				agree.cutoff,
+				agree.separated,
+			),
 		},
 	}
 }
@@ -525,7 +629,14 @@ export class Calibrator {
 				const selection = selectSources(scenario.messages, topic.name, point)
 				if (selection.live.length === 0) continue
 				counts.asked += 1
-				const summary = await this.#summarize(summarizer, scenario, topic.name, point, selection, settings)
+				const summary = await this.#summarize(
+					summarizer,
+					scenario,
+					topic.name,
+					point,
+					selection,
+					settings,
+				)
 				if (summary === undefined) {
 					counts.failed += 1
 					continue
@@ -537,7 +648,10 @@ export class Calibrator {
 					seen.add(key)
 					const one = await this.#ask(cache, item)
 					asked.push(one)
-					appendFileSync(join(out, FILES.items), `${JSON.stringify({ ...item, noul: one.noul, outcome: one.outcome, cached: one.cached, wall: one.wall })}\n`)
+					appendFileSync(
+						join(out, FILES.items),
+						`${JSON.stringify({ ...item, noul: one.noul, outcome: one.outcome, cached: one.cached, wall: one.wall })}\n`,
+					)
 				}
 			}
 		}
@@ -636,7 +750,10 @@ export class Calibrator {
 		const before = cache.stats().hits[head] ?? 0
 		const started = performance.now()
 		try {
-			const result = await cache.ask({ state: item.state, questions: { [item.id]: item.question } }, this.#abort.signal)
+			const result = await cache.ask(
+				{ state: item.state, questions: { [item.id]: item.question } },
+				this.#abort.signal,
+			)
 			const answer = result.answers[item.id]
 			const wall = performance.now() - started
 			const cached = (cache.stats().hits[head] ?? 0) > before
@@ -659,7 +776,9 @@ export class Calibrator {
 
 	#print(fit: CalibrateFit): void {
 		const { summaries, change, agree } = fit.counts
-		console.log(`calibrate ${this.#config.model}: summaries ${summaries.passed}/${summaries.asked} passed, ${summaries.failed} failed`)
+		console.log(
+			`calibrate ${this.#config.model}: summaries ${summaries.passed}/${summaries.asked} passed, ${summaries.failed} failed`,
+		)
 		for (const [head, tally, cutoff] of [
 			['change', change, fit.change],
 			['agree', agree, fit.agree],

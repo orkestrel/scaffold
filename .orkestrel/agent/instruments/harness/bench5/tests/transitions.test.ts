@@ -2,9 +2,9 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { COPIES_DIR } from '../constants.ts'
-import { computeDigest } from '../helpers.ts'
-import { collectTransitions } from '../transitions/helpers.ts'
+import { COPIES_DIR } from '../constants.js'
+import { computeDigest } from '../helpers.js'
+import { collectTransitions } from '../transitions/helpers.js'
 
 describe('source transition census', () => {
 	it('freezes copy-1 opportunities without claiming observed maintenance coverage', () => {

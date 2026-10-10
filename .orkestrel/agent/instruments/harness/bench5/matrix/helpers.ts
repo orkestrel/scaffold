@@ -10,15 +10,15 @@ import type {
 	MatrixResource,
 	MatrixRole,
 	MatrixRun,
-} from './types.ts'
-import type { RefitFile } from '../refit/types.ts'
-import type { CallRole } from '../types.ts'
+} from './types.js'
+import type { RefitFile } from '../refit/types.js'
+import type { CallRole, Copy } from '../types.js'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
 import { LEDGER_SCALE_DRIFT } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import { readCopy } from '../Driver.ts'
+import { readCopy } from '../Driver.js'
 import {
 	COPIES_DIR,
 	HARNESS,
@@ -27,25 +27,26 @@ import {
 	MICA_MODEL,
 	MODELS,
 	SAMPLER,
-} from '../constants.ts'
+} from '../constants.js'
 import {
 	matchesExposure,
 	matchesSummaryBlock,
 	readJSON,
 	readScoreCarriers,
 	readWireReading,
-} from '../helpers.ts'
-import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.ts'
-import { collectSummaryBodies, countSoleTokens } from '../aggregates/helpers.ts'
-import { hashFile, verifyFiles } from '../refit/helpers.ts'
-import { MATRIX_ADMISSION, MATRIX_CAPACITY, MATRIX_RESERVES } from './constants.ts'
+} from '../helpers.js'
+import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.js'
+import { collectSummaryBodies, countSoleTokens } from '../aggregates/helpers.js'
+import { hashFile, verifyFiles } from '../refit/helpers.js'
+import { MATRIX_ADMISSION, MATRIX_CAPACITY, MATRIX_RESERVES } from './constants.js'
 import {
 	isMatrixAttempt,
 	isMatrixExecution,
 	isMatrixFreeze,
 	isMatrixResource,
-} from './validators.ts'
-import { parseMatrixRun } from './parsers.ts'
+} from './validators.js'
+import { parseMatrixRun } from './parsers.js'
+import { BUILD, readBuild } from '../build/helpers.js'
 
 /** Returns an unambiguous protocol, role-policy, arm, and copy result key.
  * @param cell - The explicit l6 identity
@@ -86,7 +87,9 @@ export function listMatrixSources(directory: string = join(HARNESS, 'bench5')): 
  * @returns Byte identities whose changes invalidate a matrix configuration
  */
 export function readMatrixFiles(): readonly RefitFile[] {
+	readBuild()
 	return [
+		join(BUILD, 'build-manifest.json'),
 		...listMatrixSources(),
 		join(HARNESS, 'tools', 'run-one.ts'),
 		join(HARNESS, 'tools', 'series.ts'),
@@ -430,7 +433,7 @@ export function readSeedCache(frozen: MatrixFreeze): string {
  * @returns Whether that goal received the treatment body
  */
 export function matchesMatrixExposure(
-	run: Pick<MatrixRun, 'execution' | 'picks' | 'requests'>,
+	run: Pick<MatrixRun, 'picks' | 'requests'> & { readonly execution: Pick<MatrixExecution, 'arm'> },
 	goal: string,
 ): boolean {
 	return matchesExposure(
@@ -460,8 +463,19 @@ export function matchesMatrixExposure(
 export function listMatrixWireFailures(
 	run: Pick<MatrixRun, 'execution' | 'picks' | 'requests' | 'gauge'>,
 ): readonly string[] {
+	return listWireInvariantFailures(run, readCopy(join(COPIES_DIR, `v${run.execution.copy}.json`)))
+}
+
+/** Rechecks common wire invariants against an explicit safe scenario projection.
+ * @param run - Actual selection and wire evidence
+ * @param copy - The exact projected runtime
+ * @returns Raw admission, support, and recovery failures
+ */
+export function listWireInvariantFailures(
+	run: Pick<MatrixRun, 'picks' | 'requests' | 'gauge'>,
+	copy: Copy,
+): readonly string[] {
 	const failures: string[] = []
-	const copy = readCopy(join(COPIES_DIR, `v${run.execution.copy}.json`))
 	for (const request of run.requests.filter(
 		(entry) => entry.sent && entry.role === 'agent' && entry.goal !== undefined,
 	)) {
@@ -523,8 +537,8 @@ export function listMatrixWireFailures(
  * @returns Protocol invariant differences
  */
 export function listMatrixPairFailures(
-	records: MatrixRun,
-	aggregate: MatrixRun,
+	records: Pick<MatrixRun, 'picks' | 'gauge' | 'rows'>,
+	aggregate: Pick<MatrixRun, 'picks' | 'gauge' | 'rows'>,
 ): readonly string[] {
 	const failures: string[] = []
 	const left = records.picks[0]
@@ -553,7 +567,9 @@ export function listMatrixPairFailures(
  * @param run - The exact retained run
  * @returns Measured costs without charging cached token usage as fresh calls
  */
-export function measureMatrixCosts(run: MatrixRun): MatrixCosts {
+export function measureMatrixCosts(
+	run: Pick<MatrixRun, 'path' | 'rows' | 'requests'>,
+): MatrixCosts {
 	const info = readJSON(join(run.path, 'run.json'))
 	return {
 		wire: ['agent', 'judge', 'summarizer', 'flush'].flatMap((role) =>

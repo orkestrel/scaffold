@@ -1,6 +1,13 @@
+import { BUILD } from '../constants.js'
 import type { JudgeQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { CacheRow, CalibrateAsked, CalibrateConfig, CalibrateItem, CalibrateSummary } from '../types.ts'
-import type { Fixture } from './fixture.ts'
+import type {
+	CacheRow,
+	CalibrateAsked,
+	CalibrateConfig,
+	CalibrateItem,
+	CalibrateSummary,
+} from '../types.js'
+import type { Fixture } from './fixture.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -8,8 +15,8 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { createOllamaJudge } from '../../vendor/ollama/index.js'
-import { AGREE_QUESTION, CHANGE_HEAD, AGREE_HEAD, SUMMARY_PREFIX } from '../aggregates/constants.ts'
-import { buildAgreeState, buildChangeQuestion, buildChangeState } from '../aggregates/helpers.ts'
+import { AGREE_QUESTION, CHANGE_HEAD, AGREE_HEAD, SUMMARY_PREFIX } from '../aggregates/constants.js'
+import { buildAgreeState, buildChangeQuestion, buildChangeState } from '../aggregates/helpers.js'
 import {
 	Calibrator,
 	buildItems,
@@ -27,7 +34,7 @@ import {
 	readScenario,
 	replaceValue,
 	selectSources,
-} from '../calibrate.ts'
+} from '../calibrate.js'
 import {
 	DAEMON,
 	HARNESS,
@@ -38,12 +45,12 @@ import {
 	MODELS,
 	SCENARIO_LONG,
 	TIMEOUT,
-} from '../constants.ts'
-import { buildCacheKey, readJSON, readRows } from '../helpers.ts'
-import { readFit } from '../Driver.ts'
-import { startFixture } from './fixture.ts'
+} from '../constants.js'
+import { buildCacheKey, readJSON, readRows } from '../helpers.js'
+import { readFit } from '../Driver.js'
+import { startFixture } from './fixture.js'
 
-const SCRIPT = join(HARNESS, 'bench5', 'calibrate.ts')
+const SCRIPT = join(BUILD, 'bench5', 'calibrate.js')
 const directory = mkdtempSync(join(tmpdir(), 'bench5-calibrate-'))
 const nativeFetch = globalThis.fetch
 const fetched: string[] = []
@@ -84,19 +91,73 @@ interface Entry {
 
 // The seed keeps each topic name out of the other topics' messages, because the fixture picks a summary by the longest topic name in the request.
 const SEED_ENTRIES: readonly Entry[] = [
-	{ role: 'user', category: 'fact', topics: [], content: 'Morning, I am Dana Whitcombe on the Larkspur desk.' },
+	{
+		role: 'user',
+		category: 'fact',
+		topics: [],
+		content: 'Morning, I am Dana Whitcombe on the Larkspur desk.',
+	},
 	{ role: 'assistant', category: 'chatter', topics: [], content: 'Good morning, Dana.' },
-	{ role: 'user', category: 'rule', topics: ['refunds'], content: 'Standing rule: a refund over $200 needs approval code MX-4471 from Marcus Oyelaran.' },
-	{ role: 'user', category: 'fact', topics: ['returns'], content: 'Opened items come back with a 15 percent restocking fee. Ticket EX-2219 covers the first one.' },
-	{ role: 'user', category: 'correction', topics: ['refunds'], content: 'Marcus rotated the code. Use MX-4486 from now on.', amends: [2] },
-	{ role: 'user', category: 'fact', topics: ['delivery'], content: 'Carrier Brightline collects from depot D-12 on Fridays.' },
-	{ role: 'user', category: 'fact', topics: ['refunds', 'returns'], content: 'Order LH-5001 is a $75 case and needs MX-4486.' },
-	{ role: 'user', category: 'correction', topics: ['returns'], content: 'The director scrapped the restocking fee. Opened items come back in full.', supersedes: [3] },
-	{ role: 'user', category: 'fact', topics: ['refunds'], content: 'Gift orders go back to the original card only.' },
-	{ role: 'user', category: 'fact', topics: ['returns'], content: 'Wholesale items come back by pallet slot on Friday.' },
+	{
+		role: 'user',
+		category: 'rule',
+		topics: ['refunds'],
+		content: 'Standing rule: a refund over $200 needs approval code MX-4471 from Marcus Oyelaran.',
+	},
+	{
+		role: 'user',
+		category: 'fact',
+		topics: ['returns'],
+		content:
+			'Opened items come back with a 15 percent restocking fee. Ticket EX-2219 covers the first one.',
+	},
+	{
+		role: 'user',
+		category: 'correction',
+		topics: ['refunds'],
+		content: 'Marcus rotated the code. Use MX-4486 from now on.',
+		amends: [2],
+	},
+	{
+		role: 'user',
+		category: 'fact',
+		topics: ['delivery'],
+		content: 'Carrier Brightline collects from depot D-12 on Fridays.',
+	},
+	{
+		role: 'user',
+		category: 'fact',
+		topics: ['refunds', 'returns'],
+		content: 'Order LH-5001 is a $75 case and needs MX-4486.',
+	},
+	{
+		role: 'user',
+		category: 'correction',
+		topics: ['returns'],
+		content: 'The director scrapped the restocking fee. Opened items come back in full.',
+		supersedes: [3],
+	},
+	{
+		role: 'user',
+		category: 'fact',
+		topics: ['refunds'],
+		content: 'Gift orders go back to the original card only.',
+	},
+	{
+		role: 'user',
+		category: 'fact',
+		topics: ['returns'],
+		content: 'Wholesale items come back by pallet slot on Friday.',
+	},
 ]
 const SCENARIO = Object.freeze({
-	ledger: { topics: { refunds: 'refund money', returns: 'items coming back', delivery: 'carriers and depots' } },
+	ledger: {
+		topics: {
+			refunds: 'refund money',
+			returns: 'items coming back',
+			delivery: 'carriers and depots',
+		},
+	},
 	days: [
 		{ date: '2026-10-08', from: 0 },
 		{ date: '2026-10-09', from: 5 },
@@ -136,7 +197,11 @@ after(async () => {
 	)
 })
 
-function buildSummary(topic: 'refunds' | 'returns', point: number, prose: string): CalibrateSummary {
+function buildSummary(
+	topic: 'refunds' | 'returns',
+	point: number,
+	prose: string,
+): CalibrateSummary {
 	const selection = selectSources(scenario.messages, topic, point)
 	return {
 		topic,
@@ -149,7 +214,13 @@ function buildSummary(topic: 'refunds' | 'returns', point: number, prose: string
 	}
 }
 
-function buildAsked(head: CalibrateItem['head'], label: boolean, noul: number | undefined, outcome: CalibrateAsked['outcome'] = 'answered', cached = false): CalibrateAsked {
+function buildAsked(
+	head: CalibrateItem['head'],
+	label: boolean,
+	noul: number | undefined,
+	outcome: CalibrateAsked['outcome'] = 'answered',
+	cached = false,
+): CalibrateAsked {
 	const question: JudgeQuestion = AGREE_QUESTION
 	const item: CalibrateItem = {
 		id: JSON.stringify([head]),
@@ -178,7 +249,11 @@ function planItems(): readonly CalibrateItem[] {
 	return items
 }
 
-function writeCache(path: string, items: readonly CalibrateItem[], answer: (item: CalibrateItem) => number): void {
+function writeCache(
+	path: string,
+	items: readonly CalibrateItem[],
+	answer: (item: CalibrateItem) => number,
+): void {
 	mkdirSync(join(path, '..'), { recursive: true })
 	const rows = items.map((item): CacheRow => ({
 		key: buildCacheKey(JUDGE, item.state, item.question),
@@ -198,7 +273,10 @@ function prepareRun(): CalibrateConfig {
 	const base = join(directory, `run-${runs}`)
 	mkdirSync(base, { recursive: true })
 	writeFileSync(join(base, 'scenario.json'), JSON.stringify(SCENARIO))
-	writeFileSync(join(base, 'settings.json'), JSON.stringify({ q2: { allowance: 300, retry: 1, predict: 160 } }))
+	writeFileSync(
+		join(base, 'settings.json'),
+		JSON.stringify({ q2: { allowance: 300, retry: 1, predict: 160 } }),
+	)
 	return {
 		cache: join(base, 'cache'),
 		model: MODELS.q2,
@@ -230,14 +308,25 @@ function runScript(args: readonly string[]): Promise<Outcome> {
 		child.stderr.on('data', (chunk: Buffer) => err.push(chunk))
 		child.on('error', fail)
 		child.on('close', (code) =>
-			done({ code, stdout: Buffer.concat(out).toString('utf8'), stderr: Buffer.concat(err).toString('utf8') }),
+			done({
+				code,
+				stdout: Buffer.concat(out).toString('utf8'),
+				stderr: Buffer.concat(err).toString('utf8'),
+			}),
 		)
 	})
 }
 
 describe('parseFlags', () => {
 	it('resolves the cache against the harness and the output against the working directory', () => {
-		const outcome = parseFlags(['--cache', 'tmp/l5/cache', '--model', MODELS.q2, '--out', 'tmp/l5/calibrate'])
+		const outcome = parseFlags([
+			'--cache',
+			'tmp/l5/cache',
+			'--model',
+			MODELS.q2,
+			'--out',
+			'tmp/l5/calibrate',
+		])
 		assert.equal(outcome.success, true)
 		if (!outcome.success) return
 		assert.equal(outcome.value.cache, join(HARNESS, 'tmp', 'l5', 'cache'))
@@ -251,7 +340,17 @@ describe('parseFlags', () => {
 	})
 
 	it('keeps an absolute cache and reads --live and --url', () => {
-		const outcome = parseFlags(['--cache', directory, '--model', MODELS.g4, '--out', directory, '--live', '--url', 'http://127.0.0.1:9'])
+		const outcome = parseFlags([
+			'--cache',
+			directory,
+			'--model',
+			MODELS.g4,
+			'--out',
+			directory,
+			'--live',
+			'--url',
+			'http://127.0.0.1:9',
+		])
 		assert.equal(outcome.success, true)
 		if (!outcome.success) return
 		assert.equal(outcome.value.cache, directory)
@@ -283,7 +382,10 @@ describe('parseFlags', () => {
 	it('exits 64 with the usage line when run without flags', async () => {
 		const outcome = await runScript([])
 		assert.equal(outcome.code, 64)
-		assert.match(outcome.stderr, /usage: node bench5\/calibrate\.ts --cache DIR --model TAG --out DIR \[--live\] \[--url URL\]/)
+		assert.match(
+			outcome.stderr,
+			/usage: node bench5\/calibrate\.ts --cache DIR --model TAG --out DIR \[--live\] \[--url URL\]/,
+		)
 		assert.equal(outcome.stdout, '')
 	})
 })
@@ -316,7 +418,10 @@ describe('readScenario', () => {
 		const long = readScenario(readJSON(SCENARIO_LONG))
 		assert.equal(long.messages.length, 152)
 		assert.equal(long.topics.length, 6)
-		assert.deepEqual(long.points, [47, 89, 95, 105, 111, 115, 123, 127, 132, 133, 137, 139, 143, 145, 149])
+		assert.deepEqual(
+			long.points,
+			[47, 89, 95, 105, 111, 115, 123, 127, 132, 133, 137, 139, 143, 145, 149],
+		)
 	})
 
 	it('throws on a scenario without topics, a seed, a read point, or a known role', () => {
@@ -324,7 +429,12 @@ describe('readScenario', () => {
 		assert.throws(() => readScenario({ ledger: { topics: {} }, seed: [], goals: [] }), /read point/)
 		assert.throws(() => readScenario({ ledger: { topics: {} }, goals: [] }), /no seed/)
 		assert.throws(
-			() => readScenario({ ledger: { topics: {} }, seed: [{ role: 'wizard', content: 'x' }], goals: [{ after: 0 }] }),
+			() =>
+				readScenario({
+					ledger: { topics: {} },
+					seed: [{ role: 'wizard', content: 'x' }],
+					goals: [{ after: 0 }],
+				}),
 			/seed message 0/,
 		)
 	})
@@ -332,9 +442,12 @@ describe('readScenario', () => {
 
 describe('selecting sources', () => {
 	it('keeps the carriers that no earlier pair replaced and lists the replaced carriers apart', () => {
-		const list = (topic: string, point: number): readonly (readonly number[])[] => {
+		const list = (topic: string, point: number): ReadonlyArray<readonly number[]> => {
 			const selection = selectSources(scenario.messages, topic, point)
-			return [selection.live.map((message) => message.index), selection.stale.map((message) => message.index)]
+			return [
+				selection.live.map((message) => message.index),
+				selection.stale.map((message) => message.index),
+			]
 		}
 		assert.deepEqual(list('refunds', 4), [[4], [2]])
 		assert.deepEqual(list('returns', 4), [[3], []])
@@ -351,12 +464,21 @@ describe('selecting sources', () => {
 			seed: [
 				{ role: 'user', content: 'A.', truth: { category: 'fact', topics: ['refunds'] } },
 				{ role: 'user', content: 'B.', truth: { category: 'fact', topics: ['refunds'] } },
-				{ role: 'user', content: 'C.', truth: { category: 'opinion', topics: [], supersedes: [0] } },
+				{
+					role: 'user',
+					content: 'C.',
+					truth: { category: 'opinion', topics: [], supersedes: [0] },
+				},
 				{ role: 'user', content: 'D.', truth: { category: 'chatter', topics: ['refunds'] } },
-				{ role: 'user', content: 'E.', truth: { category: 'correction', topics: ['refunds'], amends: [1] } },
+				{
+					role: 'user',
+					content: 'E.',
+					truth: { category: 'correction', topics: ['refunds'], amends: [1] },
+				},
 			],
 		}).messages
-		const live = (point: number): readonly number[] => selectSources(messages, 'refunds', point).live.map((message) => message.index)
+		const live = (point: number): readonly number[] =>
+			selectSources(messages, 'refunds', point).live.map((message) => message.index)
 		assert.deepEqual(live(1), [0, 1])
 		assert.deepEqual(live(2), [1])
 		assert.deepEqual(live(3), [1])
@@ -379,7 +501,10 @@ describe('selecting sources', () => {
 			{ id: 'm4', sentence: 1, role: 'user', text: 'Use MX-4486 from now on.', day: '2026-10-08' },
 		])
 		const later = scenario.messages[6]
-		assert.equal(later === undefined ? '' : buildSources(later, scenario.days)[0]?.day, '2026-10-09')
+		assert.equal(
+			later === undefined ? '' : buildSources(later, scenario.days)[0]?.day,
+			'2026-10-09',
+		)
 	})
 })
 
@@ -393,10 +518,7 @@ describe('sampling', () => {
 			Array.from({ length: 50 }, () => second()),
 		)
 		assert.ok(draws.every((draw) => draw >= 0 && draw < 1))
-		assert.notDeepEqual(
-			draws,
-			Array.from({ length: 50 }, createRandom(SEED + 1)),
-		)
+		assert.notDeepEqual(draws, Array.from({ length: 50 }, createRandom(SEED + 1)))
 	})
 
 	it('picks from a list and draws nothing for an empty list', () => {
@@ -410,12 +532,10 @@ describe('sampling', () => {
 
 describe('values', () => {
 	it('lists dates, ids, amounts, and numbers once, in order of first occurrence', () => {
-		assert.deepEqual(extractValues('On 2026-10-08 code MX-4471 cost $1,200.50 for 15 items; MX-4471 again.'), [
-			'2026-10-08',
-			'MX-4471',
-			'$1,200.50',
-			'15',
-		])
+		assert.deepEqual(
+			extractValues('On 2026-10-08 code MX-4471 cost $1,200.50 for 15 items; MX-4471 again.'),
+			['2026-10-08', 'MX-4471', '$1,200.50', '15'],
+		)
 		assert.deepEqual(extractValues('no values here'), [])
 	})
 
@@ -428,8 +548,14 @@ describe('values', () => {
 	})
 
 	it('replaces whole values only', () => {
-		assert.equal(replaceValue('Code MX-4486 and 15, not 150 or MX-44860.', '15', '20'), 'Code MX-4486 and 20, not 150 or MX-44860.')
-		assert.equal(replaceValue('Code MX-4486, again MX-4486.', 'MX-4486', 'MX-4471'), 'Code MX-4471, again MX-4471.')
+		assert.equal(
+			replaceValue('Code MX-4486 and 15, not 150 or MX-44860.', '15', '20'),
+			'Code MX-4486 and 20, not 150 or MX-44860.',
+		)
+		assert.equal(
+			replaceValue('Code MX-4486, again MX-4486.', 'MX-4486', 'MX-4471'),
+			'Code MX-4471, again MX-4471.',
+		)
 	})
 })
 
@@ -442,22 +568,61 @@ describe('swapping a value', () => {
 			['Ticket EX-2219 covers it.', 'The fee is 15 percent.'],
 		)
 		assert.deepEqual(swaps, [
-			{ variant: 'stale', from: 'MX-4486', to: 'MX-4471', prose: 'Marcus rotated the code to MX-4471.' },
-			{ variant: 'cross', from: 'MX-4486', to: 'EX-2219', prose: 'Marcus rotated the code to EX-2219.' },
+			{
+				variant: 'stale',
+				from: 'MX-4486',
+				to: 'MX-4471',
+				prose: 'Marcus rotated the code to MX-4471.',
+			},
+			{
+				variant: 'cross',
+				from: 'MX-4486',
+				to: 'EX-2219',
+				prose: 'Marcus rotated the code to EX-2219.',
+			},
 		])
 	})
 
 	it('skips a replacement that a live source carries, a different shape, or a value the summary already holds', () => {
-		assert.deepEqual(buildSwaps('Code MX-4486.', ['Use MX-4486; MX-4471 is dead.'], ['MX-4471 was the old code.'], []), [])
-		assert.deepEqual(buildSwaps('Code MX-4486.', ['Use MX-4486.'], ['Ticket ESC-2219.'], ['Pay $75.']), [])
-		assert.deepEqual(buildSwaps('Codes MX-4486 and MX-4471.', ['Use MX-4486 and MX-4471.'], ['Old code MX-4471.'], []), [])
-		assert.deepEqual(buildSwaps('Codes MX-4486 and MX-4471.', ['Use MX-4486.'], ['Old code MX-4471.'], []), [])
+		assert.deepEqual(
+			buildSwaps(
+				'Code MX-4486.',
+				['Use MX-4486; MX-4471 is dead.'],
+				['MX-4471 was the old code.'],
+				[],
+			),
+			[],
+		)
+		assert.deepEqual(
+			buildSwaps('Code MX-4486.', ['Use MX-4486.'], ['Ticket ESC-2219.'], ['Pay $75.']),
+			[],
+		)
+		assert.deepEqual(
+			buildSwaps(
+				'Codes MX-4486 and MX-4471.',
+				['Use MX-4486 and MX-4471.'],
+				['Old code MX-4471.'],
+				[],
+			),
+			[],
+		)
+		assert.deepEqual(
+			buildSwaps('Codes MX-4486 and MX-4471.', ['Use MX-4486.'], ['Old code MX-4471.'], []),
+			[],
+		)
 		assert.deepEqual(buildSwaps('No values.', [], ['MX-4471'], ['EX-2219']), [])
 	})
 
 	it('replaces the first value of the summary that has a replacement', () => {
-		const swaps = buildSwaps('Pay $75 on MX-4486.', ['Use MX-4486 and $75.'], ['Old MX-4471.', 'Old $20.'], [])
-		assert.deepEqual(swaps, [{ variant: 'stale', from: '$75', to: '$20', prose: 'Pay $20 on MX-4486.' }])
+		const swaps = buildSwaps(
+			'Pay $75 on MX-4486.',
+			['Use MX-4486 and $75.'],
+			['Old MX-4471.', 'Old $20.'],
+			[],
+		)
+		assert.deepEqual(swaps, [
+			{ variant: 'stale', from: '$75', to: '$20', prose: 'Pay $20 on MX-4486.' },
+		])
 	})
 })
 
@@ -466,7 +631,9 @@ describe('building items', () => {
 	const summary = buildSummary('refunds', 4, prose)
 
 	it('labels the CHANGE items from the next carrier, a foreign message, and a repeated source', () => {
-		const items = buildItems(summary, scenario, createRandom(SEED)).filter((item) => item.head === CHANGE_HEAD)
+		const items = buildItems(summary, scenario, createRandom(SEED)).filter(
+			(item) => item.head === CHANGE_HEAD,
+		)
 		assert.deepEqual(
 			items.map((item) => [item.variant, item.label]),
 			[
@@ -477,17 +644,28 @@ describe('building items', () => {
 		)
 		const [next, foreign, repeat] = items
 		assert.deepEqual(next?.events, [6])
-		assert.ok([5, 7, 9].includes(foreign?.events[0] ?? -1), 'a foreign draw is a later decisive message without the topic')
+		assert.ok(
+			[5, 7, 9].includes(foreign?.events[0] ?? -1),
+			'a foreign draw is a later decisive message without the topic',
+		)
 		assert.deepEqual(repeat?.events, [4])
 		assert.equal(next?.id, '["change","m6","refunds",4]')
-		assert.equal(next?.state, 'Summary of refunds as of 2026-10-08: Marcus rotated the code to MX-4486.\nEvent: user: Order LH-5001 is a $75 case and needs MX-4486.')
-		assert.equal(repeat?.state, 'Summary of refunds as of 2026-10-08: Marcus rotated the code to MX-4486.\nEvent: user: Marcus rotated the code. Use MX-4486 from now on.')
+		assert.equal(
+			next?.state,
+			'Summary of refunds as of 2026-10-08: Marcus rotated the code to MX-4486.\nEvent: user: Order LH-5001 is a $75 case and needs MX-4486.',
+		)
+		assert.equal(
+			repeat?.state,
+			'Summary of refunds as of 2026-10-08: Marcus rotated the code to MX-4486.\nEvent: user: Marcus rotated the code. Use MX-4486 from now on.',
+		)
 		assert.deepEqual(next?.question, buildChangeQuestion('refunds'))
 		for (const item of items) assert.equal(item.swap, undefined)
 	})
 
 	it('labels the AGREE items from the summary and its swaps', () => {
-		const items = buildItems(summary, scenario, createRandom(SEED)).filter((item) => item.head === AGREE_HEAD)
+		const items = buildItems(summary, scenario, createRandom(SEED)).filter(
+			(item) => item.head === AGREE_HEAD,
+		)
 		assert.deepEqual(
 			items.map((item) => [item.variant, item.label, item.swap]),
 			[
@@ -496,7 +674,8 @@ describe('building items', () => {
 				['cross', false, 'MX-4486 -> EX-2219'],
 			],
 		)
-		const sources = 'Source messages:\n(2026-10-08) user: Marcus rotated the code.\n(2026-10-08) user: Use MX-4486 from now on.'
+		const sources =
+			'Source messages:\n(2026-10-08) user: Marcus rotated the code.\n(2026-10-08) user: Use MX-4486 from now on.'
 		assert.equal(items[0]?.state, `${prose}\n${sources}`)
 		assert.equal(items[1]?.state, `Marcus rotated the code to MX-4471.\n${sources}`)
 		assert.equal(items[2]?.state, `Marcus rotated the code to EX-2219.\n${sources}`)
@@ -506,7 +685,10 @@ describe('building items', () => {
 	})
 
 	it('builds the same items from the same seed and draws nothing when no CHANGE item can exist', () => {
-		assert.deepEqual(buildItems(summary, scenario, createRandom(SEED)), buildItems(summary, scenario, createRandom(SEED)))
+		assert.deepEqual(
+			buildItems(summary, scenario, createRandom(SEED)),
+			buildItems(summary, scenario, createRandom(SEED)),
+		)
 		let draws = 0
 		const counting = (): number => {
 			draws += 1
@@ -520,7 +702,11 @@ describe('building items', () => {
 	})
 
 	it('builds one AGREE item for a summary without values and draws one negative per kind that has a pool', () => {
-		const plain = buildItems(buildSummary('returns', 7, PROSE.returns), scenario, createRandom(SEED))
+		const plain = buildItems(
+			buildSummary('returns', 7, PROSE.returns),
+			scenario,
+			createRandom(SEED),
+		)
 		assert.deepEqual(
 			plain.map((item) => `${item.head}:${item.variant}:${item.label}`),
 			['change:next:true', 'change:foreign:false', 'change:repeat:false', 'agree:summary:true'],
@@ -529,7 +715,18 @@ describe('building items', () => {
 		assert.deepEqual(next?.events, [9])
 		assert.deepEqual(foreign?.events, [8])
 		assert.ok([6, 7].includes(repeat?.events[0] ?? -1))
-		assert.equal(next?.state, buildChangeState({ title: 'returns', asOf: '2026-10-09', prose: PROSE.returns }, [{ id: 'm9', sentence: 0, role: 'user', text: 'Wholesale items come back by pallet slot on Friday.', day: '2026-10-09' }]))
+		assert.equal(
+			next?.state,
+			buildChangeState({ title: 'returns', asOf: '2026-10-09', prose: PROSE.returns }, [
+				{
+					id: 'm9',
+					sentence: 0,
+					role: 'user',
+					text: 'Wholesale items come back by pallet slot on Friday.',
+					day: '2026-10-09',
+				},
+			]),
+		)
 	})
 })
 
@@ -592,7 +789,7 @@ describe('counting items', () => {
 		]
 		const fit = fitAsked(asked, { asked: 3, passed: 2, failed: 1 })
 		assert.equal(fit.change, 0.51)
-		// The negative at 1 never separates, so the cutoff sits just above the other negative, where one of two negatives is rejected and the positive is kept.
+		// The negative at 1 never separates, so the cutoff sits above the other negative, where one of two negatives is rejected and the positive is kept.
 		assert.equal(fit.agree, 0.71)
 		assert.equal(fit.separated, false)
 		assert.deepEqual(fit.counts.summaries, { asked: 3, passed: 2, failed: 1 })
@@ -627,28 +824,53 @@ describe('Calibrator', () => {
 		const items = planItems()
 		assert.equal(items.filter((item) => item.head === CHANGE_HEAD).length, COUNTS.change)
 		assert.equal(items.filter((item) => item.head === AGREE_HEAD).length, COUNTS.agree)
-		assert.equal(new Set(items.map((item) => item.state + item.head + item.label)).size, items.length)
+		assert.equal(
+			new Set(items.map((item) => item.state + item.head + item.label)).size,
+			items.length,
+		)
 	})
 
 	it('writes the hand-computed cutoffs and counts from live summaries and cached judge answers', async () => {
 		const config = prepareRun()
 		const items = planItems()
 		writeCache(join(config.cache, 'judge.jsonl'), items, answerSeparated)
-		const before = fixture.requests.length
+		const initialRequests = fixture.requests.length
 		const code = await new Calibrator(config).execute()
 		assert.equal(code, 0)
 		const fit = readOutput(config)
 		assert.equal(readField(fit, 'change'), 0.56)
 		assert.equal(readField(fit, 'agree'), 0.81)
 		assert.equal(readField(fit, 'separated'), true)
-		assert.deepEqual(readFit(join(config.out, 'fit.json')), { change: 0.56, agree: 0.81, separated: true })
+		assert.deepEqual(readFit(join(config.out, 'fit.json')), {
+			change: 0.56,
+			agree: 0.81,
+			separated: true,
+		})
 		assert.deepEqual(readField(fit, 'counts'), {
 			summaries: { asked: 5, passed: 4, failed: 1 },
-			change: { positives: 4, negatives: 8, refused: 0, failed: 0, cached: COUNTS.change, recalled: 4, leaked: 0, separated: true },
-			agree: { positives: 4, negatives: 4, refused: 0, failed: 0, cached: COUNTS.agree, recalled: 4, leaked: 0, separated: true },
+			change: {
+				positives: 4,
+				negatives: 8,
+				refused: 0,
+				failed: 0,
+				cached: COUNTS.change,
+				recalled: 4,
+				leaked: 0,
+				separated: true,
+			},
+			agree: {
+				positives: 4,
+				negatives: 4,
+				refused: 0,
+				failed: 0,
+				cached: COUNTS.agree,
+				recalled: 4,
+				leaked: 0,
+				separated: true,
+			},
 		})
 		// Four passing summaries cost one request each, and the failing delivery summary costs the first attempt plus the one retry.
-		const sent = fixture.requests.slice(before)
+		const sent = fixture.requests.slice(initialRequests)
 		assert.equal(sent.length, 6)
 		const retried = sent.filter((body) => JSON.stringify(body).includes('failed these checks'))
 		assert.equal(retried.length, 1)
@@ -687,7 +909,11 @@ describe('Calibrator', () => {
 		await new Calibrator(config).execute()
 		const live = readOutput(config)
 		const count = fixture.requests.length
-		const offline: CalibrateConfig = { ...config, live: false, out: join(config.out, '..', 'offline') }
+		const offline: CalibrateConfig = {
+			...config,
+			live: false,
+			out: join(config.out, '..', 'offline'),
+		}
 		assert.equal(await new Calibrator(offline).execute(), 0)
 		assert.equal(fixture.requests.length, count)
 		assert.deepEqual(readOutput(offline), live)
@@ -711,7 +937,10 @@ describe('Calibrator', () => {
 
 	it('throws a harness fault when a live judge miss fails every retry', async () => {
 		const config = prepareRun()
-		await assert.rejects(new Calibrator(config).execute(), /harness fault: the judge failed 2 times/)
+		await assert.rejects(
+			new Calibrator(config).execute(),
+			/harness fault: the judge failed 2 times/,
+		)
 		assert.equal(existsSync(join(config.out, 'fit.json')), false)
 	})
 
@@ -722,7 +951,8 @@ describe('Calibrator', () => {
 		writeCache(join(second.cache, 'judge.jsonl'), planItems(), answerSeparated)
 		await new Calibrator(first).execute()
 		await new Calibrator(second).execute()
-		const events = (config: CalibrateConfig): readonly unknown[] => readRows(join(config.out, 'items.jsonl')).map((row) => readField(row, 'events'))
+		const events = (config: CalibrateConfig): readonly unknown[] =>
+			readRows(join(config.out, 'items.jsonl')).map((row) => readField(row, 'events'))
 		assert.deepEqual(events(first), events(second))
 	})
 })

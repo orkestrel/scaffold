@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { isRecord } from '@orkestrel/contract'
-import { MICA_MODEL, MODELS } from '../constants.ts'
+import { MICA_MODEL, MODELS } from '../constants.js'
 
 /** Serves actual Ollama wire boundaries for matrix admission tests. */
 export class MatrixPeer {
@@ -34,6 +34,7 @@ export class MatrixPeer {
 	}
 
 	async #respond(request: IncomingMessage, response: ServerResponse): Promise<void> {
+		response.setHeader('connection', 'close')
 		if (request.url === '/api/tags') {
 			response.setHeader('content-type', 'application/json')
 			response.end(

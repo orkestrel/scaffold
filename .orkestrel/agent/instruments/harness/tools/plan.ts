@@ -41,20 +41,78 @@ function readFlag(argv: readonly string[], name: string): string | undefined {
 }
 
 function armArgs(arm: string, copy: number, condition: Condition): readonly string[] {
-	const model = ['--model', condition.model, ...(condition.think ? ['--think'] : []), ...(condition.predict === undefined ? [] : ['--think-predict', String(condition.predict)])]
+	const model = [
+		'--model',
+		condition.model,
+		...(condition.think ? ['--think'] : []),
+		...(condition.predict === undefined ? [] : ['--think-predict', String(condition.predict)]),
+	]
 	if (arm === 'records') {
 		const ctx = RECORDS_CTX + condition.grow
 		const budget = ((RECORDS_CTX * RECORDS_BUDGET) / ctx).toFixed(6).replace(/0+$/, '')
 		return [
-			'--mode', 'ledger', '--profile', 'refined', '--scenario', `${BENCH}/variants/ledger/v${copy}.json`,
-			'--ctx', String(ctx), '--budget', budget, '--judge', 'mica', '--judge-ctx', '4096', '--tail', '0.35',
-			'--judgments', `${ROOT}/data/cal-categories.jsonl`, '--reply', 'terminal', '--records', 'on', ...model, ...(condition.records ?? []),
+			'--mode',
+			'ledger',
+			'--profile',
+			'refined',
+			'--scenario',
+			`${BENCH}/variants/ledger/v${copy}.json`,
+			'--ctx',
+			String(ctx),
+			'--budget',
+			budget,
+			'--judge',
+			'mica',
+			'--judge-ctx',
+			'4096',
+			'--tail',
+			'0.35',
+			'--judgments',
+			`${ROOT}/data/cal-categories.jsonl`,
+			'--reply',
+			'terminal',
+			'--records',
+			'on',
+			...model,
+			...(condition.records ?? []),
 		]
 	}
-	if (arm === 'control') return ['--mode', 'none', '--ctx', String(CONTROL_CTX + condition.grow), '--search', 'words', '--reply', 'terminal', '--scenario', `${BENCH}/variants/v${copy}.json`, ...model]
+	if (arm === 'control')
+		return [
+			'--mode',
+			'none',
+			'--ctx',
+			String(CONTROL_CTX + condition.grow),
+			'--search',
+			'words',
+			'--reply',
+			'terminal',
+			'--scenario',
+			`${BENCH}/variants/v${copy}.json`,
+			...model,
+		]
 	return [
-		'--mode', 'compaction', '--ctx', String(COMPACTION_CTX + condition.grow), '--search', 'words', '--summary', 'tuned', '--window', '1600', '--keep', '6', '--sections', '3',
-		'--reply', 'terminal', '--scenario', `${BENCH}/variants/v${copy}.json`, '--summary-model', condition.model, ...model,
+		'--mode',
+		'compaction',
+		'--ctx',
+		String(COMPACTION_CTX + condition.grow),
+		'--search',
+		'words',
+		'--summary',
+		'tuned',
+		'--window',
+		'1600',
+		'--keep',
+		'6',
+		'--sections',
+		'3',
+		'--reply',
+		'terminal',
+		'--scenario',
+		`${BENCH}/variants/v${copy}.json`,
+		'--summary-model',
+		condition.model,
+		...model,
 	]
 }
 
@@ -63,19 +121,60 @@ function main(): number {
 	const copies = /^(\d+)-(\d+)$/.exec(readFlag(argv, '--copies') ?? '')
 	const names = (readFlag(argv, '--conditions') ?? '').split(',').filter((name) => name !== '')
 	const out = readFlag(argv, '--out')
-	const arms = (readFlag(argv, '--arms') ?? 'records,control,compaction').split(',').filter((arm) => arm !== '')
+	const arms = (readFlag(argv, '--arms') ?? 'records,control,compaction')
+		.split(',')
+		.filter((arm) => arm !== '')
 	const cap = Number(readFlag(argv, '--cap') ?? 'NaN')
 	const capped = Number.isInteger(cap) && cap > 0 && cap <= 4096 && cap % 256 === 0
-	if (copies === null || names.length === 0 || out === undefined || arms.length === 0 || arms.some((arm) => !['records', 'control', 'compaction'].includes(arm)) || (names.includes('t4') && !capped)) {
-		process.stderr.write('usage: node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a,t4 [--arms records,control,compaction] [--cap N] --out PLAN.json\n')
+	if (
+		copies === null ||
+		names.length === 0 ||
+		out === undefined ||
+		arms.length === 0 ||
+		arms.some((arm) => !['records', 'control', 'compaction'].includes(arm)) ||
+		(names.includes('t4') && !capped)
+	) {
+		process.stderr.write(
+			'usage: node plan.ts --copies FIRST-LAST --conditions f4,t2,t2w,t2a,t4 [--arms records,control,compaction] [--cap N] --out PLAN.json\n',
+		)
 		return 64
 	}
 	const conditions: Readonly<Record<string, Condition>> = {
-		f4: { model: AGENT_4B, think: false, grow: 0, predict: undefined, estimates: { records: 1600, control: 400, compaction: 3300 } },
-		t2: { model: AGENT_2B, think: true, grow: 1024, predict: undefined, estimates: { records: 1700, control: 1200, compaction: 2400 } },
-		t2w: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1900, control: 1400, compaction: 2700 } },
-		t2a: { model: AGENT_2B, think: true, grow: 2048, predict: 2048, estimates: { records: 1500, control: 400, compaction: 6200 } },
-		t4: { model: AGENT_4B, think: true, grow: cap, predict: cap, estimates: { records: 2400, control: 1500, compaction: 6200 } },
+		f4: {
+			model: AGENT_4B,
+			think: false,
+			grow: 0,
+			predict: undefined,
+			estimates: { records: 1600, control: 400, compaction: 3300 },
+		},
+		t2: {
+			model: AGENT_2B,
+			think: true,
+			grow: 1024,
+			predict: undefined,
+			estimates: { records: 1700, control: 1200, compaction: 2400 },
+		},
+		t2w: {
+			model: AGENT_2B,
+			think: true,
+			grow: 2048,
+			predict: 2048,
+			estimates: { records: 1900, control: 1400, compaction: 2700 },
+		},
+		t2a: {
+			model: AGENT_2B,
+			think: true,
+			grow: 2048,
+			predict: 2048,
+			estimates: { records: 1500, control: 400, compaction: 6200 },
+		},
+		t4: {
+			model: AGENT_4B,
+			think: true,
+			grow: cap,
+			predict: cap,
+			estimates: { records: 2400, control: 1500, compaction: 6200 },
+		},
 	}
 	if (names.some((name) => !Object.hasOwn(conditions, name))) {
 		process.stderr.write('--conditions names f4, t2, t2w, t2a, t4, or several\n')
@@ -86,7 +185,12 @@ function main(): number {
 		for (const name of names) {
 			const condition = conditions[name]
 			for (const arm of arms) {
-				plan.push({ name: `${name}-${arm}-v${copy}`, harness: arm === 'records' ? 'bench3' : 'bench', estimate: condition.estimates[arm], args: armArgs(arm, copy, condition) })
+				plan.push({
+					name: `${name}-${arm}-v${copy}`,
+					harness: arm === 'records' ? 'bench3' : 'bench',
+					estimate: condition.estimates[arm],
+					args: armArgs(arm, copy, condition),
+				})
 			}
 		}
 	}

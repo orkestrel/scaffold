@@ -1,9 +1,9 @@
 import type { Message } from '../vendor/agent-0.0.30-trimmed/index.js'
-import type { SummarizerInterface, SummarizerOptions, SummaryResult, SummaryRow } from './types.ts'
+import type { SummarizerInterface, SummarizerOptions, SummaryResult, SummaryRow } from './types.js'
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { SUMMARY_MISS } from './constants.ts'
-import { buildSummaryKey, isSummaryRow, readRows } from './helpers.ts'
+import { SUMMARY_MISS } from './constants.js'
+import { buildSummaryKey, isSummaryRow, readRows } from './helpers.js'
 
 /**
  * Generates aggregate prose from a message list through its own provider, and answers a repeated list from a rows file.
@@ -45,10 +45,13 @@ export class Summarizer implements SummarizerInterface {
 	async summarize(messages: readonly Message[], signal: AbortSignal): Promise<SummaryResult> {
 		const key = buildSummaryKey(this.#options, messages)
 		const row = this.#rows.get(key)
-		if (row !== undefined) return { prose: row.prose, raw: row.raw, usage: row.usage, wall: row.wall, cached: true }
+		if (row !== undefined)
+			return { prose: row.prose, raw: row.raw, usage: row.usage, wall: row.wall, cached: true }
 		if (!this.#options.live) throw new Error(SUMMARY_MISS)
 		const started = performance.now()
-		const result = await this.#options.provider.generate(messages, signal, undefined, { think: false })
+		const result = await this.#options.provider.generate(messages, signal, undefined, {
+			think: false,
+		})
 		const wall = performance.now() - started
 		const fresh: SummaryRow = {
 			key,

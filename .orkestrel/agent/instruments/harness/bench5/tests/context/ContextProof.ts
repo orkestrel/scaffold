@@ -1,5 +1,5 @@
 import type { Selection } from '../../../vendor/agent-0.0.30-trimmed/index.js'
-import type { ProbeReading, TurnReading } from './types.ts'
+import type { ProbeReading, TurnReading } from './types.js'
 import { strict as assert } from 'node:assert'
 import { createTool } from '@orkestrel/tool'
 import {
@@ -11,10 +11,10 @@ import {
 	LEDGER_QUESTIONS,
 	LEDGER_NOTES,
 } from '../../../vendor/agent-0.0.30-trimmed/index.js'
-import { Fixture } from './Fixture.ts'
-import { FullViewAdapter } from '../../FullViewAdapter.ts'
-import { RelayFrameParser } from './RelayFrameParser.ts'
-import { buildSeed, projectMessages } from './helpers.ts'
+import { Fixture } from './Fixture.js'
+import { FullViewAdapter } from '../../FullViewAdapter.js'
+import { RelayFrameParser } from './RelayFrameParser.js'
+import { buildSeed, projectMessages } from './helpers.js'
 
 export class ContextProof {
 	readonly #fixture = new Fixture()

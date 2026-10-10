@@ -1,4 +1,4 @@
-import { Matrix } from './matrix/Matrix.ts'
+import { Matrix } from './matrix/Matrix.js'
 // Writes the aggregate arm's plan for tools/series.ts, interleaved by copy so a series stopped early still holds whole pairs:
 //   node bench5/plan.ts --models q2[,g2,...] --copies A-B --cache DIR --out FILE
 // Each model key is a `MODELS` key, and A-B is a range of copies from 1 to 8. DIR and FILE resolve against the
@@ -7,11 +7,11 @@ import { Matrix } from './matrix/Matrix.ts'
 // The estimate of an entry is 60 x 1.3 x the projected minutes of its arm, where copy 1 of the aggregate arm
 // carries the cache-filling overhead that later copies do not; the pilot's measurements replace the projection.
 // Exit: 0; 64 on usage.
-import type { PlanEntry, ArchiveArm } from './types.ts'
+import type { PlanEntry, ArchiveArm } from './types.js'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
-import { MODELS } from './constants.ts'
+import { MODELS } from './constants.js'
 
 const USAGE = 'usage: node bench5/plan.ts --models q2[,g2,...] --copies A-B --cache DIR --out FILE'
 const SECONDS = 60

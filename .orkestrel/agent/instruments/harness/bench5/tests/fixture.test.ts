@@ -1,17 +1,24 @@
 import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { Fixture, FixtureOptions } from './fixture.ts'
+import type { Fixture, FixtureOptions } from './fixture.js'
 import { after, afterEach, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createOllama } from '../../vendor/ollama/index.js'
-import { collectContents, loadExchange, readSystem, replaceContent, selectTopic, startFixture } from './fixture.ts'
+import {
+	collectContents,
+	loadExchange,
+	readSystem,
+	replaceContent,
+	selectTopic,
+	startFixture,
+} from './fixture.js'
 
 const RECORDING = join(import.meta.dirname, 'data', 'chat-final.json')
 const PREFIX = 'You write one topic summary for the support shift.'
 const SUMMARIES = Object.freeze({
 	'Luis Ferreira': 'Luis Ferreira holds order LH-79215 and has a full refund.',
-	'Luis': 'The short topic summary.',
+	Luis: 'The short topic summary.',
 	'Carrier depots': 'Tomasz Brennan releases shipments held at a depot.',
 })
 const original = globalThis.fetch
@@ -26,25 +33,44 @@ function guardFetch(input: Parameters<typeof fetch>[0], init?: RequestInit): Pro
 	return original(input, init)
 }
 
-function readRecording(): { readonly body: string; readonly stream: unknown; readonly contentType: unknown } {
+function readRecording(): {
+	readonly body: string
+	readonly stream: unknown
+	readonly contentType: unknown
+} {
 	const value: unknown = JSON.parse(readFileSync(RECORDING, 'utf8'))
 	assert.ok(typeof value === 'object' && value !== null)
 	const body = Reflect.get(value, 'body')
 	assert.equal(typeof body, 'string')
-	return { body: String(body), stream: Reflect.get(value, 'stream'), contentType: Reflect.get(value, 'contentType') }
+	return {
+		body: String(body),
+		stream: Reflect.get(value, 'stream'),
+		contentType: Reflect.get(value, 'contentType'),
+	}
 }
 
 // Joins the content of every NDJSON record the way a client assembles the reply.
 function assembleContent(body: string): string {
-	return body.split('\n').filter((line) => line !== '').map((line): string => {
-		const record: unknown = JSON.parse(line)
-		const message = typeof record === 'object' && record !== null ? Reflect.get(record, 'message') : undefined
-		const content = typeof message === 'object' && message !== null ? Reflect.get(message, 'content') : undefined
-		return typeof content === 'string' ? content : ''
-	}).join('')
+	return body
+		.split('\n')
+		.filter((line) => line !== '')
+		.map((line): string => {
+			const record: unknown = JSON.parse(line)
+			const message =
+				typeof record === 'object' && record !== null ? Reflect.get(record, 'message') : undefined
+			const content =
+				typeof message === 'object' && message !== null
+					? Reflect.get(message, 'content')
+					: undefined
+			return typeof content === 'string' ? content : ''
+		})
+		.join('')
 }
 
-async function withFixture(options: FixtureOptions, work: (fixture: Fixture) => Promise<void>): Promise<void> {
+async function withFixture(
+	options: FixtureOptions,
+	work: (fixture: Fixture) => Promise<void>,
+): Promise<void> {
 	const fixture = await startFixture(options)
 	try {
 		await work(fixture)
@@ -53,18 +79,33 @@ async function withFixture(options: FixtureOptions, work: (fixture: Fixture) => 
 	}
 }
 
-async function generate(url: string, system: string, user: string, options: Readonly<Record<string, number>>): Promise<{ readonly content: unknown; readonly prompt: unknown; readonly total: unknown }> {
+async function generate(
+	url: string,
+	system: string,
+	user: string,
+	options: Readonly<Record<string, number>>,
+): Promise<{ readonly content: unknown; readonly prompt: unknown; readonly total: unknown }> {
 	const provider = createOllama({ url, model: 'gemma4:e2b-it-q4_K_M', options })
-	const messages: readonly Message[] = [{ id: 's', role: 'system', content: system }, { id: 'u', role: 'user', content: user }]
+	const messages: readonly Message[] = [
+		{ id: 's', role: 'system', content: system },
+		{ id: 'u', role: 'user', content: user },
+	]
 	const result: unknown = await provider.generate(messages, new AbortController().signal)
 	assert.ok(typeof result === 'object' && result !== null)
 	const usage = Reflect.get(result, 'usage')
 	assert.ok(typeof usage === 'object' && usage !== null)
-	return { content: Reflect.get(result, 'content'), prompt: Reflect.get(usage, 'prompt'), total: Reflect.get(usage, 'total') }
+	return {
+		content: Reflect.get(result, 'content'),
+		prompt: Reflect.get(usage, 'prompt'),
+		total: Reflect.get(usage, 'total'),
+	}
 }
 
 function postChat(url: string, body: unknown): Promise<Response> {
-	return fetch(`${url}/api/chat`, { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body) })
+	return fetch(`${url}/api/chat`, {
+		method: 'POST',
+		body: typeof body === 'string' ? body : JSON.stringify(body),
+	})
 }
 
 describe('startFixture', () => {
@@ -82,7 +123,12 @@ describe('startFixture', () => {
 
 	it('control: the guard rejects a :11434 request, including the provider default URL', async () => {
 		await assert.rejects(guardFetch('http://127.0.0.1:11434/api/chat'), /blocked daemon request/)
-		await assert.rejects(createOllama({ model: 'gemma4:e2b-it-q4_K_M' }).generate([{ id: 'u', role: 'user', content: 'hi' }], new AbortController().signal))
+		await assert.rejects(
+			createOllama({ model: 'gemma4:e2b-it-q4_K_M' }).generate(
+				[{ id: 'u', role: 'user', content: 'hi' }],
+				new AbortController().signal,
+			),
+		)
 		assert.equal(blocked.length, 2)
 		blocked.length = 0
 	})
@@ -92,7 +138,10 @@ describe('startFixture', () => {
 		const expected = assembleContent(recording.body)
 		assert.ok(expected.length > 0)
 		await withFixture({}, async (fixture) => {
-			const reply = await generate(fixture.url, 'Answer briefly.', 'Reach Sigrid?', { temperature: 0, num_ctx: 3072 })
+			const reply = await generate(fixture.url, 'Answer briefly.', 'Reach Sigrid?', {
+				temperature: 0,
+				num_ctx: 3072,
+			})
 			assert.equal(reply.content, expected)
 			assert.ok(typeof reply.prompt === 'number' && reply.prompt > 0)
 			assert.equal(fixture.requests.length, 1)
@@ -129,7 +178,9 @@ describe('startFixture', () => {
 	})
 
 	it('carries a final record whose prompt_eval_count is a number', () => {
-		const lines = loadExchange().body.split('\n').filter((line) => line !== '')
+		const lines = loadExchange()
+			.body.split('\n')
+			.filter((line) => line !== '')
 		const last: unknown = JSON.parse(lines[lines.length - 1] ?? 'null')
 		assert.ok(typeof last === 'object' && last !== null)
 		assert.equal(Reflect.get(last, 'done'), true)
@@ -140,7 +191,10 @@ describe('startFixture', () => {
 		await withFixture({}, async (fixture) => {
 			const response = await postChat(fixture.url, { model: 'any', messages: [], stream: false })
 			assert.equal(response.status, 400)
-			assert.match(await response.text(), /stream flag mismatch: request stream false, recording stream true/)
+			assert.match(
+				await response.text(),
+				/stream flag mismatch: request stream false, recording stream true/,
+			)
 			assert.equal(fixture.requests.length, 1)
 		})
 	})
@@ -155,7 +209,10 @@ describe('startFixture', () => {
 
 	it('answers /api/generate and any other path with 404 and records the body', async () => {
 		await withFixture({}, async (fixture) => {
-			const generated = await fetch(`${fixture.url}/api/generate`, { method: 'POST', body: JSON.stringify({ model: 'any', prompt: 'p' }) })
+			const generated = await fetch(`${fixture.url}/api/generate`, {
+				method: 'POST',
+				body: JSON.stringify({ model: 'any', prompt: 'p' }),
+			})
 			assert.equal(generated.status, 404)
 			const listed = await fetch(`${fixture.url}/api/tags`)
 			assert.equal(listed.status, 404)
@@ -168,12 +225,27 @@ describe('startFixture', () => {
 	it('answers a summarizer request with the summary of the longest topic named in it', async () => {
 		const recording = readRecording()
 		await withFixture({ summaries: SUMMARIES, prefix: PREFIX }, async (fixture) => {
-			const reply = await generate(fixture.url, `${PREFIX} Topic: Luis Ferreira. As of 2026-10-08.`, 'Sources follow.', { temperature: 0 })
+			const reply = await generate(
+				fixture.url,
+				`${PREFIX} Topic: Luis Ferreira. As of 2026-10-08.`,
+				'Sources follow.',
+				{ temperature: 0 },
+			)
 			assert.equal(reply.content, SUMMARIES['Luis Ferreira'])
 			assert.ok(typeof reply.prompt === 'number' && reply.prompt > 0)
-			const other = await generate(fixture.url, `${PREFIX} Topic: Carrier depots.`, 'Sources follow.', { temperature: 0 })
+			const other = await generate(
+				fixture.url,
+				`${PREFIX} Topic: Carrier depots.`,
+				'Sources follow.',
+				{ temperature: 0 },
+			)
 			assert.equal(other.content, SUMMARIES['Carrier depots'])
-			const plain = await generate(fixture.url, 'You are the operations assistant. Luis Ferreira asks.', 'Hello', { temperature: 0 })
+			const plain = await generate(
+				fixture.url,
+				'You are the operations assistant. Luis Ferreira asks.',
+				'Hello',
+				{ temperature: 0 },
+			)
 			assert.equal(plain.content, assembleContent(recording.body))
 			assert.equal(readSystem(fixture.requests[0])?.startsWith(PREFIX), true)
 		})
@@ -188,7 +260,11 @@ describe('startFixture', () => {
 
 	it('refuses a summarizer request that names no topic with 400', async () => {
 		await withFixture({ summaries: SUMMARIES, prefix: PREFIX }, async (fixture) => {
-			const response = await postChat(fixture.url, { model: 'any', stream: true, messages: [{ role: 'system', content: `${PREFIX} Topic: Warehouse.` }] })
+			const response = await postChat(fixture.url, {
+				model: 'any',
+				stream: true,
+				messages: [{ role: 'system', content: `${PREFIX} Topic: Warehouse.` }],
+			})
 			assert.equal(response.status, 400)
 			assert.match(await response.text(), /no summary topic occurs/)
 		})
@@ -219,7 +295,10 @@ describe('fixture helpers', () => {
 	})
 
 	it('replaceContent throws on a body with no content record', () => {
-		assert.throws(() => replaceContent('{"message":{"content":""},"done":true}\n', 'x'), /no content record/)
+		assert.throws(
+			() => replaceContent('{"message":{"content":""},"done":true}\n', 'x'),
+			/no content record/,
+		)
 	})
 
 	it('selectTopic returns the longest occurring name, skips an empty name, and returns undefined on no match', () => {

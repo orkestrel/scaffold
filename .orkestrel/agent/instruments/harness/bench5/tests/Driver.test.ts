@@ -1,5 +1,6 @@
+import { BUILD } from '../constants.js'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
-import type { Fixture } from './fixture.ts'
+import type { Fixture } from './fixture.js'
 import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -11,13 +12,13 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { compileRules, scoreText } from '../../bench/rescore.mjs'
 import { estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import { SUMMARIES_HEADING, SUMMARY_PREFIX } from '../aggregates/constants.ts'
-import { COPIES_DIR, HARNESS, SAMPLER, VENDOR_AGENT } from '../constants.ts'
-import { FLUSH_SYSTEM, classifyMisses, describeLookups, parseFlags, shapeBody } from '../Driver.ts'
-import { computeDigest, isMessageRole, readJSON, readRows } from '../helpers.ts'
-import { loadExchange, replaceContent, startFixture } from './fixture.ts'
+import { SUMMARIES_HEADING, SUMMARY_PREFIX } from '../aggregates/constants.js'
+import { COPIES_DIR, HARNESS, SAMPLER, VENDOR_AGENT } from '../constants.js'
+import { FLUSH_SYSTEM, classifyMisses, describeLookups, parseFlags, shapeBody } from '../Driver.js'
+import { computeDigest, isMessageRole, readJSON, readRows } from '../helpers.js'
+import { loadExchange, replaceContent, startFixture } from './fixture.js'
 
-const BENCH = join(HARNESS, 'bench5', 'bench.ts')
+const BENCH = join(BUILD, 'bench5', 'bench.js')
 const GOALS = 'g01,g11'
 const LEAKS = 'g01,g11,g19'
 const WEEKDAY = Object.freeze({

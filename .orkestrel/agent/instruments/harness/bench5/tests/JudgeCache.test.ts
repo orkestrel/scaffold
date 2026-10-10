@@ -1,15 +1,27 @@
 import type { JudgeInterface, JudgeRequest, JudgeResult, Message } from '@orkestrel/agent'
-import type { SeedMessage } from '../types.ts'
+import type { SeedMessage } from '../types.js'
 import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Classifier, LEDGER_QUESTIONS, createConversationManager } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import { CORPUS, FIT, HARNESS, JUDGE_MISS, MICA_MODEL, SCENARIO_LONG } from '../constants.ts'
-import { assignCategory, buildCacheKey, extractHead, importCorpus, isMessageRole, readJSON, readRows } from '../helpers.ts'
-import { JudgeCache } from '../JudgeCache.ts'
+import {
+	Classifier,
+	LEDGER_QUESTIONS,
+	createConversationManager,
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
+import { CORPUS, FIT, HARNESS, JUDGE_MISS, MICA_MODEL, SCENARIO_LONG } from '../constants.js'
+import {
+	assignCategory,
+	buildCacheKey,
+	extractHead,
+	importCorpus,
+	isMessageRole,
+	readJSON,
+	readRows,
+} from '../helpers.js'
+import { JudgeCache } from '../JudgeCache.js'
 
 const COPY = join(HARNESS, 'bench', 'variants', 'ledger', 'v1.json')
 const V3 = '/home/user/agent/tmp/bench/results/v3/cal-categories.jsonl'
@@ -84,7 +96,12 @@ const signal = new AbortController().signal
 describe('JudgeCache', () => {
 	describe('live', () => {
 		it('takes id, name, and model from the inner judge', () => {
-			const cache = new JudgeCache({ judge: createStub([]).judge, path: pickPath(), live: false, retry: 0 })
+			const cache = new JudgeCache({
+				judge: createStub([]).judge,
+				path: pickPath(),
+				live: false,
+				retry: 0,
+			})
 			assert.equal(cache.id, 'stub')
 			assert.equal(cache.name, 'stub judge')
 			assert.equal(cache.model, 'stub-model')
@@ -127,7 +144,12 @@ describe('JudgeCache', () => {
 		})
 
 		it('counts hits and misses per head and files an unparseable key under other', async () => {
-			const cache = new JudgeCache({ judge: createStub([]).judge, path: pickPath(), live: true, retry: 0 })
+			const cache = new JudgeCache({
+				judge: createStub([]).judge,
+				path: pickPath(),
+				live: true,
+				retry: 0,
+			})
 			await cache.ask(askOne('["category","m1"]', 's1'), signal)
 			await cache.ask(askOne('["category","m1"]', 's1'), signal)
 			await cache.ask(askOne('["amends","m1","m2"]', 's2'), signal)
@@ -222,8 +244,17 @@ describe('JudgeCache', () => {
 			const failure = new Error('connection refused')
 			const stub = createStub([failure, failure, failure, failure])
 			const faults: Error[] = []
-			const cache = new JudgeCache({ judge: stub.judge, path, live: true, retry: 1, abort: (fault) => faults.push(fault) })
-			await assert.rejects(cache.ask(askOne('["category","m1"]', 'doomed'), signal), /harness fault/)
+			const cache = new JudgeCache({
+				judge: stub.judge,
+				path,
+				live: true,
+				retry: 1,
+				abort: (fault) => faults.push(fault),
+			})
+			await assert.rejects(
+				cache.ask(askOne('["category","m1"]', 'doomed'), signal),
+				/harness fault/,
+			)
 			assert.equal(stub.calls.length, 2)
 			assert.deepEqual(readFile(path), [])
 			assert.equal(cache.stats().transient, 2)
@@ -251,7 +282,10 @@ describe('JudgeCache', () => {
 			const cache = new JudgeCache({ judge: stub.judge, path, live: true, retry: 3 })
 			const controller = new AbortController()
 			controller.abort()
-			await assert.rejects(cache.ask(askOne('["category","m1"]', 'stopped'), controller.signal), /aborted by caller/)
+			await assert.rejects(
+				cache.ask(askOne('["category","m1"]', 'stopped'), controller.signal),
+				/aborted by caller/,
+			)
 			assert.equal(stub.calls.length, 1)
 			assert.deepEqual(readFile(path), [])
 			assert.equal(cache.stats().transient, 0)
@@ -264,7 +298,10 @@ describe('JudgeCache', () => {
 			const path = pickPath()
 			const stub = createStub([])
 			const cache = new JudgeCache({ judge: stub.judge, path, live: false, retry: 2 })
-			await assert.rejects(cache.ask(askOne('["topic","m1","refunds"]', 'unseen'), signal), new Error(JUDGE_MISS))
+			await assert.rejects(
+				cache.ask(askOne('["topic","m1","refunds"]', 'unseen'), signal),
+				new Error(JUDGE_MISS),
+			)
 			assert.equal(stub.calls.length, 0)
 			assert.equal(existsSync(path), false)
 			assert.deepEqual(fetched, [])
@@ -285,8 +322,16 @@ describe('JudgeCache', () => {
 		})
 
 		it('answers a request with no question with an empty result', async () => {
-			const cache = new JudgeCache({ judge: createStub([]).judge, path: pickPath(), live: false, retry: 0 })
-			assert.deepEqual(await cache.ask({ state: 's', questions: {} }, signal), { model: 'stub-model', answers: {} })
+			const cache = new JudgeCache({
+				judge: createStub([]).judge,
+				path: pickPath(),
+				live: false,
+				retry: 0,
+			})
+			assert.deepEqual(await cache.ask({ state: 's', questions: {} }, signal), {
+				model: 'stub-model',
+				answers: {},
+			})
 		})
 
 		it('skips a malformed row when it loads the file', async () => {
@@ -331,13 +376,16 @@ describe('JudgeCache', () => {
 					try {
 						return await cache.ask(request, abort)
 					} catch (error) {
-						if (error instanceof Error && error.message === JUDGE_MISS) missed.push(...Object.keys(request.questions))
+						if (error instanceof Error && error.message === JUDGE_MISS)
+							missed.push(...Object.keys(request.questions))
 						throw error
 					}
 				},
 			}
 			const conversation = createConversationManager().add()
-			const messages: readonly Message[] = conversation.add(seed.slice(0, 48).map((message) => ({ ...message })))
+			const messages: readonly Message[] = conversation.add(
+				seed.slice(0, 48).map((message) => ({ ...message })),
+			)
 			const indexes = new Map<string, number>(messages.map((message, index) => [message.id, index]))
 			const classifier = new Classifier({
 				conversation,
@@ -345,7 +393,8 @@ describe('JudgeCache', () => {
 				questions: LEDGER_QUESTIONS,
 				topics: topics.map((topic) => ({ ...topic, requested: topic.name !== 'warehouse' })),
 				thresholds: FIT,
-				assign: (message: Message) => assignCategory(message, conversation.messages(), new Set(), new Set(), new Map()),
+				assign: (message: Message) =>
+					assignCategory(message, conversation.messages(), new Set(), new Set(), new Map()),
 				entities: () => new Set<string>(),
 			})
 			const result = await classifier.classify(new Set(), signal)
@@ -353,21 +402,34 @@ describe('JudgeCache', () => {
 			const forward = new Set<number>()
 			const covered = new Set<string>()
 			for (const row of rows) {
-				if (readField(row, 'question') === 'category' && readField(row, 'order') === 'forward') forward.add(Number(readField(row, 'index')))
-				if (readField(row, 'question') === 'topic') covered.add(`${readField(row, 'index')} ${readField(row, 'topic')}`)
+				if (readField(row, 'question') === 'category' && readField(row, 'order') === 'forward')
+					forward.add(Number(readField(row, 'index')))
+				if (readField(row, 'question') === 'topic')
+					covered.add(`${readField(row, 'index')} ${readField(row, 'topic')}`)
 			}
-			t.diagnostic(`misses ${missed.length}: ${missed.map((id) => describeMiss(id, indexes)).join(', ')}`)
-			assert.ok(cache.stats().hits['category'] !== undefined && cache.stats().hits['topic'] !== undefined)
+			t.diagnostic(
+				`misses ${missed.length}: ${missed.map((id) => describeMiss(id, indexes)).join(', ')}`,
+			)
+			assert.ok(
+				cache.stats().hits['category'] !== undefined && cache.stats().hits['topic'] !== undefined,
+			)
 			for (const id of missed) {
 				const key: unknown = JSON.parse(id)
 				assert.ok(Array.isArray(key))
 				const index = indexes.get(String(key[1]))
 				assert.ok(index !== undefined, id)
-				if (extractHead(id) === 'category') assert.ok(!forward.has(index), `category question for covered message ${index}`)
-				if (extractHead(id) === 'topic') assert.ok(!covered.has(`${index} ${String(key[2])}`), `topic question for covered message ${index}`)
+				if (extractHead(id) === 'category')
+					assert.ok(!forward.has(index), `category question for covered message ${index}`)
+				if (extractHead(id) === 'topic')
+					assert.ok(
+						!covered.has(`${index} ${String(key[2])}`),
+						`topic question for covered message ${index}`,
+					)
 			}
 			assert.equal(inner.calls.length, 0)
-			const asked = messages.filter((message: Message) => classifier.category(message.id) !== undefined)
+			const asked = messages.filter(
+				(message: Message) => classifier.category(message.id) !== undefined,
+			)
 			assert.ok(asked.length > 0)
 		})
 	})
@@ -396,7 +458,7 @@ function readSeed(): readonly SeedMessage[] {
 	})
 }
 
-function readTopics(): readonly { readonly name: string; readonly criterion: string }[] {
+function readTopics(): ReadonlyArray<{ readonly name: string; readonly criterion: string }> {
 	const topics = readField(readField(readJSON(COPY), 'ledger'), 'topics')
 	assert.ok(typeof topics === 'object' && topics !== null)
 	return Object.entries(topics).map(([name, criterion]) => ({ name, criterion: String(criterion) }))

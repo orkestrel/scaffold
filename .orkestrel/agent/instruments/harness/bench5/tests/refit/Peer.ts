@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { PeerOptions } from './types.ts'
+import type { PeerOptions } from './types.js'
 import { createServer } from 'node:http'
 import { isRecord } from '@orkestrel/contract'
 

@@ -22,11 +22,11 @@ import type {
 	TopicSpec,
 	WireReading,
 	WireRun,
-} from './types.ts'
+} from './types.js'
 import { isFiniteNumber, isRecord } from '@orkestrel/contract'
 import { compileRules, plainText, scoreText } from '../bench/rescore.mjs'
-import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from './aggregates/constants.ts'
-import { collectSummaryBodies, countSoleTokens } from './aggregates/helpers.ts'
+import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from './aggregates/constants.js'
+import { collectSummaryBodies, countSoleTokens } from './aggregates/helpers.js'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
@@ -46,7 +46,7 @@ import {
 	SYSTEM_HANDLE_SENTENCE,
 	SYSTEM_PIN_SENTENCE,
 	SYSTEM_REPLACEMENTS,
-} from './constants.ts'
+} from './constants.js'
 
 /** Reads scored and forbidden phrases actually present, preserving the scorer's normalization.
  * @param goal - The accepted goal rules

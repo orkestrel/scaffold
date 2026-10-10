@@ -1,3 +1,4 @@
+import { BUILD } from '../constants.js'
 import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -8,7 +9,7 @@ import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const HARNESS = dirname(dirname(import.meta.dirname))
-const PROBE = join(HARNESS, 'bench5', 'seams.ts')
+const PROBE = join(BUILD, 'bench5', 'tools', 'artifacts', 'seams.js')
 const VENDORED = join(HARNESS, 'vendor', 'agent-0.0.30-trimmed', 'index.js')
 const VENDORED_URL = pathToFileURL(VENDORED).href
 const README = join(HARNESS, 'README.md')
@@ -27,7 +28,7 @@ function probeBuild(args: readonly string[]): Outcome {
 }
 
 async function listExports(): Promise<readonly string[]> {
-	const build: unknown = await import(VENDORED_URL)
+	const build: unknown = await import('../../vendor/agent-0.0.30-trimmed/index.js')
 	return typeof build === 'object' && build !== null ? Object.keys(build) : []
 }
 
@@ -57,7 +58,9 @@ describe('seams.ts', () => {
 		const digest = createHash('sha256').update(readFileSync(VENDORED)).digest('hex')
 		assert.match(outcome.stdout, new RegExp(`^sha256 ${digest}$`, 'm'))
 		const readme = readFileSync(README, 'utf8')
-		const row = readme.split('\n').find((line) => line.startsWith('| `vendor/agent-0.0.30-trimmed/index.js`'))
+		const row = readme
+			.split('\n')
+			.find((line) => line.startsWith('| `vendor/agent-0.0.30-trimmed/index.js`'))
 		assert.ok(row !== undefined && row.includes(digest), 'README row for the vendored 0.0.30 build')
 	})
 
@@ -75,6 +78,40 @@ describe('seams.ts', () => {
 		const seams = Reflect.get(report, 'seams')
 		assert.ok(Array.isArray(seams) && seams.length > 0)
 		assert.ok(seams.every((seam) => Reflect.get(seam, 'ok') === true))
+	})
+
+	it('loads an arbitrary artifact with a transitive top-level await', () => {
+		const dependency = join(scratch, 'async-dependency.js')
+		const path = join(scratch, 'async-build.js')
+		writeFileSync(dependency, 'await Promise.resolve()\nexport const ready = true\n')
+		writeFileSync(
+			path,
+			`import { ready } from './async-dependency.js'\nif (!ready) throw new Error('async dependency did not finish')\nexport * from '${VENDORED_URL}'\n`,
+		)
+		const outcome = probeBuild(['--build', path])
+		assert.equal(outcome.status, 0, outcome.stdout + outcome.stderr)
+		assert.deepEqual(listFailures(outcome.stdout), [])
+		assert.match(outcome.stdout, /^fetch calls 0$/m)
+		const digest = createHash('sha256').update(readFileSync(path)).digest('hex')
+		assert.match(outcome.stdout, new RegExp(`^sha256 ${digest}$`, 'm'))
+	})
+
+	it('blocks import-time fetch after transitive asynchronous evaluation', () => {
+		const dependency = join(scratch, 'fetch-dependency.js')
+		const path = join(scratch, 'fetch-build.js')
+		writeFileSync(
+			dependency,
+			"await Promise.resolve()\nawait fetch('https://invalid.example/blocked-before-network')\n",
+		)
+		writeFileSync(path, `import './fetch-dependency.js'\nexport * from '${VENDORED_URL}'\n`)
+		const outcome = probeBuild(['--build', path])
+		assert.equal(outcome.status, 1)
+		assert.ok(
+			listFailures(outcome.stdout).some(
+				(line) => line.includes('import build') && line.includes('fetch is blocked'),
+			),
+		)
+		assert.match(outcome.stdout, /^fetch calls 1$/m)
 	})
 
 	it('exits 1 with a line naming buildRecords on a build that omits it', async () => {
@@ -95,17 +132,27 @@ describe('seams.ts', () => {
 	})
 
 	it('exits 1 naming the note members on a build whose LEDGER_NOTES lacks one', async () => {
-		const path = await writeScratch('LEDGER_NOTES', 'export const LEDGER_NOTES = Object.freeze({ cue: "c", results: "r", repeat: "p" })')
+		const path = await writeScratch(
+			'LEDGER_NOTES',
+			'export const LEDGER_NOTES = Object.freeze({ cue: "c", results: "r", repeat: "p" })',
+		)
 		const outcome = probeBuild(['--build', path])
 		assert.equal(outcome.status, 1)
 		assert.ok(listFailures(outcome.stdout).some((line) => line.includes('LEDGER_NOTES members')))
 	})
 
 	it('exits 1 on a build whose scope handler is not read at call time', async () => {
-		const path = await writeScratch('createScope', `import { createScope as create } from '${VENDORED_URL}'\nexport function createScope(input) { return create({ name: input.name }) }`)
+		const path = await writeScratch(
+			'createScope',
+			`import { createScope as create } from '${VENDORED_URL}'\nexport function createScope(input) { return create({ name: input.name }) }`,
+		)
 		const outcome = probeBuild(['--build', path])
 		assert.equal(outcome.status, 1)
-		assert.ok(listFailures(outcome.stdout).some((line) => line.includes('select reads the scope at call time')))
+		assert.ok(
+			listFailures(outcome.stdout).some((line) =>
+				line.includes('select reads the scope at call time'),
+			),
+		)
 	})
 
 	it('exits 1 on a build that fails to import', () => {
@@ -113,14 +160,27 @@ describe('seams.ts', () => {
 		writeFileSync(path, 'throw new Error("broken build")\n')
 		const outcome = probeBuild(['--build', path])
 		assert.equal(outcome.status, 1)
-		assert.ok(listFailures(outcome.stdout).some((line) => line.includes('import build') && line.includes('broken build')))
+		assert.ok(
+			listFailures(outcome.stdout).some(
+				(line) => line.includes('import build') && line.includes('broken build'),
+			),
+		)
 	})
 
 	it('exits 64 with the usage line when --build is missing, valueless, or an unknown flag is given', () => {
-		for (const args of [[], ['--json'], ['--build'], ['--build', '--json'], ['--build', VENDORED, '--other']]) {
+		for (const args of [
+			[],
+			['--json'],
+			['--build'],
+			['--build', '--json'],
+			['--build', VENDORED, '--other'],
+		]) {
 			const outcome = probeBuild(args)
 			assert.equal(outcome.status, 64, args.join(' '))
-			assert.match(outcome.stderr, /usage: node bench5\/seams\.ts --build PATH \[--json\]/)
+			assert.match(
+				outcome.stderr,
+				/usage: node \.build\/bench5\/tools\/artifacts\/seams\.js --build PATH \[--json\]/,
+			)
 		}
 	})
 })

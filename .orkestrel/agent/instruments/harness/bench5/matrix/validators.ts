@@ -8,12 +8,12 @@ import type {
 	MatrixResource,
 	MatrixRole,
 	MatrixRow,
-} from './types.ts'
-import type { SelectionRecord } from '../types.ts'
+} from './types.js'
+import type { SelectionRecord } from '../types.js'
 import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
-import { MODELS } from '../constants.ts'
-import { isRefitFile } from '../refit/validators.ts'
-import { isAggregateState } from '../aggregates/validators.ts'
+import { MODELS } from '../constants.js'
+import { isRefitFile } from '../refit/validators.js'
+import { isAggregateState } from '../aggregates/validators.js'
 
 /** Checks an l6 cell without accepting archived identities. */
 export function isMatrixIdentity(value: unknown): value is MatrixIdentity {

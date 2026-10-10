@@ -12,10 +12,10 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { nameMatrix, readExecution } from '../bench5/matrix/helpers.ts'
+import { nameMatrix, readExecution } from '../bench5/matrix/helpers.js'
 
 const ROOT = dirname(import.meta.dirname)
-const RUN_ONE = join(ROOT, 'tools', 'run-one.ts')
+const RUN_ONE = join(ROOT, 'tools', 'run-one.js')
 const MARGIN = 1.3
 
 interface Planned {

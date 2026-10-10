@@ -47,3 +47,6 @@ playwright-report/
 
 # Agent worktrees (created by an isolated subagent dispatch, never committed)
 .claude/worktrees/
+
+# Canonical benchmark emit; source and historical resources stay outside it.
+.orkestrel/agent/instruments/harness/.build/

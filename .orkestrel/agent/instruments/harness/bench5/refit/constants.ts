@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { HARNESS } from '../constants.ts'
+import { HARNESS } from '../constants.js'
 
 export const REFIT_GRID = Object.freeze(
 	Array.from({ length: 50 }, (_unused, at) => (51 + at) / 100),

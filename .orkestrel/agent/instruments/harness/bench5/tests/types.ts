@@ -1,4 +1,4 @@
-import type { RunArm } from '../types.ts'
+import type { RunArm } from '../types.js'
 import type { LedgerGauge } from '../../vendor/agent-0.0.30-trimmed/index.js'
 
 /** Holds archived-response replay observations without normalizing request bytes. */

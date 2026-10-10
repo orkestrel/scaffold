@@ -1,11 +1,12 @@
+import { BUILD } from '../constants.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { isRecord } from '@orkestrel/contract'
-import { Matrix } from '../matrix/Matrix.ts'
-import { Comparison } from '../matrix/Comparison.ts'
+import { Matrix } from '../matrix/Matrix.js'
+import { Comparison } from '../matrix/Comparison.js'
 import {
 	buildBudget,
 	listResourceFailures,
@@ -13,17 +14,17 @@ import {
 	readExecution,
 	readFrozen,
 	readResource,
-} from '../matrix/helpers.ts'
-import { parseMatrixRun } from '../matrix/parsers.ts'
-import { isMatrixIdentity, isMatrixResource } from '../matrix/validators.ts'
-import { HARNESS, MODELS } from '../constants.ts'
-import { hashFile } from '../refit/helpers.ts'
-import { readJSON, readRows } from '../helpers.ts'
-import { MatrixPeer } from './matrixFixture.ts'
-import { Driver, parseFlags } from '../Driver.ts'
-import { Refit } from '../refit/Refit.ts'
-import { Shadow } from '../shadow.ts'
-import { buildOptions } from './refit/helpers.ts'
+} from '../matrix/helpers.js'
+import { parseMatrixRun } from '../matrix/parsers.js'
+import { isMatrixIdentity, isMatrixResource } from '../matrix/validators.js'
+import { HARNESS, MODELS } from '../constants.js'
+import { hashFile } from '../refit/helpers.js'
+import { readJSON, readRows } from '../helpers.js'
+import { MatrixPeer } from './matrixFixture.js'
+import { Driver, parseFlags } from '../Driver.js'
+import { Refit } from '../refit/Refit.js'
+import { Shadow } from '../shadow.js'
+import { buildOptions } from './refit/helpers.js'
 
 it('rejects l6 run and series identities before any cold-start process can execute', () => {
 	const directory = resolve('tmp/units/aggregate-matrix-tool-fixtures')
@@ -38,7 +39,7 @@ it('rejects l6 run and series identities before any cold-start process can execu
 	const single = spawnSync(
 		process.execPath,
 		[
-			join(HARNESS, 'tools', 'run-one.ts'),
+			join(BUILD, 'tools', 'run-one.js'),
 			'l6-q2-think0-records-v2',
 			'bench5',
 			directory,
@@ -51,7 +52,7 @@ it('rejects l6 run and series identities before any cold-start process can execu
 	assert.match(single.stderr, /l6 run requires an explicit execution manifest/)
 	const series = spawnSync(
 		process.execPath,
-		[join(HARNESS, 'tools', 'series.ts'), '--plan', plan, '--base', directory, '--budget', '1'],
+		[join(BUILD, 'tools', 'series.js'), '--plan', plan, '--base', directory, '--budget', '1'],
 		{ encoding: 'utf8' },
 	)
 	assert.notEqual(series.status, 0)

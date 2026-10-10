@@ -23,9 +23,11 @@ import type {
 	ProviderInterface,
 	Refusal,
 } from '../vendor/agent-0.0.30-trimmed/index.js'
-import type { Aggregator } from './aggregates/Aggregator.ts'
-import type { JudgeCache } from './JudgeCache.ts'
-import type { MatrixExecution, MatrixFailure, MatrixFreeze, MatrixRequest } from './matrix/types.ts'
+import type { Aggregator } from './aggregates/Aggregator.js'
+import type { JudgeCache } from './JudgeCache.js'
+import type { MatrixExecution, MatrixFailure, MatrixFreeze, MatrixRequest } from './matrix/types.js'
+import type { SustainedExecution } from './sustained/types.js'
+import type { EnduranceRuntime } from './endurance/types.js'
 
 export type JudgeState = JudgeRequest['state']
 
@@ -671,6 +673,9 @@ export type DriverMode = 'run' | 'dry' | 'seed'
 
 /** Holds the flags of one driver invocation after validation, with every path resolved. */
 export interface Config {
+	readonly study?: SustainedExecution
+	readonly studyPath?: string
+	readonly runtime?: EnduranceRuntime
 	readonly think: boolean
 	readonly reserve: number
 	readonly execution?: MatrixExecution

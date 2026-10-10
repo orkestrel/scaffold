@@ -1,17 +1,17 @@
-import type { MatrixChain, MatrixKey, MatrixRun } from './types.ts'
-import type { TransitionCategory } from '../types.ts'
+import type { MatrixChain, MatrixKey, MatrixRun } from './types.js'
+import type { TransitionCategory } from '../types.js'
 import { randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
-import { COPIES_DIR } from '../constants.ts'
-import { readCopy } from '../Driver.ts'
-import { computeDigest, readJSON, readRows } from '../helpers.ts'
-import { hashFile, verifyFiles } from '../refit/helpers.ts'
-import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validators.ts'
-import { collectTransitions } from '../transitions/helpers.ts'
-import { parseMatrixRun } from './parsers.ts'
+import { COPIES_DIR } from '../constants.js'
+import { readCopy } from '../Driver.js'
+import { computeDigest, readJSON, readRows } from '../helpers.js'
+import { hashFile, verifyFiles } from '../refit/helpers.js'
+import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validators.js'
+import { collectTransitions } from '../transitions/helpers.js'
+import { parseMatrixRun } from './parsers.js'
 import {
 	listMatrixPairFailures,
 	matchesMatrixExposure,
@@ -19,8 +19,8 @@ import {
 	nameMatrix,
 	readAttempt,
 	readExecution,
-} from './helpers.ts'
-import { isMatrixAttempt, isMatrixExecution, isMatrixResource } from './validators.ts'
+} from './helpers.js'
+import { isMatrixAttempt, isMatrixExecution, isMatrixResource } from './validators.js'
 
 /** Reads exact matrix runs, prepares blind answers, and reports valid comparisons. */
 export class Comparison {

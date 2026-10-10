@@ -1,3 +1,4 @@
+import { BUILD } from '../constants.js'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import type { JudgeAnswer, JudgeQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
@@ -6,7 +7,7 @@ import type {
 	CacheRow,
 	ShadowItem,
 	ShadowTruth,
-} from '../types.ts'
+} from '../types.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -34,14 +35,14 @@ import {
 	MICA_SYSTEM,
 	MODELS,
 	TIMEOUT,
-} from '../constants.ts'
+} from '../constants.js'
 import {
 	buildCacheKey,
 	buildCategoryQuestion,
 	buildTopicQuestion,
 	readJSON,
 	readRows,
-} from '../helpers.ts'
+} from '../helpers.js'
 import {
 	Shadow,
 	buildPairKey,
@@ -56,9 +57,9 @@ import {
 	readTruth,
 	readVerdict,
 	renderShadow,
-} from '../shadow.ts'
+} from '../shadow.js'
 
-const SCRIPT = join(HARNESS, 'bench5', 'shadow.ts')
+const SCRIPT = join(BUILD, 'bench5', 'shadow.js')
 const directory = mkdtempSync(join(tmpdir(), 'bench5-shadow-'))
 const blocker = join(directory, 'blocker.ts')
 const copies = join(directory, 'copies')

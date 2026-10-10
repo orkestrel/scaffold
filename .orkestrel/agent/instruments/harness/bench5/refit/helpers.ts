@@ -10,22 +10,22 @@ import type {
 	RefitLabels,
 	RefitReading,
 	RefitRecall,
-} from './types.ts'
+} from './types.js'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
-import { AGREE_QUESTION } from '../aggregates/constants.ts'
+import { AGREE_QUESTION } from '../aggregates/constants.js'
 import {
 	buildAgreeState,
 	buildSummaryPrompt,
 	checkProse,
 	collectStaleTokens,
 	renderSource,
-} from '../aggregates/helpers.ts'
-import { SAMPLER } from '../constants.ts'
-import { buildCacheKey, buildSummaryKey, computeDigest } from '../helpers.ts'
-import { REFIT_GRID, REFIT_LIMITATION } from './constants.ts'
+} from '../aggregates/helpers.js'
+import { SAMPLER } from '../constants.js'
+import { buildCacheKey, buildSummaryKey, computeDigest } from '../helpers.js'
+import { REFIT_GRID, REFIT_LIMITATION } from './constants.js'
 
 /** Reads a file's exact SHA-256 identity.
  * @param path - The file

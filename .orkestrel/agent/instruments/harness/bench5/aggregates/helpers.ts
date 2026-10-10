@@ -15,7 +15,7 @@ import type {
 	MirrorLine,
 	MirrorProjection,
 	MirrorReading,
-} from '../types.ts'
+} from '../types.js'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import {
 	LEDGER_OWNER_PREFIX,
@@ -45,7 +45,7 @@ import {
 	SUMMARY_SLOT,
 	SUMMARY_SYSTEM,
 	SUMMARY_TOPIC_SLOT,
-} from './constants.ts'
+} from './constants.js'
 
 /**
  * Fills the `TOPIC` and `DATE` slots of a template in one pass.

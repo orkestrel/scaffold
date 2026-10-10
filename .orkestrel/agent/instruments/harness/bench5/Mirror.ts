@@ -11,7 +11,7 @@ import type {
 	MirrorOptions,
 	MirrorProjection,
 	MirrorReading,
-} from './types.ts'
+} from './types.js'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import {
 	Classifier,
@@ -26,7 +26,7 @@ import {
 	matchEntities,
 	findLedgerCall,
 } from '../vendor/agent-0.0.30-trimmed/index.js'
-import { assignCategory } from './helpers.ts'
+import { assignCategory } from './helpers.js'
 
 /**
  * Rebuilds the projection input and the filing that the ledger's private projection and plan read, without asking the judge.
@@ -61,7 +61,8 @@ export class Mirror implements MirrorInterface {
 			topics: options.topics,
 			thresholds: options.thresholds,
 			assign: (message: Message) => this.assign(message),
-			entities: (text: string, partial: boolean) => matchEntities(collectRegistry(this.readings()), text, partial),
+			entities: (text: string, partial: boolean) =>
+				matchEntities(collectRegistry(this.readings()), text, partial),
 		})
 		// The ledger keys a result by the conversation length at the event, because the tool message is added after it.
 		ledger.agent.emitter.on('tool', (_call, result) => {
@@ -87,7 +88,13 @@ export class Mirror implements MirrorInterface {
 		this.#flush()
 		if (message.role === 'tool') this.readings()
 		const messages = this.#ledger.conversation.messages()
-		return assignCategory(message, messages, this.#requests, this.#annotate(messages), this.#results)
+		return assignCategory(
+			message,
+			messages,
+			this.#requests,
+			this.#annotate(messages),
+			this.#results,
+		)
 	}
 
 	/**
@@ -101,7 +108,12 @@ export class Mirror implements MirrorInterface {
 			for (const message of group.slice(1)) {
 				const call = findLedgerCall(group, message)
 				const read = call === undefined ? undefined : this.#options.reads.get(call.name)
-				if (call === undefined || read === undefined || this.#results.get(message.id)?.success === false) continue
+				if (
+					call === undefined ||
+					read === undefined ||
+					this.#results.get(message.id)?.success === false
+				)
+					continue
 				let result: LookupReading | undefined
 				try {
 					result = read(call.arguments, message.content)
@@ -117,7 +129,10 @@ export class Mirror implements MirrorInterface {
 					name: call.name,
 					arguments: call.arguments,
 					text: message.content,
-					result: result === undefined ? undefined : { ...result, ids: [...new Set([...result.ids, ...named])] },
+					result:
+						result === undefined
+							? undefined
+							: { ...result, ids: [...new Set([...result.ids, ...named])] },
 				})
 			}
 		}
@@ -138,7 +153,12 @@ export class Mirror implements MirrorInterface {
 			owners: registry.owners,
 			messages,
 			readings,
-			entities: new Map(messages.map((message) => [message.id, [...matchEntities(registry, message.content, true)]])),
+			entities: new Map(
+				messages.map((message) => [
+					message.id,
+					[...matchEntities(registry, message.content, true)],
+				]),
+			),
 			classification: this.#filer.classification(),
 		}
 	}
@@ -159,7 +179,11 @@ export class Mirror implements MirrorInterface {
 	 * @param projection - The projection whose stale sentences drop out; default: the projection of the input
 	 * @returns The lines in sentence order; empty when the message is absent
 	 */
-	lines(id: string, input: MirrorInput = this.input(), projection: MirrorProjection = this.projection(input)): readonly MirrorLine[] {
+	lines(
+		id: string,
+		input: MirrorInput = this.input(),
+		projection: MirrorProjection = this.projection(input),
+	): readonly MirrorLine[] {
 		return buildLines(
 			input,
 			new Map(input.messages.map((message) => [message.id, message])),
@@ -177,7 +201,10 @@ export class Mirror implements MirrorInterface {
 	 */
 	near(request: Message): ReadonlySet<string> {
 		const registry = collectRegistry(this.readings())
-		return new Set([...matchEntities(registry, request.content, true), ...this.#filer.topics(request.id)])
+		return new Set([
+			...matchEntities(registry, request.content, true),
+			...this.#filer.topics(request.id),
+		])
 	}
 
 	/**
@@ -219,7 +246,8 @@ export class Mirror implements MirrorInterface {
 				.filter(
 					(message) =>
 						message.role === 'user' &&
-						(message.content === LEDGER_NOTES.cue || message.content.startsWith(LEDGER_NOTES.results)),
+						(message.content === LEDGER_NOTES.cue ||
+							message.content.startsWith(LEDGER_NOTES.results)),
 				)
 				.map((message) => message.id),
 		)

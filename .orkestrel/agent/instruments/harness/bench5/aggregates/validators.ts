@@ -1,6 +1,6 @@
-import type { AggregateSource, AggregateState } from '../types.ts'
+import type { AggregateSource, AggregateState } from '../types.js'
 import { arrayOf, isNonNegativeInteger, isString, recordOf, whereOf } from '@orkestrel/contract'
-import { isMessageRole } from '../helpers.ts'
+import { isMessageRole } from '../helpers.js'
 
 /**
  * Checks a recorded source projection line without coercion.

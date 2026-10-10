@@ -5,7 +5,7 @@ import type {
 	Message,
 	Selection,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { Fixture } from './fixture.ts'
+import type { Fixture } from './fixture.js'
 import type {
 	AggregatorOptions,
 	AggregateRow,
@@ -15,7 +15,7 @@ import type {
 	MirrorLine,
 	ScenarioDay,
 	SeedMessage,
-} from '../types.ts'
+} from '../types.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
@@ -39,7 +39,7 @@ import {
 	matchEntities,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama } from '../../vendor/ollama/index.js'
-import { Aggregator } from '../aggregates/Aggregator.ts'
+import { Aggregator } from '../aggregates/Aggregator.js'
 import {
 	AGREE_QUESTION,
 	CHANGE_QUESTION,
@@ -48,7 +48,7 @@ import {
 	SUMMARIES_HEADING,
 	SUMMARY_PREFIX,
 	SUMMARY_SYSTEM,
-} from '../aggregates/constants.ts'
+} from '../aggregates/constants.js'
 import {
 	buildAgreeState,
 	buildChangeQuestion,
@@ -68,9 +68,9 @@ import {
 	renderSource,
 	renderSummaries,
 	versionToState,
-} from '../aggregates/helpers.ts'
-import { isAggregateSource, isAggregateState } from '../aggregates/validators.ts'
-import { buildTimeline, findSnapshot, parseAggregates } from '../shadow.ts'
+} from '../aggregates/helpers.js'
+import { isAggregateSource, isAggregateState } from '../aggregates/validators.js'
+import { buildTimeline, findSnapshot, parseAggregates } from '../shadow.js'
 import {
 	ADMISSION_LIMIT,
 	CORPUS,
@@ -80,7 +80,7 @@ import {
 	MODELS,
 	SAMPLER,
 	SCENARIO_LONG,
-} from '../constants.ts'
+} from '../constants.js'
 import {
 	buildCacheKey,
 	buildCategoryQuestion,
@@ -94,11 +94,11 @@ import {
 	readRows,
 	renderMessageState,
 	renderPairState,
-} from '../helpers.ts'
-import { JudgeCache } from '../JudgeCache.ts'
-import { Mirror } from '../Mirror.ts'
-import { Summarizer } from '../Summarizer.ts'
-import { startFixture } from './fixture.ts'
+} from '../helpers.js'
+import { JudgeCache } from '../JudgeCache.js'
+import { Mirror } from '../Mirror.js'
+import { Summarizer } from '../Summarizer.js'
+import { startFixture } from './fixture.js'
 
 const COPY = join(HARNESS, 'bench', 'variants', 'ledger', 'v1.json')
 const SEEDED = 48

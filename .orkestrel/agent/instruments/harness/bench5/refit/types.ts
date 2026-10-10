@@ -1,5 +1,5 @@
 import type { TokenUsage } from '@orkestrel/budget'
-import type { MatrixFreeze } from '../matrix/types.ts'
+import type { MatrixFreeze } from '../matrix/types.js'
 import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateFailure,
@@ -8,7 +8,7 @@ import type {
 	CacheRow,
 	Settings,
 	SummaryRow,
-} from '../types.ts'
+} from '../types.js'
 
 /** Holds a file's immutable byte identity. */
 export interface RefitFile {
@@ -52,6 +52,7 @@ export interface RefitPoint {
 
 /** Holds all development occurrences and the evidence needed to reproduce them. */
 export interface RefitCorpus {
+	readonly sustained?: { readonly runtime: RefitFile; readonly classification: RefitFile }
 	readonly mode: 'cold-build seed-only development'
 	readonly files: readonly RefitFile[]
 	readonly contexts: readonly RefitContext[]
@@ -93,6 +94,7 @@ export interface RefitItem {
 
 /** Holds a completed generation manifest and its exact artifact identities. */
 export interface RefitGeneration {
+	readonly sustained?: { readonly runtime: RefitFile; readonly classification: RefitFile }
 	readonly matrix?: MatrixFreeze
 	readonly corpus: string
 	readonly attempts: string
@@ -170,6 +172,8 @@ export interface RefitDiagnosis {
 
 /** Holds the closed command configuration. */
 export interface RefitOptions {
+	readonly runtime?: string
+	readonly classification?: string
 	readonly frozen?: string
 	readonly phase: 'freeze' | 'generate' | 'fit'
 	readonly out: string

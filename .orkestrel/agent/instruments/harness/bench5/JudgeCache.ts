@@ -6,10 +6,10 @@ import type {
 	JudgeResult,
 	Refusal,
 } from '@orkestrel/agent'
-import type { CacheRow, JudgeCacheOptions, JudgeStats } from './types.ts'
+import type { CacheRow, JudgeCacheOptions, JudgeStats } from './types.js'
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { JUDGE_MISS } from './constants.ts'
+import { JUDGE_MISS } from './constants.js'
 import {
 	buildCacheKey,
 	describeError,
@@ -17,7 +17,7 @@ import {
 	isCacheRow,
 	matchesDeterministic,
 	readRows,
-} from './helpers.ts'
+} from './helpers.js'
 
 /**
  * Answers one-question judge requests from a rows file keyed by model, state, and question, and forwards a miss to the inner judge when live.
@@ -88,7 +88,8 @@ export class JudgeCache implements JudgeInterface {
 	 */
 	async ask(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult> {
 		const entries = Object.entries(request.questions)
-		if (entries.length > 1) throw new Error(`judge cache: expected one question, received ${entries.length}`)
+		if (entries.length > 1)
+			throw new Error(`judge cache: expected one question, received ${entries.length}`)
 		const entry = entries[0]
 		if (entry === undefined) return { model: this.model, answers: {} }
 		const [id, question] = entry
@@ -137,7 +138,7 @@ export class JudgeCache implements JudgeInterface {
 				if (matchesDeterministic(error)) {
 					const text = describeError(error)
 					this.#append(request, question, started, { error: text })
-					throw new Error(text)
+					throw new Error(text, { cause: error })
 				}
 				this.#transient += 1
 				last = error
@@ -157,9 +158,12 @@ export class JudgeCache implements JudgeInterface {
 			})
 			return result
 		}
-		const fault = new Error(`harness fault: the judge failed ${attempts} times: ${describeError(last)}`, {
-			cause: last,
-		})
+		const fault = new Error(
+			`harness fault: the judge failed ${attempts} times: ${describeError(last)}`,
+			{
+				cause: last,
+			},
+		)
 		this.#fault = fault
 		this.#options.abort?.(fault)
 		throw fault

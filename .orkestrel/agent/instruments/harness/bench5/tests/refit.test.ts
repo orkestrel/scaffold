@@ -1,5 +1,5 @@
-import type { RefitCorpus, RefitReading } from '../refit/types.ts'
-import type { AggregatorOptions } from '../types.ts'
+import type { RefitCorpus, RefitReading } from '../refit/types.js'
+import type { AggregatorOptions } from '../types.js'
 import { before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
@@ -20,7 +20,7 @@ import {
 	matchEntities,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../../vendor/ollama/index.js'
-import { Aggregator } from '../aggregates/Aggregator.ts'
+import { Aggregator } from '../aggregates/Aggregator.js'
 import {
 	COPIES_DIR,
 	FIT,
@@ -31,13 +31,13 @@ import {
 	MICA_SYSTEM,
 	MODELS,
 	SAMPLER,
-} from '../constants.ts'
-import { appendSeed, readCopy } from '../Driver.ts'
-import { buildSystem, computeDigest, readJSON, readLookup, readRows } from '../helpers.ts'
-import { JudgeCache } from '../JudgeCache.ts'
-import { Mirror } from '../Mirror.ts'
-import { Summarizer } from '../Summarizer.ts'
-import { Refit } from '../refit/Refit.ts'
+} from '../constants.js'
+import { appendSeed, readCopy } from '../Driver.js'
+import { buildSystem, computeDigest, readJSON, readLookup, readRows } from '../helpers.js'
+import { JudgeCache } from '../JudgeCache.js'
+import { Mirror } from '../Mirror.js'
+import { Summarizer } from '../Summarizer.js'
+import { Refit } from '../refit/Refit.js'
 import {
 	buildRefitItem,
 	collectReadings,
@@ -48,7 +48,7 @@ import {
 	verifyEvidence,
 	verifyFiles,
 	verifyLabels,
-} from '../refit/helpers.ts'
+} from '../refit/helpers.js'
 import {
 	isRefitAttempt,
 	isRefitContext,
@@ -62,9 +62,9 @@ import {
 	isRefitSource,
 	isRefitUsage,
 	isRefitVerdict,
-} from '../refit/validators.ts'
-import { Peer } from './refit/Peer.ts'
-import { DURATION_CASES } from './refit/constants.ts'
+} from '../refit/validators.js'
+import { Peer } from './refit/Peer.js'
+import { DURATION_CASES } from './refit/constants.js'
 import {
 	buildEvidenceCases,
 	buildMembershipCases,
@@ -74,7 +74,7 @@ import {
 	writeCorpus,
 	writeCache,
 	writeLabels,
-} from './refit/helpers.ts'
+} from './refit/helpers.js'
 
 const ROOT = join(HARNESS, '..', '..', '..', '..', 'tmp', 'units')
 mkdirSync(ROOT, { recursive: true })

@@ -1,13 +1,13 @@
 import type { IncomingMessage } from 'node:http'
-import type { AdmissionFixture, AdmissionReplay } from './types.ts'
+import type { AdmissionFixture, AdmissionReplay } from './types.js'
 import { isRecord } from '@orkestrel/contract'
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { join, resolve as resolvePath } from 'node:path'
-import { Driver, parseFlags } from '../Driver.ts'
-import { HARNESS } from '../constants.ts'
-import { readJSON, readRows } from '../helpers.ts'
-import { SUMMARY_PREFIX } from '../aggregates/constants.ts'
+import { Driver, parseFlags } from '../Driver.js'
+import { HARNESS } from '../constants.js'
+import { readJSON, readRows } from '../helpers.js'
+import { SUMMARY_PREFIX } from '../aggregates/constants.js'
 
 /** Reads the request bytes received by the protocol fixture. */
 function collectRequest(request: IncomingMessage): Promise<string> {

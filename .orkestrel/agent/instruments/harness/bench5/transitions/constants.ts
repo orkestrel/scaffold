@@ -1,4 +1,4 @@
-import type { TransitionAnnotation } from '../types.ts'
+import type { TransitionAnnotation } from '../types.js'
 
 /** Records semantic opportunities omitted from the scenario's category and pair fields. */
 export const TRANSITION_ANNOTATIONS: readonly TransitionAnnotation[] = Object.freeze([

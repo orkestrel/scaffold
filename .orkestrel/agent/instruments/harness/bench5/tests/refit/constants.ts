@@ -1,4 +1,4 @@
-import type { DurationCase } from './types.ts'
+import type { DurationCase } from './types.js'
 
 export const DURATION_CASES: readonly DurationCase[] = Object.freeze([
 	['negative', -1],

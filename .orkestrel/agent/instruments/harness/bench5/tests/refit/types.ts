@@ -6,7 +6,7 @@ export interface PeerOptions {
 	readonly no: number
 	readonly usage: boolean
 }
-import type { RefitEvidence, RefitGeneration, RefitFile } from '../../refit/types.ts'
+import type { RefitEvidence, RefitGeneration, RefitFile } from '../../refit/types.js'
 
 /** Holds a cache evidence mutation and whether its digest is rebound. */
 export type EvidenceCase = readonly [string, RefitEvidence, boolean]

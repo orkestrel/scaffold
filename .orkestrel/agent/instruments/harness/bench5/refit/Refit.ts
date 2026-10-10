@@ -1,4 +1,4 @@
-import type { AggregateFailure, MirrorRead } from '../types.ts'
+import type { AggregateFailure, MirrorRead } from '../types.js'
 import type {
 	RefitAttempt,
 	RefitContext,
@@ -9,7 +9,7 @@ import type {
 	RefitOptions,
 	RefitPoint,
 	RefitReading,
-} from './types.ts'
+} from './types.js'
 import { randomUUID } from 'node:crypto'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -23,7 +23,7 @@ import {
 	matchEntities,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../../vendor/ollama/index.js'
-import { AGREE_QUESTION } from '../aggregates/constants.ts'
+import { AGREE_QUESTION } from '../aggregates/constants.js'
 import {
 	buildAgreeState,
 	buildSummaryPrompt,
@@ -33,7 +33,7 @@ import {
 	collectTopicSources,
 	collectTopics,
 	renderSource,
-} from '../aggregates/helpers.ts'
+} from '../aggregates/helpers.js'
 import {
 	COPIES_DIR,
 	DAEMON,
@@ -46,8 +46,8 @@ import {
 	MODELS,
 	SAMPLER,
 	TIMEOUT,
-} from '../constants.ts'
-import { appendSeed, readCopy, readSettings } from '../Driver.ts'
+} from '../constants.js'
+import { appendSeed, readCopy, readSettings } from '../Driver.js'
 import {
 	buildCacheKey,
 	buildSummaryKey,
@@ -60,17 +60,20 @@ import {
 	readJSON,
 	readLookup,
 	readRows,
-} from '../helpers.ts'
-import { JudgeCache } from '../JudgeCache.ts'
-import { Mirror } from '../Mirror.ts'
-import { readFrozen, readModelDigest } from '../matrix/helpers.ts'
-import { Summarizer } from '../Summarizer.ts'
+} from '../helpers.js'
+import { JudgeCache } from '../JudgeCache.js'
+import { Mirror } from '../Mirror.js'
+import { readFrozen, readModelDigest } from '../matrix/helpers.js'
+import { readBuild } from '../build/helpers.js'
+import { projectCopy, readRuntime } from '../endurance/helpers.js'
+import { readClassification } from '../sustained/helpers.js'
+import { Summarizer } from '../Summarizer.js'
 import {
 	REFIT_CONTROLS,
 	REFIT_CONTROL_HASHES,
 	REFIT_IMPLEMENTATION,
 	REFIT_LIMITATION,
-} from './constants.ts'
+} from './constants.js'
 import {
 	buildRefitItem,
 	collectReadings,
@@ -80,7 +83,7 @@ import {
 	verifyEvidence,
 	verifyFiles,
 	verifyLabels,
-} from './helpers.ts'
+} from './helpers.js'
 import {
 	isRefitAttempt,
 	isRefitCorpus,
@@ -90,7 +93,7 @@ import {
 	isRefitLabels,
 	isRefitUsage,
 	isRefitVerdict,
-} from './validators.ts'
+} from './validators.js'
 
 /** Runs development freezing, score-independent generation, and independently adjudicated fitting. */
 export class Refit {
@@ -114,6 +117,8 @@ export class Refit {
 			args: [...args],
 			allowPositionals: true,
 			options: {
+				runtime: { type: 'string' },
+				classification: { type: 'string' },
 				copy: { type: 'string', default: '1' },
 				frozen: { type: 'string' },
 				settings: { type: 'string' },
@@ -140,12 +145,19 @@ export class Refit {
 			)
 		if (values.live && phase !== 'generate')
 			throw new Error('--live is permitted only for generate')
+		if (
+			(values.runtime === undefined) !== (values.classification === undefined) ||
+			(values.runtime !== undefined && values.frozen === undefined)
+		)
+			throw new Error('runtime fitting requires both classification and frozen role custody')
 		if ((phase === 'freeze' || phase === 'generate') && values.cache === undefined)
 			throw new Error('--cache is required')
 		if (phase !== 'freeze' && values.corpus === undefined) throw new Error('--corpus is required')
 		if (phase === 'fit' && (values.attempts === undefined || values.labels === undefined))
 			throw new Error('--attempts and --labels are required')
 		return await new Refit({
+			runtime: values.runtime,
+			classification: values.classification,
 			phase,
 			frozen: values.frozen,
 			out: values.out,
@@ -170,6 +182,7 @@ export class Refit {
 	 * @returns Exit 0 on complete preparation or accepted fit; exit 3 on refusal
 	 */
 	async execute(signal?: AbortSignal): Promise<number> {
+		readBuild()
 		this.#signal =
 			signal === undefined ? this.#abort.signal : AbortSignal.any([signal, this.#abort.signal])
 		mkdirSync(dirname(this.#options.out), { recursive: true })
@@ -203,13 +216,24 @@ export class Refit {
 			const frozen = readFrozen(hashFile(this.#options.frozen))
 			if (this.#options.model !== frozen.summarizer.model)
 				throw new Error('summarizer model differs from frozen configuration')
-			return [...frozen.files, frozen.settings]
+			return [...frozen.files, frozen.settings, ...this.#runtimeFiles()]
 		}
 		return [
 			...REFIT_IMPLEMENTATION.map((path) => join(HARNESS, path)),
 			this.#options.scenario,
 			this.#options.settings,
 		].map(hashFile)
+	}
+
+	#runtimeFiles(): readonly RefitFile[] {
+		if (this.#options.runtime === undefined) return []
+		if (this.#options.classification === undefined || this.#options.frozen === undefined)
+			throw new Error('runtime refit lacks classification ancestry')
+		const runtime = hashFile(this.#options.runtime)
+		readRuntime(runtime.path)
+		const classification = hashFile(this.#options.classification)
+		const ancestry = readClassification(classification, runtime, hashFile(this.#options.frozen))
+		return [runtime, classification, ancestry.cache, ...ancestry.files]
 	}
 
 	#fetch(input: Parameters<typeof fetch>[0], init?: RequestInit): Promise<Response> {
@@ -238,7 +262,21 @@ export class Refit {
 
 	async #freeze(): Promise<number> {
 		const files = [...this.#files(), hashFile(join(this.#options.cache, 'judge.jsonl'))]
-		const copy = readCopy(this.#options.scenario)
+		const copy =
+			this.#options.runtime === undefined
+				? readCopy(this.#options.scenario)
+				: projectCopy(readRuntime(this.#options.runtime))
+		if (this.#options.runtime !== undefined) {
+			if (this.#options.classification === undefined || this.#options.frozen === undefined)
+				throw new Error('runtime refit lacks ancestry')
+			const ancestry = readClassification(
+				hashFile(this.#options.classification),
+				hashFile(this.#options.runtime),
+				hashFile(this.#options.frozen),
+			)
+			if (hashFile(join(this.#options.cache, 'judge.jsonl')).hash !== ancestry.cache.hash)
+				throw new Error('refit freeze refuses foreign classification cache')
+		}
 		const judge = this.#judge(join(this.#options.cache, 'judge.jsonl'), false, 0)
 		const provider = createOllama({
 			model: this.#options.model,
@@ -346,6 +384,14 @@ export class Refit {
 			}
 		}
 		const corpus: RefitCorpus = {
+			...(this.#options.runtime === undefined || this.#options.classification === undefined
+				? {}
+				: {
+						sustained: {
+							runtime: hashFile(this.#options.runtime),
+							classification: hashFile(this.#options.classification),
+						},
+					}),
 			mode: 'cold-build seed-only development',
 			files,
 			points,
@@ -376,7 +422,11 @@ export class Refit {
 			const frozen = readFrozen(hashFile(this.#options.frozen))
 			if (
 				!isDeepStrictEqual(corpus.files.slice(0, -1), this.#files()) ||
-				corpus.files.at(-1)?.hash !== frozen.seed.hash
+				(this.#options.runtime === undefined
+					? corpus.files.at(-1)?.hash !== frozen.seed.hash
+					: corpus.sustained?.runtime.hash !== hashFile(this.#options.runtime).hash ||
+						corpus.sustained.classification.hash !==
+							hashFile(this.#options.classification ?? '').hash)
 			)
 				throw new Error('frozen corpus source/settings/seed population mismatch')
 		}
@@ -397,7 +447,30 @@ export class Refit {
 		const key = Object.entries(MODELS).find(([, tag]) => tag === model)?.[0]
 		if (key === undefined) throw new Error('unknown model')
 		const settings = readSettings(this.#options.settings, key)
-		if (this.#options.frozen !== undefined) {
+		if (corpus.sustained !== undefined) {
+			if (this.#options.frozen === undefined)
+				throw new Error('runtime generation lacks frozen roles')
+			const ancestry = readClassification(
+				corpus.sustained.classification,
+				corpus.sustained.runtime,
+				hashFile(this.#options.frozen),
+			)
+			if (existsSync(this.#options.cache))
+				throw new Error('runtime generation requires a separate new writable cache')
+			mkdirSync(this.#options.cache, { recursive: true })
+			writeFileSync(join(this.#options.cache, 'judge.jsonl'), readFileSync(ancestry.cache.path), {
+				flag: 'wx',
+			})
+			writeFileSync(
+				join(this.#options.cache, 'lineage.json'),
+				JSON.stringify({
+					runtime: ancestry.runtime.hash,
+					classification: corpus.sustained.classification.hash,
+					seed: ancestry.cache.hash,
+				}),
+				{ flag: 'wx' },
+			)
+		} else if (this.#options.frozen !== undefined) {
 			const frozen = readFrozen(hashFile(this.#options.frozen))
 			const custody = {
 				summarizer: frozen.summarizer,
@@ -579,6 +652,7 @@ export class Refit {
 		const retained = join(this.#options.out, 'evidence.json')
 		writeFileSync(retained, `${JSON.stringify(evidence, null, 2)}\n`, { flag: 'wx' })
 		const manifest: RefitGeneration = {
+			sustained: corpus.sustained,
 			...(this.#options.frozen === undefined
 				? {}
 				: { matrix: readFrozen(hashFile(this.#options.frozen)) }),
@@ -709,6 +783,8 @@ export class Refit {
 			throw new Error('corpus/attempt/packet/manifest custody mismatch')
 		if (!isDeepStrictEqual(manifest.files, this.#files()))
 			throw new Error('implementation custody membership mismatch')
+		if (!isDeepStrictEqual(manifest.sustained, corpus.sustained))
+			throw new Error('development corpus transfer identity differs')
 		if (
 			this.#options.frozen !== undefined &&
 			!isDeepStrictEqual(manifest.matrix, readFrozen(hashFile(this.#options.frozen)))
@@ -805,7 +881,7 @@ export class Refit {
 		if (!diagnosis.accepted) return 3
 		writeFileSync(
 			join(this.#options.out, 'fit.json'),
-			`${JSON.stringify({ agree: diagnosis.cutoff, change: 0.56, separated: true, ...(manifest.matrix === undefined ? {} : { matrix: { summarizer: manifest.matrix.summarizer, judge: manifest.matrix.judge, files: manifest.matrix.files, settings: manifest.matrix.settings.hash, seed: manifest.matrix.seed.hash }, preparation: { manifest: hashFile(join(directory, 'manifest.json')), attempts: hashFile(join(directory, 'attempts.jsonl')), corpus: hashFile(join(this.#options.corpus, 'corpus.json')), labels: hashFile(this.#options.labels) } }), custody: { corpus: corpusHash, attempts: attemptsHash, packet: packetHash, manifest: manifestHash, labels: hashFile(this.#options.labels).hash }, limitation: REFIT_LIMITATION }, null, 2)}\n`,
+			`${JSON.stringify({ agree: diagnosis.cutoff, change: 0.56, separated: true, ...(manifest.sustained === undefined ? {} : { sustained: { runtime: manifest.sustained.runtime.hash, classification: manifest.sustained.classification.hash } }), ...(manifest.matrix === undefined ? {} : { matrix: { summarizer: manifest.matrix.summarizer, judge: manifest.matrix.judge, files: manifest.matrix.files, settings: manifest.matrix.settings.hash, seed: manifest.matrix.seed.hash }, preparation: { manifest: hashFile(join(directory, 'manifest.json')), attempts: hashFile(join(directory, 'attempts.jsonl')), corpus: hashFile(join(this.#options.corpus, 'corpus.json')), labels: hashFile(this.#options.labels) } }), custody: { corpus: corpusHash, attempts: attemptsHash, packet: packetHash, manifest: manifestHash, labels: hashFile(this.#options.labels).hash }, limitation: REFIT_LIMITATION }, null, 2)}\n`,
 			{ flag: 'wx' },
 		)
 		return 0

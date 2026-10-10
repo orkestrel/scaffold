@@ -1,5 +1,5 @@
 import type { LedgerGauge } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { RefitFile } from '../refit/types.ts'
+import type { RefitFile } from '../refit/types.js'
 import type {
 	CallRole,
 	Row,
@@ -7,7 +7,7 @@ import type {
 	SelectionRecord,
 	Settings,
 	TransitionCategory,
-} from '../types.ts'
+} from '../types.js'
 
 /** Names an explicit l6 decision configuration. */
 export interface MatrixIdentity {

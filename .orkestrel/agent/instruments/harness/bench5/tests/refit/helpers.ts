@@ -1,4 +1,4 @@
-import type { EvidenceCase, MembershipCase } from './types.ts'
+import type { EvidenceCase, MembershipCase } from './types.js'
 import type {
 	RefitAttempt,
 	RefitContext,
@@ -8,12 +8,12 @@ import type {
 	RefitLabels,
 	RefitOptions,
 	RefitVerdict,
-} from '../../refit/types.ts'
+} from '../../refit/types.js'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createOllamaJudge } from '../../../vendor/ollama/index.js'
-import { AGREE_QUESTION } from '../../aggregates/constants.ts'
-import { buildAgreeState } from '../../aggregates/helpers.ts'
+import { AGREE_QUESTION } from '../../aggregates/constants.js'
+import { buildAgreeState } from '../../aggregates/helpers.js'
 import {
 	COPIES_DIR,
 	HARNESS,
@@ -23,11 +23,11 @@ import {
 	MICA_SYSTEM,
 	MICA_CALIBRATION,
 	MICA_CONTEXT,
-} from '../../constants.ts'
-import { buildCacheKey, buildSummaryKey, computeDigest, readJSON, readRows } from '../../helpers.ts'
-import { REFIT_CONTROLS } from '../../refit/constants.ts'
-import { buildRefitItem, hashFile } from '../../refit/helpers.ts'
-import { isRefitAttempt, isRefitCorpus, isRefitGeneration } from '../../refit/validators.ts'
+} from '../../constants.js'
+import { buildCacheKey, buildSummaryKey, computeDigest, readJSON, readRows } from '../../helpers.js'
+import { REFIT_CONTROLS } from '../../refit/constants.js'
+import { buildRefitItem, hashFile } from '../../refit/helpers.js'
+import { isRefitAttempt, isRefitCorpus, isRefitGeneration } from '../../refit/validators.js'
 
 /** Builds explicit command options for isolated fixtures. */
 export function buildOptions(out: string, overrides: Partial<RefitOptions> = {}): RefitOptions {

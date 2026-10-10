@@ -1,22 +1,22 @@
-import type { MatrixRun } from './types.ts'
+import type { MatrixRun } from './types.js'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isFiniteNumber, isRecord } from '@orkestrel/contract'
-import { INSTRUCTION_SUMMARIES } from '../aggregates/constants.ts'
-import { COPIES_DIR } from '../constants.ts'
-import { readJSON, readRows, readWireReading } from '../helpers.ts'
-import { hashFile } from '../refit/helpers.ts'
-import { buildTimeline, parseAggregates } from '../shadow.ts'
-import { MATRIX_FILES } from './constants.ts'
+import { INSTRUCTION_SUMMARIES } from '../aggregates/constants.js'
+import { COPIES_DIR } from '../constants.js'
+import { readJSON, readRows, readWireReading } from '../helpers.js'
+import { hashFile } from '../refit/helpers.js'
+import { buildTimeline, parseAggregates } from '../shadow.js'
+import { MATRIX_FILES } from './constants.js'
 import {
 	listMatrixWireFailures,
 	listResourceFailures,
 	nameMatrix,
 	readFrozen,
 	readModelDigest,
-} from './helpers.ts'
-import { isMatrixExecution, isMatrixRequest, isMatrixRow, isMatrixSelection } from './validators.ts'
+} from './helpers.js'
+import { isMatrixExecution, isMatrixRequest, isMatrixRow, isMatrixSelection } from './validators.js'
 
 /** Decodes a frozen l6 run and refuses archive or malformed evidence.
  * @param path - The run directory

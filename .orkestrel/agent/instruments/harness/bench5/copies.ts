@@ -54,29 +54,177 @@ const COPY_NAME = /^v(\d+)\.json$/
 // Words that name a rule, a deadline, a contact route, or a correction in the seed; a request that adds one
 // points the model at the fact it must find. A group counts as present when any of its forms is.
 const RULE_WORDS: Readonly<Record<string, readonly string[]>> = Object.freeze({
-	day: ['today', 'tonight', 'tomorrow', 'yesterday', 'morning', 'afternoon', 'evening', 'noon', 'midday', 'pm', 'am', 'deadline', 'asap', 'urgent', 'urgently', 'week', 'weekend', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'date', 'dated', 'hour', 'hours', 'eod'],
+	day: [
+		'today',
+		'tonight',
+		'tomorrow',
+		'yesterday',
+		'morning',
+		'afternoon',
+		'evening',
+		'noon',
+		'midday',
+		'pm',
+		'am',
+		'deadline',
+		'asap',
+		'urgent',
+		'urgently',
+		'week',
+		'weekend',
+		'monday',
+		'tuesday',
+		'wednesday',
+		'thursday',
+		'friday',
+		'saturday',
+		'sunday',
+		'date',
+		'dated',
+		'hour',
+		'hours',
+		'eod',
+	],
 	sequence: ['before', 'after', 'until', 'till', 'unless'],
 	phone: ['extension', 'ext', 'switchboard', 'direct', 'mobile', 'cell', 'desk'],
 	approve: ['approval', 'approvals', 'approve', 'approved', 'approves', 'approving'],
-	authorize: ['authorize', 'authorizes', 'authorized', 'authorizing', 'authorization', 'authorise', 'authorises', 'authorised', 'authorisation'],
+	authorize: [
+		'authorize',
+		'authorizes',
+		'authorized',
+		'authorizing',
+		'authorization',
+		'authorise',
+		'authorises',
+		'authorised',
+		'authorisation',
+	],
 	sign: ['sign', 'signs', 'signed', 'signing', 'signoff', 'sign-off', 'signature'],
 	code: ['code', 'codes'],
 	manager: ['manager', 'managers', 'supervisor', 'supervisors', 'director', 'directors', 'boss'],
 	copy: ['copy', 'copies', 'copied', 'cc', 'cced', 'loop'],
-	correction: ['correction', 'corrected', 'corrects', 'update', 'updated', 'updates', 'new', 'newest', 'latest', 'current', 'currently', 'old', 'older', 'previous', 'prior', 'superseded', 'replaced', 'revised', 'withdrawn', 'scrapped', 'retired', 'changed', 'amended', 'valid', 'invalid', 'instead'],
-	fee: ['fee', 'fees', 'restocking', 'percent', 'percentage', 'deduct', 'deducted', 'deduction', 'full', 'partial', 'minus'],
+	correction: [
+		'correction',
+		'corrected',
+		'corrects',
+		'update',
+		'updated',
+		'updates',
+		'new',
+		'newest',
+		'latest',
+		'current',
+		'currently',
+		'old',
+		'older',
+		'previous',
+		'prior',
+		'superseded',
+		'replaced',
+		'revised',
+		'withdrawn',
+		'scrapped',
+		'retired',
+		'changed',
+		'amended',
+		'valid',
+		'invalid',
+		'instead',
+	],
+	fee: [
+		'fee',
+		'fees',
+		'restocking',
+		'percent',
+		'percentage',
+		'deduct',
+		'deducted',
+		'deduction',
+		'full',
+		'partial',
+		'minus',
+	],
 	window: ['return', 'returns', 'returned', 'returning', 'window'],
-	arrival: ['estimate', 'estimated', 'eta', 'arrive', 'arrives', 'arrived', 'arrival', 'deliver', 'delivers', 'delivered', 'delivery', 'deliveries', 'expected', 'expect'],
-	rule: ['rule', 'rules', 'policy', 'policies', 'require', 'requires', 'required', 'requirement', 'requirements', 'must', 'mandatory'],
-	limit: ['limit', 'limits', 'threshold', 'exceed', 'exceeds', 'over', 'above', 'cap', 'outstanding', 'balance'],
+	arrival: [
+		'estimate',
+		'estimated',
+		'eta',
+		'arrive',
+		'arrives',
+		'arrived',
+		'arrival',
+		'deliver',
+		'delivers',
+		'delivered',
+		'delivery',
+		'deliveries',
+		'expected',
+		'expect',
+	],
+	rule: [
+		'rule',
+		'rules',
+		'policy',
+		'policies',
+		'require',
+		'requires',
+		'required',
+		'requirement',
+		'requirements',
+		'must',
+		'mandatory',
+	],
+	limit: [
+		'limit',
+		'limits',
+		'threshold',
+		'exceed',
+		'exceeds',
+		'over',
+		'above',
+		'cap',
+		'outstanding',
+		'balance',
+	],
 	tier: ['tier', 'gold', 'silver', 'wholesale', 'standard', 'member', 'membership', 'vip'],
 	ticket: ['ticket', 'tickets'],
 	escalation: ['escalation', 'escalations', 'escalate', 'escalated', 'escalating'],
 	carrier: ['carrier', 'carriers', 'courier', 'tracking', 'trace', 'tracked', 'parcel'],
 	release: ['release', 'releases', 'released', 'releasing'],
-	availability: ['available', 'availability', 'unavailable', 'away', 'vacation', 'holiday', 'absent', 'reachable'],
+	availability: [
+		'available',
+		'availability',
+		'unavailable',
+		'away',
+		'vacation',
+		'holiday',
+		'absent',
+		'reachable',
+	],
 	occasion: ['birthday', 'anniversary', 'wedding', 'congratulations', 'happy'],
-	count: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'twenty', 'thirty', 'forty', 'fifty', 'hundred', 'thousand', 'half', 'twice', 'dozen'],
+	count: [
+		'one',
+		'two',
+		'three',
+		'four',
+		'five',
+		'six',
+		'seven',
+		'eight',
+		'nine',
+		'ten',
+		'eleven',
+		'twelve',
+		'twenty',
+		'thirty',
+		'forty',
+		'fifty',
+		'hundred',
+		'thousand',
+		'half',
+		'twice',
+		'dozen',
+	],
 })
 const ID = /\b[A-Z]{2,}-\d+(?:-\d+)*\b/g
 const NUMBER = /\$?\d(?:[\d,]*\d)?(?:\.\d+)?/g
@@ -84,15 +232,35 @@ const CAPITALIZED = /[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/g
 const SENTENCE_START = /(?:^|[.!?:;]["'“”’)]*\s+|["“(]\s*)$/
 // Each edit of an original request breaks one rule, so a check that passes all of them would pass anything.
 const REFUSALS: readonly Refusal[] = Object.freeze([
-	{ prefix: 'g10', edit: (text) => `${text} Is it extension 4127 after 2 pm?`, reason: 'adds phone words' },
+	{
+		prefix: 'g10',
+		edit: (text) => `${text} Is it extension 4127 after 2 pm?`,
+		reason: 'adds phone words',
+	},
 	{ prefix: 'g08', edit: (text) => text.replace('$3,000 ', ''), reason: 'drops number $3,000' },
-	{ prefix: 'g07', edit: (text) => text.replace('Who do I ask', 'Do I ask Tomasz'), reason: 'adds name Tomasz' },
+	{
+		prefix: 'g07',
+		edit: (text) => text.replace('Who do I ask', 'Do I ask Tomasz'),
+		reason: 'adds name Tomasz',
+	},
 	{ prefix: 'g02', edit: (text) => `${text} It is account LH-44870.`, reason: 'adds id LH-44870' },
-	{ prefix: 'g08', edit: (text) => text.replace('whether it fits', 'whether it fits within'), reason: 'adds scoring phrase "within"' },
-	{ prefix: 'g03', edit: (text) => text.replace('Grace Okafor', 'Grace'), reason: 'drops name Grace Okafor' },
+	{
+		prefix: 'g08',
+		edit: (text) => text.replace('whether it fits', 'whether it fits within'),
+		reason: 'adds scoring phrase "within"',
+	},
+	{
+		prefix: 'g03',
+		edit: (text) => text.replace('Grace Okafor', 'Grace'),
+		reason: 'drops name Grace Okafor',
+	},
 	{ prefix: 'g05', edit: (text) => text, reason: 'the request is the original text' },
 	{ prefix: 'g11', edit: (text) => `${text} Check with Zoltan.`, reason: 'adds name Zoltan' },
-	{ prefix: 'g12', edit: (text) => `${text} Offer a $50 store credit.`, reason: 'adds forbidden pattern' },
+	{
+		prefix: 'g12',
+		edit: (text) => `${text} Offer a $50 store credit.`,
+		reason: 'adds forbidden pattern',
+	},
 	{ prefix: 'g20', edit: (text) => `${text} Marcus can join.`, reason: 'adds name Marcus' },
 ])
 
@@ -111,7 +279,8 @@ function readTexts(value: unknown, key: string): readonly string[] {
 }
 
 function readGoal(value: unknown): Goal {
-	if (!isRecord(value) || typeof value.id !== 'string' || typeof value.request !== 'string') throw new Error('a goal lacks a string id or request')
+	if (!isRecord(value) || typeof value.id !== 'string' || typeof value.request !== 'string')
+		throw new Error('a goal lacks a string id or request')
 	const sources = readTexts(value, 'forbiddenPatterns')
 	return {
 		id: value.id,
@@ -125,7 +294,9 @@ function readGoal(value: unknown): Goal {
 
 function readContents(value: unknown): readonly string[] {
 	if (!Array.isArray(value)) return []
-	return value.flatMap((message) => (isRecord(message) && typeof message.content === 'string' ? [message.content] : []))
+	return value.flatMap((message) =>
+		isRecord(message) && typeof message.content === 'string' ? [message.content] : [],
+	)
 }
 
 function listStrings(value: unknown): readonly string[] {
@@ -142,7 +313,8 @@ function buildKnown(texts: readonly string[]): ReadonlySet<string> {
 	for (const text of texts)
 		for (const match of text.matchAll(CAPITALIZED)) {
 			const words = match[0].split(/\s+/)
-			for (const word of SENTENCE_START.test(text.slice(0, match.index)) ? words.slice(1) : words) known.add(word)
+			for (const word of SENTENCE_START.test(text.slice(0, match.index)) ? words.slice(1) : words)
+				known.add(word)
 		}
 	return known
 }
@@ -150,10 +322,19 @@ function buildKnown(texts: readonly string[]): ReadonlySet<string> {
 function readBase(): Base {
 	const text = readFileSync(BASE_FILE, 'utf8')
 	const value: unknown = JSON.parse(text)
-	if (!isRecord(value) || !Array.isArray(value.goals)) throw new Error(`${BASE_FILE} holds no goals`)
-	if (`${JSON.stringify(value, null, '\t')}\n` !== text) throw new Error(`${BASE_FILE} does not round-trip through JSON.stringify with a tab indent, so no serialization comparison holds`)
+	if (!isRecord(value) || !Array.isArray(value.goals))
+		throw new Error(`${BASE_FILE} holds no goals`)
+	if (`${JSON.stringify(value, null, '\t')}\n` !== text)
+		throw new Error(
+			`${BASE_FILE} does not round-trip through JSON.stringify with a tab indent, so no serialization comparison holds`,
+		)
 	const goals = value.goals.map((goal) => readGoal(goal))
-	const texts = [...listStrings(value.system), ...readContents(value.seed), ...listStrings(value.tools), ...goals.map((goal) => goal.request)]
+	const texts = [
+		...listStrings(value.system),
+		...readContents(value.seed),
+		...listStrings(value.tools),
+		...goals.map((goal) => goal.request),
+	]
 	return { text, value, goals, known: buildKnown(texts) }
 }
 
@@ -161,19 +342,33 @@ function findNames(text: string, known: ReadonlySet<string>): readonly string[] 
 	const out: string[] = []
 	for (const match of text.matchAll(CAPITALIZED)) {
 		const words = match[0].split(/\s+/)
-		const kept = SENTENCE_START.test(text.slice(0, match.index)) && !known.has(words[0]) ? words.slice(1) : words
+		const kept =
+			SENTENCE_START.test(text.slice(0, match.index)) && !known.has(words[0])
+				? words.slice(1)
+				: words
 		if (kept.length > 0) out.push(kept.join(' '))
 	}
 	return out
 }
 
 function listWords(text: string): ReadonlySet<string> {
-	return new Set((text.toLowerCase().replace(/['’]s\b/g, '').match(/[a-z]+(?:[-'’][a-z]+)*/g) ?? []).map((word) => word.replace(/’/g, "'")))
+	return new Set(
+		(
+			text
+				.toLowerCase()
+				.replace(/['’]s\b/g, '')
+				.match(/[a-z]+(?:[-'’][a-z]+)*/g) ?? []
+		).map((word) => word.replace(/’/g, "'")),
+	)
 }
 
 function listGroups(text: string): ReadonlySet<string> {
 	const present = listWords(text)
-	return new Set(Object.entries(RULE_WORDS).filter(([, forms]) => forms.some((form) => present.has(form))).map(([group]) => group))
+	return new Set(
+		Object.entries(RULE_WORDS)
+			.filter(([, forms]) => forms.some((form) => present.has(form)))
+			.map(([group]) => group),
+	)
 }
 
 function matchPhrase(text: string, needle: string): boolean {
@@ -188,7 +383,11 @@ function readTokens(text: string, label: 'id' | 'number'): ReadonlySet<string> {
 }
 
 // Returns the reasons a reworded request breaks the rules, or none.
-function compareRequest(goal: Goal, reworded: unknown, known: ReadonlySet<string>): readonly string[] {
+function compareRequest(
+	goal: Goal,
+	reworded: unknown,
+	known: ReadonlySet<string>,
+): readonly string[] {
 	if (typeof reworded !== 'string' || reworded.trim() === '') return ['the request is empty']
 	const reasons: string[] = []
 	const before = goal.request
@@ -202,12 +401,21 @@ function compareRequest(goal: Goal, reworded: unknown, known: ReadonlySet<string
 	const keptNames = findNames(before, known)
 	const keptWords = new Set(keptNames.flatMap((name) => name.split(' ')))
 	for (const name of keptNames) if (!reworded.includes(name)) reasons.push(`drops name ${name}`)
-	for (const word of new Set(findNames(reworded, known).flatMap((name) => name.split(' ')))) if (!keptWords.has(word)) reasons.push(`adds name ${word}`)
+	for (const word of new Set(findNames(reworded, known).flatMap((name) => name.split(' '))))
+		if (!keptWords.has(word)) reasons.push(`adds name ${word}`)
 	const had = listGroups(before)
 	const present = listWords(reworded)
-	for (const group of listGroups(reworded)) if (!had.has(group)) reasons.push(`adds ${group} words (${(RULE_WORDS[group] ?? []).filter((form) => present.has(form)).join(', ')})`)
-	for (const needle of [...goal.expected, ...goal.expectedAny, ...goal.forbidden]) if (matchPhrase(reworded, needle) && !matchPhrase(before, needle)) reasons.push(`adds scoring phrase "${needle}"`)
-	for (const [at, pattern] of goal.patterns.entries()) if (pattern.test(reworded) && !pattern.test(before)) reasons.push(`adds forbidden pattern ${at + 1} of ${goal.patterns.length}`)
+	for (const group of listGroups(reworded))
+		if (!had.has(group))
+			reasons.push(
+				`adds ${group} words (${(RULE_WORDS[group] ?? []).filter((form) => present.has(form)).join(', ')})`,
+			)
+	for (const needle of [...goal.expected, ...goal.expectedAny, ...goal.forbidden])
+		if (matchPhrase(reworded, needle) && !matchPhrase(before, needle))
+			reasons.push(`adds scoring phrase "${needle}"`)
+	for (const [at, pattern] of goal.patterns.entries())
+		if (pattern.test(reworded) && !pattern.test(before))
+			reasons.push(`adds forbidden pattern ${at + 1} of ${goal.patterns.length}`)
 	return reasons
 }
 
@@ -215,7 +423,11 @@ function runSelfTests(base: Base): readonly string[] {
 	const failures: string[] = []
 	for (const { prefix, edit, reason } of REFUSALS) {
 		const goal = base.goals.find((one) => one.id.startsWith(prefix))
-		if (goal === undefined || !compareRequest(goal, edit(goal.request), base.known).some((one) => one.startsWith(reason))) failures.push(`the check does not refuse a ${prefix} request that ${reason}`)
+		if (
+			goal === undefined ||
+			!compareRequest(goal, edit(goal.request), base.known).some((one) => one.startsWith(reason))
+		)
+			failures.push(`the check does not refuse a ${prefix} request that ${reason}`)
 	}
 	return failures
 }
@@ -226,37 +438,64 @@ function readLedger(context: Context, copy: number): readonly string[] {
 	const file = join(LEDGER_DIR, `v${copy}.json`)
 	const value: unknown = JSON.parse(readFileSync(file, 'utf8'))
 	if (!isRecord(value) || !Array.isArray(value.goals)) throw new Error(`${file} holds no goals`)
-	const requests = value.goals.map((goal) => (isRecord(goal) && typeof goal.request === 'string' ? goal.request : ''))
+	const requests = value.goals.map((goal) =>
+		isRecord(goal) && typeof goal.request === 'string' ? goal.request : '',
+	)
 	context.ledger.set(copy, requests)
 	return requests
 }
 
-function restoreRequests(copy: Record<string, unknown>, goals: readonly Goal[]): Record<string, unknown> {
+function restoreRequests(
+	copy: Record<string, unknown>,
+	goals: readonly Goal[],
+): Record<string, unknown> {
 	const list: readonly unknown[] = Array.isArray(copy.goals) ? copy.goals : []
-	return { ...copy, goals: list.map((goal, at) => (isRecord(goal) ? { ...goal, request: goals[at]?.request } : goal)) }
+	return {
+		...copy,
+		goals: list.map((goal, at) =>
+			isRecord(goal) ? { ...goal, request: goals[at]?.request } : goal,
+		),
+	}
 }
 
 // Returns the reasons a copy file breaks the rules, or none.
-function inspectCopy(context: Context, text: string, label: string, copy: number | undefined): Inspection {
+function inspectCopy(
+	context: Context,
+	text: string,
+	label: string,
+	copy: number | undefined,
+): Inspection {
 	const { base } = context
 	const parsed: unknown = JSON.parse(text)
 	if (!isRecord(parsed) || !Array.isArray(parsed.goals)) return ['holds no goals']
 	const ids: readonly unknown[] = parsed.goals.map((goal) => (isRecord(goal) ? goal.id : undefined))
-	if (ids.length !== base.goals.length || ids.some((id, at) => id !== base.goals[at]?.id)) return ['goals differ in count, order, or id']
+	if (ids.length !== base.goals.length || ids.some((id, at) => id !== base.goals[at]?.id))
+		return ['goals differ in count, order, or id']
 	const problems: string[] = []
 	const restored = restoreRequests(parsed, base.goals)
 	if (!isDeepStrictEqual(restored, base.value)) {
-		const fields = [...new Set([...Object.keys(base.value), ...Object.keys(restored)])].filter((key) => !isDeepStrictEqual(restored[key], base.value[key]))
+		const fields = [...new Set([...Object.keys(base.value), ...Object.keys(restored)])].filter(
+			(key) => !isDeepStrictEqual(restored[key], base.value[key]),
+		)
 		problems.push(`differs from ${BASE_FILE} outside goals[].request in ${fields.join(', ')}`)
 	}
-	if (text !== `${JSON.stringify(parsed, null, '\t')}\n`) problems.push(`is not serialized as JSON.stringify(copy, null, '\\t') plus a newline`)
-	if (copy === undefined || copy < 1 || copy > COPY_COUNT) problems.push(`file name ${label} is not v1.json to v${COPY_COUNT}.json, so no ledger copy applies`)
-	const ledger = copy === undefined || copy < 1 || copy > COPY_COUNT ? [] : readLedger(context, copy)
+	if (text !== `${JSON.stringify(parsed, null, '\t')}\n`)
+		problems.push(`is not serialized as JSON.stringify(copy, null, '\\t') plus a newline`)
+	if (copy === undefined || copy < 1 || copy > COPY_COUNT)
+		problems.push(
+			`file name ${label} is not v1.json to v${COPY_COUNT}.json, so no ledger copy applies`,
+		)
+	const ledger =
+		copy === undefined || copy < 1 || copy > COPY_COUNT ? [] : readLedger(context, copy)
 	for (const [at, goal] of base.goals.entries()) {
 		const reworded = parsed.goals[at]?.request
-		for (const reason of compareRequest(goal, reworded, base.known)) problems.push(`${goal.id}: ${reason}`)
+		for (const reason of compareRequest(goal, reworded, base.known))
+			problems.push(`${goal.id}: ${reason}`)
 		if (at < LEDGER_GOALS) {
-			if (ledger.length > at && reworded !== ledger[at]) problems.push(`${goal.id}: the request differs from goals[${at}].request of ledger/v${copy}.json`)
+			if (ledger.length > at && reworded !== ledger[at])
+				problems.push(
+					`${goal.id}: the request differs from goals[${at}].request of ledger/v${copy}.json`,
+				)
 			continue
 		}
 		const record = context.seen.get(goal.id)
@@ -293,8 +532,15 @@ function main(argv: readonly string[]): number {
 		for (const failure of failures) console.error(`copies: ${failure}`)
 		return 2
 	}
-	const files = argv.length > 0 ? argv.map((file) => resolve(file)) : Array.from({ length: COPY_COUNT }, (_, at) => join(COPY_DIR, `v${at + 1}.json`))
-	const context: Context = { base, ledger: new Map(), seen: new Map(base.goals.map((goal) => [goal.id, new Map()])) }
+	const files =
+		argv.length > 0
+			? argv.map((file) => resolve(file))
+			: Array.from({ length: COPY_COUNT }, (_, at) => join(COPY_DIR, `v${at + 1}.json`))
+	const context: Context = {
+		base,
+		ledger: new Map(),
+		seen: new Map(base.goals.map((goal) => [goal.id, new Map()])),
+	}
 	let failed = 0
 	console.log(`self-tests ${REFUSALS.length} refused as expected`)
 	for (const file of files) {
@@ -305,7 +551,11 @@ function main(argv: readonly string[]): number {
 			problems = [`unreadable, ${describeError(error)}`]
 		}
 		if (problems.length > 0) failed += 1
-		console.log(problems.length === 0 ? `${file}: ok, ${base.goals.length} requests keep their ids, numbers, and names and add no id, number, name, rule word, scoring phrase, or forbidden pattern` : `${file}: ${problems.length} problems`)
+		console.log(
+			problems.length === 0
+				? `${file}: ok, ${base.goals.length} requests keep their ids, numbers, and names and add no id, number, name, rule word, scoring phrase, or forbidden pattern`
+				: `${file}: ${problems.length} problems`,
+		)
 		for (const problem of problems) console.log(`  ${problem}`)
 	}
 	console.log(`${files.length - failed} of ${files.length} copy files pass against ${BASE_FILE}`)

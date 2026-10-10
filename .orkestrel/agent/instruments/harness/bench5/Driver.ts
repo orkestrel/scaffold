@@ -8,8 +8,8 @@ import type {
 	ProviderInterface,
 	Selection,
 } from '../vendor/agent-0.0.30-trimmed/index.js'
-import type { MatrixFailure, MatrixRequest } from './matrix/types.ts'
-import type { RefitFile } from './refit/types.ts'
+import type { MatrixFailure, MatrixRequest } from './matrix/types.js'
+import type { RefitFile } from './refit/types.js'
 import type { ToolCall, ToolResult } from '@orkestrel/tool'
 import type {
 	AggregateRendering,
@@ -40,7 +40,7 @@ import type {
 	SelectionRecord,
 	Settings,
 	TailMessage,
-} from './types.ts'
+} from './types.js'
 import {
 	appendFileSync,
 	existsSync,
@@ -72,8 +72,8 @@ import {
 } from '../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../vendor/ollama/index.js'
 import { clean, compileRules, scoreText } from '../bench/rescore.mjs'
-import { INSTRUCTION_DATE, INSTRUCTION_SUMMARIES } from './aggregates/constants.ts'
-import { Aggregator } from './aggregates/Aggregator.ts'
+import { INSTRUCTION_DATE, INSTRUCTION_SUMMARIES } from './aggregates/constants.js'
+import { Aggregator } from './aggregates/Aggregator.js'
 import {
 	CORPUS,
 	ADMISSION_LIMIT,
@@ -90,7 +90,7 @@ import {
 	SCENARIO_LONG,
 	TIMEOUT,
 	VENDOR_AGENT,
-} from './constants.ts'
+} from './constants.js'
 import {
 	buildSystem,
 	computeDigest,
@@ -104,22 +104,29 @@ import {
 	readRows,
 	renderDate,
 	resolveLookup,
-} from './helpers.ts'
-import { JudgeCache } from './JudgeCache.ts'
-import { Mirror } from './Mirror.ts'
-import { Summarizer } from './Summarizer.ts'
-import { FullViewAdapter } from './FullViewAdapter.ts'
+} from './helpers.js'
+import { JudgeCache } from './JudgeCache.js'
+import { Mirror } from './Mirror.js'
+import { Summarizer } from './Summarizer.js'
+import { FullViewAdapter } from './FullViewAdapter.js'
 import {
 	buildBudget,
 	listResourceFailures,
 	nameMatrix,
 	readExecution,
 	readModelDigest,
-} from './matrix/helpers.ts'
-import { readWireReading } from './helpers.ts'
-import { hashFile } from './refit/helpers.ts'
+} from './matrix/helpers.js'
+import { readWireReading } from './helpers.js'
+import { matchesSummaryBlock } from './helpers.js'
+import { collectSummaryBodies } from './aggregates/helpers.js'
+import { hashFile } from './refit/helpers.js'
+import { readBuild } from './build/helpers.js'
+import { readClassification, readSustainedExecution } from './sustained/helpers.js'
+import { projectCopy, measureText } from './endurance/helpers.js'
+import type { SustainedObservation, SustainedReceipt } from './sustained/types.js'
 
 const OPTIONS = {
+	study: { type: 'string' },
 	fixture: { type: 'boolean' },
 	manifest: { type: 'string' },
 	think: { type: 'string' },
@@ -353,18 +360,28 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	const mode = values.run === true ? 'run' : values.dry === true ? 'dry' : 'seed'
 	if (modes.filter(Boolean).length !== 1)
 		problems.push('exactly one of --run, --dry, and --seed is required')
-	const copy = /^[1-8]$/.test(values.copy ?? '') ? Number(values.copy) : 0
+	const copy =
+		values.study !== undefined && values.copy === undefined
+			? 1
+			: /^[1-8]$/.test(values.copy ?? '')
+				? Number(values.copy)
+				: 0
 	if (copy === 0) problems.push('--copy must be an integer from 1 to 8')
 	let bound: ReturnType<typeof readExecution> | undefined
+	let study: ReturnType<typeof readSustainedExecution> | undefined
 	try {
+		if (values.study !== undefined) study = readSustainedExecution(resolve(values.study))
 		if (values.manifest !== undefined) bound = readExecution(resolve(values.manifest))
 	} catch (error) {
 		problems.push(describeError(error))
 	}
-	const model = values.model ?? bound?.frozen.decision.model ?? MODELS.q2
+	if (values.study !== undefined && values.manifest !== undefined)
+		problems.push('choose exactly one execution protocol')
+	const model =
+		values.model ?? study?.frozen.decision.model ?? bound?.frozen.decision.model ?? MODELS.q2
 	const key = Object.entries(MODELS).find(([, tag]) => tag === model)?.[0]
 	if (key === undefined) problems.push(`--model must be one of ${Object.values(MODELS).join(', ')}`)
-	const arm = values.arm ?? bound?.execution.arm ?? 'records'
+	const arm = values.arm ?? study?.execution.arm ?? bound?.execution.arm ?? 'records'
 	if (!isArm(arm)) problems.push('--arm must be records, aggregate, or full')
 	const live = values.live === true
 	if (values.think !== undefined && values.think !== 'true' && values.think !== 'false')
@@ -372,13 +389,21 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	const think =
 		values.think === undefined ? (bound?.execution.think ?? false) : values.think === 'true'
 	const reserve =
-		values.reserve === undefined ? (bound?.execution.budget.reserve ?? 512) : Number(values.reserve)
+		values.reserve === undefined
+			? (study?.execution.budget.reserve ?? bound?.execution.budget.reserve ?? 512)
+			: Number(values.reserve)
 	try {
 		buildBudget(reserve)
 	} catch (error) {
 		problems.push(describeError(error))
 	}
-	if (mode === 'run' && live && bound === undefined && values.fixture !== true)
+	if (
+		mode === 'run' &&
+		live &&
+		bound === undefined &&
+		study === undefined &&
+		values.fixture !== true
+	)
 		problems.push('live l6 runs require --manifest FILE')
 	if (
 		bound !== undefined &&
@@ -390,7 +415,7 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	)
 		problems.push('flags differ from execution manifest')
 	if (
-		bound !== undefined &&
+		(bound !== undefined || study !== undefined) &&
 		[
 			values.allowance,
 			values.retry,
@@ -401,6 +426,17 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 		].some((value) => value !== undefined)
 	)
 		problems.push('frozen execution refuses configuration and goal overrides')
+	if (
+		study !== undefined &&
+		(values.copy !== undefined ||
+			model !== study.frozen.decision.model ||
+			arm !== study.execution.arm ||
+			think ||
+			reserve !== study.execution.budget.reserve ||
+			(mode === 'seed') !== (study.execution.phase === 'filing') ||
+			mode === 'dry')
+	)
+		problems.push('e1 flags differ from complete frozen phase')
 	const url = values.url ?? DAEMON
 	let port = ''
 	try {
@@ -428,10 +464,13 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	return {
 		success: true,
 		value: {
+			study: study?.execution,
+			studyPath: values.study === undefined ? undefined : resolve(values.study),
+			runtime: study?.runtime,
 			think,
 			reserve,
 			execution: bound?.execution,
-			frozen: bound?.frozen,
+			frozen: study?.frozen ?? bound?.frozen,
 			mode,
 			live,
 			copy,
@@ -445,8 +484,12 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 				.split(',')
 				.map((prefix) => prefix.trim())
 				.filter((prefix) => prefix !== ''),
-			fit: bound?.execution.fit?.path ?? resolveRoot(values.fit ?? join('bench5', 'fit.json')),
+			fit:
+				study?.execution.fit?.path ??
+				bound?.execution.fit?.path ??
+				resolveRoot(values.fit ?? join('bench5', 'fit.json')),
 			settings:
+				study?.frozen.settings.path ??
 				bound?.frozen.settings.path ??
 				resolveRoot(values.settings ?? join('bench5', 'settings.json')),
 			allowance,
@@ -693,6 +736,12 @@ export class Driver {
 	readonly #walls = new Map<CallRole, number>()
 	readonly #requests = new Set<string>()
 	readonly #tags = new Map<string, string>()
+	readonly #receipts: SustainedReceipt[] = []
+	readonly #selectedSources = new Set<string>()
+	#history: readonly Message[] = []
+	#tokensUsed = 0
+	#stopped: string | undefined
+	#exposed = false
 	#sequence = 0
 	#sent = 0
 	#turn = 0
@@ -741,6 +790,8 @@ export class Driver {
 	 * @remarks Thrown when a run or a seed pass fails, when its output directory exists, and when its settings differ; the judge cache's fault ends a run with a thrown harness fault after the output is written.
 	 */
 	async execute(): Promise<number> {
+		readBuild()
+		if (this.#config.studyPath !== undefined) readSustainedExecution(this.#config.studyPath)
 		const prepared = this.#prepare()
 		const failed = prepared.checks.filter((check) => !check.equal)
 		if (this.#config.mode === 'dry') return await this.#dry(prepared, failed)
@@ -753,7 +804,8 @@ export class Driver {
 	#prepare(): Preparation {
 		const { key, goals: prefixes, settings: settingsPath, fit: fitPath, arm } = this.#config
 		const path = join(COPIES_DIR, `v${this.#config.copy}.json`)
-		const copy = readCopy(path)
+		const copy: Copy =
+			this.#config.runtime === undefined ? readCopy(path) : projectCopy(this.#config.runtime)
 		const stored = readSettings(settingsPath, key)
 		const settings: Settings = {
 			allowance: this.#config.allowance ?? stored.allowance,
@@ -765,15 +817,22 @@ export class Driver {
 			throw new Error(`--goals ${prefixes.join(',')} matches no goal of ${path}`)
 		const base = readJSON(SCENARIO_LONG)
 		const raw = readJSON(path)
-		const checks = GOAL_ROOT.map((name) =>
-			this.#compare(`copy.${name}`, readField(raw, name), readField(base, name)),
-		)
+		const checks =
+			this.#config.study === undefined
+				? GOAL_ROOT.map((name) =>
+						this.#compare(`copy.${name}`, readField(raw, name), readField(base, name)),
+					)
+				: []
 		checks.push(
-			this.#compare(
-				'copy.goals',
-				readList(raw, 'goals').map(stripRequest),
-				readList(base, 'goals').map(stripRequest),
-			),
+			...(this.#config.study === undefined
+				? [
+						this.#compare(
+							'copy.goals',
+							readList(raw, 'goals').map(stripRequest),
+							readList(base, 'goals').map(stripRequest),
+						),
+					]
+				: []),
 			this.#compare('capacity', SAMPLER.num_ctx, 3072),
 		)
 		const fit = readFit(fitPath)
@@ -809,6 +868,15 @@ export class Driver {
 		const turn = role === 'agent' && !this.#calibrating ? this.#turn : undefined
 		try {
 			const request = new Request(input, init)
+			const limits = this.#config.study?.limits
+			if (
+				limits !== undefined &&
+				(this.#stopped !== undefined ||
+					this.#sent >= limits.calls ||
+					this.#tokensUsed >= limits.tokens ||
+					Date.now() - this.#started >= limits.wall)
+			)
+				throw new Error(this.#stopped ?? 'e1 whole-trajectory limit reached')
 			const blocked =
 				this.#config.mode === 'dry' ||
 				(!this.#config.live && new URL(request.url).port === DAEMON_PORT)
@@ -822,7 +890,13 @@ export class Driver {
 				method: request.method,
 				headers: request.headers,
 				body,
-				signal: request.signal,
+				signal:
+					limits === undefined
+						? request.signal
+						: AbortSignal.any([
+								request.signal,
+								AbortSignal.timeout(Math.max(1, limits.wall - (Date.now() - this.#started))),
+							]),
 			})
 			status = response.status
 			const bytes = new Uint8Array(await response.arrayBuffer())
@@ -836,12 +910,37 @@ export class Driver {
 			error = describeError(cause)
 			throw cause
 		} finally {
-			const budget = this.#config.execution?.budget ?? buildBudget(this.#config.reserve)
+			const budget =
+				this.#config.study?.budget ??
+				this.#config.execution?.budget ??
+				buildBudget(this.#config.reserve)
 			const failures = this.#calibrating
 				? []
 				: listResourceFailures(role, raw, responseText, budget, status, error)
 			for (const failure of failures) this.#invalid.add(failure)
 			const reading = readWireReading({ body: raw }, { text: responseText })
+			const summary = this.#picks.at(-1)?.instructions[INSTRUCTION_SUMMARIES.name] ?? ''
+			if (
+				role === 'agent' &&
+				sent &&
+				collectSummaryBodies(summary).length > 0 &&
+				matchesSummaryBlock(summary, reading.messages)
+			)
+				this.#exposed = true
+			if (this.#config.study !== undefined) {
+				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
+				if (
+					!sent ||
+					error !== undefined ||
+					(status ?? 500) >= 400 ||
+					reading.prompt === undefined ||
+					reading.completion === undefined ||
+					failures.length !== 0 ||
+					this.#tokensUsed > this.#config.study.limits.tokens ||
+					Date.now() - this.#started > this.#config.study.limits.wall
+				)
+					this.#stopped = `e1 integrity/resource failure at request ${sequence}`
+			}
 			const evidence: MatrixRequest = {
 				sequence,
 				role,
@@ -962,6 +1061,34 @@ export class Driver {
 		const path = join(this.#config.cache, FILES.judge)
 		const frozen = this.#config.frozen
 		const execution = this.#config.execution
+		const study = this.#config.study
+		if (study !== undefined) {
+			if (existsSync(this.#config.cache))
+				throw new Error('e1 requires a new writable cache for every phase and arm')
+			const classification =
+				study.classification === undefined
+					? undefined
+					: readClassification(study.classification, study.runtime, study.frozen)
+			mkdirSync(this.#config.cache, { recursive: true })
+			writeFileSync(
+				path,
+				classification === undefined ? '' : readFileSync(classification.cache.path),
+				{ flag: 'wx' },
+			)
+			writeFileSync(
+				join(this.#config.cache, 'lineage.json'),
+				JSON.stringify({
+					protocol: 'e1',
+					runtime: study.runtime.hash,
+					frozen: study.frozen.hash,
+					classification: study.classification?.hash,
+					seed: hashFile(path).hash,
+				}),
+				{ flag: 'wx' },
+			)
+			this.#lineage = [hashFile(path)]
+			return { path, scratch: undefined }
+		}
 		if (frozen !== undefined && execution !== undefined) {
 			const origin = {
 				identity: nameMatrix(execution),
@@ -1040,7 +1167,10 @@ export class Driver {
 			}),
 			read: readLookup,
 		}))
-		const budget = this.#config.execution?.budget ?? buildBudget(this.#config.reserve)
+		const budget =
+			this.#config.study?.budget ??
+			this.#config.execution?.budget ??
+			buildBudget(this.#config.reserve)
 		return createLedger(
 			this.#createProvider('agent', {
 				...SAMPLER,
@@ -1197,6 +1327,7 @@ export class Driver {
 			'calls.jsonl',
 			'messages.jsonl',
 			'judgments.jsonl',
+			...(this.#config.study === undefined ? [] : ['receipts.jsonl', 'observations.jsonl']),
 		])
 			writeFileSync(join(out, name), '')
 		if (this.#config.frozen !== undefined) {
@@ -1240,6 +1371,35 @@ export class Driver {
 	}
 
 	#count(rig: Rig, call: ToolCall, result: ToolResult): void {
+		if (
+			this.#config.runtime !== undefined &&
+			this.#current !== undefined &&
+			this.#out !== undefined
+		) {
+			const id = String(call.arguments.id ?? call.arguments.account ?? '')
+			const version = this.#config.runtime.lookups
+				.filter(
+					(lookup) =>
+						lookup.tool === call.name && lookup.id === id && lookup.from <= this.#position,
+				)
+				.at(-1)?.from
+			const receipt: SustainedReceipt = {
+				goal: this.#current.id,
+				call: call.id,
+				tool: call.name,
+				arguments: call.arguments,
+				success: result.success,
+				content: result.success
+					? typeof result.value === 'string'
+						? result.value
+						: JSON.stringify(result.value)
+					: result.error,
+				after: this.#position,
+				version,
+			}
+			this.#receipts.push(receipt)
+			appendFileSync(join(this.#out, 'receipts.jsonl'), `${JSON.stringify(receipt)}\n`)
+		}
 		if (call.name !== 'recall') {
 			this.#lookups += 1
 			if (!result.success && result.error === LEDGER_NOTES.repeat) this.#repeats += 1
@@ -1292,7 +1452,119 @@ export class Driver {
 			scale: rig.ledger.gauge?.scale,
 		}
 		this.#picks.push(record)
+		if (this.#config.runtime !== undefined) this.#observeSources(rig, selection)
 		appendFileSync(join(out, FILES.selections), `${JSON.stringify(record)}\n`)
+	}
+
+	#observeSources(rig: Rig, selection: Selection): void {
+		const runtime = this.#config.runtime
+		if (runtime === undefined) return
+		const direct = new Set(selection.messages.map((message) => message.id))
+		const input = rig.mirror.input()
+		const projection = rig.mirror.projection(input)
+		for (const message of rig.ledger.conversation.messages()) {
+			if (
+				!direct.has(message.id) &&
+				!rig.mirror
+					.lines(message.id, input, projection)
+					.some((line) => (selection.briefing ?? '').includes(line.text))
+			)
+				continue
+			const index = rig.seeds.get(message.id)
+			const source = index === undefined ? undefined : runtime.seed[index]
+			if (source !== undefined) this.#selectedSources.add(`source:${source.id}`)
+			const goal = this.#tags.get(message.id)
+			if (message.role === 'assistant' && goal !== undefined && goal !== this.#current?.id)
+				this.#selectedSources.add(`product:${goal}`)
+			const receipt = this.#receipts.find(
+				(one) => one.call === message.call && one.version !== undefined && one.success,
+			)
+			if (receipt !== undefined)
+				this.#selectedSources.add(
+					`lookup:${String(receipt.arguments.id ?? receipt.arguments.account)}@${receipt.version}`,
+				)
+		}
+	}
+
+	#observeWork(rig: Rig, goal: CopyGoal, row: Row, out: string): void {
+		const runtime = this.#config.runtime
+		const current = runtime?.goals.find((one) => one.id === goal.id)
+		if (runtime === undefined || current === undefined) return
+		const sources = [
+			...runtime.seed.slice(0, goal.after + 1).map((source) => `source:${source.id}`),
+			...new Set(
+				this.#receipts
+					.filter((receipt) => receipt.success && receipt.version !== undefined)
+					.map(
+						(receipt) =>
+							`lookup:${String(receipt.arguments.id ?? receipt.arguments.account)}@${receipt.version}`,
+					),
+			),
+		]
+		const products = [
+			...new Set(
+				this.#history
+					.filter((message) => message.role === 'assistant' && this.#tags.has(message.id))
+					.map((message) => `product:${this.#tags.get(message.id)}`),
+			),
+		]
+		const available = [...sources, ...products]
+		const arrivals = measureText(
+			runtime.seed
+				.slice(0, goal.after + 1)
+				.map((source) => source.content)
+				.join('\n'),
+		).tokens
+		const requests = measureText(
+			[
+				...this.#history
+					.filter((message) => this.#requests.has(message.id))
+					.map((message) => message.content),
+				goal.request,
+			].join('\n'),
+		).tokens
+		const work = measureText(
+			this.#history
+				.filter((message) => message.role === 'assistant')
+				.map((message) => message.content)
+				.join('\n'),
+		).tokens
+		const tools = measureText(
+			this.#history
+				.filter((message) => message.role === 'tool')
+				.map((message) => message.content)
+				.join('\n'),
+		).tokens
+		const complete =
+			!row.partial &&
+			row.error === undefined &&
+			row.reply.length > 0 &&
+			this.#stopped === undefined &&
+			(row.resource?.length ?? 0) === 0
+		const observation: SustainedObservation = {
+			goal: goal.id,
+			shift: current.shift,
+			after: goal.after,
+			checkpoint:
+				complete &&
+				current.shift % 4 === 0 &&
+				runtime.goals.filter((one) => one.shift === current.shift).at(-1)?.id === goal.id,
+			conversation: this.#history.map((message) => `message:${message.id}`),
+			sources,
+			products,
+			selected: available.filter((id) => this.#selectedSources.has(id)),
+			omitted: available.filter((id) => !this.#selectedSources.has(id)),
+			history: {
+				arrivals,
+				requests,
+				products: work,
+				tools,
+				total: arrivals + requests + work + tools,
+			},
+			exposed: this.#exposed,
+			complete,
+		}
+		appendFileSync(join(out, 'observations.jsonl'), `${JSON.stringify(observation)}\n`)
 	}
 
 	// Wraps the ledger's selection: files the request, runs the aggregate stage, and sends the prefix flush before the agent builds its prompt.
@@ -1385,6 +1657,8 @@ export class Driver {
 	}
 
 	#begin(goal: CopyGoal): void {
+		this.#selectedSources.clear()
+		this.#exposed = false
 		this.#current = goal
 		this.#faults = 0
 		this.#invalid.clear()
@@ -1407,6 +1681,7 @@ export class Driver {
 	async #serve(rig: Rig, goal: CopyGoal, prepared: Preparation, out: string): Promise<void> {
 		this.#begin(goal)
 		this.#advance(rig, goal.after)
+		this.#history = [...rig.ledger.conversation.messages()]
 		this.#date = renderDate(findDay(rig.copy.days, goal.after)?.date ?? '')
 		rig.ledger.agent.context.instructions.add({
 			name: INSTRUCTION_DATE.name,
@@ -1476,7 +1751,13 @@ export class Driver {
 			sole: rendering?.sole ?? 0,
 		}
 		appendFileSync(join(out, FILES.rows), `${JSON.stringify(row)}\n`)
+		this.#observeWork(rig, goal, row, out)
 		this.#report(out, prepared, 'running', undefined)
+		if (
+			this.#config.study !== undefined &&
+			(this.#stopped !== undefined || row.partial || row.error !== undefined || row.reply === '')
+		)
+			throw new Error(this.#stopped ?? `e1 incomplete response at ${goal.id}`)
 		console.log(
 			`${goal.id}: ${row.success ? 'PASS' : 'FAIL'}; wall=${row.wall}ms stage=${Math.round(row.stage)}ms`,
 		)
@@ -1583,26 +1864,40 @@ export class Driver {
 			join(out, FILES.run),
 			JSON.stringify(
 				{
-					protocol: 'l6',
-					identity: nameMatrix({
-						protocol: 'l6',
-						key: config.key,
-						think: config.think,
-						arm: config.arm,
-						copy: config.copy,
-					}),
+					protocol: config.study?.protocol ?? 'l6',
+					identity:
+						config.study === undefined
+							? nameMatrix({
+									protocol: 'l6',
+									key: config.key,
+									think: config.think,
+									arm: config.arm,
+									copy: config.copy,
+								})
+							: `e1-${config.key}-${config.study.phase}-${config.arm}-${config.study.runtime.hash.slice(0, 12)}`,
 					think: config.think,
-					execution: config.execution,
+					execution: config.study ?? config.execution,
+					executionFile: config.studyPath === undefined ? undefined : hashFile(config.studyPath),
+					runtime: config.study?.runtime,
+					limits: config.study?.limits,
+					tokens: this.#tokensUsed,
 					frozen: config.frozen,
 					lineage: {
-						seed: config.frozen?.seed,
+						seed:
+							config.study === undefined
+								? config.frozen?.seed
+								: {
+										runtime: config.study.runtime.hash,
+										classification: config.study.classification?.hash,
+										hash: this.#lineage[0]?.hash,
+									},
 						before: this.#lineage,
 						after: [join(config.cache, FILES.judge), join(config.cache, FILES.summary)]
 							.filter(existsSync)
 							.map(hashFile),
 					},
-					budget: config.execution?.budget ?? buildBudget(config.reserve),
-					unfrozen: config.execution === undefined,
+					budget: config.study?.budget ?? config.execution?.budget ?? buildBudget(config.reserve),
+					unfrozen: config.execution === undefined && config.study === undefined,
 					turns: this.#turn,
 					sent: this.#sent,
 					status,
@@ -1667,6 +1962,7 @@ export class Driver {
 			const requests = new Set<string>()
 			let position = -1
 			for (const goal of goals) {
+				if (this.#config.study !== undefined) this.#current = goal
 				if (goal.after > position) {
 					appendSeed(ledger.conversation, copy.seed, position + 1, goal.after, new Map())
 					position = goal.after
@@ -1675,6 +1971,7 @@ export class Driver {
 				mirror.note(request)
 				requests.add(request.id)
 				await classifier.classify(requests, abort.signal)
+				if (this.#stopped !== undefined) throw new Error(this.#stopped)
 				if (cache.fault !== undefined) throw cache.fault
 				console.log(
 					live
@@ -1710,6 +2007,22 @@ export class Driver {
 		if (out === undefined) throw new Error('--seed requires --out DIR')
 		if (existsSync(out)) throw new Error(`seed output already exists: ${out}`)
 		mkdirSync(out, { recursive: true })
+		this.#out = out
+		if (this.#config.study !== undefined) {
+			writeFileSync(join(out, 'requests.jsonl'), '')
+			writeFileSync(join(out, 'calls.jsonl'), '')
+			const response = await globalThis.fetch(new URL('/api/tags', this.#config.url))
+			const inventory: unknown = await response.json()
+			writeFileSync(join(out, 'model-inventory.json'), JSON.stringify(inventory))
+			if (this.#config.frozen === undefined) throw new Error('missing filing freeze')
+			for (const role of [
+				this.#config.frozen.judge,
+				this.#config.frozen.summarizer,
+				this.#config.frozen.decision,
+			])
+				if (readModelDigest(inventory, role.model) !== role.digest)
+					throw new Error('filing model digest changed')
+		}
 		this.#path = join(out, FILES.calls)
 		this.#report(out, prepared, 'started', undefined)
 		try {

@@ -14,13 +14,13 @@ import type {
 	AggregateTrigger,
 	AggregateVersion,
 	AggregatorOptions,
-} from '../types.ts'
+} from '../types.js'
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import { LEDGER_OWNER_PREFIX } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import { describeError, findDay } from '../helpers.ts'
-import { AGREE_HEAD, AGREE_QUESTION, CHANGE_HEAD } from './constants.ts'
+import { describeError, findDay } from '../helpers.js'
+import { AGREE_HEAD, AGREE_QUESTION, CHANGE_HEAD } from './constants.js'
 import {
 	buildAgreeState,
 	buildChangeQuestion,
@@ -41,7 +41,7 @@ import {
 	renderSource,
 	renderSummaries,
 	versionToState,
-} from './helpers.ts'
+} from './helpers.js'
 
 /**
  * Keeps one summary per desk topic and per owner, rebuilds it when its sources change, and renders the summaries that the control arm's text already carries.

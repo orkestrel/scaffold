@@ -1,13 +1,13 @@
 import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { WireRun } from '../types.ts'
+import type { WireRun } from '../types.js'
 import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { CORPUS, HARNESS, MICA_MODEL, SCENARIO_LONG } from '../constants.ts'
-import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.ts'
+import { CORPUS, HARNESS, MICA_MODEL, SCENARIO_LONG } from '../constants.js'
+import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.js'
 import {
 	assignCategory,
 	buildCacheKey,
@@ -36,7 +36,7 @@ import {
 	renderMessageState,
 	renderPairState,
 	resolveLookup,
-} from '../helpers.ts'
+} from '../helpers.js'
 
 const SHORT = join(HARNESS, 'bench', 'scenario.json')
 const COPY = join(HARNESS, 'bench', 'variants', 'ledger', 'v1.json')

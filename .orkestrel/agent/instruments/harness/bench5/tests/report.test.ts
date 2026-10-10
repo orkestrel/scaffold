@@ -1,10 +1,11 @@
+import { BUILD } from '../constants.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { HARNESS } from '../constants.ts'
+import { HARNESS } from '../constants.js'
 
 type Table = Readonly<Record<string, unknown>>
 type Arm = 'control' | 'aggregate'
@@ -32,7 +33,7 @@ interface Passes {
 
 type Tweak = (data: RunData, arm: Arm, copy: number) => RunData
 
-const REPORT = join(HARNESS, 'bench5', 'report.ts')
+const REPORT = join(BUILD, 'bench5', 'report.js')
 const MODEL = 'qwen3.5:2b-q4_K_M'
 // The goals in file order; g06 is outside every comparison.
 const GOALS = ['g01-alpha', 'g06-skip', 'g11-gamma', 'g12-delta']

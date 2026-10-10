@@ -11,10 +11,10 @@ import type {
 	RefitLabels,
 	RefitSource,
 	RefitVerdict,
-} from './types.ts'
+} from './types.js'
 import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
-import { isCacheRow, isMessageRole, isSummaryRow, isUsage } from '../helpers.ts'
-import { isMatrixFreeze } from '../matrix/validators.ts'
+import { isCacheRow, isMessageRole, isSummaryRow, isUsage } from '../helpers.js'
+import { isMatrixFreeze } from '../matrix/validators.js'
 
 /** Checks a serialized projected source, including seed grouping. */
 export function isRefitSource(value: unknown): value is RefitSource {
@@ -85,6 +85,10 @@ export function isRefitCorpus(value: unknown): value is RefitCorpus {
 		() =>
 			isRecord(value) &&
 			value.mode === 'cold-build seed-only development' &&
+			(value.sustained === undefined ||
+				(isRecord(value.sustained) &&
+					isRefitFile(value.sustained.runtime) &&
+					isRefitFile(value.sustained.classification))) &&
 			arrayOf(isRefitFile)(value.files) &&
 			arrayOf(isRefitContext)(value.contexts) &&
 			Array.isArray(value.points) &&
@@ -164,6 +168,10 @@ export function isRefitGeneration(value: unknown): value is RefitGeneration {
 		() =>
 			isRecord(value) &&
 			(value.matrix === undefined || isMatrixFreeze(value.matrix)) &&
+			(value.sustained === undefined ||
+				(isRecord(value.sustained) &&
+					isRefitFile(value.sustained.runtime) &&
+					isRefitFile(value.sustained.classification))) &&
 			isString(value.corpus) &&
 			isString(value.attempts) &&
 			isString(value.packet) &&

@@ -1,3 +1,3 @@
-import { Refit } from './refit/Refit.ts'
+import { Refit } from './refit/Refit.js'
 
 process.exitCode = await Refit.run(process.argv.slice(2))

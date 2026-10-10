@@ -1,15 +1,15 @@
 import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { Fixture } from './fixture.ts'
+import type { Fixture } from './fixture.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createOllama } from '../../vendor/ollama/index.js'
-import { DAEMON, SAMPLER } from '../constants.ts'
-import { readRows } from '../helpers.ts'
-import { Summarizer } from '../Summarizer.ts'
-import { startFixture } from './fixture.ts'
+import { DAEMON, SAMPLER } from '../constants.js'
+import { readRows } from '../helpers.js'
+import { Summarizer } from '../Summarizer.js'
+import { startFixture } from './fixture.js'
 
 const MODEL = 'gemma4:e2b-it-q4_K_M'
 const PREFIX = 'You maintain a short summary'
@@ -53,13 +53,26 @@ function pickPath(): string {
 
 function buildMessages(topic: string, line = 'Marcus got the refund.'): readonly Message[] {
 	return [
-		{ id: 's1', role: 'system', content: `${PREFIX} of what a support desk's messages establish about ${topic} as of 2026-10-08.` },
+		{
+			id: 's1',
+			role: 'system',
+			content: `${PREFIX} of what a support desk's messages establish about ${topic} as of 2026-10-08.`,
+		},
 		{ id: 'u1', role: 'user', content: `(Thu) customer: ${line}` },
 	]
 }
 
-function buildSummarizer(path: string, live: boolean, predict = PREDICT, url = fixture.url): Summarizer {
-	const provider = createOllama({ model: MODEL, url, options: { ...SAMPLER, num_predict: predict } })
+function buildSummarizer(
+	path: string,
+	live: boolean,
+	predict = PREDICT,
+	url = fixture.url,
+): Summarizer {
+	const provider = createOllama({
+		model: MODEL,
+		url,
+		options: { ...SAMPLER, num_predict: predict },
+	})
 	return new Summarizer({ provider, model: MODEL, sampler: SAMPLER, predict, cache: path, live })
 }
 
@@ -113,7 +126,10 @@ describe('Summarizer', () => {
 	it('throws on an offline miss, with no request and no file', async () => {
 		const path = pickPath()
 		const count = fixture.requests.length
-		await assert.rejects(buildSummarizer(path, false).summarize(buildMessages(TOPIC), signal()), /^Error: summary cache miss$/)
+		await assert.rejects(
+			buildSummarizer(path, false).summarize(buildMessages(TOPIC), signal()),
+			/^Error: summary cache miss$/,
+		)
 		assert.equal(fixture.requests.length, count)
 		assert.equal(existsSync(path), false)
 	})
@@ -139,12 +155,29 @@ describe('Summarizer', () => {
 		const path = pickPath()
 		await buildSummarizer(path, true).summarize(buildMessages(TOPIC), signal())
 		const offline = buildSummarizer(path, false)
-		await assert.rejects(offline.summarize(buildMessages(TOPIC, 'Marcus got a different refund.'), signal()), /summary cache miss/)
-		await assert.rejects(buildSummarizer(path, false, PREDICT + 16).summarize(buildMessages(TOPIC), signal()), /summary cache miss/)
+		await assert.rejects(
+			offline.summarize(buildMessages(TOPIC, 'Marcus got a different refund.'), signal()),
+			/summary cache miss/,
+		)
+		await assert.rejects(
+			buildSummarizer(path, false, PREDICT + 16).summarize(buildMessages(TOPIC), signal()),
+			/summary cache miss/,
+		)
 		const reversed = buildMessages(TOPIC).map((message): Message => ({ ...message, role: 'user' }))
 		await assert.rejects(offline.summarize(reversed, signal()), /summary cache miss/)
-		const provider = createOllama({ model: 'other-model', url: fixture.url, options: { ...SAMPLER, num_predict: PREDICT } })
-		const renamed = new Summarizer({ provider, model: 'other-model', sampler: SAMPLER, predict: PREDICT, cache: path, live: false })
+		const provider = createOllama({
+			model: 'other-model',
+			url: fixture.url,
+			options: { ...SAMPLER, num_predict: PREDICT },
+		})
+		const renamed = new Summarizer({
+			provider,
+			model: 'other-model',
+			sampler: SAMPLER,
+			predict: PREDICT,
+			cache: path,
+			live: false,
+		})
 		await assert.rejects(renamed.summarize(buildMessages(TOPIC), signal()), /summary cache miss/)
 		const reseeded = new Summarizer({
 			provider,
@@ -172,7 +205,9 @@ describe('Summarizer', () => {
 		const path = pickPath()
 		const controller = new AbortController()
 		controller.abort()
-		await assert.rejects(buildSummarizer(path, true).summarize(buildMessages(TOPIC), controller.signal))
+		await assert.rejects(
+			buildSummarizer(path, true).summarize(buildMessages(TOPIC), controller.signal),
+		)
 		assert.equal(existsSync(path) ? readRows(path).length : 0, 0)
 	})
 
@@ -183,7 +218,11 @@ describe('Summarizer', () => {
 		const [row] = readRows(path)
 		const lines = [
 			JSON.stringify({ key: 1 }),
-			JSON.stringify({ ...(typeof row === 'object' ? row : {}), key: 'broken', usage: { prompt: 'x' } }),
+			JSON.stringify({
+				...(typeof row === 'object' ? row : {}),
+				key: 'broken',
+				usage: { prompt: 'x' },
+			}),
 			'',
 			readFileSync(path, 'utf8').trim(),
 		]

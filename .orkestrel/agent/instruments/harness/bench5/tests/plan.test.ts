@@ -1,3 +1,4 @@
+import { BUILD } from '../constants.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -5,11 +6,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { MODELS } from '../constants.ts'
+import { MODELS } from '../constants.js'
 
 const HARNESS = dirname(dirname(import.meta.dirname))
-const PLAN = join(HARNESS, 'bench5', 'plan.ts')
-const RUN_ONE = join(HARNESS, 'tools', 'run-one.ts')
+const PLAN = join(BUILD, 'bench5', 'plan.js')
+const RUN_ONE = join(BUILD, 'tools', 'run-one.js')
 const scratch = mkdtempSync(join(tmpdir(), 'plan-'))
 const thrower = join(scratch, 'thrower.mjs')
 let written = 0

@@ -4,10 +4,10 @@ import assert from 'node:assert/strict'
 import { isRecord } from '@orkestrel/contract'
 import { mkdirSync, mkdtempSync } from 'node:fs'
 import { resolve, join } from 'node:path'
-import { ADMISSION_LIMIT, HARNESS } from '../constants.ts'
+import { ADMISSION_LIMIT, HARNESS } from '../constants.js'
 import { estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import { isMessageRole } from '../helpers.ts'
-import { replayAdmission } from './setupAdmission.ts'
+import { isMessageRole } from '../helpers.js'
+import { replayAdmission } from './setupAdmission.js'
 
 describe('archived records messages with explicit l6 wire caps', () => {
 	it('preserves archived messages through empty, rejected, and all-cut treatment while explicitly capping previously uncapped decisions at 512', async () => {
