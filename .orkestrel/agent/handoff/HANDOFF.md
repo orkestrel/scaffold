@@ -42,14 +42,14 @@ The weekly limit stopped the subagents at 16:20 UTC on 2026-10-10. The state eac
   - U6 (ledgers) died mid-run; the cleanup unit reversed its partial edits from the tree. `agent-wip/U6-ledgers-partial.diff` stays for reference only.
   - U4, U3, U7, and U2 never ran.
   - The agent working tree is clean at `a2285b8`.
-- The supplementary audit (workflow run `wf_5f9617ac-565`): all 18 checker lanes returned 407 findings, and none was verified (the verifiers hit the limit). They are in `../instruments/units/agent-0030/compliance-audit-tests-unverified.json`, keyed by lane.
+- The supplementary audit (workflow run `wf_5f9617ac-565`): its 18 checker lanes returned 407 findings (`../instruments/units/agent-0030/compliance-audit-tests-unverified.json`). A read-only GPT-6 Astra lane (Codex session in `tmp/codex/tests-verify.jsonl` of the agent checkout, 1,058,243 ms) ruled on all 407 against the tree at `a2285b8`: 101 confirmed, 100 refuted, 206 covered, 0 gone. The verdicts are `../instruments/units/agent-0030/compliance-audit-tests-verdicts.json`; the most confirmed findings sit in `tests/setup.ts` (25), `tests/src/core/agents/Agent.test.ts` (14), and `tests/guides.test.ts` (8).
 - The aggregate arm's judge-only seed pass finished: 1,897,212 ms, 500 live questions (topic 348, amends 96, category 48, supersedes 8), 823 cache rows. The cache is `l5-cache/judge.jsonl` and the pass's output `l5-seed/`. The dry coverage check then read 0 seed-only misses and 0 fetches on copies 1 to 8; copies 2 to 8 each leave 120 topic questions about their reworded requests, which go live during the runs.
 - The results artifact's source page is `artifact/larkspur.html`.
 
 ## 0.0.30: the remaining steps
 
 1. Rule on U5's two open questions and repair `tests/src/core/conversations/validators.test.ts:108`. Then rerun U6, U4, U3, U7, and U2 from `workflows/phase2.js` with U5 removed from its unit list, starting from `a2285b8`.
-2. Verify the 407 supplementary findings (the verify stage of `audit-tests.js`, resumable from its run's cache only in the same session), write the confirmed ones to the agent repository's `tmp/units/compliance-audit-tests.json`, and give each to the unit that owns the file, as a second pass. Its line numbers predate phase 1; units find the code by content.
+2. Give each of the 101 confirmed supplementary findings in `compliance-audit-tests-verdicts.json` to the unit that owns its file, with the corrected fix the verdict carries; setup, guides-test, and guide findings go to the S, IG, and G integration units.
 3. Phase 3, in the order `compliance-plan-planner.md` § Integration order gives: B applies the barrel patches; S applies the setup patches in the order U6, U5, U4, U3, U7, U2, and each unit's acceptance runs after its own patch; then IG (`tests/guides.test.ts`), G (`guides/agent.md`, `guides/README.md`, `README.md`), and K (`npm run lint`, then `npm run format`).
 4. Gates, read bare, by a `verifier`: `npm run prepublishOnly`; the recorded-wire replay (`npx vitest run --config vite.config.ts --project probe tmp/probes/ledger-replay.test.ts`, 108 of 108 at `c04eea4`; the probe and its evidence file come from `/home/user/agent-port-gauge/tmp/`); and a raw comparison of the requests the `c04eea4` build and the final build generate for the 8 recorded runs.
 5. One `orkestrel-falsify` round on the integrated diff.
