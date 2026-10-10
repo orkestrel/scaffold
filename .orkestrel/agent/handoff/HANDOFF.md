@@ -34,16 +34,22 @@ The aggregate arm's records are in `../instruments/units/aggregates/`: `design.m
 
 ## Running at handoff
 
-Each of these runs inside this container and stops when the session ends.
+The weekly limit stopped the subagents at 16:20 UTC on 2026-10-10. The state each line of work reached is saved under this directory, because the agent repository's `tmp/` and the harness's `tmp/` are ignored and die with the container.
 
-- Phase 2 of the agent campaign (workflow run `wf_fc724977-56e`): units U6 (ledgers, R1 to R4, the `setupLedger` fold) and U5 (conversations, R7) were writing; U4, U3, U7, and U2 were queued. Its edits sit uncommitted in `/home/user/agent-release`.
-- The supplementary audit of the 39 test files the first audit did not read whole (workflow run `wf_5f9617ac-565`, script `../instruments/units/agent-0030/audit-tests.js`): 18 of about 36 agents had returned. Its output is `tmp/units/compliance-audit-tests.json` in the agent repository once written.
-- The aggregate arm's judge-only seed pass: `node bench5/bench.ts --seed --live --copy 1 --cache tmp/l5/cache --out tmp/l5/seed` from `../instruments/harness`, with 453 cache rows at handoff. `tmp/` is ignored, so a new container restarts it from the corpus.
+- Phase 2 of the agent campaign (workflow run `wf_fc724977-56e`):
+  - U5 (conversations, R7, the snapshot ruling) finished. Its own report: every U5 finding closed; in a scratch tree with its patches applied, conversations 202 of 202, setup 64 of 64, `check:src:core` exit 0; in the checkout, 9 conversation tests wait on its setup patch. No independent gate ran. Its edits are `agent-wip/U5-conversations.diff` (tracked changes and its created `tests/src/core/conversations/factories.test.ts`), and its shared-file patches are `agent-wip/patches/U5/` (`tests-setup.ts.diff`, `tests-setup.test.ts.diff`, `tests-guides.test.ts.diff`, `guides-agent.md.diff`, which applies after `patches/U1/guides-agent.md.diff`). It asks three rulings: whether `rehydrate` stays silent on an unknown id, whether `requireSectionsCap` refuses `NaN`, and the guide-patch order.
+  - U5 also deleted shared scratchpad paths it did not create (`scripts/`, `base/`, `run/`, `applycheck/`, root `*.md`, `f.txt`); no tracked file and no record this handoff names was among them.
+  - U6 (ledgers) died mid-run. Its partial edits are `agent-wip/U6-ledgers-partial.diff`: untrusted, kept for reference only.
+  - U4, U3, U7, and U2 never ran.
+  - The agent working tree at `/home/user/agent-release` still holds the U5 and U6 edits uncommitted on top of `1b5ede0`.
+- The supplementary audit (workflow run `wf_5f9617ac-565`): all 18 checker lanes returned 407 findings, and none was verified (the verifiers hit the limit). They are in `../instruments/units/agent-0030/compliance-audit-tests-unverified.json`, keyed by lane.
+- The aggregate arm's judge-only seed pass ran on without the limit (it calls only the local daemon): goal g13 of 24 and 602 cache rows at 16:22 UTC. The cache snapshot is `l5-cache/judge.jsonl`; copy it to `../instruments/harness/tmp/l5/cache/judge.jsonl` in a fresh container, and the seed pass asks only the questions it lacks.
+- The results artifact's source page is `artifact/larkspur.html`.
 
 ## 0.0.30: the remaining steps
 
-1. Check the working tree of `/home/user/agent-release`. When the container survived and phase 2 finished, read each unit's report from the workflow journal and continue. When phase 2 died part-way, the partial edits are not trustworthy: return the tree to `1b5ede0` (the session that resumes decides how, because `AGENTS.md` and `.agents/orchestration.md` forbid units from running `git checkout`, `restore`, `reset`, or `clean`) and rerun `workflows/phase2.js`.
-2. Turn the supplementary audit's confirmed findings into `tmp/units/compliance-audit-tests.json` and give each to the unit that owns the file, as a second pass. Its line numbers predate phase 1; units find the code by content.
+1. Start the agent checkout from `1b5ede0` plus U5's work: apply `agent-wip/U5-conversations.diff` with `git apply` (when the container is fresh) and run an independent gate on it (`npx vitest run --config vite.config.ts --project src:core tests/src/core/conversations` after S applies `patches/U5/tests-setup.ts.diff`). Rerun U6, U4, U3, U7, and U2 from `workflows/phase2.js` with U5 removed from its unit list, and rule on U5's three questions first.
+2. Verify the 407 supplementary findings (the verify stage of `audit-tests.js`, resumable from its run's cache only in the same session), write the confirmed ones to the agent repository's `tmp/units/compliance-audit-tests.json`, and give each to the unit that owns the file, as a second pass. Its line numbers predate phase 1; units find the code by content.
 3. Phase 3, in the order `compliance-plan-planner.md` § Integration order gives: B applies the barrel patches; S applies the setup patches in the order U6, U5, U4, U3, U7, U2, and each unit's acceptance runs after its own patch; then IG (`tests/guides.test.ts`), G (`guides/agent.md`, `guides/README.md`, `README.md`), and K (`npm run lint`, then `npm run format`).
 4. Gates, read bare, by a `verifier`: `npm run prepublishOnly`; the recorded-wire replay (`npx vitest run --config vite.config.ts --project probe tmp/probes/ledger-replay.test.ts`, 108 of 108 at `c04eea4`; the probe and its evidence file come from `/home/user/agent-port-gauge/tmp/`); and a raw comparison of the requests the `c04eea4` build and the final build generate for the 8 recorded runs.
 5. One `orkestrel-falsify` round on the integrated diff.
@@ -62,12 +68,12 @@ Deferred by ruling: the agent's `@orkestrel/scaffold` devDependency moves to `^0
 
 All commands run from `../instruments/harness`; launch each live step through `node /home/user/scaffold/.agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap, in the background.
 
-1. Finish the seed pass, then run `node bench5/bench.ts --dry --copy N --cache tmp/l5/cache` for N from 1 to 8; every seed-only question must be a cache hit.
+1. Restore `../handoff/l5-cache/judge.jsonl` into `tmp/l5/cache/` when the container is fresh, finish the seed pass (`node bench5/bench.ts --seed --live --copy 1 --cache tmp/l5/cache --out tmp/l5/seed`), then run `node bench5/bench.ts --dry --copy N --cache tmp/l5/cache` for N from 1 to 8; every seed-only question must be a cache hit.
 2. Calibrate the CHANGE and AGREE cutoffs: `node bench5/calibrate.ts --cache tmp/l5/cache --model qwen3.5:2b-q4_K_M --out tmp/l5/calibrate --live`, then copy its `fit.json` to `bench5/fit.json`.
 3. Pilot: q2 copy 1 on goals g01 to g12, control then aggregate, through `tools/run-one.ts`. It sets the per-model allowance, the retry bound, and the summarizer cap in `bench5/settings.json`, and it measures the costs the cost attack refuted. Then run `node bench5/report.ts --base tmp/l5/pilot --pair q2,1-1`; no invariant line may fail.
 4. Vendor the trimmed 0.0.30 build beside `vendor/agent-0.0.30/` after the agent campaign lands (ruling T8), record its row in `README.md`, apply X3, and rerun `node bench5/seams.ts` and `node --test bench5/tests/*.test.ts` (296 of 296 at `98e8ce8`) and the type check (`node /home/user/scaffold/node_modules/typescript/bin/tsc -p bench5/tsconfig.json`).
 5. Stage A: q2 copies 1 to 4, both arms (`node bench5/plan.ts --models q2 --copies 1-4 --cache <absolute cache dir> --out <plan>`, then `tools/series.ts`), with the stopping rule in `rulings.md`. Stage B: g2, then g4, then q4, copies 1 to 4. `gemma4:e2b-it-q4_K_M` is not installed; the disk had 8.7 GB free, so remove one 4B model before pulling it if space runs short. Stage C runs copies 5 to 8 unless a pair clears at the low end.
-6. Blind-audit both sides (`audit/audit.js`, `audit/items.ts --count 24`, `audit/tally.ts --count 24`), run the shadow on copies 1 and 2 per model, and write the report to `../instruments/results/l5/REPORT.md`, with each departure from BRIEFING § 9 named. Then update `../issues.md` and the results artifact (https://claude.ai/artifact/VgCKcDwqN7YMd74jawfJ3S, from `larkspur.html` in the session scratchpad, which a new container lacks: read the artifact back with the Artifact tool's read action).
+6. Blind-audit both sides (`audit/audit.js`, `audit/items.ts --count 24`, `audit/tally.ts --count 24`), run the shadow on copies 1 and 2 per model, and write the report to `../instruments/results/l5/REPORT.md`, with each departure from BRIEFING § 9 named. Then update `../issues.md` and the results artifact (https://claude.ai/artifact/VgCKcDwqN7YMd74jawfJ3S; its source page at handoff is `artifact/larkspur.html` beside this file).
 
 ## Standing rules
 
