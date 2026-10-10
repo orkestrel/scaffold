@@ -53,7 +53,7 @@ describe('plan.ts', () => {
 		assert.equal(outcome.status, 0)
 		assert.deepEqual(
 			entries.map((entry) => entry.name),
-			['l5-q2-control-v1', 'l5-q2-aggregate-v1', 'l5-q2-aggregate-v2', 'l5-q2-control-v2', 'l5-q2-control-v3', 'l5-q2-aggregate-v3', 'l5-q2-aggregate-v4', 'l5-q2-control-v4'],
+			['l5-q2-control-v1', 'l5-q2-aggregatefill-v1', 'l5-q2-aggregate-v2', 'l5-q2-control-v2', 'l5-q2-control-v3', 'l5-q2-aggregate-v3', 'l5-q2-aggregate-v4', 'l5-q2-control-v4'],
 		)
 	})
 
@@ -100,15 +100,23 @@ describe('plan.ts', () => {
 		const estimates = new Map(entries.map((entry) => [entry.name, entry.estimate]))
 		assert.equal(estimates.get('l5-q2-control-v1'), Math.round(60 * 1.3 * 17.0))
 		assert.equal(estimates.get('l5-q2-control-v2'), Math.round(60 * 1.3 * 17.0))
-		assert.equal(estimates.get('l5-q2-aggregate-v1'), Math.round(60 * 1.3 * 49.6))
+		assert.equal(estimates.get('l5-q2-aggregatefill-v1'), Math.round(60 * 1.3 * 49.6))
 		assert.equal(estimates.get('l5-q2-aggregate-v2'), Math.round(60 * 1.3 * 25.6))
+	})
+
+	it('names only the first aggregate entry of each model with the aggregatefill token', () => {
+		const { entries } = writePlan(['--models', 'q2,g4', '--copies', '1-3', '--cache', join(scratch, 'cache')])
+		const names = entries.map((entry) => String(entry.name))
+		assert.deepEqual(names.filter((name) => name.includes('aggregatefill')), ['l5-q2-aggregatefill-v1', 'l5-g4-aggregatefill-v1'])
+		assert.equal(names.filter((name) => /-aggregate-v\d+$/.test(name)).length, 4)
+		assert.ok(names.every((name) => !name.includes('control') || /-control-v\d+$/.test(name)))
 	})
 
 	it('orders several models one after another, each in copy order', () => {
 		const { entries } = writePlan(['--models', 'g2,q4', '--copies', '1-2', '--cache', join(scratch, 'cache')])
 		assert.deepEqual(
 			entries.map((entry) => entry.name),
-			['l5-g2-control-v1', 'l5-g2-aggregate-v1', 'l5-g2-aggregate-v2', 'l5-g2-control-v2', 'l5-q4-control-v1', 'l5-q4-aggregate-v1', 'l5-q4-aggregate-v2', 'l5-q4-control-v2'],
+			['l5-g2-control-v1', 'l5-g2-aggregatefill-v1', 'l5-g2-aggregate-v2', 'l5-g2-control-v2', 'l5-q4-control-v1', 'l5-q4-aggregatefill-v1', 'l5-q4-aggregate-v2', 'l5-q4-control-v2'],
 		)
 		const models = entries.map((entry) => (Array.isArray(entry.args) ? entry.args[entry.args.indexOf('--model') + 1] : undefined))
 		assert.deepEqual(models, [MODELS.g2, MODELS.g2, MODELS.g2, MODELS.g2, MODELS.q4, MODELS.q4, MODELS.q4, MODELS.q4])
@@ -154,8 +162,8 @@ describe('run-one.ts', () => {
 	})
 
 	it('exits 2 for an existing log or wire directory of a bench5 run', () => {
-		writeFileSync(join(base, 'l5-q2-aggregate-v1.log'), '')
-		assert.equal(runOne(['l5-q2-aggregate-v1', 'bench5', base, '--', '--run', '--live']).status, 2)
+		writeFileSync(join(base, 'l5-q2-aggregatefill-v1.log'), '')
+		assert.equal(runOne(['l5-q2-aggregatefill-v1', 'bench5', base, '--', '--run', '--live']).status, 2)
 		mkdirSync(join(base, 'l5-g2-control-v1-wire'))
 		assert.equal(runOne(['l5-g2-control-v1', 'bench5', base, '--', '--run', '--live']).status, 2)
 		assert.equal(existsSync(join(base, 'run.log')), false)

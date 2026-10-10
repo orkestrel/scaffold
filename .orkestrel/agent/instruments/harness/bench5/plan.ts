@@ -39,9 +39,14 @@ function estimateRun(key: keyof typeof MODELS, arm: RunArm, copy: number): numbe
 	return Math.round(SECONDS * MARGIN * minutes)
 }
 
+// The first aggregate copy fills the caches, so series.ts must not price later copies from it; report.ts reads the token as copy 1.
+function nameArm(arm: RunArm, copy: number): string {
+	return arm === 'aggregate' && copy === FIRST ? 'aggregatefill' : arm
+}
+
 function buildEntry(key: keyof typeof MODELS, arm: RunArm, copy: number, cache: string): PlanEntry {
 	return {
-		name: `l5-${key}-${arm}-v${copy}`,
+		name: `l5-${key}-${nameArm(arm, copy)}-v${copy}`,
 		harness: 'bench5',
 		estimate: estimateRun(key, arm, copy),
 		args: ['--run', '--live', '--copy', String(copy), '--model', MODELS[key], '--arm', arm, '--cache', cache],
