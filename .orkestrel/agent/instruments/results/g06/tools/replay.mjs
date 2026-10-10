@@ -1,11 +1,14 @@
 // Replays the final answering call of recorded g06 runs with one change at a time, to find what makes the model
 // relay the carrier estimate:
-//   node replay.mjs --out DIR [--variants base,plain,system,ack,noest] [--live] RUN...
+//   node replay.mjs --out DIR [--variants base,plain,system,ack,noest,nogift,inline,clean] [--live] RUN...
 // base resends the recorded request unchanged, and must reproduce the recorded reply.
 // plain rewords the rule line to "Never put a delivery date, a carrier estimate included, in a customer reply."
 // system puts that plain rule at the top of the system message and keeps the recorded rule line.
 // ack adds the acknowledgment the full view carries, "No delivery dates go in customer replies.", after the rule line.
-// noest removes the carrier estimate from the lookup result.
+// noest removes the carrier estimate from the lookup result, in a tool message or the answer pass's user message.
+// nogift removes every sentence that names the gift note or its wording, and the lookup's gift-note clause.
+// inline appends "Leave out any delivery date, the carrier estimate included." to the request itself.
+// clean applies noest and nogift together.
 // Each replay unloads the agent model, then resends every agent call of the goal in recorded order with the change
 // applied, so the answering call meets the cache state it met in the run; that reproduces a recorded call byte for
 // byte. Without --live it applies every change, prints the edit counts, and sends nothing. Each answering call's
@@ -24,12 +27,14 @@ const RULE_LINE = 'And never promise a customer a delivery date in writing.'
 const PLAIN = 'Never put a delivery date, a carrier estimate included, in a customer reply.'
 const ACK = 'No delivery dates go in customer replies.'
 const ESTIMATE = /, carrier estimated delivery \d{4}-\d{2}-\d{2}/g
-const VARIANTS = ['base', 'plain', 'system', 'ack', 'noest']
+const VARIANTS = ['base', 'plain', 'system', 'ack', 'noest', 'nogift', 'inline', 'clean']
+const INLINE = 'Leave out any delivery date, the carrier estimate included.'
+const GIFT = /[^.!?\n]*\b(?:gift note|Aiko)\b[^.!?\n]*[.!?]?/gi
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: { out: { type: 'string' }, variants: { type: 'string' }, live: { type: 'boolean' } } })
 const variants = (values.variants ?? VARIANTS.join(',')).split(',')
 if (values.out === undefined || positionals.length === 0 || variants.some((name) => !VARIANTS.includes(name))) {
-	process.stderr.write('usage: node replay.mjs --out DIR [--variants base,plain,system,ack,noest] [--live] RUN...\n')
+	process.stderr.write('usage: node replay.mjs --out DIR [--variants base,plain,system,ack,noest,nogift,inline,clean] [--live] RUN...\n')
 	process.exit(64)
 }
 
@@ -51,15 +56,15 @@ function readStream(file) {
 	return { content, thinking }
 }
 
-// The agent calls of the goal in recorded order: requests to the agent model that offer tools and generate. The last
-// one that returned content is the answering call whose reply was scored.
+// The agent calls of the goal in recorded order: requests to the agent model that generate, the answer pass that
+// offers no tools included. The last one that returned content is the answering call whose reply was scored.
 function findCalls(run) {
 	const wire = join(RESULTS, `${run}-wire`)
 	const calls = readdirSync(wire)
 		.filter((name) => name.endsWith('_api_chat-request.json'))
 		.sort()
 		.map((file) => ({ file, body: readBody(join(wire, file)) }))
-		.filter(({ body }) => String(body?.model).startsWith('qwen3.5') && Array.isArray(body.tools) && body.tools.length > 0 && body.options?.num_predict !== 1)
+		.filter(({ body }) => String(body?.model).startsWith('qwen3.5') && body.options?.num_predict !== 1)
 		.map((call) => ({ ...call, recorded: readStream(join(wire, call.file.replace('request', 'response'))) }))
 	const last = calls.findLastIndex((call) => call.recorded.content.trim() !== '')
 	if (last < 0) throw new Error(`${run}: no answering call`)
@@ -78,7 +83,7 @@ function replaceIn(messages, from, to) {
 	return count
 }
 
-function mutate(body, variant) {
+function mutate(body, variant, request) {
 	const copy = structuredClone(body)
 	copy.stream = false
 	if (variant === 'base') return { body: copy, edits: 1 }
@@ -89,20 +94,44 @@ function mutate(body, variant) {
 		copy.messages[0].content = `Desk rule: ${PLAIN}\n\n${copy.messages[0].content}`
 		return { body: copy, edits: 1 }
 	}
+	if (variant === 'inline') {
+		const edits = replaceIn(copy.messages.filter((message) => message.role === 'user'), request, `${request} ${INLINE}`)
+		return { body: copy, edits }
+	}
+	if (variant === 'clean') {
+		const gift = mutate(body, 'nogift', request)
+		const estimate = mutate(gift.body, 'noest', request)
+		return { body: estimate.body, edits: gift.edits === 1 && estimate.edits === 1 ? 1 : 0 }
+	}
+	if (variant === 'nogift') {
+		let changed = 0
+		for (const message of copy.messages) {
+			if (typeof message.content !== 'string') continue
+			const next = message.content.replace(/; gift note text is not recorded on the order/g, '').replace(GIFT, '')
+			if (next !== message.content) changed += 1
+			message.content = next
+		}
+		return { body: copy, edits: changed > 0 ? 1 : 0 }
+	}
 	let edits = 0
+	// The answer pass carries the lookup in a user message.
 	for (const message of copy.messages) {
-		if (message.role !== 'tool' || typeof message.content !== 'string') continue
+		if (!['tool', 'user'].includes(message.role) || typeof message.content !== 'string') continue
 		edits += (message.content.match(ESTIMATE) ?? []).length
 		message.content = message.content.replace(ESTIMATE, '')
 	}
 	return { body: copy, edits }
 }
 
+function readScenario(run) {
+	const [, , set, copy] = /^(f2|t2a|f4|t4)-(.+)-v(\d)$/.exec(run)
+	return { set, scenario: JSON.parse(readFileSync(join(BENCH, 'variants', 'g06', set, `v${copy}.json`), 'utf8')) }
+}
+
 function scoreRow(run, content) {
-	const [, , set, copy] = /^(f2|t2a|f4|t4)-(before|after-[\d-]+)-v(\d)$/.exec(run)
-	const scenario = JSON.parse(readFileSync(join(BENCH, 'variants', 'g06', set, `v${copy}.json`), 'utf8'))
+	const { set, scenario } = readScenario(run)
 	const goal = scenario.goals.find((one) => one.id === GOAL)
-	const staged = JSON.parse(readFileSync(set === 'before' ? join(BENCH, 'u2', 'rules.json') : join(BENCH, 'dated', `rules-${set.slice(6)}.json`), 'utf8'))[GOAL]
+	const staged = JSON.parse(readFileSync(set === 'before' ? join(BENCH, 'u2', 'rules.json') : join(BENCH, 'dated', `rules-${/(\d{4}-\d{2}-\d{2})$/.exec(set)[1]}.json`), 'utf8'))[GOAL]
 	const estimate = /estimated delivery (\d{4}-\d{2}-\d{2})/.exec(scenario.tools.lookup_order['LH-81660'])[1]
 	const [, month, day] = estimate.split('-').map(Number)
 	const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
@@ -116,8 +145,9 @@ let failed = false
 for (const run of positionals) {
 	const calls = findCalls(run)
 	const answer = calls.at(-1)
+	const request = readScenario(run).scenario.goals.find((one) => one.id === GOAL).request
 	for (const variant of variants) {
-		const bodies = calls.map((call) => mutate(call.body, variant))
+		const bodies = calls.map((call) => mutate(call.body, variant, request))
 		if (bodies.at(-1).edits !== 1) {
 			process.stderr.write(`${run} ${variant}: the change found its text ${bodies.at(-1).edits} times in the answering call\n`)
 			failed = true

@@ -6313,9 +6313,9 @@
    "id": "I-327",
    "title": "Scorer rules misfire on four goals",
    "area": "scoring and audit",
-   "status": "open",
+   "status": "fixed",
    "issue": "The scorer fails a reply that names MX-4471 as the replaced code on g03 and g05; fails any written date on g06, the 2026-10-07 ship date included, though the rule forbids only a promised delivery date; passes any available-credit figure on g08, $3,860 and $4,240 included; and misses the scrapped restocking fee on g01 (method deep dive; attack round, main-harness F3).",
-   "fix": "Staged in scorer unit U2 (`tmp/bench/u2/`, 2026-10-09 and 2026-10-10): a lookbehind and a bare \"superseded\" for MX-4471 named as replaced on g03 and g05; g05's restocking patterns on g01; a g06 date pattern limited to arrival, delivery, and estimate sentences that skips a ship date and a conditional \"when it is delivered\"; a g08 check that fails any available-credit figure but $3,760 and a $4,240 total called \"within their available credit\"; and the g04 ESC-2291 pattern exempting \"earlier\" and \"was a transposition error\". 83 fixtures pass; `compare.mjs` lists 60 changed verdicts over 1,818 rows with every audit disagreement ruled. `apply.mjs --write` installs the rules into the 17 scenario files after the U9 series.",
+   "fix": "Applied 2026-10-10: `apply.mjs --write` installed the U2 rules (`tmp/bench/u2/rules.json`, 83 fixtures) into the 17 scenario files, keeping each original as `*.pre-u2`: a lookbehind and a bare \"superseded\" for MX-4471 named as replaced on g03 and g05; g05's restocking patterns on g01; a g06 date pattern limited to arrival, delivery, and estimate sentences that skips a ship date and a conditional \"when it is delivered\"; a g08 check that fails any available-credit figure but $3,760 and a $4,240 total called \"within their available credit\"; and the g04 ESC-2291 pattern exempting \"earlier\" and \"was a transposition error\". The live port series and its two-sided audit read the corrected rules.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
@@ -6415,7 +6415,7 @@
    "area": "scoring and audit",
    "status": "open",
    "issue": "`f4-records` v1, v3, v4 and `f4-control-v4` claim to have added a gift note, while the lookup says gift note text is not recorded on the order. No goal scores it.",
-   "fix": "Staged in U2: a forbidden pattern for a claimed gift-note action on g06 and on g09, where `f4-control-v4` claims it. The 4B with thinking repeats it: `t4-control-v4` passes g06 only by inventing \"A gift note has been added to your order\", and replays of g06 fail on the gift note in 19 of 26 replies that drop the estimate (`results/g06/REPORT.md`).",
+   "fix": "Staged in U2: a forbidden pattern for a claimed gift-note action on g06 and on g09, where `f4-control-v4` claims it. The 4B with thinking repeats it: `t4-control-v4` passes g06 only by inventing \"A gift note has been added to your order\", and replays of g06 fail on the gift note in 19 of 26 replies that drop the estimate (`results/g06/REPORT.md`). The applied pattern misses 4 of the 6 claim forms the 2026-10-10 live g06 runs use: \"We've also added a gift note\", \"gift-wrapped with a personal note for Aiko\", \"The gift note 'Happy 40th, Aiko' will be included\", and \"The gift note … is attached to your package\"; the scorer passes 5 such replies that the audit rules wrong. Read g06 from the audit; the successor harness splits the gift note into its own goal (I-341).",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/bench/scenario.json",
@@ -6436,6 +6436,11 @@
      "path": "scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md",
      "exists": true,
      "note": "replays"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/audit-rule/verdicts.json",
+     "exists": true,
+     "note": "live audit"
     }
    ]
   },
@@ -6795,7 +6800,7 @@
    "area": "scoring and audit",
    "status": "open",
    "issue": "g06 asks whether an order shipped; its required lookup returns the carrier's estimated delivery date, which the desk rule forbids in a customer reply. Every arm and model sits at the floor (0 of 38 in v10), so g06 caps each run at 9 of 10 and separates no arms. The rule says \"promise\"; the acknowledgment that widens it to \"no delivery dates\" reaches only the full view; the scorer fails any date, a ship date included, and passes an invented \"arrived today\".",
-   "fix": "Measured 2026-10-09: g06 alone on records under the 2B and the 4B with thinking on and off fails 16 of 16 before and 16 of 16 after a repair that anchors every scenario date to the run day (blind audit, no disagreement), so the dates are not the cause. Single-change replays of the recorded answering calls (each reproducing its record byte for byte) find two stacked causes: \"never promise\" lets the 4B with thinking relay a hedged estimate, which a plain rule stops in 8 of 8; with the estimate gone, replies claim a gift note the lookup says is not recorded. The scorer half is staged in U2 (I-327); the rule wording goes to the successor harness. Read no arm comparison from g06.",
+   "fix": "Measured 2026-10-09 and 2026-10-10 (`results/g06/REPORT.md`). Anchoring every date to the run day moves no outcome (0 of 16 before, 0 of 16 after). The plain rule \"never put a delivery date, a carrier estimate included, in a customer reply\", live in both arms over 4 conditions and 4 copies, gives 1 correct of 48 under a blind audit: it stops the 4B with thinking relaying the estimate in 7 of 8 replies, and those replies then claim the gift note in 7 of 8. Request-level replays show the 2B and the 4B without thinking relay the estimate even when the request forbids it (3 of 4 each), and the 2B with thinking withholds it only when the request says so. The rule reaches every prompt and both arms fail alike, so g06 measures the model and the goal, not the context strategy, and no port change follows. The successor harness rewords the rule and splits g06 into a withhold-the-estimate goal and a pending-gift-note goal.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/v10/G06.md",
@@ -6826,6 +6831,21 @@
      "path": "scaffold:.orkestrel/agent/instruments/results/g06/probes-audit/verdicts.json",
      "exists": true,
      "note": "replay audit"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/audit-rule/verdicts.json",
+     "exists": true,
+     "note": "live audit"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/probes-rule-audit/verdicts.json",
+     "exists": true,
+     "note": "probe audit"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/plan-rule-1-4.json",
+     "exists": true,
+     "note": "plan"
     }
    ]
   },
@@ -6906,10 +6926,10 @@
   },
   {
    "id": "I-346",
-   "title": "The thinking 4B full view invents actions the record does not support",
+   "title": "The thinking 4B invents actions the record does not support",
    "area": "model behavior",
    "status": "open",
-   "issue": "`t4-control-v4` passes the scorer on 10 of 10, and the blind audit rules 3 of those passes false: an escalation that account LH-44870 does not have (g05), a gift note \"added\" that the lookup says is not recorded (g06), and a warehouse pickup the record does not offer (g10). Under the 4B the full view also claims \"has been sent to Priya\" on g04 in 4 of 11 runs, where the harness offers no send tool.",
+   "issue": "`t4-control-v4` passes the scorer on 10 of 10, and the blind audit rules 3 of those passes false: an escalation that account LH-44870 does not have (g05), a gift note \"added\" that the lookup says is not recorded (g06), and a warehouse pickup the record does not offer (g10). Under the 4B the full view also claims \"has been sent to Priya\" on g04 in 4 of 11 runs, where the harness offers no send tool. In the 2026-10-10 g06 runs with the plain rule, the 4B with thinking claims the gift note is added, attached, or included in 7 of 8 replies, in records and the full view alike.",
    "fix": "None. The audit catches these where the scorer passes them; the band uses the audit. The g04 claim comes from the request \"Can you send it to her?\" under terminal replies (I-256), so the successor harness offers a send tool or rewords g04's request.",
    "files": [
     {
@@ -6921,6 +6941,11 @@
      "path": "scaffold:.orkestrel/agent/instruments/bench/variants/v1.json",
      "exists": true,
      "note": "g04 request"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md",
+     "exists": true,
+     "note": "plain-rule runs"
     }
    ]
   },
@@ -6970,7 +6995,7 @@
    "area": "records method",
    "status": "open",
    "issue": "Seed 6 reaches the records briefing as two lines, so the rule arrives as \"- And never promise a customer a delivery date in writing.\" with its framing cut off. In replays, the same rule as an imperative at the top of the system message stopped the 4B with thinking from relaying the estimate in 4 of 4 and moved the 2B with thinking in 2 of 4; in place it moved only the 4B with thinking.",
-   "fix": "None yet. Render each rule whole as a standing instruction in the records rendering, then measure it.",
+   "fix": "Live plain-rule runs (2026-10-10) show the split fragment suffices for the 4B with thinking: it leaves the carrier date out of 4 of 4 records replies and quotes the rule. Below it, the 2B and the 4B without thinking relay the estimate even with the rule in the request, so the rendering is not what limits g06. Measure the whole-rule rendering on all ten goals before changing the records rendering.",
    "files": [
     {
      "path": "scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md",
@@ -7051,6 +7076,156 @@
      "path": "desk:package.json",
      "exists": true,
      "note": "devEngines"
+    }
+   ]
+  },
+  {
+   "id": "I-354",
+   "title": "The scorer alone read the live port below the measured records",
+   "area": "measurement",
+   "status": "fixed",
+   "issue": "Scored by the corrected rules alone, the live port (`p1-ledger`, `createLedger` at 8f5098b) trailed the measured `a5-records` runs with a lower bound of −1.73, outside the trim tolerance of −1.",
+   "fix": "Both sides audited blind under one brief (`bench4/audit/verdicts-u9.json`, `verdicts-a1.json`; 0 unresolved). The audit removes 12 false passes from `a5-records` and 6 from the port: the port reads 5.75–6.50 against 5.50–6.38 (lower bounds −0.57 and −0.91) and clears the full view at every end (1.43, 1.13, 0.70). Recorded in `FINAL-CHECK.md` § The live port.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "The live port"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/port/audit/tally-u9.json",
+     "exists": true,
+     "note": "bands"
+    }
+   ]
+  },
+  {
+   "id": "I-355",
+   "title": "Near-identical contexts flip 1 goal outcome in 6",
+   "area": "measurement method",
+   "status": "open",
+   "issue": "Between the live port and the measured records runs, 13 of 80 goal outcomes differ, at the same rate whether the goal's first prompt matches after normalizing handles and whitespace (9 of 56) or differs by a listed departure (4 of 24).",
+   "fix": "None; it is the noise floor of a temperature-0 small model under byte-level prompt changes. Read arm differences from 8-copy bands with the audit, never from single goals or single copies.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/port/diverge.mjs",
+     "exists": true,
+     "note": "alignment"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md",
+     "exists": true,
+     "note": "Flips"
+    }
+   ]
+  },
+  {
+   "id": "I-356",
+   "title": "The g06 replay skipped the tool-free answer pass",
+   "area": "measurement method",
+   "status": "fixed",
+   "issue": "`results/g06/tools/replay.mjs` took only agent calls that offer tools, so a 2B-with-thinking run that answers through its answer pass had no answering call, and `noest` edited only tool messages while that pass carries the lookup in a user message.",
+   "fix": "The replay takes every generating agent call, and `noest` edits tool and user messages; the dry run over the before, after, and records-plain runs finds each change exactly once, and 16 of 16 base replays reproduce their record byte for byte.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/tools/replay.mjs",
+     "exists": true,
+     "note": "call filter and noest"
+    }
+   ]
+  },
+  {
+   "id": "I-357",
+   "title": "The g06 audit items stated one rule wording for every run",
+   "area": "scoring and audit",
+   "status": "fixed",
+   "issue": "`results/g06/tools/items.mjs` wrote \"never promise a customer a delivery date in writing\" into every item, so a plain-rule run would be judged against a rule it never saw.",
+   "fix": "Each item states the wording its run's scenario carries; `tools/probe-items.mjs` does the same for replays and states only the facts each change leaves.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/tools/items.mjs",
+     "exists": true,
+     "note": "rule wording"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/tools/probe-items.mjs",
+     "exists": true,
+     "note": "probe items"
+    }
+   ]
+  },
+  {
+   "id": "I-358",
+   "title": "Small models call the ship date today",
+   "area": "model behavior",
+   "status": "open",
+   "issue": "In the 2026-10-10 g06 runs, 20 of 48 replies say the kettle \"shipped today (Oct 8)\" while both arms state \"Today is Friday 2026-10-09\" in the system message and the seed, in every condition and both arms.",
+   "fix": "None in the context strategy; the rendered dates are right. The audit counts it as a contradiction of the facts.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/rows-rule.json",
+     "exists": true,
+     "note": "replies"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md",
+     "exists": true,
+     "note": "Today"
+    }
+   ]
+  },
+  {
+   "id": "I-359",
+   "title": "Without thinking, the small models relay a value the request forbids",
+   "area": "model behavior",
+   "status": "open",
+   "issue": "With \"Leave out any delivery date, the carrier estimate included.\" appended to the request itself, the 2B and the 4B without thinking still write the carrier estimate in 3 of 4 replays each; with the estimate removed from the lookup, they invent a window (\"within 5 business days\", \"by tomorrow morning\").",
+   "fix": "None in the context strategy. `ideas.md` § Judge draft check against a rule before the reply already measured the check pass: the judge separates date-breaking drafts (AUC 0.98), but a rewrite that named the rule kept the date in 9 of 9 runs, which this probe confirms from the request side.",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/probes-rule-audit/verdicts.json",
+     "exists": true,
+     "note": "inline and clean"
+    },
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/results/g06/probes-rule/rows.json",
+     "exists": true,
+     "note": "replays"
+    }
+   ]
+  },
+  {
+   "id": "I-360",
+   "title": "The desk tests asserted the superseded 2B reading",
+   "area": "desk",
+   "status": "fixed",
+   "issue": "After the 2B thinking-off reading moved to the audited live-port run (5.50–6.38 against 3.50–4.13, 2026-10-10), three app tests still asserted 6.50–6.75 against 4.38–5.13 and the date 2026-10-09.",
+   "fix": "The tests assert the audited reading and its date, and the verdict test drops the unused \"The ranges do not overlap.\" wording; check, 182 app tests, the journey, lint, format, policy, config, and the build pass (desk commit 70c2357, local).",
+   "files": [
+    {
+     "path": "desk:tests/app/vue/helpers.test.ts",
+     "exists": true,
+     "note": "measured readings"
+    },
+    {
+     "path": "desk:tests/app/vue/App.test.ts",
+     "exists": true,
+     "note": "lanes and Bench tab"
+    }
+   ]
+  },
+  {
+   "id": "I-361",
+   "title": "Rebuilding the agent clone would change the measured harness",
+   "area": "session and dispatch",
+   "status": "worked around",
+   "issue": "The measured harnesses import `/home/user/agent/dist/src/core/index.js`, so a release visit in that clone, which rebuilds `dist/`, would swap the library under any later measured run; a linked worktree such as `agent-port` cannot publish, because the upload refuses a `.git` file.",
+   "fix": "The release visit runs in a full clone, `/home/user/agent-release`, at the release candidate 8f5098b: re-pin to scaffold 0.0.99, overwrite, and every gate pass, and the comparison rules a bump (dist moved, ranges same).",
+   "files": [
+    {
+     "path": "scaffold:.orkestrel/agent/instruments/bench/bench.mjs",
+     "exists": true,
+     "note": "dist import"
     }
    ]
   }

@@ -12,7 +12,7 @@ import { compileRules, scoreText } from '../../../rescore.mjs'
 const RESULTS = join(import.meta.dirname, '..')
 const BENCH = join(RESULTS, '..', '..')
 const GOAL = 'g06-kenji-shipping'
-const RULE = /never promise a customer a delivery date/i
+const RULE = /never promise a customer a delivery date|never put a delivery date/i
 const ACK = /no delivery dates go in customer replies/i
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -23,7 +23,7 @@ function frameOf(scenario) {
 	const lookup = scenario.tools.lookup_order['LH-81660']
 	const shipped = /Shipped (\d{4}-\d{2}-\d{2})/.exec(lookup)[1]
 	const estimate = /estimated delivery (\d{4}-\d{2}-\d{2})/.exec(lookup)[1]
-	return { today: scenario.ledger.clock, shipped, estimate }
+	return { today: scenario.ledger?.clock ?? /(\d{4}-\d{2}-\d{2})/.exec(scenario.seed[0].content)[1], shipped, estimate }
 }
 
 // The written forms of one date a reply can carry: ISO, month and day, day and month, numeric, and the weekday.
@@ -67,14 +67,15 @@ function readPrompts(wire) {
 const finished = new Set([...readFileSync(join(RESULTS, 'run.log'), 'utf8').matchAll(/^===== (\S+) end \S+ exit 0$/gm)].map((match) => match[1]))
 const rows = []
 for (const run of readdirSync(RESULTS).filter((name) => finished.has(name)).sort()) {
-	const jsonl = join(RESULTS, run, 'ledger.jsonl')
-	if (!existsSync(jsonl)) continue
+	const name = existsSync(join(RESULTS, run)) ? readdirSync(join(RESULTS, run)).find((file) => file.endsWith('.jsonl')) : undefined
+	if (name === undefined) continue
+	const jsonl = join(RESULTS, run, name)
 	const row = readFileSync(jsonl, 'utf8').trim().split('\n').map((line) => JSON.parse(line)).find((line) => line.goal === GOAL)
 	if (row === undefined) continue
-	const [, condition, set, copy] = /^(f2|t2a|f4|t4)-(before|after-[\d-]+)-v(\d)$/.exec(run)
+	const [, condition, set, copy] = /^(f2|t2a|f4|t4)-(.+)-v(\d)$/.exec(run)
 	const scenario = JSON.parse(readFileSync(join(BENCH, 'variants', 'g06', set, `v${copy}.json`), 'utf8'))
 	const goal = scenario.goals.find((one) => one.id === GOAL)
-	const staged = JSON.parse(readFileSync(set === 'before' ? join(BENCH, 'u2', 'rules.json') : join(BENCH, 'dated', `rules-${set.slice(6)}.json`), 'utf8'))[GOAL]
+	const staged = JSON.parse(readFileSync(set === 'before' ? join(BENCH, 'u2', 'rules.json') : join(BENCH, 'dated', `rules-${/(\d{4}-\d{2}-\d{2})$/.exec(set)[1]}.json`), 'utf8'))[GOAL]
 	const answer = String(row.answer ?? '')
 	const live = scoreText(compileRules(goal), answer)
 	const stagedScore = scoreText(compileRules({ ...goal, ...staged }), answer)

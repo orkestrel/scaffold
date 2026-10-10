@@ -62,7 +62,7 @@ export class Driver {
 		this.#options = {
 			judge: { model: this.#judge.model, ask: this.#ask.bind(this) },
 			system: buildSystem(this.#scenario),
-			topics: Object.entries(this.#scenario.ledger.topics).map(([name, criterion]) => ({ name, criterion, requests: name !== 'warehouse' })),
+			topics: Object.entries(this.#scenario.ledger.topics).map(([name, criterion]) => ({ name, criterion, requested: name !== 'warehouse' })),
 			questions: LEDGER_QUESTIONS, thresholds: FIT, capacity: SAMPLER.num_ctx, predict: 0, think: false,
 			share: { ...DEFAULT_LEDGER_SHARE }, recall: { limit: DEFAULT_RECALL_LIMIT }, agent: { limit: DEFAULT_LEDGER_LIMIT, timeout: TIMEOUT },
 			lookups: [
@@ -118,7 +118,7 @@ export class Driver {
 		const fit = /const LEDGER_FIT = \{ ([^}]+) \}/.exec(harness)?.[1]
 		this.#check('thresholds', this.#options.thresholds, Object.fromEntries((fit ?? '').split(', ').map((entry) => { const [key, value] = entry.split(': '); return [key, Number(value)] })))
 		const unasked = new Set([.../const UNASKED_REQUEST_TOPICS = new Set\(\[([^\]]*)\]\)/.exec(harness)?.[1].matchAll(/'([^']+)'/g) ?? []].map((match) => match[1]))
-		this.#check('topics.sha256', computeDigest(this.#options.topics), computeDigest(Object.entries(this.#scenario.ledger.topics).map(([name, criterion]) => ({ name, criterion, requests: !unasked.has(name) }))))
+		this.#check('topics.sha256', computeDigest(this.#options.topics), computeDigest(Object.entries(this.#scenario.ledger.topics).map(([name, criterion]) => ({ name, criterion, requested: !unasked.has(name) }))))
 		const rows = readRows(CORPUS)
 		this.#check('questions.match', rows.filter((row) => row.asked !== undefined && buildJudgment(row, this.#ledger.conversation.messages(), this.#options.topics, this.#judge.model) !== undefined).length, rows.filter((row) => row.asked !== undefined).length)
 		this.#check('judgments.imported', this.#imported, this.#seed.imported)

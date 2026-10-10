@@ -110,9 +110,30 @@ The pair is `t4-records` against `t4-control`, copies 1 to 4, at the 4B cap of 1
 - **Reading.** With the 4B thinking, the full view reaches the records level, and records keeps no lead. The full view's gains are g05 (0–2 of 4 to 3 of 4) and g08 (1–2 of 4 to 4 of 4); records holds 2–3 of 4 on g08 because its replies leave out the fit verdict (I-295).
 - **New failure.** The full view's copy 4 passes the scorer on 10 of 10, and the audit rules 3 of those passes false: an escalation the account does not have, a gift note "added" that the lookup says is not recorded, and a warehouse pickup the record does not offer.
 
+## The live port
+
+`/home/user/agent-port/tmp/bench4/driver.mjs` ran the ported ledger (`createLedger` at `8f5098b`) live over copies 1 to 8 with the `a5-records` settings on 2026-10-09 and 2026-10-10 (`p1-ledger`). Every row of `p1-ledger`, `a5-records`, and `a1-control` (the 2B full view with thinking off) was rescored under the corrected rules and audited blind on both sides under one brief (`bench4/audit/verdicts-u9.json`, `verdicts-a1.json`; 0 unresolved).
+
+| Arm | Passes per copy, low to high |
+| --- | --- |
+| Live port (`p1-ledger`) | 5.75–6.50 |
+| Measured records (`a5-records`) | 5.50–6.38 |
+| Full view (`a1-control`) | 3.50–4.13 |
+
+- **Against the full view.** The live port clears at every end (lower bounds 1.43, 1.13, and 0.70), as the measured records do (1.07, 0.80, and 0.13).
+- **Against the measured records.** The port's lower bounds are −0.57 at the low end and −0.91 at the high end, inside the trim tolerance of −1. The scorer alone read the port below the measured runs (lower bound −1.73); the audit rules out 12 false passes in `a5-records` against 6 in the port, and 15 of the full view's 47 scorer passes.
+- **Flips.** Between the port and the measured runs, 13 of 80 goal outcomes differ, at the same rate whether the goal's first prompt matches after normalizing handles and whitespace (9 of 56) or not (4 of 24). The port's prompts differ by the listed departures: blank lines, handle tags, and a tail cut one exchange earlier.
+- **The two-sided audit.** The `v9` reading of 6.50–6.75 against 4.38–5.13 audited failures only; this reading replaces it for the 2B with thinking off.
+
 ## g06
 
-g06 fails in every arm and condition: 0 of 38 `v10` runs, and 0 of 32 g06-only records runs before and after a repair that anchors every scenario date to the run day (`results/g06/REPORT.md`). Replays of the recorded answering calls find two stacked causes: the rule's wording ("never promise") lets the 4B with thinking relay a hedged carrier estimate, and with the estimate gone the replies claim a gift note the lookup says is not recorded. Read no arm comparison from g06.
+g06 fails in every arm and condition: 0 of 38 `v10` runs, 0 of 32 g06-only records runs before and after anchoring every scenario date to the run day, and 1 correct of 48 live runs with the plain rule in both arms (`results/g06/REPORT.md`). The rule reaches every prompt in both arms, and records and the full view fail alike, so g06 measures the model and the goal, not the context strategy:
+
+- "Never promise" lets the 4B with thinking relay a hedged carrier estimate; the plain rule "never put a delivery date, a carrier estimate included, in a customer reply" stops it in 7 of 8 live replies, in both arms.
+- The 2B and the 4B without thinking relay the estimate even when the request itself forbids it (3 of 4 replays each); the 2B with thinking withholds it only when the request says so.
+- With the date withheld, the 4B with thinking claims the gift note the lookup reports as not recorded in 7 of 8 live replies; with the gift note removed, it writes 3 correct replies of 4.
+
+Read no arm comparison from g06.
 
 ## Plan
 
