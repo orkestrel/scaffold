@@ -62,3 +62,9 @@ The long-scenario unit also makes these edits to `check-long.mjs`:
 - The `system` comparison removes the short scenario's date sentence (`Today is Thursday 2026-10-08.`) before comparing, because the long scenario serves the date through `days`.
 - The facts check (every forbidden substring and pattern is absent from a goal's current facts and sources) applies to g11 to g24. g01 to g10 follow `scenario.json` byte for byte, including the g03 and g06 patterns that match facts 6, 11, and 15 there; `notes` records the exemption beside the g15 exemption.
 - The g11 hedged sample carries every expected value beside an affirmative Marcus approval clause, so the hedged check can fail on the guard the audit added.
+
+## Tool rulings (2026-10-10)
+
+- Arm token: each model's first aggregate copy fills the summary cache and the CHANGE and AGREE rows, so `plan.ts` names it `l5-SHORT-aggregatefill-v1`. `tools/series.ts` then prices later aggregate copies from their own finished runs. `report.ts --pair` reads `aggregatefill` as copy 1 of the aggregate arm.
+- `shadow.ts` keeps its `--copies` flag; the shadow runs copies 1 and 2 per model.
+- A helper that only one self-contained script uses (`shadow.ts`, `copies.ts`, `seams.ts`, `calibrate.ts`) stays in that script, as `.claude/rules/documentation.md` § Workflow skills allows for a self-contained script; a helper two files use lives in `bench5/helpers.ts`. Types stay in `bench5/types.ts`.
