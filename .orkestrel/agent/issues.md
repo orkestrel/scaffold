@@ -7,13 +7,15 @@ Paths name their checkout:
 - `agent:` is the `orkestrel/agent` repository, branch `claude/confident-maxwell-6nd0f3`;
 - `scaffold:` is the `orkestrel/scaffold` repository, branch `claude/confident-maxwell-6nd0f3`;
 - `desk:` is `mikesaintsg/desk`, and `ollama:` is `orkestrel/ollama`, on the same branch name;
-- `scaffold:.orkestrel/agent/instruments/` holds the benchmark harnesses, tools, probes, reports, and unit briefs, copied from the agent checkout's gitignored `tmp/` (`instruments/bench/` is `tmp/bench/`, `instruments/bench3/` is `tmp/bench3/`, `instruments/results/` is `tmp/bench/results/`).
+- `scaffold:.orkestrel/agent/instruments/` holds the benchmark harnesses, tools, probes, reports, and unit briefs, copied from the agent checkout's gitignored `tmp/` (`instruments/harness/bench/` retains `tmp/bench/`, `instruments/harness/bench3/` retains `tmp/bench3/`, and `instruments/results/` retains `tmp/bench/results/`). The typed ledger driver lives in `instruments/harness/bench4/`; superseded snapshot paths remain in Git history.
 
 The benchmark scenario fixes its own date: the Larkspur shift happens on Thursday 2026-10-08, whatever the calendar says. Judge a reply's date against that line, not the day a run happened.
 
-Status counts: 58 open, 201 fixed, 83 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
+Each issue records its status. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
 
 Add an item when an issue is found, and update its status and files when it is fixed.
+
+For the verified 0.0.30 source, trim and compliance outcomes, consumer patches, and pending registry steps, see [Agent 0.0.30 release checkpoint](instruments/units/agent-0030/release-checkpoint.md).
 
 ## Open items
 
@@ -76,7 +78,6 @@ The following items have no fix yet:
 - I-363 The judge samples its one-token answer at temperature 1 (measurement method)
 - I-364 The records lead depends on the model's long-context reading (measurement)
 - I-365 Gemma 4 commits the desk to actions the record does not allow (model behavior)
-- I-368 The release commit and push were refused by the permission check (session and dispatch)
 
 ## Thinking
 
@@ -85,7 +86,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** Under 2B thinking, records g01 and g10 got no reply: the first pass's last call wrote its answer as reasoning and ended the turn with no `</think>`, so content was empty, and the tool-free answer pass, run with thinking on, thought to the cap at 1,024 and 2,048 tokens. The harness log equals the wire and the raw output has no closing tag, so the model did this, not a parser.
 - **Fix:** The answer pass always runs with thinking off: the package since commit 4852d4c, the harness first through `--answer-think off` and then as fixed behavior with the flag removed. `t2a-records` copies 1 to 4 replied on 40 of 40 goals with no call cut.
-- **Files:** `agent:src/core/ledgers/Ledger.ts`, `agent:src/core/ledgers/types.ts`, `commit 4852d4c (agent)`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/probes/raw-probe.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/probes/raw.jsonl`, `scaffold:.orkestrel/agent/instruments/results/v10/THINKING.md`, `scaffold:.orkestrel/agent/instruments/units/agent/answer-think-fixed-brief.md`, `scaffold:.orkestrel/agent/instruments/units/port/t6-answer-think-brief.md`.
+- **Files:** `agent:src/core/ledgers/Ledger.ts`, `agent:src/core/ledgers/types.ts`, `commit 4852d4c (agent)`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/probes/raw-probe.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/probes/raw.jsonl`, `scaffold:.orkestrel/agent/instruments/results/v10/THINKING.md`, `scaffold:.orkestrel/agent/instruments/units/agent/answer-think-fixed-brief.md`, `scaffold:.orkestrel/agent/instruments/units/port/t6-answer-think-brief.md`.
 
 ### I-305 Raising the thinking cap did not fix the missing replies
 
@@ -134,7 +135,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The main harness's tool-free answer run also ran with thinking on: in `t2w-control-v2`, g07 got no reply after its first call and its answer run both thought to the 2,048 cap with no content, so the records arm had the thinking-off fix and the full view did not. The per-call inspection found it.
 - **Fix:** The main harness runs its answer run with thinking off under `--think` (sha `b5c49ee4`, 2026-10-09), and the four full-view thinking copies reran as `t2a-control`. They replied on 40 of 40 goals and cut 1 of 64 agent calls, a first pass whose answer run replied.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/bench.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/tools/inspect.ts`, `scaffold:.orkestrel/agent/instruments/units/agent/control-answer-think-brief.md`, `scaffold:.orkestrel/agent/instruments/results/v10/plan-stage2.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/bench.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/tools/inspect.ts`, `scaffold:.orkestrel/agent/instruments/units/agent/control-answer-think-brief.md`, `scaffold:.orkestrel/agent/instruments/results/v10/plan-stage2.json`.
 
 ### I-331 The 4B with thinking on needs a sized cap
 
@@ -150,21 +151,21 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** A design treated tool results as cached files, which the user rejected.
 - **Fix:** Four separate stores: messages, results by call id, judgments, and a pin ledger.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/BRIEFING.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/BRIEFING.md`.
 
 ### I-283 Facts lacked lifetimes
 
 - **Status:** fixed.
 - **Issue:** Facts go stale, change, or retire.
 - **Fix:** Derived lifetimes in the design; the ledger carries category, amends, and supersedes.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/BRIEFING.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/BRIEFING.md`.
 
 ### I-284 Per-topic records unbuilt
 
 - **Status:** fixed.
 - **Issue:** Section 9 of BRIEFING.md was unbuilt.
 - **Fix:** records.mjs behind --records on.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/records.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/records.mjs`.
 
 ### I-285 Ledger answers slow
 
@@ -178,14 +179,14 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** 0 of 38 ledger calls stated the date against 20 of 20 control calls.
 - **Fix:** --date on.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md:477`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md:477`.
 
 ### I-287 Tail replayed answers and older requests
 
 - **Status:** fixed.
 - **Issue:** Replayed answers carried mistakes, and earlier unanswered requests got answered instead.
 - **Fix:** --tail-answers drop and --tail-requests drop.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md:548`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md:548`.
 
 ### I-288 Idle briefing parts and the reply gate
 
@@ -199,7 +200,7 @@ The following items have no fix yet:
 - **Status:** rejected.
 - **Issue:** The 2B quotes Kenji's date in 27 of 27 probe replies and 9 of 9 rewrites. In v10 the 4B with thinking off fails g06 in 4 of 4 records copies, and the full view fails 11 of 12 runs.
 - **Fix:** Measurement dropped the fixes on purpose: every rule placement passed 0 of 9, and a judge-triggered rewrite kept the date in 9 of 9. The method deep dive of 2026-10-09 found the rule and the 2026-10-12 date in the same answer request in 17 of 17 records runs, with nothing cut, so each loss is the model's, not the method's. The reopen condition is a larger model or thinking; the 4B with thinking on (`t4`) is the one untested case. The g06 forensics of 2026-10-09 (`G06.md`) found the goal a poor instrument: g06 passed 5 of 99 recorded replies, 3 of them clean, all on the 2B with thinking off; 88 of 94 failures relay the 2026-10-12 estimate the required lookup returns; the rule says "promise", which the 4B with thinking read as allowing a hedged estimate, and the records and briefing arms never show the acknowledgment that widens it. The scorer fix and the rule wording are I-341.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:44`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/rejected.md`, `scaffold:.orkestrel/agent/records-series-verdict.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:44`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/rejected.md`, `scaffold:.orkestrel/agent/records-series-verdict.md`, `scaffold:.orkestrel/agent/instruments/harness/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`.
 
 ### I-290 Release owner named wrongly
 
@@ -241,7 +242,7 @@ The following items have no fix yet:
 - **Status:** open.
 - **Issue:** On the 2B, records passes g08 in 2 of 8 copies (`a5`) and 2 of 5 under thinking (`t2a`, `t2w`), while the full view passes 8 of 8. The 4B records passes 1 of 4 and the 4B full view 2 of 4, with the same omission. Every failure states the account and leaves out the fit verdict the request asks for.
 - **Fix:** None yet. The deep dive of 2026-10-09 found no stage of the pipeline losing a fact in 17 of 17 records runs, and in `t2a-records-v1` the verdict and the content that drops it come from one thinking-on response. Ranked next steps: a cold replay of the 12 failing requests (U3) picks between cleaning account records of request sentences and fragments (I-329) and a verdict-first sentence in the application's system text; the relevance filter on pinned and record lines comes last.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:93`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/results/v9/probes/judge-relevance.ts`, `scaffold:.orkestrel/agent/ideas.md`, `scaffold:.orkestrel/agent/instruments/bench3/records.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v9/FINDINGS-A1.md:93`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/results/v9/probes/judge-relevance.ts`, `scaffold:.orkestrel/agent/ideas.md`, `scaffold:.orkestrel/agent/instruments/harness/bench3/records.mjs`.
 
 ### I-296 Recall handles cited
 
@@ -290,7 +291,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** Unnamed major finding.
 - **Fix:** Fixed; 251 of 251 checks.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/records-check.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/records-check.mjs`.
 
 ### I-303 Refined briefing ties full view
 
@@ -304,21 +305,21 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** The final-check record said only the recall room reads the leftover window. The records harness also reads it to close the arm tools and to price an unpinned reply at the deny gate, and its reply reserve counts thinking tokens, so under thinking the tools can close sooner (attack round, records-harness C2).
 - **Fix:** `FINAL-CHECK.md` names all three readers. No records request in the v10 thinking or 4B runs carries the closure or narrowing text, so no closure fired. The port counts only carried thinking in the reserve (I-307).
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:1341`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:1351`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs:1342`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs:1352`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`.
 
 ### I-328 The delivery-date rule is filed off the delivery topic
 
 - **Status:** open.
 - **Issue:** Seed 6, the rule that forbids a written delivery date, reads delivery at 0.444 against the 0.60 topic threshold, so it ranks off-topic for g06 and would be the first Rules line a consolidation cut drops. It cost nothing in v9 or v10: no g06 request cut a line.
 - **Fix:** None; deferred while no Rules line is cut. Judge topics per sentence for a split record line, or refit the delivery criterion.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v3/cal-categories.jsonl:105`, `scaffold:.orkestrel/agent/instruments/bench3/records.mjs:124`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v3/cal-categories.jsonl:105`, `scaffold:.orkestrel/agent/instruments/harness/bench3/records.mjs:124`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`.
 
 ### I-329 Account records carry request sentences and fragments
 
 - **Status:** open.
 - **Issue:** The Halvorsen record lists 'Anyway, can you check where the Halvorsen shipment actually is?' and 'I transposed the digits.' as facts, and the late $1,240 order total twice beside the $1,240 outstanding. On the 2B, this noise sits in every failing g08 briefing.
 - **Fix:** None yet. Ranked fourth in the deep dive: drop user-request sentences and lines with no id, number, or name from account records, conditional on the cold replay (U3) showing the noise causes the omission.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/records.mjs`, `agent:src/core/ledgers/helpers.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/records.mjs`, `agent:src/core/ledgers/helpers.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`.
 
 ## Judge and selection
 
@@ -397,7 +398,7 @@ The following items have no fix yet:
 - **Status:** open.
 - **Issue:** 0.90, the 0.96 fit (margin 0.0015), and the records fits (m29 0.717 against 0.7) come from the same 48-message seed. The records arm's `LEDGER_FIT` and refined profile were fitted on the seed every reworded copy shares, so every v9 and v10 records reading is in-sample; the full view has no fitted parameter (attack round, records-harness C).
 - **Fix:** None yet. A held-out goal set is required, and none has been labeled. `FINAL-CHECK.md` § In-sample fit states the limit beside every v10 band.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/JUDGE.md:71`, `scaffold:.orkestrel/agent/instruments/results/v9/RECORDS-PLAN.md:50`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:829`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`, `scaffold:.orkestrel/agent/rejected.md:21`, `scaffold:.orkestrel/agent/ideas.md:450`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/JUDGE.md:71`, `scaffold:.orkestrel/agent/instruments/results/v9/RECORDS-PLAN.md:50`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs:830`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`, `scaffold:.orkestrel/agent/rejected.md:21`, `scaffold:.orkestrel/agent/ideas.md:450`.
 
 ### I-214 Judge filings imported from a recording
 
@@ -411,7 +412,7 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** Stock JSON costs 2,433 prompt tokens per question against 1,679 plain, and whole-view tokens grow quadratically (3,800 to 5,300 per question).
 - **Fix:** A bounded state (2 neighbors) runs about 360 tokens and 4 s; bench.mjs exposes --state stock, plain, or bounded.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/bench.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/bench.mjs`.
 
 ### I-216 Selection alone does not bound the prompt
 
@@ -502,7 +503,7 @@ The following items have no fix yet:
 - **Status:** open.
 - **Issue:** Raw selection cannot tell that a later message cancels an earlier one, so the withdrawn fee rule stayed without its withdrawal; under compaction chaining asked 32 questions and chained nothing.
 - **Fix:** None yet for raw selection. --chain corrections still has no verdict. The ported records classifier (amends and supersedes pairs, stale marking) might cover withdrawals, but no measurement shows that it does for this case.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md`, `scaffold:.orkestrel/agent/ideas.md:540`, `scaffold:.orkestrel/agent/instruments/bench/README.md:223`, `agent:src/core/ledgers/Classifier.ts:72`, `scaffold:.orkestrel/agent/instruments/results/v9/RECORDS-PLAN.md:159`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/README.md`, `scaffold:.orkestrel/agent/ideas.md:540`, `scaffold:.orkestrel/agent/instruments/harness/bench/README.md:223`, `agent:src/core/ledgers/Classifier.ts:72`, `scaffold:.orkestrel/agent/instruments/results/v9/RECORDS-PLAN.md:159`.
 
 ### I-229 Judge drift after a runner load
 
@@ -551,7 +552,7 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** Message 11 reads as request at 0.73, so auto-pin never pins the gift note.
 - **Fix:** Message 11 is reached through topic and names.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md:336`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md:336`.
 
 ### I-236 Score-confidence mismatch was an arithmetic error
 
@@ -581,14 +582,14 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** A two-message fold invented order and tracking numbers that reached a reply.
 - **Fix:** The guard rejects ids no folded message states, retries once naming the allowed set, then drops the sentences.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md:247`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/README.md:247`.
 
 ### I-240 Identifier guard misfired on tool arguments and the date
 
 - **Status:** fixed.
 - **Issue:** The guard rejected the scenario date and LH-79215, which appear only in tool-call arguments.
 - **Fix:** The allowed set holds the input's ids and the summarizer system message's ids, and --probe-guard covers an id held only in arguments.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md:121`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/README.md:121`.
 
 ### I-241 Merges erase sections and lose identifiers
 
@@ -644,7 +645,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The guard recirculated model-written text such as 'MX-4471 is required' and the decoy 555-0142.
 - **Fix:** Restores only from user messages and lookup results.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md:410`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/README.md:410`.
 
 ### I-249 Compaction measured worse and dropped
 
@@ -702,7 +703,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The model wrote replies as prose and skipped send_reply in 37 of 172 goals; the tool design leaked its label, and a 20-token wording change moved skips from 4 to 0.
 - **Fix:** The final message with no tool call is the reply, with a tools-free answer run.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md:152`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/README.md:152`.
 
 ### I-257 Extra answer turn skipped selection
 
@@ -737,14 +738,14 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The model repeated the same call to the turn limit (7 repeats; request 7 used 9 turns) and ignored a notice.
 - **Fix:** The first repeat ends the turn and one no-tools turn answers; request 7 then used 3 turns.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs`.
 
 ### I-262 Answer turn produced no text
 
 - **Status:** fixed.
 - **Issue:** After a repeat stop the answer turn produced a tool call with no text (a1-ledger g03, g04), and three A1 goals ended without a reply.
 - **Fix:** --repeat-stop all, --answer-view collapsed, --answer-cue on, --recall-budget 2, --recall-split on, --recall-category off; the frozen series replied on 70 of 70 goals.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md:598`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md:598`.
 
 ### I-263 Replay ENOENT on the judgments path
 
@@ -758,7 +759,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** Scenario members differed in the variant files.
 - **Fix:** variants/ledger copies.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/variants/ledger/v1.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/variants/ledger/v1.json`.
 
 ### I-265 Model copied the example id from tool descriptions
 
@@ -807,28 +808,28 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The token scale was fitted on prompts with a fixed 691-token schema and the budget left out about 835 tokens of tools, so 6 of 20 requests overflowed and the estimate ran 30% under qwen.
 - **Fix:** Schema cost charged and priced apart; first prompt fell from about 2,500 to 1,872 tokens.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md:702`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md:702`.
 
 ### I-272 First briefing run defects
 
 - **Status:** fixed.
 - **Issue:** The first ledger run's budget flag fired on every goal, the tail's share was charged unused, and goal facts stopped pinning from goal 3. Recall by handle returned nothing, shown-in-rN lines repeated, and five deterministic judge errors were re-asked at every select site.
 - **Fix:** The ledger-debug unit fixed them against a replay fixture that passes 87 checks; the source does not map each defect to its change.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs`, `agent:src/core/ledgers/constants.ts`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs`, `agent:src/core/ledgers/constants.ts`.
 
 ### I-273 Lifetime arms and long scenario
 
 - **Status:** open.
 - **Issue:** The 10-request scenario barely tests replaced facts, and the 152-message scenario lacks a verified bench3 loader.
 - **Fix:** None yet. The long scenario has no ledger section, and bench3 refuses a scenario without one, so no loader runs it.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario-long.json`, `scaffold:.orkestrel/agent/instruments/bench/check-long.mjs`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:272`, `scaffold:.orkestrel/agent/ideas.md:847`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md:36`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/scenario-long.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/check-long.mjs`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs:273`, `scaffold:.orkestrel/agent/ideas.md:847`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md:36`.
 
 ### I-274 Frozen harness defects
 
 - **Status:** worked around.
 - **Issue:** A repeated call id hides the repeat stop, the answer run keeps seed calls, a first-run timeout skips it, joined handles stay joined, a category prices recall, and the empty-reply guard is untested; edge paths have no live footprint.
 - **Fix:** The ledger port on branch port (HEAD 4852d4c) fixes F3, F4a, F5, F6 (by removing recall by handle), and F8 in package code, and a test covers each one. The frozen harness still has every defect, and the successor harness unit that this issue names has not been applied. O1 is out of the port's scope, so the harness's empty-reply guard is still untested.
-- **Files:** `scaffold:.orkestrel/agent/frozen-harness-audit-verdict.md`, `scaffold:.orkestrel/agent/instruments/units/agent/frozen-harness-claims.md`, `agent:src/core/ledgers/Ledger.ts`, `agent:tests/src/core/ledgers/Ledger.test.ts`, `scaffold:.orkestrel/agent/instruments/units/agent/records-port-planner.md`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs`, `scaffold:.orkestrel/agent/ideas.md`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`, `commit 4852d4c (agent, branch port)`.
+- **Files:** `scaffold:.orkestrel/agent/frozen-harness-audit-verdict.md`, `scaffold:.orkestrel/agent/instruments/units/agent/frozen-harness-claims.md`, `agent:src/core/ledgers/Ledger.ts`, `agent:tests/src/core/ledgers/Ledger.test.ts`, `scaffold:.orkestrel/agent/instruments/units/agent/records-port-planner.md`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs`, `scaffold:.orkestrel/agent/ideas.md`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`, `commit 4852d4c (agent, branch port)`.
 
 ### I-275 Report regex blind to records
 
@@ -863,14 +864,14 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** Permissive scoring passed replies with a stale value or a denied fit, and fixes that flipped only briefing rows biased the comparison. Auditing failures alone inflated the full view with false passes such as $3,860 available credit.
 - **Fix:** The strict scorer is restored, and two Haiku checkers with a tiebreak judge every pass and failure blind while Astra checks each batch. adjudicated.ts tallies misreads as passes and ambiguous rows as a range; batch 1 of 110 rows gave 9 false passes, 8 ambiguous passes, and 2 misreads.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/tools/adjudicated.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b1.json`, `scaffold:.orkestrel/agent/rejected.md:68-69`, `commit 6c939a9 (scaffold)`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/tools/adjudicated.ts`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b1.json`, `scaffold:.orkestrel/agent/rejected.md:68-69`, `commit 6c939a9 (scaffold)`.
 
 ### I-280 Scorer misread markdown, verdict words, a stale id, and a deadline
 
 - **Status:** fixed.
 - **Issue:** The scorer misread markdown table cells, verdict words, the stale code MX-4471, and the Friday deadline.
 - **Fix:** Each has a negative case, and forbidden patterns use lookbehind and lookahead lists such as not and no longer. scorer-check.ts passes 26 of 26.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v9/tools/scorer-check.ts`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v9/tools/scorer-check.ts`.
 
 ### I-281 Single runs and 8-port screens as evidence
 
@@ -905,14 +906,14 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** `--check-ledger` built its arm outside the path `runLedger` uses, so it could pass while a live run sent the wrong `think` on the answer pass (attack round, records-harness C6).
 - **Fix:** Installed after copy 8 of stage 2 with no run active (records harness sha `67c863b1…`; the earlier file stays as `bench.mjs.pre-tooling-fix`): `runLedger` passes `think: flags.think`, and `--check-ledger` builds its answer-pass arm through that path and asserts `think: false` on the answer pass. `--check-ledger` under `--profile refined`, `--profile roundA`, and `--think --profile refined` exits 0. The `t4` runs start on this sha.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs`, `scaffold:.orkestrel/agent/instruments/units/agent/harness-tooling-fix-brief.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs`, `scaffold:.orkestrel/agent/instruments/units/agent/harness-tooling-fix-brief.md`.
 
 ### I-321 The harness READMEs misstated the thinking flags
 
 - **Status:** fixed.
 - **Issue:** The records README said the answer pass thinks, and neither README listed `--think-predict` or said that `num_predict` comes from it (attack round, records-harness B, main-harness F4).
 - **Fix:** Both READMEs state that the tool-free answer pass sends `think: false` and keeps the `num_predict` cap, that `num_predict` is the `--think-predict` value (default 1,024), and list the flag.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md`, `scaffold:.orkestrel/agent/instruments/bench/README.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md`, `scaffold:.orkestrel/agent/instruments/harness/bench/README.md`.
 
 ### I-335 The series stopped before copy 8 on its time budget
 
@@ -926,7 +927,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The U9 driver stripped quotes and a send-reply label from the reply, which the measured terminal route never did, and scored a partial pass's text where the measured harness scored no reply; a recovered daemon fault left no trace in the row, and two dry checks could not fail.
 - **Fix:** The reply is the last pass's trimmed content and a partial pass scores as no reply; each row lists its daemon faults; `run.json` names the wire overrides; the topics check parses the harness's unasked set and the seed check digests every message in wire shape. Copies 1 and 8 pass the dry check.
-- **Files:** `agent:tmp/bench4/Driver.mjs`, `agent:tmp/bench4/helpers.mjs`, `scaffold:.orkestrel/agent/instruments/units/port/u9-driver-brief.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench4/Driver.ts`, `scaffold:.orkestrel/agent/instruments/harness/bench4/helpers.ts`, `scaffold:.orkestrel/agent/instruments/units/port/u9-driver-brief.md`.
 
 ## Scoring and audit
 
@@ -935,7 +936,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The work ran on real dates 2026-10-08 and 2026-10-09 while the scenario fixes its today at Thursday 2026-10-08, so a reply's 'today (Friday, 2026-10-09)' reads right by the calendar and wrong by the scenario, and a report can state a date without saying which it means.
 - **Fix:** Judge every date in a reply against the scenario's date line, which both harnesses read from fixed data (`scenario.json` system text and `scenario.ledger.clock`), and name which date a record or report means.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs:993-1010`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs:994-1011`.
 
 ### I-315 The failure audit brief was asymmetric
 
@@ -956,21 +957,21 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** `rescore.mjs` scored each row with `scenario.json`'s scoring fields even when the row named a variant file, so a variant whose fields differ would be misscored (attack round, main-harness F5).
 - **Fix:** Installed after copy 7 of stage 2 (sha `6019bdd2…`): `rescore.mjs` exits 2 naming the goal and field when a row's scenario file has scoring fields that differ from `scenario.json`'s.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/rescore.mjs`.
 
 ### I-327 Scorer rules misfire on four goals
 
 - **Status:** fixed.
 - **Issue:** The scorer fails a reply that names MX-4471 as the replaced code on g03 and g05; fails any written date on g06, the 2026-10-07 ship date included, though the rule forbids only a promised delivery date; passes any available-credit figure on g08, $3,860 and $4,240 included; and misses the scrapped restocking fee on g01 (method deep dive; attack round, main-harness F3).
 - **Fix:** Applied 2026-10-10: `apply.mjs --write` installed the U2 rules (`tmp/bench/u2/rules.json`, 83 fixtures) into the 17 scenario files, keeping each original as `*.pre-u2`: a lookbehind and a bare "superseded" for MX-4471 named as replaced on g03 and g05; g05's restocking patterns on g01; a g06 date pattern limited to arrival, delivery, and estimate sentences that skips a ship date and a conditional "when it is delivered"; a g08 check that fails any available-credit figure but $3,760 and a $4,240 total called "within their available credit"; and the g04 ESC-2291 pattern exempting "earlier" and "was a transposition error". The live port series and its two-sided audit read the corrected rules.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/bench/variants`, `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/bench/u2/fixtures.json`, `scaffold:.orkestrel/agent/instruments/bench/u2/compare.md`, `scaffold:.orkestrel/agent/instruments/bench/u2/apply.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/variants`, `scaffold:.orkestrel/agent/instruments/harness/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/harness/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/u2/fixtures.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/u2/compare.md`, `scaffold:.orkestrel/agent/instruments/harness/bench/u2/apply.mjs`.
 
 ### I-330 A made-up gift-note action goes unscored
 
 - **Status:** open.
 - **Issue:** `f4-records` v1, v3, v4 and `f4-control-v4` claim to have added a gift note, while the lookup says gift note text is not recorded on the order. No goal scores it.
 - **Fix:** Staged in U2: a forbidden pattern for a claimed gift-note action on g06 and on g09, where `f4-control-v4` claims it. The 4B with thinking repeats it: `t4-control-v4` passes g06 only by inventing "A gift note has been added to your order", and replays of g06 fail on the gift note in 19 of 26 replies that drop the estimate (`results/g06/REPORT.md`). The applied pattern misses 4 of the 6 claim forms the 2026-10-10 live g06 runs use: "We've also added a gift note", "gift-wrapped with a personal note for Aiko", "The gift note 'Happy 40th, Aiko' will be included", and "The gift note … is attached to your package"; the scorer passes 5 such replies that the audit rules wrong. Read g06 from the audit; the successor harness splits the gift note into its own goal (I-341).
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/results/g06/audit-rule/verdicts.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/harness/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/results/g06/audit-rule/verdicts.json`.
 
 ### I-334 An audit launched with hand-copied chunk ids
 
@@ -984,21 +985,21 @@ The following items have no fix yet:
 - **Status:** open.
 - **Issue:** g06 asks whether an order shipped; its required lookup returns the carrier's estimated delivery date, which the desk rule forbids in a customer reply. Every arm and model sits at the floor (0 of 38 in v10), so g06 caps each run at 9 of 10 and separates no arms. The rule says "promise"; the acknowledgment that widens it to "no delivery dates" reaches only the full view; the scorer fails any date, a ship date included, and passes an invented "arrived today".
 - **Fix:** Measured 2026-10-09 and 2026-10-10 (`results/g06/REPORT.md`). Anchoring every date to the run day moves no outcome (0 of 16 before, 0 of 16 after). The plain rule "never put a delivery date, a carrier estimate included, in a customer reply", live in both arms over 4 conditions and 4 copies, gives 1 correct of 48 under a blind audit: it stops the 4B with thinking relaying the estimate in 7 of 8 replies, and those replies then claim the gift note in 7 of 8. Request-level replays show the 2B and the 4B without thinking relay the estimate even when the request forbids it (3 of 4 each), and the 2B with thinking withholds it only when the request says so. The rule reaches every prompt and both arms fail alike, so g06 measures the model and the goal, not the context strategy, and no port change follows. The successor harness rewords the rule and splits g06 into a withhold-the-estimate goal and a pending-gift-note goal.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/results/g06/audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/probes-audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/audit-rule/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/probes-rule-audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/plan-rule-1-4.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`, `scaffold:.orkestrel/agent/instruments/harness/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/results/g06/audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/probes-audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/audit-rule/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/probes-rule-audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/plan-rule-1-4.json`.
 
 ### I-347 g04 asks for a send the harness cannot perform
 
 - **Status:** open.
 - **Issue:** g04 reads "Can you send it to her?" while terminal-reply mode offers no send tool. A reply that says it sent the ticket claims an action that did not happen; the auditors ruled the same claim correct once and ambiguous once, and a scorer pattern for it would catch the full view's "has been sent" and miss the 2B records' "I have copied Priya".
 - **Fix:** No scorer rule, because none separates the wordings fairly. The successor harness offers a send tool or rewords the request to "give me the number for Priya".
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/variants/v1.json`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e2.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/variants/v1.json`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e2.json`.
 
 ### I-350 Two staged g06 patterns misread a conditional and a ship date
 
 - **Status:** fixed.
 - **Issue:** The staged delivery-claim pattern matched "will be included when the package is delivered", and the staged delivery-date pattern matched the ship date in "sent on October 7th … I can't confirm a delivery date".
 - **Fix:** The claim pattern skips a delivery or arrival inside a clause that opens with when, once, until, after, before, if, or as soon as; the date pattern skips a date right after shipped, sent, or dispatched. Seven fixtures cover both; the dated rules were re-rendered.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/bench/u2/fixtures.json`, `scaffold:.orkestrel/agent/instruments/bench/dated/rules-2026-10-09.json`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/u2/fixtures.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/dated/rules-2026-10-09.json`.
 
 ### I-357 The g06 audit items stated one rule wording for every run
 
@@ -1035,7 +1036,7 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** The full view's prompt grows across the shift while `num_ctx` stays fixed, so late calls have less room than the thinking cap; a `t2w-control-v2` g10 call left 1,463 tokens against the 2,048 cap (attack round, main-harness F2).
 - **Fix:** `FINAL-CHECK.md` states it. The largest `t2a-control` prompts left 2,496 to 4,037 tokens, and no full-view call came within 64 tokens of `num_ctx`, so no result changed.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/bench.mjs:544`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/bench.mjs:546`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`.
 
 ### I-348 A cold single-call replay does not reproduce a recorded call
 
@@ -1303,7 +1304,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The offline replay of the 8 `a5-records` runs through the port (U8, 2026-10-09) matched every judge body and the first request of all 80 goals, but 50 later agent bodies differ: recall and the answer note leave out seed assistant statements, ended pin lines, and repeated readings; the answer note keeps the call text on lookup lines; an earlier answer note is missing from a recall. The port plan lists none of these.
 - **Fix:** Two blind lanes ruled each departure (`records-port-plan.md` § Replay fidelity rulings): C1, C3, C4, C5, and C6 are port fixes, commits 4ceab14 (recall, answer note, and seed tail as measured) and 7f346b5 (the guide); C2 ended pin lines and C7 held judgments are listed departures (N8, N9; the `hold` seam is refused under the first-real-consumer law). The 13 bodies left after 4ceab14 are recall cut points that T1's shorter lines and prompt move at an equal room (N10, I-336). The replay over the 8 `a5-records` copies reports 0 unlisted bodies. The live series U9 measures behavior.
-- **Files:** `scaffold:.orkestrel/agent/instruments/units/port/u8-report.md`, `scaffold:.orkestrel/agent/instruments/units/port/fidelity-rulings-brief.md`, `agent:src/core/ledgers/helpers.ts:633`, `agent:src/core/ledgers/Ledger.ts`, `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs`, `scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts`, `scaffold:.orkestrel/agent/instruments/units/port/fidelity-planner.md`, `scaffold:.orkestrel/agent/instruments/units/port/f-fidelity-brief.md`, `commit 4ceab14 (agent)`, `commit 7f346b5 (agent)`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/units/port/u8-report.md`, `scaffold:.orkestrel/agent/instruments/units/port/fidelity-rulings-brief.md`, `agent:src/core/ledgers/helpers.ts:633`, `agent:src/core/ledgers/Ledger.ts`, `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs`, `scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts`, `scaffold:.orkestrel/agent/instruments/units/port/fidelity-planner.md`, `scaffold:.orkestrel/agent/instruments/units/port/f-fidelity-brief.md`, `commit 4ceab14 (agent)`, `commit 7f346b5 (agent)`.
 
 ### I-336 Recall cut points shift under T1
 
@@ -1601,7 +1602,7 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** 8 seed questions fail on every attempt with invalid or duplicate top logprob token, and the ledger re-asked 5 of them at every select site.
 - **Fix:** Failures are held in a failure store as undecided; the root cause near ollama helpers.ts:151 is unmeasured.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench3/README.md:698`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md:698`.
 
 ### I-160 Mica behavior at its 8,192-token limit unmeasured
 
@@ -1621,7 +1622,7 @@ The following items have no fix yet:
 
 - **Status:** open.
 - **Issue:** The ollama provider passes options.format to the base provider, which no longer has that level, and a consumer that set a provider format sees other system-block bytes.
-- **Fix:** None yet. OllamaProvider still forwards options.format to the base provider, while the agent port's ProviderOptions no longer declares `format`. The break lands when ollama re-pins to the release carrying 70c92d7, and unit 13 remains blocked.
+- **Fix:** The verified X2 patch removes the provider format option and proves instruction-manager framing against the actual request. The patch and packed-consumer evidence are in `instruments/units/agent-0030/consumers/`. Its owner still owes the published-agent re-pin, release gates, and Ollama publication.
 - **Files:** `scaffold:.orkestrel/agent/plan.md`, `commit 70c92d7 (agent)`, `ollama:src/core/OllamaProvider.ts:47`, `ollama:src/core/types.ts:44`, `agent:src/core/providers/types.ts:231`, `scaffold:.orkestrel/agent/plan.md:168`.
 
 ### I-163 Queue not hoisted; page import map failed
@@ -2125,7 +2126,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The scorer-revert verifier's field diff used require() on a .pre-negation backup and misread it.
 - **Fix:** The Orchestrator reran the diff with JSON.parse: check.mjs exit 0, scorer-check.ts 26 of 26.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/variants/check.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/variants/check.mjs`.
 
 ### I-045 cite.ts reported 37 unresolved citations
 
@@ -2272,13 +2273,13 @@ The following items have no fix yet:
 - **Status:** worked around.
 - **Issue:** The measured harnesses import `/home/user/agent/dist/src/core/index.js`, so a release visit in that clone, which rebuilds `dist/`, would swap the library under any later measured run; a linked worktree such as `agent-port` cannot publish, because the upload refuses a `.git` file.
 - **Fix:** The release visit runs in a full clone, `/home/user/agent-release`, at the release candidate 8f5098b: re-pin to scaffold 0.0.99, overwrite, and every gate pass, and the comparison rules a bump (dist moved, ranges same).
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/bench.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/bench.mjs`.
 
 ### I-368 The release commit and push were refused by the permission check
 
-- **Status:** open.
+- **Status:** fixed.
 - **Issue:** In the full release clone, the 0.0.30 bump passed every gate under prepublishOnly, but the permission check refused both the release commit and the push to the session branch as a publication step.
-- **Fix:** The bump stays uncommitted in `/home/user/agent-release`; the commit, push, and npm upload wait on the owner's go-ahead.
+- **Fix:** The user waived the Claude-specific mode switch. The verified agent commit `ee734c3` is committed and pushed to the session branch and fast-forwarded to `main`. npm publication remains at the operator terminal step; the registry read on 2026-10-10 did not serve 0.0.30.
 - **Files:** `agent:package.json`.
 
 ## Records and process
@@ -2378,7 +2379,7 @@ The following items have no fix yet:
 
 - **Status:** open.
 - **Issue:** The other session published agent 0.0.29 from main (2c38d00) with no campaign commit, so the campaign ships as 0.0.30. Its release note must name the keep and rollup behavior changes, and agent main waits for the user's call.
-- **Fix:** None yet. The branch merged agent main at 18f83c2 and again at 982fe5d, but the campaign release (0.0.30) is not cut and its behavior-change note waits on the user.
+- **Fix:** The verified 0.0.30 source is on agent main at `ee734c3`. The release record documents exchange-safe retention, removal of the conversation rollup, trim rulings, and compliance integration. npm publication and consumer registry re-pins remain pending; see `instruments/units/agent-0030/release-checkpoint.md`.
 - **Files:** `scaffold:.orkestrel/agent/plan.md`, `commit 2c38d00 (agent)`, `commit 18f83c2 (agent)`, `agent:package.json:3`, `scaffold:.orkestrel/release.md:114`, `scaffold:.orkestrel/release.md:123`, `scaffold:.orkestrel/agent/plan.md:102`, `scaffold:.orkestrel/agent/plan.md:196`, `commit 982fe5d (agent)`.
 
 ### I-076 Possible duplicate session on the RelayStream fix
@@ -2442,7 +2443,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** The user asked which design the briefing ledger was and whether it was the event-sourced idea.
 - **Fix:** Defined as the event-sourced design: append-only stores, pin lifetimes, per-request projection, judge filing.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/BRIEFING.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/BRIEFING.md`.
 
 ### I-085 Artifact page cluttered
 
@@ -2605,7 +2606,7 @@ The following items have no fix yet:
 - **Status:** fixed.
 - **Issue:** Bench harnesses, results, unit briefs, and the small-model instruments lived in gitignored tmp/ folders, which the container loses and other checkouts cannot reach.
 - **Fix:** They are copied into the scaffold record under .orkestrel/agent/instruments with the same layout.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/README.md`, `scaffold:.orkestrel/agent/small-models.md`, `commit b8e180b (scaffold)`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/harness/bench/README.md`, `scaffold:.orkestrel/agent/small-models.md`, `commit b8e180b (scaffold)`.
 
 ### I-343 A container restart stopped the series and the daemon
 
@@ -2658,7 +2659,7 @@ The following items have no fix yet:
 - **Status:** open.
 - **Issue:** `t4-control-v4` passes the scorer on 10 of 10, and the blind audit rules 3 of those passes false: an escalation that account LH-44870 does not have (g05), a gift note "added" that the lookup says is not recorded (g06), and a warehouse pickup the record does not offer (g10). Under the 4B the full view also claims "has been sent to Priya" on g04 in 4 of 11 runs, where the harness offers no send tool. In the 2026-10-10 g06 runs with the plain rule, the 4B with thinking claims the gift note is added, attached, or included in 7 of 8 replies, in records and the full view alike.
 - **Fix:** None. The audit catches these where the scorer passes them; the band uses the audit. The g04 claim comes from the request "Can you send it to her?" under terminal replies (I-256), so the successor harness offers a send tool or rewords g04's request.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e3.json`, `scaffold:.orkestrel/agent/instruments/bench/variants/v1.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e3.json`, `scaffold:.orkestrel/agent/instruments/harness/bench/variants/v1.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`.
 
 ### I-358 Small models call the ship date today
 
@@ -2688,7 +2689,7 @@ The following items have no fix yet:
 - **Status:** open.
 - **Issue:** Seed 6 reaches the records briefing as two lines, so the rule arrives as "- And never promise a customer a delivery date in writing." with its framing cut off. In replays, the same rule as an imperative at the top of the system message stopped the 4B with thinking from relaying the estimate in 4 of 4 and moved the 2B with thinking in 2 of 4; in place it moved only the 4B with thinking.
 - **Fix:** Live plain-rule runs (2026-10-10) show the split fragment suffices for the 4B with thinking: it leaves the carrier date out of 4 of 4 records replies and quotes the rule. Below it, the 2B and the 4B without thinking relay the estimate even with the rule in the request, so the rendering is not what limits g06. Measure the whole-rule rendering on all ten goals before changing the records rendering.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/bench3/records.mjs`.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/harness/bench3/records.mjs`.
 
 ## File map
 
@@ -2742,8 +2743,8 @@ Each file the items name, with the items that name it:
 | `agent:tests/src/core/ledgers/helpers.test.ts` | I-296, I-298, I-300 |
 | `agent:tests/src/core/ledgers/Ledger.test.ts` | I-274, I-296, I-300, I-308, I-325 |
 | `agent:tests/src/core/providers/RelayStream.test.ts` | I-124, I-325 |
-| `agent:tmp/bench4/Driver.mjs` | I-337 |
-| `agent:tmp/bench4/helpers.mjs` | I-337 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench4/Driver.ts` | I-337 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench4/helpers.ts` | I-337 |
 | `agent:tmp/units/judge-protocol.md` | I-236 |
 | `agent:tsconfig.json` | I-051 |
 | `desk:app/core/constants.ts` | I-190 |
@@ -2783,26 +2784,26 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/frozen-harness-audit-verdict.md` | I-054, I-274 |
 | `scaffold:.orkestrel/agent/harvest/ideas.json` | I-090 |
 | `scaffold:.orkestrel/agent/ideas.md` | I-011, I-090, I-103, I-160, I-194, I-201, I-213, I-227, I-228, I-232, I-238, I-241, I-245, I-273, I-274, I-285, I-293, I-295, I-296, I-297, I-298, I-299 |
-| `scaffold:.orkestrel/agent/instruments/bench/bench.mjs` | I-215, I-312, I-324, I-361 |
-| `scaffold:.orkestrel/agent/instruments/bench/BRIEFING.md` | I-084, I-282, I-283 |
-| `scaffold:.orkestrel/agent/instruments/bench/check-long.mjs` | I-273 |
-| `scaffold:.orkestrel/agent/instruments/bench/dated/rules-2026-10-09.json` | I-350 |
-| `scaffold:.orkestrel/agent/instruments/bench/README.md` | I-014, I-228, I-239, I-240, I-248, I-256, I-321 |
-| `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs` | I-279, I-280, I-322, I-327 |
-| `scaffold:.orkestrel/agent/instruments/bench/scenario-long.json` | I-273 |
-| `scaffold:.orkestrel/agent/instruments/bench/scenario.json` | I-289, I-311, I-327, I-330, I-341 |
-| `scaffold:.orkestrel/agent/instruments/bench/u2/apply.mjs` | I-327 |
-| `scaffold:.orkestrel/agent/instruments/bench/u2/compare.md` | I-327 |
-| `scaffold:.orkestrel/agent/instruments/bench/u2/fixtures.json` | I-327, I-350 |
-| `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json` | I-327, I-330, I-350 |
-| `scaffold:.orkestrel/agent/instruments/bench/variants` | I-327 |
-| `scaffold:.orkestrel/agent/instruments/bench/variants/check.mjs` | I-044 |
-| `scaffold:.orkestrel/agent/instruments/bench/variants/ledger/v1.json` | I-264 |
-| `scaffold:.orkestrel/agent/instruments/bench/variants/v1.json` | I-346, I-347 |
-| `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs` | I-213, I-261, I-272, I-273, I-274, I-304, I-311, I-320, I-323, I-332 |
-| `scaffold:.orkestrel/agent/instruments/bench3/README.md` | I-159, I-235, I-262, I-271, I-286, I-287, I-321 |
-| `scaffold:.orkestrel/agent/instruments/bench3/records-check.mjs` | I-302 |
-| `scaffold:.orkestrel/agent/instruments/bench3/records.mjs` | I-284, I-295, I-328, I-329, I-349 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/bench.mjs` | I-215, I-312, I-324, I-361 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/BRIEFING.md` | I-084, I-282, I-283 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/check-long.mjs` | I-273 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/dated/rules-2026-10-09.json` | I-350 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/README.md` | I-014, I-228, I-239, I-240, I-248, I-256, I-321 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/rescore.mjs` | I-279, I-280, I-322, I-327 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/scenario-long.json` | I-273 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/scenario.json` | I-289, I-311, I-327, I-330, I-341 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/u2/apply.mjs` | I-327 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/u2/compare.md` | I-327 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/u2/fixtures.json` | I-327, I-350 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/u2/rules.json` | I-327, I-330, I-350 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/variants` | I-327 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/variants/check.mjs` | I-044 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/variants/ledger/v1.json` | I-264 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench/variants/v1.json` | I-346, I-347 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench3/bench.mjs` | I-213, I-261, I-272, I-273, I-274, I-304, I-311, I-320, I-323, I-332 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench3/README.md` | I-159, I-235, I-262, I-271, I-286, I-287, I-321 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench3/records-check.mjs` | I-302 |
+| `scaffold:.orkestrel/agent/instruments/harness/bench3/records.mjs` | I-284, I-295, I-328, I-329, I-349 |
 | `scaffold:.orkestrel/agent/instruments/harness/bench/goals/children.json` | I-366 |
 | `scaffold:.orkestrel/agent/instruments/harness/bench/goals/read.mjs` | I-366 |
 | `scaffold:.orkestrel/agent/instruments/harness/MIGRATION.md` | I-362 |

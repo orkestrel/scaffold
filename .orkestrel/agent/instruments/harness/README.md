@@ -12,6 +12,7 @@ The following table names each directory and what it holds.
 | --- | --- |
 | `bench/` | The full view and compaction harness (`bench.mjs`), the scorer (`rescore.mjs`), `scenario.json`, `scenario-long.json`, the reworded variants in `variants/` and `variants/ledger/`, the date renderer in `dated/`, the scoring-rule tooling in `u2/`, and the per-requirement scorer in `goals/`, which reads the recorded runs under `../results/`. |
 | `bench3/` | The records harness (`bench.mjs`, `records.mjs`), its offline check (`records-check.mjs`), `records-fixtures.json`, and its `scenario.json`. |
+| `bench4/` | The typed archived ledger driver (`Driver.ts`), its unambiguous Node entry (`bench.ts`), and focused offline proofs. It imports the trimmed agent release and the historical judge and scorer. |
 | `tools/` | The series tools: `plan.ts`, `series.ts`, `run-one.ts`, `cold-start.mjs`, the wire recorder `record-fetch.mjs`, and the offline judge-import probe `probe-judge.mjs`. |
 | `models/` | The candidate-model pilot: `plan.mjs`, `pilot.mjs`, `sweep.sh`. |
 | `audit/` | The blind-audit kit for the v10 series (`audit.js`, `items.ts`, `tally.ts`, `inspect.ts`, `adjudicated.ts`, `extract.ts`) and for the g06 series (`g06-audit.js`, `items.mjs`, `probe-items.mjs`, `collect.mjs`, `replay.mjs`, `trace.mjs`, `variants.mjs`). |
@@ -94,6 +95,21 @@ node tools/probe-judge.mjs
 ```
 
 `tools/probe-judge.mjs` blocks `fetch`, imports `vendor/ollama/index.js`, and constructs a judge without calling it; it exits 0 and prints `fetch calls 0`, and it exits non-zero when the vendored judge build or its `@orkestrel/agent` resolution is missing or broken. The other checks never load that build. `bench/variants/check.mjs` exits 2 and the `CLI` case of `bench/dated/check.mjs` fails; both fail the same way in the original tree, so a failure there is not a sign of a broken copy. `node --test bench/dated/check.mjs` also rewrites files under `bench/dated/`; run it in a scratch copy when you need those files unchanged.
+
+## Run the relocated ledger driver
+
+From this harness directory, compare a preserved records copy and run the focused offline proofs:
+
+```sh
+node bench4/bench.ts --copy 1 --dry
+node --test bench4/helpers.test.ts bench4/Driver.test.ts
+```
+
+The driver accepts copies 1 through 8. A dry check compares the recorded settings, questions, system, sampler, seed, and tools, maps the archived Linux scenario and corpus identities to unchanged local bytes, and sends no request. The seed's `measured.fixed` field remains historical data; the trimmed vendor's calibrated gauge uses `overhead`.
+
+A run requires `--out DIR`; path checks restrict output to this harness's `tmp/bench4` directory and refuse symbolic links. These checks assume stable filesystem ancestors; they do not lock against concurrent directory replacement. Without `--live`, calibration reaches the fetch guard before creating the run output. The `--references DIR` operation retains its source validation and non-overwrite checks. The preserved archive lacks the `a4-refined-v1` reference JSONL input, so the real archive operation refuses before writing. Its success and containment proofs use owned inert rows with byte copies of the real driver.
+
+The driver imports `vendor/agent-0.0.30-trimmed/index.js`, SHA-256 `8f040acf72b6426246b79e5c2f31d3644291e4c08f49434ad1224e16f176311d`, from agent source commit `ee734c30151c7d431e480aff7a0d54306d387f13`. Its declaration SHA-256 is `f6f28cab8a2d417510e68f308563f1f53eb86b600e0a57208799adc8d783d171`. The driver imports the historical `vendor/ollama/index.js` encoder and `bench/rescore.mjs` scorer. This relocation carries no live performance measurement.
 
 ## Read the older documents
 
