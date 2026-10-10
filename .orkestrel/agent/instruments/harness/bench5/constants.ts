@@ -55,6 +55,7 @@ export const LOOKUP_OWNER_PATTERNS = Object.freeze([
 
 export const JUDGE_MISS = 'judge cache miss'
 export const JUDGE_HEAD_OTHER = 'other'
+export const SUMMARY_MISS = 'summary cache miss'
 
 // The typeof each corpus field must have when present; the guard reads no other field.
 export const CORPUS_FIELD_TYPES = Object.freeze({

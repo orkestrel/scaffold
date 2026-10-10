@@ -1,4 +1,10 @@
-import type { JudgeAnswer, JudgeInterface, JudgeQuestion, Message, Selection } from '@orkestrel/agent'
+import type {
+	JudgeAnswer,
+	JudgeInterface,
+	JudgeQuestion,
+	Message,
+	Selection,
+} from '../../vendor/agent-0.0.30/index.js'
 import type { Fixture } from './fixture.ts'
 import type { AggregateRow, AggregateSource, CacheRow, Fit, MirrorLine, ScenarioDay, SeedMessage } from '../types.ts'
 import { after, before, describe, it } from 'node:test'
@@ -51,6 +57,7 @@ import {
 	buildTopicQuestion,
 	findDay,
 	importCorpus,
+	isMessageRole,
 	readJSON,
 	readLookup,
 	readRows,
@@ -138,8 +145,10 @@ function readSeed(scenario: unknown): readonly SeedMessage[] {
 	return readList(scenario, 'seed').map((message) => {
 		const calls = readField(message, 'calls')
 		const call = readField(message, 'call')
+		const role = readField(message, 'role')
+		assert.ok(isMessageRole(role), String(role))
 		return {
-			role: readText(message, 'role'),
+			role,
 			content: readText(message, 'content'),
 			...(Array.isArray(calls) ? { calls } : {}),
 			...(typeof call === 'string' ? { call } : {}),

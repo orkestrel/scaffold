@@ -1,6 +1,17 @@
 {
 	"title": "Larkspur Home support desk, three days",
 	"system": "You are the operations assistant on the Larkspur Home online store's customer-support desk, working for the shift lead in this conversation. You must use the facts, rules, corrections, and withdrawals stated earlier in the conversation: a correction replaces the earlier value, and a withdrawn rule no longer applies. When a request concerns an order id or account number from the conversation, you must call lookup_order or lookup_customer with it before you answer. When a fact you need is not in view, you must call search_history with a distinctive name, id, or word to recover it from the full conversation record. You must finish every request by calling send_reply with the complete answer; only the send_reply text counts as your answer.",
+	"ledger": {
+		"system": "You are the operations assistant on the Larkspur Home online store's customer-support desk, working for the shift lead in this conversation. You must use the facts, rules, corrections, and withdrawals stated earlier in the conversation: a correction replaces the earlier value, and a withdrawn rule no longer applies. When a request concerns an order id or account number from the conversation, you must call lookup_order or lookup_customer with it before you answer. When a fact you need is not in view, you must call recall with a topic (a customer name, an order or account id, or a desk topic) to recover it from the full conversation record. Finish every request with your complete answer as your final message; that message is what the shift lead receives.",
+		"topics": {
+			"refunds": "refunds, refund amounts, refund methods, and the manager approval codes refunds need",
+			"returns": "returns of items, return windows, and fees taken off a return",
+			"escalations": "escalations, escalation tickets, sign-offs, and who is copied on an escalation",
+			"delivery": "shipping, packing, gift notes, carriers, tracking, depots, and delivery status or dates",
+			"warehouse": "the Larkspur Home warehouse, its staff, and releases of held shipments",
+			"contacts": "who to reach, how, and when"
+		}
+	},
 	"days": [
 		{
 			"date": "2026-10-08",
@@ -1959,16 +1970,23 @@
 			"expected": [
 				"289"
 			],
-			"forbidden": [
-				"245.65",
-				"43.35"
-			],
+			"forbidden": [],
 			"facts": [
 				42,
 				44
 			],
 			"tools": [
+				"lookup_order",
 				"send_reply"
+			],
+			"forbiddenPatterns": [
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replacing|was|formerly|old|superseded|withdrawn|dead|retired)\\s+(?:(?:a|an|the)\\s+)?[(\"'“]?\\$?)(?<![\\w.])\\$?245\\.65(?!\\d)(?![)\"'”]?,?\\s+(?:was replaced|is dead|is retired|expired|withdrawn|scrapped|no longer applies|is not kept|does not count)\\b)",
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replacing|was|formerly|old|superseded|withdrawn|dead|retired)\\s+(?:(?:a|an|the)\\s+)?[(\"'“]?\\$?)(?<![\\w.])\\$?43\\.35(?!\\d)(?![)\"'”]?,?\\s+(?:was replaced|is dead|is retired|expired|withdrawn|scrapped|no longer applies|is not kept|does not count)\\b)",
+				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\b\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent)\\s+restocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
+				"restocking fees?\\s*\\(if applicable\\)",
+				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\bsubject to\\b[^.\\n]{0,40}?\\brestocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
+				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees?\\s+(?:applies|apply|will apply|is applied|will be applied|is deducted|will be deducted)\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
+				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees? of\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)"
 			],
 			"after": 47
 		},
@@ -1988,6 +2006,7 @@
 				"lookup_customer",
 				"send_reply"
 			],
+			"forbiddenPatterns": [],
 			"after": 47,
 			"sources": [
 				{
@@ -2011,7 +2030,10 @@
 				"restocking fees?\\s*\\(if applicable\\)",
 				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\bsubject to\\b[^.\\n]{0,40}?\\brestocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
 				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees?\\s+(?:applies|apply|will apply|is applied|will be applied|is deducted|will be deducted)\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
-				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees? of\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)"
+				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees? of\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
+				"^(?![\\s\\S]*(?:\\bmarcus\\b(?:\\s+oyelaran\\b)?(?:'s)?(?:\\s*\\([^()\\n]*\\))?(?:,\\s*[^,.;\\n]{1,40},)?(?:\\s*[-–—])?\\s+(?:(?:must|will|needs?\\s+to|has\\s+to|is\\s+to|to|shall|should)\\s+)?(?:sign|approv)|\\b(?:sign(?:s|ed|ing)?(?:[-\\s]?offs?)?|approv\\w*|signature)(?:\\s+(?:is\\s+)?required)?\\s*(?:[:¦]|\\bby\\b|\\bfrom\\b)\\s*(?:(?!(?:and|or)\\b)[\\w'-]+\\s+){0,2}marcus\\b))",
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replaces|replacing|was|formerly|old|previous|prior|superseded|withdrawn|dead|retired)\\s+(?:(?:a|an|the)\\s+)?(?:(?:manager\\s+)?approval\\s+)?(?:(?:code|ticket|number)\\s+)?[(\"'“]?\\$?)\\besc-2291\\b(?![)\"'”]?,?\\s+(?:(?:is|was|has been|had been|got)\\s+(?:replaced|superseded)|(?:replaced|superseded)\\s+by|(?:(?:is|was|has been|had been)\\s+)?(?:dead|retired|expired|withdrawn|scrapped|invalid|obsolete|no longer (?:valid|applies|in use|used|active|current))|is not kept|does not count)\\b)(?!\\s*\\(\\s*(?:now\\s+)?(?:(?:replaced|superseded)\\s+by\\b|(?:dead|retired|expired|withdrawn|scrapped|invalid|obsolete|old|previous|prior|no longer)\\b(?!\\s+(?:[\\w'-]+\\s+){0,2}[(\"'“]?[a-z]{2,4}-\\d)))",
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replaces|replacing|was|formerly|original|rotated from|old|previous|prior|superseded|withdrawn|dead|retired)\\s+(?:(?:a|an|the)\\s+)?(?:(?:manager\\s+)?approval\\s+)?(?:(?:code|ticket|number)\\s+)?[(\"'“]?\\$?)\\bmx-4471\\b(?![)\"'”]?,?\\s+(?:(?:is|was|has been|had been|got)\\s+(?:replaced|superseded)|(?:replaced|superseded)\\s+by|(?:(?:is|was|has been|had been)\\s+)?(?:dead|retired|expired|withdrawn|scrapped|superseded|invalid|obsolete|no longer (?:valid|applies|in use|used|active|current))|is not kept|does not count)\\b)(?!\\s*\\(\\s*(?:now\\s+)?(?:(?:replaced|superseded)\\s+by\\b|(?:dead|retired|expired|withdrawn|scrapped|superseded|invalid|obsolete|old|previous|prior|no longer)\\b(?!\\s+(?:[\\w'-]+\\s+){0,2}[(\"'“]?[a-z]{2,4}-\\d)))"
 			],
 			"facts": [
 				6,
@@ -2019,6 +2041,7 @@
 				18
 			],
 			"tools": [
+				"lookup_order",
 				"send_reply"
 			],
 			"after": 47
@@ -2030,15 +2053,16 @@
 			"expected": [
 				"esc-2219"
 			],
-			"forbidden": [
-				"esc-2291"
-			],
+			"forbidden": [],
 			"facts": [
 				22,
 				27
 			],
 			"tools": [
 				"send_reply"
+			],
+			"forbiddenPatterns": [
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replacing|was|formerly|old|superseded|withdrawn|dead|retired|earlier|previous|prior|original|mistyped|transposed)\\s+(?:(?:a|an|the)\\s+)?[(\"'“]?\\$?)\\besc-2291\\b(?![)\"'”]?,?\\s+(?:was replaced|is dead|is retired|expired|withdrawn|scrapped|no longer applies|is not kept|does not count|was (?:a |an )?(?:transposition |typing |digit )?(?:error|mistake|typo)|(?:has been|was|is) corrected|(?:was|is) (?:wrong|incorrect))\\b)"
 			],
 			"after": 47
 		},
@@ -2049,11 +2073,10 @@
 			"expected": [
 				"mx-4486"
 			],
-			"forbidden": [
-				"mx-4471",
-				"245.65"
-			],
+			"forbidden": [],
 			"forbiddenPatterns": [
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replaces|replacing|was|formerly|original|rotated from|old|previous|prior|superseded|withdrawn|dead|retired)\\s+(?:(?:a|an|the)\\s+)?(?:(?:manager\\s+)?approval\\s+)?(?:(?:code|ticket|number)\\s+)?[(\"'“]?\\$?)\\bmx-4471\\b(?![)\"'”]?,?\\s+(?:(?:is|was|has been|had been|got)\\s+(?:replaced|superseded)|(?:replaced|superseded)\\s+by|(?:(?:is|was|has been|had been)\\s+)?(?:dead|retired|expired|withdrawn|scrapped|superseded|invalid|obsolete|no longer (?:valid|applies|in use|used|active|current))|is not kept|does not count)\\b)(?!\\s*\\(\\s*(?:now\\s+)?(?:(?:replaced|superseded)\\s+by\\b|(?:dead|retired|expired|withdrawn|scrapped|superseded|invalid|obsolete|old|previous|prior|no longer)\\b(?!\\s+(?:[\\w'-]+\\s+){0,2}[(\"'“]?[a-z]{2,4}-\\d)))",
+				"(?<!\\b(?:not|no|no longer|instead of|rather than|corrected from|replaced|replacing|was|formerly|old|superseded|withdrawn|dead|retired)\\s+(?:(?:a|an|the)\\s+)?[(\"'“]?\\$?)(?<![\\w.])\\$?245\\.65(?!\\d)(?![)\"'”]?,?\\s+(?:was replaced|is dead|is retired|expired|withdrawn|scrapped|no longer applies|is not kept|does not count)\\b)",
 				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\b\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent)\\s+restocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
 				"restocking fees?\\s*\\(if applicable\\)",
 				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\bsubject to\\b[^.\\n]{0,40}?\\brestocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
@@ -2066,6 +2089,7 @@
 				42
 			],
 			"tools": [
+				"lookup_order",
 				"send_reply"
 			],
 			"after": 47
@@ -2087,7 +2111,11 @@
 				"10/12"
 			],
 			"forbiddenPatterns": [
-				"\\b\\d{4}-\\d{1,2}-\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b(?:1[0-2]|0?[1-9])/(?:3[01]|[12][0-9]|0?[1-9])(?:/\\d{2,4})?\\b|\\b\\d{1,2}/\\d{1,2}/\\d{2,4}\\b"
+				"\\b(?:2026[-/.]0?10[-/.]0?12|0?10[-/.]0?12(?:[-/.](?:2026|26))?|0?12[-/.]0?10[-/.](?:2026|26)|oct(?:ober)?\\.?[ \\t-]*(?:the\\s+)?(?:12(?:th)?|twelfth|twelve)|(?:12(?:th)?|twelfth|twelve)[ \\t-]+(?:of\\s+)?oct(?:ober)?\\.?)\\b",
+				"\\b(?:arriv\\w*|deliver\\w*|estimat\\w*|expected(?:\\s+date)?|ETA)\\b(?:[^.!?\\n]|(?<=\\b(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\\.|(?<=\\d)\\.(?=\\d))*?(?<!\\b(?:shipped|sent|dispatched)\\s+(?:out\\s+)?(?:on\\s+)?(?:\\w+\\s+)?\\(?)(?:\\b\\d{4}[-/.]\\d{1,2}[-/.]\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b\\d{1,2}[-/.]\\d{1,2}(?:[-/.]\\d{2,4})?\\b)|(?<!\\b(?:shipped|sent|dispatched)\\s+(?:out\\s+)?(?:on\\s+)?(?:\\w+\\s+)?\\(?)(?:\\b\\d{4}[-/.]\\d{1,2}[-/.]\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b\\d{1,2}[-/.]\\d{1,2}(?:[-/.]\\d{2,4})?\\b)(?:[^.!?\\n]|(?<=\\b(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\\.|(?<=\\d)\\.(?=\\d))*?\\b(?:arriv\\w*|deliver\\w*|estimat\\w*|expected(?:\\s+date)?|ETA)\\b",
+				"(?<!\\b(?:when|once|until|till|after|before|if|whenever|as soon as)\\b[^.!?\\n]{0,40})(?<!\\b(?:not|never|hasn't|haven't|hadn't)\\s+(?:yet\\s+)?)\\barrived\\b|(?<!\\b(?:when|once|until|till|after|before|if|whenever|as soon as)\\b[^.!?\\n]{0,40})\\b(?:(?:was|were|is|has been|have been|had been|s been|ve been|got)\\s+(?:(?:already|successfully)\\s+)?delivered|(?:we|they|parcelway|the carrier)\\s+(?:have\\s+|has\\s+)?delivered)\\b|(?:^|[\\n:¦])\\s*delivered\\b",
+				"^(?![\\s\\S]*(?:\\b(?:hi|hello|dear)\\s+kenji\\b|(?:^|[\\n\"“])\\s*kenji(?:\\s+nakamura)?\\s*[,!:]|\\byour\\s+(?:replacement|electric|kettle|order|tracking|package|parcel|shipment)\\b))",
+				"\\b(?:i've|we've|i have|we have|i|we)\\s+(?:already\\s+)?(?:added|included|attached|recorded|updated|written|printed)\\b[^.!?\\n]*\\b(?:gift\\s+(?:note|card)|(?:that|the|this)\\s+(?:text|wording))\\b|\\b(?:gift\\s+(?:note|card)(?:\\s+text)?)\\s+(?:has been|was|is|has already been)\\s+(?:added|included|attached|recorded|printed)\\b"
 			],
 			"facts": [
 				6,
@@ -2113,13 +2141,23 @@
 				"tomasz",
 				"fl-660412"
 			],
+			"expectedAny": [
+				"today",
+				"2026-10-08"
+			],
 			"forbidden": [],
 			"facts": [
 				8,
 				36
 			],
 			"tools": [
+				"lookup_order",
 				"send_reply"
+			],
+			"forbiddenPatterns": [
+				"(?<!\\b(?:off|out|away|unavailable|absent)\\s+)\\b(?:by|on|before|until|no later than)\\s+(?:this\\s+)?friday\\b|(?<!\\b(?:off|out|away|unavailable|absent)\\s+(?:on\\s+|until\\s+|tomorrow,?\\s+)?\\(?)(?<!\\b(?:off|out|away|unavailable|absent|leave)(?:\\s+(?:work|sick|of|the|office|from|on|leave|for|all|day|duty)){0,3}\\s+tomorrow,?\\s*\\(?)\\bfriday,?\\s+(?:oct(?:ober|\\.)?\\s+9(?:th)?|2026-10-09)\\b|\\btoday,?\\s+(?:is\\s+)?friday\\b|\\bdeadline\\s*(?:[:¦]|is)?\\s*(?:this\\s+)?friday\\b|(?<!\\b(?:off|out|away|unavailable|absent)\\s+)\\bfriday\\b(?=[^.\\n]{0,20}\\bafter\\s+2\\b)",
+				"\\b(?:ask|asking|reach|contact|call|message|email|ping|tell|notify)\\s+(?:(?!today\\b)[\\w'-]+\\s+){0,3}(?<!\\b(?:off|out|away|unavailable|absent|not|before|than)\\s+)tomorrow\\b|(?<!\\b(?:off|out|away|unavailable|absent|leave)\\s+)\\b(?:by|until|no later than|due)\\s+(?:the\\s+end\\s+of\\s+(?:the\\s+day\\s+)?)?tomorrow\\b|\\bdeadline\\s*(?:[:¦]|is)?\\s*tomorrow\\b",
+				"^(?=[\\s\\S]*\\btoday\\b)(?![\\s\\S]*(?<!\\b(?:unavailable|absent|(?:is|are|was|be|been|being|\\w+'s)\\s+(?:\\w+\\s+)?(?:off|out|away)(?:\\s+(?:work|sick|of\\s+(?:the\\s+)?office))?|on\\s+leave)\\s+)\\btoday\\b)(?![\\s\\S]*2026-10-08)"
 			],
 			"after": 47
 		},
@@ -2130,6 +2168,29 @@
 			"expected": [
 				"albrecht"
 			],
+			"expectedAny": [
+				"fits",
+				"within",
+				"enough",
+				"covers",
+				"approve",
+				"does fit",
+				"yes",
+				"can afford",
+				"can proceed",
+				"can go",
+				"can put",
+				"can be put",
+				"can place",
+				"can be placed",
+				"can take",
+				"can cover",
+				"can accommodate",
+				"can approve",
+				"can be approved",
+				"sufficient",
+				"would be approved"
+			],
 			"forbidden": [],
 			"facts": [
 				22
@@ -2137,6 +2198,19 @@
 			"tools": [
 				"lookup_customer",
 				"send_reply"
+			],
+			"forbiddenPatterns": [
+				"\\bexceeds\\b",
+				"(?<!\\b(?:not|never|no)\\s+(?:\\w+\\s+)?)\\bover the limit\\b",
+				"\\bnot enough\\b",
+				"\\b(?:does|do|will|would)\\s*(?:not|n't)\\s+fit\\b",
+				"\\b(?:cannot|can't|can not)\\s+(?:be\\s+)?(?:approved?|afford|fit|cover|accommodate|proceed|go|put|place|take)\\b",
+				"(?:^|[\\n:?¦])\\s*no\\b(?=\\s*(?:[,.;:!—–¦-]|$))",
+				"\\b(?:not|never|no longer|hardly|no|nor|without|lacks?|lacking|lack of|short of|falls? short(?: of)?|\\w+n't(?:\\s+be)?)\\s+(?:\\w+\\s+)?sufficient\\b|\\binsufficient\\b",
+				"\\b(?:(?:would|will|could|should)\\s*(?:not|n't)|won't|never)\\s+be\\s+approved\\b",
+				"\\bno\\s+(?:(?:more|credit|extra|spare|real)\\s+){0,2}room\\b",
+				"\\b(?:available[ \\t]+credit|credit[ \\t]+available|credit[ \\t]+(?:remaining|availability))(?:[ \\t]|[:¦=—–-]|\\b(?:is|of|at|equals|stands|totals|amounts|to|currently|now|only|exactly|just|approximately|USD|balance|limit)\\b)*(?:\\$[ \\t]*)?(?!3,?760(?:\\.00)?(?!\\d|[.,]\\d))\\d[\\d,]*(?:\\.\\d+)?(?!\\d|[.,]\\d)(?![ \\t]*[-−+][ \\t]*\\$?[\\d,]+(?:\\.\\d+)?[ \\t]*=)|\\b(?:available[ \\t]+credit|credit[ \\t]+available|credit[ \\t]+(?:remaining|availability))[^\\n!?;]*?=[ \\t]*(?:\\$[ \\t]*)?(?!3,?760(?:\\.00)?(?!\\d|[.,]\\d))\\d[\\d,]*(?:\\.\\d+)?(?!\\d|[.,]\\d)|(?<![\\d.,])(?:\\$[ \\t]*)?(?!3,?760(?:\\.00)?(?!\\d|[.,]\\d))\\d[\\d,]*(?:\\.\\d+)?(?!\\d|[.,]\\d)[ \\t]*(?:dollars?[ \\t]*)?(?:(?:in|of)[ \\t]+)?(?:available[ \\t]+credit|credit[ \\t]+available|credit[ \\t]+(?:remaining|availability))\\b|(?<![\\d.,])(?:\\$[ \\t]*)?(?!3,?760(?:\\.00)?(?!\\d|[.,]\\d))\\d[\\d,]*(?:\\.\\d+)?(?!\\d|[.,]\\d)[ \\t]*(?:dollars?[ \\t]*)?available\\b|\\bavailable[ \\t]*[:¦=][ \\t]*(?:\\$[ \\t]*)?(?!3,?760(?:\\.00)?(?!\\d|[.,]\\d))\\d[\\d,]*(?:\\.\\d+)?(?!\\d|[.,]\\d)",
+				"\\$?4,?240(?:\\.00)?\\b[^.!?\\n]*\\bwithin\\b[^.!?\\n]*\\bavailable\\s+credit\\b"
 			],
 			"after": 47,
 			"sources": [
@@ -2156,12 +2230,14 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"\\b\\d{4}-\\d{1,2}-\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b(?:1[0-2]|0?[1-9])/(?:3[01]|[12][0-9]|0?[1-9])(?:/\\d{2,4})?\\b|\\b\\d{1,2}/\\d{1,2}/\\d{2,4}\\b"
+				"\\b\\d{4}-\\d{1,2}-\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b(?:1[0-2]|0?[1-9])/(?:3[01]|[12][0-9]|0?[1-9])(?:/\\d{2,4})?\\b|\\b\\d{1,2}/\\d{1,2}/\\d{2,4}\\b",
+				"\\b(?:i've|we've|i have|we have|i|we)\\s+(?:already\\s+)?(?:added|included|attached|recorded|updated|written|printed)\\b[^.!?\\n]*\\b(?:gift\\s+(?:note|card)|(?:that|the|this)\\s+(?:text|wording))\\b|\\b(?:gift\\s+(?:note|card)(?:\\s+text)?)\\s+(?:has been|was|is|has already been)\\s+(?:added|included|attached|recorded|printed)\\b"
 			],
 			"facts": [
 				11
 			],
 			"tools": [
+				"lookup_order",
 				"search_history",
 				"send_reply"
 			],
@@ -2174,6 +2250,15 @@
 			"expected": [
 				"4127"
 			],
+			"expectedAny": [
+				"2 pm",
+				"2pm",
+				"2:00 pm",
+				"2:00pm",
+				"2 p.m.",
+				"2:00 p.m.",
+				"14:00"
+			],
 			"forbidden": [],
 			"facts": [
 				24
@@ -2181,6 +2266,11 @@
 			"tools": [
 				"search_history",
 				"send_reply"
+			],
+			"forbiddenPatterns": [
+				"(?<!\\b(?:off|out|away|unavailable|absent)\\s+)\\b(?:by|on|before|until|no later than)\\s+(?:this\\s+)?friday\\b|(?<!\\b(?:off|out|away|unavailable|absent)\\s+(?:on\\s+|until\\s+|tomorrow,?\\s+)?\\(?)\\bfriday,?\\s+(?:oct(?:ober|\\.)?\\s+9(?:th)?|2026-10-09)\\b|\\btoday,?\\s+(?:is\\s+)?friday\\b|\\bdeadline\\s*(?:[:¦]|is)?\\s*(?:this\\s+)?friday\\b|(?<!\\b(?:off|out|away|unavailable|absent)\\s+)\\bfriday\\b(?=[^.\\n]{0,20}\\bafter\\s+2\\b)",
+				"(?<!\\b(?:not|never|instead of|rather than|avoid|skip|don't|do not)\\s+(?:[\\w'’-]+\\s+){0,4}[(\"'“]?)\\b555-0142\\b",
+				"\\b(?:before|by|until|no later than)\\s+2(?::00)?\\s*(?:pm|p\\.m\\.)"
 			],
 			"after": 47
 		},
@@ -2192,6 +2282,10 @@
 				"adeyemi"
 			],
 			"forbidden": [],
+			"forbiddenPatterns": [
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\bmarcus(?:\\s+oyelaran)?\\s+(?:(?:must|will|can|may|should|also|still)\\s+)*(?:sign(?:s|ing)?\\s*off|approve[sd]?|authori[sz]e[sd]?)\\b(?!\\s+(?:normally|usually|ordinarily)\\b)",
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\b(?:sign[- ]?off|approval|authorization|authorisation)\\s+(?:from|by|through)\\s+marcus\\b"
+			],
 			"facts": [
 				18,
 				54,
@@ -2212,9 +2306,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)(?<![\\w$])\\$?50(?:\\.00)?\\s+(?:in\\s+)?store credit(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)",
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\bstore credit of \\$?50(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)",
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\b(?:offer|give|issue|grant|provide|apply)\\w*\\b(?:(?!\\b(?:not|no longer|instead of|rather than)\\b)[^.\\n]){0,30}?\\bstore credit(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?<![\\w$])(?:\\$?50(?:\\.00)?\\s+(?:in\\s+)?store credit|(?<!\\$?50(?:\\.00)?\\s+(?:in\\s+)?)\\bstore credit)(?!\\s*(?:of\\s+\\$?50(?:\\.00)?\\s*)?(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				94
@@ -2237,7 +2329,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\b19\\s+quarry(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\b19\\s+quarry(?!(?:\\s+lane)?\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				103
@@ -2262,9 +2354,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\brefund(?:ed|ing|s)?\\b[^.\\n]{0,25}?\\$?412(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)",
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)(?<![\\w$])\\$?412(?:\\.00)?\\s+refund(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)",
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\bfull refund\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?:\\brefund(?:ed|ing|s)?\\b[^.\\n]{0,25}?\\$?412(?:\\.00)?(?![\\d.])|(?<![\\w$])\\$?412(?:\\.00)?\\s+refund\\b|\\bfull refund\\b)(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				71,
@@ -2289,16 +2379,10 @@
 				"7719",
 				"2026-10-21"
 			],
-			"forbidden": [
-				"245.65",
-				"43.35"
-			],
+			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\b\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent)\\s+restocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
-				"restocking fees?\\s*\\(if applicable\\)",
-				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\bsubject to\\b[^.\\n]{0,40}?\\brestocking(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
-				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees?\\s+(?:applies|apply|will apply|is applied|will be applied|is deducted|will be deducted)\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)",
-				"(?<!\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b[^.\\n]*)\\brestocking fees? of\\b(?![^.\\n]*\\b(?:withdrawn|withdrew|withdraw|scrapped|scrap|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|not|no|without)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?<![\\w$])\\$?(?:245\\.65|43\\.35)(?!\\d)(?!(?:\\s+(?:deduction|fee))?\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)",
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?:\\b\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent)\\s+restocking fees?\\b|(?<!\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent)\\s+)\\brestocking fees?\\b)(?!\\s+(?:of\\s+\\d+(?:\\.\\d+)?\\s*(?:%|percent|per cent)\\s+)?(?:(?:is|are|was|were|has been|have been)\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|eliminated|cancell?ed|rescinded|retired|lifted|no longer|does not|do not|will not)\\b)"
 			],
 			"facts": [
 				40,
@@ -2330,8 +2414,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\b1\\s*(?::00\\s*)?p\\.?m\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)",
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\b9\\s*(?::00\\s*)?a\\.?m\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\b(?:1\\s*(?::00\\s*)?p\\.?m|9\\s*(?::00\\s*)?a\\.?m)\\b(?!(?:\\s+(?:opening|hours?))?\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				122
@@ -2354,7 +2437,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)555-0188(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\b555-0188\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				124
@@ -2377,8 +2460,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)pw-7042-1185(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)",
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)fl-661978(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\b(?:pw-7042-1185|fl-661978)\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				96,
@@ -2407,7 +2489,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)\\blate10\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\blate10\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				114,
@@ -2432,7 +2514,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)(?:\\bines\\s+albrecht|(?<!\\bines\\s+)\\balbrecht)\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?:\\bines\\s+albrecht|(?<!\\bines\\s+)\\balbrecht)\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				136
@@ -2455,7 +2537,8 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)(?:\\b(?:extension|ext\\.?)\\s*43(?:01|10)|(?<!\\b(?:extension|ext\\.?)\\s*)\\b43(?:01|10))\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?:\\b(?:extension|ext\\.?)\\s*43(?:01|10)|(?<!\\b(?:extension|ext\\.?)\\s*)\\b43(?:01|10))\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)",
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?:\\bowen\\s+pritchard|(?<!\\bowen\\s+)\\bpritchard)\\b(?!(?:\\s+on\\s+(?:extension|ext\\.?)\\s*43(?:01|10))?\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				138
@@ -2475,6 +2558,7 @@
 			"distance": "far",
 			"request": "Packing needs the gift card text for Kenji's second kettle, and he wants to know when it will arrive. Write me the card text and the reply to him.",
 			"expected": [
+				"happy",
 				"40th",
 				"aiko"
 			],
@@ -2488,7 +2572,8 @@
 				"10/12"
 			],
 			"forbiddenPatterns": [
-				"\\b\\d{4}-\\d{1,2}-\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b(?:1[0-2]|0?[1-9])/(?:3[01]|[12][0-9]|0?[1-9])(?:/\\d{2,4})?\\b|\\b\\d{1,2}/\\d{1,2}/\\d{2,4}\\b"
+				"\\b\\d{4}-\\d{1,2}-\\d{1,2}\\b|\\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?\\s+(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\b|\\b(?:3[01]|[12][0-9]|0?[1-9])(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\b|\\b(?:1[0-2]|0?[1-9])/(?:3[01]|[12][0-9]|0?[1-9])(?:/\\d{2,4})?\\b|\\b\\d{1,2}/\\d{1,2}/\\d{2,4}\\b",
+				"(?<!\\b(?:not|never|cannot|can't|won't|don't|do not)\\s+)\\b(?:arriv(?:e|es|ing|al)|deliver(?:ed|y))\\s+(?:(?:on|by|before|this|next)\\s+)?(?:today|tomorrow|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b"
 			],
 			"facts": [
 				6,
@@ -2512,7 +2597,7 @@
 			],
 			"forbidden": [],
 			"forbiddenPatterns": [
-				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing)\\s+(?:(?:a|an|the)\\s+)?)(?:\\bruth\\s+adeyemi|(?<!\\bruth\\s+)\\badeyemi)\\b(?!\\s+(?:expired|arrived|left|took over)\\b)(?![^.\\n]*\\b(?:withdrawn|withdrew|scrapped|removed|dropped|replaced|replaces|changed|no longer|without|previous|previously|old|earlier|former|formerly|superseded|expired|ended|left|closed|cancell?ed|already|took over|moved|disregard|covered)\\b)"
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)(?:\\bruth\\s+adeyemi|(?<!\\bruth\\s+)\\badeyemi)\\b(?!(?:'s\\s+cover)?\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				15,
@@ -2541,8 +2626,10 @@
 				"2026-10-16",
 				"cracked"
 			],
-			"forbidden": [
-				"awaiting a release"
+			"forbidden": [],
+			"forbiddenPatterns": [
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\bawaiting\\s+(?:a\\s+)?release\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)",
+				"(?<!\\b(?:no|not|no longer|instead of|rather than|took over from|replaced|replacing|replaces|withdrawn|scrapped|removed|waived|dropped|cancelled|canceled|former|previous|old)\\s+(?:(?:a|an|the)\\s+)?)\\b(?:still\\s+)?held\\s+at\\s+(?:the\\s+)?riverside(?:\\s+depot)?\\b(?!\\s*(?:[,;:]\\s*)?(?:(?:is|are|was|were|has|have|had)\\s+)?(?:already\\s+)?(?:withdrawn|scrapped|removed|waived|dropped|replaced|no longer|superseded|expired|ended|left|closed|cancell?ed|took over|moved|disregarded|covered|arrived)\\b)"
 			],
 			"facts": [
 				82,
@@ -2786,5 +2873,5 @@
 			"goal": "g18-chase-list"
 		}
 	],
-	"notes": "Scenario: the Larkspur Home desk over 3 working days, 2026-10-08 to 2026-10-10, built by hand under check-long.mjs; the small model under test wrote none of it. Seed indices are zero-based. The seed has 152 messages and 9 tool groups. Messages 0 to 47 equal scenario.json's seed in role, kind, content, calls, and call, so earlier readings transfer; 48 to 77 finish day 1, 78 to 119 are day 2, and 120 to 151 are day 3.\n\nSchema additions: bench.mjs as of 2026-10-08 reads scenario.json only, and a harness that reads this file needs the following members. (1) days lists each date with the seed index it starts at; the conversation clock for seed index I or a goal posed after I is the date of the last day whose from is at or before I. (2) Each seed message carries truth: category (fact, rule, correction, request, opinion, chatter, distractor), topics (entity ids LH-NNNNN, ESC-NNNN, TR-NNNN, and the desk topics refunds, returns, escalations, delivery, warehouse, contacts), and where it applies amends or supersedes (earlier indices the message partly or wholly replaces), closes or reopens ({ thread, index }: for closes, the message that opened or renamed the thread; for reopens, the close it undoes), and until (a YYYY-MM-DD date the message states, after which the whole message no longer holds). (3) Each goal carries after, the seed index after which it is posed, so goals interleave with the seed; stale, the indices the goal must treat as ended (superseded, amended, expired, or closed), which the facts never include; and sources, the canned lookups { tool, id } that hold an expected value the seed lacks (g02, g06, and g08 carry the lookups scenario.json's notes name, and g15 carries LH-44870). Apart from after and sources, g01 to g10 equal scenario.json's goals field for field. (4) lookups lists later versions of a canned lookup as { tool, id, from, text }: a call made at seed index I, or by a goal posed after I, returns the entry for that tool and id with the largest from at or before I, else tools[tool][id]. tools keeps the version every call before the first change returns, so the first 10 goals read the data scenario.json gives. (5) cases lists every lifetime case with its indices and its scoring goal, and the line for each case follows.\n\nTruth rules: the first 48 categories follow BRIEFING.md section 5 (withdrawals map to correction, call messages to chatter, results to fact), with 27 amending 22 and 23, 29 amending 2 and 3, and 44 superseding 4 and 5. Entity topics are the ids a message names plus the account of a customer it names by name; a call message carries the ids in its arguments. Only the correcting user message carries amends or supersedes, as in the first 48; its acknowledgment carries none. Both the close message and its acknowledgment carry closes, and both the reopen and its acknowledgment carry reopens, because each states the close or reopen in its own words. A wide close carries no closes member anywhere: only the cases member records it, because no single message decides it. until is set only where the whole message lapses on the date (the LATE10 code, Ruth Adeyemi's cover, the WKND15 code); a message whose dated part is incidental (8, Tomasz off on 2026-10-09; 42, the return window; 82, the claim window) carries none, because an until would end its standing facts.\n\nNoise: by kind, 44 of 152 messages (28.9 percent) are distractors or chatter; by truth.category, 53 of 152 messages (34.9 percent) are, because the truth also reads the 9 call messages as chatter. The ledger arms use the kind share, as scenario.json's 29.2 percent (14 of 48) counts by kind. Distractor and chatter indices: 1, 9, 10, 20, 21, 25, 26, 31, 32, 33, 38, 39, 46, 47, 52, 53, 60, 61, 69, 70, 76, 77, 79, 86, 87, 97, 98, 106, 107, 116, 117, 118, 119, 121, 128, 129, 131, 132, 140, 141, 146, 147, 150, 151. Expected drop set: goal G drops every index in that list at or before G's after index, plus the messages of customers and threads its facts do not name; g01 to g10 keep scenario.json's drop set (14 messages through 47), and the later counts are g11 25 (through 87), g12 25 (through 87), g13 27 (through 98), g14 29 (through 107), g15 29 (through 107), g16 34 (through 121), g17 34 (through 121), g18 38 (through 132), g19 38 (through 132), g20 38 (through 132), g21 38 (through 132), g22 40 (through 141), g23 40 (through 141), g24 42 (through 147).\n\nGoals: 24. g01 to g10 equal scenario.json's goals, posed after 47. g11 to g15 fall on day 2 and g16 to g24 on day 3. g11, g19, and g23 list the day-start message (78 or 120) among their facts, because each answer turns on the conversation date against an until date. Distance per goal, computed as scenario.json computes it (far when a fact sits in the first third of the view through after, near when every fact sits in the last 8 messages, mid otherwise): g01 near (after 47, facts 42, 44); g02 near (after 47, facts 40); g03 far (after 47, facts 6, 15, 18); g04 mid (after 47, facts 22, 27); g05 far (after 47, facts 2, 29, 42); g06 far (after 47, facts 6, 11); g07 far (after 47, facts 8, 36); g08 mid (after 47, facts 22); g09 far (after 47, facts 11); g10 mid (after 47, facts 24); g11 far (after 89, facts 18, 54, 78, 88); g12 near (after 95, facts 94); g13 near (after 105, facts 103); g14 mid (after 111, facts 71, 108, 110); g15 mid (after 115, facts 40, 42, 44); g16 near (after 123, facts 122); g17 near (after 127, facts 124); g18 mid (after 132, facts 96, 101, 105, 130); g19 mid (after 133, facts 114, 120, 133); g20 near (after 137, facts 136); g21 near (after 139, facts 138); g22 far (after 143, facts 6, 11, 142); g23 far (after 145, facts 15, 18, 56, 120, 144); g24 mid (after 149, facts 82, 148).\n\nCase explicit-close (ESC-2219): indices 84, 85; scored by g17-phone-list.\n\nCase explicit-close (TR-3307): indices 90, 91; unscored, nearest goal g23-grace-reopened.\n\nCase wide-close (ESC-2244): indices 96; scored by g18-chase-list.\n\nCase wide-close (LH-83317): indices 130; scored by g18-chase-list.\n\nCase reopen (TR-3307): indices 90, 144, 145; scored by g23-grace-reopened.\n\nCase reopen (ESC-2219): indices 84, 148, 149; scored by g24-halvorsen-claim.\n\nCase opinion-change: indices 50, 51, 94; scored by g12-copperline-gesture.\n\nCase opinion-change: indices 74, 75, 108; scored by g14-beatriz-remedy.\n\nCase expiry (2026-10-09): indices 48, 49; scored by g19-farah-code.\n\nCase expiry (2026-10-09): indices 54, 55; scored by g23-grace-reopened.\n\nCase returning-customer (Luis Ferreira): indices 40, 42, 44; scored by g15-luis-returns.\n\nCase returning-customer (Kenji Nakamura): indices 11, 142; scored by g22-kenji-returns.\n\nCase amend: indices 68, 92; unscored, nearest goal g21-copperline-buyer.\n\nCase amend: indices 99, 102, 103; scored by g13-farah-address.\n\nCase supersede: indices 112, 113, 122; scored by g16-walk-in-return.\n\nCase supersede: indices 68, 92, 93, 138; scored by g21-copperline-buyer.\n\nCase replaced-lookup (LH-80941): indices 36, 82; scored by g24-halvorsen-claim.\n\nCase replaced-lookup (LH-71592): indices 65, 136; scored by g20-copperline-manager.\n\nCase stale-instruction (ESC-2219): indices 58, 59, 84; scored by g17-phone-list.\n\nCase stale-instruction (ESC-2244): indices 67, 96; scored by g18-chase-list.\n\nCase stale-instruction (LH-83317): indices 110, 111, 130; scored by g18-chase-list.\n\nLifetime cases in words. Explicit close: 84 and 85 close ESC-2219 (\"Ticket ESC-2219 is resolved, close it\"), and 90 and 91 close the locker trace TR-3307; the judge reads each locally. The TR-3307 close is unscored: no goal posed between 91 and the reopen at 144 asks about Grace, the 24-goal cap leaves no room for one, and g23 reads the thread only after the reopen. Wide close: Owen Pritchard says all 24 chairs arrived at 96 and ESC-2244, LH-84056, and FL-661978 never recur; Beatriz Solano says the sage rug is perfect at 130, two messages before g18 is posed, and her thread never recurs; no message says close, so only the application can decide either. Reopen: 144 and 145 reopen TR-3307 (the collected parcel was someone else's), scored by g23 through \"twin\", which only 144 supplies; 148 and 149 reopen ESC-2219 (cracked glass), scored by g24 through \"cracked\", which only the reopen supplies, and g24's request names no damage. Opinion change: Marcus's $50 store credit preference (50, repeated by acknowledgment 51) flips to free freight at 94, scored by g12; Beatriz's refund wish (74, repeated with the $412.00 by acknowledgment 75) flips to an exchange at 108, scored by g14. Expiry: LATE10 (48, 49) holds until 2026-10-09 and g19 is posed on 2026-10-10, so g19 expects WKND15 (114) and forbids LATE10; Ruth Adeyemi's cover (54, 55) holds until 2026-10-09, so g11 on 2026-10-09 expects Adeyemi and g23 on 2026-10-10 forbids her and expects Marcus. Returning customer: Luis Ferreira is last named by g05 and returns in g15 after 9 goals and every seed message from 48 to 115 without his name, ids, or the mixer; g15 needs 40 for the account id behind the card lookup, 42 for the $289.00 and the return-window end 2026-10-21, and 44 for the withdrawn fee. Kenji Nakamura is last named by g09 and returns at 142 after 12 goals; g22 needs the gift wording at 11 and rule 6. The harness keeps every goal turn in the one conversation, so the replies to g01, g02, g05, and g09 carry 289, 7719, and \"Happy 40th, Aiko\" across each gap. Under the ledger arm, the goal turns about a customer retire with the customer facts, so a returning goal tests retirement and refresh on the whole thread. g15 also needs 2026-10-21 from 42, which no earlier goal request or expected value carries; Kenji has no such fact, because 11 is his only seed fact before the gap and g06 and g09 bring up its id and wording. Partial amend: 92 changes Owen's extension 4301 to 4310 and keeps the before-noon window, unscored, because 138 supersedes 68, 92, and 93 before any goal asks for Owen, so g21 forbids both extensions and scores the supersession only; 103 changes Farah's house number 19 to 91 and keeps the rest of 99, scored by g13. Whole supersession: 122 replaces the Saturday counter hours of 112 and 113, scored by g16; 138 replaces everything about Copperline's buyer (68, 92, 93), scored by g21. Replaced lookup: the LH-80941 result at 82 replaces the depot hold at 36 with a delivery and a claim deadline, scored by g24; the LH-71592 result at 136 replaces account manager Ines Albrecht at 65 with Tobias Lindqvist, scored by g20. Stale instruction of a closed thread: the morning call to Freightline Riverside on 555-0188 (58, 59) lapses with the explicit close of ESC-2219 at 84, scored by g17; the afternoon chases on FL-661978 (67) and PW-7042-1185 (110, 111) lapse with the wide closes at 96 and 130, scored by g18.\n\nTraps carried from scenario.json: (a) acknowledgment 12 omits the gift wording and the LH-81660 and LH-52307 lookups record none; (b) no message after 24 repeats extension 4127; (c) the LH-81660 lookup gives the carrier estimate 2026-10-12, which rule 6 forbids writing to a customer, and g22 meets it again; (d) acknowledgments 3 and 23 repeat the superseded code and ticket; (e) g07 and g10 carry unscored timing questions. Traps added: (f) acknowledgments repeat the value that later ends: 49 (LATE10), 51 ($50 store credit), 55 (Ruth Adeyemi), 59 (555-0188), 75 (refund of $412.00), 102 (19 Quarry Lane), 113 (9 am to 1 pm), and 93 (extension 4310). (g) The flip at 94 names the old $50 store credit right after \"instead of the\" and 103 names the old 19 right after \"not\", so g12's and g13's patterns skip both facts. (h) 82 and 36 answer the same lookup_order LH-80941, and 136 and 65 the same lookup_customer LH-71592; a live lookup by a goal posed after the change returns the later version through the lookups member. (i) The TR-3307 close at 90 says to drop Grace's replacement; the reopen at 144 revives it, so g23 needs the reopen and the sign-off rule 18 together. The TR-3307 close at 90 has Grace collect the parcel at 3 pm on day 2, before the end-of-day replacement deadline at 88, and after g11 asks at noon. (j) The goal requests of g12 and g24 avoid the names Marcus and Priya, because g03 and g23 expect them and an earlier request enters the record. (k) Luis's account id LH-44870 sits only in 40, so g15 cannot reach the card ending 7719 without that retired fact. (l) Ruth Adeyemi's cover names Friday 2026-10-09; day 3 is Saturday 2026-10-10, after it.\n\nScoring: every new goal whose stale value a correct reply might name in passing (to say it lapsed) forbids it through forbiddenPatterns, not forbidden, because a forbidden substring fails a correct reply such as \"LATE10 expired, use WKND15\"; each pattern of g12 to g14 and g16 to g23 skips the value only where an ending word sits next to it: \"not\", \"no longer\", \"instead of\", or \"rather than\", with an optional \"a\", \"an\", or \"the\", immediately before it, or \"expired\", \"arrived\", \"left\", or \"took over\" immediately after it. An open-sentence lookahead also skips a sentence that names a strong ending word after the value (withdrawn, withdrew, scrapped, removed, dropped, replaced, replaces, changed, no longer, without, previous, previously, old, earlier, former, formerly, superseded, expired, ended, left, closed, cancelled, already, took over, moved, disregard, covered); it omits no, not, back, rather, than, instead, landed, delivered, and arrived, because a hedged stale reply uses them (\"neither has landed yet\", \"rather than a discount code\", \"Marcus is not back\"). A name or extension value starts at its first name or the word extension, so \"not Ines Albrecht\" and \"not extension 4310\" sit next to it. A correct reply that names the old value after another word fails, for example \"No refund of $412.00 goes out\" and \"Tobias Lindqvist took over from Ines Albrecht\". Plain forbidden substrings remain only where no correct reply names them: g15's 245.65 and 43.35, g22's written dates, and g24's \"awaiting a release\". g15 copies g05's restocking patterns and g22 copies g06's date pattern. Expected substrings avoid comma-formatted amounts, because scenario.json's candidate review rejected one for that.\n\nConstruction choices: canned data covers all 15 LH ids in the seed (LH-20418, LH-31055, LH-44870, LH-58841, LH-60214, LH-66208, LH-71592, LH-77302, LH-79215, LH-80941, LH-81660, LH-83317, LH-84056, LH-85123, LH-86610) plus LH-52307, Kenji's account, which only a lookup names; the 8 ids of scenario.json keep their texts, and LH-60214, LH-58841, and LH-66208 gain account texts no seed lookup returns. Tool call ids continue from call_5 to call_11. The system prompt equals scenario.json's, so a difference between the scenarios measures the seed. Day 3 is a Saturday; the desk works it, and the counter closure at 122 is part of the scenario. check-long.mjs checks the structure, truth links, cases, case lines, counts, both shares, and distances these notes state; scores correct, stale, and hedged stale sample replies for each of g11 to g24 and a stale reply per scored case; checks that each stale index has ended by its goal, that a date-dependent goal lists its day-start message, that no goal is posed inside a tool group, that each canned id sits in the table of its kind, and that no forbidden value or pattern matches a goal's current facts or sources; and exits 3 on a failure. Exemption (2026-10-08): g15 keeps g05's restocking-fee patterns unchanged, with the open-sentence skip words including no, not, and without, because the first 10 goals must stay identical to scenario.json and 'no restocking fee applies' is a correct phrasing for that value; every pattern written for g11 to g24 uses the adjacent-word construction, which also admits no, took over from, replaced, and replacing right before a value so that 'No refund of $412.00 goes out' and 'took over from Ines Albrecht' pass."
+	"notes": "Scenario: the Larkspur Home desk over 3 working days, 2026-10-08 to 2026-10-10, built by hand under check-long.mjs; the small model under test wrote none of it. Seed indices are zero-based. The seed has 152 messages and 9 tool groups. Messages 0 to 47 equal scenario.json's seed in role, kind, content, calls, and call, so earlier readings transfer; 48 to 77 finish day 1, 78 to 119 are day 2, and 120 to 151 are day 3.\n\nSchema additions: bench.mjs as of 2026-10-08 reads scenario.json only, and a harness that reads this file needs the following members. (1) days lists each date with the seed index it starts at; the conversation clock for seed index I or a goal posed after I is the date of the last day whose from is at or before I. (2) Each seed message carries truth: category (fact, rule, correction, request, opinion, chatter, distractor), topics (entity ids LH-NNNNN, ESC-NNNN, TR-NNNN, and the desk topics refunds, returns, escalations, delivery, warehouse, contacts), and where it applies amends or supersedes (earlier indices the message partly or wholly replaces), closes or reopens ({ thread, index }: for closes, the message that opened or renamed the thread; for reopens, the close it undoes), and until (a YYYY-MM-DD date the message states, after which the whole message no longer holds). (3) Each goal carries after, the seed index after which it is posed, so goals interleave with the seed; stale, the indices the goal must treat as ended (superseded, amended, expired, or closed), which the facts never include; and sources, the canned lookups { tool, id } that hold an expected value the seed lacks (g02, g06, and g08 carry the lookups scenario.json's notes name, and g15 carries LH-44870). Apart from after and sources, g01 to g10 equal scenario.json's goals field for field. (4) lookups lists later versions of a canned lookup as { tool, id, from, text }: a call made at seed index I, or by a goal posed after I, returns the entry for that tool and id with the largest from at or before I, else tools[tool][id]. tools keeps the version every call before the first change returns, so the first 10 goals read the data scenario.json gives. (5) cases lists every lifetime case with its indices and its scoring goal, and the line for each case follows.\n\nTruth rules: the first 48 categories follow BRIEFING.md section 5 (withdrawals map to correction, call messages to chatter, results to fact), with 27 amending 22 and 23, 29 amending 2 and 3, and 44 superseding 4 and 5. Entity topics are the ids a message names plus the account of a customer it names by name; a call message carries the ids in its arguments. Only the correcting user message carries amends or supersedes, as in the first 48; its acknowledgment carries none. Both the close message and its acknowledgment carry closes, and both the reopen and its acknowledgment carry reopens, because each states the close or reopen in its own words. A wide close carries no closes member anywhere: only the cases member records it, because no single message decides it. until is set only where the whole message lapses on the date (the LATE10 code, Ruth Adeyemi's cover, the WKND15 code); a message whose dated part is incidental (8, Tomasz off on 2026-10-09; 42, the return window; 82, the claim window) carries none, because an until would end its standing facts.\n\nNoise: by kind, 44 of 152 messages (28.9 percent) are distractors or chatter; by truth.category, 53 of 152 messages (34.9 percent) are, because the truth also reads the 9 call messages as chatter. The ledger arms use the kind share, as scenario.json's 29.2 percent (14 of 48) counts by kind. Distractor and chatter indices: 1, 9, 10, 20, 21, 25, 26, 31, 32, 33, 38, 39, 46, 47, 52, 53, 60, 61, 69, 70, 76, 77, 79, 86, 87, 97, 98, 106, 107, 116, 117, 118, 119, 121, 128, 129, 131, 132, 140, 141, 146, 147, 150, 151. Expected drop set: goal G drops every index in that list at or before G's after index, plus the messages of customers and threads its facts do not name; g01 to g10 keep scenario.json's drop set (14 messages through 47), and the later counts are g11 25 (through 87), g12 25 (through 87), g13 27 (through 98), g14 29 (through 107), g15 29 (through 107), g16 34 (through 121), g17 34 (through 121), g18 38 (through 132), g19 38 (through 132), g20 38 (through 132), g21 38 (through 132), g22 40 (through 141), g23 40 (through 141), g24 42 (through 147).\n\nGoals: 24. g01 to g10 equal scenario.json's goals, posed after 47. g11 to g15 fall on day 2 and g16 to g24 on day 3. g11, g19, and g23 list the day-start message (78 or 120) among their facts, because each answer turns on the conversation date against an until date. Distance per goal, computed as scenario.json computes it (far when a fact sits in the first third of the view through after, near when every fact sits in the last 8 messages, mid otherwise): g01 near (after 47, facts 42, 44); g02 near (after 47, facts 40); g03 far (after 47, facts 6, 15, 18); g04 mid (after 47, facts 22, 27); g05 far (after 47, facts 2, 29, 42); g06 far (after 47, facts 6, 11); g07 far (after 47, facts 8, 36); g08 mid (after 47, facts 22); g09 far (after 47, facts 11); g10 mid (after 47, facts 24); g11 far (after 89, facts 18, 54, 78, 88); g12 near (after 95, facts 94); g13 near (after 105, facts 103); g14 mid (after 111, facts 71, 108, 110); g15 mid (after 115, facts 40, 42, 44); g16 near (after 123, facts 122); g17 near (after 127, facts 124); g18 mid (after 132, facts 96, 101, 105, 130); g19 mid (after 133, facts 114, 120, 133); g20 near (after 137, facts 136); g21 near (after 139, facts 138); g22 far (after 143, facts 6, 11, 142); g23 far (after 145, facts 15, 18, 56, 120, 144); g24 mid (after 149, facts 82, 148).\n\nCase explicit-close (ESC-2219): indices 84, 85; scored by g17-phone-list.\n\nCase explicit-close (TR-3307): indices 90, 91; unscored, nearest goal g23-grace-reopened.\n\nCase wide-close (ESC-2244): indices 96; scored by g18-chase-list.\n\nCase wide-close (LH-83317): indices 130; scored by g18-chase-list.\n\nCase reopen (TR-3307): indices 90, 144, 145; scored by g23-grace-reopened.\n\nCase reopen (ESC-2219): indices 84, 148, 149; scored by g24-halvorsen-claim.\n\nCase opinion-change: indices 50, 51, 94; scored by g12-copperline-gesture.\n\nCase opinion-change: indices 74, 75, 108; scored by g14-beatriz-remedy.\n\nCase expiry (2026-10-09): indices 48, 49; scored by g19-farah-code.\n\nCase expiry (2026-10-09): indices 54, 55; scored by g23-grace-reopened.\n\nCase returning-customer (Luis Ferreira): indices 40, 42, 44; scored by g15-luis-returns.\n\nCase returning-customer (Kenji Nakamura): indices 11, 142; scored by g22-kenji-returns.\n\nCase amend: indices 68, 92; unscored, nearest goal g21-copperline-buyer.\n\nCase amend: indices 99, 102, 103; scored by g13-farah-address.\n\nCase supersede: indices 112, 113, 122; scored by g16-walk-in-return.\n\nCase supersede: indices 68, 92, 93, 138; scored by g21-copperline-buyer.\n\nCase replaced-lookup (LH-80941): indices 36, 82; scored by g24-halvorsen-claim.\n\nCase replaced-lookup (LH-71592): indices 65, 136; scored by g20-copperline-manager.\n\nCase stale-instruction (ESC-2219): indices 58, 59, 84; scored by g17-phone-list.\n\nCase stale-instruction (ESC-2244): indices 67, 96; scored by g18-chase-list.\n\nCase stale-instruction (LH-83317): indices 110, 111, 130; scored by g18-chase-list.\n\nLifetime cases in words. Explicit close: 84 and 85 close ESC-2219 (\"Ticket ESC-2219 is resolved, close it\"), and 90 and 91 close the locker trace TR-3307; the judge reads each locally. The TR-3307 close is unscored: no goal posed between 91 and the reopen at 144 asks about Grace, the 24-goal cap leaves no room for one, and g23 reads the thread only after the reopen. Wide close: Owen Pritchard says all 24 chairs arrived at 96 and ESC-2244, LH-84056, and FL-661978 never recur; Beatriz Solano says the sage rug is perfect at 130, two messages before g18 is posed, and her thread never recurs; no message says close, so only the application can decide either. Reopen: 144 and 145 reopen TR-3307 (the collected parcel was someone else's), scored by g23 through \"twin\", which only 144 supplies; 148 and 149 reopen ESC-2219 (cracked glass), scored by g24 through \"cracked\", which only the reopen supplies, and g24's request names no damage. Opinion change: Marcus's $50 store credit preference (50, repeated by acknowledgment 51) flips to free freight at 94, scored by g12; Beatriz's refund wish (74, repeated with the $412.00 by acknowledgment 75) flips to an exchange at 108, scored by g14. Expiry: LATE10 (48, 49) holds until 2026-10-09 and g19 is posed on 2026-10-10, so g19 expects WKND15 (114) and forbids LATE10; Ruth Adeyemi's cover (54, 55) holds until 2026-10-09, so g11 on 2026-10-09 expects Adeyemi and g23 on 2026-10-10 forbids her and expects Marcus. Returning customer: Luis Ferreira is last named by g05 and returns in g15 after 9 goals and every seed message from 48 to 115 without his name, ids, or the mixer; g15 needs 40 for the account id behind the card lookup, 42 for the $289.00 and the return-window end 2026-10-21, and 44 for the withdrawn fee. Kenji Nakamura is last named by g09 and returns at 142 after 12 goals; g22 needs the gift wording at 11 and rule 6. The harness keeps every goal turn in the one conversation, so the replies to g01, g02, g05, and g09 carry 289, 7719, and \"Happy 40th, Aiko\" across each gap. Under the ledger arm, the goal turns about a customer retire with the customer facts, so a returning goal tests retirement and refresh on the whole thread. g15 also needs 2026-10-21 from 42, which no earlier goal request or expected value carries; Kenji has no such fact, because 11 is his only seed fact before the gap and g06 and g09 bring up its id and wording. Partial amend: 92 changes Owen's extension 4301 to 4310 and keeps the before-noon window, unscored, because 138 supersedes 68, 92, and 93 before any goal asks for Owen, so g21 forbids both extensions and scores the supersession only; 103 changes Farah's house number 19 to 91 and keeps the rest of 99, scored by g13. Whole supersession: 122 replaces the Saturday counter hours of 112 and 113, scored by g16; 138 replaces everything about Copperline's buyer (68, 92, 93), scored by g21. Replaced lookup: the LH-80941 result at 82 replaces the depot hold at 36 with a delivery and a claim deadline, scored by g24; the LH-71592 result at 136 replaces account manager Ines Albrecht at 65 with Tobias Lindqvist, scored by g20. Stale instruction of a closed thread: the morning call to Freightline Riverside on 555-0188 (58, 59) lapses with the explicit close of ESC-2219 at 84, scored by g17; the afternoon chases on FL-661978 (67) and PW-7042-1185 (110, 111) lapse with the wide closes at 96 and 130, scored by g18.\n\nTraps carried from scenario.json: (a) acknowledgment 12 omits the gift wording and the LH-81660 and LH-52307 lookups record none; (b) no message after 24 repeats extension 4127; (c) the LH-81660 lookup gives the carrier estimate 2026-10-12, which rule 6 forbids writing to a customer, and g22 meets it again; (d) acknowledgments 3 and 23 repeat the superseded code and ticket; (e) g07 and g10 carry unscored timing questions. Traps added: (f) acknowledgments repeat the value that later ends: 49 (LATE10), 51 ($50 store credit), 55 (Ruth Adeyemi), 59 (555-0188), 75 (refund of $412.00), 102 (19 Quarry Lane), 113 (9 am to 1 pm), and 93 (extension 4310). (g) The flip at 94 names the old $50 store credit right after \"instead of the\" and 103 names the old 19 right after \"not\", so g12's and g13's patterns skip both facts. (h) 82 and 36 answer the same lookup_order LH-80941, and 136 and 65 the same lookup_customer LH-71592; a live lookup by a goal posed after the change returns the later version through the lookups member. (i) The TR-3307 close at 90 says to drop Grace's replacement; the reopen at 144 revives it, so g23 needs the reopen and the sign-off rule 18 together. The TR-3307 close at 90 has Grace collect the parcel at 3 pm on day 2, before the end-of-day replacement deadline at 88, and after g11 asks at noon. (j) The goal requests of g12 and g24 avoid the names Marcus and Priya, because g03 and g23 expect them and an earlier request enters the record. (k) Luis's account id LH-44870 sits only in 40, so g15 cannot reach the card ending 7719 without that retired fact. (l) Ruth Adeyemi's cover names Friday 2026-10-09; day 3 is Saturday 2026-10-10, after it.\n\nScoring: every new goal whose stale value a correct reply might name in passing (to say it lapsed) forbids it through forbiddenPatterns, not forbidden, because a forbidden substring fails a correct reply such as \"LATE10 expired, use WKND15\"; each pattern of g12 to g14 and g16 to g23 skips the value only where an ending word sits next to it: \"not\", \"no longer\", \"instead of\", or \"rather than\", with an optional \"a\", \"an\", or \"the\", immediately before it, or \"expired\", \"arrived\", \"left\", or \"took over\" immediately after it. An open-sentence lookahead also skips a sentence that names a strong ending word after the value (withdrawn, withdrew, scrapped, removed, dropped, replaced, replaces, changed, no longer, without, previous, previously, old, earlier, former, formerly, superseded, expired, ended, left, closed, cancelled, already, took over, moved, disregard, covered); it omits no, not, back, rather, than, instead, landed, delivered, and arrived, because a hedged stale reply uses them (\"neither has landed yet\", \"rather than a discount code\", \"Marcus is not back\"). A name or extension value starts at its first name or the word extension, so \"not Ines Albrecht\" and \"not extension 4310\" sit next to it. A correct reply that names the old value after another word fails, for example \"No refund of $412.00 goes out\" and \"Tobias Lindqvist took over from Ines Albrecht\". A plain forbidden substring remains only where no correct reply names it: g22's written dates. The scoring audit in long-audit.json moved g15's 245.65 and 43.35 and g24's \"awaiting a release\" into contextual patterns, because a correct reply can name them in passing, and it tightened the forbiddenPatterns of g11 to g24 and added \"happy\" to g22's expected; where an audit pattern and the adjacent-word construction described here differ, the audit pattern holds. g22 holds a written-date pattern and an arrival-day pattern. Expected substrings avoid comma-formatted amounts, because scenario.json's candidate review rejected one for that.\n\nConstruction choices: canned data covers all 15 LH ids in the seed (LH-20418, LH-31055, LH-44870, LH-58841, LH-60214, LH-66208, LH-71592, LH-77302, LH-79215, LH-80941, LH-81660, LH-83317, LH-84056, LH-85123, LH-86610) plus LH-52307, Kenji's account, which only a lookup names; the 8 ids of scenario.json keep their texts, and LH-60214, LH-58841, and LH-66208 gain account texts no seed lookup returns. Tool call ids continue from call_5 to call_11. The system text equals scenario.json's without its date sentence and its two omitted-history sentences, and the driver writes the date as an instruction, so a difference between the scenarios measures the seed. Day 3 is a Saturday; the desk works it, and the counter closure at 122 is part of the scenario. check-long.mjs checks the structure, truth links, cases, case lines, counts, both shares, and distances these notes state; scores correct, stale, and hedged stale sample replies for each of g11 to g24 and a stale reply per scored case; checks that each stale index has ended by its goal, that a date-dependent goal lists its day-start message, that no goal is posed inside a tool group, that each canned id sits in the table of its kind, and that no forbidden value or pattern matches a goal's current facts or sources; and exits 3 on a failure. Exemption (2026-10-08): g01 to g10 equal scenario.json's goals byte for byte outside after and sources, so check-long.mjs does not test their forbidden substrings and patterns against the facts and sources; the g03 and g06 patterns match facts 6, 11, and 15 there, and g05's restocking-fee patterns keep the skip words no, not, and without, because 'no restocking fee applies' is a correct phrasing for that value. Every pattern written for g11 to g24 uses the adjacent-word construction, which also admits no, took over from, replaced, and replacing right before a value so that 'No refund of $412.00 goes out' and 'took over from Ines Albrecht' pass, and check-long.mjs tests them against the facts and sources. The ledger member carries the createLedger system text and the six desk topics: ledger.system is the long system text with its search_history sentence replaced by the recall sentence of variants/ledger/v1.json and its send_reply finish sentence replaced by the final-message sentence that bench4/helpers.mjs writes, and ledger.topics equals variants/ledger/v1.json's topics with their criteria."
 }

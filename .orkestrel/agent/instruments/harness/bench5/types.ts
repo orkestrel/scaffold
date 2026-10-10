@@ -1,5 +1,26 @@
-import type { JudgeAnswer, JudgeInterface, JudgeQuestion, JudgeRequest, Refusal } from '@orkestrel/agent'
 import type { TokenUsage } from '@orkestrel/budget'
+// The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
+import type {
+	AgentInterface,
+	ClassifierInterface,
+	ConversationInterface,
+	JudgeAnswer,
+	JudgeEntry,
+	JudgeInterface,
+	JudgeQuestion,
+	JudgeRequest,
+	LedgerLine,
+	LedgerLookupReading,
+	LedgerProjection,
+	LedgerProjectionInput,
+	LedgerQuestion,
+	LedgerThreshold,
+	LedgerTopic,
+	Message,
+	MessageRole,
+	ProviderInterface,
+	Refusal,
+} from '../vendor/agent-0.0.30/index.js'
 
 export type JudgeState = JudgeRequest['state']
 
@@ -169,7 +190,7 @@ export interface SeedCall {
 }
 
 export interface SeedMessage {
-	readonly role: string
+	readonly role: MessageRole
 	readonly content: string
 	readonly calls?: readonly SeedCall[]
 	readonly call?: string
@@ -187,8 +208,8 @@ export interface TopicSpec {
 
 export interface QuestionSet {
 	readonly category: {
-		readonly instructions?: string
-		readonly criteria: Readonly<Record<string, string>>
+		readonly instructions?: JudgeEntry
+		readonly criteria: Readonly<Record<string, JudgeEntry | null>>
 	}
 	readonly topic: string
 	readonly amends: JudgeQuestion
@@ -235,4 +256,243 @@ export interface CorpusRow {
 export interface CorpusQuery {
 	readonly state: string
 	readonly question: JudgeQuestion
+}
+
+/** Configures a summarizer over one rows file. */
+export interface SummarizerOptions {
+	/** Holds the provider that generates the prose; it must send the sampler and `num_predict` that the options carry. */
+	readonly provider: ProviderInterface
+	readonly model: string
+	readonly sampler: Readonly<Record<string, number>>
+	/** Holds the generation cap in tokens, `num_predict`. */
+	readonly predict: number
+	/** Holds the path of the rows file. */
+	readonly cache: string
+	readonly live: boolean
+}
+
+/** Holds one summary under the content key of its model, sampler, cap, and messages. */
+export interface SummaryRow {
+	readonly key: string
+	readonly model: string
+	readonly sampler: Readonly<Record<string, number>>
+	readonly predict: number
+	readonly prose: string
+	readonly raw: string
+	readonly usage?: TokenUsage
+	readonly wall: number
+	readonly origin: CacheOrigin
+	readonly at: number
+}
+
+/** Holds the outcome of one summary call. */
+export interface SummaryResult {
+	readonly prose: string
+	readonly raw: string
+	readonly usage: TokenUsage | undefined
+	readonly wall: number
+	readonly cached: boolean
+}
+
+/** Generates aggregate prose from a message list and answers a repeated list from a rows file. */
+export interface SummarizerInterface {
+	summarize(messages: readonly Message[], signal: AbortSignal): Promise<SummaryResult>
+}
+
+/** Reads the ids and owners that one lookup result names. */
+export type MirrorRead = (args: Readonly<Record<string, unknown>>, text: string) => LookupReading | undefined
+
+export type MirrorTopic = LedgerTopic
+
+export type MirrorThresholds = LedgerThreshold
+
+export type MirrorFiler = ClassifierInterface
+
+export type MirrorInput = LedgerProjectionInput
+
+export type MirrorProjection = LedgerProjection
+
+export type MirrorLine = LedgerLine
+
+export type MirrorReading = LedgerLookupReading
+
+/** Holds the two members of a ledger that the mirror reads. */
+export interface MirrorLedger {
+	readonly agent: AgentInterface
+	readonly conversation: ConversationInterface
+}
+
+/** Configures a mirror with the judge, wording, topics, cutoffs, system text, and lookup readers that the ledger runs with. */
+export interface MirrorOptions {
+	readonly judge: JudgeInterface
+	readonly questions: LedgerQuestion
+	readonly topics: readonly MirrorTopic[]
+	readonly thresholds: MirrorThresholds
+	readonly system: string
+	readonly reads: ReadonlyMap<string, MirrorRead>
+}
+
+/** Rebuilds the projection input and the filing that the ledger's private projection and plan read. */
+export interface MirrorInterface {
+	note(request: Message): void
+	assign(message: Message): AssignCategory | undefined
+	readings(): readonly MirrorReading[]
+	input(): MirrorInput
+	projection(input?: MirrorInput): MirrorProjection
+	lines(id: string, input?: MirrorInput, projection?: MirrorProjection): readonly MirrorLine[]
+	near(request: Message): ReadonlySet<string>
+	owners(request: Message): readonly string[]
+}
+
+/** Answers questions as a judge and counts the questions it answered from its rows. */
+export interface JudgeCacheInterface extends JudgeInterface {
+	stats(): JudgeStats
+}
+
+export type AggregateTrigger = 'first' | 'removed' | 'change' | 'check' | 'retry'
+
+export type AggregateEvent = 'build' | 'agree' | 'change' | 'withhold'
+
+export type AggregateStatus = 'current' | 'stale' | 'withheld'
+
+export type AggregateCheck = 'empty' | 'id' | 'number' | 'name' | 'stale' | 'agree'
+
+/** Holds one failed check of a summary and the token that failed it. */
+export interface AggregateFailure {
+	readonly kind: AggregateCheck
+	readonly token: string
+}
+
+/** Holds the tokens of a text: the ids, numbers, name candidates, and words. */
+export interface AggregateTokens {
+	readonly ids: ReadonlySet<string>
+	readonly numbers: ReadonlySet<number>
+	readonly names: ReadonlySet<string>
+	readonly words: ReadonlySet<string>
+}
+
+/** Holds the sentences of a summary that the shown text carries, with the ids that occur there and the sentences dropped. */
+export interface AggregateFilter {
+	readonly prose: string
+	readonly ids: readonly string[]
+	readonly dropped: readonly string[]
+}
+
+/** Holds one record line that a topic summarizes, with the date of its message. */
+export interface AggregateSource {
+	readonly id: string
+	readonly sentence: number
+	readonly role: MessageRole
+	readonly text: string
+	readonly day: string
+}
+
+/** Holds a source's message id, seed index, and sentence index. */
+export interface AggregateRef {
+	readonly id: string
+	readonly seed: number | undefined
+	readonly sentence: number
+}
+
+/** Holds one summary topic: a desk topic or an owner record. */
+export interface AggregateTopic {
+	readonly key: string
+	readonly title: string
+	readonly owner: boolean
+}
+
+/** Holds one built summary of a topic. */
+export interface AggregateVersion {
+	readonly version: number
+	readonly title: string
+	readonly asOf: string
+	readonly prose: string
+	readonly raw: string
+	readonly ids: readonly string[]
+	readonly sources: readonly AggregateSource[]
+}
+
+/** Holds one summary as the block renders it. */
+export interface AggregateEntry {
+	readonly key: string
+	readonly title: string
+	readonly date: string
+	readonly ids: readonly string[]
+	readonly prose: string
+}
+
+/** Holds the rendered block, the entries it kept and cut, and its price. */
+export interface AggregateBlock {
+	readonly text: string
+	readonly kept: readonly AggregateEntry[]
+	readonly cut: readonly AggregateEntry[]
+	readonly tokens: number
+}
+
+/** Holds a sentence that the render filter dropped from a topic's prose. */
+export interface AggregateDrop {
+	readonly topic: string
+	readonly sentence: string
+}
+
+/** Holds the summaries block of a prompt and what the render left out. */
+export interface AggregateRendering {
+	readonly text: string
+	readonly topics: readonly string[]
+	readonly cut: readonly string[]
+	readonly withheld: readonly string[]
+	readonly emptied: readonly string[]
+	readonly filtered: readonly AggregateDrop[]
+	readonly sole: number
+	readonly tokens: number
+}
+
+/** Holds the answer, cache status, and wall time of one asked noul question. */
+export interface AggregateAsked {
+	readonly noul: number
+	readonly cached: boolean
+	readonly wall: number
+}
+
+/** Holds what one maintain pass reads for every topic. */
+export interface AggregateContext {
+	readonly input: MirrorInput
+	readonly projection: MirrorProjection
+	readonly goal: string
+	readonly lastSeed: number
+	readonly asOf: string
+	readonly signal: AbortSignal
+}
+
+/** Holds one line of the aggregate rows file. */
+export interface AggregateRow {
+	readonly topic: string
+	readonly title: string
+	readonly goal: string
+	readonly lastSeed: number
+	readonly event: AggregateEvent
+	readonly version: number
+	readonly status: AggregateStatus
+	readonly sources: readonly AggregateRef[]
+	readonly ids: string | undefined
+	readonly prose: string | undefined
+	readonly raw: string | undefined
+	readonly trigger: AggregateTrigger | undefined
+	readonly answers: Readonly<Record<string, number>>
+	readonly failures: readonly AggregateFailure[]
+	readonly wall: number
+	readonly cached: boolean
+}
+
+/** Configures an aggregator with its mirror, summarizer, judge, cutoffs, settings, days, seed indices, rows file, and logger. */
+export interface AggregatorOptions {
+	readonly mirror: MirrorInterface
+	readonly summarizer: SummarizerInterface
+	readonly judge: JudgeCacheInterface
+	readonly fit: Fit
+	readonly settings: Settings
+	readonly days: readonly ScenarioDay[]
+	readonly seeds: ReadonlyMap<string, number>
+	readonly path: string
+	readonly log: (line: string) => void
 }

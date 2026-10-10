@@ -1,6 +1,7 @@
-import type { JudgeInterface, Message } from '@orkestrel/agent'
+import type { JudgeInterface, Message } from '../../vendor/agent-0.0.30/index.js'
 import type { Fixture } from './fixture.ts'
 import type { MirrorRead, ScenarioLookups, SeedMessage } from '../types.ts'
+import type { ToolResult } from '@orkestrel/tool'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -16,7 +17,7 @@ import {
 } from '../../vendor/agent-0.0.30/index.js'
 import { createOllama } from '../../vendor/ollama/index.js'
 import { CORPUS, FIT, HARNESS, MICA_MODEL, MODELS, SAMPLER, SCENARIO_LONG } from '../constants.ts'
-import { buildSystem, importCorpus, readJSON, readLookup, readRows, resolveLookup } from '../helpers.ts'
+import { buildSystem, importCorpus, isMessageRole, readJSON, readLookup, readRows, resolveLookup } from '../helpers.ts'
 import { JudgeCache } from '../JudgeCache.ts'
 import { Mirror } from '../Mirror.ts'
 import { startFixture } from './fixture.ts'
@@ -59,8 +60,10 @@ function readSeed(scenario: unknown): readonly SeedMessage[] {
 	return readList(scenario, 'seed').map((message) => {
 		const calls = readField(message, 'calls')
 		const call = readField(message, 'call')
+		const role = readField(message, 'role')
+		assert.ok(isMessageRole(role), String(role))
 		return {
-			role: readText(message, 'role'),
+			role,
 			content: readText(message, 'content'),
 			...(Array.isArray(calls) ? { calls } : {}),
 			...(typeof call === 'string' ? { call } : {}),
@@ -326,16 +329,16 @@ describe('Mirror', () => {
 		it('selects the owner a request names by name, by id, and by a linked order id', () => {
 			const named = rig.mirror.owners({ id: 'stub-name', role: 'user', content: 'Has Luis Ferreira called back?' })
 			assert.deepEqual(named, ['LH-44870'])
-			const id = { id: 'stub-id', role: 'user', content: 'Anything on account LH-44870?' }
+			const id: Message = { id: 'stub-id', role: 'user', content: 'Anything on account LH-44870?' }
 			assert.deepEqual(rig.mirror.owners(id), ['LH-44870'])
-			const order = { id: 'stub-order', role: 'user', content: 'Any news on order LH-79215?' }
+			const order: Message = { id: 'stub-order', role: 'user', content: 'Any news on order LH-79215?' }
 			assert.ok(rig.mirror.near(order).has('LH-79215'))
 			assert.deepEqual(rig.mirror.owners(order), ['LH-44870'])
 			assert.deepEqual(rig.mirror.owners({ id: 'stub-none', role: 'user', content: 'Good morning.' }), [])
 		})
 
 		it('selects an owner by the first name alone, because a request matches names partially', () => {
-			const partial = { id: 'stub-partial', role: 'user', content: 'Has Luis called back?' }
+			const partial: Message = { id: 'stub-partial', role: 'user', content: 'Has Luis called back?' }
 			assert.ok(rig.mirror.near(partial).has('LH-44870'))
 			assert.deepEqual(rig.mirror.owners(partial), ['LH-44870'])
 		})
@@ -397,8 +400,8 @@ describe('Mirror', () => {
 				{ id: 'c3', name: 'lookup_order', arguments: { id: 'LH-80941' } },
 			]
 			own.ledger.conversation.add([{ role: 'assistant', content: 'Checking.', calls }])
-			const failed = { success: false, id: 'c1', name: 'lookup_order', error: 'the desk system timed out' }
-			const worked = { success: true, id: 'c2', name: 'lookup_order', value: 'ok' }
+			const failed: ToolResult = { success: false, id: 'c1', name: 'lookup_order', error: 'the desk system timed out' }
+			const worked: ToolResult = { success: true, id: 'c2', name: 'lookup_order', value: 'ok' }
 			emitter.emit('tool', calls[0], failed)
 			const [lost] = own.ledger.conversation.add([{ role: 'tool', content: 'Order LH-79215 for account LH-44870 (Luis Ferreira): stand mixer.', call: 'c1' }])
 			emitter.emit('tool', calls[1], worked)

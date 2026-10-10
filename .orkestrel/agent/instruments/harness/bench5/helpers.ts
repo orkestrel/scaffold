@@ -1,4 +1,5 @@
-import type { JudgeQuestion } from '@orkestrel/agent'
+import type { JudgeQuestion, Message, MessageRole } from '../vendor/agent-0.0.30/index.js'
+import type { TokenUsage } from '@orkestrel/budget'
 import type {
 	AssignCategory,
 	AssignMessage,
@@ -14,12 +15,14 @@ import type {
 	ScenarioLookups,
 	ScenarioSystem,
 	StateMessage,
+	SummarizerOptions,
+	SummaryRow,
 	TopicSpec,
 } from './types.ts'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
-import { DETERMINISTIC_JUDGE_ERROR, LEDGER_CATEGORIES, LEDGER_QUESTIONS } from '../vendor/agent-0.0.30/index.js'
+import { DETERMINISTIC_JUDGE_ERROR, LEDGER_CATEGORIES, LEDGER_QUESTIONS, MESSAGE_ROLES } from '../vendor/agent-0.0.30/index.js'
 import {
 	CORPUS_FIELD_TYPES,
 	JUDGE_HEAD_OTHER,
@@ -409,4 +412,65 @@ export function assignCategory(
 	if ((message.calls?.length ?? 0) > 0) return 'chatter'
 	const first = messages.findIndex((one) => requests.has(one.id))
 	return first >= 0 && messages.findIndex((one) => one.id === message.id) > first ? 'chatter' : undefined
+}
+
+/**
+ * Checks whether a value is a message role of the vendored build.
+ *
+ * @param value - The parsed value
+ * @returns True if the value is one of the build's `MESSAGE_ROLES`; false otherwise.
+ */
+export function isMessageRole(value: unknown): value is MessageRole {
+	return MESSAGE_ROLES.some((role) => role === value)
+}
+
+/**
+ * Builds the content key of one summary call.
+ *
+ * @param options - The summarizer's options, whose model, sampler, and generation cap the key records
+ * @param messages - The system and user messages of the summary prompt
+ * @returns The SHA-256 of the JSON text of the model, sampler, cap, and the role and content of each message
+ */
+export function buildSummaryKey(
+	options: Pick<SummarizerOptions, 'model' | 'sampler' | 'predict'>,
+	messages: readonly Message[],
+): string {
+	return computeDigest([options.model, options.sampler, options.predict, messages.map((message) => [message.role, message.content])])
+}
+
+/**
+ * Checks whether a value is a token usage.
+ *
+ * @param value - The parsed value
+ * @returns True if `prompt`, `completion`, and `total` are numbers; false otherwise.
+ */
+export function isUsage(value: unknown): value is TokenUsage {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		typeof Reflect.get(value, 'prompt') === 'number' &&
+		typeof Reflect.get(value, 'completion') === 'number' &&
+		typeof Reflect.get(value, 'total') === 'number'
+	)
+}
+
+/**
+ * Checks whether a value is a summary row that can answer a call.
+ *
+ * @param value - The parsed row
+ * @returns True if the row carries its key, prose, raw output, wall time, time, and origin, and a usage when present; false otherwise.
+ */
+export function isSummaryRow(value: unknown): value is SummaryRow {
+	if (typeof value !== 'object' || value === null) return false
+	const usage: unknown = Reflect.get(value, 'usage')
+	const origin: unknown = Reflect.get(value, 'origin')
+	return (
+		typeof Reflect.get(value, 'key') === 'string' &&
+		typeof Reflect.get(value, 'prose') === 'string' &&
+		typeof Reflect.get(value, 'raw') === 'string' &&
+		typeof Reflect.get(value, 'wall') === 'number' &&
+		typeof Reflect.get(value, 'at') === 'number' &&
+		(origin === 'corpus' || origin === 'live') &&
+		(usage === undefined || isUsage(usage))
+	)
 }

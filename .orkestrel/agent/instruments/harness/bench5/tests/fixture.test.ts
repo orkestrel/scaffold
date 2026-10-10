@@ -1,3 +1,4 @@
+import type { Message } from '../../vendor/agent-0.0.30/index.js'
 import type { Fixture, FixtureOptions } from './fixture.ts'
 import { after, afterEach, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -54,7 +55,7 @@ async function withFixture(options: FixtureOptions, work: (fixture: Fixture) => 
 
 async function generate(url: string, system: string, user: string, options: Readonly<Record<string, number>>): Promise<{ readonly content: unknown; readonly prompt: unknown; readonly total: unknown }> {
 	const provider = createOllama({ url, model: 'gemma4:e2b-it-q4_K_M', options })
-	const messages = [{ id: 's', role: 'system', content: system }, { id: 'u', role: 'user', content: user }]
+	const messages: readonly Message[] = [{ id: 's', role: 'system', content: system }, { id: 'u', role: 'user', content: user }]
 	const result: unknown = await provider.generate(messages, new AbortController().signal)
 	assert.ok(typeof result === 'object' && result !== null)
 	const usage = Reflect.get(result, 'usage')

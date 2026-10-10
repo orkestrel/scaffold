@@ -1,3 +1,4 @@
+import type { Message } from '../../vendor/agent-0.0.30/index.js'
 import { after, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
@@ -9,6 +10,7 @@ import {
 	assignCategory,
 	buildCacheKey,
 	buildCorpusQuery,
+	buildSummaryKey,
 	buildSystem,
 	computeDigest,
 	describeError,
@@ -17,6 +19,9 @@ import {
 	importCorpus,
 	isCacheRow,
 	isCorpusRow,
+	isMessageRole,
+	isSummaryRow,
+	isUsage,
 	matchesDeterministic,
 	readJSON,
 	readLookup,
@@ -416,6 +421,74 @@ describe('helpers.ts', () => {
 			assert.equal(assign('n1', none, new Set(['n1'])), 'chatter')
 			assert.equal(assign('t1', none, new Set(['t1'])), 'chatter')
 			assert.equal(assign('n1', none), undefined)
+		})
+	})
+
+	describe('buildSummaryKey', () => {
+		const options = { model: 'model-a', sampler: { temperature: 0, seed: 7 }, predict: 160 }
+		const messages: readonly Message[] = [
+			{ id: 's1', role: 'system', content: 'Summarize Marcus Halvorsen.' },
+			{ id: 'u1', role: 'user', content: 'Marcus got the refund.' },
+		]
+
+		it('digests the model, sampler, cap, and the role and content of each message', () => {
+			const expected = computeDigest(['model-a', { temperature: 0, seed: 7 }, 160, [['system', 'Summarize Marcus Halvorsen.'], ['user', 'Marcus got the refund.']]])
+			assert.equal(buildSummaryKey(options, messages), expected)
+		})
+
+		it('ignores message ids and keys a changed model, sampler, cap, or content apart', () => {
+			const renamed = messages.map((message) => ({ ...message, id: `other-${message.id}` }))
+			assert.equal(buildSummaryKey(options, renamed), buildSummaryKey(options, messages))
+			const keys = new Set([
+				buildSummaryKey(options, messages),
+				buildSummaryKey({ ...options, model: 'model-b' }, messages),
+				buildSummaryKey({ ...options, sampler: { temperature: 0, seed: 8 } }, messages),
+				buildSummaryKey({ ...options, predict: 161 }, messages),
+				buildSummaryKey(options, messages.slice(0, 1)),
+				buildSummaryKey(options, [{ id: 's1', role: 'system', content: 'Summarize Dana Ostrow.' }, ...messages.slice(1)]),
+			])
+			assert.equal(keys.size, 6)
+		})
+	})
+
+	describe('isUsage', () => {
+		it('accepts a record with numeric prompt, completion, and total', () => {
+			assert.equal(isUsage({ prompt: 10, completion: 4, total: 14 }), true)
+			assert.equal(isUsage({ prompt: 0, completion: 0, total: 0, extra: 'kept' }), true)
+		})
+
+		it('refuses a non-object, a missing member, and a member of another type', () => {
+			for (const value of [undefined, null, 14, 'usage', [], {}, { prompt: 10, completion: 4 }, { prompt: '10', completion: 4, total: 14 }]) {
+				assert.equal(isUsage(value), false, JSON.stringify(value))
+			}
+		})
+	})
+
+	describe('isSummaryRow', () => {
+		const row = { key: 'k', model: 'model-a', sampler: {}, predict: 160, prose: 'Marcus was refunded.', raw: ' Marcus was refunded.\n', wall: 12.5, origin: 'live', at: 1 }
+
+		it('accepts a row with or without a usage', () => {
+			assert.equal(isSummaryRow(row), true)
+			assert.equal(isSummaryRow({ ...row, origin: 'corpus' }), true)
+			assert.equal(isSummaryRow({ ...row, usage: { prompt: 10, completion: 4, total: 14 } }), true)
+		})
+
+		it('refuses a non-object, a missing or mistyped field, an unknown origin, and a malformed usage', () => {
+			assert.equal(isSummaryRow(null), false)
+			assert.equal(isSummaryRow('row'), false)
+			for (const key of ['key', 'prose', 'raw', 'wall', 'at', 'origin']) {
+				assert.equal(isSummaryRow({ ...row, [key]: undefined }), false, key)
+			}
+			assert.equal(isSummaryRow({ ...row, prose: 3 }), false)
+			assert.equal(isSummaryRow({ ...row, origin: 'cache' }), false)
+			assert.equal(isSummaryRow({ ...row, usage: { prompt: 10 } }), false)
+		})
+	})
+
+	describe('isMessageRole', () => {
+		it('accepts the four roles of a message and refuses every other value', () => {
+			for (const role of ['system', 'user', 'assistant', 'tool']) assert.equal(isMessageRole(role), true, role)
+			for (const value of ['developer', 'User', '', undefined, null, 1]) assert.equal(isMessageRole(value), false, String(value))
 		})
 	})
 })

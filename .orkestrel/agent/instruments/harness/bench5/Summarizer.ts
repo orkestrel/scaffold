@@ -1,46 +1,9 @@
-import type { Message } from '@orkestrel/agent'
-import type { TokenUsage } from '@orkestrel/budget'
-import type { SummarizerOptions, SummaryResult, SummaryRow } from './types.ts'
+import type { Message } from '../vendor/agent-0.0.30/index.js'
+import type { SummarizerInterface, SummarizerOptions, SummaryResult, SummaryRow } from './types.ts'
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { computeDigest, readRows } from './helpers.ts'
-
-// The key helper and the row guard stay beside the class until types.ts, constants.ts, and helpers.ts take them.
-const SUMMARY_MISS = 'summary cache miss'
-
-function buildSummaryKey(options: SummarizerOptions, messages: readonly Message[]): string {
-	return computeDigest([
-		options.model,
-		options.sampler,
-		options.predict,
-		messages.map((message) => [message.role, message.content]),
-	])
-}
-
-function isUsage(value: unknown): value is TokenUsage {
-	return (
-		typeof value === 'object' &&
-		value !== null &&
-		typeof Reflect.get(value, 'prompt') === 'number' &&
-		typeof Reflect.get(value, 'completion') === 'number' &&
-		typeof Reflect.get(value, 'total') === 'number'
-	)
-}
-
-function isSummaryRow(value: unknown): value is SummaryRow {
-	if (typeof value !== 'object' || value === null) return false
-	const usage: unknown = Reflect.get(value, 'usage')
-	const origin: unknown = Reflect.get(value, 'origin')
-	return (
-		typeof Reflect.get(value, 'key') === 'string' &&
-		typeof Reflect.get(value, 'prose') === 'string' &&
-		typeof Reflect.get(value, 'raw') === 'string' &&
-		typeof Reflect.get(value, 'wall') === 'number' &&
-		typeof Reflect.get(value, 'at') === 'number' &&
-		(origin === 'corpus' || origin === 'live') &&
-		(usage === undefined || isUsage(usage))
-	)
-}
+import { SUMMARY_MISS } from './constants.ts'
+import { buildSummaryKey, isSummaryRow, readRows } from './helpers.ts'
 
 /**
  * Generates aggregate prose from a message list through its own provider, and answers a repeated list from a rows file.
@@ -54,7 +17,7 @@ function isSummaryRow(value: unknown): value is SummaryRow {
  * const { prose } = await summarizer.summarize(messages, signal)
  * ```
  */
-export class Summarizer {
+export class Summarizer implements SummarizerInterface {
 	readonly #options: SummarizerOptions
 	readonly #rows = new Map<string, SummaryRow>()
 

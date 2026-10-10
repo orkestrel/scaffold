@@ -1,4 +1,4 @@
-import type { JudgeQuestion, Message, Selection } from '@orkestrel/agent'
+import type { JudgeQuestion, Message, Selection } from '../../vendor/agent-0.0.30/index.js'
 import type {
 	AggregateAsked,
 	AggregateContext,

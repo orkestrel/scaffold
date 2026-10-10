@@ -1,4 +1,4 @@
-import type { Message, NoulQuestion } from '@orkestrel/agent'
+import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30/index.js'
 import type {
 	AggregateBlock,
 	AggregateEntry,

@@ -1,10 +1,11 @@
-import type { Message } from '@orkestrel/agent'
+import type { Message } from '../vendor/agent-0.0.30/index.js'
 import type {
 	AssignCategory,
 	AssignResult,
 	LookupReading,
 	MirrorFiler,
 	MirrorInput,
+	MirrorInterface,
 	MirrorLedger,
 	MirrorLine,
 	MirrorOptions,
@@ -37,7 +38,7 @@ import { assignCategory } from './helpers.ts'
  * const titles = mirror.owners(request).map((id) => mirror.projection().records.find((record) => record.key === `owner:${id}`)?.title)
  * ```
  */
-export class Mirror {
+export class Mirror implements MirrorInterface {
 	readonly #ledger: MirrorLedger
 	readonly #options: MirrorOptions
 	readonly #filer: MirrorFiler

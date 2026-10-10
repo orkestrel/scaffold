@@ -4,10 +4,14 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isDeepStrictEqual } from 'node:util'
+import { clean, compileRules, scoreText } from './rescore.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const long = JSON.parse(readFileSync(join(HERE, 'scenario-long.json'), 'utf8'))
 const short = JSON.parse(readFileSync(join(HERE, 'scenario.json'), 'utf8'))
+const ledgerV1 = JSON.parse(readFileSync(join(HERE, 'variants', 'ledger', 'v1.json'), 'utf8'))
+const audit = JSON.parse(readFileSync(join(HERE, 'long-audit.json'), 'utf8'))
 
 const CATEGORIES = new Set(['fact', 'rule', 'correction', 'request', 'opinion', 'chatter', 'distractor'])
 const DESK = new Set(['refunds', 'returns', 'escalations', 'delivery', 'warehouse', 'contacts'])
@@ -35,7 +39,7 @@ const SAMPLES = {
 	'g11-grace-signoff-today': {
 		pass: ["Ruth Adeyemi signs off Grace's replacement today, because Marcus is at the supplier summit through 2026-10-09."],
 		fail: ['Marcus Oyelaran has to sign off the replacement.'],
-		hedged: ["Marcus Oyelaran signs off Grace's replacement, unless he is unreachable at the summit."],
+		hedged: ["Marcus Oyelaran signs off Grace's replacement, unless he is unreachable at the summit.", "Ruth Adeyemi signs off Grace's replacement today, and Marcus Oyelaran will also sign off."],
 	},
 	'g12-copperline-gesture': {
 		pass: ["Marcus prefers free freight on Copperline's next order rather than the $50 store credit.", 'Offer Copperline free freight on their next order.', 'Offer free freight on their next order instead of the $50 store credit.'],
@@ -172,10 +176,9 @@ function patternsOf(goal) {
 	return (goal.forbiddenPatterns ?? []).map((source) => new RegExp(source, 'i'))
 }
 
-// Mirrors bench.mjs scoring: every expected substring, no forbidden substring, no pattern match, case-insensitively.
+// Scores a reply as bench.mjs and rescore.mjs do, on the reply text without its markdown.
 function scores(goal, reply) {
-	const text = lower(reply)
-	return goal.expected.every((item) => text.includes(lower(item))) && !goal.forbidden.some((item) => text.includes(lower(item))) && !patternsOf(goal).some((pattern) => pattern.test(reply))
+	return clean(scoreText(compileRules(goal), reply))
 }
 
 function stale(goal, text) {
@@ -183,10 +186,43 @@ function stale(goal, text) {
 }
 
 // Shape.
+// scenario.json's system text adds three sentences on 2026-10-08 that the long scenario leaves out: the date, which the driver writes as an instruction, and the two omitted-history sentences, which belong to the compaction arms.
+const SHORT_ONLY = [
+	'Today is Thursday 2026-10-08. ',
+	'Earlier messages can be omitted from view, and a message that begins with "[Summary of earlier messages]" is a recap that condenses earlier history. ',
+	'When a request names a person, id, or fact that is not in view, you must call search_history to find it before you answer. ',
+]
+const sharedSystem = SHORT_ONLY.reduce((text, sentence) => text.replace(sentence, ''), short.system)
 check('top-level members', [
-	...['title', 'system', 'days', 'seed', 'tools', 'lookups', 'goals', 'cases', 'notes'].filter((key) => long[key] === undefined).map((key) => `missing ${key}`),
-	...(long.system === short.system ? [] : ['system differs from scenario.json']),
+	...['title', 'system', 'ledger', 'days', 'seed', 'tools', 'lookups', 'goals', 'cases', 'notes'].filter((key) => long[key] === undefined).map((key) => `missing ${key}`),
+	...(SHORT_ONLY.every((sentence) => short.system.includes(sentence)) ? [] : ['scenario.json system lacks a sentence this check removes']),
+	...(long.system === sharedSystem ? [] : ['system differs from scenario.json system without its date and omitted-history sentences']),
+	...(long.system === ledgerV1.system ? [] : ['system differs from variants/ledger/v1.json system']),
+	...(Object.keys(long).indexOf('ledger') === Object.keys(long).indexOf('system') + 1 ? [] : ['ledger does not follow system']),
 ])
+
+// The ledger section: the createLedger system text and the six desk topics.
+{
+	const SEARCH = 'When a fact you need is not in view, you must call search_history with a distinctive name, id, or word to recover it from the full conversation record.'
+	const FINISH = 'You must finish every request by calling send_reply with the complete answer; only the send_reply text counts as your answer.'
+	const RECALL = 'When a fact you need is not in view, you must call recall with a topic (a customer name, an order or account id, or a desk topic) to recover it from the full conversation record.'
+	const ENDING = 'Finish every request with your complete answer as your final message; that message is what the shift lead receives.'
+	const system = long.ledger?.system
+	const problems = []
+	if (typeof system !== 'string') problems.push('ledger.system is not a string')
+	else {
+		if (!/\brecall\b/.test(system)) problems.push('ledger.system does not name recall')
+		if (/\bsearch_history\b/.test(system)) problems.push('ledger.system names search_history')
+		if (/\bsend_reply\b/.test(system)) problems.push('ledger.system names send_reply')
+		if (/\bToday is\b/.test(system)) problems.push('ledger.system carries a date sentence')
+		if (!ledgerV1.ledger.system.includes(RECALL)) problems.push('variants/ledger/v1.json ledger.system lacks the recall sentence')
+		if (system !== long.system.replace(SEARCH, RECALL).replace(FINISH, ENDING)) problems.push('ledger.system is not the long system with the recall and finish sentences replaced')
+	}
+	if (!isDeepStrictEqual(long.ledger?.topics, ledgerV1.ledger.topics)) problems.push('ledger.topics differs from variants/ledger/v1.json ledger.topics')
+	if (!isDeepStrictEqual(Object.keys(long.ledger?.topics ?? {}).sort(), [...DESK].sort())) problems.push('ledger.topics does not name exactly the six desk topics')
+	if (!isDeepStrictEqual(Object.keys(long.ledger ?? {}), ['system', 'topics'])) problems.push('ledger holds members other than system and topics')
+	check('ledger carries the createLedger system text and the six desk topics', problems)
+}
 
 check('seed size is about 150', seed.length >= 140 && seed.length <= 160 ? [] : [`seed has ${seed.length} messages`])
 
@@ -398,11 +434,10 @@ check(
 	}),
 )
 
-// Rule 6 forbids writing the carrier estimate that the LH-81660 lookup returns (notes trap c), so g06's source holds its forbidden date.
-const SOURCE_TRAPS = new Set(['g06-kenji-shipping'])
+// g01 to g10 follow scenario.json byte for byte, including the g03 and g06 patterns that match facts 6, 11, and 15 there and the g06 source that holds the carrier estimate rule 6 forbids, so only g11 onward is checked.
 {
 	const problems = []
-	for (const goal of goals) {
+	for (const goal of goals.slice(10)) {
 		let patterns = []
 		try {
 			patterns = patternsOf(goal)
@@ -417,14 +452,13 @@ const SOURCE_TRAPS = new Set(['g06-kenji-shipping'])
 			for (const item of goal.forbidden) if (!replacedText.includes(lower(item)) && lower(content(index)).includes(lower(item))) problems.push(`${goal.id}: forbidden ${item} in fact ${index}`)
 			for (const pattern of patterns) if (pattern.test(content(index))) problems.push(`${goal.id}: a forbidden pattern matches fact ${index}`)
 		}
-		if (SOURCE_TRAPS.has(goal.id)) continue
 		for (const source of goal.sources ?? []) {
 			const text = canned(source.tool, source.id, goal.after) ?? ''
 			for (const item of goal.forbidden) if (lower(text).includes(lower(item))) problems.push(`${goal.id}: forbidden ${item} in source ${source.tool} ${source.id}`)
 			for (const pattern of patterns) if (pattern.test(text)) problems.push(`${goal.id}: a forbidden pattern matches source ${source.tool} ${source.id}`)
 		}
 	}
-	check('every forbidden substring and pattern is absent from the facts and sources a goal needs as current', problems)
+	check('every forbidden substring and pattern of g11 onward is absent from the facts and sources the goal needs as current', problems)
 }
 
 check(
@@ -682,6 +716,37 @@ check(
 		...goals.filter((goal) => !long.notes.includes(`${goal.id.slice(0, 3)} ${goal.distance} (after ${goal.after}, facts ${goal.facts.join(', ')})`)).map((goal) => `distance of ${goal.id}`),
 	],
 )
+
+// The audit labels replies under the rules before its changes ('current') and under the changed rules ('changed'). Only the changed rules are in the tree, so the 'changed' twin of a 'current' reply stands for it, and every other reply must score as labelled under the tree's rules.
+{
+	const problems = []
+	const entries = audit.goals ?? {}
+	for (const goal of goals.slice(10)) {
+		const entry = entries[goal.id]
+		if (!entry) {
+			problems.push(`${goal.id}: no audit entry`)
+			continue
+		}
+		for (const [field, ruling] of Object.entries(entry.fields ?? {})) {
+			if (!['keep', 'change'].includes(ruling.ruling)) problems.push(`${goal.id}.${field}: ruling ${ruling.ruling}`)
+			if (ruling.ruling === 'change' && !isDeepStrictEqual(goal[field], ruling.value)) problems.push(`${goal.id}.${field}: differs from the accepted change`)
+		}
+		const rules = compileRules(goal)
+		const replies = entry.replies ?? []
+		const changed = new Map(replies.filter((reply) => reply.under === 'changed').map((reply) => [reply.text, reply.label]))
+		if (!replies.some((reply) => reply.under === 'current')) problems.push(`${goal.id}: no current reply`)
+		for (const reply of replies) {
+			if (!['current', 'changed'].includes(reply.under) || !['pass', 'fail'].includes(reply.label)) {
+				problems.push(`${goal.id}: reply ${JSON.stringify(reply.text)} has under ${reply.under} and label ${reply.label}`)
+				continue
+			}
+			if (reply.under === 'current' && changed.has(reply.text)) continue
+			const label = clean(scoreText(rules, reply.text)) ? 'pass' : 'fail'
+			if (label !== reply.label) problems.push(`${goal.id}: ${reply.under} reply ${JSON.stringify(reply.text)} is labelled ${reply.label} and scores ${label}`)
+		}
+	}
+	check('long-audit.json has an entry for every goal from g11 on, its accepted changes are applied, and every reply scores as labelled', problems)
+}
 
 console.log(`\n${passed} passed, ${failures.length} failed`)
 process.exit(failures.length === 0 ? 0 : 3)

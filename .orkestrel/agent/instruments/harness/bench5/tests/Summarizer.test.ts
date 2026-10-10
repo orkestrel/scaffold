@@ -1,4 +1,4 @@
-import type { Message } from '@orkestrel/agent'
+import type { Message } from '../../vendor/agent-0.0.30/index.js'
 import type { Fixture } from './fixture.ts'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'

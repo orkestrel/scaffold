@@ -207,13 +207,13 @@ describe('items.ts and tally.ts with defaults', () => {
 		assert.equal(outcome.stderr, 'r-aggregate-v1: no 10-row file\n')
 	})
 
-	it('exits 64 on a malformed --count or --rows', () => {
+	it('exits 64 on a malformed --count', () => {
 		const items = runTool(ITEMS, ['--dir', scratch, '--rows', 'passes', '--items', join(scratch, 'x.json'), '--key', join(scratch, 'y.json'), '--count', '0', 'a-v1'], scratch)
 		assert.equal(items.status, 64)
 		assert.match(items.stderr, /--count takes a positive integer, not 0/)
-		const tally = runTool(TALLY, ['--audit', scratch, '--rows', 'many'], scratch)
+		const tally = runTool(TALLY, ['--audit', scratch, '--count', 'many'], scratch)
 		assert.equal(tally.status, 64)
-		assert.match(tally.stderr, /--rows takes a positive integer, not many/)
+		assert.match(tally.stderr, /--count takes a positive integer, not many/)
 	})
 })
 
@@ -242,9 +242,9 @@ describe('items.ts and tally.ts on 24-row runs', () => {
 		assert.deepEqual(item?.facts, indices.map((index) => long.seed[index]?.content))
 	})
 
-	it('tallies two 24-row copies with --rows 24 and refuses them at the default', () => {
+	it('tallies two 24-row copies with --count 24 and refuses them at the default', () => {
 		const suite = buildSuite('bench5', goals, passes, LONG_FLAGS)
-		const accepted = runTool(TALLY, ['--audit', suite.audit, '--keys', suite.keys, '--rows', '24', '--pair', 'l-aggregate,l-control,1-2'], suite.cwd)
+		const accepted = runTool(TALLY, ['--audit', suite.audit, '--keys', suite.keys, '--count', '24', '--pair', 'l-aggregate,l-control,1-2'], suite.cwd)
 		assert.equal(accepted.status, 0, accepted.stderr)
 		assert.equal(accepted.stdout, LONG_TALLY)
 		const refused = runTool(TALLY, ['--audit', suite.audit, '--keys', suite.keys, '--pair', 'l-aggregate,l-control,1-2'], suite.cwd)

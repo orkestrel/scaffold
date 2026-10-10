@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Classifier, LEDGER_QUESTIONS, createConversationManager } from '../../vendor/agent-0.0.30/index.js'
 import { CORPUS, FIT, HARNESS, JUDGE_MISS, MICA_MODEL, SCENARIO_LONG } from '../constants.ts'
-import { assignCategory, buildCacheKey, extractHead, importCorpus, readJSON, readRows } from '../helpers.ts'
+import { assignCategory, buildCacheKey, extractHead, importCorpus, isMessageRole, readJSON, readRows } from '../helpers.ts'
 import { JudgeCache } from '../JudgeCache.ts'
 
 const COPY = join(HARNESS, 'bench', 'variants', 'ledger', 'v1.json')
@@ -385,8 +385,10 @@ function readSeed(): readonly SeedMessage[] {
 	return seed.map((message) => {
 		const calls = readField(message, 'calls')
 		const call = readField(message, 'call')
+		const role = readField(message, 'role')
+		assert.ok(isMessageRole(role), String(role))
 		return {
-			role: readText(message, 'role'),
+			role,
 			content: readText(message, 'content'),
 			...(Array.isArray(calls) ? { calls } : {}),
 			...(typeof call === 'string' ? { call } : {}),
