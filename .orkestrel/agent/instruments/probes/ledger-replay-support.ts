@@ -317,7 +317,7 @@ function buildTopics(scenario: Scenario): readonly LedgerTopic[] {
 	return Object.entries(scenario.ledger.topics).map(([name, criterion]) => ({
 		name,
 		criterion,
-		requests: !UNASKED_REQUEST_TOPICS.has(name),
+		requested: !UNASKED_REQUEST_TOPICS.has(name),
 	}))
 }
 
