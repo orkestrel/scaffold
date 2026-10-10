@@ -48,6 +48,7 @@ import {
 	BIN_ENTRY_PATH,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
+	blueprintToManifestOverrides,
 	blueprintToFaces,
 	blueprintToProjects,
 	blueprintToScripts,
@@ -69,10 +70,12 @@ import {
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
 	replaceManifestScripts,
+	replaceManifestOverrides,
 	replacePlanRanges,
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
 	SKILLS_CONFIG_PATH,
+	SHOWCASE_DEV_DEPENDENCIES,
 } from '@src/core'
 import {
 	Materializer,
@@ -319,7 +322,7 @@ export class CLI implements CLIInterface {
 		const blueprint = this.#derive(target)
 		const groups = selectionToGroups(command.groups)
 		const declared = manifestToWritableDependencies(manifest, blueprint)
-		const versions = await this.#versions(declared, command.offline === true)
+		const versions = await this.#versions(declared, command.offline === true, blueprint)
 		const questions = [
 			...this.#targetQuestions(target, blueprint, groups),
 			...releasesToQuestions(versions.releases),
@@ -383,6 +386,7 @@ export class CLI implements CLIInterface {
 			const versions = await this.#versions(
 				manifestToWritableDependencies(this.#manifest(target), blueprint),
 				command.offline === true,
+				blueprint,
 			)
 			const refusal = versionsToRefusal(versions)
 			if (refusal !== undefined) throw refusal
@@ -391,6 +395,7 @@ export class CLI implements CLIInterface {
 				host.materializer.declare(
 					{
 						pins: versions.pins,
+						overrides: blueprintToManifestOverrides(blueprint),
 						scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
 					},
 					target,
@@ -530,6 +535,7 @@ export class CLI implements CLIInterface {
 				return EXIT_DRIFT
 			}
 			const declared: ManifestRegionSet = {
+				overrides: blueprintToManifestOverrides(blueprint),
 				pins: manifestToWritableDependencies(this.#manifest(target), blueprint),
 				scripts: manifestToWritableScripts(this.#manifest(target), blueprint),
 			}
@@ -540,11 +546,27 @@ export class CLI implements CLIInterface {
 			// configuration importing a package the manifest does not declare. They keep
 			// their planned ranges because the version read that follows measures what the
 			// manifest declared before this run.
+			const policy =
+				blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}
 			const added =
-				additions.runtime.length === 0 && additions.development.length === 0
+				additions.runtime.length === 0 &&
+				additions.development.length === 0 &&
+				Object.keys(policy).length === 0
 					? undefined
 					: host.materializer.declare(
-							{ pins: { runtime: [], development: [] }, scripts: [], additions },
+							{
+								pins: {
+									runtime: declared.pins.runtime
+										.filter(({ name }) => Object.hasOwn(policy, name))
+										.map(({ name, range }) => ({ name, range: policy[name] ?? range })),
+									development: declared.pins.development
+										.filter(({ name }) => Object.hasOwn(policy, name))
+										.map(({ name, range }) => ({ name, range: policy[name] ?? range })),
+								},
+								scripts: [],
+								additions,
+								overrides: blueprintToManifestOverrides(blueprint),
+							},
 							target,
 						)
 			// The candidate set is re-derived from the plan and target, then held to
@@ -568,8 +590,15 @@ export class CLI implements CLIInterface {
 			)
 			const remainder: Omit<OverwriteResult, 'audit' | 'additions'> =
 				command.offline === true
-					? await this.#declare(host.materializer, target, declared, host.baseline)
-					: await this.#reconcile(host.materializer, target, declared, host.baseline, host.forced)
+					? await this.#declare(host.materializer, target, declared, host.baseline, blueprint)
+					: await this.#reconcile(
+							host.materializer,
+							target,
+							declared,
+							host.baseline,
+							host.forced,
+							blueprint,
+						)
 			const [measured] = this.#survey(host.materializer, blueprint, target, groups)
 			const terminal = this.#appendQuestions(measured, target, blueprint, groups)
 			const outcome: OverwriteResult = {
@@ -611,11 +640,12 @@ export class CLI implements CLIInterface {
 		target: string,
 		declared: ManifestRegionSet,
 		host: Baseline | undefined,
+		blueprint: Blueprint,
 	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
-		const versions = await this.#versions(declared.pins, true)
+		const versions = await this.#versions(declared.pins, true, blueprint)
 		const refusal = versionsToRefusal(versions)
 		if (refusal !== undefined) throw refusal
-		const written = materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target)
+		const written = materializer.declare({ ...declared, pins: versions.pins }, target)
 		return {
 			...written,
 			mirrors: [],
@@ -639,12 +669,13 @@ export class CLI implements CLIInterface {
 		declared: ManifestRegionSet,
 		host: Baseline | undefined,
 		hostForced: boolean,
+		blueprint: Blueprint,
 	): Promise<Omit<OverwriteResult, 'audit' | 'additions'>> {
 		const previous = catalogToNames(target)
 		let releases: readonly Release[] = []
 		let provenance: Provenance = { ...(host === undefined ? {} : { host }) }
 		try {
-			const versions = await this.#versions(declared.pins, false)
+			const versions = await this.#versions(declared.pins, false, blueprint)
 			releases = versions.releases
 			provenance = {
 				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
@@ -674,7 +705,7 @@ export class CLI implements CLIInterface {
 			}
 			const written = mergeResults(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target),
+				materializer.declare({ ...declared, pins: versions.pins }, target),
 			)
 			const floors: string[] = []
 			if (hostForced) floors.push('host')
@@ -756,7 +787,47 @@ export class CLI implements CLIInterface {
 
 	// Resolve one whole version surface. Authoritative absence refuses, while a
 	// read that did not complete selects every declaration's distributed floor.
-	async #versions(declared: DependencyPinSet, offline: boolean): Promise<VersionResolution> {
+	async #versions(
+		declared: DependencyPinSet,
+		offline: boolean,
+		blueprint?: Blueprint,
+	): Promise<VersionResolution> {
+		if (blueprint?.showcase === true && blueprint.app.includes('browser')) {
+			const ordinary = await this.#versions(
+				{
+					runtime: declared.runtime.filter(
+						({ name }) => !Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name),
+					),
+					development: declared.development.filter(
+						({ name }) => !Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name),
+					),
+				},
+				offline,
+			)
+			return {
+				...ordinary,
+				pins: {
+					runtime: [
+						...ordinary.pins.runtime,
+						...declared.runtime
+							.filter(({ name }) => Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name))
+							.map(({ name, range }) => ({
+								name,
+								range: SHOWCASE_DEV_DEPENDENCIES[name] ?? range,
+							})),
+					],
+					development: [
+						...ordinary.pins.development,
+						...declared.development
+							.filter(({ name }) => Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name))
+							.map(({ name, range }) => ({
+								name,
+								range: SHOWCASE_DEV_DEPENDENCIES[name] ?? range,
+							})),
+					],
+				},
+			}
+		}
 		const dependencies = [...declared.runtime, ...declared.development]
 		if (dependencies.length === 0) {
 			return {
@@ -1440,6 +1511,46 @@ export class CLI implements CLIInterface {
 		declaring = false,
 	): readonly Question[] {
 		const questions: TargetQuestion[] = []
+		if (blueprint.showcase && blueprint.app.includes('browser')) {
+			const manifest = this.#manifest(target)
+			const parsed = parseJSON(manifest)
+			const malformed = isRecord(parsed)
+				? ['dependencies', 'devDependencies'].flatMap((section) => {
+						const entries = parsed[section]
+						return isRecord(entries)
+							? Object.keys(SHOWCASE_DEV_DEPENDENCIES)
+									.filter((name) => Object.hasOwn(entries, name) && !isString(entries[name]))
+									.map((name) => `${section}.${name}`)
+							: []
+					})
+				: []
+			if (malformed.length > 0) {
+				questions.push({
+					field: 'dependencies',
+					message: `The showcase declarations ${malformed.join(', ')} must hold version strings. Correct package.json before writing configuration or dependencies.`,
+					blocking: true,
+					groups: ['manifest'],
+				})
+			}
+			const aligned = replaceManifestOverrides(manifest, blueprintToManifestOverrides(blueprint))
+			const pins = manifestToWritableDependencies(manifest, blueprint)
+			const stale = [...pins.runtime, ...pins.development].filter(
+				({ name, range }) =>
+					Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name) &&
+					SHOWCASE_DEV_DEPENDENCIES[name] !== range,
+			)
+			if (aligned === undefined || (!writing && (aligned !== manifest || stale.length > 0))) {
+				questions.push({
+					field: 'dependencies',
+					message:
+						aligned === undefined
+							? 'The showcase npm override path is malformed or duplicated. Correct package.json before writing configuration or dependencies.'
+							: `The showcase dependency contract has drifted. Run repair to apply ${JSON.stringify(SHOWCASE_DEV_DEPENDENCIES)} and ${JSON.stringify(blueprintToManifestOverrides(blueprint))}.`,
+					blocking: true,
+					groups: ['manifest'],
+				})
+			}
+		}
 		const browser = resolveContainedPath(target, 'app/browser')
 		if (browser !== undefined && listFiles(browser).some((path) => path.endsWith('.vue'))) {
 			questions.push({

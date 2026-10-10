@@ -51,6 +51,7 @@ import {
 	nameToGuide,
 	planToFindings,
 	replaceManifestRanges,
+	replaceManifestOverrides,
 	renderSkillPointer,
 	replaceManifestScripts,
 	ScaffoldError,
@@ -445,6 +446,9 @@ export class Materializer implements MaterializerInterface {
 	 * the manifest only through `additions`, which inserts it into the section its
 	 * list names in key order, creating that section when the manifest lacks it,
 	 * before the ranges are rewritten.
+	 * Scoped npm overrides insert absent ancestors and leaves and replace owned
+	 * string leaves. Malformed ancestors, duplicate selected keys, and non-string
+	 * owned leaves refuse the entire manifest write.
 	 *
 	 * The regions refuse differently because their targets differ. A range
 	 * the manifest does not declare is the caller's mistake and throws. A script
@@ -1279,8 +1283,14 @@ export class Materializer implements MaterializerInterface {
 	// ranges, and the script values moves.
 	#redeclare(regions: ManifestRegionSet): (text: string) => string {
 		return (text: string) => {
+			const overridden = replaceManifestOverrides(text, regions.overrides ?? {})
+			if (overridden === undefined)
+				throw this.#error(
+					'INVALID',
+					'The manifest cannot safely rewrite the selected npm overrides.',
+				)
 			const additions = regions.additions ?? { runtime: [], development: [] }
-			const declared = insertManifestDependencies(text, additions)
+			const declared = insertManifestDependencies(overridden, additions)
 			if (declared === undefined) {
 				const names = [...additions.runtime, ...additions.development].map(({ name }) => name)
 				throw this.#error(

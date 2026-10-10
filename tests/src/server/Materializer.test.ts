@@ -1419,6 +1419,45 @@ describe('Materializer catalog', () => {
 })
 
 describe('Materializer declare', () => {
+	it('writes scoped overrides atomically with other regions and leaves an aligned manifest idle', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = workspace.ensure('target')
+			const materializer = new Materializer({ host })
+			try {
+				const regions = {
+					pins: { runtime: [], development: [{ name: 'vite', range: '^8.3.4' }] },
+					scripts: [],
+					overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
+				}
+				const malformed =
+					'{"devDependencies":{"vite":"^6.0.0"},"overrides":{"vite-plugin-singlefile@2.3.3":{"micromatch":null}}}'
+				workspace.write('target/package.json', malformed)
+				expect(() => materializer.declare(regions, target)).toThrow('selected npm overrides')
+				expect(workspace.read('target/package.json')).toBe(malformed)
+				workspace.write(
+					'target/package.json',
+					'{"devDependencies":{"vite":"^6.0.0"},"overrides":{"other":"keep"}}',
+				)
+				expect(materializer.declare(regions, target).written).toEqual(['package.json'])
+				const written = workspace.read('target/package.json')
+				expect(JSON.parse(requireValue(written))).toEqual({
+					devDependencies: { vite: '^8.3.4' },
+					overrides: {
+						other: 'keep',
+						'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' },
+					},
+				})
+				expect(materializer.declare(regions, target).written).toEqual([])
+				expect(workspace.read('target/package.json')).toBe(written)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
 	it('raises writable ranges while preserving a shared peer declaration', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

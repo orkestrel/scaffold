@@ -27,6 +27,24 @@ import {
 import { createScratch } from '@orkestrel/test/server'
 
 describe('guard totality', () => {
+	it('accepts only string leaves in manifest override maps', () => {
+		const base = { pins: { runtime: [], development: [] }, scripts: [] }
+		expect(
+			isManifestRegionSet({
+				...base,
+				overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
+			}),
+		).toBe(true)
+		for (const overrides of [
+			null,
+			[],
+			{ package: 'range' },
+			{ package: { child: 2 } },
+			{ package: { child: {} } },
+		]) {
+			expect(isManifestRegionSet({ ...base, overrides })).toBe(false)
+		}
+	})
 	it('reports a real failure when the probe under it is not total', () => {
 		const revoked = selectHostileCase('revoked proxy')
 		const oversized = selectHostileCase('oversized array')

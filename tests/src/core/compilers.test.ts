@@ -15,6 +15,7 @@ import {
 	blueprintToGuideArtifacts,
 	blueprintToHostArtifacts,
 	blueprintToManifest,
+	blueprintToManifestOverrides,
 	blueprintToMachinery,
 	blueprintToOrchestrationArtifacts,
 	blueprintToProjects,
@@ -39,6 +40,7 @@ import {
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestRanges,
+	replaceManifestOverrides,
 	replaceManifestScripts,
 	srcToExports,
 } from '@src/core'
@@ -49,6 +51,76 @@ import { buildBlueprint } from '../../setup.js'
 import { buildEnvironment, readStatements, TEMPLATE_PROJECT_CONFIG } from '../../setupServer.js'
 
 describe('generated defect regressions', () => {
+	it('leaves unselected workspaces outside the showcase override policy', () => {
+		for (const blueprint of [
+			createBlueprint('desk', { app: ['browser'] }),
+			createBlueprint('desk', { app: ['server'], showcase: true }),
+		]) {
+			expect(blueprintToManifestOverrides(blueprint)).toEqual({})
+			expect(JSON.parse(blueprintToManifest(blueprint))).not.toHaveProperty('overrides')
+			expect(blueprintToDevDependencies(blueprint)).not.toHaveProperty('vite-plugin-singlefile')
+		}
+	})
+
+	it('edits only selected override paths and retains escaped aligned spellings', () => {
+		const overrides = { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } }
+		const sibling = '"unrelated": { "nested": ["}\\\"", {"overrides": 1}] }'
+		for (const section of [
+			'',
+			'"overrides":{},',
+			'"overrides":{"vite-plugin-singlefile@2.3.3":{}},',
+			'"overrides":{"vite-plugin-singlefile@2.3.3":{"micromatch":"old","kept":"1"},"other":"2"},',
+		]) {
+			const original = `{${section}${sibling}}\n`
+			const written = requireValue(replaceManifestOverrides(original, overrides))
+			expect(written).toContain(sibling)
+			expect(JSON.parse(written)).toMatchObject({ overrides })
+			expect(written.includes('"kept":"1"},"other":"2"')).toBe(section.includes('kept'))
+			expect(replaceManifestOverrides(written, overrides)).toBe(written)
+		}
+		const escaped =
+			'{ "overrides": { "vite-plugin-singlefile@2.3.3": { "micro\\u006datch": "npm:picomatch@2.3.\\u0032" } } }'
+		expect(replaceManifestOverrides(escaped, overrides)).toBe(escaped)
+		expect(
+			replaceManifestOverrides(escaped.replace('picomatch@2.3.', 'picomatch@1.3.'), overrides),
+		).toBe(escaped.replace('"npm:picomatch@2.3.\\u0032"', '"npm:picomatch@2.3.2"'))
+	})
+
+	it('refuses malformed and duplicate selected override paths', () => {
+		const overrides = { plugin: { child: '2' } }
+		for (const manifest of [
+			'{',
+			'[]',
+			'{"overrides":null}',
+			'{"overrides":[]}',
+			'{"overrides":"1"}',
+			'{"overrides":{"plugin":"1"}}',
+			'{"overrides":{"plugin":[]}}',
+			'{"overrides":{"plugin":{"child":{}}}}',
+			'{"overrides":{},"overrides":{}}',
+			'{"overrides":{"plugin":{},"plugin":{}}}',
+			'{"overrides":{"plugin":{"child":"1","ch\\u0069ld":"2"}}}',
+		]) {
+			expect(replaceManifestOverrides(manifest, overrides)).toBeUndefined()
+		}
+	})
+	it('keeps the tested showcase dependency contract after extras composition', () => {
+		for (const extensions of [[], [{ surface: 'browser', name: 'vue', axes: ['app'] }]] as const) {
+			const blueprint = createBlueprint('display', {
+				app: ['browser'],
+				showcase: true,
+				extensions,
+				extras: [
+					{ name: 'vite', range: '^6.0.0' },
+					{ name: 'vite-plugin-singlefile', range: '^2.3.3' },
+				],
+			})
+			expect(JSON.parse(blueprintToManifest(blueprint))).toMatchObject({
+				devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '2.3.3' },
+				overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
+			})
+		}
+	})
 	it('excludes Node globals from every scoped browser configuration', () => {
 		const scratch = createScratch({ prefix: 'scaffold-browser-isolation-' })
 		try {

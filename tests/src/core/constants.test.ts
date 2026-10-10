@@ -196,9 +196,11 @@ describe('shared dependency tables', () => {
 	// derived row can only carry what the manifest carries, so the manifest is
 	// held to the same form below.
 	it('carries a full-triple caret on every foreign table row', () => {
+		expect(SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile']).toBe('2.3.3')
 		const offForm: string[] = []
 		for (const [label, table] of TABLES) {
 			for (const [name, range] of Object.entries(table)) {
+				if (label === 'showcase' && name === 'vite-plugin-singlefile') continue
 				const pattern = name.startsWith('@orkestrel/')
 					? ORKESTREL_RANGE_PATTERN
 					: TOOLCHAIN_RANGE_PATTERN

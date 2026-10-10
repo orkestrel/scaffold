@@ -62,6 +62,7 @@ import {
 	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
 	SHOWCASE_DEV_DEPENDENCIES,
+	SHOWCASE_OVERRIDES,
 	SKILLS_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SRC_MATRIX,
@@ -321,13 +322,14 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 			: {}),
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
-		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 	}
 	for (const framework of blueprintToMachinery(blueprint).frameworks) {
 		Object.assign(merged, FRAMEWORK_MATRIX[framework].dependencies)
 	}
 	for (const extra of blueprint.extras) merged[extra.name] = extra.range
+	if (blueprint.showcase && blueprint.app.includes('browser'))
+		Object.assign(merged, SHOWCASE_DEV_DEPENDENCIES)
 	for (const peer of blueprint.peers) {
 		if (!Object.hasOwn(merged, peer.name)) merged[peer.name] = peer.range
 	}
@@ -337,6 +339,109 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 			.filter(([name]) => name !== own && !runtime.has(name))
 			.sort(([left], [right]) => compareValues(left, right)),
 	)
+}
+
+/**
+ * Projects the scoped npm overrides required by a selected browser showcase.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The showcase override map, or an empty map for other workspaces.
+ * @example
+ * ```ts
+ * import { blueprintToManifestOverrides, createBlueprint } from '@orkestrel/scaffold'
+ * blueprintToManifestOverrides(createBlueprint('desk', { app: ['browser'], showcase: true }))
+ * // { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } }
+ * ```
+ */
+export function blueprintToManifestOverrides(
+	blueprint: Blueprint,
+): Readonly<Record<string, Readonly<Record<string, string>>>> {
+	return blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_OVERRIDES : {}
+}
+
+/**
+ * Replaces selected npm override leaves while preserving every byte outside the edited path.
+ *
+ * @param manifest - The JSON package manifest text.
+ * @param overrides - The scoped selectors and string leaves to write.
+ * @returns The aligned text, or `undefined` for invalid JSON, duplicate selected keys, malformed ancestors, or non-string owned leaves.
+ * @remarks
+ * Absent ancestors and leaves are inserted. Aligned strings retain their original spelling.
+ * Unrelated overrides remain caller-owned. Artifact replacements in `Blueprint.overrides` are independent.
+ * @example
+ * ```ts
+ * import { replaceManifestOverrides } from '@orkestrel/scaffold'
+ * replaceManifestOverrides('{}', { 'plugin@1.0.0': { child: '2.0.0' } })
+ * // '{"overrides":{"plugin@1.0.0":{"child":"2.0.0"}}}'
+ * ```
+ */
+export function replaceManifestOverrides(
+	manifest: string,
+	overrides: Readonly<Record<string, Readonly<Record<string, string>>>>,
+): string | undefined {
+	if (!isRecord(parseJSON(manifest))) return undefined
+	let compiled = manifest
+	for (const [selector, children] of Object.entries(overrides)) {
+		for (const [child, range] of Object.entries(children)) {
+			const path = ['overrides', selector, child]
+			let open = compiled.indexOf('{')
+			for (let level = 0; level < path.length; level += 1) {
+				const key = path[level]
+				let depth = 0
+				let close = -1
+				let start = -1
+				let end = -1
+				let count = 0
+				// Native JSON validation owns syntax. This scan locates only the selected
+				// object's immediate keys and treats strings and nested arrays as opaque.
+				for (const token of compiled.slice(open).matchAll(/"(?:\\[\s\S]|[^"\\])*"|[{}[\]]/gu)) {
+					const position = open + token.index
+					const text = token[0]
+					if (text === '{' || text === '[') depth += 1
+					else if (text === '}' || text === ']') {
+						depth -= 1
+						if (depth === 1 && start >= 0 && end < 0) end = position + 1
+						if (depth === 0) {
+							close = position
+							break
+						}
+					} else if (depth === 1) {
+						if (position === start) end = position + text.length
+						let colon = position + text.length
+						while (/\s/u.test(compiled.charAt(colon))) colon += 1
+						if (compiled.charAt(colon) !== ':' || parseJSON(text) !== key) continue
+						count += 1
+						start = colon + 1
+						while (/\s/u.test(compiled.charAt(start))) start += 1
+						end = -1
+					}
+				}
+				if (close < 0 || count > 1) return undefined
+				if (count === 0) {
+					let insertion = JSON.stringify(range)
+					for (const name of path.slice(level).reverse())
+						insertion = `{${JSON.stringify(name)}:${insertion}}`
+					let tail = close - 1
+					while (tail > open && /\s/u.test(compiled.charAt(tail))) tail -= 1
+					compiled =
+						compiled.slice(0, tail + 1) +
+						(tail === open ? '' : ',') +
+						insertion.slice(1, -1) +
+						compiled.slice(tail + 1)
+					break
+				}
+				if (level < path.length - 1) {
+					if (compiled.charAt(start) !== '{') return undefined
+					open = start
+				} else {
+					if (compiled.charAt(start) !== '"' || end < 0) return undefined
+					if (parseJSON(compiled.slice(start, end)) !== range)
+						compiled = compiled.slice(0, start) + JSON.stringify(range) + compiled.slice(end)
+				}
+			}
+		}
+	}
+	return compiled
 }
 
 /**
@@ -781,6 +886,9 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 		scripts: blueprintToScripts(blueprint),
 		dependencies,
 		devDependencies: blueprintToDevDependencies(blueprint),
+		...(Object.keys(blueprintToManifestOverrides(blueprint)).length > 0
+			? { overrides: blueprintToManifestOverrides(blueprint) }
+			: {}),
 		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
 		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
 		devEngines: WORKSPACE_DEV_ENGINES,

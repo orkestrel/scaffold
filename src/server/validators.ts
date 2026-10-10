@@ -15,6 +15,7 @@ import {
 	andOf,
 	arrayOf,
 	boundsOf,
+	compileGuard,
 	holds,
 	isArray,
 	isBoolean,
@@ -22,6 +23,8 @@ import {
 	isInteger,
 	isString,
 	recordOf,
+	recordShape,
+	stringShape,
 	stringOf,
 	unionOf,
 	whereOf,
@@ -289,8 +292,9 @@ export const isManifestRegionSet: Guard<ManifestRegionSet> = recordOf(
 		pins: recordOf({ runtime: isDependencies, development: isDependencies }),
 		scripts: andOf(isCollection, arrayOf(isManifestScript)),
 		additions: recordOf({ runtime: isDependencies, development: isDependencies }),
+		overrides: compileGuard(recordShape(recordShape(stringShape()))),
 	},
-	['additions'],
+	['additions', 'overrides'],
 )
 
 /** Narrows a value to a bounded list of fetched guide mirrors. */

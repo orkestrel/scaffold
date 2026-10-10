@@ -31,7 +31,6 @@ import {
 	RELEASE_PROOF_COMMAND,
 	renderSkillPointer,
 	replaceManifestScripts,
-	SHOWCASE_DEV_DEPENDENCIES,
 	SKILLS_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	TARGET_SKILL_NAMES,
@@ -83,6 +82,324 @@ import {
 import { createScratch } from '@orkestrel/test/server'
 
 describe('surface creation and migration', () => {
+	it('repairs every selected showcase declaration in both sections and audits secondary drift', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('display')
+			const args = ['--offline', '--from', host, '--target', target, '--json']
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'display',
+					'--app',
+					'browser',
+					'--showcase',
+					...args,
+				]),
+			).toBe(EXIT_CLEAN)
+			const original = requireValue(workspace.read('display/package.json'))
+			createRepository(target)
+			for (const [name, range] of [
+				['vite', '^8.3.4'],
+				['vite-plugin-singlefile', '2.3.3'],
+			] as const) {
+				for (const section of ['dependencies', 'devDependencies'] as const) {
+					for (const verb of ['repair', 'overwrite']) {
+						const manifest: {
+							dependencies: Record<string, string>
+							devDependencies: Record<string, string>
+						} = JSON.parse(original)
+						manifest.dependencies[name] = range
+						manifest.devDependencies[name] = range
+						manifest[section][name] = '^2.2.0'
+						workspace.write('display/package.json', JSON.stringify(manifest))
+						const audited = createSink()
+						expect(await new CLI(audited.options).execute(['audit', ...args])).toBe(EXIT_DRIFT)
+						const audit: AuditResult = JSON.parse(audited.output[0] ?? '')
+						expect(
+							audit.questions.some(({ message }) =>
+								message.includes('showcase dependency contract'),
+							),
+						).toBe(true)
+						const sink = createSink()
+						expect(
+							await new CLI(sink.options).execute([
+								verb,
+								...(verb === 'overwrite' ? ['--dirty'] : []),
+								...args,
+							]),
+						).toBe(verb === 'overwrite' ? EXIT_DRIFT : EXIT_CLEAN)
+						expect(JSON.parse(requireValue(workspace.read('display/package.json')))).toMatchObject({
+							dependencies: { [name]: range },
+							devDependencies: { [name]: range },
+						})
+						const result: RepairResult = JSON.parse(sink.output[0] ?? '')
+						expect(result.audit.questions).toEqual([])
+					}
+				}
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses malformed selected showcase declarations before manifest or configuration writes', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('display')
+			const args = ['--offline', '--from', host, '--target', target, '--json']
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'display',
+					'--app',
+					'browser',
+					'--showcase',
+					...args,
+				]),
+			).toBe(EXIT_CLEAN)
+			const original = requireValue(workspace.read('display/package.json'))
+			createRepository(target)
+			for (const name of ['vite', 'vite-plugin-singlefile']) {
+				for (const section of ['dependencies', 'devDependencies'] as const) {
+					for (const value of [17, null, false, {}, []]) {
+						const manifest: {
+							dependencies: Record<string, unknown>
+							devDependencies: Record<string, unknown>
+						} = JSON.parse(original)
+						manifest[section][name] = value
+						const malformed = JSON.stringify(manifest)
+						workspace.write('display/package.json', malformed)
+						workspace.write('display/vite.config.ts', 'untouched configuration')
+						const audited = createSink()
+						expect(await new CLI(audited.options).execute(['audit', ...args])).toBe(EXIT_DRIFT)
+						const audit: AuditResult = JSON.parse(audited.output[0] ?? '')
+						expect(
+							audit.questions.some(
+								({ message }) =>
+									message.includes('showcase') && message.includes(`${section}.${name}`),
+							),
+						).toBe(true)
+						for (const verb of ['repair', 'overwrite']) {
+							const sink = createSink()
+							expect(
+								await new CLI(sink.options).execute([
+									verb,
+									...(verb === 'overwrite' ? ['--dirty'] : []),
+									'--groups',
+									'configs',
+									...args,
+								]),
+							).toBe(EXIT_DRIFT)
+							expect(sink.output.join('\n')).toContain(`${section}.${name}`)
+							expect(workspace.read('display/package.json')).toBe(malformed)
+							expect(workspace.read('display/vite.config.ts')).toBe('untouched configuration')
+						}
+					}
+				}
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('audits override-only drift and repairs selected showcase pins online and offline without moving runtime declarations', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const blueprint = createBlueprint('display', {
+			app: ['browser'],
+			showcase: true,
+			journey: true,
+			extensions: [{ surface: 'browser', name: 'vue', axes: ['app'] }],
+		})
+		const replies = Object.fromEntries(
+			Object.entries(blueprintToDevDependencies(blueprint)).map(([name, range]) => [
+				`/${name.replace('/', '%2F')}`,
+				{ status: 200, body: buildPackument(range.replace(/^\^/u, '')) },
+			]),
+		)
+		const server = await createUpstreamServer({
+			...replies,
+			'/vite': { status: 200, body: buildPackument('8.9.0') },
+			'/vite-plugin-singlefile': { status: 200, body: buildPackument('2.9.0') },
+		})
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('display')
+			const args = ['--from', host, '--target', target, '--json']
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'display',
+					'--app',
+					'browser',
+					'--showcase',
+					'--extend',
+					'browser:vue',
+					'--offline',
+					...args,
+				]),
+			).toBe(EXIT_CLEAN)
+			const original = requireValue(workspace.read('display/package.json'))
+			expect(JSON.parse(original)).toMatchObject({
+				devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '2.3.3' },
+				overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
+			})
+			workspace.write('display/package.json', original.replace('npm:picomatch@2.3.2', 'old'))
+			const audited = createSink()
+			expect(await new CLI(audited.options).execute(['audit', '--offline', ...args])).toBe(
+				EXIT_DRIFT,
+			)
+			const audit: AuditResult = JSON.parse(audited.output[0] ?? '')
+			expect(
+				audit.questions.some(({ message }) => message.includes('showcase dependency contract')),
+			).toBe(true)
+			for (const offline of [true, false]) {
+				const parsed: {
+					dependencies: Record<string, string>
+					devDependencies: Record<string, string>
+					overrides: Record<string, unknown>
+				} = JSON.parse(original)
+				delete parsed.devDependencies['vite-plugin-singlefile']
+				parsed.dependencies['vite-plugin-singlefile'] = '^2.2.0'
+				parsed.devDependencies.vite = '^6.0.0'
+				parsed.devDependencies['unrelated-exact'] = '1.2.3'
+				parsed.overrides = { unrelated: { child: 'keep' } }
+				workspace.write('display/package.json', JSON.stringify(parsed, undefined, '\t'))
+				const sink = createSink()
+				expect(
+					await new CLI(buildCLIOptions(sink, server.base)).execute([
+						'repair',
+						...(offline ? ['--offline'] : []),
+						'--groups',
+						'configs',
+						...args,
+					]),
+				).toBe(EXIT_CLEAN)
+				const repaired = requireValue(workspace.read('display/package.json'))
+				expect(JSON.parse(repaired)).toMatchObject({
+					dependencies: { 'vite-plugin-singlefile': '2.3.3' },
+					devDependencies: { vite: '^8.3.4', 'unrelated-exact': '1.2.3' },
+					overrides: {
+						unrelated: { child: 'keep' },
+						'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' },
+					},
+				})
+				expect(JSON.parse(repaired).devDependencies).not.toHaveProperty('vite-plugin-singlefile')
+				const repeated = createSink()
+				expect(
+					await new CLI(buildCLIOptions(repeated, server.base)).execute([
+						'repair',
+						...(offline ? ['--offline'] : []),
+						'--groups',
+						'configs',
+						...args,
+					]),
+				).toBe(EXIT_CLEAN)
+				const result: RepairResult = JSON.parse(repeated.output[0] ?? '')
+				expect(result.written).toEqual([])
+				expect(workspace.read('display/package.json')).toBe(repaired)
+			}
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('refuses unsafe showcase overrides before any write and keeps missing dependencies blocked in repair', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('display')
+			const args = ['--offline', '--from', host, '--target', target, '--json']
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'display',
+					'--app',
+					'browser',
+					'--showcase',
+					...args,
+				]),
+			).toBe(EXIT_CLEAN)
+			const original = requireValue(workspace.read('display/package.json'))
+			for (const malformed of [
+				original.replace('"micromatch": "npm:picomatch@2.3.2"', '"micromatch": {}'),
+				original.replace('"overrides": {', '"overrides": {}, "overrides": {'),
+			]) {
+				workspace.write('display/package.json', malformed)
+				workspace.write('display/vite.config.ts', 'unchanged config')
+				for (const verb of ['repair', 'overwrite']) {
+					expect(await new CLI(createSink().options).execute([verb, ...args])).toBe(EXIT_DRIFT)
+					expect(workspace.read('display/package.json')).toBe(malformed)
+					expect(workspace.read('display/vite.config.ts')).toBe('unchanged config')
+				}
+			}
+			const missing = original.replace(/\s*"vite-plugin-singlefile": "2\.3\.3",?/u, '')
+			workspace.write('display/package.json', missing)
+			expect(await new CLI(createSink().options).execute(['repair', ...args])).toBe(EXIT_DRIFT)
+			expect(workspace.read('display/package.json')).toBe(missing)
+			expect(workspace.read('display/vite.config.ts')).toBe('unchanged config')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('lands showcase override and pin repairs in overwrite before a catalog failure, including a missing plugin', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({})
+		try {
+			const host = createStagedHost(workspace)
+			for (const offline of [true, false]) {
+				const name = offline ? 'local' : 'network'
+				const target = workspace.ensure(name)
+				const args = ['--from', host, '--target', target, '--json']
+				expect(
+					await new CLI(createSink().options).execute([
+						'new',
+						name,
+						'--app',
+						'browser',
+						'--showcase',
+						'--offline',
+						...args,
+					]),
+				).toBe(EXIT_CLEAN)
+				const original = requireValue(workspace.read(`${name}/package.json`))
+				workspace.write(
+					`${name}/package.json`,
+					original
+						.replace(/\s*"vite-plugin-singlefile": "2\.3\.3",?/u, '')
+						.replace('"vite": "^8.3.4"', '"vite": "^6.0.0"')
+						.replace('npm:picomatch@2.3.2', 'old'),
+				)
+				workspace.write(`${name}/vite.config.ts`, 'stale config')
+				createRepository(target)
+				const sink = createSink()
+				expect(
+					await new CLI(buildCLIOptions(sink, server.base)).execute([
+						'overwrite',
+						'--dirty',
+						...(offline ? ['--offline'] : []),
+						...args,
+					]),
+				).toBe(EXIT_DRIFT)
+				const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+				expect(result.note).toContain('catalog step did not complete')
+				expect(JSON.parse(requireValue(workspace.read(`${name}/package.json`)))).toMatchObject({
+					devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '2.3.3' },
+					overrides: { 'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' } },
+				})
+				expect(workspace.read(`${name}/vite.config.ts`)).not.toBe('stale config')
+				expect(await new CLI(createSink().options).execute(['audit', '--offline', ...args])).toBe(
+					EXIT_CLEAN,
+				)
+			}
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
 	it('refuses unsupported extensions and unmet option prerequisites before writing', async () => {
 		const sink = createSink()
 		const cli = new CLI(sink.options)
@@ -445,7 +762,7 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	},
 	'/vite-plugin-singlefile': {
 		status: 200,
-		body: buildPackument(SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile']?.slice(1) ?? ''),
+		body: buildPackument('2.3.3'),
 	},
 	'/vitest': {
 		status: 200,
