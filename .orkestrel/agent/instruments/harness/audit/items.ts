@@ -1,14 +1,20 @@
 // Writes a blind audit set from the passed or failed rows of the named runs, and a key that maps each
 // opaque id back to its run and goal:
-//   node items.ts --dir RESULTS_DIR --rows passes|failures --items ITEMS_OUT (--keys KEY_DIR | --key KEY_OUT) RUN...
+//   node items.ts --dir RESULTS_DIR --rows passes|failures --items ITEMS_OUT (--keys KEY_DIR | --key KEY_OUT)
+//     [--count N] [--variants DIR] [--seed FILE] RUN...
 // --keys writes the key to KEY_DIR/key-ITEMS_NAME and wins over --key; KEY_DIR must lie outside the items file's
 // directory, because the auditors read that directory. Each id is 8 hex characters of a hash over a random 16-byte
 // salt that the run draws, the run, and the goal. The last output line is the JSON array of the item ids, for the
 // chunk's `ids` in audit.js.
-// A control or compaction run (a name holding `control` or `compaction`) reads variants/vN.json; every other
-// run reads variants/ledger/vN.json. Rescored rows under RESULTS_DIR/rescored/RUN win over the run's own.
+// --count N is the row count that a run file must hold (default 10). A run directory holding rows.jsonl reads that
+// file; any other directory reads its first .jsonl file whose name does not start with `memory`.
+// Without --variants, a control or compaction run (a name holding `control` or `compaction`) reads
+// bench/variants/vN.json and every other run reads bench/variants/ledger/vN.json. --variants DIR makes every run read
+// DIR/vN.json, for example bench/variants/long. --seed FILE names the scenario file whose `seed` the goals' fact
+// indices address (default bench/scenario.json). A relative DIR or FILE resolves against the working directory.
+// Rescored rows under RESULTS_DIR/rescored/RUN win over the run's own.
 // Items sort by goal, then id, so no arm's rows sit together.
-// Exit: 0 written; 1 when a run has no 10-row file or two ids collide; 64 on usage or a key directory inside the items directory.
+// Exit: 0 written; 1 when a run has no N-row file or two ids collide; 64 on usage, on a malformed --count, or on a key directory inside the items directory.
 import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -16,6 +22,8 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 const ROOT = resolve(import.meta.dirname, '..')
 const VARIANTS = join(ROOT, 'bench', 'variants')
 const SEED = join(ROOT, 'bench', 'scenario.json')
+const COUNT = 10
+const USAGE = 'usage: node items.ts --dir RESULTS_DIR --rows passes|failures --items ITEMS_OUT (--keys KEY_DIR | --key KEY_OUT) [--count N] [--variants DIR] [--seed FILE] RUN...\n'
 
 interface Key {
 	readonly id: string
@@ -31,19 +39,34 @@ function readFlag(argv: readonly string[], name: string): string | undefined {
 	return value === undefined || value.startsWith('--') ? undefined : value
 }
 
-function readRows(dir: string, run: string): readonly Record<string, unknown>[] {
+function readCount(value: string | undefined): number | undefined {
+	if (value === undefined) return COUNT
+	return /^[1-9]\d*$/.test(value) ? Number(value) : undefined
+}
+
+function findRowFile(base: string): string | undefined {
+	const names = readdirSync(base)
+	return names.includes('rows.jsonl') ? 'rows.jsonl' : names.find((name) => name.endsWith('.jsonl') && !name.startsWith('memory'))
+}
+
+function readRows(dir: string, run: string, count: number): readonly Record<string, unknown>[] {
 	for (const base of [join(dir, 'rescored', run), join(dir, run)]) {
 		if (!existsSync(base)) continue
-		const file = readdirSync(base).find((name) => name.endsWith('.jsonl') && !name.startsWith('memory'))
+		const file = findRowFile(base)
 		if (file === undefined) continue
 		const rows = readFileSync(join(base, file), 'utf8')
 			.split(/\r\n|\n/)
 			.filter((line) => line.trim() !== '')
 			.map((line): Record<string, unknown> => JSON.parse(line))
 			.filter((row) => typeof row.goal === 'string')
-		if (rows.length === 10) return rows
+		if (rows.length === count) return rows
 	}
 	return []
+}
+
+function locateScenario(variants: string | undefined, plain: boolean, copy: string): string {
+	if (variants !== undefined) return join(resolve(variants), `v${copy}.json`)
+	return plain ? join(VARIANTS, `v${copy}.json`) : join(VARIANTS, 'ledger', `v${copy}.json`)
 }
 
 function main(): number {
@@ -53,10 +76,18 @@ function main(): number {
 	const itemsOut = readFlag(argv, '--items')
 	const keyFile = readFlag(argv, '--key')
 	const keyDir = readFlag(argv, '--keys')
-	const flags = new Set(['--dir', '--rows', '--items', '--key', '--keys'])
+	const variants = readFlag(argv, '--variants')
+	const seedFile = readFlag(argv, '--seed')
+	const count = readCount(readFlag(argv, '--count'))
+	const flags = new Set(['--dir', '--rows', '--items', '--key', '--keys', '--count', '--variants', '--seed'])
 	const runs = argv.filter((arg, at) => !arg.startsWith('--') && !flags.has(argv[at - 1] ?? ''))
-	if (dir === undefined || (which !== 'passes' && which !== 'failures') || itemsOut === undefined || (keyDir === undefined && keyFile === undefined) || runs.length === 0) {
-		process.stderr.write('usage: node items.ts --dir RESULTS_DIR --rows passes|failures --items ITEMS_OUT (--keys KEY_DIR | --key KEY_OUT) RUN...\n')
+	const keyOut = keyDir !== undefined && itemsOut !== undefined ? join(keyDir, `key-${basename(itemsOut)}`) : keyFile
+	if (dir === undefined || (which !== 'passes' && which !== 'failures') || itemsOut === undefined || keyOut === undefined || runs.length === 0) {
+		process.stderr.write(USAGE)
+		return 64
+	}
+	if (count === undefined) {
+		process.stderr.write(`--count takes a positive integer, not ${readFlag(argv, '--count')}\n`)
 		return 64
 	}
 	if (keyDir !== undefined) {
@@ -66,20 +97,19 @@ function main(): number {
 			return 64
 		}
 	}
-	const keyOut = keyDir === undefined ? (keyFile as string) : join(keyDir, `key-${basename(itemsOut)}`)
 	const salt = randomBytes(16)
-	const seed = JSON.parse(readFileSync(SEED, 'utf8')).seed
+	const seed = JSON.parse(readFileSync(seedFile === undefined ? SEED : resolve(seedFile), 'utf8')).seed
 	const items: Record<string, unknown>[] = []
 	const keys: Key[] = []
 	for (const run of runs) {
 		const copy = /-v(\d+)$/.exec(run)?.[1]
-		const rows = readRows(dir, run)
+		const rows = readRows(dir, run, count)
 		if (copy === undefined || rows.length === 0) {
-			process.stderr.write(`${run}: no 10-row file\n`)
+			process.stderr.write(`${run}: no ${count}-row file\n`)
 			return 1
 		}
 		const plain = /control|compaction/.test(run)
-		const scenario = JSON.parse(readFileSync(plain ? join(VARIANTS, `v${copy}.json`) : join(VARIANTS, 'ledger', `v${copy}.json`), 'utf8'))
+		const scenario = JSON.parse(readFileSync(locateScenario(variants, plain, copy), 'utf8'))
 		for (const row of rows) {
 			const passed = row.success === true
 			if (passed !== (which === 'passes')) continue

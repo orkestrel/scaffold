@@ -15,8 +15,9 @@ The following table names each directory and what it holds.
 | `tools/` | The series tools: `plan.ts`, `series.ts`, `run-one.ts`, `cold-start.mjs`, the wire recorder `record-fetch.mjs`, and the offline judge-import probe `probe-judge.mjs`. |
 | `models/` | The candidate-model pilot: `plan.mjs`, `pilot.mjs`, `sweep.sh`. |
 | `audit/` | The blind-audit kit for the v10 series (`audit.js`, `items.ts`, `tally.ts`, `inspect.ts`, `adjudicated.ts`, `extract.ts`) and for the g06 series (`g06-audit.js`, `items.mjs`, `probe-items.mjs`, `collect.mjs`, `replay.mjs`, `trace.mjs`, `variants.mjs`). |
+| `bench5/` | The aggregate arm's files. `seams.ts` probes an agent build for the seams the arm relies on, and `tests/seams.test.ts` proves the probe. |
 | `data/` | The inputs the harness reads by default: `cal-categories.jsonl` and the `ledger-deny-first/` record. |
-| `vendor/` | The two library builds every measured run imported. |
+| `vendor/` | The library builds the runs import: the two builds every measured run imported, and the 0.0.30 agent build of the aggregate arm. |
 | `tmp/` | The default output root for raw series output. Git ignores it, so it does not exist after a checkout; you create it when you start a series. |
 
 ## Set up
@@ -66,6 +67,9 @@ The harness imports the agent build from `vendor/agent/index.js` and loads the j
 | --- | --- | --- | --- |
 | `vendor/agent/index.js` | `/home/user/agent/dist/src/core/index.js` | 2026-10-08 19:31 UTC | `4db78c23046e9a1b081682d55779a5fd8f88dc904a2caf50e761a28cf36e5f51` |
 | `vendor/ollama/index.js` | `/home/user/ollama/dist/src/core/index.js` | 2026-10-07 14:44 UTC | `e09277478a425e6227f37730a29b2df5d9f80cfc595740cd0335fa05da22b4a7` |
+| `vendor/agent-0.0.30/index.js` | `/home/user/agent-release/dist/src/core/index.js` at commit `c04eea4` (`@orkestrel/agent` 0.0.30) | 2026-10-10 03:10 UTC | `066f7368af737eb34bc839abf3f69397f21efe95edb2a81f1637492a8ed2e911` |
+
+The `vendor/agent-0.0.30/index.js` build carries the ledger of the aggregate arm. Its `src` is identical to the measured port at `8f5098b`, and it is the build the units of the aggregate arm start from. Its bare imports are `@orkestrel/abort`, `budget`, `contract`, `database`, `emitter`, `queue`, `timeout`, `tool`, `workflow`, and `workspace`, each at the version `package.json` pins. After the agent trim lands, vendor the trimmed build as a further directory, keep both rows in the table, and rerun `bench5/seams.ts` and every offline proof against the trimmed build before Stage 0. `vendor/agent/index.js` stays untouched.
 
 The bare imports in both builds and in the harness resolve from `node_modules`. `package.json` pins each package to the version that the source checkouts held on 2026-10-10, the date of the migration, including `@orkestrel/agent` 0.0.29 for the ollama build.
 
@@ -91,9 +95,15 @@ node bench/bench.mjs --probe-exchanges
 node bench/variants/check.mjs
 node --test bench/dated/check.mjs
 node tools/probe-judge.mjs
+node bench5/seams.ts --build vendor/agent-0.0.30/index.js
+node --test bench5/tests/seams.test.ts
 ```
 
-`tools/probe-judge.mjs` blocks `fetch`, imports `vendor/ollama/index.js`, and constructs a judge without calling it; it exits 0 and prints `fetch calls 0`, and it exits non-zero when the vendored judge build or its `@orkestrel/agent` resolution is missing or broken. The other checks never load that build. `bench/variants/check.mjs` exits 2 and the `CLI` case of `bench/dated/check.mjs` fails; both fail the same way in the original tree, so a failure there is not a sign of a broken copy. `node --test bench/dated/check.mjs` also rewrites files under `bench/dated/`; run it in a scratch copy when you need those files unchanged.
+`tools/probe-judge.mjs` blocks `fetch`, imports `vendor/ollama/index.js`, and constructs a judge without calling it; it exits 0 and prints `fetch calls 0`, and it exits non-zero when the vendored judge build or its `@orkestrel/agent` resolution is missing or broken.
+
+`bench5/seams.ts --build PATH [--json]` blocks `fetch`, imports the build at `PATH`, constructs a ledger from an inert provider and an inert judge, and prints one line per seam, the build's SHA-256, and `fetch calls N`. It exits 0 when every seam holds, 1 when a seam fails or the build does not import, and 64 on a usage error. A seam line that starts with `FAIL` names the export or member that is missing or changed. Run it against any agent build before you vendor that build, and compare the printed digest with the table row.
+
+No other check loads the judge build. `bench/variants/check.mjs` exits 2 and the `CLI` case of `bench/dated/check.mjs` fails; both fail the same way in the original tree, so a failure there is not a sign of a broken copy. `node --test bench/dated/check.mjs` also rewrites files under `bench/dated/`; run it in a scratch copy when you need those files unchanged.
 
 ## Read the older documents
 

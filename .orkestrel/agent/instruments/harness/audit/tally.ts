@@ -1,16 +1,18 @@
 // Tallies the blind audits into adjudicated passes per run and reads the band for arm pairs:
-//   node tally.ts --audit AUDIT_DIR [--keys KEY_DIR] [--pair A,B,COPIES]... [--json FILE]
+//   node tally.ts --audit AUDIT_DIR [--keys KEY_DIR] [--rows N] [--pair A,B,COPIES]... [--json FILE]
 // Reads every verdicts-*.json and key-*.json under AUDIT_DIR, and every key-*.json under KEY_DIR. A scorer pass counts unless the audit rules it a false
 // pass; a scorer fail counts when the audit rules it a misread; an ambiguous row counts as a fail at the low end and
 // a pass at the high end. Each --pair names two run prefixes and a copy range (for example
 // t2a-records,t2w-control,1-4); the pair's d per copy is A − B, read at the low end, the high end, and across (A low
-// against B high), and it clears when mean(d) − 2·sd(d)/√n > 0. The flag repeats.
+// against B high), and it clears when mean(d) − 2·sd(d)/√n > 0. The flag repeats. --rows N is the audited row count that
+// each paired run must hold (default 10).
 // Exit: 0; 1 when a verdict id has no key, an id appears twice across the verdict files, a run of a pair has no audited
-// rows, or a paired run's audited row count is not 10; 64 on usage.
+// rows, or a paired run's audited row count is not N; 64 on usage or a malformed --rows.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROWS = 10
+const USAGE = 'usage: node tally.ts --audit AUDIT_DIR [--keys KEY_DIR] [--rows N] [--pair A,B,COPIES]... [--json FILE]\n'
 
 interface Key {
 	readonly id: string
@@ -42,6 +44,11 @@ function readOptions(argv: readonly string[], name: string): readonly string[] {
 	return values
 }
 
+function readList<Entry>(file: string): readonly Entry[] {
+	const list: Entry[] = JSON.parse(readFileSync(file, 'utf8'))
+	return list
+}
+
 function mean(values: readonly number[]): number {
 	return values.reduce((sum, value) => sum + value, 0) / values.length
 }
@@ -55,19 +62,25 @@ function main(): number {
 	const argv = process.argv.slice(2)
 	const dir = readOptions(argv, '--audit')[0]
 	const json = readOptions(argv, '--json')[0]
+	const rowsFlag = readOptions(argv, '--rows')[0]
+	const required = rowsFlag === undefined ? ROWS : /^[1-9]\d*$/.test(rowsFlag) ? Number(rowsFlag) : undefined
 	if (dir === undefined) {
-		process.stderr.write('usage: node tally.ts --audit AUDIT_DIR [--keys KEY_DIR] [--pair A,B,COPIES]... [--json FILE]\n')
+		process.stderr.write(USAGE)
+		return 64
+	}
+	if (required === undefined) {
+		process.stderr.write(`--rows takes a positive integer, not ${rowsFlag}\n`)
 		return 64
 	}
 	const files = readdirSync(dir)
 	const keys = new Map<string, Key>()
 	for (const keyDir of [dir, ...readOptions(argv, '--keys')])
 		for (const name of (keyDir === dir ? files : readdirSync(keyDir)).filter((file) => file.startsWith('key-') && file.endsWith('.json')))
-			for (const key of JSON.parse(readFileSync(join(keyDir, name), 'utf8')) as Key[]) keys.set(key.id, key)
+			for (const key of readList<Key>(join(keyDir, name))) keys.set(key.id, key)
 	const seen = new Map<string, string>()
 	const tallies = new Map<string, Tally>()
 	for (const name of files.filter((file) => file.startsWith('verdicts-') && file.endsWith('.json'))) {
-		for (const verdict of JSON.parse(readFileSync(join(dir, name), 'utf8')) as Verdict[]) {
+		for (const verdict of readList<Verdict>(join(dir, name))) {
 			const key = keys.get(verdict.id)
 			if (key === undefined) {
 				process.stderr.write(`${name}: verdict id ${verdict.id} has no key\n`)
@@ -92,10 +105,9 @@ function main(): number {
 	}
 	const low = (tally: Tally): number => tally.scorer - tally.falsePass - tally.ambiguousPass + tally.misread
 	const high = (tally: Tally): number => tally.scorer - tally.falsePass + tally.misread + tally.ambiguousFail
-	const runs = [...tallies.keys()].sort()
+	const runs = [...tallies].sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
 	process.stdout.write('run scorer false-pass ambiguous+ misread ambiguous- | low high\n')
-	for (const run of runs) {
-		const tally = tallies.get(run) as Tally
+	for (const [run, tally] of runs) {
 		process.stdout.write(`${run} ${tally.scorer} ${tally.falsePass} ${tally.ambiguousPass} ${tally.misread} ${tally.ambiguousFail} | ${low(tally)} ${high(tally)}\n`)
 	}
 	const bands = []
@@ -115,8 +127,8 @@ function main(): number {
 				return 1
 			}
 			for (const [label, tally] of [[`${left}-v${copy}`, a], [`${right}-v${copy}`, b]] as const) {
-				if (tally.rows !== ROWS) {
-					process.stderr.write(`${label}: ${tally.rows} audited rows where ${ROWS} are required\n`)
+				if (tally.rows !== required) {
+					process.stderr.write(`${label}: ${tally.rows} audited rows where ${required} are required\n`)
 					return 1
 				}
 			}
