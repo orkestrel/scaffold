@@ -11,7 +11,7 @@ Paths name their checkout:
 
 The benchmark scenario fixes its own date: the Larkspur shift happens on Thursday 2026-10-08, whatever the calendar says. Judge a reply's date against that line, not the day a run happened.
 
-Status counts: 48 open, 191 fixed, 79 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
+Status counts: 52 open, 194 fixed, 81 worked around, 26 rejected. A rejected item is a design that measured worse and was dropped; `rejected.md` carries the measurement.
 
 Add an item when an issue is found, and update its status and files when it is fixed.
 
@@ -67,6 +67,10 @@ The following items have no fix yet:
 - I-329 Account records carry request sentences and fragments (briefing and records method)
 - I-330 A made-up gift-note action goes unscored (scoring and audit)
 - I-341 g06 measures relaying a forbidden lookup value, not context (scoring and audit)
+- I-345 With the 4B thinking, the full view catches up to records (measurement)
+- I-346 The thinking 4B full view invents actions the record does not support (model behavior)
+- I-347 g04 asks for a send the harness cannot perform (scoring and audit)
+- I-349 The records briefing splits a rule into a bare fragment (records method)
 
 ## Thinking
 
@@ -952,15 +956,15 @@ The following items have no fix yet:
 
 - **Status:** open.
 - **Issue:** The scorer fails a reply that names MX-4471 as the replaced code on g03 and g05; fails any written date on g06, the 2026-10-07 ship date included, though the rule forbids only a promised delivery date; passes any available-credit figure on g08, $3,860 and $4,240 included; and misses the scrapped restocking fee on g01 (method deep dive; attack round, main-harness F3).
-- **Fix:** None yet. Scorer unit U2: a lookbehind for 'original' and 'rotated from' on MX-4471, a g06 pattern that allows a ship date, a g08 check that fails any figure but $3,760, and the g05 restocking patterns in g01's `forbiddenPatterns` across the 18 scenario files, then a rescore of every v9 and v10 row that lists each changed verdict.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/bench/variants`, `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`.
+- **Fix:** Staged in scorer unit U2 (`tmp/bench/u2/`, 2026-10-09 and 2026-10-10): a lookbehind and a bare "superseded" for MX-4471 named as replaced on g03 and g05; g05's restocking patterns on g01; a g06 date pattern limited to arrival, delivery, and estimate sentences that skips a ship date and a conditional "when it is delivered"; a g08 check that fails any available-credit figure but $3,760 and a $4,240 total called "within their available credit"; and the g04 ESC-2291 pattern exempting "earlier" and "was a transposition error". 83 fixtures pass; `compare.mjs` lists 60 changed verdicts over 1,818 rows with every audit disagreement ruled. `apply.mjs --write` installs the rules into the 17 scenario files after the U9 series.
+- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/bench/variants`, `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/bench/u2/fixtures.json`, `scaffold:.orkestrel/agent/instruments/bench/u2/compare.md`, `scaffold:.orkestrel/agent/instruments/bench/u2/apply.mjs`.
 
 ### I-330 A made-up gift-note action goes unscored
 
 - **Status:** open.
 - **Issue:** `f4-records` v1, v3, v4 and `f4-control-v4` claim to have added a gift note, while the lookup says gift note text is not recorded on the order. No goal scores it.
-- **Fix:** None yet. Add a g06 forbidden pattern for a claimed gift-note action in scorer unit U2, or rule it out of scope.
-- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`.
+- **Fix:** Staged in U2: a forbidden pattern for a claimed gift-note action on g06 and on g09, where `f4-control-v4` claims it. The 4B with thinking repeats it: `t4-control-v4` passes g06 only by inventing "A gift note has been added to your order", and replays of g06 fail on the gift note in 19 of 26 replies that drop the estimate (`results/g06/REPORT.md`).
+- **Files:** `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/v10/METHOD-DEEP-DIVE.md`, `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`.
 
 ### I-334 An audit launched with hand-copied chunk ids
 
@@ -973,8 +977,22 @@ The following items have no fix yet:
 
 - **Status:** open.
 - **Issue:** g06 asks whether an order shipped; its required lookup returns the carrier's estimated delivery date, which the desk rule forbids in a customer reply. Every arm and model sits at the floor (0 of 38 in v10), so g06 caps each run at 9 of 10 and separates no arms. The rule says "promise"; the acknowledgment that widens it to "no delivery dates" reaches only the full view; the scorer fails any date, a ship date included, and passes an invented "arrived today".
-- **Fix:** None yet. Scorer unit U2, after the series: reword seed 6 to forbid a delivery date, a carrier estimate included, in a customer reply, in every arm; score only the customer draft; fail a reply with no draft or a claimed delivery; limit the date pattern to a date about arrival, delivery, or an estimate. Read no arm comparison from g06 until then.
-- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`.
+- **Fix:** Measured 2026-10-09: g06 alone on records under the 2B and the 4B with thinking on and off fails 16 of 16 before and 16 of 16 after a repair that anchors every scenario date to the run day (blind audit, no disagreement), so the dates are not the cause. Single-change replays of the recorded answering calls (each reproducing its record byte for byte) find two stacked causes: "never promise" lets the 4B with thinking relay a hedged estimate, which a plain rule stops in 8 of 8; with the estimate gone, replies claim a gift note the lookup says is not recorded. The scorer half is staged in U2 (I-327); the rule wording goes to the successor harness. Read no arm comparison from g06.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/G06.md`, `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md`, `scaffold:.orkestrel/agent/instruments/bench/scenario.json`, `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/results/g06/audit/verdicts.json`, `scaffold:.orkestrel/agent/instruments/results/g06/probes-audit/verdicts.json`.
+
+### I-347 g04 asks for a send the harness cannot perform
+
+- **Status:** open.
+- **Issue:** g04 reads "Can you send it to her?" while terminal-reply mode offers no send tool. A reply that says it sent the ticket claims an action that did not happen; the auditors ruled the same claim correct once and ambiguous once, and a scorer pattern for it would catch the full view's "has been sent" and miss the 2B records' "I have copied Priya".
+- **Fix:** No scorer rule, because none separates the wordings fairly. The successor harness offers a send tool or rewords the request to "give me the number for Priya".
+- **Files:** `scaffold:.orkestrel/agent/instruments/bench/variants/v1.json`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e2.json`.
+
+### I-350 Two staged g06 patterns misread a conditional and a ship date
+
+- **Status:** fixed.
+- **Issue:** The staged delivery-claim pattern matched "will be included when the package is delivered", and the staged delivery-date pattern matched the ship date in "sent on October 7th … I can't confirm a delivery date".
+- **Fix:** The claim pattern skips a delivery or arrival inside a clause that opens with when, once, until, after, before, if, or as soon as; the date pattern skips a date right after shipped, sent, or dispatched. Seven fixtures cover both; the dated rules were re-rendered.
+- **Files:** `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json`, `scaffold:.orkestrel/agent/instruments/bench/u2/fixtures.json`, `scaffold:.orkestrel/agent/instruments/bench/dated/rules-2026-10-09.json`.
 
 ## Measurement method
 
@@ -998,6 +1016,20 @@ The following items have no fix yet:
 - **Issue:** The full view's prompt grows across the shift while `num_ctx` stays fixed, so late calls have less room than the thinking cap; a `t2w-control-v2` g10 call left 1,463 tokens against the 2,048 cap (attack round, main-harness F2).
 - **Fix:** `FINAL-CHECK.md` states it. The largest `t2a-control` prompts left 2,496 to 4,037 tokens, and no full-view call came within 64 tokens of `num_ctx`, so no result changed.
 - **Files:** `scaffold:.orkestrel/agent/instruments/bench/bench.mjs:544`, `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`.
+
+### I-348 A cold single-call replay does not reproduce a recorded call
+
+- **Status:** fixed.
+- **Issue:** Replaying a run's answering call alone on a freshly loaded model returned a different reply from the record in 2 of 2 tries at temperature 0, because in the run that call met the cache its preceding call left, and a cache hit changes the arithmetic enough to flip a near tie.
+- **Fix:** `results/g06/tools/replay.mjs` unloads the agent model and resends every agent call of the goal in recorded order with the change applied; 16 of 16 base replays then reproduce reply and thinking byte for byte. A replay probe proves its base reproduces the record before any change is read.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/tools/replay.mjs`, `scaffold:.orkestrel/agent/instruments/results/g06/probes/rows.json`.
+
+### I-351 The g06 audit-item builder refused a correct key folder
+
+- **Status:** fixed.
+- **Issue:** `results/g06/tools/items.mjs` compared the key folder and the items folder as plain strings, so `audit-keys` read as inside `audit` and the builder refused it.
+- **Fix:** The check compares whole path segments; a key inside the items folder still exits 64.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/tools/items.mjs`.
 
 ## Agent package code
 
@@ -2173,6 +2205,13 @@ The following items have no fix yet:
 - **Fix:** The Orchestrator ran the gates itself in the named worktree before each commit. A verifier brief carries the absolute path in every command, and the Orchestrator re-runs a red gate in the named tree before acting on it.
 - **Files:** `scaffold:.orkestrel/agent/instruments/units/port/g3-release-guide-brief.md`.
 
+### I-352 A series launched from a foreground shell sends no completion notice
+
+- **Status:** worked around.
+- **Issue:** The after series was started with a trailing ampersand inside a foreground command, so it ran detached and the session would get no notice when it ended.
+- **Fix:** A background watcher waited on the series process and reported its end. Launch a long series as a background task.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/run-log.txt`.
+
 ## Records and process
 
 ### I-062 Ollama checkout was on main
@@ -2506,6 +2545,40 @@ The following items have no fix yet:
 - **Fix:** The daemon restarted with the same settings (models under /opt/ollama/models, one loaded model); the partial run moved to `aborted/` with an end line; the series and both falsify lanes relaunched.
 - **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/run.log`.
 
+### I-353 The desk requires npm 11.6, the container ships npm 10.9
+
+- **Status:** worked around.
+- **Issue:** The desk's `devEngines` requires npm 11.6.0 or later and fails every npm command under the installed npm 10.9.4.
+- **Fix:** A shim at `/home/user/desk-npm11/bin/npm` runs the npx-cached npm 11.6.2; desk work puts it first on PATH.
+- **Files:** `desk:package.json`.
+
+## Measurement
+
+### I-345 With the 4B thinking, the full view catches up to records
+
+- **Status:** open.
+- **Issue:** Over copies 1 to 4, `t4-records` reads 8.00 to 8.25 passes per copy against 7.50 to 8.50 for `t4-control`; neither end clears. Thinking lifts the full view against its thinking-off copies (both ends clear, lower bounds 1.18 and 0.29) and lifts records at neither end.
+- **Fix:** Recorded in `FINAL-CHECK.md` § The 4B with thinking. Copies 5 to 8 of `t4` are unrun; the records method keeps its lead on the 2B and on the 4B with thinking off at the strict end only.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/tally-t4.json`, `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e3.json`.
+
+## Model behavior
+
+### I-346 The thinking 4B full view invents actions the record does not support
+
+- **Status:** open.
+- **Issue:** `t4-control-v4` passes the scorer on 10 of 10, and the blind audit rules 3 of those passes false: an escalation that account LH-44870 does not have (g05), a gift note "added" that the lookup says is not recorded (g06), and a warehouse pickup the record does not offer (g10). Under the 4B the full view also claims "has been sent to Priya" on g04 in 4 of 11 runs, where the harness offers no send tool.
+- **Fix:** None. The audit catches these where the scorer passes them; the band uses the audit. The g04 claim comes from the request "Can you send it to her?" under terminal replies (I-256), so the successor harness offers a send tool or rewords g04's request.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e3.json`, `scaffold:.orkestrel/agent/instruments/bench/variants/v1.json`.
+
+## Records method
+
+### I-349 The records briefing splits a rule into a bare fragment
+
+- **Status:** open.
+- **Issue:** Seed 6 reaches the records briefing as two lines, so the rule arrives as "- And never promise a customer a delivery date in writing." with its framing cut off. In replays, the same rule as an imperative at the top of the system message stopped the 4B with thinking from relaying the estimate in 4 of 4 and moved the 2B with thinking in 2 of 4; in place it moved only the 4B with thinking.
+- **Fix:** None yet. Render each rule whole as a standing instruction in the records rendering, then measure it.
+- **Files:** `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md`, `scaffold:.orkestrel/agent/instruments/bench3/records.mjs`.
+
 ## File map
 
 Each file the items name, with the items that name it:
@@ -2571,7 +2644,7 @@ Each file the items name, with the items that name it:
 | `desk:app/vue/desk.css` | I-185 |
 | `desk:app/vue/helpers.ts` | I-197 |
 | `desk:app/vue/Policy.vue` | I-187, I-188 |
-| `desk:package.json` | I-003, I-195 |
+| `desk:package.json` | I-003, I-195, I-353 |
 | `desk:tests/app/core/helpers.test.ts` | I-010 |
 | `desk:tests/app/fixtures.ts` | I-079, I-200 |
 | `desk:tests/app/vue/App.test.ts` | I-194 |
@@ -2601,28 +2674,42 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/bench/bench.mjs` | I-215, I-312, I-324 |
 | `scaffold:.orkestrel/agent/instruments/bench/BRIEFING.md` | I-084, I-282, I-283 |
 | `scaffold:.orkestrel/agent/instruments/bench/check-long.mjs` | I-273 |
+| `scaffold:.orkestrel/agent/instruments/bench/dated/rules-2026-10-09.json` | I-350 |
 | `scaffold:.orkestrel/agent/instruments/bench/README.md` | I-014, I-228, I-239, I-240, I-248, I-256, I-321 |
 | `scaffold:.orkestrel/agent/instruments/bench/rescore.mjs` | I-279, I-280, I-322, I-327 |
 | `scaffold:.orkestrel/agent/instruments/bench/scenario-long.json` | I-273 |
 | `scaffold:.orkestrel/agent/instruments/bench/scenario.json` | I-289, I-311, I-327, I-330, I-341 |
+| `scaffold:.orkestrel/agent/instruments/bench/u2/apply.mjs` | I-327 |
+| `scaffold:.orkestrel/agent/instruments/bench/u2/compare.md` | I-327 |
+| `scaffold:.orkestrel/agent/instruments/bench/u2/fixtures.json` | I-327, I-350 |
+| `scaffold:.orkestrel/agent/instruments/bench/u2/rules.json` | I-327, I-330, I-350 |
 | `scaffold:.orkestrel/agent/instruments/bench/variants` | I-327 |
 | `scaffold:.orkestrel/agent/instruments/bench/variants/check.mjs` | I-044 |
 | `scaffold:.orkestrel/agent/instruments/bench/variants/ledger/v1.json` | I-264 |
+| `scaffold:.orkestrel/agent/instruments/bench/variants/v1.json` | I-346, I-347 |
 | `scaffold:.orkestrel/agent/instruments/bench3/bench.mjs` | I-213, I-261, I-272, I-273, I-274, I-304, I-311, I-320, I-323, I-332 |
 | `scaffold:.orkestrel/agent/instruments/bench3/README.md` | I-159, I-235, I-262, I-271, I-286, I-287, I-321 |
 | `scaffold:.orkestrel/agent/instruments/bench3/records-check.mjs` | I-302 |
-| `scaffold:.orkestrel/agent/instruments/bench3/records.mjs` | I-284, I-295, I-328, I-329 |
+| `scaffold:.orkestrel/agent/instruments/bench3/records.mjs` | I-284, I-295, I-328, I-329, I-349 |
 | `scaffold:.orkestrel/agent/instruments/probes/ledger-replay-compare.ts` | I-333 |
 | `scaffold:.orkestrel/agent/instruments/probes/ledger-replay.test.ts` | I-332, I-333 |
 | `scaffold:.orkestrel/agent/instruments/results/AUDIT.md` | I-153, I-220, I-231, I-241, I-245, I-254, I-267, I-269 |
 | `scaffold:.orkestrel/agent/instruments/results/full-ctx6144/` | I-252 |
 | `scaffold:.orkestrel/agent/instruments/results/full/runner.sh` | I-252 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/audit/verdicts.json` | I-341 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/probes-audit/verdicts.json` | I-341 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/probes/rows.json` | I-348 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/REPORT.md` | I-330, I-341, I-349 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/run-log.txt` | I-352 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/tools/items.mjs` | I-351 |
+| `scaffold:.orkestrel/agent/instruments/results/g06/tools/replay.mjs` | I-348 |
 | `scaffold:.orkestrel/agent/instruments/results/JUDGE.md` | I-034, I-149, I-208, I-209, I-210, I-211, I-213, I-217 |
 | `scaffold:.orkestrel/agent/instruments/results/lab/context-lab.html` | I-041, I-085 |
 | `scaffold:.orkestrel/agent/instruments/results/lab/context-lab.v20.html` | I-085 |
 | `scaffold:.orkestrel/agent/instruments/results/REPORT.md` | I-149, I-216, I-237 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/attack.json` | I-314 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/inspect.json` | I-317 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/audit/tally-t4.json` | I-345 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/tally.json` | I-313, I-314 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b1.json` | I-279, I-299 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-b2.json` | I-293, I-299 |
@@ -2630,11 +2717,13 @@ Each file the items name, with the items that name it:
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-c1.json` | I-314 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-d1.json` | I-313, I-334 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-d2.json` | I-313 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e2.json` | I-347 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-e3.json` | I-345, I-346 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/audit/verdicts-r1.json` | I-315 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/cap.md` | I-331 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/f4-control-v3/none.md` | I-285 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/f4-records-v3/ledger.md` | I-285 |
-| `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md` | I-048, I-093, I-213, I-238, I-258, I-273, I-274, I-305, I-313, I-314, I-323, I-324 |
+| `scaffold:.orkestrel/agent/instruments/results/v10/FINAL-CHECK.md` | I-048, I-093, I-213, I-238, I-258, I-273, I-274, I-305, I-313, I-314, I-323, I-324, I-345 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/G06-FORENSICS-raw.md` | I-289, I-341 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/G06.md` | I-289, I-341 |
 | `scaffold:.orkestrel/agent/instruments/results/v10/INVESTIGATE-4B.md` | I-313, I-331 |

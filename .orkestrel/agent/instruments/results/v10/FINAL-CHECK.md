@@ -93,6 +93,27 @@ The pair is `f4-records` against `f4-control`, copies 1 to 8, read under the sam
 - **Reading.** On the 4B with thinking off, records leads by 1.50 passes per copy when an ambiguous reply counts as a fail and by 0.38 when it counts as a pass. The full view's spread rests on replies the auditors could not rule, so the 4B lead is real at the strict end and unproven at the lenient end.
 - **Cause.** The 4B lifts the full view more than records. Records reaches 61 of 80 cells at the low end; the full view's who-is-who errors on g03 and g07 mostly go away, and g05, g06, and g08 fail in both arms (`INVESTIGATE-4B.md`, `METHOD-DEEP-DIVE.md`).
 
+## The 4B with thinking
+
+The pair is `t4-records` against `t4-control`, copies 1 to 4, at the 4B cap of 1,024 (`cap.md`), read under the same audit (`audit/verdicts-e1.json` to `-e3.json`). `tools/inspect.ts --cap 1024` read every call of the 8 runs: 121 calls, 0 findings, and no call reached the cap.
+
+| Copy | Records | Full view |
+| --- | --- | --- |
+| 1 | 8 | 8–9 |
+| 2 | 8 | 9 |
+| 3 | 8–9 | 7–9 |
+| 4 | 8 | 6–7 |
+| Mean | 8.00–8.25 | 7.50–8.50 |
+
+- **Band.** Neither end clears: the low end's lower bound is −0.79, the high end's −1.21.
+- **Against thinking off.** Thinking lifts the full view: `t4-control` against `f4-control` clears at both ends (lower bounds 1.18 and 0.29). It does not lift records: `t4-records` against `f4-records` clears at neither (−0.50 and −0.25).
+- **Reading.** With the 4B thinking, the full view reaches the records level, and records keeps no lead. The full view's gains are g05 (0–2 of 4 to 3 of 4) and g08 (1–2 of 4 to 4 of 4); records holds 2–3 of 4 on g08 because its replies leave out the fit verdict (I-295).
+- **New failure.** The full view's copy 4 passes the scorer on 10 of 10, and the audit rules 3 of those passes false: an escalation the account does not have, a gift note "added" that the lookup says is not recorded, and a warehouse pickup the record does not offer.
+
+## g06
+
+g06 fails in every arm and condition: 0 of 38 `v10` runs, and 0 of 32 g06-only records runs before and after a repair that anchors every scenario date to the run day (`results/g06/REPORT.md`). Replays of the recorded answering calls find two stacked causes: the rule's wording ("never promise") lets the 4B with thinking relay a hedged carrier estimate, and with the estimate gone the replies claim a gift note the lookup says is not recorded. Read no arm comparison from g06.
+
 ## Plan
 
 Stage 1 ran copies 1 to 4 of each condition. A condition whose pair clears at the low end stops at 4 copies; any other condition runs copies 5 to 8. `t2a` clears and stops. `f4` ran copies 5 to 8 and takes the band over copies 1 to 8. `t4` runs copies 1 to 4 of records and the full view after its sizing probe, and reads two bands: the `t4` pair, and each arm against its `f4` copy.
