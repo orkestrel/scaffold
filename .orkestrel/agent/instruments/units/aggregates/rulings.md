@@ -52,3 +52,13 @@ Apply every FIX line of lens 1 as written. In short:
 ## Sections 9 fidelity
 
 The arm measures the model reading aggregates live. The judge reading them is measured offline (T5), and CHANGE marks no supersession (T5). Each departure from `../../harness/bench/BRIEFING.md` § 9 is reported in the series report.
+
+## Scoring audit (GPT-6 Astra, analyst route, session 01a12623-6b15-7eb3-8dec-3c1c72fa829e, 555,110 ms)
+
+`../../harness/bench/long-audit.json` holds the audit of g11 to g24. Under the current rules, all 50 of its `current` replies score as labelled (checked in this session with `compileRules`, `scoreText`, and `clean` from `bench/rescore.mjs`). Every `change` ruling is accepted: tightened `forbiddenPatterns` on g11 to g24, the g15 and g24 literal `forbidden` strings moved into contextual patterns, and `happy` added to g22's `expected`. Applied to a scratch copy, the changes score every `changed` reply as labelled, and every flip of a `current` label is a correction.
+
+The long-scenario unit also makes these edits to `check-long.mjs`:
+
+- The `system` comparison removes the short scenario's date sentence (`Today is Thursday 2026-10-08.`) before comparing, because the long scenario serves the date through `days`.
+- The facts check (every forbidden substring and pattern is absent from a goal's current facts and sources) applies to g11 to g24. g01 to g10 follow `scenario.json` byte for byte, including the g03 and g06 patterns that match facts 6, 11, and 15 there; `notes` records the exemption beside the g15 exemption.
+- The g11 hedged sample carries every expected value beside an affirmative Marcus approval clause, so the hedged check can fail on the guard the audit added.
