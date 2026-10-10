@@ -384,7 +384,7 @@ function writeCopy(target = copies, replacement?: Table): void {
 function runReport(args: readonly string[]): Outcome {
 	const run = spawnSync(
 		process.execPath,
-		['--import', pathToFileURL(blocker).href, REPORT, ...args],
+		['--import', pathToFileURL(blocker).href, REPORT, '--archive', ...args],
 		{ cwd: HARNESS, encoding: 'utf8' },
 	)
 	return { status: run.status, stdout: run.stdout, stderr: run.stderr }

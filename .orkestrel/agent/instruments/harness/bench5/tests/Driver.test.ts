@@ -310,6 +310,7 @@ let url = ''
 
 function stubArgs(extra: readonly string[], list = GOALS, store = cache): readonly string[] {
 	return [
+		'--fixture',
 		'--copy',
 		'1',
 		'--url',
@@ -438,14 +439,14 @@ describe('Driver', () => {
 		assert.ok(address !== null && typeof address !== 'string')
 		url = `http://127.0.0.1:${address.port}`
 		mode.lookup = true
-		await startRun('control', ['--run', '--live', '--arm', 'control'])
+		await startRun('records', ['--run', '--live', '--arm', 'records'])
 		await startRun('aggregate', ['--run', '--live', '--arm', 'aggregate'])
 		await startRun(
 			'squeeze',
 			['--run', '--live', '--arm', 'aggregate', '--allowance', String(SQUEEZE)],
 			LEAKS,
 		)
-		await startRun('offline', ['--run', '--arm', 'control'])
+		await startRun('offline', ['--run', '--arm', 'records'])
 		mode.lookup = false
 		mode.empty = true
 		await startRun('answer', ['--run', '--live', '--arm', 'aggregate'])
@@ -516,6 +517,7 @@ describe('Driver', () => {
 			assert.deepEqual(JSON.parse(shapeBody('agent', body, true)), {
 				model: 'm',
 				options: { ...options, num_predict: 1 },
+				think: false,
 				truncate: false,
 			})
 			assert.deepEqual(JSON.parse(shapeBody('summarizer', body, true)), {
@@ -583,7 +585,7 @@ describe('Driver', () => {
 
 	describe('run', () => {
 		it('exits 0 for both arms, with every request on the stub and none on the daemon', () => {
-			for (const name of ['control', 'aggregate', 'squeeze', 'answer', 'offline']) {
+			for (const name of ['records', 'aggregate', 'squeeze', 'answer', 'offline']) {
 				const run = recall(name)
 				assert.equal(run.outcome.code, 0, `${name}: ${run.outcome.stderr}`)
 			}
@@ -591,14 +593,14 @@ describe('Driver', () => {
 		})
 
 		it('writes the rows, selections, messages, judgments, calls, and run files, and the aggregate rows for the aggregate arm only', () => {
-			for (const name of ['control', 'aggregate']) {
+			for (const name of ['records', 'aggregate']) {
 				assert.equal(listFile(name, 'rows.jsonl').length, 2)
 				assert.ok(listFile(name, 'selections.jsonl').length >= 2)
 				assert.ok(listFile(name, 'messages.jsonl').length > 48)
 				assert.ok(listFile(name, 'judgments.jsonl').length > 48)
 				assert.ok(listFile(name, 'calls.jsonl').some((call) => readField(call, 'role') === 'judge'))
 			}
-			assert.equal(existsSync(join(recall('control').out, 'aggregates.jsonl')), false)
+			assert.equal(existsSync(join(recall('records').out, 'aggregates.jsonl')), false)
 			assert.ok(listFile('aggregate', 'aggregates.jsonl').length > 0)
 			const report = readJSON(join(recall('aggregate').out, 'run.json'))
 			assert.equal(readField(report, 'status'), 'complete')
@@ -611,21 +613,21 @@ describe('Driver', () => {
 
 		it('adds the seed through each goal read point before its request', () => {
 			assert.deepEqual(
-				listIndices('control', 'g01'),
+				listIndices('records', 'g01'),
 				Array.from({ length: 48 }, (_, at) => at),
 			)
 			assert.deepEqual(
-				listIndices('control', 'g11'),
+				listIndices('records', 'g11'),
 				Array.from({ length: 90 }, (_, at) => at),
 			)
-			const added = listFile('control', 'messages.jsonl')
+			const added = listFile('records', 'messages.jsonl')
 				.map((one) => readField(one, 'index'))
 				.filter((index): index is number => typeof index === 'number')
 			assert.equal(Math.max(...added), 89)
 		})
 
 		it('writes the date instruction of the read point in both arms', () => {
-			for (const name of ['control', 'aggregate']) {
+			for (const name of ['records', 'aggregate']) {
 				const records = listFile(name, 'selections.jsonl')
 				const g01 = records.find((one) => readText(one, 'goal').startsWith('g01'))
 				const g11 = records.find((one) => readText(one, 'goal').startsWith('g11'))
@@ -637,7 +639,7 @@ describe('Driver', () => {
 		it('binds every admitted wire body to the recorded maintenance version and keeps absent bodies unbound', () => {
 			let admitted = 0
 			let absent = 0
-			for (const name of ['control', 'aggregate']) {
+			for (const name of ['records', 'aggregate']) {
 				const rows = listFile(name, 'aggregates.jsonl')
 				for (const record of listFile(name, 'selections.jsonl')) {
 					const bindings = readList(record, 'aggregates')
@@ -675,7 +677,7 @@ describe('Driver', () => {
 		})
 
 		it('returns the versioned text for a lookup of LH-80941 at g11', () => {
-			for (const name of ['control', 'aggregate']) {
+			for (const name of ['records', 'aggregate']) {
 				const tools = listFile(name, 'messages.jsonl').filter(
 					(one) =>
 						readField(one, 'role') === 'tool' && String(readField(one, 'goal')).startsWith('g11'),
@@ -711,7 +713,7 @@ describe('Driver', () => {
 					goal,
 				)
 			}
-			for (const body of pickFirstPasses(recall('control').chat)) {
+			for (const body of pickFirstPasses(recall('records').chat)) {
 				assert.equal(readSystem(body).includes(SUMMARIES_HEADING), false)
 				assert.ok(readSystem(body).includes('## Instructions'))
 			}
@@ -772,7 +774,7 @@ describe('Driver', () => {
 		})
 
 		it('sends one identical prefix flush per goal in both arms, after the aggregate stage and before the first pass', () => {
-			for (const name of ['control', 'aggregate']) {
+			for (const name of ['records', 'aggregate']) {
 				const chat = recall(name).chat
 				const flushes = pickFlushes(chat)
 				assert.equal(flushes.length, 2, name)
@@ -797,7 +799,7 @@ describe('Driver', () => {
 				recall('aggregate').chat.indexOf(summaries[0]) <
 					recall('aggregate').chat.indexOf(pickFlushes(recall('aggregate').chat)[0]),
 			)
-			assert.deepEqual(listFlushBodies('control'), listFlushBodies('aggregate'))
+			assert.deepEqual(listFlushBodies('records'), listFlushBodies('aggregate'))
 		})
 
 		it('sends truncate false on every chat request and num_predict 1 on the calibration calls and the flush only', () => {
@@ -813,7 +815,7 @@ describe('Driver', () => {
 		})
 
 		it('keeps default shares and the initial calibrated gauge identical across arms', () => {
-			const control = readJSON(join(recall('control').out, 'run.json'))
+			const control = readJSON(join(recall('records').out, 'run.json'))
 			const aggregate = readJSON(join(recall('aggregate').out, 'run.json'))
 			const gauge = readField(aggregate, 'gauge')
 			assert.deepEqual(readField(control, 'gauge'), gauge)
@@ -826,7 +828,7 @@ describe('Driver', () => {
 		})
 
 		it('records the stage and flush walls apart from the agent wall, and the aggregate topics and tokens per goal', () => {
-			for (const row of listFile('control', 'rows.jsonl')) {
+			for (const row of listFile('records', 'rows.jsonl')) {
 				assert.equal(readNumber(row, 'stage'), 0)
 				assert.deepEqual(readList(row, 'rendered'), [])
 				assert.equal(readNumber(row, 'summary'), 0)
@@ -844,7 +846,7 @@ describe('Driver', () => {
 		})
 
 		it('plans the briefing of the first goal identically in both arms and digests the tail by seed index', () => {
-			const control = listFile('control', 'rows.jsonl')
+			const control = listFile('records', 'rows.jsonl')
 			const aggregate = listFile('aggregate', 'rows.jsonl')
 			assert.equal(
 				readField(readField(control[0], 'briefing'), 'digest'),
@@ -856,7 +858,7 @@ describe('Driver', () => {
 			)
 			assert.equal(readField(control[0], 'tail'), readField(aggregate[0], 'tail'))
 			assert.match(String(readField(control[0], 'tail')), /^[0-9a-f]{64}$/)
-			const tail = readList(listFile('control', 'selections.jsonl')[0], 'tail')
+			const tail = readList(listFile('records', 'selections.jsonl')[0], 'tail')
 			assert.ok(tail.length > 0)
 			for (const message of tail) {
 				assert.equal(isRecord(message) && 'id' in message, false)
@@ -866,7 +868,7 @@ describe('Driver', () => {
 		})
 
 		it('replays a run offline from the cache with the same plan', () => {
-			const first = listFile('control', 'rows.jsonl')
+			const first = listFile('records', 'rows.jsonl')
 			const rows = listFile('offline', 'rows.jsonl')
 			assert.equal(rows.length, 2)
 			for (const [at, row] of rows.entries()) {
@@ -881,7 +883,7 @@ describe('Driver', () => {
 		})
 
 		it('refuses an output directory that exists', async () => {
-			const outcome = await runBench(stubArgs(['--run', '--live', '--out', recall('control').out]))
+			const outcome = await runBench(stubArgs(['--run', '--live', '--out', recall('records').out]))
 			assert.equal(outcome.code, 1)
 			assert.match(outcome.stderr, /already exists/)
 		})

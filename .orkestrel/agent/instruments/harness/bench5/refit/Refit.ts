@@ -11,7 +11,7 @@ import type {
 	RefitReading,
 } from './types.ts'
 import { randomUUID } from 'node:crypto'
-import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
 import { arrayOf, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
@@ -63,6 +63,7 @@ import {
 } from '../helpers.ts'
 import { JudgeCache } from '../JudgeCache.ts'
 import { Mirror } from '../Mirror.ts'
+import { readFrozen, readModelDigest } from '../matrix/helpers.ts'
 import { Summarizer } from '../Summarizer.ts'
 import {
 	REFIT_CONTROLS,
@@ -114,6 +115,8 @@ export class Refit {
 			allowPositionals: true,
 			options: {
 				copy: { type: 'string', default: '1' },
+				frozen: { type: 'string' },
+				settings: { type: 'string' },
 				out: { type: 'string' },
 				cache: { type: 'string' },
 				corpus: { type: 'string' },
@@ -144,6 +147,7 @@ export class Refit {
 			throw new Error('--attempts and --labels are required')
 		return await new Refit({
 			phase,
+			frozen: values.frozen,
 			out: values.out,
 			cache: values.cache ?? '',
 			corpus: values.corpus ?? '',
@@ -151,7 +155,10 @@ export class Refit {
 			labels: values.labels ?? '',
 			controls: values.controls,
 			scenario: join(COPIES_DIR, 'v1.json'),
-			settings: join(HARNESS, 'bench5', 'settings.json'),
+			settings:
+				values.frozen === undefined
+					? (values.settings ?? join(HARNESS, 'bench5', 'settings.json'))
+					: readFrozen(hashFile(values.frozen)).settings.path,
 			model: values.model,
 			url: values.url,
 			live: values.live,
@@ -168,6 +175,16 @@ export class Refit {
 		mkdirSync(dirname(this.#options.out), { recursive: true })
 		mkdirSync(this.#options.out)
 		try {
+			if (this.#options.frozen !== undefined && this.#options.phase === 'generate') {
+				const frozen = readFrozen(hashFile(this.#options.frozen))
+				if (this.#options.live) {
+					const response = await this.#fetch(new URL('/api/tags', this.#options.url))
+					const tags: unknown = await response.json()
+					for (const role of [frozen.summarizer, frozen.judge])
+						if (readModelDigest(tags, role.model) !== role.digest)
+							throw new Error('actual calibration model digest changed')
+				}
+			}
 			if (this.#options.phase === 'freeze') return await this.#freeze()
 			if (this.#options.phase === 'generate') return await this.#generate()
 			return this.#fit()
@@ -182,6 +199,12 @@ export class Refit {
 	}
 
 	#files(): readonly RefitFile[] {
+		if (this.#options.frozen !== undefined) {
+			const frozen = readFrozen(hashFile(this.#options.frozen))
+			if (this.#options.model !== frozen.summarizer.model)
+				throw new Error('summarizer model differs from frozen configuration')
+			return [...frozen.files, frozen.settings]
+		}
 		return [
 			...REFIT_IMPLEMENTATION.map((path) => join(HARNESS, path)),
 			this.#options.scenario,
@@ -349,6 +372,14 @@ export class Refit {
 			throw new Error('invalid corpus custody')
 		verifyCorpus(corpus)
 		verifyFiles(corpus.files)
+		if (this.#options.frozen !== undefined) {
+			const frozen = readFrozen(hashFile(this.#options.frozen))
+			if (
+				!isDeepStrictEqual(corpus.files.slice(0, -1), this.#files()) ||
+				corpus.files.at(-1)?.hash !== frozen.seed.hash
+			)
+				throw new Error('frozen corpus source/settings/seed population mismatch')
+		}
 		return corpus
 	}
 
@@ -366,6 +397,31 @@ export class Refit {
 		const key = Object.entries(MODELS).find(([, tag]) => tag === model)?.[0]
 		if (key === undefined) throw new Error('unknown model')
 		const settings = readSettings(this.#options.settings, key)
+		if (this.#options.frozen !== undefined) {
+			const frozen = readFrozen(hashFile(this.#options.frozen))
+			const custody = {
+				summarizer: frozen.summarizer,
+				judge: frozen.judge,
+				source: frozen.files,
+				seed: frozen.seed,
+			}
+			const lineage = join(this.#options.cache, 'lineage.json')
+			const judgePath = join(this.#options.cache, 'judge.jsonl')
+			if (existsSync(lineage)) {
+				if (!isDeepStrictEqual(readJSON(lineage), custody))
+					throw new Error('calibration cache configuration mismatch')
+			} else {
+				if (
+					existsSync(join(this.#options.cache, 'summary.jsonl')) ||
+					(existsSync(judgePath) && hashFile(judgePath).hash !== frozen.seed.hash)
+				)
+					throw new Error('calibration cache lacks fixed seed custody')
+				mkdirSync(this.#options.cache, { recursive: true })
+				writeFileSync(lineage, JSON.stringify(custody), { flag: 'wx' })
+			}
+			if (!existsSync(judgePath))
+				writeFileSync(judgePath, readFileSync(frozen.seed.path), { flag: 'wx' })
+		}
 		const before = this.#lineage()
 		// A failed judge call refuses preparation immediately; hidden retries cannot have unrecorded costs.
 		const judge = this.#judge(join(this.#options.cache, 'judge.jsonl'), this.#options.live, 0)
@@ -523,6 +579,9 @@ export class Refit {
 		const retained = join(this.#options.out, 'evidence.json')
 		writeFileSync(retained, `${JSON.stringify(evidence, null, 2)}\n`, { flag: 'wx' })
 		const manifest: RefitGeneration = {
+			...(this.#options.frozen === undefined
+				? {}
+				: { matrix: readFrozen(hashFile(this.#options.frozen)) }),
 			corpus: hashFile(join(this.#options.corpus, 'corpus.json')).hash,
 			attempts: hashFile(join(this.#options.out, 'attempts.jsonl')).hash,
 			packet: hashFile(join(this.#options.out, 'packet.jsonl')).hash,
@@ -650,6 +709,11 @@ export class Refit {
 			throw new Error('corpus/attempt/packet/manifest custody mismatch')
 		if (!isDeepStrictEqual(manifest.files, this.#files()))
 			throw new Error('implementation custody membership mismatch')
+		if (
+			this.#options.frozen !== undefined &&
+			!isDeepStrictEqual(manifest.matrix, readFrozen(hashFile(this.#options.frozen)))
+		)
+			throw new Error('generation role configuration differs from freeze')
 		verifyFiles(manifest.files)
 		if (resolve(manifest.evidence.path) !== resolve(directory, 'evidence.json'))
 			throw new Error('retained evidence path mismatch')
@@ -741,7 +805,7 @@ export class Refit {
 		if (!diagnosis.accepted) return 3
 		writeFileSync(
 			join(this.#options.out, 'fit.json'),
-			`${JSON.stringify({ agree: diagnosis.cutoff, change: 0.56, separated: true, custody: { corpus: corpusHash, attempts: attemptsHash, packet: packetHash, manifest: manifestHash, labels: hashFile(this.#options.labels).hash }, limitation: REFIT_LIMITATION }, null, 2)}\n`,
+			`${JSON.stringify({ agree: diagnosis.cutoff, change: 0.56, separated: true, ...(manifest.matrix === undefined ? {} : { matrix: { summarizer: manifest.matrix.summarizer, judge: manifest.matrix.judge, files: manifest.matrix.files, settings: manifest.matrix.settings.hash, seed: manifest.matrix.seed.hash }, preparation: { manifest: hashFile(join(directory, 'manifest.json')), attempts: hashFile(join(directory, 'attempts.jsonl')), corpus: hashFile(join(this.#options.corpus, 'corpus.json')), labels: hashFile(this.#options.labels) } }), custody: { corpus: corpusHash, attempts: attemptsHash, packet: packetHash, manifest: manifestHash, labels: hashFile(this.#options.labels).hash }, limitation: REFIT_LIMITATION }, null, 2)}\n`,
 			{ flag: 'wx' },
 		)
 		return 0

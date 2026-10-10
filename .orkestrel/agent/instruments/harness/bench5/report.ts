@@ -10,6 +10,9 @@
 // A pair is refused, with no statistics, when a run is missing or short, did not complete, or counts a transient judge error.
 // Exit: 0; 1 when a run is missing or short or a pair is refused; 64 on usage.
 import type {
+	AggregateBinding,
+	AggregateMaintenance,
+	AggregateState,
 	AggregateCheck,
 	AggregateEvent,
 	AggregateRow,
@@ -22,7 +25,7 @@ import type {
 	LookupCount,
 	QuestionCount,
 	Row,
-	RunArm,
+	ArchiveArm,
 	SelectionRecord,
 	TailMessage,
 	WireReading,
@@ -32,13 +35,16 @@ import { join, resolve } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import { LEDGER_SCALE_DRIFT, matchesCutLine } from '../vendor/agent-0.0.30-trimmed/index.js'
-import { compileRules, plainText, scoreText } from '../bench/rescore.mjs'
+import { Comparison } from './matrix/Comparison.ts'
 import { INSTRUCTION_SUMMARIES } from './aggregates/constants.ts'
 import { readTokens } from './aggregates/helpers.ts'
+import { isAggregateSource, isAggregateState } from './aggregates/validators.ts'
+import { buildTimeline, parseAggregates } from './shadow.ts'
 import { COPIES_DIR, MODELS, SAMPLER } from './constants.ts'
 import { readCopy } from './Driver.ts'
 import {
 	buildSystem,
+	readScoreCarriers,
 	describeError,
 	listWireFailures,
 	matchesExposure,
@@ -77,7 +83,15 @@ type Reading = Pick<
 type AggregateReading = Pick<
 	AggregateRow,
 	'topic' | 'goal' | 'event' | 'status' | 'trigger' | 'answers' | 'failures' | 'wall' | 'cached'
->
+> &
+	Partial<
+		Pick<
+			AggregateRow,
+			'lastSeed' | 'version' | 'title' | 'prose' | 'prior' | 'result' | 'projection'
+		>
+	>
+
+type AggregateJournal = AggregateReading | AggregateMaintenance
 
 type Verdict = 'STOP' | 'CONTINUE' | 'REFUSED'
 
@@ -98,7 +112,7 @@ interface Flags {
 /** Holds what a run's `run.json` says about the run. */
 interface Info {
 	readonly status: string
-	readonly arm: RunArm
+	readonly arm: ArchiveArm
 	readonly copy: number
 	readonly model: string
 	readonly goals: readonly string[]
@@ -114,14 +128,10 @@ interface Run {
 	readonly rows: readonly Reading[]
 	readonly picks: readonly SelectionRecord[]
 	readonly calls: readonly CallRecord[]
+	readonly journal: readonly AggregateJournal[]
 	readonly events: readonly AggregateReading[]
 	/** Maps a request sequence to the prompt token count its wire response reports. */
 	readonly wire: ReadonlyMap<number, WireReading>
-}
-
-interface Matches {
-	readonly expected: readonly string[]
-	readonly stale: readonly string[]
 }
 
 /** Holds what the rendered summaries of one goal carry beyond the shown text, and which goal facts and stale tokens they hold. */
@@ -178,7 +188,7 @@ interface AggregateReport {
 
 interface RunReport {
 	readonly name: string
-	readonly arm: RunArm
+	readonly arm: ArchiveArm
 	readonly copy: number
 	readonly goals: number
 	readonly passes: number
@@ -283,9 +293,25 @@ const LAST_COPY = 8
 const WIRE_FILE = /^(\d+)_api_chat-response\.json$/
 const TIMEOUT_ERROR = /time ?out|abort/i
 const ROLES: readonly CallRole[] = ['agent', 'judge', 'summarizer', 'flush']
-const EVENTS: readonly AggregateEvent[] = ['build', 'agree', 'change', 'withhold']
-const STATUSES: readonly AggregateStatus[] = ['current', 'stale', 'withheld']
-const TRIGGERS: readonly AggregateTrigger[] = ['first', 'removed', 'change', 'check', 'retry']
+const EVENTS: readonly AggregateEvent[] = [
+	'build',
+	'agree',
+	'change',
+	'withhold',
+	'keep',
+	'retire',
+	'fail',
+]
+const STATUSES: readonly AggregateStatus[] = ['current', 'stale', 'withheld', 'retired', 'failed']
+const TRIGGERS: readonly AggregateTrigger[] = [
+	'first',
+	'removed',
+	'change',
+	'check',
+	'retry',
+	'unchanged',
+	'retained',
+]
 const CHECKS: readonly AggregateCheck[] = ['empty', 'id', 'number', 'name', 'stale', 'agree']
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
@@ -380,7 +406,7 @@ function isCheck(value: unknown): value is AggregateCheck {
 	return CHECKS.some((check) => check === value)
 }
 
-function isArm(value: unknown): value is RunArm {
+function isArm(value: unknown): value is ArchiveArm {
 	return value === 'control' || value === 'aggregate'
 }
 
@@ -474,6 +500,26 @@ function readTail(value: unknown, label: string): TailMessage {
 	}
 }
 
+function readState(value: unknown, label: string): AggregateState | undefined {
+	if (value === undefined) return undefined
+	if (!isAggregateState(value)) throw new Error(label + ': invalid aggregate state')
+	return value
+}
+
+function readBindings(value: unknown, label: string): readonly AggregateBinding[] | undefined {
+	if (value === undefined) return undefined
+	if (!Array.isArray(value)) throw new Error(label + ': aggregates is not a list')
+	return value.map((binding) => {
+		const state = readState(readField(binding, 'state'), label)
+		if (state === undefined) throw new Error(label + ': missing aggregate state')
+		return {
+			topic: readText(binding, 'topic', label),
+			prose: readText(binding, 'prose', label),
+			state,
+		}
+	})
+}
+
 function readPick(value: unknown, label: string): SelectionRecord {
 	const instructions = readField(value, 'instructions')
 	if (!isRecord(instructions)) throw new Error(`${label}: instructions is not a table`)
@@ -488,6 +534,7 @@ function readPick(value: unknown, label: string): SelectionRecord {
 			Object.entries(instructions).map(([name, content]) => [name, String(content)]),
 		),
 		scale: readOptional(value, 'scale'),
+		aggregates: readBindings(readField(value, 'aggregates'), label),
 	}
 }
 
@@ -507,10 +554,33 @@ function readCall(value: unknown, label: string): CallRecord {
 	}
 }
 
+function readJournal(value: unknown, label: string): AggregateJournal {
+	if (readField(value, 'event') !== 'maintenance') return readEvent(value, label)
+	const status = readField(value, 'status')
+	if (status !== 'complete' && status !== 'failed' && status !== 'aborted')
+		throw new Error(label + ': invalid maintenance status')
+	const error = readField(value, 'error')
+	return {
+		event: 'maintenance',
+		goal: readText(value, 'goal', label),
+		lastSeed: readNumber(value, 'lastSeed', label),
+		status,
+		...(typeof error === 'string' ? { error } : {}),
+	}
+}
+
 function readEvent(value: unknown, label: string): AggregateReading {
 	const event = readField(value, 'event')
 	const status = readField(value, 'status')
 	const trigger = readField(value, 'trigger')
+	const projection = readField(value, 'projection')
+	const title = readField(value, 'title')
+	const prose = readField(value, 'prose')
+	if (
+		projection !== undefined &&
+		(!Array.isArray(projection) || !projection.every(isAggregateSource))
+	)
+		throw new Error(label + ': invalid aggregate projection')
 	if (!isEvent(event) || !isStatus(status))
 		throw new Error(`${label}: event or status is not a member of its set`)
 	return {
@@ -519,6 +589,13 @@ function readEvent(value: unknown, label: string): AggregateReading {
 		event,
 		status,
 		trigger: isTrigger(trigger) ? trigger : undefined,
+		lastSeed: readOptional(value, 'lastSeed'),
+		version: readOptional(value, 'version'),
+		title: typeof title === 'string' ? title : undefined,
+		prose: typeof prose === 'string' ? prose : undefined,
+		prior: readState(readField(value, 'prior'), label),
+		result: readState(readField(value, 'result'), label),
+		projection,
 		answers: readNumbers(value, 'answers', label),
 		failures: readList(value, 'failures', label).map((failure) => {
 			const kind = readField(failure, 'kind')
@@ -573,14 +650,14 @@ function readLines<Entry>(
 	return readRows(path).map((value, at) => read(value, `${path} line ${at + 1}`))
 }
 
-function locateRun(base: string, short: string, arm: RunArm, copy: number): string | undefined {
+function locateRun(base: string, short: string, arm: ArchiveArm, copy: number): string | undefined {
 	const names = arm === 'control' ? ['control'] : ['aggregate', FILL_ARM]
 	return names
 		.map((name) => `${RUN_PREFIX}-${short}-${name}-v${copy}`)
 		.find((name) => existsSync(join(base, name)))
 }
 
-function readRun(base: string, short: string, model: string, arm: RunArm, copy: number): Run {
+function readRun(base: string, short: string, model: string, arm: ArchiveArm, copy: number): Run {
 	const name = locateRun(base, short, arm, copy)
 	if (name === undefined) throw new Error(`missing run ${RUN_PREFIX}-${short}-${arm}-v${copy}`)
 	const dir = join(base, name)
@@ -597,13 +674,15 @@ function readRun(base: string, short: string, model: string, arm: RunArm, copy: 
 	const events = join(dir, 'aggregates.jsonl')
 	if (arm === 'aggregate' && !existsSync(events))
 		throw new Error(`${name}: aggregates.jsonl is missing`)
+	const journal = existsSync(events) ? readLines(events, readJournal) : []
 	return {
 		name,
 		info,
 		rows,
 		picks: readLines(join(dir, 'selections.jsonl'), readPick),
 		calls: readLines(join(dir, 'calls.jsonl'), readCall),
-		events: existsSync(events) ? readLines(events, readEvent) : [],
+		journal,
+		events: journal.filter((entry) => entry.event !== 'maintenance'),
 		wire: readWire(`${dir}-wire`),
 	}
 }
@@ -645,21 +724,6 @@ function matchesTimeout(row: Reading): boolean {
 	return row.partial === true || TIMEOUT_ERROR.test(row.error ?? '')
 }
 
-function listMatches(goal: CopyGoal, text: string): Matches {
-	const rules: unknown = compileRules(goal)
-	const scored: unknown = scoreText(rules, text)
-	const missing = new Set(readTexts(scored, 'missing', 'score'))
-	const expected = goal.expected.filter((phrase) => !missing.has(phrase))
-	const choice = `any of ${goal.expectedAny.join('/')}`
-	if (goal.expectedAny.length > 0 && !missing.has(choice)) expected.push(choice)
-	const plain = plainText(text)
-	// Absence predicates can fail answer scoring without carrying forbidden text.
-	const patterns = readTexts(scored, 'patterns', 'score').filter((source) =>
-		[...plain.matchAll(new RegExp(source, 'gi'))].some((match) => match[0].length > 0),
-	)
-	return { expected, stale: [...readTexts(scored, 'violations', 'score'), ...patterns] }
-}
-
 function listTokens(text: string): ReadonlySet<string> {
 	const { ids, numbers } = readTokens(text)
 	return new Set([
@@ -694,8 +758,8 @@ function collectShown(system: string, picks: readonly SelectionRecord[]): string
 
 // A fact counts when the summaries carry every id and number of its seed message; a stale token counts when no goal fact carries it.
 function auditLeak(goal: CopyGoal, scenario: Copy, summaries: string, shown: string): Leak {
-	const own = listMatches(goal, summaries)
-	const seen = listMatches(goal, shown)
+	const own = readScoreCarriers(goal, summaries)
+	const seen = readScoreCarriers(goal, shown)
 	const carried = listTokens(summaries)
 	const tokens = goal.facts.map((index) => listSeedTokens(scenario, index))
 	const held = new Set(tokens.flat())
@@ -871,6 +935,45 @@ function listSoleFailures(aggregate: Run): readonly string[] {
 }
 
 function listCheckFailures(aggregate: Run): readonly string[] {
+	// Historical l5 compatibility only. The l6 admission gate must separately require maintenance custody.
+	if (!aggregate.journal.some((entry) => entry.event === 'maintenance'))
+		return listLegacyCheckFailures(aggregate)
+	const failures: string[] = []
+	for (const row of aggregate.rows) {
+		const end = aggregate.journal.findLastIndex(
+			(entry) => entry.goal === row.goal && entry.event === 'maintenance',
+		)
+		const marker = aggregate.journal[end]
+		const snapshot = buildTimeline(parseAggregates(aggregate.journal.slice(0, end + 1))).at(-1)
+		if (marker?.event !== 'maintenance' || marker.status !== 'complete') {
+			if (row.rendered.length > 0)
+				failures.push(row.goal + ': rendered without completed maintenance')
+		}
+		for (const topic of row.rendered) {
+			if (snapshot?.topics.get(topic)?.state.goal !== row.goal)
+				failures.push(row.goal + ': ' + topic + ' rendered without current state')
+		}
+		for (const pick of aggregate.picks.filter((entry) => entry.goal === row.goal)) {
+			const body = pick.instructions[INSTRUCTION_SUMMARIES.name]
+			if (pick.aggregates === undefined) {
+				failures.push(row.goal + ': selection lacks maintained bindings')
+				continue
+			}
+			if ((body === undefined) !== (pick.aggregates.length === 0))
+				failures.push(row.goal + ': summary body and bindings disagree')
+			for (const binding of pick.aggregates) {
+				const current = snapshot?.topics.get(binding.topic)
+				if (binding.state.goal !== row.goal || !isDeepStrictEqual(binding.state, current?.state))
+					failures.push(row.goal + ': ' + binding.topic + ' selection state mismatch')
+				if (binding.prose.length === 0 || !body?.includes(binding.prose))
+					failures.push(row.goal + ': ' + binding.topic + ' admitted prose mismatch')
+			}
+		}
+	}
+	return failures
+}
+
+function listLegacyCheckFailures(aggregate: Run): readonly string[] {
 	const latest = new Map<string, AggregateReading>()
 	const failures: string[] = []
 	let cursor = 0
@@ -1351,4 +1454,6 @@ function main(argv: readonly string[]): number {
 	return reports.some(isRefusal) ? 1 : 0
 }
 
-process.exitCode = main(process.argv.slice(2))
+process.exitCode = process.argv.includes('--archive')
+	? main(process.argv.slice(2).filter((arg) => arg !== '--archive'))
+	: Comparison.execute(['report', ...process.argv.slice(2)])

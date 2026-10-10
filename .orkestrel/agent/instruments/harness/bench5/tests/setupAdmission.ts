@@ -26,7 +26,7 @@ function collectRequest(request: IncomingMessage): Promise<string> {
  * @returns The unmodified archived body serialization and the raw received request strings
  * @example
  * ```ts
- * const result = await replayAdmission(directory, { arm: 'control', prose: '', allowance: 555, agree: true })
+ * const result = await replayAdmission(directory, { arm: 'records', prose: '', allowance: 555, agree: true })
  * ```
  */
 export async function replayAdmission(
@@ -50,8 +50,14 @@ export async function replayAdmission(
 		const envelope = readJSON(
 			join(wire, `${String(sequence).padStart(5, '0')}_api_chat-request.json`),
 		)
-		if (!isRecord(envelope)) throw new Error('the archive request has no envelope')
-		return JSON.stringify(envelope.body)
+		if (!isRecord(envelope) || !isRecord(envelope.body) || !isRecord(envelope.body.options))
+			throw new Error('the archive request has no options')
+		const body = envelope.body
+		const options = envelope.body.options
+		return JSON.stringify({
+			...body,
+			options: { ...options, num_predict: options.num_predict ?? 512 },
+		})
 	})
 	const requests: string[] = []
 	const server = createServer((request, response) => {
@@ -134,6 +140,7 @@ export async function replayAdmission(
 		const parsed = parseFlags([
 			'--run',
 			'--live',
+			'--fixture',
 			'--copy',
 			'1',
 			'--goals',
@@ -174,7 +181,7 @@ export async function replayAdmission(
 			expected,
 			rows: readRows(join(out, 'rows.jsonl')),
 			picks: readRows(join(out, 'selections.jsonl')),
-			builds: fixture.arm === 'control' ? [] : readRows(join(out, 'aggregates.jsonl')),
+			builds: fixture.arm === 'records' ? [] : readRows(join(out, 'aggregates.jsonl')),
 		}
 	} finally {
 		await new Promise<void>((resolve) => {

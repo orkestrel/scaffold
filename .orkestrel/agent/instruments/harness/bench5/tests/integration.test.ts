@@ -9,13 +9,13 @@ import { estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { isMessageRole } from '../helpers.ts'
 import { replayAdmission } from './setupAdmission.ts'
 
-describe('archived control request identity', () => {
-	it('preserves every archived request body through empty, rejected, and all-cut treatment under held responses', async () => {
+describe('archived records messages with explicit l6 wire caps', () => {
+	it('preserves archived messages through empty, rejected, and all-cut treatment while explicitly capping previously uncapped decisions at 512', async () => {
 		const parent = resolve(HARNESS, '..', '..', '..', '..', 'tmp', 'units', 'aggregate-admission')
 		mkdirSync(parent, { recursive: true })
 		const root = mkdtempSync(join(parent, 'replay-'))
-		const control = await replayAdmission(join(root, 'control'), {
-			arm: 'control',
+		const control = await replayAdmission(join(root, 'records'), {
+			arm: 'records',
 			prose: '',
 			allowance: 555,
 			agree: true,
@@ -24,6 +24,16 @@ describe('archived control request identity', () => {
 		assert.equal(control.requests.length, 40)
 		assert.equal(control.rows.length, 12)
 		assert.deepEqual(control.requests, control.expected)
+		assert.throws(() =>
+			assert.deepEqual(
+				control.requests,
+				control.expected.map((text, index) =>
+					index === 0
+						? text.replace('operations assistant', 'unrelated changed instruction')
+						: text,
+				),
+			),
+		)
 		for (const [name, prose, allowance, agree] of [
 			['empty', '', 555, true],
 			['rejected', 'The standing rule applies to this topic.', 555, false],

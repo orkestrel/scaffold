@@ -59,3 +59,15 @@ Complete the trimmed-vendor consumer unit first. Then implement lifecycle contra
 Run one integrated falsification round on the added measurement claims after deterministic proofs. Close adopted review prescriptions with failing mutation controls and restored passes. Freeze hashes before live calibration and evaluation. Finish with audited measured results or explicit, evidence-backed infeasibility for each requested configuration, the comparison artifact, and committed session-branch records. Aggregate files remain off scaffold main.
 
 Before an adoption decision, complete the user's additional sustained-work comparison; see [Sustained-work comparison requirement](endurance.md). The matrix alone cannot close that criterion.
+
+## Executable phases
+
+The l6 matrix entry exposes `freeze`, `resource`, `full`, `pilot`, and `plan` commands. Preparation artifacts are create-only. Freeze records model digests, independent role settings, the seed cache, source/vendor/settings hashes, and the transition census. Resource admission tests copy 1 through the fixed reserve ladder; the full-view phase writes its finite bound before preflight. The pilot requires a matching accepted fit and resource manifest and verifies actual nonempty body exposure.
+
+The refit entry accepts `--frozen FILE` for corpus freeze, generation, and fitting. Its generation packet is audited without identity or scores. Accepted fits bind the fixed summarizer and judge configurations and may be shared across decision-thinking conditions only when those identities and the source/settings/seed population match.
+
+Place each configuration beneath `ROOT/KEY-thinkN/{freeze,resource,full,pilot}`. Plan stages A, B, and C into distinct JSON files; the runner validates each explicit execution manifest before starting a run. The comparison entry exposes `blind` and `report`, accepts repeated `--plan FILE`, and writes the private blind join separately from the audit packet. Reports accept repeated `--shadow FILE` for a separate judge table and `--preparation FILE` for refused preparation or calibration artifacts that no evaluated cell references. Supply a generation manifest explicitly only when an accepted referenced fit does not already carry that generation, to avoid displaying its costs twice.
+
+Historical l5 planning and reports require `--archive`. The l6 records baseline uses an explicit 512-token wire cap where archived requests were uncapped; this is a documented protocol departure, and archived request bytes remain unchanged.
+
+Offline component acceptance does not establish live feasibility. Resolve the canonical ESM build boundary and complete shared runtime integration before freezing the final population. Live resource admission, blind fit acceptance, pilot exposure, all feasible evaluation copies, answer adjudication, and the sustained-work comparison remain required.

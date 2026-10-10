@@ -32,7 +32,7 @@ function writePlan(
 ): { readonly outcome: Outcome; readonly entries: ReadonlyArray<Record<string, unknown>> } {
 	written += 1
 	const out = join(scratch, `plan-${written}`, 'plan.json')
-	const outcome = spawnNode([PLAN, ...args, '--out', out], cwd)
+	const outcome = spawnNode([PLAN, '--archive', ...args, '--out', out], cwd)
 	const parsed: unknown = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : []
 	const entries = Array.isArray(parsed)
 		? parsed.filter(
@@ -247,7 +247,8 @@ describe('plan.ts', () => {
 			assert.equal(entries.length, 0)
 		}
 		assert.equal(
-			spawnNode([PLAN, '--models', 'q2', '--copies', '1-2', '--cache', cache], HARNESS).status,
+			spawnNode([PLAN, '--archive', '--models', 'q2', '--copies', '1-2', '--cache', cache], HARNESS)
+				.status,
 			64,
 		)
 	})

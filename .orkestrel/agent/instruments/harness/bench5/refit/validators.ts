@@ -14,6 +14,7 @@ import type {
 } from './types.ts'
 import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
 import { isCacheRow, isMessageRole, isSummaryRow, isUsage } from '../helpers.ts'
+import { isMatrixFreeze } from '../matrix/validators.ts'
 
 /** Checks a serialized projected source, including seed grouping. */
 export function isRefitSource(value: unknown): value is RefitSource {
@@ -162,6 +163,7 @@ export function isRefitGeneration(value: unknown): value is RefitGeneration {
 	const result = attempt(
 		() =>
 			isRecord(value) &&
+			(value.matrix === undefined || isMatrixFreeze(value.matrix)) &&
 			isString(value.corpus) &&
 			isString(value.attempts) &&
 			isString(value.packet) &&

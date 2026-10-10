@@ -1,4 +1,5 @@
 import type { TokenUsage } from '@orkestrel/budget'
+import type { MatrixFreeze } from '../matrix/types.ts'
 import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateFailure,
@@ -92,6 +93,7 @@ export interface RefitItem {
 
 /** Holds a completed generation manifest and its exact artifact identities. */
 export interface RefitGeneration {
+	readonly matrix?: MatrixFreeze
 	readonly corpus: string
 	readonly attempts: string
 	readonly packet: string
@@ -168,6 +170,7 @@ export interface RefitDiagnosis {
 
 /** Holds the closed command configuration. */
 export interface RefitOptions {
+	readonly frozen?: string
 	readonly phase: 'freeze' | 'generate' | 'fit'
 	readonly out: string
 	readonly cache: string

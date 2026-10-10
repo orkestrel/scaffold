@@ -5,6 +5,7 @@ import type {
 	AssignMessage,
 	AssignResult,
 	CacheRow,
+	CopyGoal,
 	CorpusQuery,
 	CorpusRow,
 	JudgeState,
@@ -14,6 +15,7 @@ import type {
 	ScenarioLookup,
 	ScenarioLookups,
 	ScenarioSystem,
+	ScoreCarriers,
 	StateMessage,
 	SummarizerOptions,
 	SummaryRow,
@@ -22,6 +24,7 @@ import type {
 	WireRun,
 } from './types.ts'
 import { isFiniteNumber, isRecord } from '@orkestrel/contract'
+import { compileRules, plainText, scoreText } from '../bench/rescore.mjs'
 import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from './aggregates/constants.ts'
 import { collectSummaryBodies, countSoleTokens } from './aggregates/helpers.ts'
 import { createHash } from 'node:crypto'
@@ -44,6 +47,42 @@ import {
 	SYSTEM_PIN_SENTENCE,
 	SYSTEM_REPLACEMENTS,
 } from './constants.ts'
+
+/** Reads scored and forbidden phrases actually present, preserving the scorer's normalization.
+ * @param goal - The accepted goal rules
+ * @param text - The exact rendered or wire text
+ * @returns Positive and stale carriers, excluding zero-width absence predicates
+ */
+export function readScoreCarriers(goal: CopyGoal, text: string): ScoreCarriers {
+	const scored: unknown = scoreText(compileRules(goal), text)
+	if (
+		!isRecord(scored) ||
+		!Array.isArray(scored.missing) ||
+		!Array.isArray(scored.violations) ||
+		!Array.isArray(scored.patterns) ||
+		![...scored.missing, ...scored.violations, ...scored.patterns].every(
+			(value: unknown) => typeof value === 'string',
+		)
+	)
+		throw new Error('invalid score carrier reading')
+	const missing = new Set(scored.missing)
+	const expected = goal.expected.filter((phrase) => !missing.has(phrase))
+	const choice = `any of ${goal.expectedAny.join('/')}`
+	if (goal.expectedAny.length > 0 && !missing.has(choice)) expected.push(choice)
+	const plain = plainText(text)
+	const patterns = scored.patterns.filter(
+		(source: unknown): source is string =>
+			typeof source === 'string' &&
+			[...plain.matchAll(new RegExp(source, 'gi'))].some((match) => match[0].length > 0),
+	)
+	return {
+		expected,
+		stale: [
+			...scored.violations.filter((value: unknown): value is string => typeof value === 'string'),
+			...patterns,
+		],
+	}
+}
 
 /**
  * Reads terminal usage and request content from recorded Ollama wire envelopes.

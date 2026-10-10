@@ -1,0 +1,538 @@
+import type {
+	MatrixAttempt,
+	MatrixBound,
+	MatrixExecution,
+	MatrixFreeze,
+	MatrixFull,
+	MatrixPilot,
+	MatrixResource,
+	MatrixRun,
+} from './types.ts'
+import type { PlanEntry } from '../types.ts'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { parseArgs } from 'node:util'
+import { isRecord } from '@orkestrel/contract'
+import { DEFAULT_LEDGER_LIMIT, estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
+import {
+	COPIES_DIR,
+	DAEMON,
+	MICA_CALIBRATION,
+	MICA_CONTEXT,
+	MICA_MODEL,
+	MODELS,
+	SAMPLER,
+} from '../constants.ts'
+import { Driver, parseFlags, readCopy, readSettings } from '../Driver.ts'
+import { buildSystem, describeError, readJSON } from '../helpers.ts'
+import { hashFile } from '../refit/helpers.ts'
+import { collectTransitions } from '../transitions/helpers.ts'
+import { MATRIX_RESERVES, MATRIX_STAGES } from './constants.ts'
+import {
+	buildBudget,
+	listMatrixPairFailures,
+	matchesMatrixExposure,
+	nameMatrix,
+	permitsReserve,
+	readExecution,
+	readFrozen,
+	readMatrixFiles,
+	readModelDigest,
+	readResource,
+	readSeedCache,
+} from './helpers.ts'
+import { parseMatrixRun } from './parsers.ts'
+
+/** Executes frozen l6 preparation and unscored admission phases. */
+export class Matrix {
+	/** Parses and executes one explicit matrix phase.
+	 * @param argv - Arguments after matrix.ts
+	 * @returns Exit 0 for success or 3 for explicit infeasibility
+	 */
+	static async execute(argv: readonly string[]): Promise<number> {
+		const { values, positionals } = parseArgs({
+			args: [...argv],
+			allowPositionals: true,
+			options: {
+				out: { type: 'string' },
+				root: { type: 'string' },
+				key: { type: 'string' },
+				think: { type: 'string' },
+				seed: { type: 'string' },
+				settings: { type: 'string' },
+				frozen: { type: 'string' },
+				resource: { type: 'string' },
+				fit: { type: 'string' },
+				stage: { type: 'string' },
+				url: { type: 'string', default: DAEMON },
+				live: { type: 'boolean', default: false },
+			},
+		})
+		if (positionals.length !== 1 || values.out === undefined)
+			throw new Error(
+				'usage: matrix.ts freeze|resource|full|pilot|plan --out PATH [--frozen FILE --resource FILE --fit FILE] [--key KEY --think true|false --seed FILE --settings FILE] [--root DIR --stage A|B|C] [--live --url URL]',
+			)
+		const phase = positionals[0]
+		const out = resolve(values.out)
+		if (phase === 'plan') return new Matrix().#plan(values.root, values.stage, out)
+		if (!values.live) throw new Error('model phases require --live; no calls were sent')
+		mkdirSync(dirname(out), { recursive: true })
+		mkdirSync(out)
+		const runner = new Matrix()
+		if (phase === 'freeze')
+			return await runner.#freeze(
+				values.key,
+				values.think,
+				values.seed,
+				values.settings,
+				out,
+				values.url,
+			)
+		if (values.frozen === undefined) throw new Error('--frozen FILE is required')
+		const frozen = hashFile(resolve(values.frozen))
+		readFrozen(frozen)
+		if (phase === 'resource') return await runner.#resource(frozen.path, out, values.url)
+		if (values.resource === undefined) throw new Error('--resource FILE is required')
+		const resource = hashFile(resolve(values.resource))
+		if (phase === 'full') return await runner.#full(frozen.path, resource.path, out, values.url)
+		if (phase === 'pilot' && values.fit !== undefined)
+			return await runner.#pilot(frozen.path, resource.path, resolve(values.fit), out, values.url)
+		throw new Error('phase or required phase arguments are invalid')
+	}
+
+	async #freeze(
+		key: string | undefined,
+		think: string | undefined,
+		seed: string | undefined,
+		settings: string | undefined,
+		out: string,
+		url: string,
+	): Promise<number> {
+		const model = Object.entries(MODELS).find(([name]) => name === key)?.[1]
+		if (
+			key === undefined ||
+			model === undefined ||
+			(think !== 'true' && think !== 'false') ||
+			seed === undefined ||
+			settings === undefined
+		)
+			throw new Error('freeze requires --key, explicit --think, --seed, and --settings')
+		const response = await fetch(new URL('/api/tags', url))
+		if (!response.ok) throw new Error(`model inventory HTTP ${response.status}`)
+		const tags: unknown = await response.json()
+		writeFileSync(join(out, 'tags.json'), `${JSON.stringify(tags, null, 2)}\n`, { flag: 'wx' })
+		const configuration = readSettings(resolve(settings), key)
+		const census = collectTransitions(readJSON(join(COPIES_DIR, 'v1.json')))
+		writeFileSync(
+			join(out, 'transitions.json'),
+			`${JSON.stringify({ scenario: hashFile(join(COPIES_DIR, 'v1.json')), opportunities: census }, null, 2)}\n`,
+			{ flag: 'wx' },
+		)
+		const frozen: MatrixFreeze = {
+			protocol: 'l6',
+			key,
+			think: think === 'true',
+			decision: {
+				model,
+				digest: readModelDigest(tags, model),
+				think: think === 'true',
+				sampler: SAMPLER,
+			},
+			summarizer: {
+				model,
+				digest: readModelDigest(tags, model),
+				think: false,
+				sampler: { ...SAMPLER, num_predict: configuration.predict },
+			},
+			judge: {
+				model: MICA_MODEL,
+				digest: readModelDigest(tags, MICA_MODEL),
+				think: false,
+				sampler: { num_ctx: MICA_CONTEXT, calibration: MICA_CALIBRATION },
+			},
+			files: readMatrixFiles(),
+			settings: hashFile(resolve(settings)),
+			seed: hashFile(resolve(seed)),
+			configuration,
+			census: hashFile(join(out, 'transitions.json')),
+			tags: hashFile(join(out, 'tags.json')),
+		}
+		writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(frozen, null, 2)}\n`, {
+			flag: 'wx',
+		})
+		readFrozen(hashFile(join(out, 'manifest.json')))
+		return 0
+	}
+
+	async #attempt(
+		execution: MatrixExecution,
+		directory: string,
+		url: string,
+	): Promise<MatrixAttempt> {
+		mkdirSync(directory)
+		const path = join(directory, 'execution.json')
+		writeFileSync(path, `${JSON.stringify(execution, null, 2)}\n`, { flag: 'wx' })
+		const frozen = readFrozen(execution.frozen)
+		const cache = join(directory, 'cache', nameMatrix(execution))
+		mkdirSync(cache, { recursive: true })
+		writeFileSync(join(cache, 'judge.jsonl'), readSeedCache(frozen), { flag: 'wx' })
+		const run = join(directory, nameMatrix(execution))
+		const config = parseFlags([
+			'--run',
+			'--live',
+			'--copy',
+			String(execution.copy),
+			'--manifest',
+			path,
+			'--cache',
+			cache,
+			'--out',
+			run,
+			'--url',
+			url,
+		])
+		if (!config.success) throw new Error(config.error)
+		let fault: string | undefined
+		try {
+			await new Driver(config.value).execute()
+		} catch (error) {
+			fault = describeError(error)
+		}
+		const reading = existsSync(join(run, 'run.json')) ? parseMatrixRun(run) : undefined
+		const failures = [
+			...(reading?.failures ?? ['missing complete run evidence']),
+			...(fault === undefined ? [] : [fault]),
+		]
+		return {
+			execution: hashFile(path),
+			run,
+			budget: execution.budget,
+			accepted: failures.length === 0,
+			failures,
+			resource: reading !== undefined && permitsReserve(reading.requests),
+			files: reading?.files ?? [],
+		}
+	}
+
+	async #resource(path: string, out: string, url: string): Promise<number> {
+		const reference = hashFile(path)
+		const frozen = readFrozen(reference)
+		const attempts: MatrixAttempt[] = []
+		for (const reserve of MATRIX_RESERVES) {
+			const execution: MatrixExecution = {
+				protocol: 'l6',
+				key: frozen.key,
+				think: frozen.think,
+				arm: 'records',
+				copy: 1,
+				phase: 'resource',
+				frozen: reference,
+				budget: buildBudget(reserve),
+			}
+			const attempt = await this.#attempt(execution, join(out, `reserve-${reserve}`), url)
+			attempts.push(attempt)
+			const manifest: MatrixResource = {
+				protocol: 'l6',
+				frozen: reference,
+				accepted: attempt.accepted,
+				attempts,
+				...(attempt.accepted ? { budget: attempt.budget } : {}),
+			}
+			writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+			if (attempt.accepted) return 0
+			if (!attempt.resource) return 3
+		}
+		return 3
+	}
+
+	#bound(run: MatrixRun): MatrixBound {
+		const copy = readCopy(join(COPIES_DIR, 'v1.json'))
+		const copies = Array.from({ length: 8 }, (_value, at) =>
+			hashFile(join(COPIES_DIR, `v${at + 1}.json`)),
+		)
+		const scenarios = copies.map((entry) => readCopy(entry.path))
+		if (run.gauge === undefined)
+			throw new Error('full-view bound requires calibrated development pricing')
+		const seed = Math.max(
+			...scenarios.map((scenario) =>
+				estimateMessages([
+					{
+						id: 'system',
+						role: 'system',
+						content: buildSystem({ ledger: { system: scenario.system } }),
+					},
+					...scenario.seed.map((message, at) => ({ ...message, id: `seed-${at}` })),
+				]),
+			),
+		)
+		const requests = Math.max(
+			...scenarios.flatMap((scenario) =>
+				scenario.goals.map((goal) =>
+					estimateMessages([{ id: 'request', role: 'user', content: goal.request }]),
+				),
+			),
+		)
+		const payloads = scenarios.flatMap((scenario) => [
+			...Object.values(scenario.tables.tools).flatMap((table) => Object.values(table)),
+			...scenario.tables.lookups.map((lookup) => lookup.text),
+			scenario.seed.map((message) => message.content).join('\n'),
+		])
+		const payload = Math.max(
+			...payloads.map((content) => estimateMessages([{ id: 'tool', role: 'tool', content }])),
+		)
+		const sent = run.requests.filter(
+			(request) => request.role === 'agent' && request.goal !== undefined && request.sent,
+		)
+		const observed = Math.max(...sent.map((request) => request.prompt ?? 0))
+		const growth = Math.max(
+			run.execution.budget.reserve,
+			...run.rows.map((row) =>
+				estimateMessages([{ id: 'reply', role: 'assistant', content: row.reply }]),
+			),
+		)
+		// This is a declared finite empirical envelope. Preflight and every wire request still prove feasibility.
+		const window = Math.ceil(
+			(seed +
+				copy.goals.length *
+					(requests + (DEFAULT_LEDGER_LIMIT + 1) * (growth + payload + requests))) *
+				run.gauge.scale +
+				run.gauge.overhead +
+				observed +
+				run.execution.budget.reserve,
+		)
+		return {
+			scenario: hashFile(join(COPIES_DIR, 'v1.json')),
+			copies,
+			development: run.files,
+			gauge: run.gauge,
+			goals: copy.goals.length,
+			turns: DEFAULT_LEDGER_LIMIT + 1,
+			reserve: run.execution.budget.reserve,
+			seed,
+			requests,
+			payload,
+			growth,
+			observed,
+			window,
+			limitation:
+				'Finite empirical envelope from all copy inputs, largest reachable payload including the complete recall seed, declared turn/completion caps, calibrated pricing, and measured development output. It is not a tokenizer worst-case guarantee; complete copy-1 preflight and actual wire capacity checks must pass. No text is trimmed.',
+		}
+	}
+
+	async #full(path: string, resourcePath: string, out: string, url: string): Promise<number> {
+		const reference = hashFile(path)
+		const frozen = readFrozen(reference)
+		const resource = hashFile(resourcePath)
+		const accepted = readResource(resource, reference)
+		const prior = accepted.attempts.at(-1)
+		if (!accepted.accepted || accepted.budget === undefined || prior === undefined)
+			throw new Error('full-view preflight requires accepted records resource development')
+		const reading = parseMatrixRun(prior.run)
+		if (reading === undefined) throw new Error('missing complete records development trace')
+		const bound = this.#bound(reading)
+		writeFileSync(join(out, 'bound.json'), `${JSON.stringify(bound, null, 2)}\n`, { flag: 'wx' })
+		const budget = { ...accepted.budget, window: bound.window }
+		const execution: MatrixExecution = {
+			protocol: 'l6',
+			key: frozen.key,
+			think: frozen.think,
+			arm: 'full',
+			copy: 1,
+			phase: 'full',
+			frozen: reference,
+			resource,
+			budget,
+		}
+		const attempt = await this.#attempt(execution, join(out, 'preflight'), url)
+		const manifest: MatrixFull = {
+			protocol: 'l6',
+			frozen: reference,
+			bound,
+			accepted: attempt.accepted,
+			attempts: [attempt],
+			...(attempt.accepted ? { budget } : {}),
+		}
+		writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, {
+			flag: 'wx',
+		})
+		return attempt.accepted ? 0 : 3
+	}
+
+	async #pilot(
+		path: string,
+		resourcePath: string,
+		fitPath: string,
+		out: string,
+		url: string,
+	): Promise<number> {
+		const reference = hashFile(path)
+		const frozen = readFrozen(reference)
+		const resource = hashFile(resourcePath)
+		const accepted = readResource(resource, reference)
+		if (!accepted.accepted || accepted.budget === undefined)
+			throw new Error('pilot requires an accepted reserve')
+		const fit = hashFile(fitPath)
+		const execution: MatrixExecution = {
+			protocol: 'l6',
+			key: frozen.key,
+			think: frozen.think,
+			arm: 'aggregate',
+			copy: 1,
+			phase: 'pilot',
+			frozen: reference,
+			resource,
+			fit,
+			budget: accepted.budget,
+		}
+		const attempt = await this.#attempt(execution, join(out, 'development'), url)
+		const run = parseMatrixRun(attempt.run)
+		if (run === undefined) throw new Error('pilot has no readable l6 run')
+		const exposed = run.rows.filter((row) => matchesMatrixExposure(run, row.goal)).length
+		const failures = [...attempt.failures]
+		const records = accepted.attempts.at(-1)
+		const baseline = records === undefined ? undefined : parseMatrixRun(records.run)
+		failures.push(
+			...(baseline === undefined
+				? ['missing paired development evidence']
+				: listMatrixPairFailures(baseline, run)),
+		)
+		if (exposed <= run.rows.length / 2)
+			failures.push('nonempty wire body exposure is not a majority of served development goals')
+		const manifest: MatrixPilot = {
+			protocol: 'l6',
+			frozen: reference,
+			resource,
+			fit,
+			attempt,
+			served: run.rows.length,
+			exposed,
+			accepted: failures.length === 0,
+			failures,
+		}
+		writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, {
+			flag: 'wx',
+		})
+		return manifest.accepted ? 0 : 3
+	}
+
+	#plan(root: string | undefined, stage: string | undefined, out: string): number {
+		if (root === undefined || (stage !== 'A' && stage !== 'B' && stage !== 'C'))
+			throw new Error('plan requires --root DIR and --stage A|B|C')
+		const plan: PlanEntry[] = []
+		const infeasible: unknown[] = []
+		const selected = MATRIX_STAGES[stage]
+		for (const key of selected.keys)
+			for (const think of [false, true]) {
+				const base = resolve(root, `${key}-think${think ? '1' : '0'}`)
+				const frozen = hashFile(join(base, 'freeze', 'manifest.json'))
+				readFrozen(frozen)
+				const resource = hashFile(join(base, 'resource', 'manifest.json'))
+				const decision = readResource(resource, frozen)
+				if (!decision.accepted || decision.budget === undefined) {
+					infeasible.push({
+						key,
+						think,
+						arm: 'records',
+						reason: 'resource preflight refused',
+						resource,
+					})
+					continue
+				}
+				for (const copy of selected.copies)
+					for (const arm of copy % 2 === 1
+						? (['records', 'aggregate', 'full'] as const)
+						: (['aggregate', 'records', 'full'] as const)) {
+						let execution: MatrixExecution = {
+							protocol: 'l6',
+							key,
+							think,
+							arm,
+							copy,
+							phase: 'evaluation',
+							frozen,
+							resource,
+							budget: decision.budget,
+						}
+						if (arm === 'aggregate') {
+							const pilotPath = join(base, 'pilot', 'manifest.json')
+							const pilot = existsSync(pilotPath) ? readJSON(pilotPath) : undefined
+							if (
+								!isRecord(pilot) ||
+								pilot.accepted !== true ||
+								!isRecord(pilot.fit) ||
+								typeof pilot.fit.path !== 'string'
+							) {
+								infeasible.push({
+									key,
+									think,
+									arm,
+									copy,
+									reason: 'aggregate pilot absent or infeasible',
+								})
+								continue
+							}
+							execution = {
+								...execution,
+								pilot: hashFile(pilotPath),
+								fit: hashFile(pilot.fit.path),
+							}
+						}
+						if (arm === 'full') {
+							const fullPath = join(base, 'full', 'manifest.json')
+							const full = existsSync(fullPath) ? readJSON(fullPath) : undefined
+							if (
+								!isRecord(full) ||
+								full.accepted !== true ||
+								!isRecord(full.budget) ||
+								typeof full.budget.window !== 'number'
+							) {
+								infeasible.push({
+									key,
+									think,
+									arm,
+									copy,
+									reason: 'full preflight absent or infeasible',
+								})
+								continue
+							}
+							execution = {
+								...execution,
+								full: hashFile(fullPath),
+								budget: { ...decision.budget, window: full.budget.window },
+							}
+						}
+						const name = nameMatrix(execution)
+						const manifest = join(dirname(out), 'executions', `${name}.json`)
+						mkdirSync(dirname(manifest), { recursive: true })
+						writeFileSync(manifest, `${JSON.stringify(execution, null, 2)}\n`, { flag: 'wx' })
+						readExecution(manifest)
+						const cache = join(base, 'cache', name)
+						mkdirSync(cache, { recursive: true })
+						writeFileSync(join(cache, 'judge.jsonl'), readSeedCache(readFrozen(frozen)), {
+							flag: 'wx',
+						})
+						plan.push({
+							name,
+							harness: 'bench5',
+							estimate: 3600,
+							args: [
+								'--run',
+								'--live',
+								'--copy',
+								String(copy),
+								'--manifest',
+								manifest,
+								'--cache',
+								cache,
+							],
+						})
+					}
+			}
+		mkdirSync(dirname(out), { recursive: true })
+		writeFileSync(out, `${JSON.stringify(plan, null, 2)}\n`, { flag: 'wx' })
+		writeFileSync(`${out}.infeasible.json`, `${JSON.stringify(infeasible, null, 2)}\n`, {
+			flag: 'wx',
+		})
+		return 0
+	}
+}

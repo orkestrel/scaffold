@@ -2,6 +2,7 @@
 // Exit: 0 on success, 1 on a missing input or a failed read, 64 on usage.
 import type { JudgeAnswer, JudgeInterface, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { ToolCall } from '@orkestrel/tool'
+import type { MatrixRequest } from './matrix/types.ts'
 import type {
 	AggregateMaintenance,
 	MirrorReading,
@@ -27,9 +28,9 @@ import type {
 	ShadowTruth,
 	ShadowVerdict,
 } from './types.ts'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
-import { parseArgs } from 'node:util'
+import { isDeepStrictEqual, parseArgs } from 'node:util'
 import { isArray, isNumber, isRecord, isString } from '@orkestrel/contract'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import {
@@ -58,9 +59,11 @@ import {
 	MODELS,
 	TIMEOUT,
 } from './constants.ts'
-import { describeError, readJSON, readLookup, readRows } from './helpers.ts'
+import { describeError, readJSON, readLookup, readRows, readWireReading } from './helpers.ts'
 import { JudgeCache } from './JudgeCache.ts'
 import { isAggregateState } from './aggregates/validators.ts'
+import { nameMatrix, readModelDigest } from './matrix/helpers.ts'
+import { parseMatrixRun } from './matrix/parsers.ts'
 
 const OPTIONS = {
 	run: { type: 'string' },
@@ -627,6 +630,7 @@ export function formatRate(rate: ShadowRate): string {
  * ```
  */
 export class Shadow {
+	readonly #requests: MatrixRequest[] = []
 	readonly #config: ShadowConfig
 	readonly #entities = new Map<number, ShadowEntities>()
 
@@ -645,8 +649,39 @@ export class Shadow {
 	 */
 	async execute(): Promise<number> {
 		const inputs = this.#load()
+		if (inputs.run.frozen !== undefined && inputs.run.execution !== undefined) {
+			if (this.#config.live) {
+				const response = await fetch(new URL('/api/tags', this.#config.url))
+				if (
+					!response.ok ||
+					readModelDigest(await response.json(), MICA_MODEL) !== inputs.run.frozen.judge.digest
+				)
+					throw new Error('shadow judge digest differs from freeze')
+			}
+			const lineage = {
+				shadow: nameMatrix(inputs.run.execution),
+				frozen: inputs.run.execution.frozen,
+				judge: inputs.run.frozen.judge,
+				seed: inputs.run.frozen.seed,
+			}
+			mkdirSync(this.#config.cache, { recursive: true })
+			const path = join(this.#config.cache, 'lineage.json')
+			if (existsSync(path)) {
+				if (!isDeepStrictEqual(readJSON(path), lineage))
+					throw new Error('shadow cache lineage differs')
+			} else {
+				if (existsSync(join(this.#config.cache, FILES.judge)))
+					throw new Error('unbound shadow cache')
+				writeFileSync(
+					join(this.#config.cache, FILES.judge),
+					readFileSync(inputs.run.frozen.seed.path),
+					{ flag: 'wx' },
+				)
+				writeFileSync(path, `${JSON.stringify(lineage, null, 2)}\n`, { flag: 'wx' })
+			}
+		}
 		const abort = new AbortController()
-		const cache = this.#createCache(inputs.run.model, abort)
+		const cache = this.#createCache(inputs.run, abort)
 		const items = await this.#collect(inputs, cache, abort.signal)
 		const report: ShadowReport = {
 			...inputs.run,
@@ -655,6 +690,7 @@ export class Shadow {
 			shadow: computeRates(items, inputs.truth, (item) => item.shadow),
 			flips: countFlips(items),
 			items,
+			...(inputs.run.execution === undefined ? {} : { requests: this.#requests }),
 		}
 		mkdirSync(dirname(this.#config.out), { recursive: true })
 		writeFileSync(this.#config.out, `${JSON.stringify(report, null, 2)}\n`)
@@ -667,10 +703,18 @@ export class Shadow {
 		const missing = [join(run, FILES.run)].filter((path) => !existsSync(path))
 		if (missing.length > 0) throw new Error(`missing input: ${missing.join(', ')}`)
 		const meta = readJSON(join(run, FILES.run))
+		const matrix = isRecord(meta) && meta.protocol === 'l6' ? parseMatrixRun(run) : undefined
+		if (
+			isRecord(meta) &&
+			meta.protocol === 'l6' &&
+			(matrix === undefined || matrix.failures.length > 0 || matrix.execution.arm !== 'aggregate')
+		)
+			throw new Error('l6 shadow requires a valid maintained aggregate run')
 		const info: ShadowRun = {
 			copy: isRecord(meta) && isNumber(meta.copy) ? meta.copy : 0,
 			model: isRecord(meta) && isString(meta.model) ? meta.model : '',
 			arm: isRecord(meta) && isString(meta.arm) ? meta.arm : '',
+			...(matrix === undefined ? {} : { execution: matrix.execution, frozen: matrix.frozen }),
 		}
 		const copyPath = join(copies, `v${info.copy}.json`)
 		const paths = [
@@ -691,7 +735,7 @@ export class Shadow {
 	}
 
 	// Builds the judge cache over the shared rows file; without `--live` the inner judge cannot reach the network.
-	#createCache(model: string, abort: AbortController): JudgeCache {
+	#createCache(run: ShadowRun, abort: AbortController): JudgeCache {
 		const { live, url, cache } = this.#config
 		const judge: JudgeInterface = createOllamaJudge({
 			url,
@@ -703,7 +747,7 @@ export class Shadow {
 			timeout: TIMEOUT,
 			fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
 				live
-					? fetch(input, init)
+					? this.#fetch(input, init)
 					: Promise.reject(
 							new Error(`${JUDGE_MISS}: the shadow reads the cache only without --live`),
 						),
@@ -712,9 +756,45 @@ export class Shadow {
 			judge,
 			path: join(cache, FILES.judge),
 			live,
-			retry: live ? this.#readRetry(model) : 0,
+			retry: live ? (run.frozen?.configuration.retry ?? this.#readRetry(run.model)) : 0,
 			abort: (fault) => abort.abort(fault),
 		})
+	}
+
+	async #fetch(input: Parameters<typeof fetch>[0], init?: RequestInit): Promise<Response> {
+		const started = performance.now()
+		const request: unknown = typeof init?.body === 'string' ? JSON.parse(init.body) : undefined
+		const sequence = this.#requests.length + 1
+		try {
+			const response = await fetch(input, init)
+			const text = await response.clone().text()
+			const reading = readWireReading({ body: request }, { text })
+			this.#requests.push({
+				sequence,
+				role: 'judge',
+				sent: true,
+				request,
+				response: text,
+				status: response.status,
+				wall: performance.now() - started,
+				prompt: reading.prompt,
+				completion: reading.completion,
+				reason: reading.reason,
+				failures: response.ok ? [] : ['transport'],
+			})
+			return response
+		} catch (error) {
+			this.#requests.push({
+				sequence,
+				role: 'judge',
+				sent: true,
+				request,
+				error: describeError(error),
+				wall: performance.now() - started,
+				failures: ['transport'],
+			})
+			throw error
+		}
 	}
 
 	#readRetry(model: string): number {

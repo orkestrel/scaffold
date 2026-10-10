@@ -8,6 +8,8 @@ import type {
 	ProviderInterface,
 	Selection,
 } from '../vendor/agent-0.0.30-trimmed/index.js'
+import type { MatrixFailure, MatrixRequest } from './matrix/types.ts'
+import type { RefitFile } from './refit/types.ts'
 import type { ToolCall, ToolResult } from '@orkestrel/tool'
 import type {
 	AggregateRendering,
@@ -106,8 +108,22 @@ import {
 import { JudgeCache } from './JudgeCache.ts'
 import { Mirror } from './Mirror.ts'
 import { Summarizer } from './Summarizer.ts'
+import { FullViewAdapter } from './FullViewAdapter.ts'
+import {
+	buildBudget,
+	listResourceFailures,
+	nameMatrix,
+	readExecution,
+	readModelDigest,
+} from './matrix/helpers.ts'
+import { readWireReading } from './helpers.ts'
+import { hashFile } from './refit/helpers.ts'
 
 const OPTIONS = {
+	fixture: { type: 'boolean' },
+	manifest: { type: 'string' },
+	think: { type: 'string' },
+	reserve: { type: 'string' },
 	run: { type: 'boolean' },
 	dry: { type: 'boolean' },
 	seed: { type: 'boolean' },
@@ -127,7 +143,7 @@ const OPTIONS = {
 } as const
 
 const USAGE =
-	'usage: node bench5/bench.ts (--run | --dry | --seed) --copy 1-8 [--live] [--model TAG] [--arm control|aggregate] [--out DIR] [--cache DIR] [--url URL] [--goals PREFIX,...] [--fit FILE] [--settings FILE] [--allowance N] [--retry N] [--predict N]'
+	'usage: node bench5/bench.ts (--run | --dry | --seed) --copy 1-8 [--live] [--model TAG] [--arm records|aggregate|full] [--think true|false] [--reserve N] [--manifest FILE] [--out DIR] [--cache DIR] [--url URL] [--goals PREFIX,...] [--fit FILE] [--settings FILE] [--allowance N] [--retry N] [--predict N]'
 const DAEMON_PORT = new URL(DAEMON).port
 // The text of the prefix flush is fixed so that every flush sends the same bytes in both arms.
 export const FLUSH_SYSTEM = 'Reply with one token.'
@@ -167,7 +183,7 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 }
 
 function isArm(value: string): value is RunArm {
-	return value === 'control' || value === 'aggregate'
+	return value === 'records' || value === 'aggregate' || value === 'full'
 }
 
 function readField(value: unknown, key: string): unknown {
@@ -339,16 +355,61 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 		problems.push('exactly one of --run, --dry, and --seed is required')
 	const copy = /^[1-8]$/.test(values.copy ?? '') ? Number(values.copy) : 0
 	if (copy === 0) problems.push('--copy must be an integer from 1 to 8')
-	const model = values.model ?? MODELS.q2
+	let bound: ReturnType<typeof readExecution> | undefined
+	try {
+		if (values.manifest !== undefined) bound = readExecution(resolve(values.manifest))
+	} catch (error) {
+		problems.push(describeError(error))
+	}
+	const model = values.model ?? bound?.frozen.decision.model ?? MODELS.q2
 	const key = Object.entries(MODELS).find(([, tag]) => tag === model)?.[0]
 	if (key === undefined) problems.push(`--model must be one of ${Object.values(MODELS).join(', ')}`)
-	const arm = values.arm ?? 'control'
-	if (!isArm(arm)) problems.push('--arm must be control or aggregate')
+	const arm = values.arm ?? bound?.execution.arm ?? 'records'
+	if (!isArm(arm)) problems.push('--arm must be records, aggregate, or full')
 	const live = values.live === true
+	if (values.think !== undefined && values.think !== 'true' && values.think !== 'false')
+		problems.push('--think must be true or false')
+	const think =
+		values.think === undefined ? (bound?.execution.think ?? false) : values.think === 'true'
+	const reserve =
+		values.reserve === undefined ? (bound?.execution.budget.reserve ?? 512) : Number(values.reserve)
+	try {
+		buildBudget(reserve)
+	} catch (error) {
+		problems.push(describeError(error))
+	}
+	if (mode === 'run' && live && bound === undefined && values.fixture !== true)
+		problems.push('live l6 runs require --manifest FILE')
+	if (
+		bound !== undefined &&
+		(bound.execution.copy !== copy ||
+			bound.execution.arm !== arm ||
+			bound.execution.think !== think ||
+			bound.execution.budget.reserve !== reserve ||
+			bound.frozen.decision.model !== model)
+	)
+		problems.push('flags differ from execution manifest')
+	if (
+		bound !== undefined &&
+		[
+			values.allowance,
+			values.retry,
+			values.predict,
+			values.settings,
+			values.fit,
+			values.goals,
+		].some((value) => value !== undefined)
+	)
+		problems.push('frozen execution refuses configuration and goal overrides')
 	const url = values.url ?? DAEMON
 	let port = ''
 	try {
 		port = new URL(url).port
+		if (
+			values.fixture === true &&
+			(new URL(url).hostname !== '127.0.0.1' || port === DAEMON_PORT || port === '')
+		)
+			problems.push('--fixture requires an ephemeral IPv4 loopback peer')
 	} catch {
 		problems.push('--url must be a URL')
 	}
@@ -367,6 +428,10 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	return {
 		success: true,
 		value: {
+			think,
+			reserve,
+			execution: bound?.execution,
+			frozen: bound?.frozen,
 			mode,
 			live,
 			copy,
@@ -380,8 +445,10 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 				.split(',')
 				.map((prefix) => prefix.trim())
 				.filter((prefix) => prefix !== ''),
-			fit: resolveRoot(values.fit ?? join('bench5', 'fit.json')),
-			settings: resolveRoot(values.settings ?? join('bench5', 'settings.json')),
+			fit: bound?.execution.fit?.path ?? resolveRoot(values.fit ?? join('bench5', 'fit.json')),
+			settings:
+				bound?.frozen.settings.path ??
+				resolveRoot(values.settings ?? join('bench5', 'settings.json')),
 			allowance,
 			retry,
 			predict,
@@ -540,7 +607,9 @@ export function shapeBody(role: CallRole, text: string, calibrating: boolean): s
 	return JSON.stringify({
 		...body,
 		truncate: false,
-		...(calibrating && role === 'agent' ? { options: { ...options, num_predict: 1 } } : {}),
+		...(calibrating && role === 'agent'
+			? { think: false, options: { ...options, num_predict: 1 } }
+			: {}),
 	})
 }
 
@@ -625,6 +694,13 @@ export class Driver {
 	readonly #requests = new Set<string>()
 	readonly #tags = new Map<string, string>()
 	#sequence = 0
+	#sent = 0
+	#turn = 0
+	#out: string | undefined
+	#ledger: LedgerInterface | undefined
+	#adapter: FullViewAdapter | undefined
+	#lineage: readonly RefitFile[] = []
+	#invalid = new Set<MatrixFailure>()
 	#calibrating = false
 	#position = -1
 	#current: CopyGoal | undefined
@@ -727,6 +803,10 @@ export class Driver {
 		const started = Date.now()
 		let status: number | undefined
 		let error: string | undefined
+		let sent = false
+		let raw: unknown
+		let responseText: string | undefined
+		const turn = role === 'agent' && !this.#calibrating ? this.#turn : undefined
 		try {
 			const request = new Request(input, init)
 			const blocked =
@@ -735,6 +815,9 @@ export class Driver {
 			if (blocked)
 				throw new Error(`fetch guard: request ${sequence} (${role}) refused; --live is required`)
 			const body = shapeBody(role, await request.text(), this.#calibrating)
+			raw = JSON.parse(body)
+			sent = true
+			this.#sent += 1
 			const response = await globalThis.fetch(request.url, {
 				method: request.method,
 				headers: request.headers,
@@ -743,6 +826,7 @@ export class Driver {
 			})
 			status = response.status
 			const bytes = new Uint8Array(await response.arrayBuffer())
+			responseText = new TextDecoder().decode(bytes)
 			return new Response(NO_BODY.includes(status) ? null : bytes, {
 				status,
 				statusText: response.statusText,
@@ -752,7 +836,34 @@ export class Driver {
 			error = describeError(cause)
 			throw cause
 		} finally {
+			const budget = this.#config.execution?.budget ?? buildBudget(this.#config.reserve)
+			const failures = this.#calibrating
+				? []
+				: listResourceFailures(role, raw, responseText, budget, status, error)
+			for (const failure of failures) this.#invalid.add(failure)
+			const reading = readWireReading({ body: raw }, { text: responseText })
+			const evidence: MatrixRequest = {
+				sequence,
+				role,
+				goal,
+				turn,
+				sent,
+				request: raw ?? null,
+				response: responseText,
+				status,
+				error,
+				estimate: role === 'agent' ? this.#estimate : undefined,
+				prompt: reading.prompt,
+				completion: reading.completion,
+				reason: reading.reason,
+				failures,
+				wall: Date.now() - started,
+			}
+			if (this.#out !== undefined)
+				appendFileSync(join(this.#out, 'requests.jsonl'), `${JSON.stringify(evidence)}\n`)
 			this.#record({
+				sent,
+				turn,
 				sequence,
 				role,
 				goal,
@@ -769,7 +880,7 @@ export class Driver {
 		const provider: ProviderInterface = createOllama({
 			url: this.#config.url,
 			model: this.#config.model,
-			think: false,
+			think: role === 'agent' ? this.#config.think : false,
 			keepAlive: '30m',
 			timeout: TIMEOUT,
 			options: { ...options },
@@ -806,6 +917,26 @@ export class Driver {
 		if (this.#estimate !== undefined && estimateMessages(current) !== this.#estimate) {
 			throw new Error('the provider request differs from the context priced at the ledger turn')
 		}
+		if (this.#config.arm === 'full' && this.#ledger !== undefined) {
+			const expected = stripThinking(
+				this.#ledger.agent.context.build({
+					messages: this.#ledger.conversation.view(),
+					judgments: [],
+				}),
+				'none',
+			)
+			if (
+				!isDeepStrictEqual(
+					current.map(({ id: _id, ...message }) => message),
+					expected.map(({ id: _id, ...message }) => message),
+				)
+			) {
+				this.#invalid.add('configuration')
+				throw new Error(
+					'full-view provider boundary does not carry the complete chronological history',
+				)
+			}
+		}
 		return current
 	}
 
@@ -829,6 +960,33 @@ export class Driver {
 		copy: Copy,
 	): { readonly path: string; readonly scratch: string | undefined } {
 		const path = join(this.#config.cache, FILES.judge)
+		const frozen = this.#config.frozen
+		const execution = this.#config.execution
+		if (frozen !== undefined && execution !== undefined) {
+			const origin = {
+				identity: nameMatrix(execution),
+				frozen: execution.frozen,
+				seed: frozen.seed,
+			}
+			const manifest = join(this.#config.cache, 'lineage.json')
+			const seed = readFileSync(frozen.seed.path, 'utf8')
+			if (existsSync(manifest)) {
+				if (!isDeepStrictEqual(readJSON(manifest), origin))
+					throw new Error('cache belongs to another frozen decision configuration, arm, or copy')
+			} else {
+				if (
+					existsSync(join(this.#config.cache, FILES.summary)) ||
+					(existsSync(path) && readFileSync(path, 'utf8') !== seed)
+				)
+					throw new Error('unbound cache does not equal the fixed seed lineage')
+				mkdirSync(this.#config.cache, { recursive: true })
+				writeFileSync(manifest, JSON.stringify(origin), { flag: 'wx' })
+			}
+			if (!existsSync(path)) writeFileSync(path, seed, { flag: 'wx' })
+			this.#lineage = [path, join(this.#config.cache, FILES.summary)]
+				.filter(existsSync)
+				.map(hashFile)
+		}
 		if (existsSync(path)) return { path, scratch: undefined }
 		const rows: readonly CacheRow[] = importCorpus(readRows(CORPUS), copy.seed, copy.topics, model)
 		const text = rows.map((row) => `${JSON.stringify(row)}\n`).join('')
@@ -882,21 +1040,29 @@ export class Driver {
 			}),
 			read: readLookup,
 		}))
-		return createLedger(this.#createProvider('agent', SAMPLER), {
-			judge: cache,
-			system,
-			topics: copy.topics,
-			questions: LEDGER_QUESTIONS,
-			thresholds: FIT,
-			capacity: SAMPLER.num_ctx,
-			predict: 0,
-			think: false,
-			share,
-			recall: { limit: DEFAULT_RECALL_LIMIT },
-			agent: { limit: DEFAULT_LEDGER_LIMIT, timeout: TIMEOUT },
-			lookups,
-			...(gauge === undefined ? {} : { gauge }),
-		})
+		const budget = this.#config.execution?.budget ?? buildBudget(this.#config.reserve)
+		return createLedger(
+			this.#createProvider('agent', {
+				...SAMPLER,
+				num_ctx: budget.window,
+				num_predict: budget.reserve,
+			}),
+			{
+				judge: cache,
+				system,
+				topics: copy.topics,
+				questions: LEDGER_QUESTIONS,
+				thresholds: FIT,
+				capacity: budget.window,
+				predict: budget.predict,
+				think: this.#config.think,
+				share,
+				recall: { limit: DEFAULT_RECALL_LIMIT },
+				agent: { limit: DEFAULT_LEDGER_LIMIT, timeout: TIMEOUT },
+				lookups,
+				...(gauge === undefined ? {} : { gauge }),
+			},
+		)
 	}
 
 	#createMirror(ledger: LedgerInterface, copy: Copy, system: string, cache: JudgeCache): Mirror {
@@ -945,6 +1111,7 @@ export class Driver {
 	): Rig {
 		const { copy, settings, fit } = prepared
 		const ledger = this.#assemble(copy, system, cache, share, gauge)
+		this.#ledger = ledger
 		const mirror = this.#createMirror(ledger, copy, system, cache)
 		const seeds = new Map<string, number>()
 		const aggregator =
@@ -985,6 +1152,7 @@ export class Driver {
 		const { agent } = ledger
 		agent.emitter.on('select', (selection) => this.#observe(rig, selection, out))
 		agent.emitter.on('turn', () => {
+			this.#turn += 1
 			// The ledger reads this same builder and suffix in its earlier listener on this event.
 			this.#estimate = estimateMessages(
 				stripThinking(
@@ -994,6 +1162,10 @@ export class Driver {
 					],
 					'none',
 				),
+			)
+			appendFileSync(
+				join(out, 'turns.jsonl'),
+				`${JSON.stringify({ turn: this.#turn, goal: this.#current?.id, estimate: this.#estimate, scope: agent.context.scope?.name })}\n`,
 			)
 		})
 		agent.emitter.on('usage', (usage) => {
@@ -1006,6 +1178,7 @@ export class Driver {
 				select: (_conversation, request, signal) => this.#intercept(rig, request, signal),
 			}),
 		)
+		if (this.#config.arm === 'full') this.#adapter = new FullViewAdapter(agent)
 		return rig
 	}
 
@@ -1015,6 +1188,29 @@ export class Driver {
 		if (out === undefined) throw new Error('--run requires --out DIR')
 		if (existsSync(out)) throw new Error(`run output already exists: ${out}`)
 		mkdirSync(out, { recursive: true })
+		this.#out = out
+		for (const name of [
+			'requests.jsonl',
+			'turns.jsonl',
+			'selections.jsonl',
+			'rows.jsonl',
+			'calls.jsonl',
+			'messages.jsonl',
+			'judgments.jsonl',
+		])
+			writeFileSync(join(out, name), '')
+		if (this.#config.frozen !== undefined) {
+			const response = await globalThis.fetch(new URL('/api/tags', this.#config.url))
+			const inventory: unknown = await response.json()
+			writeFileSync(join(out, 'model-inventory.json'), JSON.stringify(inventory))
+			for (const role of [
+				this.#config.frozen.decision,
+				this.#config.frozen.summarizer,
+				this.#config.frozen.judge,
+			])
+				if (readModelDigest(inventory, role.model) !== role.digest)
+					throw new Error('actual model digest changed after freeze')
+		}
 		this.#path = join(out, FILES.calls)
 		const abort = new AbortController()
 		const { cache, scratch } = this.#createCache(copy, settings, this.#config.live, abort)
@@ -1037,6 +1233,7 @@ export class Driver {
 			this.#report(out, prepared, abort.signal.aborted ? 'fault' : 'failed', describeError(error))
 			throw error
 		} finally {
+			this.#adapter?.destroy()
 			if (rig !== undefined) this.#dump(rig, out)
 			if (scratch !== undefined) rmSync(scratch, { recursive: true, force: true })
 		}
@@ -1190,6 +1387,7 @@ export class Driver {
 	#begin(goal: CopyGoal): void {
 		this.#current = goal
 		this.#faults = 0
+		this.#invalid.clear()
 		this.#prompts = []
 		this.#picks = []
 		this.#lookups = 0
@@ -1239,6 +1437,7 @@ export class Driver {
 		const prompt = Math.max(0, ...this.#prompts)
 		const rendering = this.#rendering
 		const row: Row = {
+			resource: [...this.#invalid],
 			goal: goal.id,
 			copy: this.#config.copy,
 			model: this.#config.model,
@@ -1261,7 +1460,7 @@ export class Driver {
 			last: this.#sequence,
 			prompt,
 			entry: this.#prompts[0],
-			overflow: prompt >= SAMPLER.num_ctx || CONTEXT_ERROR.test(error ?? ''),
+			overflow: this.#invalid.has('capacity') || CONTEXT_ERROR.test(error ?? ''),
 			recalls: this.#recallCount(),
 			lookups: { calls: this.#lookups, repeats: this.#repeats },
 			questions: buildQuestions(before, rig.cache.stats()),
@@ -1384,6 +1583,28 @@ export class Driver {
 			join(out, FILES.run),
 			JSON.stringify(
 				{
+					protocol: 'l6',
+					identity: nameMatrix({
+						protocol: 'l6',
+						key: config.key,
+						think: config.think,
+						arm: config.arm,
+						copy: config.copy,
+					}),
+					think: config.think,
+					execution: config.execution,
+					frozen: config.frozen,
+					lineage: {
+						seed: config.frozen?.seed,
+						before: this.#lineage,
+						after: [join(config.cache, FILES.judge), join(config.cache, FILES.summary)]
+							.filter(existsSync)
+							.map(hashFile),
+					},
+					budget: config.execution?.budget ?? buildBudget(config.reserve),
+					unfrozen: config.execution === undefined,
+					turns: this.#turn,
+					sent: this.#sent,
 					status,
 					error,
 					mode: config.mode,

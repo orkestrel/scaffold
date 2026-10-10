@@ -25,14 +25,23 @@ import type {
 } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { Aggregator } from './aggregates/Aggregator.ts'
 import type { JudgeCache } from './JudgeCache.ts'
+import type { MatrixExecution, MatrixFailure, MatrixFreeze, MatrixRequest } from './matrix/types.ts'
 
 export type JudgeState = JudgeRequest['state']
+
+/** Holds scored phrases and forbidden text actually carried by an input. */
+export interface ScoreCarriers {
+	readonly expected: readonly string[]
+	readonly stale: readonly string[]
+}
 
 export type CacheOrigin = 'corpus' | 'live'
 
 export type CallRole = 'agent' | 'judge' | 'summarizer' | 'flush'
 
-export type RunArm = 'control' | 'aggregate'
+export type ArchiveArm = 'control' | 'aggregate'
+
+export type RunArm = 'records' | 'aggregate' | 'full'
 
 export type ReplyVia = 'none' | 'answered' | 'final'
 
@@ -92,6 +101,9 @@ export interface PlanEntry {
 
 /** Holds one request that a run sent to the daemon, as one line of `calls.jsonl`. */
 export interface CallRecord {
+	/** Distinguishes a sent request from a refused local observation. */
+	readonly sent?: boolean
+	readonly turn?: number
 	/** Holds the request's position among the run's requests, which is also the number of its wire files. */
 	readonly sequence: number
 	readonly role: CallRole
@@ -165,6 +177,8 @@ export interface LookupCount {
 
 /** Holds one goal's outcome and measurements as one line of a run's `rows.jsonl`. */
 export interface Row {
+	/** Holds l6 resource invalidity separately from scorer outcomes; absent in archives. */
+	readonly resource?: readonly MatrixFailure[]
 	readonly goal: string
 	readonly copy: number
 	readonly model: string
@@ -571,9 +585,11 @@ export interface WireReading {
 
 /** Holds the recorded run evidence needed to check exposure and completion boundaries. */
 export interface WireRun {
-	readonly info: { readonly arm: RunArm }
+	readonly info: { readonly arm: RunArm | ArchiveArm }
 	readonly picks: readonly SelectionRecord[]
-	readonly calls: readonly CallRecord[]
+	readonly calls: ReadonlyArray<
+		Pick<CallRecord, 'sequence' | 'role' | 'goal'> & Partial<CallRecord>
+	>
 	readonly wire: ReadonlyMap<number, WireReading>
 }
 
@@ -655,6 +671,10 @@ export type DriverMode = 'run' | 'dry' | 'seed'
 
 /** Holds the flags of one driver invocation after validation, with every path resolved. */
 export interface Config {
+	readonly think: boolean
+	readonly reserve: number
+	readonly execution?: MatrixExecution
+	readonly frozen?: MatrixFreeze
 	readonly mode: DriverMode
 	readonly live: boolean
 	readonly copy: number
@@ -917,6 +937,8 @@ export interface ShadowRun {
 	readonly copy: number
 	readonly model: string
 	readonly arm: string
+	readonly execution?: MatrixExecution
+	readonly frozen?: MatrixFreeze
 }
 
 /** Holds one line of a run's `messages.jsonl`. */
@@ -1056,4 +1078,5 @@ export interface ShadowReport extends ShadowRun {
 	readonly shadow: ShadowRates
 	readonly flips: ShadowFlips
 	readonly items: readonly ShadowItem[]
+	readonly requests?: readonly MatrixRequest[]
 }

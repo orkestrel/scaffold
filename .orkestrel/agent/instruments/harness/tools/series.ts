@@ -11,7 +11,8 @@
 // Exit: 0 when the plan finishes or the budget stops it; 1 when a run exits nonzero; 2 when a run is unfinished; 64 on usage.
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { nameMatrix, readExecution } from '../bench5/matrix/helpers.ts'
 
 const ROOT = dirname(import.meta.dirname)
 const RUN_ONE = join(ROOT, 'tools', 'run-one.ts')
@@ -36,8 +37,19 @@ function readPlan(file: string): readonly Planned[] | undefined {
 	if (!Array.isArray(value)) return undefined
 	const plan: Planned[] = []
 	for (const entry of value) {
-		if (typeof entry?.name !== 'string' || typeof entry.harness !== 'string' || typeof entry.estimate !== 'number' || !Array.isArray(entry.args)) return undefined
-		plan.push({ name: entry.name, harness: entry.harness, estimate: entry.estimate, args: entry.args.map(String) })
+		if (
+			typeof entry?.name !== 'string' ||
+			typeof entry.harness !== 'string' ||
+			typeof entry.estimate !== 'number' ||
+			!Array.isArray(entry.args)
+		)
+			return undefined
+		plan.push({
+			name: entry.name,
+			harness: entry.harness,
+			estimate: entry.estimate,
+			args: entry.args.map(String),
+		})
 	}
 	return plan
 }
@@ -51,7 +63,8 @@ function readFinished(log: string): ReadonlyMap<string, number> {
 		const start = /^===== (\S+) start (\S+)/.exec(line)
 		if (start !== null) starts.set(start[1], Date.parse(start[2]))
 		const end = /^===== (\S+) end (\S+) exit (\d+)/.exec(line)
-		if (end !== null && end[3] === '0' && starts.has(end[1])) finished.set(end[1], (Date.parse(end[2]) - (starts.get(end[1]) ?? 0)) / 1000)
+		if (end !== null && end[3] === '0' && starts.has(end[1]))
+			finished.set(end[1], (Date.parse(end[2]) - (starts.get(end[1]) ?? 0)) / 1000)
 	}
 	return finished
 }
@@ -80,28 +93,54 @@ function main(): number {
 	const budget = Number(readFlag(argv, '--budget'))
 	const plan = planFile === undefined ? undefined : readPlan(planFile)
 	if (plan === undefined || base === undefined || !Number.isFinite(budget) || budget <= 0) {
-		process.stderr.write('usage: node series.ts --plan PLAN.json --base OUT_BASE --budget SECONDS\n')
+		process.stderr.write(
+			'usage: node series.ts --plan PLAN.json --base OUT_BASE --budget SECONDS\n',
+		)
 		return 64
 	}
 	const began = Date.now()
 	const log = join(base, 'run.log')
 	const open = readOpen(log)
 	if (open.length > 0) {
-		process.stderr.write(`series: ${log} holds a start line with no end line for ${open.join(', ')}; confirm the run is gone, then remove its start line\n`)
+		process.stderr.write(
+			`series: ${log} holds a start line with no end line for ${open.join(', ')}; confirm the run is gone, then remove its start line\n`,
+		)
 		return 2
 	}
 	for (const run of plan) {
+		if (run.name.startsWith('l6-')) {
+			const manifest = readFlag(run.args, '--manifest')
+			if (
+				manifest === undefined ||
+				run.harness !== 'bench5' ||
+				nameMatrix(readExecution(resolve(manifest)).execution) !== run.name
+			)
+				throw new Error('series l6 identity differs from explicit execution')
+		}
 		const finished = readFinished(log)
 		if (finished.has(run.name)) continue
-		const longest = Math.max(0, ...[...finished].filter(([name]) => armOf(name) === armOf(run.name)).map(([, seconds]) => seconds))
+		const longest = Math.max(
+			0,
+			...[...finished]
+				.filter(([name]) => armOf(name) === armOf(run.name))
+				.map(([, seconds]) => seconds),
+		)
 		const estimate = longest > 0 ? longest * MARGIN : run.estimate
 		const elapsed = (Date.now() - began) / 1000
 		if (elapsed + estimate > budget) {
-			process.stdout.write(`stopped: ${run.name} needs about ${Math.round(estimate)} s and ${Math.round(budget - elapsed)} s remain\n`)
+			process.stdout.write(
+				`stopped: ${run.name} needs about ${Math.round(estimate)} s and ${Math.round(budget - elapsed)} s remain\n`,
+			)
 			return 0
 		}
-		process.stdout.write(`run ${run.name} (estimate ${Math.round(estimate)} s, elapsed ${Math.round(elapsed)} s)\n`)
-		const result = spawnSync(process.execPath, [RUN_ONE, run.name, run.harness, base, '--', ...run.args], { stdio: ['ignore', 'inherit', 'inherit'] })
+		process.stdout.write(
+			`run ${run.name} (estimate ${Math.round(estimate)} s, elapsed ${Math.round(elapsed)} s)\n`,
+		)
+		const result = spawnSync(
+			process.execPath,
+			[RUN_ONE, run.name, run.harness, base, '--', ...run.args],
+			{ stdio: ['ignore', 'inherit', 'inherit'] },
+		)
 		if (result.status !== 0) {
 			process.stdout.write(`failed: ${run.name} exit ${result.status ?? 'none'}\n`)
 			return 1
