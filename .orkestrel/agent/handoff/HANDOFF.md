@@ -43,7 +43,7 @@ The weekly limit stopped the subagents at 16:20 UTC on 2026-10-10. The state eac
   - U4, U3, U7, and U2 never ran.
   - The agent working tree is clean at `a2285b8`.
 - The supplementary audit (workflow run `wf_5f9617ac-565`): all 18 checker lanes returned 407 findings, and none was verified (the verifiers hit the limit). They are in `../instruments/units/agent-0030/compliance-audit-tests-unverified.json`, keyed by lane.
-- The aggregate arm's judge-only seed pass ran on without the limit (it calls only the local daemon): goal g13 of 24 and 602 cache rows at 16:22 UTC. The cache snapshot is `l5-cache/judge.jsonl`; copy it to `../instruments/harness/tmp/l5/cache/judge.jsonl` in a fresh container, and the seed pass asks only the questions it lacks.
+- The aggregate arm's judge-only seed pass finished: 1,897,212 ms, 500 live questions (topic 348, amends 96, category 48, supersedes 8), 823 cache rows. The cache is `l5-cache/judge.jsonl` and the pass's output `l5-seed/`. The dry coverage check then read 0 seed-only misses and 0 fetches on copies 1 to 8; copies 2 to 8 each leave 120 topic questions about their reworded requests, which go live during the runs.
 - The results artifact's source page is `artifact/larkspur.html`.
 
 ## 0.0.30: the remaining steps
@@ -68,7 +68,7 @@ Deferred by ruling: the agent's `@orkestrel/scaffold` devDependency moves to `^0
 
 All commands run from `../instruments/harness`; launch each live step through `node /home/user/scaffold/.agents/skills/orkestrel-dispatch/scripts/launch.ts` with a cap, in the background.
 
-1. Restore `../handoff/l5-cache/judge.jsonl` into `tmp/l5/cache/` when the container is fresh, finish the seed pass (`node bench5/bench.ts --seed --live --copy 1 --cache tmp/l5/cache --out tmp/l5/seed`), then run `node bench5/bench.ts --dry --copy N --cache tmp/l5/cache` for N from 1 to 8; every seed-only question must be a cache hit.
+1. Restore `../handoff/l5-cache/judge.jsonl` into `tmp/l5/cache/` when the container is fresh. The seed pass and the dry coverage check are done (see § Running at handoff).
 2. Calibrate the CHANGE and AGREE cutoffs: `node bench5/calibrate.ts --cache tmp/l5/cache --model qwen3.5:2b-q4_K_M --out tmp/l5/calibrate --live`, then copy its `fit.json` to `bench5/fit.json`.
 3. Pilot: q2 copy 1 on goals g01 to g12, control then aggregate, through `tools/run-one.ts`. It sets the per-model allowance, the retry bound, and the summarizer cap in `bench5/settings.json`, and it measures the costs the cost attack refuted. Then run `node bench5/report.ts --base tmp/l5/pilot --pair q2,1-1`; no invariant line may fail.
 4. Vendor the trimmed 0.0.30 build beside `vendor/agent-0.0.30/` after the agent campaign lands (ruling T8), record its row in `README.md`, apply X3, and rerun `node bench5/seams.ts` and `node --test bench5/tests/*.test.ts` (296 of 296 at `98e8ce8`) and the type check (`node /home/user/scaffold/node_modules/typescript/bin/tsc -p bench5/tsconfig.json`).
