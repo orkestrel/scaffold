@@ -634,6 +634,46 @@ describe('Driver', () => {
 			}
 		})
 
+		it('binds every admitted wire body to the recorded maintenance version and keeps absent bodies unbound', () => {
+			let admitted = 0
+			let absent = 0
+			for (const name of ['control', 'aggregate']) {
+				const rows = listFile(name, 'aggregates.jsonl')
+				for (const record of listFile(name, 'selections.jsonl')) {
+					const bindings = readList(record, 'aggregates')
+					const summary = readField(readField(record, 'instructions'), 'summaries')
+					if (summary === undefined) {
+						absent += 1
+						assert.deepEqual(bindings, [])
+						continue
+					}
+					assert.ok(bindings.length > 0)
+					for (const binding of bindings) {
+						admitted += 1
+						const state = readField(binding, 'state')
+						const maintenance = rows.find(
+							(row) =>
+								['build', 'keep'].includes(readText(row, 'event')) &&
+								readText(row, 'topic') === readText(binding, 'topic') &&
+								readText(row, 'goal') === readText(state, 'goal') &&
+								readField(row, 'version') === readField(state, 'version'),
+						)
+						assert.ok(maintenance !== undefined)
+						assert.deepEqual(readField(maintenance, 'result'), state)
+						assert.ok(String(summary).includes(readText(binding, 'prose')))
+						const position = GOALS.split(',').findIndex((goal) =>
+							readText(record, 'goal').startsWith(goal),
+						)
+						assert.ok(position >= 0)
+						const wireRequest = pickFirstPasses(recall(name).chat)[position]
+						assert.ok(JSON.stringify(wireRequest).includes(readText(binding, 'prose')))
+					}
+				}
+			}
+			assert.ok(admitted > 0)
+			assert.ok(absent > 0)
+		})
+
 		it('returns the versioned text for a lookup of LH-80941 at g11', () => {
 			for (const name of ['control', 'aggregate']) {
 				const tools = listFile(name, 'messages.jsonl').filter(

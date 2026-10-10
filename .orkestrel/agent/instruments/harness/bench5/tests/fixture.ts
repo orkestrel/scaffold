@@ -17,6 +17,7 @@ export interface Exchange {
 export interface FixtureOptions {
 	readonly summaries?: Readonly<Record<string, string>>
 	readonly prefix?: string
+	readonly observe?: (body: unknown) => void
 }
 
 export interface Fixture {
@@ -40,11 +41,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isExchange(value: unknown): value is Exchange {
-	return isRecord(value)
-		&& typeof value.stream === 'boolean'
-		&& typeof value.status === 'number'
-		&& typeof value.contentType === 'string'
-		&& typeof value.body === 'string'
+	return (
+		isRecord(value) &&
+		typeof value.stream === 'boolean' &&
+		typeof value.status === 'number' &&
+		typeof value.contentType === 'string' &&
+		typeof value.body === 'string'
+	)
 }
 
 /**
@@ -97,7 +100,8 @@ export function collectContents(body: unknown): readonly string[] {
 export function readSystem(body: unknown): string | undefined {
 	if (!isRecord(body) || !Array.isArray(body.messages)) return undefined
 	for (const message of body.messages) {
-		if (isRecord(message) && message.role === 'system' && typeof message.content === 'string') return message.content
+		if (isRecord(message) && message.role === 'system' && typeof message.content === 'string')
+			return message.content
 	}
 	return undefined
 }
@@ -127,14 +131,17 @@ export function selectTopic(topics: readonly string[], text: string): string | u
  */
 export function replaceContent(body: string, summary: string): string {
 	let placed = false
-	const records = body.split('\n').filter((line) => line !== '').map((line): unknown => {
-		const record: unknown = JSON.parse(line)
-		if (!isRecord(record) || !isRecord(record.message)) return record
-		if (typeof record.message.content !== 'string' || record.message.content === '') return record
-		const content = placed ? '' : summary
-		placed = true
-		return { ...record, message: { ...record.message, content } }
-	})
+	const records = body
+		.split('\n')
+		.filter((line) => line !== '')
+		.map((line): unknown => {
+			const record: unknown = JSON.parse(line)
+			if (!isRecord(record) || !isRecord(record.message)) return record
+			if (typeof record.message.content !== 'string' || record.message.content === '') return record
+			const content = placed ? '' : summary
+			placed = true
+			return { ...record, message: { ...record.message, content } }
+		})
 	if (!placed) throw new Error('the recorded body carries no content record to replace')
 	return `${records.map((record) => JSON.stringify(record)).join('\n')}\n`
 }
@@ -147,16 +154,29 @@ function failure(status: number, message: string): Reply {
 function answerChat(body: unknown, exchange: Exchange, options: FixtureOptions): Reply {
 	if (!isRecord(body)) return failure(400, 'request body is not a JSON object')
 	if (body.stream !== exchange.stream) {
-		return failure(400, `stream flag mismatch: request stream ${String(body.stream)}, recording stream ${String(exchange.stream)}`)
+		return failure(
+			400,
+			`stream flag mismatch: request stream ${String(body.stream)}, recording stream ${String(exchange.stream)}`,
+		)
 	}
 	const system = readSystem(body)
-	const summarize = options.prefix !== undefined && system !== undefined && system.startsWith(options.prefix)
-	if (!summarize) return { status: exchange.status, contentType: exchange.contentType, text: exchange.body }
+	const summarize =
+		options.prefix !== undefined && system !== undefined && system.startsWith(options.prefix)
+	if (!summarize)
+		return { status: exchange.status, contentType: exchange.contentType, text: exchange.body }
 	const summaries = options.summaries ?? {}
 	const topic = selectTopic(Object.keys(summaries), collectContents(body).join('\n'))
 	const summary = topic === undefined ? undefined : summaries[topic]
-	if (summary === undefined) return failure(400, `no summary topic occurs in the summarizer request; topics: ${Object.keys(summaries).join(', ')}`)
-	return { status: exchange.status, contentType: exchange.contentType, text: replaceContent(exchange.body, summary) }
+	if (summary === undefined)
+		return failure(
+			400,
+			`no summary topic occurs in the summarizer request; topics: ${Object.keys(summaries).join(', ')}`,
+		)
+	return {
+		status: exchange.status,
+		contentType: exchange.contentType,
+		text: replaceContent(exchange.body, summary),
+	}
 }
 
 function readText(request: IncomingMessage): Promise<string> {
@@ -169,16 +189,27 @@ function readText(request: IncomingMessage): Promise<string> {
 }
 
 function sendReply(response: ServerResponse, reply: Reply): void {
-	response.writeHead(reply.status, { 'content-type': reply.contentType, 'content-length': Buffer.byteLength(reply.text) })
+	response.writeHead(reply.status, {
+		'content-type': reply.contentType,
+		'content-length': Buffer.byteLength(reply.text),
+	})
 	response.end(reply.text)
 }
 
-async function handleRequest(request: IncomingMessage, response: ServerResponse, exchange: Exchange, options: FixtureOptions, requests: unknown[]): Promise<void> {
+async function handleRequest(
+	request: IncomingMessage,
+	response: ServerResponse,
+	exchange: Exchange,
+	options: FixtureOptions,
+	requests: unknown[],
+): Promise<void> {
 	const text = await readText(request)
 	const body = parseBody(text)
 	requests.push(body === undefined ? text : body)
+	options.observe?.(body)
 	const path = new URL(request.url ?? '/', 'http://127.0.0.1').pathname
-	if (request.method !== 'POST' || path !== CHAT_PATH) return sendReply(response, failure(404, `${request.method ?? 'GET'} ${path} is not served`))
+	if (request.method !== 'POST' || path !== CHAT_PATH)
+		return sendReply(response, failure(404, `${request.method ?? 'GET'} ${path} is not served`))
 	return sendReply(response, answerChat(body, exchange, options))
 }
 
@@ -187,7 +218,8 @@ function listenOn(server: Server): Promise<number> {
 		server.once('error', reject)
 		server.listen(0, '127.0.0.1', () => {
 			const address = server.address()
-			if (address === null || typeof address === 'string') reject(new Error('the fixture server has no port'))
+			if (address === null || typeof address === 'string')
+				reject(new Error('the fixture server has no port'))
 			else resolve(address.port)
 		})
 	})
@@ -209,7 +241,8 @@ function closeServer(server: Server): Promise<void> {
  * A request body that is not JSON is recorded as its text.
  */
 export async function startFixture(options: FixtureOptions = {}): Promise<Fixture> {
-	if (options.prefix === undefined && Object.keys(options.summaries ?? {}).length > 0) throw new Error('summaries need a prefix')
+	if (options.prefix === undefined && Object.keys(options.summaries ?? {}).length > 0)
+		throw new Error('summaries need a prefix')
 	const exchange = loadExchange()
 	const requests: unknown[] = []
 	const server = createServer((request, response) => {

@@ -1079,6 +1079,10 @@ export class Driver {
 		}
 		const briefing = selection.briefing ?? ''
 		const record: SelectionRecord = {
+			aggregates:
+				context.instructions.instruction(INSTRUCTION_SUMMARIES.name) === undefined
+					? []
+					: (this.#rendering?.states ?? []),
 			goal,
 			pass: this.#picks.length + 1,
 			sequence: this.#sequence,

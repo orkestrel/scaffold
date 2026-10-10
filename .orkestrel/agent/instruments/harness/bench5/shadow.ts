@@ -3,6 +3,7 @@
 import type { JudgeAnswer, JudgeInterface, Message } from '../vendor/agent-0.0.30-trimmed/index.js'
 import type { ToolCall } from '@orkestrel/tool'
 import type {
+	AggregateMaintenance,
 	MirrorReading,
 	ShadowAggregate,
 	ShadowConfig,
@@ -59,6 +60,7 @@ import {
 } from './constants.ts'
 import { describeError, readJSON, readLookup, readRows } from './helpers.ts'
 import { JudgeCache } from './JudgeCache.ts'
+import { isAggregateState } from './aggregates/validators.ts'
 
 const OPTIONS = {
 	run: { type: 'string' },
@@ -135,11 +137,7 @@ export function parseFlags(argv: readonly string[]): ShadowConfigOutcome {
 	if (values.run === undefined) problems.push('--run is required')
 	if (values.out === undefined) problems.push('--out is required')
 	const url = values.url ?? DAEMON
-	try {
-		new URL(url)
-	} catch {
-		problems.push('--url must be a URL')
-	}
+	if (!URL.canParse(url)) problems.push('--url must be a URL')
 	if (problems.length > 0 || values.run === undefined || values.out === undefined) {
 		return { success: false, error: `${problems.join('\n')}\n${USAGE}` }
 	}
@@ -165,7 +163,13 @@ export function parseFlags(argv: readonly string[]): ShadowConfigOutcome {
 export function parseMessages(rows: readonly unknown[]): readonly ShadowMessage[] {
 	return rows.flatMap((row): readonly ShadowMessage[] =>
 		isRecord(row) && isMessage(row)
-			? [{ message: row, index: isNumber(row.index) ? row.index : undefined, request: row.request === true }]
+			? [
+					{
+						message: row,
+						index: isNumber(row.index) ? row.index : undefined,
+						request: row.request === true,
+					},
+				]
 			: [],
 	)
 }
@@ -218,14 +222,24 @@ export function parseJudgments(rows: readonly unknown[]): readonly ShadowJudgmen
  * @param rows - The parsed lines
  * @returns One entry per line that holds a topic, a title, a read point, an event, and a status, in file order
  */
-export function parseAggregates(rows: readonly unknown[]): readonly ShadowAggregate[] {
-	return rows.flatMap((row): readonly ShadowAggregate[] =>
-		isRecord(row) &&
-		isString(row.topic) &&
-		isString(row.title) &&
-		isNumber(row.lastSeed) &&
-		isString(row.event) &&
-		isString(row.status)
+export function parseAggregates(
+	rows: readonly unknown[],
+): ReadonlyArray<ShadowAggregate | AggregateMaintenance> {
+	return rows.flatMap((row): ReadonlyArray<ShadowAggregate | AggregateMaintenance> => {
+		if (
+			isRecord(row) &&
+			row.event === 'maintenance' &&
+			isString(row.goal) &&
+			isNumber(row.lastSeed) &&
+			(row.status === 'complete' || row.status === 'failed' || row.status === 'aborted')
+		)
+			return [{ event: 'maintenance', goal: row.goal, lastSeed: row.lastSeed, status: row.status }]
+		return isRecord(row) &&
+			isString(row.topic) &&
+			isString(row.title) &&
+			isNumber(row.lastSeed) &&
+			isString(row.event) &&
+			isString(row.status)
 			? [
 					{
 						topic: row.topic,
@@ -234,10 +248,11 @@ export function parseAggregates(rows: readonly unknown[]): readonly ShadowAggreg
 						event: row.event,
 						status: row.status,
 						prose: isString(row.prose) ? row.prose : undefined,
+						result: isAggregateState(row.result) ? row.result : undefined,
 					},
 				]
-			: [],
-	)
+			: []
+	})
 }
 
 function readNumbers(value: unknown): readonly number[] {
@@ -255,7 +270,9 @@ export function readTruth(copy: unknown): ShadowTruth {
 	const seed = isRecord(copy) ? copy.seed : undefined
 	const goals = isRecord(copy) ? copy.goals : undefined
 	if (!isArray(seed) || !isArray(goals)) throw new Error('the copy has no seed or no goals')
-	const afters = goals.flatMap((goal) => (isRecord(goal) && isNumber(goal.after) ? [goal.after] : []))
+	const afters = goals.flatMap((goal) =>
+		isRecord(goal) && isNumber(goal.after) ? [goal.after] : [],
+	)
 	if (afters.length === 0) throw new Error('the copy has no goal with a read point')
 	const first = Math.min(...afters)
 	const categories = new Map<number, string>()
@@ -279,25 +296,47 @@ export function readTruth(copy: unknown): ShadowTruth {
  * Builds the aggregates that were current at each read point.
  *
  * @param rows - The aggregate rows in file order
- * @returns One snapshot per distinct `lastSeed`, holding the topics current after that read point's rows: a `current` build replaces the topic, a `withhold` removes it, and a `stale` build, an `agree` row, and a `change` row leave it
+ * @returns One snapshot per completed, failed, or aborted maintenance boundary; unmaintained topics are absent, and incomplete passes are unavailable
  */
-export function buildTimeline(rows: readonly ShadowAggregate[]): readonly ShadowSnapshot[] {
+export function buildTimeline(
+	rows: ReadonlyArray<ShadowAggregate | AggregateMaintenance>,
+): readonly ShadowSnapshot[] {
 	const snapshots: ShadowSnapshot[] = []
 	let topics = new Map<string, ShadowEntry>()
 	let seed: number | undefined
 	for (const row of rows) {
 		if (seed !== row.lastSeed) {
-			if (seed !== undefined) snapshots.push({ seed, topics })
-			topics = new Map(topics)
+			topics = new Map()
 			seed = row.lastSeed
 		}
-		if (row.event === 'build' && row.status === 'current' && row.prose !== undefined) {
-			topics.set(row.topic, { title: row.title, prose: row.prose })
-		} else if (row.event === 'withhold') {
+		if (row.event === 'maintenance' && 'goal' in row) {
+			snapshots.push({
+				seed: row.lastSeed,
+				topics:
+					row.status === 'complete'
+						? new Map([...topics].filter(([, entry]) => entry.state.goal === row.goal))
+						: new Map(),
+			})
+			topics = new Map()
+		} else if (
+			'topic' in row &&
+			(row.event === 'build' || row.event === 'keep') &&
+			row.status === 'current' &&
+			row.prose !== undefined &&
+			row.result !== undefined &&
+			row.result.point === row.lastSeed
+		) {
+			topics.set(row.topic, { title: row.title, prose: row.prose, state: row.result })
+		} else if (
+			'topic' in row &&
+			(row.event === 'withhold' ||
+				row.event === 'retire' ||
+				row.event === 'fail' ||
+				row.status === 'stale')
+		) {
 			topics.delete(row.topic)
 		}
 	}
-	if (seed !== undefined) snapshots.push({ seed, topics })
 	return snapshots
 }
 
@@ -308,7 +347,10 @@ export function buildTimeline(rows: readonly ShadowAggregate[]): readonly Shadow
  * @param point - The seed index of the message
  * @returns The snapshot with the greatest read point that lies before the message, or `undefined` when none does
  */
-export function findSnapshot(snapshots: readonly ShadowSnapshot[], point: number): ShadowSnapshot | undefined {
+export function findSnapshot(
+	snapshots: readonly ShadowSnapshot[],
+	point: number,
+): ShadowSnapshot | undefined {
 	return snapshots.findLast((snapshot) => snapshot.seed < point)
 }
 
@@ -333,7 +375,10 @@ export function buildEntities(messages: readonly Message[]): ShadowEntities {
 				name: call.name,
 				arguments: call.arguments,
 				text: message.content,
-				result: result === undefined ? undefined : { ...result, ids: [...new Set([...result.ids, ...named])] },
+				result:
+					result === undefined
+						? undefined
+						: { ...result, ids: [...new Set([...result.ids, ...named])] },
 			})
 		}
 	}
@@ -347,7 +392,9 @@ export function buildEntities(messages: readonly Message[]): ShadowEntities {
  * @param judgments - The run's judgments in file order
  * @returns The topic names per message id, in judgment order, for the answers that reach the topic cutoff
  */
-export function collectDesk(judgments: readonly ShadowJudgment[]): ReadonlyMap<string, readonly string[]> {
+export function collectDesk(
+	judgments: readonly ShadowJudgment[],
+): ReadonlyMap<string, readonly string[]> {
 	const desk = new Map<string, readonly string[]>()
 	for (const judgment of judgments) {
 		const [head, id, name] = judgment.key
@@ -388,9 +435,15 @@ export function listTopics(
  * @param entries - The summaries to put before it, in order
  * @returns The plain state when no summary applies; otherwise `Topic summaries:` and one `TITLE: PROSE` line per entry, a blank line, then the plain state (labelled `Message: ` for a category question)
  */
-export function renderShadow(head: ShadowHead, plain: string, entries: readonly ShadowEntry[]): string {
+export function renderShadow(
+	head: ShadowHead,
+	plain: string,
+	entries: ReadonlyArray<Pick<ShadowEntry, 'title' | 'prose'>>,
+): string {
 	if (entries.length === 0) return plain
-	const block = [SUMMARIES_LABEL, ...entries.map((entry) => `${entry.title}: ${entry.prose}`)].join('\n')
+	const block = [SUMMARIES_LABEL, ...entries.map((entry) => `${entry.title}: ${entry.prose}`)].join(
+		'\n',
+	)
 	return `${block}\n\n${head === 'category' ? MESSAGE_LABEL : ''}${plain}`
 }
 
@@ -401,7 +454,10 @@ export function renderShadow(head: ShadowHead, plain: string, entries: readonly 
  * @param answer - The answer, or `undefined` for a refusal
  * @returns For `category`, whether the quiet categories carry at least the category cutoff; for a pair head, whether the answer reaches that head's cutoff; `undefined` when the answer has the wrong form or is absent
  */
-export function readVerdict(head: ShadowHead, answer: JudgeAnswer | undefined): boolean | undefined {
+export function readVerdict(
+	head: ShadowHead,
+	answer: JudgeAnswer | undefined,
+): boolean | undefined {
 	if (answer === undefined) return undefined
 	if (head === 'category') {
 		if (answer.form !== 'choice') return undefined
@@ -416,7 +472,7 @@ export function readVerdict(head: ShadowHead, answer: JudgeAnswer | undefined): 
  * @param seeds - The seed indices of the pair, earlier then later
  * @returns `EARLIER:LATER`, or `undefined` when either message is no seed message
  */
-export function buildPairKey(seeds: readonly (number | undefined)[]): string | undefined {
+export function buildPairKey(seeds: ReadonlyArray<number | undefined>): string | undefined {
 	const [earlier, later] = seeds
 	return earlier === undefined || later === undefined ? undefined : `${earlier}:${later}`
 }
@@ -436,7 +492,11 @@ function isMatched(item: ShadowItem): boolean {
 	return item.plain !== undefined && item.shadow !== undefined
 }
 
-function tallyPairs(items: readonly ShadowItem[], keys: ReadonlySet<string>, pick: ShadowVerdict): ShadowPairs {
+function tallyPairs(
+	items: readonly ShadowItem[],
+	keys: ReadonlySet<string>,
+	pick: ShadowVerdict,
+): ShadowPairs {
 	const seen = new Map<string, ShadowItem>()
 	for (const item of items) {
 		const key = buildPairKey(item.seeds)
@@ -469,7 +529,11 @@ function tallyPairs(items: readonly ShadowItem[], keys: ReadonlySet<string>, pic
  * @param pick - Reads the side's decision from an item: the plain answer or the shadow answer
  * @returns The rates over the items that both sides decided. Keep counts truth `fact`, `rule`, and `correction` messages filed not quiet; drop counts truth `chatter` and `distractor` messages filed quiet; recall counts truth pairs read at the cutoff, and a truth pair that the ledger never screened counts as not read; false drop counts screened pairs outside the truth that read at the cutoff
  */
-export function computeRates(items: readonly ShadowItem[], truth: ShadowTruth, pick: ShadowVerdict): ShadowRates {
+export function computeRates(
+	items: readonly ShadowItem[],
+	truth: ShadowTruth,
+	pick: ShadowVerdict,
+): ShadowRates {
 	let kept = 0
 	let wanted = 0
 	let dropped = 0
@@ -518,7 +582,8 @@ export function countFlips(items: readonly ShadowItem[]): ShadowFlips {
 }
 
 function countFlipped(items: readonly ShadowItem[], head: ShadowHead): number {
-	return items.filter((item) => item.head === head && isMatched(item) && item.plain !== item.shadow).length
+	return items.filter((item) => item.head === head && isMatched(item) && item.plain !== item.shadow)
+		.length
 }
 
 /**
@@ -637,7 +702,11 @@ export class Shadow {
 			keepAlive: '5m',
 			timeout: TIMEOUT,
 			fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
-				live ? fetch(input, init) : Promise.reject(new Error(`${JUDGE_MISS}: the shadow reads the cache only without --live`)),
+				live
+					? fetch(input, init)
+					: Promise.reject(
+							new Error(`${JUDGE_MISS}: the shadow reads the cache only without --live`),
+						),
 		})
 		return new JudgeCache({
 			judge,
@@ -652,19 +721,27 @@ export class Shadow {
 		const key = Object.entries(MODELS).find(([, tag]) => tag === model)?.[0]
 		const settings = readJSON(join(HARNESS, 'bench5', 'settings.json'))
 		const entry = key !== undefined && isRecord(settings) ? settings[key] : undefined
-		if (!isRecord(entry) || !isNumber(entry.retry)) throw new Error(`bench5/settings.json has no retry for the model ${model}`)
+		if (!isRecord(entry) || !isNumber(entry.retry))
+			throw new Error(`bench5/settings.json has no retry for the model ${model}`)
 		return entry.retry
 	}
 
-	async #collect(inputs: ShadowInputs, cache: JudgeCache, signal: AbortSignal): Promise<readonly ShadowItem[]> {
+	async #collect(
+		inputs: ShadowInputs,
+		cache: JudgeCache,
+		signal: AbortSignal,
+	): Promise<readonly ShadowItem[]> {
 		const { messages, judgments, timeline, truth } = inputs
 		const positions = new Map(messages.map((one, position) => [one.message.id, position]))
-		const seeds = new Map(messages.flatMap((one) => (one.index === undefined ? [] : [[one.message.id, one.index]])))
+		const seeds = new Map(
+			messages.flatMap((one) => (one.index === undefined ? [] : [[one.message.id, one.index]])),
+		)
 		const desk = collectDesk(judgments)
 		const items: ShadowItem[] = []
 		for (const judgment of judgments) {
 			const [head, ...ids] = judgment.key
-			if (head === undefined || !isShadowHead(head) || ids.length !== (head === 'category' ? 1 : 2)) continue
+			if (head === undefined || !isShadowHead(head) || ids.length !== (head === 'category' ? 1 : 2))
+				continue
 			const members = ids.map((id) => positions.get(id))
 			const indices = ids.map((id) => seeds.get(id))
 			const point = indices[indices.length - 1]
@@ -674,7 +751,9 @@ export class Shadow {
 			const entities = this.#readEntities(messages, boundary < 0 ? messages.length : boundary)
 			const named = [...members, boundary < 0 ? undefined : boundary].flatMap((position) => {
 				const one = position === undefined ? undefined : messages[position]
-				return one === undefined ? [] : listTopics(one.message.id, one.message.content, desk, entities)
+				return one === undefined
+					? []
+					: listTopics(one.message.id, one.message.content, desk, entities)
 			})
 			const snapshot = findSnapshot(timeline, point)
 			const wanted = [...new Set(named)]
@@ -686,6 +765,10 @@ export class Shadow {
 			const state = renderShadow(head, judgment.state, entries)
 			const plain = readVerdict(head, judgment.answer)
 			const base = {
+				aggregates: shown.flatMap((topic) => {
+					const entry = snapshot?.topics.get(topic)
+					return entry === undefined ? [] : [{ topic, state: entry.state, prose: entry.prose }]
+				}),
 				id: judgment.id,
 				head,
 				seeds: indices,
@@ -720,12 +803,18 @@ export class Shadow {
 		signal: AbortSignal,
 	): Promise<{ readonly outcome: ShadowOutcome; readonly answer: JudgeAnswer | undefined }> {
 		try {
-			const result = await cache.ask({ state, questions: { [judgment.id]: judgment.question } }, signal)
+			const result = await cache.ask(
+				{ state, questions: { [judgment.id]: judgment.question } },
+				signal,
+			)
 			const answer = result.answers[judgment.id]
 			return { outcome: answer === undefined ? 'failed' : 'asked', answer }
 		} catch (error) {
 			if (cache.fault !== undefined) throw cache.fault
-			return { outcome: error instanceof Error && error.message === JUDGE_MISS ? 'missed' : 'failed', answer: undefined }
+			return {
+				outcome: error instanceof Error && error.message === JUDGE_MISS ? 'missed' : 'failed',
+				answer: undefined,
+			}
 		}
 	}
 
@@ -737,10 +826,16 @@ export class Shadow {
 		console.log(`keep      plain ${formatRate(plain.keep)} | shadow ${formatRate(shadow.keep)}`)
 		console.log(`drop      plain ${formatRate(plain.drop)} | shadow ${formatRate(shadow.drop)}`)
 		for (const head of ['amends', 'supersedes'] as const) {
-			console.log(`${head} recall plain ${formatRate(plain[head].recall)} | shadow ${formatRate(shadow[head].recall)}`)
-			console.log(`${head} falsedrop plain ${formatRate(plain[head].falsedrop)} | shadow ${formatRate(shadow[head].falsedrop)}`)
+			console.log(
+				`${head} recall plain ${formatRate(plain[head].recall)} | shadow ${formatRate(shadow[head].recall)}`,
+			)
+			console.log(
+				`${head} falsedrop plain ${formatRate(plain[head].falsedrop)} | shadow ${formatRate(shadow[head].falsedrop)}`,
+			)
 		}
-		console.log(`flips     category ${flips.category}, amends ${flips.amends}, supersedes ${flips.supersedes}`)
+		console.log(
+			`flips     category ${flips.category}, amends ${flips.amends}, supersedes ${flips.supersedes}`,
+		)
 		console.log(`wrote ${this.#config.out}`)
 	}
 }

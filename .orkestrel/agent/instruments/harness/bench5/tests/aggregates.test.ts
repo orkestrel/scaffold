@@ -18,7 +18,14 @@ import type {
 } from '../types.ts'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { appendFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	appendFileSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -60,7 +67,10 @@ import {
 	readTokens,
 	renderSource,
 	renderSummaries,
+	versionToState,
 } from '../aggregates/helpers.ts'
+import { isAggregateSource, isAggregateState } from '../aggregates/validators.ts'
+import { buildTimeline, findSnapshot, parseAggregates } from '../shadow.ts'
 import {
 	ADMISSION_LIMIT,
 	CORPUS,
@@ -413,6 +423,11 @@ interface Plan {
 	readonly skip?: readonly string[]
 	readonly change?: number
 	readonly agree?: number
+	readonly retained?: number
+	readonly refused?: boolean
+	readonly rebuilt?: number
+	readonly observe?: (body: unknown) => void
+	readonly replacement?: string
 }
 
 // Replays the plan on a scratch rig and returns the CHANGE and AGREE rows that the run asks, computed from the states the run reads.
@@ -442,8 +457,23 @@ async function computeRows(plan: Plan): Promise<readonly CacheRow[]> {
 				buildNoul(plan.change ?? 0),
 			),
 		)
-		if ((plan.change ?? 0) >= FITS.change)
-			rows.push(buildAgreeRow(rig, 'contacts', CONTACTS_AFTER, plan.agree ?? AGREED))
+		rows.push(
+			buildAgreeRow(
+				rig,
+				'contacts',
+				plan.replacement ?? CONTACTS_AFTER,
+				plan.rebuilt ?? plan.agree ?? AGREED,
+			),
+		)
+		const retained = buildAgreeRow(
+			rig,
+			'contacts',
+			summaries['contacts'] ?? '',
+			plan.retained ?? AGREED,
+		)
+		rows.push(
+			plan.refused ? { ...retained, answer: undefined, refusal: { missing: ['true'] } } : retained,
+		)
 	}
 	return rows
 }
@@ -497,8 +527,12 @@ async function createRun(plan: Plan, retry = 1, fit: Fit = FITS): Promise<Run> {
 		longest[`about ${key === OWNER ? 'Luis Ferreira (account LH-44870)' : key} as of`] = prose
 	}
 	if (plan.kind === 'correct') longest[CORRECTION] = REFUNDS_AFTER
-	if (plan.kind === 'news') longest[NEWS] = CONTACTS_AFTER
-	const fixture = await startFixture({ prefix: SUMMARY_PREFIX, summaries: longest })
+	if (plan.kind === 'news') longest[NEWS] = plan.replacement ?? CONTACTS_AFTER
+	const fixture = await startFixture({
+		prefix: SUMMARY_PREFIX,
+		summaries: longest,
+		observe: plan.observe,
+	})
 	files += 1
 	const classify = join(directory, `classify-${files}.jsonl`)
 	writeRows(classify, classifyRows())
@@ -601,6 +635,37 @@ describe('aggregate helpers', () => {
 		day: '2026-10-09',
 	}
 	const sources: readonly AggregateSource[] = [first, second]
+
+	it('copies exact source grouping and multiplicity into validated maintenance bindings', () => {
+		const version = {
+			version: 3,
+			goal: 'g03',
+			point: 10,
+			title: 'refunds',
+			asOf: '2026-10-09',
+			prose: 'Refunds.',
+			raw: 'Refunds.',
+			ids: [],
+			sources: [first, second, first],
+		}
+		const state = versionToState(version)
+		assert.deepEqual(state, { version: 3, goal: 'g03', point: 10, sources: [first, second, first] })
+		assert.notEqual(state?.sources, version.sources)
+		assert.notEqual(state?.sources[0], first)
+		assert.equal(versionToState(undefined), undefined)
+		assert.equal(isAggregateState(state), true)
+		assert.equal(isAggregateSource(first), true)
+		for (const value of [
+			undefined,
+			null,
+			{},
+			{ ...state, version: 0 },
+			{ ...state, point: NaN },
+			{ ...state, sources: [{ ...first, role: 'unknown' }] },
+			{ ...state, sources: [{ ...first, sentence: -1 }] },
+		])
+			assert.equal(isAggregateState(value), false)
+	})
 
 	it('names the summarizer prefix and fills its slots in one pass', () => {
 		assert.ok(SUMMARY_SYSTEM.startsWith(SUMMARY_PREFIX))
@@ -790,6 +855,9 @@ describe('aggregate helpers', () => {
 			['a'],
 		)
 		assert.deepEqual(edited.arrived, [])
+		assert.deepEqual(compareSources([first, first], [first]).removed, [first])
+		assert.deepEqual(compareSources([first], [{ ...first, day: '2026-10-10' }]).removed, [first])
+		assert.deepEqual(compareSources([first], [{ ...first, role: 'assistant' }]).removed, [first])
 	})
 
 	it('puts the tool name and arguments before a tool line and nothing before another line', () => {
@@ -947,7 +1015,10 @@ describe('Aggregator', () => {
 			const requests = run.fixture.requests.length
 			const stats = run.judge.stats()
 			await run.maintain('g02', LAST)
-			assert.equal(run.rows().length, count)
+			assert.equal(run.rows().length, count + DESK.length + 1)
+			assert.ok(
+				pick(run.rows(), 'keep').every((row) => row.result?.goal === 'g02' && row.version === 1),
+			)
 			assert.equal(run.fixture.requests.length, requests)
 			assert.deepEqual(run.judge.stats(), stats)
 		})
@@ -1008,7 +1079,7 @@ describe('Aggregator', () => {
 	})
 
 	describe('CHANGE on an arriving message', () => {
-		it('keeps the version when CHANGE reads no, asks no AGREE, and does not ask the message again', async () => {
+		it('keeps the version when CHANGE reads no only after AGREE on the complete changed sources', async () => {
 			const run = await start({ kind: 'news', change: 0.1 })
 			await run.maintain('g01', LAST)
 			const requests = run.summarizing().length
@@ -1025,7 +1096,11 @@ describe('Aggregator', () => {
 				[SEEDED],
 			)
 			assert.equal(run.summarizing().length, requests)
-			assert.equal(run.judge.stats().hits['agree'], agrees)
+			assert.equal(run.judge.stats().hits['agree'], (agrees ?? 0) + 1)
+			const kept = pick(run.rows(), 'keep', 'contacts').at(-1)
+			assert.equal(kept?.result?.version, 1)
+			assert.equal(kept?.result?.point, SEEDED)
+			assert.ok((kept?.result?.sources.length ?? 0) > (kept?.prior?.sources.length ?? 0))
 			assert.deepEqual(
 				pick(run.rows(), 'build').filter((row) => row.version > 1),
 				[],
@@ -1033,6 +1108,23 @@ describe('Aggregator', () => {
 			await run.maintain('g03', SEEDED)
 			assert.equal(pick(run.rows(), 'change').length, 1)
 			assert.equal(run.judge.stats().hits['change'], 1)
+		})
+
+		it('rebuilds retained prose when complete-source AGREE rejects it', async () => {
+			const run = await start({ kind: 'news', change: 0.1, retained: 0.1 })
+			await run.maintain('g01', LAST)
+			await run.rig.advance(NEWS)
+			await run.maintain('g02', SEEDED)
+			const rows = run.rows().filter((row) => row.goal === 'g02' && row.topic === 'contacts')
+			assert.deepEqual(
+				pick(rows, 'agree').map((row) => row.status),
+				['stale', 'current'],
+			)
+			assert.deepEqual(
+				pick(rows, 'build').map((row) => [row.version, row.trigger, row.prose]),
+				[[2, 'check', CONTACTS_AFTER]],
+			)
+			assert.equal(pick(rows, 'keep').length, 0)
 		})
 
 		it('rebuilds the version when CHANGE reaches the cutoff, then checks the new build with AGREE', async () => {
@@ -1060,6 +1152,179 @@ describe('Aggregator', () => {
 	})
 
 	describe('consistency failure', () => {
+		it('keeps the version number when a supported rebuild returns unchanged prose', async () => {
+			const run = await start({ kind: 'news', change: 0.9, replacement: SUMMARIES['contacts'] })
+			await run.maintain('g01', LAST)
+			await run.rig.advance(NEWS)
+			await run.maintain('g02', SEEDED)
+			const builds = pick(run.rows(), 'build', 'contacts')
+			assert.deepEqual(
+				builds.map((row) => row.version),
+				[1, 1],
+			)
+			assert.equal(builds[1]?.result?.goal, 'g02')
+			assert.ok((builds[1]?.result?.sources.length ?? 0) > (builds[0]?.result?.sources.length ?? 0))
+		})
+		it('rebuilds after a retained AGREE refusal and binds the supported successor', async () => {
+			const run = await start({ kind: 'news', change: 0.1, refused: true })
+			await run.maintain('g01', LAST)
+			await run.rig.advance(NEWS)
+			await run.maintain('g02', SEEDED)
+			const rows = run.rows().filter((row) => row.goal === 'g02' && row.topic === 'contacts')
+			assert.match(pick(rows, 'agree')[0]?.error ?? '', /no noul/)
+			assert.equal(pick(rows, 'build')[0]?.result?.version, 2)
+		})
+
+		it('withholds rejected retained and rebuilt prose, then recovers from restored live sources', async () => {
+			const run = await start({ kind: 'news', change: 0.1, retained: 0.1, rebuilt: 0.1 }, 0)
+			await run.maintain('g01', LAST)
+			const message = await run.rig.advance(NEWS)
+			await run.maintain('g02', SEEDED)
+			const withheld = pick(run.rows(), 'withhold', 'contacts').at(-1)
+			assert.equal(withheld?.prior?.version, 1)
+			assert.equal(withheld?.result, undefined)
+			assert.ok(withheld?.sources.some((source) => source.id === message.id))
+			assert.equal(
+				findSnapshot(buildTimeline(parseAggregates(readRows(run.path))), SEEDED + 1)?.topics.has(
+					'contacts',
+				),
+				false,
+			)
+			run.rig.ledger.conversation.remove(message.id)
+			await run.maintain('g03', SEEDED + 1)
+			const recovered = pick(run.rows(), 'build', 'contacts').at(-1)
+			assert.equal(recovered?.result?.goal, 'g03')
+			assert.equal(recovered?.status, 'current')
+			assert.equal(
+				recovered?.result?.sources.some((source) => source.id === message.id),
+				false,
+			)
+		})
+
+		it('retires all sources including owners omitted by the live collector', async () => {
+			const run = await start({ kind: 'first' })
+			await run.maintain('g01', LAST)
+			const prior = run.rows().filter((row) => row.event === 'build')
+			run.rig.ledger.conversation.clear()
+			assert.deepEqual(listKeys(run.rig), [])
+			await run.maintain('g02', SEEDED)
+			const retired = pick(run.rows(), 'retire')
+			assert.deepEqual(retired.map((row) => row.topic).sort(), prior.map((row) => row.topic).sort())
+			assert.ok(
+				retired.every(
+					(row) => row.prior?.version === 1 && row.result === undefined && row.sources.length === 0,
+				),
+			)
+			assert.equal(
+				findSnapshot(buildTimeline(parseAggregates(readRows(run.path))), SEEDED + 1)?.topics.size,
+				0,
+			)
+			await run.maintain('g03', SEEDED + 1)
+			assert.equal(pick(run.rows(), 'retire').length, retired.length)
+		})
+
+		it('invalidates a pass on abort after the provider receives a rebuild and recovers later', async () => {
+			const controller = new AbortController()
+			let enabled = false
+			const run = await start({
+				kind: 'correct',
+				observe: () => {
+					if (enabled) controller.abort(new Error('fixture abort'))
+				},
+			})
+			await run.maintain('g01', LAST)
+			await run.rig.advance(CORRECTION)
+			enabled = true
+			await run.aggregator.maintain(run.rig.request, 'g02', SEEDED, controller.signal)
+			const rows = run.rows().filter((row) => row.goal === 'g02')
+			assert.ok(rows.some((row) => row.event === 'fail'))
+			assert.equal(
+				rows.some((row) => row.result !== undefined),
+				false,
+			)
+			assert.equal(
+				rows.some((row) => row.status === 'current'),
+				false,
+			)
+			assert.equal(readField(readRows(run.path).at(-1), 'status'), 'aborted')
+			const shown = Object.values(SUMMARIES).join('\n')
+			assert.equal(
+				run.aggregator.render(
+					select(run, shown),
+					run.rig.request,
+					run.rig.system,
+					'',
+					1,
+					() => true,
+				).text,
+				'',
+			)
+			enabled = false
+			await run.aggregator.maintain(run.rig.request, 'g03', SEEDED + 1, AbortSignal.timeout(60000))
+			assert.equal(pick(run.rows(), 'build', 'refunds').at(-1)?.result?.goal, 'g03')
+		})
+
+		it('records a failed maintenance call with prior sources and recovers through the real provider', async () => {
+			let failed = false
+			const run = await start({
+				kind: 'correct',
+				observe: () => {
+					if (failed) throw new Error('fixture maintenance failure')
+				},
+			})
+			await run.maintain('g01', LAST)
+			await run.rig.advance(CORRECTION)
+			failed = true
+			await run.aggregator.maintain(run.rig.request, 'g02', SEEDED, AbortSignal.timeout(60000))
+			const failure = pick(run.rows(), 'fail', 'refunds').at(-1)
+			assert.equal(failure?.prior?.version, 1)
+			assert.equal(failure?.result, undefined)
+			assert.ok((failure?.sources.length ?? 0) > 0)
+			assert.ok(failure?.projection?.some((source) => source.text.includes('MX-4490')))
+			assert.ok((failure?.error?.length ?? 0) > 0)
+			assert.equal(
+				findSnapshot(buildTimeline(parseAggregates(readRows(run.path))), SEEDED + 1)?.topics.has(
+					'refunds',
+				),
+				false,
+			)
+			failed = false
+			await run.aggregator.maintain(run.rig.request, 'g03', SEEDED + 1, AbortSignal.timeout(60000))
+			assert.equal(pick(run.rows(), 'build', 'refunds').at(-1)?.result?.goal, 'g03')
+		})
+
+		it('invalidates older state when the top-level maintenance journal fails', async () => {
+			const run = await start({ kind: 'first' })
+			await run.maintain('g01', LAST)
+			const saved = readFileSync(run.path, 'utf8')
+			rmSync(run.path)
+			mkdirSync(run.path)
+			try {
+				await assert.rejects(
+					run.aggregator.maintain(run.rig.request, 'g02', SEEDED, AbortSignal.timeout(60000)),
+				)
+				assert.equal(
+					run.aggregator.render(
+						select(run, Object.values(SUMMARIES).join('\n')),
+						run.rig.request,
+						run.rig.system,
+						'',
+						1,
+						() => true,
+					).text,
+					'',
+				)
+			} finally {
+				rmSync(run.path, { recursive: true })
+				writeFileSync(run.path, saved)
+			}
+			await run.aggregator.maintain(run.rig.request, 'g03', SEEDED + 1, AbortSignal.timeout(60000))
+			assert.ok(
+				pick(run.rows(), 'build')
+					.filter((row) => row.goal === 'g03')
+					.every((row) => row.result?.goal === 'g03'),
+			)
+		})
 		it('marks a mistyped id stale, retries with a different prompt, and withholds the topic after the retry bound', async () => {
 			const run = await start({
 				kind: 'first',
@@ -1189,6 +1454,51 @@ describe('Aggregator', () => {
 			assert.ok(rendered.text.includes(REFUNDS.join(' ')))
 			assert.ok(rendered.text.includes(RETURNS.join(' ')))
 			assert.ok(rendered.tokens > 0)
+		})
+
+		it('binds the exact rendered version and refuses source changes before the next maintenance', async () => {
+			const run = await start({ kind: 'correct' })
+			await run.maintain('g01', LAST)
+			const shown = [...Object.values(SUMMARIES), REFUNDS_AFTER].join('\n')
+			const first = run.aggregator.render(
+				select(run, shown),
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
+			const binding = first.states.find((one) => one.topic === 'refunds')
+			assert.ok(binding !== undefined)
+			assert.deepEqual(binding.state, pick(run.rows(), 'build', 'refunds')[0]?.result)
+			assert.ok(first.text.includes(binding.prose))
+			await run.rig.advance(CORRECTION)
+			const stale = run.aggregator.render(
+				select(run, shown),
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
+			assert.equal(
+				stale.states.some((one) => one.topic === 'refunds'),
+				false,
+			)
+			await run.maintain('g02', SEEDED)
+			const second = run.aggregator.render(
+				select(run, shown),
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
+			assert.deepEqual(
+				second.states.find((one) => one.topic === 'refunds')?.state,
+				pick(run.rows(), 'build', 'refunds').at(-1)?.result,
+			)
+			assert.equal(second.states.find((one) => one.topic === 'refunds')?.state.version, 2)
 		})
 
 		it('drops a sentence whose amount the selection lacks, keeps the others, and reads no sole token', async () => {

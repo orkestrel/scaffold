@@ -57,3 +57,5 @@ Root rejects omitting AGREE from changed-source retention. A cold-build fit does
 Complete the trimmed-vendor consumer unit first. Then implement lifecycle contracts, maintenance events, and shadow reconstruction in one serial unit. Implement decision configuration, thinking and resource accounting, the full-view adapter, planning, and comparative reports in a successor unit. Shared type and driver edits stay serial in the same checkout. Each writer runs its touched project; an independent verifier owns final gates.
 
 Run one integrated falsification round on the added measurement claims after deterministic proofs. Close adopted review prescriptions with failing mutation controls and restored passes. Freeze hashes before live calibration and evaluation. Finish with audited measured results or explicit, evidence-backed infeasibility for each requested configuration, the comparison artifact, and committed session-branch records. Aggregate files remain off scaffold main.
+
+Before an adoption decision, complete the user's additional sustained-work comparison; see [Sustained-work comparison requirement](endurance.md). The matrix alone cannot close that criterion.

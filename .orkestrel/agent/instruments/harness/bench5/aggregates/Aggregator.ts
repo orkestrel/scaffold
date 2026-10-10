@@ -6,6 +6,7 @@ import type {
 	AggregateDrop,
 	AggregateEntry,
 	AggregateFailure,
+	AggregateMaintenance,
 	AggregateRendering,
 	AggregateRow,
 	AggregateSource,
@@ -39,13 +40,14 @@ import {
 	renderBody,
 	renderSource,
 	renderSummaries,
+	versionToState,
 } from './helpers.ts'
 
 /**
  * Keeps one summary per desk topic and per owner, rebuilds it when its sources change, and renders the summaries that the control arm's text already carries.
  *
  * @remarks
- * `maintain` runs after the ledger files the request and before the agent reads the prompt. A desk topic is maintained at every read point. An owner is maintained only when the request names it. Construction refuses a fit that does not separate its negatives. A maintenance error logs and withholds the topic for that read point.
+ * `maintain` runs after the ledger files the request and before the agent reads the prompt. Desk topics and previously held owners are maintained at every read point; another owner is built when requested. Construction refuses a fit that does not separate its negatives. A maintenance error logs and withholds the topic for that read point.
  *
  * @example
  * ```ts
@@ -61,6 +63,10 @@ export class Aggregator {
 	readonly #gone = new Map<string, readonly string[]>()
 	readonly #days = new Map<string, string>()
 	readonly #withheld = new Set<string>()
+	#pending: AggregateRow[] = []
+	#prior = new Map<string, AggregateVersion>()
+	#completed: AggregateMaintenance | undefined
+	#request: string | undefined
 
 	/**
 	 * Refuses a failed fit and creates the rows directory.
@@ -80,7 +86,7 @@ export class Aggregator {
 	 * @param lastSeed - The index of the last seed message added
 	 * @param signal - The caller's signal; an abort ends the pass without a throw
 	 * @remarks
-	 * A first build, a removed source line, an arriving message that CHANGE reads as a change, and a failed code check each build the topic. A removed line rebuilds without asking. AGREE runs after a build only. A build that fails the code check or AGREE is marked stale and built again, up to `settings.retry` more times, and then the topic is withheld.
+	 * A removed line rebuilds without asking CHANGE. Changed-source retention requires lexical checks and AGREE. Failed support enters the bounded rebuild path. An abort discards the pass's successful outcomes and invalidates its usable summaries.
 	 */
 	async maintain(
 		request: Message,
@@ -89,7 +95,12 @@ export class Aggregator {
 		signal: AbortSignal,
 	): Promise<void> {
 		this.#withheld.clear()
+		this.#pending = []
+		this.#prior = new Map(this.#versions)
+		this.#completed = undefined
+		this.#request = request.id
 		try {
+			signal.throwIfAborted()
 			const { mirror, days, seeds } = this.#options
 			const input = mirror.input()
 			const projection = mirror.projection(input)
@@ -106,12 +117,66 @@ export class Aggregator {
 				asOf: findDay(days, lastSeed)?.date ?? '',
 				signal,
 			}
-			for (const topic of collectTopics(projection, input, mirror.owners(request))) {
-				if (signal.aborted) return
+			const topics = new Map(
+				collectTopics(projection, input, mirror.owners(request)).map((topic) => [topic.key, topic]),
+			)
+			for (const [key, version] of this.#prior) {
+				if (!topics.has(key))
+					topics.set(key, { key, title: version.title, owner: key.startsWith(LEDGER_OWNER_PREFIX) })
+			}
+			for (const topic of topics.values()) {
+				signal.throwIfAborted()
 				await this.#update(topic, context)
 			}
+			signal.throwIfAborted()
+			this.#completed = { event: 'maintenance', goal, lastSeed, status: 'complete' }
+			appendFileSync(
+				this.#options.path,
+				[...this.#pending, this.#completed].map((row) => `${JSON.stringify(row)}\n`).join(''),
+			)
 		} catch (error) {
 			this.#options.log(`aggregate maintain ${goal}: ${describeError(error)}`)
+			this.#completed = {
+				event: 'maintenance',
+				goal,
+				lastSeed,
+				status: signal.aborted ? 'aborted' : 'failed',
+				error: describeError(error),
+			}
+			const failed = new Map([...this.#prior, ...this.#versions])
+			this.#versions.clear()
+			const rows: AggregateRow[] = this.#pending
+				.filter((row) => row.event === 'agree' || row.event === 'change')
+				.map((row) => ({ ...row, status: 'stale', result: undefined }))
+			for (const [topic, version] of failed) {
+				this.#withheld.add(topic)
+				rows.push({
+					projection: this.#pending.findLast((row) => row.topic === topic)?.projection,
+					topic,
+					title: version.title,
+					goal,
+					lastSeed,
+					event: 'fail',
+					version: version.version,
+					status: 'failed',
+					prior: versionToState(this.#prior.get(topic)),
+					result: undefined,
+					sources: buildRefs(version.sources, this.#options.seeds),
+					ids: undefined,
+					prose: undefined,
+					raw: undefined,
+					trigger: undefined,
+					answers: {},
+					failures: [],
+					wall: 0,
+					cached: false,
+					error: describeError(error),
+				})
+			}
+			appendFileSync(
+				this.#options.path,
+				[...rows, this.#completed].map((row) => `${JSON.stringify(row)}\n`).join(''),
+			)
 		}
 	}
 
@@ -137,6 +202,8 @@ export class Aggregator {
 		admit: AggregateAdmission,
 	): AggregateRendering {
 		const { mirror, settings } = this.#options
+		const input = mirror.input()
+		const projection = mirror.projection(input)
 		const shown = [
 			selection.briefing ?? '',
 			...selection.messages.map((message) => message.content),
@@ -154,7 +221,21 @@ export class Aggregator {
 		const filtered: AggregateDrop[] = []
 		for (const key of order) {
 			const version = this.#versions.get(key)
-			if (version === undefined) continue
+			if (
+				version === undefined ||
+				this.#completed?.status !== 'complete' ||
+				this.#request !== request.id ||
+				version.goal !== this.#completed.goal ||
+				version.point !== this.#completed.lastSeed
+			)
+				continue
+			const sources = collectTopicSources(
+				projection,
+				input,
+				{ key, title: version.title, owner: key.startsWith(LEDGER_OWNER_PREFIX) },
+				this.#days,
+			)
+			if (JSON.stringify(sources) !== JSON.stringify(version.sources)) continue
 			if (countSoleTokens(version.title, shown) > 0) {
 				emptied.push(key)
 				continue
@@ -178,6 +259,10 @@ export class Aggregator {
 			admit,
 		)
 		return {
+			states: block.kept.flatMap((entry) => {
+				const state = versionToState(this.#versions.get(entry.key))
+				return state === undefined ? [] : [{ topic: entry.key, state, prose: entry.prose }]
+			}),
 			text: block.text,
 			topics: block.kept.map((entry) => entry.key),
 			cut: block.cut.map((entry) => entry.key),
@@ -191,11 +276,13 @@ export class Aggregator {
 
 	// Decides whether the topic keeps its version, rebuilds it, or builds it first; an error withholds the topic.
 	async #update(topic: AggregateTopic, context: AggregateContext): Promise<void> {
+		const started = performance.now()
+		let sources: readonly AggregateSource[] = []
 		try {
-			const sources = collectTopicSources(context.projection, context.input, topic, this.#days)
+			sources = collectTopicSources(context.projection, context.input, topic, this.#days)
 			const current = this.#versions.get(topic.key)
 			if (sources.length === 0) {
-				if (current !== undefined) this.#retire(topic.key, current.sources)
+				if (current !== undefined) this.#retire(topic, current, context)
 				return
 			}
 			if (current === undefined) {
@@ -208,7 +295,10 @@ export class Aggregator {
 				await this.#build(topic, sources, context, 'removed')
 				return
 			}
-			if (arrived.length === 0) return
+			if (JSON.stringify(current.sources) === JSON.stringify(sources)) {
+				this.#keep(topic, current, sources, context, 'unchanged')
+				return
+			}
 			for (const id of arrived) {
 				const lines = sources.filter((source) => source.id === id)
 				if (await this.#change(topic, current, lines, context)) {
@@ -220,11 +310,102 @@ export class Aggregator {
 				await this.#build(topic, sources, context, 'check')
 				return
 			}
-			this.#versions.set(topic.key, { ...current, sources })
+			if (!(await this.#support(topic, current, sources, context))) {
+				await this.#build(topic, sources, context, 'check')
+				return
+			}
+			this.#keep(topic, current, sources, context, 'retained')
 		} catch (error) {
+			context.signal.throwIfAborted()
 			this.#options.log(`aggregate ${topic.key} at ${context.goal}: ${describeError(error)}`)
 			this.#versions.delete(topic.key)
 			this.#withheld.add(topic.key)
+			this.#pending.push(
+				this.#row(topic, context, {
+					event: 'fail',
+					version: this.#counts.get(topic.key) ?? 0,
+					status: 'failed',
+					sources: buildRefs(sources, this.#options.seeds),
+					wall: performance.now() - started,
+					error: describeError(error),
+				}),
+			)
+		}
+	}
+
+	#keep(
+		topic: AggregateTopic,
+		current: AggregateVersion,
+		sources: readonly AggregateSource[],
+		context: AggregateContext,
+		trigger: AggregateTrigger,
+	): void {
+		context.signal.throwIfAborted()
+		const kept = {
+			...current,
+			asOf: context.asOf,
+			sources,
+			ids: collectIds(sources),
+			goal: context.goal,
+			point: context.lastSeed,
+		}
+		this.#versions.set(topic.key, kept)
+		this.#pending.push(
+			this.#row(topic, context, {
+				event: 'keep',
+				version: kept.version,
+				status: 'current',
+				result: versionToState(kept),
+				sources: buildRefs(sources, this.#options.seeds),
+				prose: kept.prose,
+				ids: kept.ids.join(', '),
+				trigger,
+			}),
+		)
+	}
+
+	async #support(
+		topic: AggregateTopic,
+		version: AggregateVersion,
+		sources: readonly AggregateSource[],
+		context: AggregateContext,
+	): Promise<boolean> {
+		const started = performance.now()
+		try {
+			const asked = await this.#ask(
+				AGREE_HEAD,
+				[AGREE_HEAD, topic.key, version.version],
+				buildAgreeState(version, sources),
+				AGREE_QUESTION,
+				context.signal,
+			)
+			const agreed = asked.noul >= this.#options.fit.agree
+			this.#pending.push(
+				this.#row(topic, context, {
+					event: 'agree',
+					version: version.version,
+					status: agreed ? 'current' : 'stale',
+					sources: buildRefs(sources, this.#options.seeds),
+					answers: { [AGREE_HEAD]: asked.noul },
+					wall: asked.wall,
+					cached: asked.cached,
+				}),
+			)
+			return agreed
+		} catch (error) {
+			context.signal.throwIfAborted()
+			this.#pending.push(
+				this.#row(topic, context, {
+					event: 'agree',
+					version: version.version,
+					status: 'stale',
+					sources: buildRefs(sources, this.#options.seeds),
+					error: describeError(error),
+					failures: [{ kind: 'agree', token: '' }],
+					wall: performance.now() - started,
+				}),
+			)
+			return false
 		}
 	}
 
@@ -240,13 +421,17 @@ export class Aggregator {
 		let trigger = first
 		for (let attempt = 0; attempt < attempts; attempt += 1) {
 			context.signal.throwIfAborted()
-			const version = (this.#counts.get(topic.key) ?? 0) + 1
-			this.#counts.set(topic.key, version)
+			const next = (this.#counts.get(topic.key) ?? 0) + 1
 			const started = performance.now()
 			const prompt = buildSummaryPrompt(topic.key, topic.title, context.asOf, sources, failures)
 			const result = await this.#options.summarizer.summarize(prompt, context.signal)
+			const prior = this.#prior.get(topic.key)
+			const version = prior?.prose === result.prose ? prior.version : next
+			this.#counts.set(topic.key, Math.max(next, version))
 			const draft: AggregateVersion = {
 				version,
+				goal: context.goal,
+				point: context.lastSeed,
 				title: topic.title,
 				asOf: context.asOf,
 				prose: result.prose,
@@ -255,36 +440,20 @@ export class Aggregator {
 				sources,
 			}
 			failures = this.#check(topic, result.prose, sources, context)
+			context.signal.throwIfAborted()
 			let answers: Readonly<Record<string, number>> = {}
 			if (failures.length === 0) {
-				const asked = await this.#ask(
-					AGREE_HEAD,
-					[AGREE_HEAD, topic.key, version],
-					buildAgreeState(draft, sources),
-					AGREE_QUESTION,
-					context.signal,
-				)
-				const { fit } = this.#options
-				const agreed = asked.noul >= fit.agree
-				answers = { [AGREE_HEAD]: asked.noul }
+				const agreed = await this.#support(topic, draft, sources, context)
+				answers = this.#pending.at(-1)?.answers ?? {}
 				failures = agreed ? [] : [{ kind: 'agree', token: '' }]
-				this.#append(
-					this.#row(topic, context, {
-						event: 'agree',
-						version,
-						status: agreed ? 'current' : 'stale',
-						sources: buildRefs(sources, this.#options.seeds),
-						answers,
-						wall: asked.wall,
-						cached: asked.cached,
-					}),
-				)
 			}
-			this.#append(
+			context.signal.throwIfAborted()
+			this.#pending.push(
 				this.#row(topic, context, {
 					event: 'build',
 					version,
 					status: failures.length === 0 ? 'current' : 'stale',
+					result: failures.length === 0 ? versionToState(draft) : undefined,
 					sources: buildRefs(sources, this.#options.seeds),
 					ids: draft.ids.join(', '),
 					prose: draft.prose,
@@ -304,11 +473,12 @@ export class Aggregator {
 		}
 		this.#versions.delete(topic.key)
 		this.#withheld.add(topic.key)
-		this.#append(
+		this.#pending.push(
 			this.#row(topic, context, {
 				event: 'withhold',
 				version: this.#counts.get(topic.key) ?? 0,
 				status: 'withheld',
+				sources: buildRefs(sources, this.#options.seeds),
 				failures,
 			}),
 		)
@@ -328,7 +498,7 @@ export class Aggregator {
 			buildChangeQuestion(topic.title),
 			context.signal,
 		)
-		this.#append(
+		this.#pending.push(
 			this.#row(topic, context, {
 				event: 'change',
 				version: current.version,
@@ -355,6 +525,7 @@ export class Aggregator {
 		const before = judge.stats().hits[head] ?? 0
 		const started = performance.now()
 		const result = await judge.ask({ state, questions: { [id]: question } }, signal)
+		signal.throwIfAborted()
 		const answer = result.answers[id]
 		if (answer === undefined || answer.form !== 'noul')
 			throw new Error(`the judge returned no noul answer for ${id}`)
@@ -391,9 +562,17 @@ export class Aggregator {
 	}
 
 	// Drops the version of a topic whose sources are all gone, and keeps the lines for the stale check.
-	#retire(key: string, sources: readonly AggregateSource[]): void {
-		this.#forget(key, sources)
-		this.#versions.delete(key)
+	#retire(topic: AggregateTopic, current: AggregateVersion, context: AggregateContext): void {
+		this.#forget(topic.key, current.sources)
+		this.#versions.delete(topic.key)
+		this.#pending.push(
+			this.#row(topic, context, {
+				event: 'retire',
+				version: current.version,
+				status: 'retired',
+				trigger: 'removed',
+			}),
+		)
 	}
 
 	#forget(key: string, sources: readonly AggregateSource[]): void {
@@ -407,6 +586,9 @@ export class Aggregator {
 		fields: Pick<AggregateRow, 'event' | 'version' | 'status'> & Partial<AggregateRow>,
 	): AggregateRow {
 		return {
+			prior: versionToState(this.#prior.get(topic.key)),
+			projection: collectTopicSources(context.projection, context.input, topic, this.#days),
+			result: undefined,
 			topic: topic.key,
 			title: topic.title,
 			goal: context.goal,
@@ -422,9 +604,5 @@ export class Aggregator {
 			cached: false,
 			...fields,
 		}
-	}
-
-	#append(row: AggregateRow): void {
-		appendFileSync(this.#options.path, `${JSON.stringify(row)}\n`)
 	}
 }

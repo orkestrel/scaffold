@@ -1,6 +1,12 @@
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import type { JudgeAnswer, JudgeQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import type { AggregateRow, CacheRow, ShadowAggregate, ShadowItem, ShadowTruth } from '../types.ts'
+import type {
+	AggregateMaintenance,
+	AggregateRow,
+	CacheRow,
+	ShadowItem,
+	ShadowTruth,
+} from '../types.ts'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -40,6 +46,7 @@ import {
 	Shadow,
 	buildPairKey,
 	buildTimeline,
+	parseAggregates,
 	computeRate,
 	computeRates,
 	countFlips,
@@ -234,6 +241,19 @@ function buildAggregate(
 ): AggregateRow {
 	return {
 		topic,
+		prior: undefined,
+		projection: [],
+		result:
+			status === 'current' && (event === 'build' || event === 'keep')
+				? {
+						version: 1,
+						goal: `g0${lastSeed}`,
+						point: lastSeed,
+						sources: [
+							{ id: 's0', sentence: 0, role: 'user', text: 'Recorded source.', day: '2026-10-08' },
+						],
+					}
+				: undefined,
 		title,
 		goal: `g0${lastSeed}`,
 		lastSeed,
@@ -250,6 +270,10 @@ function buildAggregate(
 		wall: 0,
 		cached: false,
 	}
+}
+
+function completeMaintenance(lastSeed: number): AggregateMaintenance {
+	return { event: 'maintenance', goal: `g0${lastSeed}`, lastSeed, status: 'complete' }
 }
 
 function buildTopicJudgment(id: string, name: string, value: number): unknown {
@@ -395,12 +419,16 @@ function writeFixture(): void {
 		buildAggregate('owner:AC-77', 'Halvorsen Studio', 3, 'build', 'current', OWNER),
 		buildAggregate('refunds', 'refunds', 3, 'build', 'current', REFUNDS_FIRST),
 		buildAggregate('escalations', 'escalations', 3, 'build', 'current', ESCALATIONS),
+		completeMaintenance(3),
 		buildAggregate('refunds', 'refunds', 5, 'change', 'current', undefined),
 		buildAggregate('refunds', 'refunds', 5, 'build', 'stale', 'Refund code is MX-9999.'),
 		buildAggregate('refunds', 'refunds', 5, 'agree', 'current', undefined),
 		buildAggregate('refunds', 'refunds', 5, 'build', 'current', REFUNDS_SECOND),
 		buildAggregate('escalations', 'escalations', 5, 'withhold', 'withheld', undefined),
+		buildAggregate('owner:AC-77', 'Halvorsen Studio', 5, 'keep', 'current', OWNER),
+		completeMaintenance(5),
 		buildAggregate('refunds', 'refunds', 8, 'build', 'current', 'Refund code is MX-3000.'),
+		completeMaintenance(8),
 	])
 	const states: ReadonlyArray<readonly [string, JudgeQuestion, JudgeAnswer]> = [
 		[
@@ -587,36 +615,16 @@ function buildItem(
 
 describe('shadow', () => {
 	describe('helpers', () => {
-		it('builds the timeline from current builds and withholds only', () => {
-			const rows: readonly ShadowAggregate[] = [
-				{ topic: 'a', title: 'A', lastSeed: 2, event: 'build', status: 'current', prose: 'first' },
-				{ topic: 'b', title: 'B', lastSeed: 2, event: 'build', status: 'current', prose: 'kept' },
-				{ topic: 'a', title: 'A', lastSeed: 5, event: 'build', status: 'stale', prose: 'stale' },
-				{
-					topic: 'a',
-					title: 'A',
-					lastSeed: 5,
-					event: 'agree',
-					status: 'current',
-					prose: undefined,
-				},
-				{
-					topic: 'a',
-					title: 'A',
-					lastSeed: 5,
-					event: 'change',
-					status: 'current',
-					prose: undefined,
-				},
-				{
-					topic: 'b',
-					title: 'B',
-					lastSeed: 5,
-					event: 'withhold',
-					status: 'withheld',
-					prose: undefined,
-				},
-				{ topic: 'a', title: 'A', lastSeed: 8, event: 'build', status: 'current', prose: 'second' },
+		it('excludes unmaintained topics at each completed boundary', () => {
+			const rows = [
+				buildAggregate('a', 'A', 2, 'build', 'current', 'first'),
+				buildAggregate('b', 'B', 2, 'build', 'current', 'kept'),
+				completeMaintenance(2),
+				buildAggregate('a', 'A', 5, 'agree', 'current', undefined),
+				buildAggregate('b', 'B', 5, 'withhold', 'withheld', undefined),
+				completeMaintenance(5),
+				buildAggregate('a', 'A', 8, 'build', 'current', 'second'),
+				completeMaintenance(8),
 			]
 			const timeline = buildTimeline(rows)
 			assert.deepEqual(
@@ -626,7 +634,7 @@ describe('shadow', () => {
 				]),
 				[
 					[2, ['a=first', 'b=kept']],
-					[5, ['a=first']],
+					[5, []],
 					[8, ['a=second']],
 				],
 			)
@@ -635,14 +643,79 @@ describe('shadow', () => {
 
 		it('finds the latest snapshot strictly before a message', () => {
 			const timeline = buildTimeline([
-				{ topic: 'a', title: 'A', lastSeed: 2, event: 'build', status: 'current', prose: 'one' },
-				{ topic: 'a', title: 'A', lastSeed: 5, event: 'build', status: 'current', prose: 'two' },
+				buildAggregate('a', 'A', 2, 'build', 'current', 'one'),
+				completeMaintenance(2),
+				buildAggregate('a', 'A', 5, 'build', 'current', 'two'),
+				completeMaintenance(5),
 			])
 			assert.equal(findSnapshot(timeline, 2), undefined)
 			assert.equal(findSnapshot(timeline, 3)?.seed, 2)
 			assert.equal(findSnapshot(timeline, 5)?.seed, 2)
 			assert.equal(findSnapshot(timeline, 6)?.seed, 5)
 			assert.equal(findSnapshot([], 6), undefined)
+		})
+
+		it('requires exact source custody and completion and removes retired failed and withheld entries', () => {
+			for (const event of ['retire', 'fail', 'withhold'] as const) {
+				const initial = buildAggregate('a', 'A', 2, 'build', 'current', 'first')
+				const removed = buildAggregate('a', 'A', 2, event, 'failed', undefined)
+				const timeline = buildTimeline(parseAggregates([initial, removed, completeMaintenance(2)]))
+				assert.equal(findSnapshot(timeline, 3)?.topics.size, 0)
+			}
+			const first = buildAggregate('a', 'A', 2, 'build', 'current', 'first')
+			assert.deepEqual(buildTimeline(parseAggregates([first])), [])
+			assert.equal(
+				buildTimeline(
+					parseAggregates([
+						{ ...first, result: { ...first.result, sources: [{}] } },
+						completeMaintenance(2),
+					]),
+				)[0]?.topics.size,
+				0,
+			)
+			assert.equal(
+				buildTimeline(
+					parseAggregates([
+						{ ...first, result: { ...first.result, point: 9 } },
+						completeMaintenance(2),
+					]),
+				)[0]?.topics.size,
+				0,
+			)
+			assert.equal(
+				buildTimeline(
+					parseAggregates([
+						{ ...first, result: { ...first.result, goal: 'future' } },
+						completeMaintenance(2),
+					]),
+				)[0]?.topics.size,
+				0,
+			)
+			for (const status of ['failed', 'aborted'])
+				assert.equal(
+					buildTimeline(parseAggregates([first, { ...completeMaintenance(2), status }]))[0]?.topics
+						.size,
+					0,
+				)
+		})
+
+		it('keeps repeated completed boundaries distinct and never uses a later recovery for an earlier arrival', () => {
+			const first = buildAggregate('a', 'A', 2, 'build', 'current', 'first')
+			const retained = buildAggregate('a', 'A', 2, 'keep', 'current', 'first')
+			const recovered = buildAggregate('a', 'A', 8, 'build', 'current', 'recovered')
+			const timeline = buildTimeline([
+				first,
+				completeMaintenance(2),
+				retained,
+				completeMaintenance(2),
+				{ ...completeMaintenance(5), status: 'failed' },
+				recovered,
+				completeMaintenance(8),
+			])
+			assert.equal(timeline.length, 4)
+			assert.equal(findSnapshot(timeline, 5)?.topics.get('a')?.prose, 'first')
+			assert.equal(findSnapshot(timeline, 8)?.topics.size, 0)
+			assert.equal(findSnapshot(timeline, 9)?.topics.get('a')?.prose, 'recovered')
 		})
 
 		it('reads a verdict at the ledger cutoffs', () => {

@@ -7,6 +7,7 @@ import type {
 	AggregateFilter,
 	AggregateRef,
 	AggregateSource,
+	AggregateState,
 	AggregateTokens,
 	AggregateTopic,
 	AggregateVersion,
@@ -312,10 +313,10 @@ export function renderSource(source: AggregateSource): string {
  * Builds the identity of a source line.
  *
  * @param source - The source
- * @returns The message id, the sentence index, and the text, so a line whose text changed reads as a different line
+ * @returns The message id, sentence index, role, text, and day, so every changed source field changes its identity
  */
 export function buildSourceKey(source: AggregateSource): string {
-	return JSON.stringify([source.id, source.sentence, source.text])
+	return JSON.stringify([source.id, source.sentence, source.role, source.text, source.day])
 }
 
 /**
@@ -329,10 +330,20 @@ export function compareSources(
 	previous: readonly AggregateSource[],
 	current: readonly AggregateSource[],
 ): { readonly removed: readonly AggregateSource[]; readonly arrived: readonly string[] } {
-	const present = new Set(current.map(buildSourceKey))
+	const present = new Map<string, number>()
+	for (const source of current) {
+		const key = buildSourceKey(source)
+		present.set(key, (present.get(key) ?? 0) + 1)
+	}
 	const before = new Set(previous.map((source) => source.id))
 	return {
-		removed: previous.filter((source) => !present.has(buildSourceKey(source))),
+		removed: previous.filter((source) => {
+			const key = buildSourceKey(source)
+			const count = present.get(key) ?? 0
+			if (count === 0) return true
+			present.set(key, count - 1)
+			return false
+		}),
 		arrived: [
 			...new Set(current.filter((source) => !before.has(source.id)).map((source) => source.id)),
 		],
@@ -526,4 +537,20 @@ export function renderSummaries(
 			return { text, kept: entries.slice(0, count), cut: entries.slice(count), tokens }
 	}
 	return { text: '', kept: [], cut: entries, tokens: 0 }
+}
+
+/**
+ * Copies a summary's version, source projection, and maintenance boundary for consumer evidence.
+ * @param version - The supported version, or absence
+ * @returns An owned state binding, or undefined
+ */
+export function versionToState(version: AggregateVersion | undefined): AggregateState | undefined {
+	return version === undefined
+		? undefined
+		: {
+				version: version.version,
+				goal: version.goal,
+				point: version.point,
+				sources: version.sources.map((source) => ({ ...source })),
+			}
 }

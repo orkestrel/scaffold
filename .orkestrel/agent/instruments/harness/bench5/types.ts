@@ -116,6 +116,8 @@ export interface TailMessage {
 
 /** Holds one `select` event of the agent, as one line of `selections.jsonl`. */
 export interface SelectionRecord {
+	/** Binds each admitted body to its completed maintenance state; absent in archived recordings. */
+	readonly aggregates?: readonly AggregateBinding[]
 	readonly goal: string
 	/** Holds the position of the event among the goal's events: 1 for the first pass, 2 for the answer pass. */
 	readonly pass: number
@@ -410,11 +412,18 @@ export interface JudgeCacheInterface extends JudgeInterface {
 	stats(): JudgeStats
 }
 
-export type AggregateTrigger = 'first' | 'removed' | 'change' | 'check' | 'retry'
+export type AggregateTrigger =
+	| 'first'
+	| 'removed'
+	| 'change'
+	| 'check'
+	| 'retry'
+	| 'unchanged'
+	| 'retained'
 
-export type AggregateEvent = 'build' | 'agree' | 'change' | 'withhold'
+export type AggregateEvent = 'build' | 'agree' | 'change' | 'withhold' | 'keep' | 'retire' | 'fail'
 
-export type AggregateStatus = 'current' | 'stale' | 'withheld'
+export type AggregateStatus = 'current' | 'stale' | 'withheld' | 'retired' | 'failed'
 
 export type AggregateCheck = 'empty' | 'id' | 'number' | 'name' | 'stale' | 'agree'
 
@@ -462,15 +471,67 @@ export interface AggregateTopic {
 	readonly owner: boolean
 }
 
-/** Holds one built summary of a topic. */
-export interface AggregateVersion {
+/** Holds a supported version's exact sources and completed read point. */
+export interface AggregateState {
 	readonly version: number
+	readonly goal: string
+	readonly point: number
+	readonly sources: readonly AggregateSource[]
+}
+
+/** Binds one admitted topic body to the state that supplied it. */
+export interface AggregateBinding {
+	readonly topic: string
+	readonly state: AggregateState
+	readonly prose: string
+}
+
+/** Records the completion boundary of one maintenance pass, including empty or failed passes. */
+export interface AggregateMaintenance {
+	readonly event: 'maintenance'
+	readonly goal: string
+	readonly lastSeed: number
+	readonly status: 'complete' | 'failed' | 'aborted'
+	readonly error?: string
+}
+
+/** Names source transitions independently of observed model decisions. */
+export type TransitionCategory =
+	| 'arrival'
+	| 'repetition'
+	| 'correction'
+	| 'withdrawal'
+	| 'supersession'
+	| 'tool'
+
+/** Records a prefrozen semantic annotation that scenario truth does not distinguish. */
+export interface TransitionAnnotation {
+	readonly transition: 'repetition' | 'withdrawal'
+	readonly index: number
+	readonly prior: readonly number[]
+	readonly text: string
+}
+
+/** Records an opportunity in the scenario, never a claim of live maintenance coverage. */
+export interface TransitionOpportunity {
+	readonly transition: TransitionCategory
+	readonly index: number
+	readonly prior: readonly number[]
+	readonly text: string
+	readonly topics: readonly string[]
+	readonly before: number | undefined
+	readonly after: number | undefined
+	readonly tool?: string
+	readonly id?: string
+}
+
+/** Holds one supported summary and the read point that validated its sources. */
+export interface AggregateVersion extends AggregateState {
 	readonly title: string
 	readonly asOf: string
 	readonly prose: string
 	readonly raw: string
 	readonly ids: readonly string[]
-	readonly sources: readonly AggregateSource[]
 }
 
 /** Holds one summary as the block renders it. */
@@ -524,6 +585,7 @@ export interface AggregateDrop {
 
 /** Holds the summaries block of a prompt and what the render left out. */
 export interface AggregateRendering {
+	readonly states: readonly AggregateBinding[]
 	readonly text: string
 	readonly topics: readonly string[]
 	readonly cut: readonly string[]
@@ -553,6 +615,11 @@ export interface AggregateContext {
 
 /** Holds one line of the aggregate rows file. */
 export interface AggregateRow {
+	/** Records the complete attempted source projection, or absence when a pass failed before reading it. */
+	readonly projection: readonly AggregateSource[] | undefined
+	readonly prior: AggregateState | undefined
+	readonly result: AggregateState | undefined
+	readonly error?: string
 	readonly topic: string
 	readonly title: string
 	readonly goal: string
@@ -879,12 +946,14 @@ export interface ShadowAggregate {
 	readonly event: string
 	readonly status: string
 	readonly prose: string | undefined
+	readonly result: AggregateState | undefined
 }
 
 /** Holds the title and prose of one current aggregate. */
 export interface ShadowEntry {
 	readonly title: string
 	readonly prose: string
+	readonly state: AggregateState
 }
 
 /** Holds the aggregates that were current after the rows of one read point. */
@@ -918,6 +987,8 @@ export interface ShadowInputs {
 
 /** Holds one judgment that the shadow re-asked, with the plain and the shadow decision. */
 export interface ShadowItem {
+	/** Binds the prefixed summaries to their exact prior maintenance states. */
+	readonly aggregates?: readonly AggregateBinding[]
 	readonly id: string
 	readonly head: ShadowHead
 	/** Holds the seed index of each message the question names, `undefined` for a message that is no seed message. */
