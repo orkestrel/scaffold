@@ -17,6 +17,7 @@ import {
 import { MAX_INVENTORY_PATHS } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
+
 import {
 	COMMAND_OPTIONS,
 	EXECUTABLE_NAME,
@@ -80,6 +81,37 @@ import {
 	USAGE_CASES,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
+
+describe('selected showcase declaration projection', () => {
+	it('projects both selected sections while retaining ordinary runtime precedence', () => {
+		const manifest = JSON.stringify({
+			dependencies: { vite: '^6.0.0', 'vite-plugin-singlefile': '2.3.3', typescript: '^6.0.3' },
+			devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '^2.2.0', typescript: '^6.0.2' },
+		})
+		const selected = manifestToWritableDependencies(
+			manifest,
+			createBlueprint('display', { app: ['browser'], showcase: true }),
+		)
+		expect(selected.runtime).toEqual([
+			{ name: 'typescript', range: '^6.0.3' },
+			{ name: 'vite', range: '^6.0.0' },
+			{ name: 'vite-plugin-singlefile', range: '2.3.3' },
+		])
+		expect(selected.development).toEqual([
+			{ name: 'vite', range: '^8.3.4' },
+			{ name: 'vite-plugin-singlefile', range: '^2.2.0' },
+		])
+		expect(
+			manifestToWritableDependencies(manifest, createBlueprint('display', { app: ['browser'] })),
+		).toEqual({
+			runtime: [
+				{ name: 'typescript', range: '^6.0.3' },
+				{ name: 'vite', range: '^6.0.0' },
+			],
+			development: [],
+		})
+	})
+})
 
 describe('extension selections', () => {
 	it('maps creation options to the command contract', () => {

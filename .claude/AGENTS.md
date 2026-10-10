@@ -7,7 +7,7 @@
 - Use the Agent tool for one unit, or when the next step depends on the result. Name a role from `.claude/agents/` as `subagent_type`; never `general-purpose`, `Plan`, `claude`, or `fork`.
 - Use a Workflow for a fan-out of many small units, a staged pipeline, or a loop. Give every `agent()` node a model alias from § Models and an effort. Serialize writing nodes. Recover an interrupted run with `resumeFromRunId`.
 - Never dispatch `fork`; it runs on the session's model and context. Every unit starts with a clean context on its role's model.
-- Use the built-in `Explore` agent with `model: haiku` for a quick locate; it loads no instruction files.
+- Use the built-in `Explore` agent with `model: haiku` for an exact bounded lookup; apply `.agents/orchestration.md` § Routing. It loads no instruction files.
 - Foreground Bash is capped at 10 minutes. Run anything longer as a background command with an internal `timeout`.
 - Write a reusable or long-running program as a TypeScript file and run it with `node`; a heredoc, `node -e`, `&&` chain, or `${...}` argument trips the Windows approval classifier, and a one-shot read-only check may run inline. Probe a bench with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts`, launch a lane through `scripts/launch.ts`, and read its answer with `scripts/result.ts`, all from the dispatch skill.
 
@@ -24,7 +24,7 @@
 - Roles that launch a CLI, run gates, or only read set `omitClaudeMd: true`; their charters carry the permission floor they need. Writers and reviewers load the contract.
 - Adding or removing an MCP server invalidates the cache when its tools load into the prefix; deferred tools (the default) append without disturbing it. Avoid either mid-session.
 - An edit to a loaded instruction file takes effect after `/clear`, `/compact`, or a restart. Edits under `.claude/agents/` and `.claude/skills/` hot-reload.
-- Keep large reads in subagents. The main context holds decisions.
+- Route supporting reads per `.agents/orchestration.md` § Routing. The main context holds decisions.
 
 ## Wiring
 

@@ -31,7 +31,7 @@ Write `tmp/units/<unit>-claims.md` and point every lane at it. Read `references/
 
 ## Dispatch the lanes
 
-- Medium: one lane, on an engine that did not write the work (`reviewer` for Astra-written work, `analyst` for Opus-written work). Large: the objective lane and the subjective lane, same claims file, each in a clean context, neither shown the other's answer before reconciliation. Add `checker` when criteria are mechanical.
+- Medium: one lane, with an independent reviewer per `.agents/orchestration.md` § Engines (`reviewer` for Astra-written work, `analyst` for Opus-written work). Large: the objective lane and the subjective lane, same claims file, each in a clean context, neither shown the other's answer before reconciliation. Add `checker` when criteria are mechanical.
 - Tell a lane when its own engine wrote the half it audits.
 - Give a lane the evidence a read-only allowlist cannot produce: run the probe yourself, record its control and output, and hand it over.
 - Auditors edit no source and spawn nothing. Their reports are immutable after they return.

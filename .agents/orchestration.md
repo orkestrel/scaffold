@@ -8,59 +8,62 @@ Read in order: the user's instruction; `AGENTS.md` and the rules it scopes to yo
 
 ## Engines
 
-| Engine                | Job                                                                             | Posture                                                                 |
-| --------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Claude Fable 5.1      | orchestration in Claude Code: the plan, every decision, integration, acceptance | never dispatched: never a subagent, a bench, a fork, or a Workflow node |
-| Cursor Grok           | absorb, distill, scout, bounded research                                        | read-only; returns evidence, never decisions                            |
-| Claude Opus 5.5       | subjective design, design-fit review, implementation                            | proposes, audits, implements; never accepts its own work                |
-| GPT-6 Astra           | objective analysis, correctness audit, implementation                           | proposes, audits, implements; never accepts its own work                |
-| Claude Sonnet 5.5     | bounded implementation of a closed shape, ecosystem reconciliation              | executes a fully specified brief                                        |
-| Claude Haiku 5.5      | bench drivers, locating, bulk reading, bounded research, conformance, gates     | executes a fully specified brief; edits no source                       |
-| GPT-6 Sol, GPT-6 Luna | mechanical units, drivers, gates, conformance, locating, reading                | executes a fully specified brief                                        |
+Name the harness family and its access route: Claude through Claude Code or the Claude CLI; Codex through Codex native agents or the Codex CLI; Cursor through the Cursor CLI, with Grok 4.7 Extra High for the Grok bench. Classify GPT-6 Astra, GPT-6.1 Sol, and GPT-6 Luna as Codex-family engines, including when another harness hosts the Orchestrator.
 
-The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Claude Code, GPT-6 Astra in Codex, Cursor Grok in Cursor. The Orchestrator owns the plan, every decision, integration, and acceptance. When the size gate names a review, the review runs on an engine that did not write the work.
+| Engine                  | Job                                                                             | Posture                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Claude Fable 5.1        | orchestration in Claude Code: the plan, every decision, integration, acceptance | never dispatched: never a subagent, a bench, a fork, or a Workflow node |
+| Cursor Grok             | context absorption, distillation, broad mapping, exploration                    | read-only; returns evidence, never decisions                            |
+| Claude Opus 5.5         | subjective design, design-fit review, implementation                            | proposes, audits, implements; never accepts its own work                |
+| GPT-6 Astra             | objective analysis, correctness audit, implementation                           | proposes, audits, implements; never accepts its own work                |
+| Claude Sonnet 5.5       | bounded implementation of a closed shape, ecosystem reconciliation              | executes a fully specified brief                                        |
+| Claude Haiku 5.5        | bench drivers, small precise tasks, exact lookups, conformance, gates           | executes a fully specified brief; edits no source                       |
+| GPT-6.1 Sol, GPT-6 Luna | mechanical units, drivers, small precise tasks, gates, exact lookups            | executes a fully specified brief                                        |
+
+The harness's own engine orchestrates: Claude Fable 5.1 or Claude Opus 5.5 in Claude Code, GPT-6 Astra in Codex, Cursor Grok in Cursor. The Orchestrator owns the plan, every decision, integration, and acceptance. When the harness is Codex or the Orchestrator uses a Codex-family engine, use the Codex column: map Opus to GPT-6 Astra, Sonnet to GPT-6.1 Sol, and Haiku to GPT-6 Luna; execute mapped Astra roles natively without an Opus bench probe. Under this mapping, assign review to another agent in a clean context and forbid self-review, including when writer and reviewer both use Astra. For other harnesses, review runs on an engine that did not write the work.
 
 ## Roles
 
-| Role         | Job                                                                | Claude       | Codex      |
-| ------------ | ------------------------------------------------------------------ | ------------ | ---------- |
-| `grok`       | absorption and distillation on Cursor Grok                         | haiku driver | sol driver |
-| `analyst`    | objective design argument or correctness audit on Astra            | haiku driver | astra      |
-| `astra`      | objective, constraint-heavy implementation on Astra                | haiku driver | astra      |
-| `planner`    | subjective design on Opus                                          | opus         | sol driver |
-| `reviewer`   | design-fit or correctness review on Opus                           | opus         | sol driver |
-| `opus`       | subjective implementation (API shape, naming, guide voice) on Opus | opus         | sol driver |
-| `builder`    | one bounded unit with a closed shape, app layer included           | sonnet       | sol        |
-| `checker`    | mechanical conformance against criteria and rules                  | haiku        | luna       |
-| `verifier`   | gates and evidence commands, exit-code truth                       | haiku        | sol        |
-| `scout`      | locate files, symbols, seams                                       | haiku        | luna       |
-| `distiller`  | bulk reading when the Cursor bench is dark                         | haiku        | luna       |
-| `researcher` | primary-source research when the Cursor bench is dark              | haiku        | luna       |
-| `orkestrel`  | ecosystem reconciliation over supplied evidence                    | sonnet       | sol        |
+| Role         | Job                                                        | Claude       | Codex       |
+| ------------ | ---------------------------------------------------------- | ------------ | ----------- |
+| `grok`       | absorption, distillation, broad mapping, exploration       | haiku driver | luna driver |
+| `analyst`    | objective design argument or correctness audit on Astra    | haiku driver | astra       |
+| `astra`      | objective, constraint-heavy implementation on Astra        | haiku driver | astra       |
+| `planner`    | subjective design                                          | opus         | astra       |
+| `reviewer`   | design-fit or correctness review                           | opus         | astra       |
+| `opus`       | subjective implementation (API shape, naming, guide voice) | opus         | astra       |
+| `builder`    | one bounded unit with a closed shape, app layer included   | sonnet       | sol         |
+| `checker`    | mechanical conformance against criteria and rules          | haiku        | luna        |
+| `verifier`   | gates and evidence commands, exit-code truth               | haiku        | luna        |
+| `scout`      | exact bounded lookup of files, symbols, seams              | haiku        | luna        |
+| `distiller`  | bulk reading when the Cursor bench is dark                 | haiku        | luna        |
+| `researcher` | primary-source research when the Cursor bench is dark      | haiku        | luna        |
+| `orkestrel`  | ecosystem reconciliation over supplied evidence            | sonnet       | sol         |
 
 - Name the role and its engine in every dispatch. Reach a role by its own name.
-- A driver launches another provider's CLI and returns the journal path and session id with the result. It never judges or implements. Refuse a bench result that carries no journal path and session id; it ran on the driver.
-- `.agents/transports/<provider>.md` owns each bench's invocation, sandbox, journal, and recovery. `.claude/agents/` and `.codex/agents/` hold one file per role.
+- A driver launches another harness's CLI and returns the journal path and session id with the result. It never judges or implements. Refuse a bench result that carries no journal path and session id; it ran on the driver.
+- `.agents/transports/<harness>.md` owns each bench's invocation, sandbox, journal, and recovery. `.claude/agents/` and `.codex/agents/` hold one file per role.
 
 ## Routing
 
 - Route by judgment load. Objective, constraint-heavy, mechanical-precision work goes to `astra`. API shape, naming, and documentation voice go to `opus`. A bounded unit whose brief or types fix its names, API, and architecture goes to `builder`, whatever its private lines; a unit that spans packages or leaves one of those open goes to `astra` or `opus`.
-- Delegate bulk supporting reads to `grok`: terrain, prior art, diff sweeps, scattered sources. Read decision-bearing source yourself. Fall back to `distiller` or `researcher` only when the Cursor bench is dark, and record the fallback.
+- Route all context absorption, distillation, broad mapping, and exploratory or fishing reads to `grok` on Cursor Grok 4.7 Extra High: terrain, prior art, diff sweeps, scattered sources. Keep decision-bearing reading with the decision owner. Fall back to `distiller` or `researcher` only when the Cursor bench is dark, and record the fallback; ease or cost never authorizes a fallback.
+- Keep small tedious precise tasks native: Claude Haiku in Claude, Codex Luna in Codex. Use `scout` for an exact bounded lookup; keep bench drivers, `checker`, and `verifier` on their mapped native engines. A bounded file scope does not turn context absorption or exploratory reading into a native lookup.
 - Route gates to `verifier`. A writer's self-reported gate is not evidence.
-- Work directly on a one-file change, a lookup, or a one-line fix. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
+- Work directly on a one-file change or a one-line fix, subject to the preceding routing rules. Route standalone lookups through `scout`. Dispatch when isolation, parallelism, a second engine, or a large read pays for the brief.
 
 ## Size gate
 
 `AGENTS.md` § Work loop sizes a change and fixes the precedence (large, then medium, then small). This file adds who runs what.
 
-| Size   | Design                                                                                          | Implementation                                 | Review                                                                                                         | Gates                              |
-| ------ | ----------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| small  | none                                                                                            | direct or `builder`                            | none; the touched test is the review                                                                           | touched file                       |
-| medium | one opinion (`planner` or `analyst`) only when the shape is open                                | `opus`, `astra`, or `builder` by judgment load | one pass by a reviewer engine that did not write it, on numbered claims about the contract and the risky seams | `verifier` on the touched projects |
-| large  | one adversarial round: `planner` and `analyst`, same brief, clean contexts, blind to each other | disjoint units in parallel                     | one `orkestrel-falsify` round on the integrated result                                                         | `verifier` tree-wide, once         |
+| Size   | Design                                                                                          | Implementation                                 | Review                                                                                                       | Gates                              |
+| ------ | ----------------------------------------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| small  | none                                                                                            | direct or `builder`                            | none; the touched test is the review                                                                         | touched file                       |
+| medium | one opinion (`planner` or `analyst`) only when the shape is open                                | `opus`, `astra`, or `builder` by judgment load | one pass by an independent reviewer per § Engines, on numbered claims about the contract and the risky seams | `verifier` on the touched projects |
+| large  | one adversarial round: `planner` and `analyst`, same brief, clean contexts, blind to each other | disjoint units in parallel                     | one `orkestrel-falsify` round on the integrated result                                                       | `verifier` tree-wide, once         |
 
 - Never run a review on a small change. Never run a second design round on the same brief.
-- A fix round re-audits the repaired claim only. A fix that adopted the reviewer's prescription verbatim closes with a mutation probe (disable the load-bearing line, watch the test fail, restore it). A fix that departs from it gets one pass by the other engine.
+- A fix round re-audits the repaired claim only. A fix that adopted the reviewer's prescription verbatim closes with a mutation probe (disable the load-bearing line, watch the test fail, restore it). A fix that departs from it gets one pass by an independent reviewer per § Engines.
 - When review rounds at one seam keep surfacing defects without converging on their source, follow `.agents/skills/orkestrel-falsify/SKILL.md` § End the depth search.
 - An all-confirmed round ends the audit. A round needs an added or repaired claim to attack; reviewer appetite is not a subject.
 
@@ -72,7 +75,7 @@ A large change runs these phases once each, in order, and ends when the exit cri
 2. **Design.** One adversarial round: `planner` (subjective) and `analyst` (objective) on one brief, clean contexts, blind to each other. Reconcile into one plan: units, owned files, dependencies, parallel and serial order, acceptance criteria, exit criterion, routing ledger.
 3. **Implement.** Dispatch units per § Routing and § Parallelism.
 4. **Integrate.** Apply returned patches to shared files serially. A type, mechanism, or criterion found here is a successor unit, never an integration edit.
-5. **Audit.** One `orkestrel-falsify` round on the integrated result, one engine that did not write it per lane; add `checker` when the criteria are mechanical.
+5. **Audit.** One `orkestrel-falsify` round on the integrated result, an independent reviewer per § Engines in each lane; add `checker` when the criteria are mechanical.
 6. **Verify.** `verifier` runs the tree-wide gates once.
 7. **Re-baseline.** Strike satisfied units, restate transformed ones, add units the exit criterion already required. A re-baseline never moves the exit criterion; that needs the user.
 8. **Accept.** Report outcome, decisions, evidence, remaining risk. Run `orkestrel-debrief` when the campaign changed process, then prune per § Cleanup.
@@ -103,7 +106,7 @@ Every working file lives under the checkout's gitignored `tmp/`, in the director
 
 | Directory                                  | Holds                                                                                              |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `tmp/claude/`, `tmp/codex/`, `tmp/cursor/` | bench briefs, launch scripts, journals, `.err` files, last-message files, login logs, per provider |
+| `tmp/claude/`, `tmp/codex/`, `tmp/cursor/` | bench briefs, launch scripts, journals, `.err` files, last-message files, login logs, per harness  |
 | `tmp/units/`                               | native unit briefs, reports, claims files, and campaign records                                    |
 | `tmp/probes/`                              | runtime probes the `probe` Vitest project collects and the `probe` MCP server arms                 |
 | `tmp/type/`                                | the type stage's workspace mirror, owned by `@orkestrel/probe`                                     |
@@ -145,7 +148,7 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 ## Benches
 
 - Probe a bench with the dispatch skill's `scripts/bench.ts` and the model its transport pins before its first lane in a session. A version string or a login status is not liveness.
-- A dispatch that fails on auth, quota, model access, or network records the bench dark and re-plans the lane on the substitute engine: Astra dark → Opus holds the objective lane too; Opus dark in Codex → Astra holds the subjective lane too; Grok dark → the harness's native reader, `distiller` or `researcher`: Claude Haiku 5.5 in Claude Code, GPT-6 Luna in Codex; when Haiku refuses the read, re-dispatch the role with `model: sonnet`. Record every substitution in the routing ledger.
+- For a harness that uses a bench, record a dispatch that fails on auth, quota, model access, or network as bench dark and re-plan the lane: Astra bench dark → Claude Opus holds the objective lane too; Claude Opus bench dark → Astra holds the subjective lane too; Grok dark → the harness's native reader, `distiller` or `researcher`: Claude Haiku 5.5 in Claude Code, GPT-6 Luna under the Codex mapping. When Haiku refuses the read, re-dispatch the role with `model: sonnet`. Record every substitution in the routing ledger. For a native role failure, use § Deviation protocol without a Claude fallback prerequisite.
 - Never assign Grok a design or review lane in Claude Code or Codex.
 - Journal every bench run under `tmp/<bench>/` with its session id. Never commit a journal.
 
@@ -162,7 +165,7 @@ The Orchestrator triages: obvious correction → tighten and re-dispatch; missin
 - Fix the model at session start. Effort switches and MCP changes invalidate the cache on most models and configurations; check the rule for the active model and tool-loading mode before changing either mid-session.
 - Keep the always-on instruction set small; rules load by path. An edit to a loaded instruction file takes effect after `/clear`, `/compact`, or a restart.
 - Give reading and driver roles no instruction files (`omitClaudeMd` in Claude Code) when their charter carries the floor they need.
-- Send bulk reads to a subagent and keep only the distillate.
+- Route bulk reads per § Routing and keep only the distillate.
 
 ## Acceptance
 

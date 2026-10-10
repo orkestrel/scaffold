@@ -50,6 +50,7 @@ import {
 	ScaffoldError,
 	SHEET_ENTRY_NAME,
 	SHOWCASE_CONFIG_PATH,
+	SHOWCASE_DEV_DEPENDENCIES,
 	SHOWCASE_PAGES_PATH,
 	STYLES_ENTRY_PATH,
 	THEMES_BARREL_PATH,
@@ -337,6 +338,9 @@ export function auditToExit(audit: Audit): number {
  * @param manifest - The target manifest text.
  * @param blueprint - The workspace shape that supplies the planned tool set.
  * @returns The declared fleet rows and planned foreign tools in their writable sections.
+ * @remarks
+ * Selected showcase tools retain every string declaration in both sections.
+ * Other foreign tools retain runtime precedence when declared in both sections.
  */
 export function manifestToWritableDependencies(
 	manifest: string,
@@ -354,7 +358,14 @@ export function manifestToWritableDependencies(
 		const runtimeRange = runtimeRecord[name]
 		if (isString(runtimeRange)) {
 			runtime.push({ name, range: runtimeRange })
-			continue
+			if (
+				!(
+					blueprint.showcase &&
+					blueprint.app.includes('browser') &&
+					Object.hasOwn(SHOWCASE_DEV_DEPENDENCIES, name)
+				)
+			)
+				continue
 		}
 		const developmentRange = developmentRecord[name]
 		if (isString(developmentRange)) development.push({ name, range: developmentRange })

@@ -1,6 +1,6 @@
 name = "orkestrel"
 description = "Read-only Orkestrel ecosystem reconciler: turns the evidence the dispatch supplies — manifests, lockfiles, installed declarations, guides, and registry readings — into package maps, dependency sequencing, blast radius, and drift findings. Collects no live state itself, and never treats the embedded catalog as live state."
-model = "gpt-6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """

@@ -1424,7 +1424,7 @@ describe('the admitted npm', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const entry = workspace.write('npm/bin/npm-cli.js', "process.stdout.write('0.0.1\\n')\n")
-			const environment = { ...process.env, npm_execpath: entry }
+			const environment = buildEnvironment({ npm_execpath: entry })
 			expect(resolveNpmEntry(environment)).toBe(entry)
 			expect(readNpmVersion(environment)).toBe('0.0.1')
 			const launched = await spawnNpm(['--version'], { environment })
@@ -1438,19 +1438,17 @@ describe('the admitted npm', () => {
 		// A spawn merges its overrides over this process's environment, so an override that leaves
 		// npm_execpath out still launches the inherited entry, and the reading must follow it.
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		const inherited = process.env.npm_execpath
+		const inherited = process.env
 		try {
-			process.env.npm_execpath = workspace.write(
-				'npm/bin/npm-cli.js',
-				"process.stdout.write('0.0.2\\n')\n",
-			)
+			process.env = buildEnvironment({
+				npm_execpath: workspace.write('npm/bin/npm-cli.js', "process.stdout.write('0.0.2\\n')\n"),
+			})
 			const environment = { PATH: requireValue(readVariable(process.env, 'PATH')) }
 			expect(readNpmVersion(environment)).toBe('0.0.2')
 			const launched = await spawnNpm(['--version'], { environment })
 			expect(launched.stdout.trim()).toBe('0.0.2')
 		} finally {
-			if (inherited === undefined) delete process.env.npm_execpath
-			else process.env.npm_execpath = inherited
+			process.env = inherited
 			workspace.destroy()
 		}
 	})

@@ -707,7 +707,7 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 })
 
 /**
- * Names the development dependency used only by the optional single-file showcase build.
+ * Names the tested dependency pair selected by the optional single-file showcase build.
  *
  * @example
  * ```ts
@@ -717,8 +717,18 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
  * ```
  */
 export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'vite-plugin-singlefile': '^2.3.3',
+	'vite-plugin-singlefile': '2.3.3',
+	vite: manifest.devDependencies.vite,
 })
+
+/** Names the scoped npm override required by the tested showcase plugin. */
+export const SHOWCASE_OVERRIDES: Readonly<Record<string, Readonly<Record<string, string>>>> =
+	Object.freeze({
+		[`vite-plugin-singlefile@${SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile']}`]:
+			Object.freeze({
+				micromatch: 'npm:picomatch@2.3.2',
+			}),
+	})
 
 /** Lists the development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({

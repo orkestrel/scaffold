@@ -199,11 +199,15 @@ export interface ManifestScript {
  * `additions` names dependencies the manifest does not declare, each inserted
  * into the section its list names: `runtime` into `dependencies` and
  * `development` into `devDependencies`. Absent, nothing is inserted.
+ * `overrides` names npm selector maps whose string leaves are replaced or inserted.
+ * Malformed ancestors and duplicate selected keys refuse the write. This metadata
+ * is independent of the artifact replacements carried by `Blueprint.overrides`.
  */
 export interface ManifestRegionSet {
 	readonly pins: DependencyPinSet
 	readonly scripts: readonly ManifestScript[]
 	readonly additions?: DependencyPinSet
+	readonly overrides?: Readonly<Record<string, Readonly<Record<string, string>>>>
 }
 
 /**

@@ -1,6 +1,6 @@
 # Claude transport contract
 
-Every Codex-side driver that carries a brief to the Claude Opus 5.5 bench follows this file. Routes: `planner`, `reviewer`, `opus`. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs. Read `.agents/orchestration.md` first; it owns the role set and the routing.
+For harnesses that route work to the Claude Opus 5.5 bench, follow this file. Routes: `planner`, `reviewer`, `opus`. Read `.agents/orchestration.md` first; its Codex mapping uses native roles without this transport or a Claude probe. A driver writes the brief, resolves the command, and returns the brief path, the command, and the journal path. The Orchestrator launches the run as a tracked background command under a cap it sizes from prior runs.
 
 ## Command
 
@@ -16,6 +16,6 @@ node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/claude/<u
 
 ## Availability
 
-- Probe with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts --claude` before the first use in a session. `live: false` records the bench dark: return it at once with the fallback named, so the Astra main session records Opus unavailable for the round. Where the binary is absent, name the install command for the `claude` CLI so the Orchestrator can put it to the user in the same turn.
+- Probe with `node .agents/skills/orkestrel-dispatch/scripts/bench.ts --claude` before the first bench use in a session. `live: false` records the bench dark: return it at once with the fallback named, so the Orchestrator records Opus unavailable for the round. Where the binary is absent, name the install command for the `claude` CLI so the Orchestrator can put it to the user in the same turn.
 - Never install, authenticate, or substitute an API key, access token, or copied auth file.
 - Never route orchestration or acceptance across this bridge. Never read credentials, edit, or spawn another agent.

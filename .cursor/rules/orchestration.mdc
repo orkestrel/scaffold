@@ -16,7 +16,7 @@ alwaysApply: true
 
 - Reach Opus 5.5 through the `claude` MCP server (`claude mcp serve`) in `.cursor/mcp.json` for a short exchange, and through `claude -p` per `.agents/transports/claude-cli.md` for a unit.
 - Reach Astra through `codex exec` per `.agents/transports/codex.md`. `codex mcp-server` no longer exists.
-- Never select another provider's model from Cursor's own model list; Cursor is the Grok bench.
+- Never select another harness family's model from Cursor's own model list; Cursor is the Grok 4.7 Extra High bench.
 - Approve the `claude` MCP server once per machine with `agent mcp enable claude`.
 
 ## Rules and skills

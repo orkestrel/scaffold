@@ -185,7 +185,8 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `SERVICE_TEST_INCLUDE`            | const | Names the include the live-service project covers, which is a directory rather than one proof.         |
 | `SHEET_ENTRY_NAME`                | const | Names the build entry beside each stylesheet marker.                                                   |
 | `SHOWCASE_CONFIG_PATH`            | const | Names the Vite wrapper whose presence makes a workspace `showcase`.                                    |
-| `SHOWCASE_DEV_DEPENDENCIES`       | const | Names the development dependency used only by the optional single-file showcase build.                 |
+| `SHOWCASE_DEV_DEPENDENCIES`       | const | Names the tested dependency pair selected by the optional single-file showcase build.                  |
+| `SHOWCASE_OVERRIDES`              | const | Names the scoped npm override required by the tested showcase plugin.                                  |
 | `SHOWCASE_PAGES_PATH`             | const | Names the physical showcase output directory.                                                          |
 | `SKILLS_CONFIG_PATH`              | const | Names the TypeScript wrapper whose presence makes a workspace `skills`.                                |
 | `SOURCE_BROWSER_DEV_DEPENDENCIES` | const | Lists the development dependencies a published browser `src` environment adds.                         |
@@ -295,6 +296,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `blueprintToHostArtifacts`          | function | Compiles the vendored host artifacts a workspace plans.                                                  |
 | `blueprintToMachinery`              | function | Derives the host-specific machinery a generated root Vite configuration carries.                         |
 | `blueprintToManifest`               | function | Compiles a blueprint into its `package.json` content.                                                    |
+| `blueprintToManifestOverrides`      | function | Projects the scoped npm overrides required by a selected browser showcase.                               |
 | `blueprintToOrchestrationArtifacts` | function | Compiles the blueprint-dependent orchestration artifacts.                                                |
 | `blueprintToQuestions`              | function | Measures a blueprint against every law its own fields decide.                                            |
 | `blueprintToRootTsconfig`           | function | Compiles the root TypeScript configuration for a blueprint.                                              |
@@ -313,6 +315,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `planToFindings`                    | function | Compares a plan against a target's current content.                                                      |
 | `planToHash`                        | function | Computes a plan's content identity.                                                                      |
 | `replaceManifestRanges`             | function | Replaces the runtime and development dependency ranges in package manifest text, and never a peer range. |
+| `replaceManifestOverrides`          | function | Replaces selected npm override leaves while preserving every byte outside the edited path.               |
 | `replaceManifestScripts`            | function | Replaces named script values in package manifest text.                                                   |
 | `replacePlanRanges`                 | function | Replaces dependency ranges in a plan's manifest and recomputes its identity.                             |
 | `srcToEntry`                        | function | Projects a published selection into the manifest's entry fields.                                         |
@@ -1776,14 +1779,33 @@ lookup verdict records why the registry row could not enter a layer.
 
 ## Dependency floors
 
-Every scaffold-owned runtime or development range is a floor: a caret over a whole
+Except for the selected showcase policy, every scaffold-owned runtime or development range is a floor: a caret over a whole
 `major.minor.patch` version. The triple is the newest release the registry served when that floor
 was last raised, so a workspace generated with no network still receives the latest floor scaffold
 knew rather than a bare `major.0.0`. A `Blueprint.peers` row is written during creation into a
 vacant target. After creation, peer declarations and `peerDependenciesMeta` are caller-owned:
 `audit`, `repair`, `catalog`, and `overwrite` do not invent, rewrite, insert, or remove them. Caller
-extras also pass through unchanged. Extras follow `EXTRA_RANGE_PATTERN`; fleet peers follow
+extras pass through unchanged except for the selected showcase pair. Extras follow `EXTRA_RANGE_PATTERN`; fleet peers follow
 `ORKESTREL_RANGE_PATTERN`; foreign peers follow `FLOOR_RANGE_PATTERN`.
+
+A browser application with `showcase: true`, including its Vue face, selects exact
+`vite-plugin-singlefile: 2.3.3`, Vite `^8.3.4` from scaffold's manifest, and the npm override
+`"vite-plugin-singlefile@2.3.3": { "micromatch": "npm:picomatch@2.3.2" }`. This policy applies
+after extras. Online resolution excludes this pair from ordinary foreign-major updates; other
+dependencies retain their usual resolution. Repair preserves each package's runtime or development
+section. Audit reports pin drift and override-only drift. Overwrite lands the pair and override in
+its offline half, including missing planned dependencies, before the catalog read.
+
+`blueprintToManifestOverrides(blueprint: Blueprint): Readonly<Record<string, Readonly<Record<string, string>>>>`
+projects this metadata for a selected showcase and returns an empty map otherwise.
+`replaceManifestOverrides(manifest: string, overrides: Readonly<Record<string, Readonly<Record<string, string>>>>): string | undefined`
+inserts missing ancestors or leaves and replaces stale string leaves without changing unrelated
+bytes. Aligned text is returned unchanged. Invalid JSON, duplicate selected keys, malformed
+ancestors, and non-string owned leaves return `undefined`; repair and overwrite refuse these
+structures before writing configuration. `ManifestRegionSet.overrides` carries the same optional
+map into `Materializer.declare`, independently of the artifact replacements in `Blueprint.overrides`.
+Like other manifest-region writes, repair and overwrite apply this policy with any `--groups`
+selection. `replaceManifestRanges` continues to ignore npm overrides.
 
 The distribution project packs a caller-owned peer beside a co-peer witness that requires an exact
 version. The real npm resolver accepts the preserved range. Its narrowed-range control reports
@@ -1800,7 +1822,7 @@ row entering or leaving the manifest moves a test rather than passing unnoticed.
 of `STYLES_DEV_DEPENDENCIES`, is a seed as well: it carries the `^1.105.1` range the
 `@orkestrel/veneer` checkout declared on 2026-09-30, and that test names it in the seeded set.
 
-A newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
+Outside the selected showcase pair, a newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
 question, and a person decides whether the generated toolchain supports it. Inside the declared
 major the verbs raise the floor themselves, which is what makes the caret's own width beside the
 point: `^0.64.0` admits no `0.65.0`, and `repair` rewrites the range to `^0.65.0` rather than

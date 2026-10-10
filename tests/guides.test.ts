@@ -33,6 +33,8 @@ await new GuideCommand({
 		blueprintToGuideArtifacts,
 		blueprintToMachinery,
 		blueprintToManifest,
+		blueprintToManifestOverrides,
+		replaceManifestOverrides,
 		blueprintToQuestions,
 		blueprintToRootTsconfig,
 		blueprintToRootVite,
@@ -69,6 +71,19 @@ await new GuideCommand({
 		await import('./setupServer.js')
 
 	describe('guides', () => {
+		it('applies the documented showcase metadata through both public projections', () => {
+			const blueprint = createBlueprint('display', { app: ['browser'], showcase: true })
+			const overrides = blueprintToManifestOverrides(blueprint)
+			expect(overrides).toEqual({
+				'vite-plugin-singlefile@2.3.3': { micromatch: 'npm:picomatch@2.3.2' },
+			})
+			const manifest = blueprintToManifest(blueprint)
+			expect(replaceManifestOverrides(manifest, overrides)).toBe(manifest)
+			expect(JSON.parse(manifest)).toMatchObject({
+				devDependencies: { vite: '^8.3.4', 'vite-plugin-singlefile': '2.3.3' },
+				overrides,
+			})
+		})
 		it('indexes every manifest input', () => {
 			expect(root.length).toBeGreaterThan(0)
 			expect(report.input).toEqual([])
