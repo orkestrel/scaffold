@@ -2,6 +2,12 @@
 
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
+## Gemma successor release of 2026-10-11
+
+Root accepts native analyst Astra's three confirmed changed-population claims and native verifier Luna's completed offline gates for the padded Gemma2 control. Final verification exited 0 uncapped in 638 ms; post-gate predecessor custody exited 0 uncapped in 160 ms. Both live-log prefixes and all 416 non-log files were preserved. Verifier-only path and timestamp adaptations are disclosed, and root confirmed the original daemon alive despite the report's incidental absence claim. Checked aggregate-capacity-g2-live releases exactly two inference and eight metadata calls as the sole service client. See [the preserved evidence and limits](instruments/units/aggregates/diagnostics/capacity-g2/README.md).
+
+Cursor Grok completed the separate capacity integration map in session `b8cfd1e9-5438-403d-9ca6-3f3b55982217`, journal tmp/cursor/aggregate-capacity-integration-map.jsonl, wrapper 461934 ms, model 458795 ms, exit 0 uncapped. Root confirmed PID 36872 gone and all 120 citations resolve. The answer remains evidence for root's decision-bearing source reading, not implementation acceptance. Canonical admission implementation continues in its disjoint lane.
+
 ## Contextual integration dispatch of 2026-10-11
 
 Cursor Grok completed the integration map: session `d09b8018-80e2-4ea2-9d03-24676db64653`, journal tmp/cursor/aggregate-focused-integration.jsonl, wrapper 479527 ms, model 476463 ms, exit 0 uncapped. Root read the answer, confirmed PID64004 gone, expanded its paragraph-relative citations without changing factual prose, and checked all 131 citations. The initial citation check could not resolve abbreviated paths; the raw and normalized reports preserve that distinction. Root directly read the authoritative types and decision-bearing runtime/refit/cache seams before dispatching native Astra for the [canonical integration](instruments/units/aggregates/reports/resumption-contextual-integration-map.md). Checked aggregate-contextual-integration owns the named harness source/tests only; root owns disjoint records. No canonical build or service request is authorized in that writing lane.
