@@ -147,3 +147,7 @@ Release-chain notes:
 - `prepublishOnly` passed on `ddaabfb` under the session's own npm 11.21.0, which `scripts/npm.sh` had raised, with no local npm on the path (750.5 s; release-mode distribution 11 passed with 1 skipped).
 - The login link was minted under `script` with a held-open stdin (`tmp/units/npm-login.ts`); the user approved it and `whoami` read `mikesaintsg`.
 - **Scaffold 0.0.98: published** 2026-10-08 from `ddaabfb` on the first code. `window.ts --publish` answered `+ @orkestrel/scaffold@0.0.98`, accepted and confirmed; `npm view` reads `gitHead` `ddaabfb3…` and `latest` 0.0.98, and the tarball answers 200.
+
+## Agent 0.0.30 downstream close, 2026-10-11
+
+The user authorized Toolbox 0.0.19 and Ollama 0.0.23 publication in this session. Both are registry-confirmed at their verified archive integrities, consuming Agent ^0.0.30. Desk consumes registry Agent ^0.0.30 and Ollama ^0.0.23 on its session branch at af774cd; format, lint, type checks, 532 tests with 4 conditional skips, six browser journeys, and build passed. Supervisor and Tactica are excluded. See [versions, archive identities, gate measurements, and retained limitations](agent/instruments/units/agent-0030/downstream-publication.md). This release record contains no aggregate source or measurements.

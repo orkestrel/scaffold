@@ -1,6 +1,6 @@
 # The context and selection campaign for `@orkestrel/agent`
 
-Agent 0.0.30 was published and registry-confirmed on 2026-10-11 from verified main at `ee734c3`. The prior publication hold is superseded by the user-authorized release. See [publication and archive identity](instruments/units/agent-0030/publication.md) and [release verification](instruments/units/agent-0030/release-checkpoint.md). Desk published-package pins and checks still depend on its owner publishing an X2-compatible Ollama release.
+Agent 0.0.30 was published and registry-confirmed on 2026-10-11 from verified main at `ee734c3`. The prior publication hold is superseded by the user-authorized release. See [publication and archive identity](instruments/units/agent-0030/publication.md) and [release verification](instruments/units/agent-0030/release-checkpoint.md). Toolbox 0.0.19 and Ollama 0.0.23 are published and registry-confirmed; Desk's published-dependency re-pin passed its gates and is pushed at af774cd. See [the downstream publication record](instruments/units/agent-0030/downstream-publication.md).
 
 ## Historical plan
 
