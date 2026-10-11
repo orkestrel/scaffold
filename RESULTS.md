@@ -27,6 +27,8 @@ The requested comparisons remain pending. All model/thinking conditions have bee
 
 Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, 1099747 ms for Gemma 4B, and 839550 ms for Qwen 4B. Every original fit refused admission. The bounded source-clause prompt revision is implemented after objective diagnosis and the requested Cursor Opus design pass. Independent verification passed its full 44-test aggregate file, formatting, canonical build, and artifact bindings. The revision preserves the judge, admission rule, and budgets; its live calibration follows this checkpoint. See [the development ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-prompt-l7.md).
 
+The revised Qwen 2B generation completed with 168 draft occurrences in 259460 ms and is under independent blind review. The other summarizers follow serially while completed packets are reviewed in parallel. Every requested model/thinking condition has been frozen again for this revision. No revised support or quality result is available yet. See [the successor calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-calibration.md).
+
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
 | Qwen 2B        | Pending           | Pending          |
