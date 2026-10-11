@@ -154,6 +154,10 @@ Root settled revised Qwen 2B labels after reading every distinct candidate/propo
 
 Root accepted Gemma 2B generation after the complete custody report, raw logs, and exact packet identity: exit 0 uncapped in 758004 ms, 174 occurrences, no manifest errors, and every bound hash matched. Root dispatched clean-context native analyst Astra under checked `support-audit-b47e`, packet SHA-256 `962fdb27b0043304631d65eca1620e5e69db8c908bfb43aca0f39273f40ca23c`. Native verifier Luna continues Gemma 4B generation under exec91758 and PID16804, with Qwen 4B queued. These units use disjoint outputs; source and canonical build stay unchanged.
 
+Root settled revised Gemma 2B labels before opening scores: 132 supported, 2 unsupported, 2 contradicted, and 38 ambiguous occurrences. The same independent analyst reconciled absent assertions and explicit chronology. Native verifier Luna ran checked `aggregate-l7-g2-fit`: child exit 3 uncapped in 2214 ms, cutoff 0.78, 131 supported occurrences scored, and none admitted. Root read the complete report and raw logs and accepted the refusal. See [the Gemma 2B adjudication](instruments/units/aggregates/reports/resumption-l7-g2-adjudication.md).
+
+Root accepted Gemma 4B generation after full custody and raw logs: exit 0 uncapped in 1032491 ms, 179 complete occurrences, no manifest errors, and all bindings matched. Clean-context native analyst Astra receives only checked opaque `support-audit-c82f`, packet SHA-256 `4e21debd02597175d3ce6e269ac91a64f3595d81c73308ba68aef676af479e6a`. Native verifier Luna continues Qwen 4B generation under exec91007 and PID73748. Unrelated scaffold product and veneer writes remain outside campaign ownership and bound harness inputs.
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.
