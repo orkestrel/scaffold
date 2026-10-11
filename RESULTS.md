@@ -40,7 +40,7 @@ Qwen 2B full-view preflight failed with an HTTP 500 XML parse error in 1043149 m
 
 The historical pilot passed 9 of 12 goals in each arm, but supplied no aggregate summaries and changed the initial seed context. Its STOP result cannot establish quality equivalence. See [the original pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-pilot-stop.md).
 
-The full-view capacity probe is prepared for Qwen and Gemma and the judge route. Its fixed plan contains 30 diagnostic inference requests. Independent source review and offline verification precede a controlled daemon start and live execution. This proof must establish the deployed retention controls before the quality comparison can claim a full-view reference. See [the capacity direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-full-admission-direction.md).
+The full-view capacity probe passed independent offline verification in 2297 ms. Its fixed plan contains 30 diagnostic inference requests for Qwen, Gemma, and the judge route. Source review leaves native persistence failures unproved; root requires actual saved-byte and receipt checks before accepting any live observation. A controlled daemon start and live execution remain pending. This proof must establish the deployed retention controls before the quality comparison can claim a full-view reference. See [the retained probe and scope](.orkestrel/agent/instruments/units/aggregates/diagnostics/capacity-controls/README.md).
 
 ## Release and implementation
 

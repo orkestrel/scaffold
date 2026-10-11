@@ -2,6 +2,12 @@
 
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
+## Capacity offline verification of 2026-10-11
+
+Independent analyst Astra confirmed the fixed admission, sequence, and offline controls, and identified unchecked native write counts as conditional source concerns. Its separate factual clarification found no permitted runtime reproducer through the unmodified Windows instrument. Root retains the report and leaves general persistence-failure behavior unproved; the bounded observational release requires independent actual-file byte/hash checks and a parsed daemon receipt. No all-confirmed audit or production capture acceptance is claimed. See [the root ruling](instruments/units/aggregates/diagnostics/capacity-controls/root-ruling.md).
+
+Native verifier Luna's first mirror failed because it relocated runtime identities. The original-path successor passed strict types, syntax/default outcomes, every intended offline refusal, and every source/input/request binding. The canonical launcher exited 0 uncapped in 2297 ms, and its process tree closed. Root read the bare outputs. The first report's packet-hash typo is corrected by the immutable successor; its abbreviated source citation resolves under the declared unit root. No service call has run. See [the archived verification](instruments/units/aggregates/diagnostics/capacity-controls/verification-report.md).
+
 ## Complete-candidate labels and capacity preparation of 2026-10-11
 
 After checkpoint `61e1ea040`, native Astra authored opaque contextual boundary fixtures. Independent analyst Astra received only the population and frozen criteria, without the author oracle, pair mappings, or scores. Native verifier Luna passed offline custody, strict types, syntax, and 10 intended refusal controls. Root accepts the independent labels, retaining ambiguity for exclusive contact-information availability and rejecting the author's positive whole-anchor proposal. Root froze the paired ordering test before inference; its complete forward/reverse plan contains 88 requests. See [the root ruling and retained evidence](instruments/units/aggregates/diagnostics/focused-boundaries/root-label-ruling.md).
