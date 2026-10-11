@@ -1,6 +1,6 @@
 # Agent 0.0.30 release checkpoint
 
-The verified agent source is on the repository's main branch at `ee734c30151c7d431e480aff7a0d54306d387f13`. The push fast-forwarded main. The registry read on 2026-10-10 did not serve 0.0.30; the operator upload and registry confirmation remain pending. This record does not claim publication.
+The verified agent source is on the repository's main branch at `ee734c30151c7d431e480aff7a0d54306d387f13`. The push fast-forwarded main. The user defers publication until the records, aggregate, and full-view comparison, development tuning, final continuous comparison, and adoption verdict finish. Operator availability does not release this hold. If adoption changes the package, the final package and consumer proofs must pass before publication. The registry read on 2026-10-10 did not serve 0.0.30; no publication has been attempted in this resumption.
 
 ## Record behavior and compliance
 
