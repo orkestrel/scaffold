@@ -1,5 +1,7 @@
 # Test contextual statement support
 
+The control-pair correction of 2026-10-11 supersedes the presumed positive label and pair in this ruling. Both old focuses are unsupported; their scores do not establish judge misranking. The contextual-focus hypothesis proceeds only with the corrected, independently adjudicated pair. See [the validity correction](resumption-focus-control-correction.md) and [the successor specification](../admission-focus-r2.json). The following text records the preceding design decision.
+
 Root selects the contextual-focus discriminator for offline preparation. This ruling authorizes an isolated instrument, followed by independent verification and a bounded live test. It authorizes no canonical aggregate change or adoption. See [the frozen specification](../admission-focus.json).
 
 The completed l8 screen scored the unsupported repair-prerequisite candidate at 0.8429336143254792 and its supported correction at 0.8021873696606229 in each pass. That measurement rejects the whole-summary presentation revision. It does not identify the model's internal cause or establish that living summaries cannot help. See [the completed screen](../diagnostics/admission-l8/README.md).

@@ -1,6 +1,6 @@
 # Judge relation-deletion diagnostic
 
-Root accepts the completed fixed diagnostic. The actual judge assigned the supported relation-deletion variant a lower score than the unsupported original. Raw requests, response probabilities, repeated scores, and independent arithmetic agree. This within-candidate result supports a bounded admission-method revision; it does not establish aggregate work quality or adoption.
+Root accepts the recorded requests, response probabilities, repeated scores, and independent arithmetic. The positive-control label was corrected on 2026-10-11: the relation-deletion variant still asserts an unsupported continuing open state. This run therefore supplies no supported-versus-unsupported comparison and no judge-misranking conclusion. See [the validity correction](../../reports/resumption-focus-control-correction.md).
 
 The live sequence ran in 22635 ms, exit 0 uncapped, with 8 inference requests and 2 daemon checks. The fixed variants produced the following normalized Yes weights; each repeated exactly in the reverse sequence.
 
@@ -9,7 +9,7 @@ The live sequence ran in 22635 ms, exit 0 uncapped, with 8 inference requests an
 | Original | Unsupported | 0.842522895608751 |
 | Invented prerequisite removed | Unsupported causal relation remains | 0.7995156693414494 |
 | Invented cause removed | Unsupported prerequisite remains | 0.8600901565538989 |
-| Both invented relationships removed | Supported | 0.8409998800116883 |
+| Both invented relationships removed | Unsupported open-state assertion; corrected label | 0.8409998800116883 |
 
 Independent replay differed by zero for every request. Reported usage totals are 8184 prompt and 8 completion tokens. These normalized weights are not calibrated probabilities of factual support. The model's sampled answer token can differ while the underlying weight stays identical. The one-token length finish is the declared judge readout, not a truncated prose answer.
 

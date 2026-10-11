@@ -1,5 +1,7 @@
 # Release and aggregate progress
 
+The control audit on 2026-10-11 corrected the local admission diagnostics: their presumed positive still asserts an open ticket state after only a reopening instruction. Both old focuses are unsupported under the frozen criteria. Raw scores and execution costs remain valid, but the judge-misranking and semantic presentation-refusal interpretations are withdrawn. No focused run occurred before correction. The corrected pair awaits independent labels and offline verification. See [the control correction](instruments/units/aggregates/reports/resumption-focus-control-correction.md). Earlier paragraphs retain the measured sequence and must be read with this correction.
+
 The existing release candidate is verified, but publication is deferred by the user until the aggregate comparison and adoption verdict finish. Aggregate model-quality evaluation remains pending. This record distinguishes release-source verification, the stopped pilot, and offline instrument proofs. For remaining work and its order, see [the resumption plan](plan.md#resume-from-the-verified-state-of-2026-10-10).
 
 The active aggregate checkout is `C:/Users/mikes/WebstormProjects/scaffold`, on `claude/confident-maxwell-6nd0f3`. Scaffold main stays at `215a103595e57d0536d0d2ca23980a0506838ae2` with release records only, including the publication hold. Root accepts the instrument at source checkpoint `4f3e0220d` after the completed independent gates. See [the concise results](../../RESULTS.md).

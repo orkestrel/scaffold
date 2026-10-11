@@ -1,5 +1,7 @@
 # Admission presentation screen
 
+The positive-control label was corrected on 2026-10-11. Both-removed still asserts an unsupported continuing open state after only a reopening instruction. The recorded program refused its frozen ranking rule, but that rule used a mistaken positive label. Preserve the scores and instrument proof; withdraw the supported-versus-unsupported interpretation and semantic presentation-refusal conclusion. See [the validity correction](../../reports/resumption-focus-control-correction.md). The following checkpoint and live records retain their historical sequence.
+
 Root accepts the r2 instrument for its frozen live screen. Independent offline verification and the independent Astra audit passed. Model ordering remains unmeasured; this checkpoint grants no admission or adoption verdict.
 
 The specification remains [admission-l8.json](../../admission-l8.json), SHA-256 `1559a844e9593577995c748fed379e3c8fd5b107446e7327d786001dec251828`. See [the development ruling](../../reports/resumption-admission-l8.md) for the independent Astra and Cursor Opus design reconciliation. The screen keeps the judge model, settings, population, labels, and thresholds fixed. Each forward and reverse pass requires the supported both-removed candidate to score strictly higher than every unsupported candidate.
