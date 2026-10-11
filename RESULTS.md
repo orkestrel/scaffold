@@ -21,7 +21,7 @@ The admission diagnostics recorded complete requests and matching score calculat
 
 ## Model runs
 
-Root selected a bounded statement-support test after Astra and Cursor Opus returned their proposals. Each check keeps the full summary for interpreting the focused statement and uses only the conversation as evidence. Offline implementation and independent checks precede the fixed live test; no canonical admission change is accepted. See [the reconciled direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-focused-ruling.md).
+Root selected a bounded statement-support test after Astra and Cursor Opus returned their proposals. Each check keeps the full summary for interpreting the focused statement and uses only the conversation as evidence. The corrected instrument passed independent review and offline verification: 8 positive tests passed and 11 intentional negative controls failed correctly. Its fixed live test follows; no canonical admission change is accepted. See [the instrument acceptance](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-support/README.md).
 
 Thinking-disabled records resource checks passed at a 3072-token context and 512-token reserve. Each run served 24 development goals. These checks establish resource feasibility, not held-out answer quality.
 

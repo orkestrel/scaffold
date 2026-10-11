@@ -206,6 +206,8 @@ Root accepted native verifier Luna's Qwen 4B thinking-disabled records preflight
 
 ## Long-running commands
 
+Root accepts the corrected focus instrument after clean-context native analyst Astra's scoped PASS and native verifier Luna's independent offline run. The run exited 0 uncapped in 3111 ms: 8 positive passes, 11 intended negative failures, exact 64259-byte packet regeneration, 76 matching bindings, and zero guarded dispatches. Root checked citations, read the source and bare outputs, and narrows the original witness wording to offline paths; live Recorder/Completion wiring remains unchanged. The live verifier receives checked aggregate-focused-screen-live only after the checkpoint push. See [the acceptance record](instruments/units/aggregates/diagnostics/focused-support/README.md).
+
 The returned focus-impact report carries CRLF bytes. Root preserves its recorded SHA-256 through a file-specific text-normalization exclusion in the report directory; the preceding commit had staged an LF-normalized copy. No report prose or measurements changed.
 
 Native scout Luna completed the exact label-impact lookup after root corrected the instrument-relative results base in a numbered successor brief. All 692 generated ids join packet items and settled labels. Neither complete deletion candidate occurs; the declared substring occurs in Qwen item fbb56761-030c-4056-bee5-e1def8cc9aba with label unsupported. Root directly checked the retained label. See [the lookup](instruments/units/aggregates/reports/resumption-focus-impact.md), SHA-256 `f390f290897c90dc4f12604885422c8e66fc9fa6419f76ffdd60a01dcfa97a13`.
