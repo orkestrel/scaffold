@@ -1,6 +1,6 @@
 # Source-clause calibration
 
-The source-clause successor's Qwen 2B and Gemma 2B fits refuse supported admission despite improved factual support. Gemma 4B generation is complete and under blind review; Qwen 4B generation runs. No downstream quality verdict exists. The original cohort remains in [the original calibration record](resumption-live-calibration.md).
+The source-clause successor's Qwen 2B, Gemma 2B, and Gemma 4B fits refuse supported admission despite improved factual support. All generation is complete; Qwen 4B is under blind review. No downstream quality verdict exists. The original cohort remains in [the original calibration record](resumption-live-calibration.md).
 
 The accepted source checkpoint is `8c9176feae3ea8e8060bdc0cfca1b49f1e1f6aad`; canonical build manifest SHA-256 is `09c7d936ffaec46ed9deb5bdd300deb0f9643ad639519762d8d84e38ef513ecf`. See [the bounded revision and verification](resumption-prompt-l7.md). The judge, fit rule, lexical checks, budgets, and source population remain unchanged. The result root is `results/l7`; manifest protocol and generated run names retain the unchanged `l6` schema.
 
@@ -38,4 +38,21 @@ The Gemma 2B custody report is primary `tmp/units/aggregate-l7-g2-calibration-re
 
 Gemma 4B corpus preparation exited 0 uncapped in 2449 ms. Generation exited 0 uncapped in 1032491 ms, producing 179 attempts and matching packet records, with a complete manifest and no errors. All 76 generation bindings match disk. The process and descendants exited; root read the full custody report and raw logs before accepting the packet. Completion usage reaches the unchanged 160-token limit in 33 occurrences; prose length ranges from 156 to 487 characters. Packet SHA-256 is `4e21debd02597175d3ce6e269ac91a64f3595d81c73308ba68aef676af479e6a`; generation manifest SHA-256 is `f575ab2cd01fb618ce72bbdc334f129822d4d32cb1f4f1af61153789f82885f0`. The full custody report at primary `tmp/units/aggregate-l7-g4-calibration-report.md` has SHA-256 `2854d70701f9cd74e9c64147f6fd702d7e0880fea0a15148bd0bbd7ae2704333`.
 
-Clean-context native analyst Astra reviews the byte-identical Gemma 4B packet under opaque `support-audit-c82f`. Qwen 4B generation continues under native verifier Luna; it is the only local model client. Blind support reviews and offline fits overlap later generation. Resource feasibility, pilots, quality comparisons, the shadow, and the continuous comparison retain their declared prerequisites. See [the baseline execution finding](resumption-baseline-execution.md).
+Root settled Gemma 4B labels before reading scores: 137 supported, 39 ambiguous, and 3 unsupported occurrences. The offline fit refused in 2045 ms at cutoff 0.78; 137 supported occurrences scored and 5 were admitted. See [the Gemma 4B adjudication](resumption-l7-g4-adjudication.md).
+
+Qwen 4B corpus preparation exited 0 uncapped in 2653 ms, covering 24 points and 162 contexts. Generation exited 0 uncapped in 850165 ms, producing 171 attempts and matching packet records. The complete manifest lists no errors. All 79 selected freeze bindings and 76 generation bindings matched disk. PID 73748 and descendants exited; root read the complete custody report and raw logs before staging the independent audit. Completion usage reaches the unchanged 160-token cap in 13 occurrences; prose lengths range from 191 to 455 characters.
+
+The Qwen 4B artifacts under `results/l7/calibration/q4` have these identities.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `corpus/corpus.json` | `1218b53008a637bee21abc7dfaf6b6785722eb8b75591a06b428e1a452c9e201` |
+| `corpus/manifest.json` | `092da72fbd024b6e1b2f45fc0e7965c175e2d1d4e38615cd28791d0f6ef0c2f2` |
+| `generation/attempts.jsonl` | `c008dc39b398b4635a1950d7aa64096970efaf9796a0855728df87dc0e2b0e98` |
+| `generation/packet.jsonl` | `1854460e68f022fe8bc3ad85780481540c2c354bdae5effce32062ef4076903b` |
+| `generation/evidence.json` | `8d41bf48ab216325f55a6a8bf3a15f6750ebac5ee3760be53b72b3f25ce04ba7` |
+| `generation/manifest.json` | `1b21e7998f49d8c8c9107170346555d220e5afb9d0125460d4a3f28807fb600a` |
+
+The Qwen 4B custody report at primary `tmp/units/aggregate-l7-q4-calibration-report.md` has SHA-256 `7a2e3ece7542e12b65047048875c6fe0020b27553075c3db5de746c52546eaa0`. The full corpus and generation error-log hashes are `c8dab61a96197e511b5958bf9e345a0b3ed17a62126145ead15e69ec6fc8e2d6` and `54340950aa23f926e88f08dc0c9effdf92e4864d4b38c003a21a23af0f1d9890`; stdout is empty. The combined completed generation report has SHA-256 `a2d7f4bbb084c33e408b68a2c9ad534e33e3964640e6097b940934cbcd7664c7`.
+
+Clean-context native analyst Astra reviews the byte-identical Qwen 4B packet under opaque `support-audit-d51a`. No local model command remains active. Resource feasibility, pilots, quality comparisons, the shadow, and the continuous comparison retain their declared prerequisites. See [the baseline execution finding](resumption-baseline-execution.md).
