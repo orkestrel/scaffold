@@ -1,6 +1,8 @@
 # Results
 
-Agent 0.0.30 is published. Aggregate adoption for possible 0.0.31 remains undecided. Records and full view completed the Qwen 2B development comparison and blind grading. The l12 aggregate successor answered 2 of 24 goals, then stopped when a summary exhausted its output budget. The bounded revision is implemented and independently verified: withhold that failed update and continue the task. L13 will measure its complete trajectory with fresh records/full baselines on the same build.
+Agent 0.0.30 is published. Aggregate adoption for possible 0.0.31 remains undecided. L13 records, living aggregate, and full view each emitted all 24 planned goal rows on commit `0913a0966`. The independent auditor is grading the combined anonymous packet of 72 goals. The l11 quality judgments in the following table remain historical evidence until that audit closes.
+
+L13 aggregate summaries reached the actual agent request on 15 of 24 goals. Six capped summary updates were withheld while the task continued. Recorded usage is 360086 tokens for aggregate, 105231 for records, and 271750 for full view. Full view also has a sent HTTP 500 request with unknown usage. Launcher durations were 1117586 ms, 387868 ms, and 936483 ms respectively; every launcher exited 0 uncapped. These measurements establish execution and cost, not answer quality.
 
 ## Blind quality results
 
@@ -10,7 +12,7 @@ The l11 runs use Qwen 3.5 2B with thinking disabled on the same authored convers
 | --- | --- | --- | --- | --- | --- |
 | Records | 12/24 | 0/24 | 4/24 | 3/24 | 349081 ms |
 | Full view | 6/24 | 1/24 | 7/24 | 4/24 | 874459 ms |
-| Living aggregate | Pending blind grading; 2/24 goals answered in l12 | — | — | — | Failed l12 attempt: 148136 ms |
+| Living aggregate | Pending blind grading; all24 goals attempted in l13 | — | — | — | L13:1117586 ms |
 
 Both baselines often omit a required fresh lookup. Other failures include stale shipment status, superseded contacts, invented refund instructions, and unanswered parts of requests. Full view retained a failed goal after an XML tool-parser error and continued. The automatic pattern scorer reported 14 and 11 matches; those figures are superseded by the blind quality judgments for interpretation.
 
