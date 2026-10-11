@@ -2,6 +2,8 @@
 
 ## Immediate measurement milestone
 
+The [development amendment](instruments/units/aggregates/reports/resumption-l9-development-direction.md) governs the next run. Add an explicitly unqualified development policy at AGREE 0.67 and a symmetric continuation rule for the observed tool-parser failure, then run every arm afresh through existing bench commands. This supersedes admission qualification as a prerequisite to development observation. Qualification, held-out evaluation, and adoption keep their strict gates. No repeated calibration generation follows from driver/schema changes alone; unchanged semantic inputs and fresh execution custody are required.
+
 The l9 MVP established a graded records baseline, refused aggregate calibration, and a full-view failure at g05. Reconcile the bounded Opus/Astra direction pass on those observed barriers before the next implementation. Separate an exploratory development measurement from qualification; preserve the original refusal, exact initial conditions, treatment exposure, failures, and costs. Do not convert the failed fit into an accepted artifact. The final blind and continuous work comparisons remain required before adoption.
 
 The l9 generation and records baseline have completed. Finish full view, the released offline calibration fit, and independent semantic grading. An accepted fit releases the maintained-aggregate pilot, which must retain the records initial selection and show actual updated summaries at the required exposure. Report the same-goal results before expanding conditions. Source and build remain frozen while the runs execute. See [the concise status](../../RESULTS.md).
