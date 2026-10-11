@@ -1,5 +1,11 @@
 # The context and selection campaign for `@orkestrel/agent`
 
+## Immediate measurement milestone
+
+The user's 2026-10-11 correction prioritizes the missing work-quality comparison. Finish the current admission and effective-capacity integration, run the required changed-behavior audit and gates, then execute the Qwen 2B thinking-disabled development comparison before preparing the entire matrix. Report records, maintained aggregate and full view against the same development goals, with per-goal quality, exposure and costs. Keep the first comparison explicitly developmental; do not open held-out evaluation results before sustained candidate selection. The final matrix, blind audit and continuous head-to-head remain required for adoption. No further local admission or capacity diagnostic is scheduled; reopening one requires an observed failure that invalidates the comparison.
+
+The padded Gemma 2B live control completed in 17737 ms. Root accepts its reached-boundary observation with the stated deployment and inference limits. Canonical capacity integration can proceed; there is no remaining diagnostic prerequisite.
+
 ## Resume from the verified state of 2026-10-10
 
 Agent 0.0.30 is verified and pushed to agent main. The user defers publication until the aggregate comparison, development tuning, full analysis, and adoption verdict are complete. Operator availability no longer releases publication. The aggregate instrument has passed its integrated audit repairs and independent gates; no accepted living-summary matrix or sustained-work model comparison exists. See [the progress and results record](progress.md) for measured runs, evidence locations, and their limits.

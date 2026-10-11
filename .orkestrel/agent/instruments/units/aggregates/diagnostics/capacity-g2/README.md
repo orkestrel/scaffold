@@ -1,6 +1,8 @@
 # Gemma 2B generation control
 
-Root accepts the fixed successor for one bounded live observation after independent Astra review and Luna offline verification. The earlier unpadded Gemma2 request stopped naturally, leaving generation exhaustion inconclusive. This successor adds one fixed older padding exchange and permits no adaptive retry. It establishes no live capacity or work-quality result yet.
+Root accepts the completed bounded deployment observation. The fixed successor completed in 17737 ms, exit 0 uncapped. Generation used 858 prompt tokens and 1189 output tokens, with a length finish despite its 4096-token output limit. The immediate loaded snapshot reports context 2048; the bounded runner log reports 2047 tokens and truncated=1. Together with the controlled removal settings, these observations support the reached-capacity interpretation for this deployment. Neither the response nor the log explicitly names the stop cause. This closes the earlier natural-stop gap without establishing work quality or universal server behavior.
+
+See [the independent live report](aggregate-capacity-g2-live-report.md), [raw captures](operator/live1/inventory.json), and [bounded log intervals](live-reading/daemon-log-intervals.json). Root read the report, native usage, immediate snapshots and matching runner task lines. Cached prompt tokens are included in the prompt total. No repeat control or further capacity diagnostic is required before canonical integration.
 
 The packet is `bb7d5de942f9c4e5168fa77d0bb344bcb2d585b931129294b68c74bb8e94bd56`; operator is `5504592be3b85761ec98574ac48e95be539998b22da5b42f2d1d5a6b6dbca014`. The two frozen requests use identical Gemma2 messages and options at context 2048, differing only in output limit 1 versus 4096. The fixed driver makes eight metadata calls around those two inference calls. The outer cap is 180 seconds. See [the preparation](aggregate-capacity-g2-control-report.md).
 

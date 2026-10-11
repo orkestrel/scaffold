@@ -1,5 +1,9 @@
 # Routing ledger for the `@orkestrel/agent` context campaign
 
+Root accepts Luna's completed Gemma 2B control after reading the raw usage, immediate loaded snapshots and bounded runner task lines. The fixed driver exited 0 uncapped in 17737 ms. The 2047-token observation at loaded context 2048 closes the original natural-stop gap for this controlled deployment; no explicit native stop-cause claim is added. Archive the raw live evidence with the already accepted operator.
+
+The user's 2026-10-11 correction moves the first same-goal development quality comparison ahead of preparing all model conditions. Finish current canonical repairs and required verification, then run the existing Qwen 2B thinking-disabled calibration and comparison path. No additional local diagnostic campaign is scheduled. Held-out matrix evaluation remains unopened before frozen sustained-candidate selection; the exit criterion and final continuous pair remain unchanged.
+
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
 ## Gemma successor release of 2026-10-11

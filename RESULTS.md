@@ -2,6 +2,8 @@
 
 Publication is on hold until the aggregate experiment and adoption verdict finish. Agent 0.0.30 is verified. The corrected records-versus-aggregate-versus-full-view quality comparison has not run.
 
+The next milestone is the first same-goal development comparison, with per-goal results, aggregate exposure, failures and costs. Harness work expanded too far before that measurement. Finish the current admission and effective-capacity repairs, verify their changed behavior, then run Qwen 2B with thinking disabled through the existing calibration and comparison path before expanding to the remaining conditions. Preserve held-out evaluation and the mandatory continuous comparison for the adoption verdict. No additional diagnostic campaign is planned.
+
 ## Admission blocker
 
 The aggregate can produce supported summaries, but its admission judge does not separate them reliably from unsupported summaries. Running with useful summaries withheld would repeat the original pilot's empty treatment.
@@ -42,7 +44,7 @@ Qwen 2B full-view preflight failed with an HTTP 500 XML parse error in 1043149 m
 
 The historical pilot passed 9 of 12 goals in each arm, but supplied no aggregate summaries and changed the initial seed context. Its STOP result cannot establish quality equivalence. See [the original pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-pilot-stop.md).
 
-The capacity diagnostic completed 30 inference requests and 40 metadata requests in 306155 ms, with all saved-byte checks passing. Every tested model accepted the larger-context prompt and rejected the identical input at the smaller context. Qwen and Gemma 4B reached their generation boundary; Gemma 2B stopped early, leaving that control inconclusive. A bounded padded Gemma 2B control is in preparation. These observations precede full-workload qualification. See [the raw evidence and limits](.orkestrel/agent/instruments/units/aggregates/diagnostics/capacity-controls/README.md).
+The capacity diagnostic completed 30 inference requests and 40 metadata requests in 306155 ms, with all saved-byte checks passing. Every tested model accepted the larger-context prompt and rejected the identical input at the smaller context. The padded Gemma 2B successor then reached 2047 prompt-plus-output tokens in a 2048-token slot and finished by length, in 17737 ms. Root accepts the bounded deployment observation; work-quality qualification remains separate. See [the original evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/capacity-controls/README.md) and [the completed successor](.orkestrel/agent/instruments/units/aggregates/diagnostics/capacity-g2/README.md).
 
 ## Release and implementation
 
