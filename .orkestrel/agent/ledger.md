@@ -182,4 +182,6 @@ Root reconciled native analyst Astra and Cursor Opus 5.5 into the frozen l8 admi
 
 ## Long-running commands
 
+Root accepted native verifier Luna's Qwen 4B thinking-disabled records preflight after full custody and bare logs: inner exit 0 uncapped in 274754 ms, reserve 512, window 3072, 24 goal rows, and 67 HTTP 200 requests with complete usage. The 900-second outer operational watchdog left the existing 14400-second inner watchdog unchanged; neither capped. Native Sol prepares the l8 screen offline in disjoint files. Native verifier Luna separately checked Qwen 2B full-view recovery without inference: all frozen and retained bindings match, the direct full command supports a vacant retry output, and the automatic plan cannot discover that output. Future evaluation must bind an accepted retry explicitly; copying path-bound manifests is refused. No retry or source change followed from the preparation alone.
+
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.
