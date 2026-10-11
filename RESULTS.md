@@ -1,6 +1,6 @@
 # Results
 
-Agent 0.0.30 is published. Aggregate adoption for possible 0.0.31 remains undecided. Records and full view have completed the Qwen 2B development comparison and blind grading. Aggregate stopped before an answer on a harness defect; that defect is repaired and independently verified, and its successor run is next.
+Agent 0.0.30 is published. Aggregate adoption for possible 0.0.31 remains undecided. Records and full view completed the Qwen 2B development comparison and blind grading. The l12 aggregate successor answered 2 of 24 goals, then stopped when a summary exhausted its output budget. Opus and an independent analyst are reviewing whether that failure must withhold the affected summary while the task continues.
 
 ## Blind quality results
 
@@ -10,7 +10,7 @@ The l11 runs use Qwen 3.5 2B with thinking disabled on the same authored convers
 | --- | --- | --- | --- | --- | --- |
 | Records | 12/24 | 0/24 | 4/24 | 3/24 | 349081 ms |
 | Full view | 6/24 | 1/24 | 7/24 | 4/24 | 874459 ms |
-| Living aggregate | No answers | — | — | — | Failed attempt: 24994 ms |
+| Living aggregate | Pending blind grading; 2/24 goals answered in l12 | — | — | — | Failed l12 attempt: 148136 ms |
 
 Both baselines often omit a required fresh lookup. Other failures include stale shipment status, superseded contacts, invented refund instructions, and unanswered parts of requests. Full view retained a failed goal after an XML tool-parser error and continued. The automatic pattern scorer reported 14 and 11 matches; those figures are superseded by the blind quality judgments for interpretation.
 
@@ -22,7 +22,9 @@ Recorded inference usage is 101937 input and 3294 output tokens for records, ver
 
 The harness rejected an intentional one-token judge response solely because its finish reason was length. The correction recognizes that exact raw-logprob protocol while retaining fault and capacity checks. An independent removal test reproduced the refusal; restoration passed the focused regression, development 5/5, capacity 6/6, and scoped static/build checks. See [verification](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l11-judge-length-verifier.md).
 
-Run l12 aggregate with fresh artifacts and the unchanged development policy, then grade it blind and report actual summary exposure. Its corrected build differs from the l11 baselines and will be disclosed. The policy remains explicitly unqualified: strict calibration at 0.93 admitted no supported drafts; development uses AGREE 0.67 and CHANGE 0.56. These observations cannot establish adoption.
+L12 answered g01 and g02 with nonzero summary exposure. Request 46, a summarizer call at g03, reached its 160-token output cap mid-sentence. The frozen policy stopped the trajectory: g03 has no answer and the remaining 21 goals were unattempted. The 46 sent requests consumed 37853 input and 1042 output tokens, with complete usage; the later unsent attempts incurred no inference cost. See [the retained l12 failure](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l12-development-run.md).
+
+The proposed successor treats this exact capped summary as an unavailable update while preserving the task's records and valid summaries. Truncated or stale summaries remain excluded. The direction requires an explicit policy amendment, a reached regression, and fresh execution. The development policy remains unqualified: strict calibration at 0.93 admitted no supported drafts; development uses AGREE 0.67 and CHANGE 0.56. These observations cannot establish adoption.
 
 The feasible Qwen/Gemma 2B/4B quality conditions with thinking enabled and disabled remain pending beyond this Qwen 2B observation. The mandatory final continuous long-work records-main-versus-aggregate comparison has not run. Complete those measurements, justified bounded tuning, and the blind analysis before deciding whether to integrate aggregates.
 
