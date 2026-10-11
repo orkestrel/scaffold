@@ -762,9 +762,28 @@ export function listResourceFailures(
 	return [...failures]
 }
 
+/** Reads raw response faults and explicit truncation without hiding a later upstream error.
+ * @param response - Retained Ollama response envelopes
+ * @returns An operational fault, explicit truncation refusal, or otherwise complete envelopes
+ */
+export function readResponseOutcome(response: string | undefined): MatrixOutcome {
+	let truncated = false
+	try {
+		for (const line of (response ?? '').split(/\r\n|\n/).filter((entry) => entry.trim() !== '')) {
+			const value: unknown = JSON.parse(line)
+			if (!isRecord(value) || value.error !== undefined) return 'fault'
+			truncated ||= value.truncated === true || value.truncation === true
+		}
+	} catch {
+		return 'fault'
+	}
+	return truncated ? 'refused' : 'complete'
+}
+
 /** Derives request validity from the retained HTTP boundary and completed response.
  * @param request - Actual request and response evidence
  * @param budget - Frozen decision bounds
+ * @param frozen - Frozen role and deployment custody when the role requires it
  * @returns A completed request, measured resource refusal, or operational fault
  */
 export function readRequestOutcome(
@@ -781,18 +800,8 @@ export function readRequestOutcome(
 		!isRecord(request.request)
 	)
 		return 'fault'
-	let truncated = false
-	try {
-		for (const line of (request.response ?? '')
-			.split(/\r\n|\n/)
-			.filter((entry) => entry.trim() !== '')) {
-			const value: unknown = JSON.parse(line)
-			if (!isRecord(value) || value.error !== undefined) return 'fault'
-			truncated ||= value.truncated === true || value.truncation === true
-		}
-	} catch {
-		return 'fault'
-	}
+	const response = readResponseOutcome(request.response)
+	if (response === 'fault') return 'fault'
 	const reading = readWireReading({ body: request.request }, { text: request.response })
 	if (
 		!reading.complete ||
@@ -856,7 +865,7 @@ export function readRequestOutcome(
 					options.num_predict === 1 &&
 					reading.completion === 1)
 			)) ||
-		truncated ||
+		response === 'refused' ||
 		failures.length !== 0 ||
 		(isRecord(options) &&
 			((typeof options.num_predict === 'number' && reading.completion > options.num_predict) ||
@@ -865,6 +874,67 @@ export function readRequestOutcome(
 	)
 		return 'refused'
 	return 'complete'
+}
+
+/** Checks whether the explicit development policy admits only local summary output-cap absence.
+ * @param request - Retained request and response evidence
+ * @param frozen - Frozen summarizer identity, sampler, context, and output cap
+ * @param execution - Explicit development invocation
+ * @param policy - Validated development policy
+ * @param aborted - If true, refuses the exception; if false, checks the measured cap
+ * @param stopped - Existing trajectory stop, which refuses the exception when present
+ * @returns True if normal output-cap exhaustion is the sole refusal; false otherwise
+ * @example
+ * ```ts
+ * const local = matchesCappedSummary(request, frozen, execution, policy, false)
+ * ```
+ */
+export function matchesCappedSummary(
+	request: MatrixRequest,
+	frozen: MatrixFreeze,
+	execution: MatrixExecution | undefined,
+	policy: MatrixDevelopment | undefined,
+	aborted: boolean,
+	stopped?: string,
+): boolean {
+	if (
+		aborted ||
+		stopped !== undefined ||
+		execution?.phase !== 'development' ||
+		!isMatrixDevelopment(policy) ||
+		policy.withhold !== true ||
+		request.role !== 'summarizer' ||
+		!isRecord(request.request) ||
+		request.request.model !== frozen.summarizer.model ||
+		request.request.think !== false ||
+		request.request.truncate !== false ||
+		frozen.summarizer.think !== false ||
+		!isRecord(request.request.options) ||
+		readRequestOutcome(request, execution.budget, frozen) !== 'refused' ||
+		readResponseOutcome(request.response) !== 'complete'
+	)
+		return false
+	const options = request.request.options
+	const context = frozen.summarizer.sampler.num_ctx
+	const cap = frozen.configuration.predict
+	if (
+		!Number.isSafeInteger(context) ||
+		context === undefined ||
+		context <= 0 ||
+		!Number.isSafeInteger(cap) ||
+		cap <= 0 ||
+		!isDeepStrictEqual(options, { ...frozen.summarizer.sampler, num_predict: cap })
+	)
+		return false
+	const reading = readWireReading({ body: request.request }, { text: request.response })
+	return (
+		reading.complete &&
+		reading.reason === 'length' &&
+		reading.prompt !== undefined &&
+		reading.completion === cap &&
+		reading.prompt + reading.completion < context &&
+		request.failures.length === 0
+	)
 }
 
 /** Checks whether an unsent attempt retains the preceding measured refusal's stop reason.

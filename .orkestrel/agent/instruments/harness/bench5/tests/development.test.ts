@@ -33,6 +33,265 @@ import { JudgeCache } from '../JudgeCache.js'
 import { createOllamaJudge } from '../../vendor/ollama/index.js'
 import { writeDevelopmentFixture } from './refit/helpers.js'
 
+it('withholds a capped rebuilt summary while real development decisions and later recovery continue', async () => {
+	const parent = resolve('tmp/units/aggregate-l12-maintenance-fix-fixtures')
+	mkdirSync(parent, { recursive: true })
+	const directory = mkdtempSync(join(parent, 'development-'))
+	const peer = new MatrixPeer()
+	peer.support = true
+	peer.agreement = 0.75
+	const url = await peer.start()
+	try {
+		const seed = join(directory, 'seed.jsonl')
+		writeFileSync(seed, '')
+		const frozenPath = join(directory, 'freeze/manifest.json')
+		assert.equal(
+			await Matrix.execute([
+				'freeze',
+				'--deployment',
+				writeDeploymentFixture(directory),
+				'--key',
+				'q2',
+				'--think',
+				'false',
+				'--seed',
+				seed,
+				'--settings',
+				join(HARNESS, 'bench5/settings.json'),
+				'--out',
+				join(directory, 'freeze'),
+				'--live',
+				'--url',
+				url,
+			]),
+			0,
+		)
+		const frozen = readFrozen(hashFile(frozenPath))
+		const policy = writeDevelopmentFixture(directory, frozenPath, true)
+		for (const withhold of [undefined, false, true])
+			assert.equal(isMatrixDevelopment({ ...policy, withhold }), true)
+		for (const withhold of [null, 1, 'true', {}, []])
+			assert.equal(isMatrixDevelopment({ ...policy, withhold }), false)
+		const policyPath = join(directory, 'development.json')
+		writeFileSync(policyPath, JSON.stringify(policy))
+		const runs = new Map<RunArm, MatrixRun>()
+		for (const arm of ['records', 'aggregate'] as const) {
+			peer.summary.rebuild = arm === 'aggregate'
+			const execution: MatrixExecution = {
+				protocol: 'l6',
+				phase: 'development',
+				key: 'q2',
+				think: false,
+				arm,
+				copy: 1,
+				frozen: hashFile(frozenPath),
+				budget: policy.paired,
+				development: hashFile(policyPath),
+			}
+			const manifest = join(directory, `${arm}-execution.json`)
+			writeFileSync(manifest, JSON.stringify(execution))
+			const cache = join(directory, `${arm}-cache`)
+			const out = join(directory, arm)
+			const config = parseFlags([
+				'--run',
+				'--live',
+				'--copy',
+				'1',
+				'--manifest',
+				manifest,
+				'--cache',
+				cache,
+				'--out',
+				out,
+				'--url',
+				url,
+			])
+			assert.ok(config.success, config.success ? '' : config.error)
+			const result: unknown = await new Driver(config.value)
+				.execute()
+				.catch((error: unknown) => error)
+			const requests = readRows(join(out, 'requests.jsonl'))
+			assert.ok(requests.every(isMatrixRequest))
+			if (arm === 'aggregate') {
+				const refused = requests.find(
+					(entry) => entry.role === 'summarizer' && entry.reason === 'length',
+				)
+				assert.ok(refused, 'the real provider must reach a capped rebuild')
+				assert.equal(refused.sent, true)
+				assert.equal(refused.status, 200)
+				assert.equal(refused.completion, 160)
+				assert.ok(refused.prompt !== undefined && refused.prompt > 0)
+				assert.equal(readRequestOutcome(refused, policy.paired, frozen), 'refused')
+				assert.ok(refused.response?.includes('The standing rule applies through 2026-'))
+				assert.equal(result, 0, 'a capped summary must leave later development decisions reachable')
+				assert.ok(
+					requests.some(
+						(entry) =>
+							entry.sent &&
+							entry.role === 'agent' &&
+							entry.goal === refused.goal &&
+							entry.sequence > refused.sequence,
+					),
+					'same-goal decision must be sent',
+				)
+				assert.ok(
+					requests.some(
+						(entry) =>
+							entry.sent &&
+							entry.role === 'agent' &&
+							entry.goal !== refused.goal &&
+							entry.goal !== undefined &&
+							entry.sequence > refused.sequence,
+					),
+					'later-goal decision must be sent',
+				)
+				assert.ok(
+					!readFileSync(join(cache, 'summary.jsonl'), 'utf8').includes(
+						'The standing rule applies through 2026-',
+					),
+					'refused candidate must never enter the summary cache',
+				)
+				assert.ok(
+					!requests.some(
+						(entry) =>
+							entry.role === 'judge' &&
+							JSON.stringify(entry.request).includes('The standing rule applies through 2026-'),
+					),
+					'refused candidate must never reach support',
+				)
+				assert.ok(
+					!readFileSync(join(out, 'selections.jsonl'), 'utf8').includes(
+						'The standing rule applies through 2026-',
+					),
+					'truncated prose must never be rendered',
+				)
+			}
+			const run = parseMatrixRun(out)
+			assert.ok(run)
+			runs.set(arm, run)
+		}
+		const records = runs.get('records')
+		const aggregate = runs.get('aggregate')
+		assert.ok(records && aggregate)
+		assert.deepEqual(listMatrixPairFailures(records, aggregate), [])
+		const refused = aggregate.requests.find(
+			(entry) => entry.role === 'summarizer' && entry.reason === 'length',
+		)
+		assert.ok(refused)
+		const failed = aggregate.journal.find(
+			(entry) =>
+				isRecord(entry) &&
+				entry.event === 'fail' &&
+				entry.goal === refused.goal &&
+				entry.title === peer.summary.topic,
+		)
+		assert.ok(isRecord(failed) && isRecord(failed.prior))
+		const prior = failed.prior
+		assert.equal(failed.status, 'failed')
+		assert.equal(failed.result, undefined)
+		assert.match(String(failed.error), /local capped summary unavailable/)
+		assert.notDeepEqual(
+			failed.projection,
+			failed.prior.sources,
+			'rebuild must change the previously valid sources',
+		)
+		assert.ok(
+			aggregate.journal.some(
+				(entry) =>
+					isRecord(entry) &&
+					entry.topic === failed.topic &&
+					entry.status === 'current' &&
+					entry.goal !== refused.goal &&
+					entry.version === prior.version,
+			),
+			'the capped rebuild must have a valid predecessor',
+		)
+		const picks = aggregate.picks.filter((entry) => entry.goal === refused.goal)
+		assert.ok(picks.length > 0)
+		assert.ok(
+			picks.every((entry) => !entry.aggregates?.some((binding) => binding.topic === failed.topic)),
+			'the affected prior version must never render at the failed read point',
+		)
+		assert.ok(
+			picks.some((entry) => entry.aggregates?.some((binding) => binding.topic !== failed.topic)),
+			'another valid topic must remain admitted',
+		)
+		const recovery = aggregate.journal.find(
+			(entry) =>
+				isRecord(entry) &&
+				entry.event === 'build' &&
+				entry.topic === failed.topic &&
+				entry.status === 'current' &&
+				entry.goal !== refused.goal &&
+				typeof entry.version === 'number' &&
+				typeof failed.version === 'number' &&
+				entry.version > failed.version,
+		)
+		assert.ok(isRecord(recovery) && isRecord(recovery.result))
+		const failedAt = aggregate.rows.findIndex((entry) => entry.goal === refused.goal)
+		const recoveredAt = aggregate.rows.findIndex((entry) => entry.goal === recovery.goal)
+		assert.ok(failedAt >= 0 && recoveredAt > failedAt)
+		const unavailable = new Set(
+			aggregate.rows.slice(failedAt, recoveredAt).map((entry) => entry.goal),
+		)
+		assert.ok(
+			aggregate.picks
+				.filter((entry) => unavailable.has(entry.goal))
+				.every((entry) => !entry.aggregates?.some((binding) => binding.topic === failed.topic)),
+			'failed topic must remain unavailable until ordinary recovery',
+		)
+		assert.equal(
+			aggregate.requests.filter(
+				(entry) =>
+					entry.role === 'summarizer' &&
+					entry.goal === refused.goal &&
+					JSON.stringify(entry.request) === JSON.stringify(refused.request),
+			).length,
+			1,
+			'local cap must not retry at the same read point',
+		)
+		assert.equal(
+			recovery.prior,
+			undefined,
+			'ordinary later recovery must not reuse the invalidated version',
+		)
+		assert.deepEqual(recovery.result.sources, recovery.projection)
+		assert.notDeepEqual(recovery.result.sources, failed.prior.sources)
+		assert.ok(
+			aggregate.requests.some(
+				(entry) =>
+					entry.role === 'summarizer' &&
+					entry.sent &&
+					entry.goal === recovery.goal &&
+					entry.reason === 'stop' &&
+					entry.sequence > refused.sequence,
+			),
+			'recovery must use a later ordinary source build',
+		)
+		assert.ok(
+			aggregate.picks.some(
+				(entry) =>
+					entry.goal === recovery.goal &&
+					entry.aggregates?.some(
+						(binding) =>
+							binding.topic === failed.topic && binding.state.version === recovery.version,
+					),
+			),
+			'recovered current version must become available to a consumer',
+		)
+		const cost = measureMatrixCosts(aggregate).wire.find(
+			(entry) => entry.role === 'summarizer' && entry.phase === 'trajectory',
+		)
+		assert.ok(
+			cost && cost.completion >= 160 && cost.requests >= 1,
+			'all-role accounting must charge the refused completion',
+		)
+		console.log(`DEVELOPMENT_CAPPED_SUMMARY_FIXTURE ${directory} topic=${peer.summary.topic}`)
+	} finally {
+		await peer.destroy()
+	}
+})
+
 it('continues real aggregate development after a fresh single-token length-terminated judge answer', async () => {
 	const parent = resolve('tmp/units/aggregate-l11-judge-length-fix-fixtures')
 	mkdirSync(parent, { recursive: true })

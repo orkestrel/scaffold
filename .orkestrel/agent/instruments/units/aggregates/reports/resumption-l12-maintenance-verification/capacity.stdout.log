@@ -1,0 +1,15 @@
+✔ admits only explicitly permitted measured capped summaries and preserves every hard-stop boundary (17.7516ms)
+✔ requires observed allocation, raw integer usage, exact controls, and the frozen strict ceiling (44.4993ms)
+✔ admits finite full trajectories with B above metadata C and refuses adapting C to the output (15.6846ms)
+✔ rejects stale, foreign, ambiguous, reordered and failed snapshots while retaining the raw inference (56.5278ms)
+✔ limits the length-finish exception to intentional one-token nonthinking gauge calibration (18.1726ms)
+✔ admits only successful intentional one-token nonthinking length-terminated flushes (12.2087ms)
+✔ limits judge length completion to the exact raw single-token logprob protocol (9.1316ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 345.2975

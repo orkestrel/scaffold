@@ -1,0 +1,193 @@
+g01-luis-refund-amount: FAIL; wall=801.0317999999997ms stage=0ms
+g02-luis-card: FAIL; wall=34.61589999999978ms stage=0ms
+g03-grace-escalation: FAIL; wall=36.5646999999999ms stage=0ms
+g04-halvorsen-ticket: FAIL; wall=31.565700000000106ms stage=0ms
+g05-luis-approval-note: FAIL; wall=34.70020000000022ms stage=0ms
+g06-kenji-shipping: FAIL; wall=31.581500000000233ms stage=0ms
+g07-depot-release: FAIL; wall=33.7494999999999ms stage=0ms
+g08-halvorsen-credit: FAIL; wall=30.88839999999982ms stage=0ms
+g09-kenji-gift-note: FAIL; wall=34.60900000000038ms stage=0ms
+g10-sigrid-callback: FAIL; wall=35.61459999999988ms stage=0ms
+g11-grace-signoff-today: FAIL; wall=357.6374000000005ms stage=0ms
+g12-copperline-gesture: FAIL; wall=97.64530000000013ms stage=0ms
+g13-farah-address: FAIL; wall=129.22760000000017ms stage=0ms
+g14-beatriz-remedy: FAIL; wall=90.70070000000032ms stage=0ms
+g15-luis-returns: FAIL; wall=79.65949999999975ms stage=0ms
+g16-walk-in-return: FAIL; wall=111.17370000000028ms stage=0ms
+g17-phone-list: FAIL; wall=63.71519999999964ms stage=0ms
+g18-chase-list: FAIL; wall=97.78260000000046ms stage=0ms
+g19-farah-code: FAIL; wall=65.86009999999987ms stage=0ms
+g20-copperline-manager: FAIL; wall=63.785899999999856ms stage=0ms
+g21-copperline-buyer: FAIL; wall=67.6882000000005ms stage=0ms
+g22-kenji-returns: FAIL; wall=84.32579999999962ms stage=0ms
+g23-grace-reopened: FAIL; wall=66.5623000000005ms stage=0ms
+g24-halvorsen-claim: FAIL; wall=89.82719999999972ms stage=0ms
+g01-luis-refund-amount: FAIL; wall=674.9125000000004ms stage=61ms
+g02-luis-card: FAIL; wall=29.43159999999989ms stage=14ms
+g03-grace-escalation: FAIL; wall=33.5067999999992ms stage=21ms
+g04-halvorsen-ticket: FAIL; wall=29.62459999999919ms stage=22ms
+g05-luis-approval-note: FAIL; wall=29.51510000000053ms stage=18ms
+g06-kenji-shipping: FAIL; wall=30.811400000000503ms stage=14ms
+g07-depot-release: FAIL; wall=29.397399999998015ms stage=14ms
+g08-halvorsen-credit: FAIL; wall=33.04080000000067ms stage=15ms
+g09-kenji-gift-note: FAIL; wall=30.496500000002925ms stage=14ms
+g10-sigrid-callback: FAIL; wall=32.65680000000066ms stage=15ms
+aggregate owner:LH-31055 at g11-grace-signoff-today: Error: local capped summary unavailable at request 523
+g11-grace-signoff-today: FAIL; wall=332.63580000000184ms stage=51ms
+g12-copperline-gesture: FAIL; wall=84.85900000000038ms stage=45ms
+g13-farah-address: FAIL; wall=115.80119999999988ms stage=39ms
+g14-beatriz-remedy: FAIL; wall=83.3080000000009ms stage=54ms
+g15-luis-returns: FAIL; wall=70.17799999999988ms stage=43ms
+g16-walk-in-return: FAIL; wall=112.76520000000164ms stage=41ms
+g17-phone-list: FAIL; wall=67.77610000000095ms stage=40ms
+g18-chase-list: FAIL; wall=92.0141999999978ms stage=45ms
+g19-farah-code: FAIL; wall=61.52809999999954ms stage=45ms
+g20-copperline-manager: FAIL; wall=62.165499999999156ms stage=48ms
+g21-copperline-buyer: FAIL; wall=64.77910000000156ms stage=46ms
+g22-kenji-returns: FAIL; wall=81.78219999999965ms stage=46ms
+g23-grace-reopened: FAIL; wall=62.053499999999985ms stage=49ms
+g24-halvorsen-claim: FAIL; wall=82.65749999999753ms stage=53ms
+DEVELOPMENT_CAPPED_SUMMARY_FIXTURE C:\Users\mikes\WebstormProjects\scaffold\tmp\units\aggregate-l12-maintenance-fix-fixtures\development-sPyDhi topic=Halvorsen Interiors (account LH-31055)
+✔ withholds a capped rebuilt summary while real development decisions and later recovery continue (11555.2803ms)
+g01-luis-refund-amount: FAIL; wall=728.6897000000008ms stage=59ms
+g02-luis-card: FAIL; wall=32.57650000000103ms stage=14ms
+g03-grace-escalation: FAIL; wall=34.690700000001016ms stage=21ms
+g04-halvorsen-ticket: FAIL; wall=30.438999999998487ms stage=22ms
+g05-luis-approval-note: FAIL; wall=31.012500000000728ms stage=15ms
+g06-kenji-shipping: FAIL; wall=29.295100000001185ms stage=14ms
+g07-depot-release: FAIL; wall=30.34860000000117ms stage=14ms
+g08-halvorsen-credit: FAIL; wall=32.78009999999995ms stage=15ms
+g09-kenji-gift-note: FAIL; wall=32.18779999999788ms stage=21ms
+g10-sigrid-callback: FAIL; wall=36.377699999999095ms stage=15ms
+g11-grace-signoff-today: FAIL; wall=355.41139999999905ms stage=52ms
+g12-copperline-gesture: FAIL; wall=99.08809999999903ms stage=50ms
+g13-farah-address: FAIL; wall=134.08650000000125ms stage=44ms
+g14-beatriz-remedy: FAIL; wall=92.72550000000047ms stage=61ms
+g15-luis-returns: FAIL; wall=76.0614999999998ms stage=43ms
+g16-walk-in-return: FAIL; wall=126.82289999999921ms stage=41ms
+g17-phone-list: FAIL; wall=68.05699999999706ms stage=42ms
+g18-chase-list: FAIL; wall=106.73129999999583ms stage=47ms
+g19-farah-code: FAIL; wall=66.47509999999966ms stage=47ms
+g20-copperline-manager: FAIL; wall=69.45579999999973ms stage=49ms
+g21-copperline-buyer: FAIL; wall=66.80429999999978ms stage=46ms
+g22-kenji-returns: FAIL; wall=82.89210000000094ms stage=47ms
+g23-grace-reopened: FAIL; wall=74.6173000000017ms stage=54ms
+g24-halvorsen-claim: FAIL; wall=97.68870000000243ms stage=44ms
+SINGLE_TOKEN_JUDGE_DEVELOPMENT_FIXTURE C:\Users\mikes\WebstormProjects\scaffold\tmp\units\aggregate-l11-judge-length-fix-fixtures\development-7wFck6
+✔ continues real aggregate development after a fresh single-token length-terminated judge answer (7046.3374ms)
+✔ retains real single-token judge protocol errors and missing-label refusals (12.0181ms)
+g01-luis-refund-amount: FAIL; wall=705.9073000000026ms stage=52ms
+g02-luis-card: FAIL; wall=31.878099999998085ms stage=14ms
+g03-grace-escalation: FAIL; wall=33.82440000000133ms stage=21ms
+g04-halvorsen-ticket: FAIL; wall=29.42370000000301ms stage=21ms
+g05-luis-approval-note: FAIL; wall=29.284100000000763ms stage=15ms
+g06-kenji-shipping: FAIL; wall=29.303499999998166ms stage=14ms
+g07-depot-release: FAIL; wall=30.373200000001816ms stage=16ms
+g08-halvorsen-credit: FAIL; wall=31.388699999999517ms stage=14ms
+g09-kenji-gift-note: FAIL; wall=30.483299999999872ms stage=15ms
+g10-sigrid-callback: FAIL; wall=34.53740000000107ms stage=15ms
+g11-grace-signoff-today: FAIL; wall=350.8787000000011ms stage=51ms
+g12-copperline-gesture: FAIL; wall=96.10329999999885ms stage=46ms
+g13-farah-address: FAIL; wall=126.85169999999925ms stage=40ms
+g14-beatriz-remedy: FAIL; wall=89.2419000000009ms stage=55ms
+g15-luis-returns: FAIL; wall=77.57419999999911ms stage=46ms
+g16-walk-in-return: FAIL; wall=162.64990000000034ms stage=53ms
+g17-phone-list: FAIL; wall=84.16969999999856ms stage=47ms
+g18-chase-list: FAIL; wall=117.19479999999749ms stage=45ms
+g19-farah-code: FAIL; wall=67.62379999999757ms stage=55ms
+g20-copperline-manager: FAIL; wall=70.2461000000003ms stage=49ms
+g21-copperline-buyer: FAIL; wall=66.41600000000108ms stage=49ms
+g22-kenji-returns: FAIL; wall=106.47860000000219ms stage=47ms
+g23-grace-reopened: FAIL; wall=66.58459999999832ms stage=48ms
+g24-halvorsen-claim: FAIL; wall=76.65680000000066ms stage=43ms
+aggregate maintain g01-luis-refund-amount: Error: harness fault: the judge failed 3 times: JudgeError: judge error: 500 - {"error":"context capacity wording in a transport fault"} <- JudgeError: judge error: 500 - {"error":"context capacity wording in a transport fault"}
+DEVELOPMENT_JUDGE_TRANSPORT_FIXTURE C:\Users\mikes\WebstormProjects\scaffold\tmp\units\aggregate-sustained-transport-fix-fixtures\development-zYmlx6
+✔ retries sent judge transport in real matrix development without admitting missing usage (8813.2162ms)
+g01-luis-refund-amount: FAIL; wall=753.6458999999959ms stage=0ms
+g02-luis-card: FAIL; wall=41.47699999999895ms stage=0ms
+g03-grace-escalation: FAIL; wall=30.74620000000141ms stage=0ms
+g04-halvorsen-ticket: FAIL; wall=35.81229999999778ms stage=0ms
+g05-luis-approval-note: FAIL; wall=28.85609999999724ms stage=0ms
+g06-kenji-shipping: FAIL; wall=28.916799999999057ms stage=0ms
+g07-depot-release: FAIL; wall=33.65740000000369ms stage=0ms
+g08-halvorsen-credit: FAIL; wall=35.56079999999929ms stage=0ms
+g09-kenji-gift-note: FAIL; wall=34.784700000003795ms stage=0ms
+g10-sigrid-callback: FAIL; wall=31.823199999998906ms stage=0ms
+g11-grace-signoff-today: FAIL; wall=373.6647000000012ms stage=0ms
+g12-copperline-gesture: FAIL; wall=101.62430000000313ms stage=0ms
+g13-farah-address: FAIL; wall=141.53059999999823ms stage=0ms
+g14-beatriz-remedy: FAIL; wall=103.67749999999796ms stage=0ms
+g15-luis-returns: FAIL; wall=78.70040000000154ms stage=0ms
+g16-walk-in-return: FAIL; wall=109.90200000000186ms stage=0ms
+g17-phone-list: FAIL; wall=69.27599999999802ms stage=0ms
+g18-chase-list: FAIL; wall=101.66300000000047ms stage=0ms
+g19-farah-code: FAIL; wall=64.7193000000043ms stage=0ms
+g20-copperline-manager: FAIL; wall=66.40770000000339ms stage=0ms
+g21-copperline-buyer: FAIL; wall=67.71929999999702ms stage=0ms
+g22-kenji-returns: FAIL; wall=88.92599999999948ms stage=0ms
+g23-grace-reopened: FAIL; wall=65.76209999999992ms stage=0ms
+g24-halvorsen-claim: FAIL; wall=88.74070000000211ms stage=0ms
+g01-luis-refund-amount: FAIL; wall=761.4372000000003ms stage=54ms
+g02-luis-card: FAIL; wall=40.674999999995634ms stage=15ms
+g03-grace-escalation: FAIL; wall=38.08309999999619ms stage=22ms
+g04-halvorsen-ticket: FAIL; wall=29.048399999999674ms stage=22ms
+g05-luis-approval-note: FAIL; wall=30.708300000005693ms stage=15ms
+g06-kenji-shipping: FAIL; wall=34.43560000000434ms stage=14ms
+g07-depot-release: FAIL; wall=30.27690000000439ms stage=14ms
+g08-halvorsen-credit: FAIL; wall=33.08419999999751ms stage=14ms
+g09-kenji-gift-note: FAIL; wall=33.79599999999482ms stage=14ms
+g10-sigrid-callback: FAIL; wall=30.67550000000483ms stage=15ms
+g11-grace-signoff-today: FAIL; wall=359.3243000000075ms stage=55ms
+g12-copperline-gesture: FAIL; wall=89.51039999999921ms stage=45ms
+g13-farah-address: FAIL; wall=133.12870000000112ms stage=42ms
+g14-beatriz-remedy: FAIL; wall=96.52710000000661ms stage=57ms
+g15-luis-returns: FAIL; wall=108.03139999999985ms stage=46ms
+g16-walk-in-return: FAIL; wall=132.38060000000405ms stage=45ms
+g17-phone-list: FAIL; wall=72.02639999999519ms stage=47ms
+g18-chase-list: FAIL; wall=110.824099999998ms stage=48ms
+g19-farah-code: FAIL; wall=77.67450000000099ms stage=49ms
+g20-copperline-manager: FAIL; wall=71.69839999999385ms stage=51ms
+g21-copperline-buyer: FAIL; wall=71.62999999999738ms stage=47ms
+g22-kenji-returns: FAIL; wall=86.9597000000067ms stage=50ms
+g23-grace-reopened: FAIL; wall=70.60349999999744ms stage=52ms
+g24-halvorsen-claim: FAIL; wall=89.60570000000735ms stage=45ms
+g01-luis-refund-amount: FAIL; wall=679.6369999999952ms stage=0ms
+g02-luis-card: FAIL; wall=49.57480000000214ms stage=0ms
+g03-grace-escalation: FAIL; wall=30.719999999993888ms stage=0ms
+g04-halvorsen-ticket: FAIL; wall=31.79670000000624ms stage=0ms
+g05-luis-approval-note: FAIL; wall=29.686699999998382ms stage=0ms
+g06-kenji-shipping: FAIL; wall=29.88039999999455ms stage=0ms
+g07-depot-release: FAIL; wall=28.100399999995716ms stage=0ms
+g08-halvorsen-credit: FAIL; wall=27.954200000000128ms stage=0ms
+g09-kenji-gift-note: FAIL; wall=28.900500000003376ms stage=0ms
+g10-sigrid-callback: FAIL; wall=29.531999999999243ms stage=0ms
+g11-grace-signoff-today: FAIL; wall=316.6875999999975ms stage=0ms
+g12-copperline-gesture: FAIL; wall=79.91760000000068ms stage=0ms
+g13-farah-address: FAIL; wall=126.74410000000353ms stage=0ms
+g14-beatriz-remedy: FAIL; wall=85.95390000000043ms stage=0ms
+g15-luis-returns: FAIL; wall=70.86180000000604ms stage=0ms
+g16-walk-in-return: FAIL; wall=103.06490000000485ms stage=0ms
+g17-phone-list: FAIL; wall=63.24919999999838ms stage=0ms
+g18-chase-list: FAIL; wall=86.85499999999593ms stage=0ms
+g19-farah-code: FAIL; wall=62.80879999999888ms stage=0ms
+g20-copperline-manager: FAIL; wall=59.84619999999995ms stage=0ms
+g21-copperline-buyer: FAIL; wall=60.95409999999538ms stage=0ms
+g22-kenji-returns: FAIL; wall=77.9268000000011ms stage=0ms
+g23-grace-reopened: FAIL; wall=67.81390000000101ms stage=0ms
+g24-halvorsen-claim: FAIL; wall=80.27060000000347ms stage=0ms
+prefix flush g01-luis-refund-amount: Error: decision qualification failed: transport
+prefix flush g01-luis-refund-amount: Error: development integrity failure at request 295
+prefix flush g01-luis-refund-amount: Error: development integrity failure at request 295
+prefix flush g01-luis-refund-amount: Error: development integrity failure at request 295
+prefix flush g01-luis-refund-amount: Error: development integrity failure at request 295
+prefix flush g01-luis-refund-amount: Error: development integrity failure at request 295
+✔ runs length-terminated production flushes in every real development arm and refuses invalid flushes (44146.1374ms)
+✔ recognizes the actual retained parser stop without granting reserve advancement (1.3926ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 71789.1877

@@ -143,6 +143,7 @@ export function isMatrixDevelopment(value: unknown): value is MatrixDevelopment 
 			value.change === 0.56 &&
 			value.selection === 'highest-grid-majority-occurrences-and-identities' &&
 			value.continuation === 'failed-goal-after-xml-function-parameter-error' &&
+			(value.withhold === undefined || typeof value.withhold === 'boolean') &&
 			value.limitation === 'seed-candidates-do-not-certify-diverged-history' &&
 			isMatrixBudget(value.paired) &&
 			isMatrixBudget(value.expanded),

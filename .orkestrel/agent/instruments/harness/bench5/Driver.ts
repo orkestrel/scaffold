@@ -126,6 +126,7 @@ import {
 	readDevelopment,
 	readFrozen,
 	permitsContinuation,
+	matchesCappedSummary,
 } from './matrix/helpers.js'
 import { readWireReading } from './helpers.js'
 import { matchesSummaryBlock } from './helpers.js'
@@ -918,9 +919,11 @@ export class Driver {
 		let inference = 0
 		let result: Response
 		let qualification: Error | undefined
+		let signal: AbortSignal | undefined
 		const turn = role === 'agent' && !this.#calibrating ? this.#turn : undefined
 		try {
 			const request = new Request(input, init)
+			signal = request.signal
 			if (this.#stopped !== undefined) throw new Error(this.#stopped)
 			const limits = this.#config.study?.limits
 			if (
@@ -1061,11 +1064,27 @@ export class Driver {
 						readRequestOutcome({ ...evidence, failures }, budget, this.#config.frozen) !==
 							'complete'))
 			) {
-				this.#stopped ??=
-					failures.length === 0
-						? `development integrity failure at request ${sequence}`
-						: `decision qualification failed: ${failures.join(', ')}`
-				qualification = new Error(this.#stopped)
+				const execution = this.#config.execution
+				if (
+					this.#config.study === undefined &&
+					execution?.phase === 'development' &&
+					matchesCappedSummary(
+						{ ...evidence, failures },
+						this.#config.frozen,
+						execution,
+						readDevelopment(execution, this.#config.frozen),
+						signal?.aborted ?? true,
+						this.#stopped,
+					)
+				)
+					qualification = new Error(`local capped summary unavailable at request ${sequence}`)
+				else {
+					this.#stopped ??=
+						failures.length === 0
+							? `development integrity failure at request ${sequence}`
+							: `decision qualification failed: ${failures.join(', ')}`
+					qualification = new Error(this.#stopped)
+				}
 			}
 		}
 		if (qualification !== undefined) throw qualification

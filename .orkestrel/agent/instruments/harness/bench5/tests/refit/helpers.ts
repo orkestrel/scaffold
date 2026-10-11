@@ -37,7 +37,11 @@ import {
 } from '../../refit/validators.js'
 
 /** Writes inert predecessor artifacts while using the real successor freeze and policy validator. */
-export function writeDevelopmentFixture(directory: string, frozenPath: string): MatrixDevelopment {
+export function writeDevelopmentFixture(
+	directory: string,
+	frozenPath: string,
+	withhold?: boolean,
+): MatrixDevelopment {
 	const frozen = readFrozen(hashFile(frozenPath))
 	const previous = { ...frozen, census: frozen.seed }
 	const predecessor = join(directory, 'predecessor.json')
@@ -149,6 +153,7 @@ export function writeDevelopmentFixture(directory: string, frozenPath: string): 
 		change: 0.56,
 		selection: 'highest-grid-majority-occurrences-and-identities',
 		continuation: 'failed-goal-after-xml-function-parameter-error',
+		...(withhold === undefined ? {} : { withhold }),
 		limitation: 'seed-candidates-do-not-certify-diverged-history',
 		paired: buildBudget(512),
 		expanded,

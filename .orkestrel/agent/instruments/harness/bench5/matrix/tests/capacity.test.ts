@@ -1,5 +1,5 @@
 import { it } from 'node:test'
-import type { MatrixOutcome } from '../types.js'
+import type { MatrixDevelopment, MatrixExecution, MatrixOutcome } from '../types.js'
 import type { CallRole } from '../../types.js'
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -12,11 +12,184 @@ import {
 	listCapacityFailures,
 	listCapacityFiles,
 	listResourceFailures,
+	matchesCappedSummary,
+	readResponseOutcome,
 } from '../helpers.js'
 import { isMatrixBudget, isMatrixRequest } from '../validators.js'
 import { MODELS, SAMPLER } from '../../constants.js'
 import { FLUSH_SYSTEM, shapeBody } from '../../Driver.js'
 import { buildCapacityFreeze, writeCapacityRequest } from './helpers.js'
+
+it('admits only explicitly permitted measured capped summaries and preserves every hard-stop boundary', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-summary-'))
+	try {
+		const original = buildCapacityFreeze(directory)
+		const frozen = { ...original, configuration: { ...original.configuration, predict: 160 } }
+		const reference = frozen.deployment
+		const policy: MatrixDevelopment = {
+			phase: 'development',
+			frozen: reference,
+			predecessor: reference,
+			diagnosis: reference,
+			labels: reference,
+			packet: reference,
+			generation: reference,
+			resource: reference,
+			full: reference,
+			agree: 0.67,
+			change: 0.56,
+			selection: 'highest-grid-majority-occurrences-and-identities',
+			continuation: 'failed-goal-after-xml-function-parameter-error',
+			withhold: true,
+			limitation: 'seed-candidates-do-not-certify-diverged-history',
+			paired: buildBudget(512),
+			expanded: buildBudget(512),
+		}
+		const execution: MatrixExecution = {
+			protocol: 'l6',
+			phase: 'development',
+			key: 'q2',
+			think: false,
+			arm: 'aggregate',
+			copy: 1,
+			frozen: reference,
+			development: reference,
+			budget: policy.paired,
+		}
+		const body = {
+			model: frozen.summarizer.model,
+			think: false,
+			truncate: false,
+			options: { ...frozen.summarizer.sampler, num_predict: 160 },
+			messages: [],
+		}
+		const response = {
+			done: true,
+			done_reason: 'length',
+			prompt_eval_count: 625,
+			eval_count: 160,
+			message: { role: 'assistant', content: 'The standing rule applies through 2026-' },
+		}
+		const request = writeCapacityRequest(directory, {
+			role: 'summarizer',
+			request: body,
+			response: JSON.stringify(response),
+		})
+		assert.equal(readRequestOutcome(request, policy.paired, frozen), 'refused')
+		assert.equal(matchesCappedSummary(request, frozen, execution, policy, false), true)
+		for (const changed of [
+			{ sent: false },
+			{ status: 500 },
+			{ error: 'connection closed' },
+			{ role: 'agent' as const },
+			{ failures: ['transport'] as const },
+			{ response: '{"done":true' },
+			{ response: JSON.stringify({ ...response, done: false }) },
+			{ response: JSON.stringify({ ...response, error: 'upstream failure' }) },
+			{ response: JSON.stringify({ ...response, prompt_eval_count: undefined }) },
+			{ response: JSON.stringify({ ...response, eval_count: undefined }) },
+			{ response: JSON.stringify({ ...response, truncated: true }) },
+			{ response: JSON.stringify({ ...response, truncation: true }) },
+			{ response: JSON.stringify({ ...response, prompt_eval_count: 2912 }) },
+			{ response: JSON.stringify({ ...response, eval_count: 161 }) },
+			{ response: JSON.stringify({ ...response, eval_count: 159 }) },
+			{ response: JSON.stringify({ ...response, done_reason: 'stop' }) },
+			{ request: { ...body, model: 'unbound' } },
+			{ request: { ...body, think: true } },
+			{ request: { ...body, truncate: true } },
+			{ request: { ...body, options: { ...body.options, seed: 8 } } },
+			{ request: { ...body, options: { ...body.options, num_ctx: 4096 } } },
+			{ request: { ...body, options: { ...body.options, num_predict: 161 } } },
+		])
+			assert.equal(
+				matchesCappedSummary({ ...request, ...changed }, frozen, execution, policy, false),
+				false,
+			)
+		for (const count of [-1, 1.5, Infinity, NaN, '625', null])
+			assert.equal(
+				matchesCappedSummary(
+					{ ...request, response: JSON.stringify({ ...response, prompt_eval_count: count }) },
+					frozen,
+					execution,
+					policy,
+					false,
+				),
+				false,
+			)
+		for (const withhold of [undefined, false])
+			assert.equal(
+				matchesCappedSummary(request, frozen, execution, { ...policy, withhold }, false),
+				false,
+			)
+		assert.equal(matchesCappedSummary(request, frozen, execution, undefined, false), false)
+		assert.equal(matchesCappedSummary(request, frozen, undefined, policy, false), false)
+		assert.equal(matchesCappedSummary(request, frozen, execution, policy, true), false)
+		assert.equal(
+			matchesCappedSummary(request, frozen, execution, policy, false, 'earlier stop'),
+			false,
+		)
+		for (const phase of ['resource', 'full', 'pilot', 'evaluation'] as const)
+			assert.equal(
+				matchesCappedSummary(request, frozen, { ...execution, phase }, policy, false),
+				false,
+			)
+		for (const cap of [0, -1, Infinity, NaN])
+			assert.equal(
+				matchesCappedSummary(
+					request,
+					{ ...frozen, configuration: { ...frozen.configuration, predict: cap } },
+					execution,
+					policy,
+					false,
+				),
+				false,
+			)
+		for (const context of [0, -1, Infinity, NaN])
+			assert.equal(
+				matchesCappedSummary(
+					request,
+					{
+						...frozen,
+						summarizer: {
+							...frozen.summarizer,
+							sampler: { ...frozen.summarizer.sampler, num_ctx: context },
+						},
+					},
+					execution,
+					policy,
+					false,
+				),
+				false,
+			)
+		assert.equal(
+			matchesCappedSummary(
+				request,
+				{ ...frozen, summarizer: { ...frozen.summarizer, think: true } },
+				execution,
+				policy,
+				false,
+			),
+			false,
+		)
+		const mixed =
+			JSON.stringify({ ...response, truncated: true }) +
+			'\n' +
+			JSON.stringify({ error: 'later upstream error' })
+		assert.equal(readResponseOutcome(mixed), 'fault')
+		assert.equal(
+			readRequestOutcome({ ...request, response: mixed }, policy.paired, frozen),
+			'fault',
+		)
+		assert.equal(
+			matchesCappedSummary({ ...request, response: mixed }, frozen, execution, policy, false),
+			false,
+		)
+		assert.equal(readResponseOutcome(JSON.stringify({ truncated: true })), 'refused')
+		assert.equal(readResponseOutcome(JSON.stringify({ done: true })), 'complete')
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})
 
 it('requires observed allocation, raw integer usage, exact controls, and the frozen strict ceiling', () => {
 	const directory = mkdtempSync(join(tmpdir(), 'capacity-proof-'))

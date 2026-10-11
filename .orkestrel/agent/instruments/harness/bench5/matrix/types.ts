@@ -116,6 +116,8 @@ export interface MatrixDevelopment {
 	readonly change: 0.56
 	readonly selection: 'highest-grid-majority-occurrences-and-identities'
 	readonly continuation: 'failed-goal-after-xml-function-parameter-error'
+	/** Permits a measured summary output cap to withhold its topic in development. Default: false. */
+	readonly withhold?: boolean
 	readonly limitation: 'seed-candidates-do-not-certify-diverged-history'
 	readonly paired: MatrixBudget
 	readonly expanded: MatrixBudget

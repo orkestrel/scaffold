@@ -27,6 +27,8 @@ export class MatrixPeer {
 	} = { length: false, malformed: false, duplicate: false, missing: false, response: undefined }
 	parser: number | undefined
 	decisions = 0
+	summary = { rebuild: false, topic: '', capped: false }
+	readonly #summaries = new Map<string, number>()
 	metadata = 200
 	flush = {
 		length: false,
@@ -207,16 +209,30 @@ export class MatrixPeer {
 			body.options.num_predict === 512 &&
 			Array.isArray(body.tools) &&
 			body.tools.length > 0
+		const title = body.messages.flatMap((message: unknown) =>
+			isRecord(message) && message.role === 'system'
+				? (/living summary about (.*?) as of/.exec(String(message.content))?.[1] ?? [])
+				: [],
+		)[0]
+		let summary = false
+		if (body.options.num_predict === 160 && title !== undefined) {
+			const count = (this.#summaries.get(title) ?? 0) + 1
+			this.#summaries.set(title, count)
+			summary = this.summary.rebuild && !this.summary.capped && count > 1
+			if (summary) this.summary = { ...this.summary, topic: title, capped: true }
+		}
 		const completion = flush
 			? this.flush.completion
 			: body.options.num_predict === 1
 				? 1
-				: capped
-					? 512
-					: 5
+				: summary
+					? 160
+					: capped
+						? 512
+						: 5
 		response.setHeader('content-type', 'application/x-ndjson')
 		response.end(
-			`${JSON.stringify({ model: body.model, done: !(flush && this.flush.incomplete), done_reason: capped || (flush && this.flush.length) ? 'length' : 'stop', message: { role: 'assistant', content: this.support && body.options.num_predict === 160 ? 'The standing rule applies to this topic.' : 'Fixture answer.' }, ...(flush && this.flush.truncated ? { truncated: true } : {}), ...((this.missing && body.options.num_predict !== 1) || (flush && this.flush.missing) ? {} : { prompt_eval_count: flush && this.flush.boundary ? Number(body.options.num_ctx) - completion : prompt, eval_count: completion }) })}\n`,
+			`${JSON.stringify({ model: body.model, done: !(flush && this.flush.incomplete), done_reason: capped || summary || (flush && this.flush.length) ? 'length' : 'stop', message: { role: 'assistant', content: summary ? 'The standing rule applies through 2026-' : this.support && body.options.num_predict === 160 ? 'The standing rule applies to this topic.' : 'Fixture answer.' }, ...(flush && this.flush.truncated ? { truncated: true } : {}), ...((this.missing && body.options.num_predict !== 1) || (flush && this.flush.missing) ? {} : { prompt_eval_count: flush && this.flush.boundary ? Number(body.options.num_ctx) - completion : prompt, eval_count: completion }) })}\n`,
 		)
 	}
 }
