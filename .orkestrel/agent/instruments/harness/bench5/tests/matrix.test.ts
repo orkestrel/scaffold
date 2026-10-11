@@ -10,6 +10,7 @@ import { Comparison } from '../matrix/Comparison.js'
 import {
 	buildBudget,
 	listResourceFailures,
+	readRequestOutcome,
 	nameMatrix,
 	readExecution,
 	readFrozen,
@@ -446,6 +447,52 @@ it('classifies raw usage, length, explicit refusal, truncation, and capacity wit
 		eval_count: 512,
 	})
 	assert.deepEqual(listResourceFailures('agent', request, response, buildBudget(512), 200), [])
+	const captured = {
+		sequence: 1,
+		role: 'agent' as const,
+		goal: 'fixture',
+		sent: true,
+		request,
+		response,
+		status: 200,
+		failures: [],
+		wall: 1,
+	}
+	assert.equal(readRequestOutcome(captured, buildBudget(512)), 'complete')
+	assert.equal(
+		readRequestOutcome(
+			{
+				...captured,
+				status: 500,
+				response: '{"error":"context capacity exceeded"}',
+				failures: ['capacity'],
+			},
+			buildBudget(512),
+		),
+		'fault',
+	)
+	assert.equal(
+		readRequestOutcome({ ...captured, response: 'malformed host response' }, buildBudget(512)),
+		'fault',
+	)
+	assert.equal(
+		readRequestOutcome({ ...captured, response: '{"done":false}' }, buildBudget(512)),
+		'fault',
+	)
+	assert.equal(
+		readRequestOutcome(
+			{ ...captured, response: '{"done":true,"done_reason":"stop"}' },
+			buildBudget(512),
+		),
+		'refused',
+	)
+	assert.equal(
+		readRequestOutcome(
+			{ ...captured, response: response.replace('stop', 'length') },
+			buildBudget(512),
+		),
+		'refused',
+	)
 	assert.deepEqual(
 		listResourceFailures(
 			'agent',
@@ -459,7 +506,7 @@ it('classifies raw usage, length, explicit refusal, truncation, and capacity wit
 	assert.deepEqual(listResourceFailures('agent', request, '{}', buildBudget(512), 200), ['usage'])
 	assert.deepEqual(
 		listResourceFailures('agent', request, '{"error":"out of memory"}', buildBudget(512), 500),
-		['capacity'],
+		['transport'],
 	)
 	assert.deepEqual(
 		listResourceFailures(

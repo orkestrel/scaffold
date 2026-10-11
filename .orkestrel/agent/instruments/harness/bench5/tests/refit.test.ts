@@ -44,6 +44,7 @@ import {
 	fitReadings,
 	hashFile,
 	measureRecall,
+	measureRefitCosts,
 	verifyCorpus,
 	verifyEvidence,
 	verifyFiles,
@@ -296,6 +297,13 @@ describe('refit generation and fit custody', () => {
 			const attempt = readAttempts(generated)[0]
 			assert.ok(attempt)
 			assert.equal(attempt.cached, true)
+			assert.equal(attempt.sent, false)
+			assert.equal(attempt.judge?.sent, false)
+			assert.ok(
+				measureRefitCosts(readAttempts(generated)).wire.every(
+					(cost) => cost.requests === 0 && cost.missing === 0,
+				),
+			)
 			assert.equal(attempt.duration, duration)
 			const labels = join(DIRECTORY, `growth-${duration}-labels.json`)
 			writeLabels(labels, generated, context)
@@ -730,6 +738,11 @@ describe('refit generation and fit custody', () => {
 			)
 			assert.equal(peer.requests.length, 3)
 			assert.ok(readAttempts(offline).every((attempt) => attempt.cached))
+			assert.ok(
+				measureRefitCosts(readAttempts(offline)).wire.every(
+					(cost) => cost.requests === 0 && cost.missing === 0,
+				),
+			)
 			const missed = join(DIRECTORY, 'offline-miss')
 			assert.equal(
 				await new Refit(
@@ -744,6 +757,12 @@ describe('refit generation and fit custody', () => {
 				3,
 			)
 			assert.match(readAttempts(missed)[0]?.error ?? '', /cache miss/)
+			assert.equal(readAttempts(missed)[0]?.sent, false)
+			assert.ok(
+				measureRefitCosts(readAttempts(missed)).wire.every(
+					(cost) => cost.requests === 0 && cost.missing === 0,
+				),
+			)
 			assert.equal(peer.requests.length, 3)
 			const packet = readRows(join(out, 'packet.jsonl'))
 			assert.ok(packet.every(isRefitItem))
@@ -787,6 +806,9 @@ describe('refit generation and fit custody', () => {
 				3,
 			)
 			assert.match(readAttempts(out)[0]?.error ?? '', /usage missing/)
+			assert.equal(readAttempts(out)[0]?.sent, true)
+			assert.equal(measureRefitCosts(readAttempts(out)).wire[0]?.requests, 1)
+			assert.equal(measureRefitCosts(readAttempts(out)).wire[0]?.missing, 1)
 			const aborted = join(DIRECTORY, 'aborted')
 			assert.equal(
 				await new Refit(
@@ -801,9 +823,77 @@ describe('refit generation and fit custody', () => {
 				3,
 			)
 			assert.match(readAttempts(aborted)[0]?.error ?? '', /cancelled/)
+			assert.equal(readAttempts(aborted)[0]?.sent, false)
+			assert.equal(measureRefitCosts(readAttempts(aborted)).wire[0]?.requests, 0)
+			assert.equal(measureRefitCosts(readAttempts(aborted)).wire[0]?.missing, 0)
 			assert.equal(peer.requests.length, 1)
 		} finally {
 			await peer.close()
+		}
+	})
+
+	it('charges sent judge failures and sent aborts while marking historical boundaries unmeasured', async () => {
+		const context = corpus.contexts[0]
+		assert.ok(context)
+		const selected = join(DIRECTORY, 'sent-selected')
+		writeCorpus(selected, corpus, context)
+		for (const operation of ['judge', 'abort']) {
+			const abort = new AbortController()
+			const peer = new Peer({
+				initial: context.sources[0]?.text ?? '',
+				retry: '',
+				yes: 0,
+				no: -100,
+				usage: true,
+				judge: false,
+				...(operation === 'abort' ? { abort } : {}),
+			})
+			const url = await peer.start()
+			try {
+				const out = join(DIRECTORY, `sent-${operation}`)
+				assert.equal(
+					await new Refit(
+						buildOptions(out, {
+							phase: 'generate',
+							corpus: selected,
+							cache: join(DIRECTORY, `sent-${operation}-cache`),
+							live: true,
+							url,
+						}),
+					).execute(abort.signal),
+					3,
+				)
+				const attempts = readAttempts(out)
+				const costs = measureRefitCosts(attempts)
+				assert.equal(
+					costs.wire.reduce((total, cost) => total + cost.requests, 0),
+					peer.requests.length,
+				)
+				assert.equal(
+					costs.wire.find((cost) => cost.role === (operation === 'judge' ? 'judge' : 'summarizer'))
+						?.missing,
+					1,
+				)
+				assert.equal(attempts[0]?.sent, true)
+				if (operation === 'judge') assert.equal(attempts[0]?.judge?.sent, true)
+				const historical = attempts.map((attempt) => ({
+					...attempt,
+					sent: undefined,
+					judge: attempt.judge === undefined ? undefined : { ...attempt.judge, sent: undefined },
+				}))
+				const unmeasured = measureRefitCosts(historical)
+				assert.ok(unmeasured.failures.some((failure) => failure.includes('unmeasured')))
+				assert.ok(unmeasured.wire.every((cost) => cost.requests === 0 && cost.missing === 0))
+				assert.throws(
+					() =>
+						measureRefitCosts(
+							attempts.map((attempt) => ({ ...attempt, sent: true, cached: true })),
+						),
+					/contradicts cache/,
+				)
+			} finally {
+				await peer.close()
+			}
 		}
 	})
 

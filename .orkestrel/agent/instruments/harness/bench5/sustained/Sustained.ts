@@ -12,23 +12,25 @@ import type {
 import { mkdirSync, existsSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
-import { isRecord } from '@orkestrel/contract'
 import { DEFAULT_LEDGER_LIMIT, LEDGER_QUESTIONS } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { DAEMON, MICA_CONTEXT, TIMEOUT } from '../constants.js'
 import { Driver, parseFlags } from '../Driver.js'
 import { readRuntime } from '../endurance/helpers.js'
-import { readJSON, describeError } from '../helpers.js'
+import { readJSON, readRows, describeError } from '../helpers.js'
 import { readBuild } from '../build/helpers.js'
-import { readFrozen, readResource, readAttempt } from '../matrix/helpers.js'
-import { isMatrixAttempt } from '../matrix/validators.js'
+import { readFrozen, readResource } from '../matrix/helpers.js'
 import { hashFile, verifyFiles } from '../refit/helpers.js'
 import {
 	SUSTAINED_RANK,
 	readClassification,
 	readSustainedSelection,
 	readPreparationFailure,
+	readPilotFeasibility,
 	buildEvaluationLimits,
+	readSustainedBoundary,
 } from './helpers.js'
+import { isMatrixRequest } from '../matrix/validators.js'
+import { isRecord } from '@orkestrel/contract'
 import { readSustainedRun } from './parsers.js'
 import { isSustainedCandidate } from './validators.js'
 
@@ -166,22 +168,14 @@ export class Sustained {
 					throw new Error('failed preparation requires explicit development --runtime')
 				readPreparationFailure(preparation, hashFile(resolve(runtimePath)), frozenRef)
 			}
-			if (resource.accepted && preparation === undefined) {
-				const value = pilot === undefined ? undefined : readJSON(pilot.path)
-				if (
-					!isRecord(value) ||
-					value.accepted !== false ||
-					!isMatrixAttempt(value.attempt) ||
-					!Array.isArray(value.failures) ||
-					value.failures.length === 0
+			if (
+				resource.accepted &&
+				preparation === undefined &&
+				(pilot === undefined || readPilotFeasibility(pilot, frozenRef, resourceRef))
+			)
+				throw new Error(
+					'resource-feasible candidate requires a refused pilot or real development evidence',
 				)
-					throw new Error(
-						'resource-feasible candidate requires a refused pilot or real development evidence',
-					)
-				const run = readAttempt(value.attempt)
-				if (run !== undefined && run.execution.frozen.hash !== frozenRef.hash)
-					throw new Error('refused pilot belongs to another configuration')
-			}
 			const candidate: SustainedCandidate = {
 				key: frozen.key,
 				frozen: frozenRef,
@@ -236,13 +230,7 @@ export class Sustained {
 		)
 			throw new Error('development requires --pilot --classification --fit')
 		const pilot = hashFile(resolve(values.pilot))
-		const pilotValue = readJSON(pilot.path)
-		if (
-			!isRecord(pilotValue) ||
-			pilotValue.accepted !== true ||
-			!isMatrixAttempt(pilotValue.attempt) ||
-			readAttempt(pilotValue.attempt)?.execution.frozen.hash !== frozenRef.hash
-		)
+		if (!readPilotFeasibility(pilot, frozenRef, resourceRef))
 			throw new Error('development requires accepted exact matrix pilot')
 		const classification = hashFile(resolve(values.classification))
 		readClassification(classification, runtimeRef, frozenRef)
@@ -307,14 +295,17 @@ export class Sustained {
 		let served = 0
 		let exposed = 0
 		let retained = files(run)
+		const errors: string[] = []
 		try {
 			const parsed = readSustainedRun(run)
+			errors.push(...parsed.errors)
 			failures.push(...parsed.failures)
 			served = parsed.rows.length
 			exposed = parsed.observations.filter((one) => one.exposed).length
 			retained = [...parsed.files]
 		} catch (error) {
 			failures.push(describeError(error))
+			errors.push(describeError(error))
 		}
 		const attempt: SustainedAttempt = {
 			execution: hashFile(path),
@@ -326,6 +317,7 @@ export class Sustained {
 			exposed,
 		}
 		write(join(directory, 'attempt.json'), attempt)
+		if (errors.length !== 0) throw new Error(`operational trajectory fault: ${errors.join('; ')}`)
 		return attempt
 	}
 
@@ -356,8 +348,14 @@ export class Sustained {
 		}
 		if (!existsSync(cache)) {
 			write(join(out, 'diagnosis.json'), { accepted: false, failures, files: files(run) })
-			return 3
+			throw new Error('operational filing fault: missing retained cache')
 		}
+		const info = readJSON(join(run, 'run.json'))
+		const requests = readRows(join(run, 'requests.jsonl'))
+		if (!isRecord(info) || !requests.every(isMatrixRequest))
+			throw new Error('operational filing fault: malformed retained evidence')
+		const boundary = readSustainedBoundary(info, requests, execution, readFrozen(execution.frozen))
+		failures.push(...boundary.failures, ...boundary.errors)
 		const classification: SustainedClassification = {
 			protocol: 'e1',
 			runtime: execution.runtime,
@@ -368,6 +366,8 @@ export class Sustained {
 			failures,
 		}
 		write(join(out, 'classification.json'), classification)
+		if (boundary.errors.length !== 0)
+			throw new Error(`operational filing fault: ${boundary.errors.join('; ')}`)
 		return classification.accepted ? 0 : 3
 	}
 

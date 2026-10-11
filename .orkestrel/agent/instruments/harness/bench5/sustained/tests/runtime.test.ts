@@ -4,22 +4,15 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { BUILD, HARNESS } from '../../constants.js'
-import { readFrozen } from '../../matrix/helpers.js'
 import { MatrixPeer } from '../../tests/matrixFixture.js'
-import {
-	isRefitAttempt,
-	isRefitCorpus,
-	isRefitGeneration,
-	isRefitItem,
-} from '../../refit/validators.js'
 import { hashFile } from '../../refit/helpers.js'
-import { computeDigest, readJSON, readRows } from '../../helpers.js'
-import { readSustainedRun, readSustainedPreparation } from '../parsers.js'
+import { readJSON } from '../../helpers.js'
+import { readSustainedRun } from '../parsers.js'
 import { readSustainedExecution, readSustainedSelection } from '../helpers.js'
 import { readWorkload } from '../../build/helpers.js'
-import { inspectOracle, readOracle, readRuntime } from '../../endurance/helpers.js'
+import { inspectOracle, readOracle } from '../../endurance/helpers.js'
 import { Peer } from './Peer.js'
-import { runCommand, writeFixtureLabels } from './helpers.js'
+import { runCommand, writeFixtureLabels, prepareRuntimeFixture } from './helpers.js'
 import { isRecord } from '@orkestrel/contract'
 
 it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a fresh refit, and retains late invalidity', async () => {
@@ -31,199 +24,16 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 	matrixPeer.support = true
 	const url = await peer.start()
 	const matrixUrl = await matrixPeer.start()
-	const workload = resolve('tmp/units/aggregate-runtime-workload-audit-2')
-	const runtime = join(workload, 'runtime/development.json')
-	const frozenPath = join(directory, 'freeze/manifest.json')
-	const resourcePath = join(directory, 'resource/manifest.json')
-	const classificationPath = join(directory, 'filing/classification.json')
 	try {
-		for (const name of ['development', 'evaluation'])
-			assert.deepEqual(
-				inspectOracle(
-					readRuntime(join(workload, 'runtime', `${name}.json`)),
-					readOracle(join(workload, 'private', `${name}.json`)),
-				),
-				[],
-			)
-		writeFileSync(join(directory, 'seed.jsonl'), '')
-		assert.equal(
-			await runCommand('matrix', [
-				'freeze',
-				'--key',
-				'q4',
-				'--think',
-				'false',
-				'--seed',
-				join(directory, 'seed.jsonl'),
-				'--settings',
-				join(HARNESS, 'bench5/settings.json'),
-				'--out',
-				join(directory, 'freeze'),
-				'--live',
-				'--url',
-				matrixUrl,
-			]),
-			0,
-		)
-		assert.equal(
-			await runCommand('matrix', [
-				'resource',
-				'--frozen',
-				frozenPath,
-				'--out',
-				join(directory, 'resource'),
-				'--live',
-				'--url',
-				matrixUrl,
-			]),
-			0,
-		)
-		assert.equal(
-			await runCommand('sustained', [
-				'filing',
-				'--frozen',
-				frozenPath,
-				'--resource',
-				resourcePath,
-				'--runtime',
-				runtime,
-				'--out',
-				join(directory, 'filing'),
-				'--live',
-				'--url',
-				url,
-			]),
-			0,
-		)
-		const classified = hashFile(join(directory, 'filing/cache/judge.jsonl'))
-		assert.equal(readSustainedPreparation(classificationPath)[0]?.phase, 'filing')
-		assert.equal(
-			readWorkload(hashFile(runtime)).manifest.hash,
-			hashFile(join(workload, 'manifest.json')).hash,
-		)
-		const common = [
-			'--frozen',
-			frozenPath,
-			'--runtime',
+		const {
+			workload,
 			runtime,
-			'--classification',
-			classificationPath,
-			'--model',
-			'qwen3.5:4b-q4_K_M',
-		]
-		const corpusPath = join(directory, 'corpus')
-		assert.equal(
-			await runCommand('refit', [
-				'freeze',
-				...common,
-				'--cache',
-				join(directory, 'filing/cache'),
-				'--out',
-				corpusPath,
-			]),
-			0,
-		)
-		const generated = join(directory, 'generated')
-		assert.equal(
-			await runCommand('refit', [
-				'generate',
-				...common,
-				'--corpus',
-				corpusPath,
-				'--cache',
-				join(directory, 'generation-cache'),
-				'--out',
-				generated,
-				'--live',
-				'--url',
-				url,
-			]),
-			0,
-		)
-		assert.equal(hashFile(classified.path).hash, classified.hash)
-		const corpus = readJSON(join(corpusPath, 'corpus.json'))
-		const generation = readJSON(join(generated, 'manifest.json'))
-		const attempts = readRows(join(generated, 'attempts.jsonl'))
-		const packet = readRows(join(generated, 'packet.jsonl'))
-		assert.ok(
-			isRefitCorpus(corpus) &&
-				isRefitGeneration(generation) &&
-				attempts.every(isRefitAttempt) &&
-				packet.every(isRefitItem),
-		)
-		const labels = join(directory, 'fixture-refit-labels.json')
-		writeFileSync(
-			labels,
-			JSON.stringify({
-				authority: 'root-adjudicated',
-				corpus: generation.corpus,
-				attempts: generation.attempts,
-				packet: generation.packet,
-				manifest: hashFile(join(generated, 'manifest.json')).hash,
-				labels: packet.map((item) => ({
-					id: item.id,
-					item: computeDigest(item),
-					verdict: 'supported',
-					propositions: [
-						{
-							text: attempts.find((attempt) => attempt.id === item.id)?.prose ?? '',
-							verdict: 'supported',
-							evidence: [item.sources[0]?.text ?? ''],
-						},
-					],
-				})),
-			}),
-		)
-		assert.equal(
-			await runCommand('refit', [
-				'fit',
-				...common,
-				'--corpus',
-				corpusPath,
-				'--attempts',
-				generated,
-				'--labels',
-				labels,
-				'--out',
-				join(directory, 'fitted'),
-			]),
-			0,
-		)
-		const fit = join(directory, 'fitted/fit.json')
-		const frozen = readFrozen(hashFile(frozenPath))
-		const matrixFit = join(directory, 'matrix-fixture-fit.json')
-		writeFileSync(
-			matrixFit,
-			JSON.stringify({
-				agree: 0.8,
-				change: 0.56,
-				separated: true,
-				matrix: {
-					summarizer: frozen.summarizer,
-					judge: frozen.judge,
-					files: frozen.files,
-					settings: frozen.settings.hash,
-					seed: frozen.seed.hash,
-				},
-			}),
-		)
-		assert.equal(
-			await runCommand('matrix', [
-				'pilot',
-				'--frozen',
-				frozenPath,
-				'--resource',
-				resourcePath,
-				'--fit',
-				matrixFit,
-				'--out',
-				join(directory, 'pilot'),
-				'--live',
-				'--url',
-				matrixUrl,
-			]),
-			0,
-		)
+			frozen: frozenPath,
+			resource: resourcePath,
+			classification: classificationPath,
+			classified,
+			fit,
+		} = await prepareRuntimeFixture(directory, url, matrixUrl)
 		assert.equal(
 			await runCommand('sustained', [
 				'development',
@@ -480,6 +290,7 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			0,
 		)
 		const partial = readSustainedRun(partialPath)
+		assert.deepEqual(partial.errors, [])
 		assert.ok(partial.failures.some((failure) => failure.includes('usage')))
 		assert.ok(partial.observations.some((one) => one.checkpoint && one.shift === 4))
 		assert.ok(partial.rows.length < 32 && partial.rows.length > 16)
@@ -502,6 +313,7 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			0,
 		)
 		const truncated = readSustainedRun(truncatedPath)
+		assert.deepEqual(truncated.errors, [])
 		assert.ok(truncated.failures.some((failure) => failure.includes('length')))
 		assert.ok(truncated.observations.some((one) => one.checkpoint && one.shift === 4))
 		peer.lengthAt = undefined
@@ -532,7 +344,10 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			]),
 			0,
 		)
-		assert.ok(readSustainedRun(limitedPath).failures.length > 0)
+		const limitedRun = readSustainedRun(limitedPath)
+		assert.ok(limitedRun.failures.length > 0)
+		assert.deepEqual(limitedRun.errors, [])
+		assert.equal(limitedRun.requests.filter((request) => request.sent).length, 1)
 		const priorCalls = peer.calls.length
 		assert.notEqual(
 			await runCommand('bench', [

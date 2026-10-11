@@ -6,6 +6,7 @@ import type {
 	MatrixFailure,
 	MatrixFreeze,
 	MatrixIdentity,
+	MatrixOutcome,
 	MatrixRequest,
 	MatrixResource,
 	MatrixRole,
@@ -38,7 +39,7 @@ import {
 import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.js'
 import { collectSummaryBodies, countSoleTokens } from '../aggregates/helpers.js'
 import { hashFile, verifyFiles } from '../refit/helpers.js'
-import { MATRIX_ADMISSION, MATRIX_CAPACITY, MATRIX_RESERVES } from './constants.js'
+import { MATRIX_ADMISSION, MATRIX_RESERVES } from './constants.js'
 import {
 	isMatrixAttempt,
 	isMatrixExecution,
@@ -180,6 +181,8 @@ export function readResource(reference: RefitFile, frozen: RefitFile): MatrixRes
 		throw new Error('invalid resource custody')
 	for (const [at, attempt] of resource.attempts.entries()) {
 		const run = readAttempt(attempt)
+		if (run === undefined) throw new Error('operational resource fault lacks raw evidence')
+		verifyMatrixFeasibility(run)
 		if (
 			run !== undefined &&
 			(run.execution.phase !== 'resource' ||
@@ -360,8 +363,7 @@ export function listResourceFailures(
 ): readonly MatrixFailure[] {
 	if (role !== 'agent') return error !== undefined || (status ?? 0) >= 400 ? ['transport'] : []
 	const failures = new Set<MatrixFailure>()
-	if (error !== undefined || (status ?? 0) >= 400)
-		return [MATRIX_CAPACITY.test(`${error ?? ''} ${response ?? ''}`) ? 'capacity' : 'transport']
+	if (error !== undefined || (status ?? 0) >= 400) return ['transport']
 	if (
 		!isRecord(request) ||
 		request.truncate !== false ||
@@ -398,6 +400,86 @@ export function listResourceFailures(
 		}
 	}
 	return [...failures]
+}
+
+/** Derives request validity from the retained HTTP boundary and completed response.
+ * @param request - Actual request and response evidence
+ * @param budget - Frozen decision bounds
+ * @returns A completed request, measured resource refusal, or operational fault
+ */
+export function readRequestOutcome(request: MatrixRequest, budget: MatrixBudget): MatrixOutcome {
+	if (
+		!request.sent ||
+		request.error !== undefined ||
+		request.status === undefined ||
+		request.status < 200 ||
+		request.status >= 300 ||
+		!isRecord(request.request)
+	)
+		return 'fault'
+	let truncated = false
+	try {
+		for (const line of (request.response ?? '')
+			.split(/\r\n|\n/)
+			.filter((entry) => entry.trim() !== '')) {
+			const value: unknown = JSON.parse(line)
+			if (!isRecord(value)) return 'fault'
+			truncated ||= value.truncated === true || value.truncation === true
+		}
+	} catch {
+		return 'fault'
+	}
+	const reading = readWireReading({ body: request.request }, { text: request.response })
+	if (!reading.complete) return 'fault'
+	const failures =
+		request.goal === undefined
+			? []
+			: listResourceFailures(
+					request.role,
+					request.request,
+					request.response,
+					budget,
+					request.status,
+				)
+	if (failures.includes('request')) return 'fault'
+	const options = request.request.options
+	if (
+		reading.prompt === undefined ||
+		reading.completion === undefined ||
+		reading.reason === 'length' ||
+		truncated ||
+		failures.length !== 0 ||
+		(isRecord(options) &&
+			((typeof options.num_predict === 'number' && reading.completion > options.num_predict) ||
+				(typeof options.num_ctx === 'number' &&
+					reading.prompt + reading.completion >= options.num_ctx)))
+	)
+		return 'refused'
+	return 'complete'
+}
+
+/** Refuses operational matrix faults as evidence for eliminating a configuration.
+ * @param run - Decoded retained matrix evidence
+ */
+export function verifyMatrixFeasibility(run: MatrixRun | undefined): void {
+	if (run === undefined) throw new Error('operational matrix fault lacks raw evidence')
+	const outcomes = run.requests.map((request) => readRequestOutcome(request, run.execution.budget))
+	for (const request of run.requests) {
+		const role =
+			request.role === 'summarizer'
+				? run.frozen.summarizer
+				: request.role === 'judge'
+					? run.frozen.judge
+					: run.frozen.decision
+		if (
+			!isRecord(request.request) ||
+			request.request.model !== role.model ||
+			(request.role === 'summarizer' && !isDeepStrictEqual(request.request.options, role.sampler))
+		)
+			throw new Error('operational matrix fault has invalid role custody')
+	}
+	if (outcomes.includes('fault') || (run.status !== 'complete' && !outcomes.includes('refused')))
+		throw new Error('operational matrix fault is not configuration infeasibility')
 }
 
 /** Determines whether a refused trajectory permits the next fixed reserve.

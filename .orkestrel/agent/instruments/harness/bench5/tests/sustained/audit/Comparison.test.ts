@@ -35,13 +35,91 @@ test('reports common fourth-shift checkpoints and disjoint intervals with final 
 	)
 	assert.equal(report.overall?.wins, 32)
 	assert.deepEqual(report.final?.gain, { low: 16, high: 16 })
-	assert.equal(report.final?.downstream.length, 16)
+	assert.equal(report.final?.downstream.length, 4)
 	assert.equal(report.overall?.dimensions.facts.aggregate.total, 32)
 	assert.deepEqual(report.suffix, { records: [], aggregate: [] })
 	assert.deepEqual(
 		report.costs.map((entry) => entry.reading),
 		[AUDIT_COSTS, AUDIT_COSTS],
 	)
+})
+
+test('positive gains without completed or repaired downstream work remain inconclusive', () => {
+	const fixture = buildAuditFixture()
+	const judgment = {
+		...fixture.judgment,
+		labels: {
+			...fixture.judgment.labels,
+			labels: fixture.judgment.labels.labels.map((label) => ({
+				...label,
+				obligations: label.obligations.map((obligation) => ({
+					...obligation,
+					disposition: 'carried' as const,
+				})),
+			})),
+		},
+	}
+	const report = new Comparison().build(buildComparisonInput({ ...fixture, judgment }))
+	assert.equal(report.valid, true)
+	assert.deepEqual(report.overall?.gain, { low: 32, high: 32 })
+	assert.deepEqual(report.final?.gain, { low: 16, high: 16 })
+	assert.deepEqual(report.overall?.downstream, [])
+	assert.deepEqual(report.final?.downstream, [])
+	assert.equal(report.recommendation, 'inconclusive')
+	assert.deepEqual(report.reasons, [
+		'A conservative gain with completed or repaired downstream work is absent overall or in the final interval.',
+	])
+})
+
+test('a missed packet control invalidates products in every reporting interval', () => {
+	const fixture = buildAuditFixture()
+	const key = fixture.blind.keys.find((entry) => entry.control?.verdict === 'stale')
+	assert.ok(key)
+	const judgment = {
+		...fixture.judgment,
+		labels: {
+			...fixture.judgment.labels,
+			labels: fixture.judgment.labels.labels.map((label) =>
+				label.id === key.id
+					? {
+							...label,
+							critical: label.critical.map((entry) => ({ ...entry, violated: false })),
+						}
+					: label,
+			),
+		},
+	}
+	const report = new Comparison().build(buildComparisonInput({ ...fixture, judgment }))
+	assert.equal(report.valid, false)
+	assert.equal(report.recommendation, 'inconclusive')
+	assert.equal(report.intervals.length, 2)
+	for (const interval of report.intervals) {
+		assert.equal(interval.valid, false)
+		assert.ok(interval.failures.includes(`invalid batch ${key.batch}`))
+	}
+	assert.deepEqual(report.served, { records: 32, aggregate: 32 })
+})
+
+test('a nonpositive overall upper gain remains negative', () => {
+	const fixture = buildAuditFixture()
+	const judgment = {
+		...fixture.judgment,
+		labels: {
+			...fixture.judgment.labels,
+			labels: fixture.judgment.labels.labels.map((label) => {
+				const key = fixture.blind.keys.find((entry) => entry.id === label.id)
+				if (key?.control !== undefined || key?.arm !== 'records') return label
+				return {
+					...label,
+					atoms: label.atoms.map((atom) => ({ ...atom, verdict: 'pass' as const })),
+				}
+			}),
+		},
+	}
+	const report = new Comparison().build(buildComparisonInput({ ...fixture, judgment }))
+	assert.equal(report.valid, true)
+	assert.deepEqual(report.overall?.gain, { low: 0, high: 0 })
+	assert.equal(report.recommendation, 'negative')
 })
 
 test('preserves served counts, invalid suffix, and the last common checkpoint after a partial response', () => {

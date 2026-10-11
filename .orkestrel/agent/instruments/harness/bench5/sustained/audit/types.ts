@@ -46,6 +46,7 @@ export interface SustainedPacket {
 /** Holds the private join and prefrozen expected control ruling. */
 export interface SustainedKey {
 	readonly id: string
+	/** Identifies the single private audit batch covering the public packet, independent of reporting intervals. */
 	readonly batch: string
 	readonly run: string
 	readonly arm: SustainedArm
@@ -80,6 +81,7 @@ export interface SustainedAtomLabel {
 /** Holds the adjudicated disposition of an obligation in actual downstream work. */
 export interface SustainedObligationLabel {
 	readonly id: string
+	/** Requires an arrived obligation closure for completion; repair requires external correction and earlier work. */
 	readonly disposition: 'carried' | 'completed' | 'repaired' | 'missed' | 'ambiguous'
 	readonly evidence: readonly string[]
 }

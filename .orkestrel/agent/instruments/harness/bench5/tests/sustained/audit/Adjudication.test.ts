@@ -1,3 +1,5 @@
+import type { SustainedItem } from '../../../sustained/audit/types.js'
+import type { SustainedReceipt } from '../../../sustained/types.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { writeFileSync } from 'node:fs'
@@ -12,7 +14,7 @@ import {
 	verifyOracleCustody,
 } from '../../../sustained/audit/helpers.js'
 import { isSustainedKeys, isSustainedLabels } from '../../../sustained/audit/validators.js'
-import { buildAuditFixture, withAuditFiles } from './helpers.js'
+import { amendAuditObligation, buildAuditFixture, withAuditFiles } from './helpers.js'
 import { AUDIT_REFERENCE } from './constants.js'
 
 test('refuses a structurally valid same-ID edited oracle against frozen byte custody', () => {
@@ -106,7 +108,7 @@ test('requires exact packet and key hashes plus every atom, critical rule, and o
 		)
 })
 
-test('missed stale and fabricated controls invalidate their batch independently of other batches', () => {
+test('missed stale controls invalidate the shared packet batch', () => {
 	const { judgment } = buildAuditFixture()
 	const key = judgment.keys.keys.find((entry) => entry.control?.verdict === 'stale')
 	assert.ok(key)
@@ -125,7 +127,8 @@ test('missed stale and fabricated controls invalidate their batch independently 
 		},
 	})
 	assert.equal(result.batches.find((batch) => batch.id === key.batch)?.valid, false)
-	assert.equal(result.batches.filter((batch) => batch.valid).length, 1)
+	assert.equal(result.batches.length, 1)
+	assert.equal(result.batches.filter((batch) => batch.valid).length, 0)
 	assert.ok(
 		result.batches.some((batch) =>
 			batch.failures.some((failure) => failure.includes('missed stale control')),
@@ -166,6 +169,58 @@ test('missed ambiguous controls and identity leaks invalidate the affected audit
 		leaked.batches.some((batch) =>
 			batch.failures.some((failure) => failure.includes('identity leak')),
 		),
+	)
+})
+
+test('missed fabricated controls and unavailable controls invalidate the shared packet batch', () => {
+	const { judgment } = buildAuditFixture()
+	const key = judgment.keys.keys.find((entry) => entry.control?.verdict === 'fabricated')
+	assert.ok(key)
+	const missed = new Adjudication().read({
+		...judgment,
+		labels: {
+			...judgment.labels,
+			labels: judgment.labels.labels.map((label) =>
+				label.id === key.id
+					? {
+							...label,
+							critical: label.critical.map((entry) => ({ ...entry, violated: false })),
+						}
+					: label,
+			),
+		},
+	})
+	assert.equal(missed.batches.length, 1)
+	assert.equal(missed.batches[0]?.valid, false)
+	assert.ok(
+		missed.batches[0]?.failures.some((failure) => failure.includes('missed fabricated control')),
+	)
+	const unavailable = new Adjudication().read({
+		...judgment,
+		packet: {
+			...judgment.packet,
+			items: judgment.packet.items.filter((entry) => entry.id !== key.id),
+		},
+		keys: { ...judgment.keys, keys: judgment.keys.keys.filter((entry) => entry.id !== key.id) },
+		labels: {
+			...judgment.labels,
+			labels: judgment.labels.labels.filter((entry) => entry.id !== key.id),
+		},
+	})
+	assert.equal(unavailable.batches[0]?.valid, false)
+	assert.ok(unavailable.batches[0]?.failures.includes('unavailable fabricated control context'))
+	assert.throws(
+		() =>
+			new Adjudication().read({
+				...judgment,
+				labels: {
+					...judgment.labels,
+					labels: judgment.labels.labels.map((label) =>
+						label.id === key.id ? { ...label, id: 'unknown' } : label,
+					),
+				},
+			}),
+		/unknown label/,
 	)
 })
 
@@ -250,13 +305,17 @@ test('does not accept earlier work as factual support or as an external completi
 						label.id === item.id
 							? {
 									...label,
-									obligations: label.obligations.map((obligation) => ({ ...obligation, evidence })),
+									obligations: label.obligations.map((obligation) => ({
+										...obligation,
+										disposition: 'completed',
+										evidence,
+									})),
 								}
 							: label,
 					),
 				},
 			}),
-		/external evidence/,
+		/completion evidence/,
 	)
 })
 
@@ -321,5 +380,218 @@ test('closed guards reject coercible outcome arrays, missing limitation fields, 
 			}),
 		),
 		false,
+	)
+})
+
+test('completion requires the exact arrived closure and refuses a foreign available source', () => {
+	const fixture = buildAuditFixture()
+	const early = fixture.blind.packet.items.find((entry) => entry.rubric.goal === 'goal-0')
+	const late = fixture.blind.packet.items.find((entry) => entry.rubric.goal === 'goal-31')
+	assert.ok(early && late)
+	assert.equal(early.obligations[0]?.closed, undefined)
+	assert.equal(late.obligations[0]?.closed, 7)
+	const opening = early.evidence.find((entry) => entry.id === 'source:source-0')
+	const closing = late.evidence.find((entry) => entry.id === 'source:source-7')
+	assert.ok(opening && closing)
+	assert.throws(
+		() =>
+			new Adjudication().read(
+				amendAuditObligation(fixture, early, 'completed', [
+					`product|${early.product}`,
+					`${opening.id}|${opening.content}`,
+				]),
+			),
+		/completion evidence/,
+	)
+	assert.throws(
+		() =>
+			new Adjudication().read(
+				amendAuditObligation(fixture, late, 'completed', [
+					`product|${late.product}`,
+					`${opening.id}|${opening.content}`,
+				]),
+			),
+		/completion evidence/,
+	)
+	const evidence = [`product|${late.product}`, `${closing.id}|${closing.content}`]
+	assert.doesNotThrow(() =>
+		new Adjudication().read(amendAuditObligation(fixture, late, 'completed', evidence)),
+	)
+	const future = {
+		...late,
+		obligations: late.obligations.map((entry) => ({ ...entry, closed: late.point.after + 1 })),
+	}
+	assert.throws(
+		() => new Adjudication().read(amendAuditObligation(fixture, future, 'completed', evidence)),
+		/completion evidence/,
+	)
+	const foreign = {
+		...late,
+		obligations: late.obligations.map((entry) => ({ ...entry, evidence: ['source-0'] })),
+	}
+	assert.throws(
+		() => new Adjudication().read(amendAuditObligation(fixture, foreign, 'completed', evidence)),
+		/completion evidence/,
+	)
+})
+
+test('completion receipts bind a required arrived lookup and the same obligation closure', () => {
+	const fixture = buildAuditFixture()
+	const late = fixture.blind.packet.items.find((entry) => entry.rubric.goal === 'goal-31')
+	assert.ok(late)
+	const receipt: SustainedReceipt = {
+		goal: late.rubric.goal,
+		call: 'filing-call',
+		tool: 'lookup_order',
+		arguments: { id: 'filing' },
+		success: true,
+		content: 'Filing has been received.',
+		after: 7,
+		version: 7,
+	}
+	const item: SustainedItem = {
+		...late,
+		evidence: [...late.evidence, { id: 'lookup:filing@7', content: receipt.content, shift: 8 }],
+		receipts: [receipt],
+		rubric: { ...late.rubric, lookups: [{ tool: receipt.tool, id: 'filing', from: 7 }] },
+	}
+	const evidence = [`product|${item.product}`, `receipt:${receipt.call}|${receipt.content}`]
+	assert.doesNotThrow(() =>
+		new Adjudication().read(amendAuditObligation(fixture, item, 'completed', evidence)),
+	)
+	for (const changed of [
+		{ ...receipt, success: false },
+		{ ...receipt, after: 6 },
+		{ ...receipt, after: 8 },
+		{ ...receipt, version: 6 },
+		{ ...receipt, arguments: { id: 'unrelated' } },
+		{ ...receipt, tool: 'lookup_customer' },
+		{ ...receipt, content: `${receipt.content} Altered output.` },
+	]) {
+		assert.throws(
+			() =>
+				new Adjudication().read(
+					amendAuditObligation(fixture, { ...item, receipts: [changed] }, 'completed', evidence),
+				),
+			/completion evidence/,
+		)
+	}
+	assert.throws(
+		() =>
+			new Adjudication().read(
+				amendAuditObligation(
+					fixture,
+					{ ...item, rubric: { ...item.rubric, lookups: [] } },
+					'completed',
+					evidence,
+				),
+			),
+		/completion evidence/,
+	)
+	assert.throws(
+		() =>
+			new Adjudication().read(
+				amendAuditObligation(
+					fixture,
+					{ ...item, obligations: item.obligations.map(({ closed: _closed, ...entry }) => entry) },
+					'completed',
+					evidence,
+				),
+			),
+		/completion evidence/,
+	)
+	const earlier: SustainedItem = {
+		...item,
+		evidence: [...late.evidence, { id: 'lookup:filing@6', content: receipt.content, shift: 7 }],
+		receipts: [{ ...receipt, after: 6, version: 6 }],
+		rubric: { ...item.rubric, lookups: [{ tool: receipt.tool, id: 'filing', from: 6 }] },
+	}
+	assert.throws(
+		() => new Adjudication().read(amendAuditObligation(fixture, earlier, 'completed', evidence)),
+		/completion evidence/,
+	)
+})
+
+test('open obligations allow product-only carry, miss, ambiguity and externally supported repair', () => {
+	const fixture = buildAuditFixture()
+	const item = fixture.blind.packet.items.find((entry) => entry.rubric.goal === 'goal-1')
+	assert.ok(item)
+	assert.equal(item.obligations[0]?.closed, undefined)
+	const earlier = item.earlier[0]
+	const source = item.evidence[0]
+	assert.ok(earlier && source)
+	const product = `product|${item.product}`
+	const external = `${source.id}|${source.content}`
+	const prior = `product:${earlier.id}|${earlier.product}`
+	for (const disposition of ['carried', 'missed', 'ambiguous'] as const)
+		assert.doesNotThrow(() =>
+			new Adjudication().read(amendAuditObligation(fixture, item, disposition, [product])),
+		)
+	assert.doesNotThrow(() =>
+		new Adjudication().read(
+			amendAuditObligation(fixture, item, 'repaired', [product, external, prior]),
+		),
+	)
+	assert.throws(
+		() =>
+			new Adjudication().read(amendAuditObligation(fixture, item, 'repaired', [product, prior])),
+		/external evidence/,
+	)
+	assert.throws(
+		() =>
+			new Adjudication().read(amendAuditObligation(fixture, item, 'repaired', [product, external])),
+		/earlier-work evidence/,
+	)
+})
+
+test('an open obligation permits receipt-backed repair only with the earlier product', () => {
+	const fixture = buildAuditFixture()
+	const original = fixture.blind.packet.items.find((entry) => entry.rubric.goal === 'goal-1')
+	assert.ok(original)
+	assert.equal(original.obligations[0]?.closed, undefined)
+	const earlier = original.earlier[0]
+	assert.ok(earlier)
+	const receipt: SustainedReceipt = {
+		goal: original.rubric.goal,
+		call: 'repair-call',
+		tool: 'lookup_order',
+		arguments: { id: 'filing' },
+		success: true,
+		content: 'The corrected filing address is available; filing remains open.',
+		after: original.point.after,
+		version: original.point.after,
+	}
+	const item: SustainedItem = {
+		...original,
+		receipts: [receipt],
+		evidence: [
+			...original.evidence,
+			{
+				id: `lookup:filing@${original.point.after}`,
+				content: receipt.content,
+				shift: original.point.shift,
+			},
+		],
+		rubric: {
+			...original.rubric,
+			lookups: [{ tool: receipt.tool, id: 'filing', from: original.point.after }],
+		},
+	}
+	const product = `product|${item.product}`
+	const external = `receipt:${receipt.call}|${receipt.content}`
+	const prior = `product:${earlier.id}|${earlier.product}`
+	assert.doesNotThrow(() =>
+		new Adjudication().read(
+			amendAuditObligation(fixture, item, 'repaired', [product, external, prior]),
+		),
+	)
+	assert.throws(
+		() => new Adjudication().read(amendAuditObligation(fixture, item, 'repaired', [product])),
+		/external evidence/,
+	)
+	assert.throws(
+		() =>
+			new Adjudication().read(amendAuditObligation(fixture, item, 'repaired', [product, external])),
+		/earlier-work evidence/,
 	)
 })

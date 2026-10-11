@@ -304,6 +304,44 @@ export function matchesFactualEvidence(
 	)
 }
 
+/** Checks whether completion cites the obligation's arrived closure or its required lookup receipt.
+ * @param item - The blinded product and temporally available evidence
+ * @param obligation - The exact obligation version being adjudicated
+ * @param references - Already validated citation references
+ * @returns True if the closure and cited external evidence have exact custody; false otherwise
+ */
+export function matchesCompletionEvidence(
+	item: SustainedItem,
+	obligation: EnduranceObligation,
+	references: readonly string[],
+): boolean {
+	const closed = obligation.closed
+	if (closed === undefined || closed > item.point.after) return false
+	return references.some(
+		(reference) =>
+			obligation.evidence.some((source) => reference === `source:${source}`) ||
+			item.receipts.some(
+				(receipt) =>
+					reference === `receipt:${receipt.call}` &&
+					receipt.success &&
+					receipt.after >= closed &&
+					receipt.after <= item.point.after &&
+					item.rubric.lookups.some(
+						(lookup) =>
+							lookup.tool === receipt.tool &&
+							lookup.id === String(receipt.arguments.id ?? receipt.arguments.account) &&
+							lookup.from === receipt.version &&
+							lookup.from <= receipt.after &&
+							item.evidence.some(
+								(entry) =>
+									entry.id === `lookup:${lookup.id}@${lookup.from}` &&
+									entry.content === receipt.content,
+							),
+					),
+			),
+	)
+}
+
 /** Merges aliases of one measured preparation without charging its work twice.
  * @param preparations - Independently retained preparation readings
  * @returns Distinct generation or run readings with every referring manifest

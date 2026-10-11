@@ -14,13 +14,13 @@
 		},
 		{
 			"path": ".orkestrel/agent/instruments/units/aggregates/endurance/private/evaluation.json",
-			"bytes": 688114,
-			"hash": "9b84d67597d2e27394983d6befb2903f3f55c7b5637f99b8b3b601485e53d814"
+			"bytes": 695026,
+			"hash": "249a307bcdf31664676626b45090f1ce58aff10de39a31dcf447cec821650e6b"
 		},
 		{
 			"path": ".orkestrel/agent/instruments/units/aggregates/endurance/private/development.json",
-			"bytes": 1364892,
-			"hash": "7c778ec9885ebaa3280bfdbb4d9e93c3e62cf087f7d027e2725e91695c2d25d5"
+			"bytes": 1371800,
+			"hash": "e1c44d1f3ddcba6835837cfc05956cdbb0453a859e84342ddc69404b8f3d6674"
 		},
 		{
 			"path": ".orkestrel/agent/instruments/units/aggregates/endurance/private/invalid.json",

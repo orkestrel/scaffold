@@ -115,6 +115,7 @@ import {
 	nameMatrix,
 	readExecution,
 	readModelDigest,
+	readRequestOutcome,
 } from './matrix/helpers.js'
 import { readWireReading } from './helpers.js'
 import { matchesSummaryBlock } from './helpers.js'
@@ -927,20 +928,6 @@ export class Driver {
 				matchesSummaryBlock(summary, reading.messages)
 			)
 				this.#exposed = true
-			if (this.#config.study !== undefined) {
-				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
-				if (
-					!sent ||
-					error !== undefined ||
-					(status ?? 500) >= 400 ||
-					reading.prompt === undefined ||
-					reading.completion === undefined ||
-					failures.length !== 0 ||
-					this.#tokensUsed > this.#config.study.limits.tokens ||
-					Date.now() - this.#started > this.#config.study.limits.wall
-				)
-					this.#stopped = `e1 integrity/resource failure at request ${sequence}`
-			}
 			const evidence: MatrixRequest = {
 				sequence,
 				role,
@@ -957,6 +944,16 @@ export class Driver {
 				reason: reading.reason,
 				failures,
 				wall: Date.now() - started,
+			}
+			if (this.#config.study !== undefined) {
+				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
+				if (
+					!sent ||
+					readRequestOutcome(evidence, budget) === 'refused' ||
+					this.#tokensUsed > this.#config.study.limits.tokens ||
+					Date.now() - this.#started > this.#config.study.limits.wall
+				)
+					this.#stopped = `e1 integrity/resource failure at request ${sequence}`
 			}
 			if (this.#out !== undefined)
 				appendFileSync(join(this.#out, 'requests.jsonl'), `${JSON.stringify(evidence)}\n`)

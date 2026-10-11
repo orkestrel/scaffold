@@ -5,8 +5,10 @@ import type {
 	SustainedAuditInput,
 	SustainedComparisonInput,
 	SustainedItem,
+	SustainedJudgmentInput,
 	SustainedKey,
 	SustainedLabel,
+	SustainedObligationLabel,
 } from '../../../sustained/audit/types.js'
 import { Adjudication } from '../../../sustained/audit/Adjudication.js'
 import { Packet } from '../../../sustained/audit/Packet.js'
@@ -255,11 +257,17 @@ export function buildAuditLabel(item: SustainedItem, key: SustainedKey): Sustain
 						: false,
 			evidence,
 		})),
-		obligations: item.rubric.obligations.map((id) => ({
-			id,
-			disposition: key.control === undefined && key.arm === 'aggregate' ? 'completed' : 'carried',
-			evidence,
-		})),
+		obligations: item.rubric.obligations.map((id) => {
+			const closure = item.obligations.find((entry) => entry.id === id)?.closed
+			return {
+				id,
+				disposition:
+					key.control === undefined && key.arm === 'aggregate' && closure !== undefined
+						? 'completed'
+						: 'carried',
+				evidence,
+			}
+		}),
 		ambiguous: key.control?.verdict === 'ambiguous' ? [`product|${item.product}`] : [],
 		leaks: [],
 	}
@@ -331,5 +339,44 @@ export function buildComparisonInput(fixture: AuditFixture): SustainedComparison
 		packet: AUDIT_REFERENCE,
 		labels: AUDIT_REFERENCE,
 		preparation: [],
+	}
+}
+
+/** Replaces one inert obligation ruling while retaining the real packet and label validator.
+ * @param fixture - The original inert packet and labels
+ * @param item - The product with the evidence context under test
+ * @param disposition - The independent ruling to validate
+ * @param evidence - Exact citations supporting that ruling
+ * @returns A complete judgment input with the targeted obligation ruling
+ */
+export function amendAuditObligation(
+	fixture: AuditFixture,
+	item: SustainedItem,
+	disposition: SustainedObligationLabel['disposition'],
+	evidence: readonly string[],
+): SustainedJudgmentInput {
+	return {
+		...fixture.judgment,
+		packet: {
+			...fixture.judgment.packet,
+			items: fixture.judgment.packet.items.map((entry) => (entry.id === item.id ? item : entry)),
+		},
+		labels: {
+			...fixture.judgment.labels,
+			labels: fixture.judgment.labels.labels.map((label) =>
+				label.id === item.id
+					? {
+							...label,
+							obligations: label.obligations.map((obligation) => ({
+								...obligation,
+								disposition,
+								evidence,
+							})),
+							ambiguous:
+								disposition === 'ambiguous' ? [`product|${item.product}`] : label.ambiguous,
+						}
+					: label,
+			),
+		},
 	}
 }

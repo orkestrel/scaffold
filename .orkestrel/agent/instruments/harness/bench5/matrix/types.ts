@@ -9,6 +9,9 @@ import type {
 	TransitionCategory,
 } from '../types.js'
 
+/** Names the raw request's completion, measured refusal, or operational fault. */
+export type MatrixOutcome = 'complete' | 'refused' | 'fault'
+
 /** Names an explicit l6 decision configuration. */
 export interface MatrixIdentity {
 	readonly protocol: 'l6'

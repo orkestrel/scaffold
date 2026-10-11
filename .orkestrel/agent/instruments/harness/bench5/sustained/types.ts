@@ -155,6 +155,17 @@ export interface SustainedRun {
 	readonly costs: MatrixCosts
 }
 
+/** Holds the raw reader's operational findings alongside retained run measurements. */
+export interface SustainedReading extends SustainedRun {
+	readonly errors: readonly string[]
+}
+
+/** Holds derived operational errors and measured refusals from one raw request population. */
+export interface SustainedBoundary {
+	readonly errors: readonly string[]
+	readonly failures: readonly string[]
+}
+
 /** Holds one unique preparation measurement; overlapping artifacts share its identity. */
 export interface SustainedPreparation {
 	readonly identity: string

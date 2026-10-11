@@ -34,6 +34,7 @@ export class Peer {
 			chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)))
 		const body: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'))
 		this.#requests.push(body)
+		this.#options.abort?.abort(new Error('sent cancellation'))
 		if (!isRecord(body)) {
 			response.writeHead(400).end()
 			return
@@ -52,7 +53,7 @@ export class Peer {
 					model: body.model,
 					response: 'Yes',
 					done: true,
-					...usage,
+					...(this.#options.judge === false ? {} : usage),
 					logprobs: [
 						{
 							top_logprobs: [

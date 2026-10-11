@@ -2,6 +2,7 @@ import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { TokenUsage } from '@orkestrel/budget'
 import type {
 	RefitAttempt,
+	RefitPreparation,
 	RefitContext,
 	RefitCorpus,
 	RefitEvidence,
@@ -114,6 +115,7 @@ export function isRefitAttempt(value: unknown): value is RefitAttempt {
 			isFiniteNumber(value.ordinal) &&
 			arrayOf(isRefitMessage)(value.prompt) &&
 			isString(value.key) &&
+			(value.sent === undefined || typeof value.sent === 'boolean') &&
 			isFiniteNumber(value.wall) &&
 			(value.duration === undefined || isFiniteNumber(value.duration)) &&
 			(value.raw === undefined || isString(value.raw)) &&
@@ -133,6 +135,7 @@ export function isRefitAttempt(value: unknown): value is RefitAttempt {
 			(value.judge === undefined ||
 				(isRecord(value.judge) &&
 					isString(value.judge.key) &&
+					(value.judge.sent === undefined || typeof value.judge.sent === 'boolean') &&
 					typeof value.judge.cached === 'boolean' &&
 					isFiniteNumber(value.judge.wall) &&
 					(value.judge.usage === undefined || isUsage(value.judge.usage)) &&
@@ -140,6 +143,23 @@ export function isRefitAttempt(value: unknown): value is RefitAttempt {
 						(isFiniteNumber(value.judge.score) &&
 							value.judge.score >= 0 &&
 							value.judge.score <= 1)))),
+	)
+	return result.success && result.value
+}
+
+/** Checks immutable fitting input references.
+ * @param value - Parsed preparation
+ * @returns True if each required artifact is identified; false otherwise
+ */
+export function isRefitPreparation(value: unknown): value is RefitPreparation {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isRefitFile(value.manifest) &&
+			isRefitFile(value.attempts) &&
+			isRefitFile(value.packet) &&
+			isRefitFile(value.corpus) &&
+			isRefitFile(value.labels),
 	)
 	return result.success && result.value
 }

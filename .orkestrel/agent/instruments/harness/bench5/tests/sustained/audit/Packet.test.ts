@@ -3,7 +3,11 @@ import { test } from 'node:test'
 import { resolve } from 'node:path'
 import { readOracle, readRuntime } from '../../../endurance/helpers.js'
 import { Packet } from '../../../sustained/audit/Packet.js'
-import { collectAuditFacts, collectAuditObligations } from '../../../sustained/audit/helpers.js'
+import {
+	collectAuditFacts,
+	collectAuditObligations,
+	computeAuditId,
+} from '../../../sustained/audit/helpers.js'
 import { buildAuditFixture, buildAuditRun } from './helpers.js'
 
 test('randomizes reproducibly and keeps identity/control metadata only in private joins', () => {
@@ -13,7 +17,8 @@ test('randomizes reproducibly and keeps identity/control metadata only in privat
 		new Packet().build(fixture.input, 32).packet.items.map((item) => item.id),
 		fixture.blind.packet.items.map((item) => item.id),
 	)
-	assert.equal(new Set(fixture.blind.packet.items.map((item) => item.id)).size, 70)
+	assert.equal(new Set(fixture.blind.packet.items.map((item) => item.id)).size, 67)
+	assert.equal(new Set(fixture.blind.keys.map((key) => key.batch)).size, 1)
 	assert.deepEqual(Object.keys(fixture.blind.packet.items[0] ?? {}).sort(), [
 		'earlier',
 		'evidence',
@@ -126,7 +131,24 @@ test('uses the real immutable evaluation reader and oracle checker for packet co
 		31,
 	)
 	assert.equal(blind.keys.filter((key) => key.control === undefined).length, 192)
-	assert.equal(blind.keys.filter((key) => key.control !== undefined).length, 18)
+	const controls = blind.keys.filter((key) => key.control !== undefined)
+	assert.equal(controls.length, oracle.controls.length)
+	assert.equal(new Set(controls.map((key) => key.control?.id)).size, controls.length)
+	assert.equal(new Set(blind.keys.map((key) => key.batch)).size, 1)
+	for (const control of oracle.controls) {
+		const matches = controls.filter((key) => key.control?.id === control.id)
+		assert.equal(matches.length, 1)
+		assert.equal(
+			blind.packet.items.find((item) => item.id === matches[0]?.id)?.product,
+			control.artifact,
+		)
+	}
+	for (const run of [buildAuditRun(runtime, 'records'), buildAuditRun(runtime, 'aggregate')]) {
+		for (const row of run.rows) {
+			const id = computeAuditId(31, [fixture.input.reference.hash, run.path, row.goal])
+			assert.equal(blind.packet.items.find((item) => item.id === id)?.product, row.reply)
+		}
+	}
 	const key = blind.keys.find(
 		(entry) => entry.goal === 'ev-13-2' && entry.arm === 'records' && entry.control === undefined,
 	)

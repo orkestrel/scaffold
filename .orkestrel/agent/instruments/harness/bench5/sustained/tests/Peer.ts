@@ -11,6 +11,8 @@ export class Peer {
 	missingAt: string | undefined
 	lengthAt: string | undefined
 	filingFailure = false
+	faults = 0
+	status = 500
 	readonly #server = createServer((request, response) => {
 		void this.#respond(request, response).catch((error: unknown) =>
 			response.writeHead(500).end(String(error)),
@@ -55,6 +57,12 @@ export class Peer {
 		this.calls.push(body)
 		await setTimeout(10)
 		if (request.url === '/api/generate') {
+			if (this.faults > 0) {
+				this.faults -= 1
+				response.writeHead(this.status, { 'content-type': 'application/json' })
+				response.end(JSON.stringify({ error: 'context capacity wording in a transport fault' }))
+				return
+			}
 			const prompt = String(body.prompt)
 			const noul = prompt.includes('Answer Yes if true, or No if false.')
 			const winner = noul

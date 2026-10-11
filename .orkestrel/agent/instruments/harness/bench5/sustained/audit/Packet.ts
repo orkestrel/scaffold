@@ -20,25 +20,21 @@ import {
 
 /** Builds deterministic blind products from actual same-arm work and separately held truth. */
 export class Packet {
-	/** Constructs private interval batches with every available prefrozen sensitivity control.
+	/** Constructs one private audit batch with each available prefrozen sensitivity control once.
 	 * @param input - The validated pair, selected configuration, and checked oracle
 	 * @param seed - The independently recorded packet randomization seed
-	 * @returns Public randomized products and private interval/control joins
+	 * @returns Public randomized products and private batch/control joins
 	 * @throws SustainedAuditError when truth, goal, or evidence joins are missing
 	 */
 	build(input: SustainedAuditInput, seed: number): SustainedBlindResult {
 		this.#verify(input)
 		const items: SustainedItem[] = []
 		const keys: SustainedKey[] = []
+		const batch = computeAuditId(seed, [input.reference.hash, 'batch'])
 		for (const run of [input.records, input.aggregate]) {
 			for (const row of run.rows) {
 				const goal = run.runtime.goals.find((entry) => entry.id === row.goal)
 				if (goal === undefined) throw new SustainedAuditError(`missing goal ${row.goal}`)
-				const batch = computeAuditId(seed, [
-					input.reference.hash,
-					'batch',
-					String(Math.ceil(goal.shift / 4)),
-				])
 				const id = computeAuditId(seed, [input.reference.hash, run.path, row.goal])
 				items.push(this.#item(run, input.oracle, row.goal, id, row.reply))
 				keys.push({
@@ -52,26 +48,24 @@ export class Packet {
 			}
 		}
 		if (items.length === 0) throw new SustainedAuditError('cannot blind an empty served population')
-		for (const batch of new Set(keys.map((key) => key.batch))) {
-			for (const control of input.oracle.controls) {
-				const run = [input.records, input.aggregate].find((entry) =>
-					entry.rows.some((row) => row.goal === control.goal),
-				)
-				if (run === undefined) continue
-				const id = computeAuditId(seed, [input.reference.hash, batch, run.path, control.id])
-				const item = this.#item(run, input.oracle, control.goal, id, control.artifact)
-				this.#control(item, control)
-				items.push(item)
-				keys.push({
-					id,
-					batch,
-					run: run.path,
-					arm: run.execution.arm,
-					goal: control.goal,
-					files: run.files,
-					control: { id: control.id, verdict: control.verdict, reason: control.reason },
-				})
-			}
+		for (const control of input.oracle.controls) {
+			const run = [input.records, input.aggregate].find((entry) =>
+				entry.rows.some((row) => row.goal === control.goal),
+			)
+			if (run === undefined) continue
+			const id = computeAuditId(seed, [input.reference.hash, batch, run.path, control.id])
+			const item = this.#item(run, input.oracle, control.goal, id, control.artifact)
+			this.#control(item, control)
+			items.push(item)
+			keys.push({
+				id,
+				batch,
+				run: run.path,
+				arm: run.execution.arm,
+				goal: control.goal,
+				files: run.files,
+				control: { id: control.id, verdict: control.verdict, reason: control.reason },
+			})
 		}
 		return {
 			packet: { protocol: 'e1', items: items.toSorted(compareAuditIds) },

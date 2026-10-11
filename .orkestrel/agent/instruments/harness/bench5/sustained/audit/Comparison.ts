@@ -128,14 +128,7 @@ export class Comparison {
 		let recommendation: SustainedReport['recommendation'] = 'inconclusive'
 		if (valid && intervals.every((interval) => interval.exposure.majority)) {
 			if (reasons.length === 0) recommendation = 'conditional'
-			else if (
-				overall.regressions.length > 0 ||
-				overall.gain.high <= 0 ||
-				final.gain.high <= 0 ||
-				(overall.gain.low > 0 &&
-					final.gain.low > 0 &&
-					(overall.downstream.length === 0 || final.downstream.length === 0))
-			)
+			else if (overall.regressions.length > 0 || overall.gain.high <= 0 || final.gain.high <= 0)
 				recommendation = 'negative'
 		}
 		if (recommendation === 'conditional')

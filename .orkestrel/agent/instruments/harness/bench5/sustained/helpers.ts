@@ -1,8 +1,9 @@
 import type { EnduranceRuntime } from '../endurance/types.js'
-import type { MatrixFreeze } from '../matrix/types.js'
+import type { MatrixFreeze, MatrixRequest } from '../matrix/types.js'
 import type { RefitFile } from '../refit/types.js'
 import type {
 	SustainedClassification,
+	SustainedBoundary,
 	SustainedExecution,
 	SustainedLimits,
 	SustainedRun,
@@ -13,12 +14,20 @@ import { dirname, join } from 'node:path'
 import { isRecord } from '@orkestrel/contract'
 import { readJSON, readRows, readWireReading } from '../helpers.js'
 import { readRuntime } from '../endurance/helpers.js'
-import { buildBudget, readFrozen, readResource, readAttempt } from '../matrix/helpers.js'
-import { verifyFiles } from '../refit/helpers.js'
+import {
+	buildBudget,
+	readFrozen,
+	readResource,
+	readAttempt,
+	readRequestOutcome,
+	listResourceFailures,
+	verifyMatrixFeasibility,
+} from '../matrix/helpers.js'
+import { verifyFiles, readRefitAssessment } from '../refit/helpers.js'
 import { isMatrixAttempt, isMatrixRequest } from '../matrix/validators.js'
 import { isRefitFile, isRefitGeneration } from '../refit/validators.js'
 import { readSustainedRun } from './parsers.js'
-import { listMatrixPairFailures } from '../matrix/helpers.js'
+import { listMatrixPairFailures, matchesMatrixExposure } from '../matrix/helpers.js'
 import {
 	isSustainedClassification,
 	isSustainedExecution,
@@ -28,6 +37,95 @@ import { readWorkload } from '../build/helpers.js'
 
 /** Holds the accepted feasibility-only ranking. */
 export const SUSTAINED_RANK = Object.freeze(['q4', 'g4', 'q2', 'g2'])
+
+/** Recomputes request and limit validity without trusting stored failure flags.
+ * @param info - Retained run metadata
+ * @param requests - Actual request boundary evidence
+ * @param execution - Validated frozen execution
+ * @param frozen - Validated model roles
+ * @returns Operational errors separately from measured resource and limit refusals
+ */
+export function readSustainedBoundary(
+	info: Readonly<Record<string, unknown>>,
+	requests: readonly MatrixRequest[],
+	execution: SustainedExecution,
+	frozen: MatrixFreeze,
+): SustainedBoundary {
+	const errors: string[] = []
+	const failures: string[] = []
+	let calls = 0
+	let tokens = 0
+	const elapsed = typeof info.wall === 'number' && Number.isFinite(info.wall) && info.wall >= 0
+	const expired = elapsed && Number(info.wall) >= execution.limits.wall
+	for (const [at, request] of requests.entries()) {
+		const reading = readWireReading({ body: request.request }, { text: request.response })
+		const limited = calls >= execution.limits.calls || tokens >= execution.limits.tokens || expired
+		if (request.sequence !== at + 1) errors.push(`request ${request.sequence}: sequence differs`)
+		if (!request.sent && (failures.length !== 0 || limited)) {
+			if (limited) failures.push('whole-trajectory limit reached')
+			continue
+		}
+		if (failures.length !== 0)
+			errors.push(`request ${request.sequence}: sent after resource refusal`)
+		const outcome = readRequestOutcome(request, execution.budget)
+		if (outcome === 'fault') {
+			if (expired && request.sent && request.error !== undefined)
+				failures.push('whole-trajectory wall limit reached')
+			else errors.push(`request ${request.sequence}: operational transport or response fault`)
+		}
+		if (outcome === 'refused')
+			failures.push(
+				`request ${request.sequence}: completed response violates resource or usage bounds`,
+			)
+		const role =
+			request.role === 'judge'
+				? frozen.judge
+				: request.role === 'summarizer'
+					? frozen.summarizer
+					: frozen.decision
+		if (!isRecord(request.request) || request.request.model !== role.model)
+			errors.push(`request ${request.sequence}: model role differs`)
+		if (request.role !== 'judge' && (!isRecord(request.request) || request.request.think !== false))
+			errors.push(`request ${request.sequence}: thinking differs`)
+		if (
+			request.role === 'summarizer' &&
+			(!isRecord(request.request) ||
+				!isDeepStrictEqual(request.request.options, frozen.summarizer.sampler))
+		)
+			errors.push(`request ${request.sequence}: summarizer configuration differs`)
+		if (
+			request.prompt !== reading.prompt ||
+			request.completion !== reading.completion ||
+			request.reason !== reading.reason
+		)
+			errors.push(`request ${request.sequence}: altered actual usage`)
+		const resource =
+			request.goal === undefined
+				? []
+				: listResourceFailures(
+						request.role,
+						request.request,
+						request.response,
+						execution.budget,
+						request.status,
+						request.error,
+					)
+		if (!isDeepStrictEqual(resource, request.failures))
+			errors.push(`request ${request.sequence}: resource reading differs`)
+		if (outcome === 'refused')
+			failures.push(...resource.map((failure) => `request ${request.sequence}: ${failure}`))
+		if (request.sent) calls += 1
+		tokens += (reading.prompt ?? 0) + (reading.completion ?? 0)
+	}
+	if (calls !== info.sent || tokens !== info.tokens || !elapsed)
+		errors.push('actual request, token, or elapsed counts differ')
+	if (calls > execution.limits.calls)
+		errors.push('requests continued beyond whole-trajectory call limit')
+	if (tokens > execution.limits.tokens || expired) failures.push('whole-trajectory limit reached')
+	if (info.status !== 'complete' && failures.length === 0)
+		errors.push('run ended without measured resource refusal')
+	return { errors, failures }
+}
 
 /** Derives the fixed evaluation limits from complete same-configuration development measurements.
  * @param runs - The complete paired development evidence
@@ -89,24 +187,16 @@ export function readPreparationFailure(
 			metadata === undefined ? [] : readRows(join(dirname(metadata.path), 'requests.jsonl'))
 		if (
 			!isRecord(info) ||
-			info.status === 'complete' ||
 			!isSustainedExecution(info.execution) ||
 			info.execution.phase !== 'filing' ||
 			info.execution.runtime.hash !== runtime.hash ||
 			info.execution.frozen.hash !== frozen.hash ||
-			!requests.every(isMatrixRequest) ||
-			!requests.some(
-				(request) =>
-					request.sent &&
-					(request.error !== undefined ||
-						(request.status ?? 500) >= 400 ||
-						!readWireReading({ body: request.request }, { text: request.response }).complete ||
-						request.prompt === undefined ||
-						request.completion === undefined ||
-						request.failures.length > 0),
-			)
+			!requests.every(isMatrixRequest)
 		)
 			throw new Error('failed filing lacks actual resource or integrity evidence')
+		const boundary = readSustainedBoundary(info, requests, info.execution, readFrozen(frozen))
+		if (boundary.errors.length !== 0 || boundary.failures.length === 0)
+			throw new Error('operational filing fault is not configuration infeasibility')
 		return
 	}
 	const configuration = readFrozen(frozen)
@@ -120,39 +210,36 @@ export function readPreparationFailure(
 			throw new Error('generation is successful or foreign')
 		readClassification(value.sustained.classification, runtime, frozen)
 		verifyFiles([value.evidence, ...value.files])
-		return
+		throw new Error('operational generation fault is not configuration infeasibility')
 	}
+	const diagnosis = readRefitAssessment(reference)
+	const generated = readJSON(diagnosis.preparation.manifest.path)
 	if (
-		!isRecord(value) ||
-		value.separated !== false ||
-		!isRecord(value.sustained) ||
-		value.sustained.runtime !== runtime.hash ||
-		!isRecord(value.matrix) ||
-		!isDeepStrictEqual(value.matrix.files, configuration.files) ||
-		!isDeepStrictEqual(value.matrix.summarizer, configuration.summarizer) ||
-		!isDeepStrictEqual(value.matrix.judge, configuration.judge) ||
-		value.matrix.settings !== configuration.settings.hash ||
-		!isRecord(value.preparation) ||
-		!isRefitFile(value.preparation.manifest) ||
-		!isRefitFile(value.preparation.labels) ||
-		!isRecord(value.custody)
-	)
-		throw new Error('unseparated development fit evidence required')
-	verifyFiles([value.preparation.manifest, value.preparation.labels])
-	const generated = readJSON(value.preparation.manifest.path)
-	if (
+		diagnosis.accepted ||
 		!isRefitGeneration(generated) ||
 		!generated.complete ||
 		generated.errors.length !== 0 ||
 		generated.sustained?.runtime.hash !== runtime.hash ||
-		generated.sustained.classification.hash !== value.sustained.classification ||
-		!isDeepStrictEqual(generated.matrix, configuration) ||
-		value.custody.manifest !== value.preparation.manifest.hash ||
-		value.custody.labels !== value.preparation.labels.hash
+		!isDeepStrictEqual(generated.matrix, configuration)
 	)
 		throw new Error('unseparated fit custody differs')
-	readClassification(generated.sustained.classification, runtime, frozen)
-	verifyFiles([generated.evidence, ...generated.files])
+	const ancestry = readClassification(generated.sustained.classification, runtime, frozen)
+	if (
+		generated.model !== configuration.summarizer.model ||
+		!isDeepStrictEqual(generated.settings, configuration.configuration)
+	)
+		throw new Error('generation settings differ from frozen configuration')
+	if (
+		!isDeepStrictEqual(generated.files, [
+			...configuration.files,
+			configuration.settings,
+			generated.sustained.runtime,
+			generated.sustained.classification,
+			ancestry.cache,
+			...ancestry.files,
+		])
+	)
+		throw new Error('implementation custody membership mismatch')
 }
 
 /** Reads sealed classification evidence and refuses changed scenario or role ancestry.
@@ -190,24 +277,10 @@ export function readClassification(
 	)
 		throw new Error('classification has no complete runtime-only filing evidence')
 	const requests = run === undefined ? [] : readRows(join(dirname(run.path), 'requests.jsonl'))
-	if (
-		!requests.every(isMatrixRequest) ||
-		requests.some((request) => {
-			const reading = readWireReading({ body: request.request }, { text: request.response })
-			return (
-				!request.sent ||
-				request.error !== undefined ||
-				(request.status ?? 500) >= 400 ||
-				request.role !== 'judge' ||
-				!reading.complete ||
-				reading.prompt === undefined ||
-				reading.completion === undefined ||
-				request.prompt !== reading.prompt ||
-				request.completion !== reading.completion ||
-				request.failures.length > 0
-			)
-		})
-	)
+	if (!requests.every(isMatrixRequest) || requests.some((request) => request.role !== 'judge'))
+		throw new Error('classification raw usage or completion is invalid')
+	const boundary = readSustainedBoundary(report, requests, report.execution, readFrozen(frozen))
+	if (boundary.errors.length !== 0 || boundary.failures.length !== 0)
 		throw new Error('classification raw usage or completion is invalid')
 	return value
 }
@@ -294,22 +367,17 @@ export function readSustainedSelection(path: string): SustainedSelection {
 		if (frozen.key !== candidate.key || frozen.think)
 			throw new Error('endurance requires ranked non-thinking configuration')
 		const resource = readResource(candidate.resource, candidate.frozen)
-		const pilot = candidate.pilot === undefined ? undefined : readJSON(candidate.pilot.path)
-		if (candidate.pilot !== undefined) verifyFiles([candidate.pilot])
-		const pilotRun =
-			isRecord(pilot) && isMatrixAttempt(pilot.attempt) ? readAttempt(pilot.attempt) : undefined
-		if (
-			candidate.accepted &&
-			(!resource.accepted ||
-				!isRecord(pilot) ||
-				pilot.accepted !== true ||
-				pilotRun?.execution.phase !== 'pilot' ||
-				pilotRun.execution.frozen.hash !== candidate.frozen.hash)
-		)
+		const pilot =
+			candidate.pilot === undefined
+				? undefined
+				: readPilotFeasibility(candidate.pilot, candidate.frozen, candidate.resource)
+		if (candidate.accepted && (!resource.accepted || pilot !== true))
 			throw new Error('candidate matrix feasibility not established')
 		const developmentRuns = candidate.attempts.map((attempt) => {
 			verifyFiles([attempt.execution, ...attempt.files])
 			const run = readSustainedRun(attempt.run)
+			if (run.errors.length !== 0)
+				throw new Error('operational development fault is not configuration infeasibility')
 			if (
 				run.execution.phase !== 'development' ||
 				run.execution.runtime.hash !== value.development.hash ||
@@ -349,13 +417,7 @@ export function readSustainedSelection(path: string): SustainedSelection {
 			!candidate.accepted &&
 			resource.accepted &&
 			candidate.preparation === undefined &&
-			!(
-				isRecord(pilot) &&
-				pilot.accepted === false &&
-				isMatrixAttempt(pilot.attempt) &&
-				!pilot.attempt.accepted &&
-				pilot.attempt.failures.length > 0
-			) &&
+			pilot !== false &&
 			!candidate.attempts.some((attempt) => !attempt.accepted && attempt.failures.length > 0) &&
 			!pairedFailure
 		)
@@ -454,4 +516,61 @@ export function readSustainedExecution(path: string): {
 		}
 	}
 	return { execution, frozen, runtime }
+}
+
+/** Rechecks pilot feasibility from exact raw resource, paired, and exposure evidence.
+ * @param reference - Emitted pilot manifest
+ * @param frozen - Required frozen configuration
+ * @param resource - Required resource decision
+ * @returns Whether the authentic pilot is feasible
+ */
+export function readPilotFeasibility(
+	reference: RefitFile,
+	frozen: RefitFile,
+	resource: RefitFile,
+): boolean {
+	verifyFiles([reference, frozen, resource])
+	const value = readJSON(reference.path)
+	const reserve = readResource(resource, frozen)
+	if (
+		!isRecord(value) ||
+		!isRefitFile(value.frozen) ||
+		value.frozen.hash !== frozen.hash ||
+		!isRefitFile(value.resource) ||
+		value.resource.hash !== resource.hash ||
+		!isRefitFile(value.fit) ||
+		!isMatrixAttempt(value.attempt)
+	)
+		throw new Error('pilot belongs to another configuration')
+	verifyFiles([value.frozen, value.resource, value.fit])
+	const run = readAttempt(value.attempt)
+	const baseline = reserve.attempts.at(-1)
+	const records = baseline === undefined ? undefined : readAttempt(baseline)
+	if (
+		!reserve.accepted ||
+		run?.execution.phase !== 'pilot' ||
+		run.execution.frozen.hash !== frozen.hash ||
+		run.execution.resource?.hash !== resource.hash ||
+		run.execution.fit?.hash !== value.fit.hash ||
+		!isDeepStrictEqual(run.execution.budget, reserve.budget)
+	)
+		throw new Error('pilot lacks exact resource and configuration custody')
+	verifyMatrixFeasibility(run)
+	const exposed = run.rows.filter((row) => matchesMatrixExposure(run, row.goal)).length
+	const failures = [
+		...run.failures,
+		...(records === undefined
+			? ['missing paired development evidence']
+			: listMatrixPairFailures(records, run)),
+	]
+	if (exposed <= run.rows.length / 2)
+		failures.push('nonempty wire body exposure is not a majority of served development goals')
+	if (
+		value.served !== run.rows.length ||
+		value.exposed !== exposed ||
+		value.accepted !== (failures.length === 0) ||
+		!isDeepStrictEqual(value.failures, failures)
+	)
+		throw new Error('pilot contradicts raw feasibility evidence')
+	return failures.length === 0
 }

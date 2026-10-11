@@ -61,6 +61,8 @@ export interface RefitCorpus {
 
 /** Holds every attempted generation, including operational refusals. */
 export interface RefitAttempt {
+	/** Records the actual fresh request boundary; absent in historical evidence. */
+	readonly sent?: boolean
 	readonly id: string
 	readonly context: string
 	readonly ordinal: number
@@ -75,6 +77,7 @@ export interface RefitAttempt {
 	readonly cached?: boolean
 	readonly state?: string
 	readonly judge?: {
+		readonly sent?: boolean
 		readonly key: string
 		readonly cached: boolean
 		readonly wall: number
@@ -168,6 +171,42 @@ export interface RefitDiagnosis {
 	readonly readings: readonly RefitReading[]
 	readonly change: 0.56
 	readonly limitation: string
+}
+
+/** Binds fitting to immutable generation, sources, and independent labels. */
+export interface RefitPreparation {
+	readonly manifest: RefitFile
+	readonly attempts: RefitFile
+	readonly packet: RefitFile
+	readonly corpus: RefitFile
+	readonly labels: RefitFile
+}
+
+/** Holds the reproducible fitted diagnosis and its underlying evidence. */
+export interface RefitAssessment extends RefitDiagnosis {
+	readonly preparation: RefitPreparation
+	readonly custody: {
+		readonly corpus: string
+		readonly attempts: string
+		readonly packet: string
+		readonly manifest: string
+		readonly labels: RefitFile
+		readonly controls: Readonly<Record<string, string>>
+	}
+}
+
+/** Holds sent fresh preparation expenditure independently of overlapping timers. */
+export interface RefitCosts {
+	readonly wire: ReadonlyArray<{
+		readonly phase: 'trajectory'
+		readonly role: string
+		readonly requests: number
+		readonly wall: number
+		readonly prompt: number
+		readonly completion: number
+		readonly missing: number
+	}>
+	readonly failures: readonly string[]
 }
 
 /** Holds the closed command configuration. */

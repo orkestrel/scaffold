@@ -40,6 +40,7 @@ import {
 	readModelDigest,
 	readResource,
 	readSeedCache,
+	verifyMatrixFeasibility,
 } from './helpers.js'
 import { parseMatrixRun } from './parsers.js'
 import { readBuild } from '../build/helpers.js'
@@ -241,6 +242,7 @@ export class Matrix {
 				...(attempt.accepted ? { budget: attempt.budget } : {}),
 			}
 			writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+			readResource(hashFile(join(out, 'manifest.json')), reference)
 			if (attempt.accepted) return 0
 			if (!attempt.resource) return 3
 		}
@@ -357,6 +359,7 @@ export class Matrix {
 		writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, {
 			flag: 'wx',
 		})
+		verifyMatrixFeasibility(parseMatrixRun(attempt.run))
 		return attempt.accepted ? 0 : 3
 	}
 
@@ -413,6 +416,7 @@ export class Matrix {
 		writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, {
 			flag: 'wx',
 		})
+		verifyMatrixFeasibility(run)
 		return manifest.accepted ? 0 : 3
 	}
 

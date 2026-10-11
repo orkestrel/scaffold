@@ -8,13 +8,12 @@ import type {
 	RefitGeneration,
 	RefitOptions,
 	RefitPoint,
-	RefitReading,
 } from './types.js'
 import { randomUUID } from 'node:crypto'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join } from 'node:path'
 import { isDeepStrictEqual, parseArgs } from 'node:util'
-import { arrayOf, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
+import { isFiniteNumber, isRecord } from '@orkestrel/contract'
 import {
 	Classifier,
 	LEDGER_QUESTIONS,
@@ -76,30 +75,22 @@ import {
 } from './constants.js'
 import {
 	buildRefitItem,
-	collectReadings,
-	fitReadings,
+	computeRefitAssessment,
+	readRefitControls,
 	hashFile,
 	verifyCorpus,
 	verifyEvidence,
 	verifyFiles,
-	verifyLabels,
 } from './helpers.js'
-import {
-	isRefitAttempt,
-	isRefitCorpus,
-	isRefitEvidence,
-	isRefitGeneration,
-	isRefitItem,
-	isRefitLabels,
-	isRefitUsage,
-	isRefitVerdict,
-} from './validators.js'
+import { isRefitCorpus, isRefitGeneration, isRefitUsage } from './validators.js'
 
 /** Runs development freezing, score-independent generation, and independently adjudicated fitting. */
 export class Refit {
 	readonly #options: RefitOptions
 	readonly #abort = new AbortController()
 	#signal = this.#abort.signal
+	#request: 'summarizer' | 'judge' | undefined
+	#sent = new Set<string>()
 
 	/** Creates a command runner from the closed CLI options.
 	 * @param options - Explicit phase, paths, model, and live permission
@@ -239,6 +230,9 @@ export class Refit {
 	#fetch(input: Parameters<typeof fetch>[0], init?: RequestInit): Promise<Response> {
 		if (this.#options.phase !== 'generate' || !this.#options.live)
 			return Promise.reject(new Error('offline refit refuses network access'))
+		this.#signal.throwIfAborted()
+		init?.signal?.throwIfAborted()
+		if (this.#request !== undefined) this.#sent.add(this.#request)
 		return fetch(input, init)
 	}
 
@@ -529,6 +523,8 @@ export class Refit {
 					context.sources,
 					failures,
 				)
+				this.#sent.clear()
+				this.#request = 'summarizer'
 				const started = performance.now()
 				let judging: number | undefined
 				const hits = judge.stats().hits.agree ?? 0
@@ -570,6 +566,7 @@ export class Refit {
 						const id = JSON.stringify(['agree', context.topic.key, ordinal + 1])
 						const asked = performance.now()
 						judging = asked
+						this.#request = 'judge'
 						attempt = {
 							...attempt,
 							judge: {
@@ -614,7 +611,15 @@ export class Refit {
 					}
 					errors.push(`${attempt.id}: ${attempt.error}`)
 				}
-				attempt = { ...attempt, wall: performance.now() - started }
+				attempt = {
+					...attempt,
+					wall: performance.now() - started,
+					sent: this.#sent.has('summarizer'),
+					...(attempt.judge === undefined
+						? {}
+						: { judge: { ...attempt.judge, sent: this.#sent.has('judge') } }),
+				}
+				this.#request = undefined
 				if (attempt.judge !== undefined) {
 					const path = join(this.#options.cache, 'judge.jsonl')
 					const row = existsSync(path)
@@ -676,111 +681,11 @@ export class Refit {
 		return manifest.complete ? 0 : 3
 	}
 
-	#controls(): readonly RefitReading[] {
-		const controls = this.#options.controls
-		for (const [name, hash] of Object.entries(REFIT_CONTROL_HASHES))
-			if (hashFile(join(controls, name)).hash !== hash)
-				throw new Error(`archived control custody mismatch: ${name}`)
-		const adjudication = readJSON(join(controls, 'adjudication.json'))
-		const packet = readRows(join(controls, 'packet.jsonl'))
-		const mapping = readRows(join(controls, 'mapping.jsonl'))
-		if (
-			!isRecord(adjudication) ||
-			!Array.isArray(adjudication.rows) ||
-			adjudication.rows.length !== 12 ||
-			packet.length !== 12 ||
-			mapping.length !== 12
-		)
-			throw new Error('incomplete archived controls')
-		writeFileSync(
-			join(this.#options.out, 'controls.json'),
-			`${JSON.stringify({ adjudication, packet, mapping, hashes: REFIT_CONTROL_HASHES }, null, 2)}\n`,
-			{ flag: 'wx' },
-		)
-		return adjudication.rows.map((row: unknown) => {
-			if (!isRecord(row) || !isString(row.id)) throw new Error('invalid archived verdict')
-			const verdict = row.verdict === 'genuinely ambiguous' ? 'ambiguous' : row.verdict
-			if (!isRefitVerdict(verdict)) throw new Error('invalid archived verdict')
-			const item = packet.find((candidate) => isRecord(candidate) && candidate.id === row.id)
-			const mapped = mapping.find((candidate) => isRecord(candidate) && candidate.id === row.id)
-			if (
-				!isRecord(item) ||
-				!isRecord(mapped) ||
-				!isString(item.state) ||
-				!Array.isArray(mapped.sources)
-			)
-				throw new Error('missing archived source mapping')
-			const score = typeof row.score === 'number' ? row.score : undefined
-			if (
-				!isRecord(mapped.input) ||
-				!Array.isArray(mapped.input.files) ||
-				!isRecord(mapped.original) ||
-				!Number.isInteger(mapped.original.index) ||
-				typeof mapped.original.index !== 'number'
-			)
-				throw new Error('missing archived build custody')
-			const file: unknown = mapped.input.files.find(
-				(candidate: unknown) =>
-					isRecord(candidate) &&
-					isString(candidate.path) &&
-					candidate.path.endsWith('/aggregates.jsonl'),
-			)
-			if (!isRecord(file) || !isString(file.path) || !isString(file.sha256))
-				throw new Error('missing archived build path')
-			const path = resolve(HARNESS, '../../../..', file.path)
-			if (hashFile(path).hash !== file.sha256)
-				throw new Error('archived build file custody mismatch')
-			const build = readRows(path)[mapped.original.index]
-			if (
-				!isRecord(build) ||
-				!Array.isArray(build.failures) ||
-				computeDigest(build) !== mapped.input.row
-			)
-				throw new Error('archived build row custody mismatch')
-			const lexical = build.failures.every(
-				(failure: unknown) => isRecord(failure) && failure.kind === 'agree',
-			)
-			if (isRecord(mapped.original.score) && mapped.original.score.agree !== score)
-				throw new Error('archived score mismatch')
-			return {
-				id: row.id,
-				identity: computeDigest([item.question, item.state, mapped.sources]),
-				generated: false,
-				verdict,
-				lexical,
-				score,
-			}
-		})
-	}
-
 	#fit(): number {
 		const corpus = this.#corpus()
 		const directory = this.#options.attempts
 		const manifest = readJSON(join(directory, 'manifest.json'))
-		const attempts = readRows(join(directory, 'attempts.jsonl'))
-		const packet = readRows(join(directory, 'packet.jsonl'))
-		const labels = readJSON(this.#options.labels)
-		if (
-			!isRefitGeneration(manifest) ||
-			!arrayOf(isRefitAttempt)(attempts) ||
-			!arrayOf(isRefitItem)(packet) ||
-			!isRefitLabels(labels)
-		)
-			throw new Error('invalid generation or root label contract')
-		const corpusHash = hashFile(join(this.#options.corpus, 'corpus.json')).hash
-		const attemptsHash = hashFile(join(directory, 'attempts.jsonl')).hash
-		const packetHash = hashFile(join(directory, 'packet.jsonl')).hash
-		const manifestHash = hashFile(join(directory, 'manifest.json')).hash
-		if (
-			labels.manifest !== manifestHash ||
-			manifest.corpus !== corpusHash ||
-			labels.corpus !== corpusHash ||
-			manifest.attempts !== attemptsHash ||
-			labels.attempts !== attemptsHash ||
-			manifest.packet !== packetHash ||
-			labels.packet !== packetHash
-		)
-			throw new Error('corpus/attempt/packet/manifest custody mismatch')
+		if (!isRefitGeneration(manifest)) throw new Error('invalid generation contract')
 		if (!isDeepStrictEqual(manifest.files, this.#files()))
 			throw new Error('implementation custody membership mismatch')
 		if (!isDeepStrictEqual(manifest.sustained, corpus.sustained))
@@ -790,98 +695,31 @@ export class Refit {
 			!isDeepStrictEqual(manifest.matrix, readFrozen(hashFile(this.#options.frozen)))
 		)
 			throw new Error('generation role configuration differs from freeze')
-		verifyFiles(manifest.files)
-		if (resolve(manifest.evidence.path) !== resolve(directory, 'evidence.json'))
-			throw new Error('retained evidence path mismatch')
-		verifyFiles([manifest.evidence])
-		const evidence = readJSON(manifest.evidence.path)
-		if (!isRefitEvidence(evidence)) throw new Error('invalid retained cache evidence')
-		verifyEvidence(
-			attempts,
-			evidence,
-			manifest,
-			createOllamaJudge({
-				model: MICA_MODEL,
-				system: MICA_SYSTEM,
-				calibration: { temperature: MICA_CALIBRATION },
-				options: { num_ctx: MICA_CONTEXT },
-			}).model,
+		const controls = readRefitControls(this.#options.controls)
+		writeFileSync(
+			join(this.#options.out, 'controls.json'),
+			`${JSON.stringify({ adjudication: readJSON(join(this.#options.controls, 'adjudication.json')), packet: readRows(join(this.#options.controls, 'packet.jsonl')), mapping: readRows(join(this.#options.controls, 'mapping.jsonl')), hashes: REFIT_CONTROL_HASHES }, null, 2)}\n`,
+			{ flag: 'wx' },
 		)
-		verifyLabels(packet, labels)
-		if (
-			attempts.length !== packet.length ||
-			new Set(attempts.map((attempt) => attempt.id)).size !== attempts.length
+		const diagnosis = computeRefitAssessment(
+			{
+				manifest: hashFile(join(directory, 'manifest.json')),
+				corpus: hashFile(join(this.#options.corpus, 'corpus.json')),
+				attempts: hashFile(join(directory, 'attempts.jsonl')),
+				packet: hashFile(join(directory, 'packet.jsonl')),
+				labels: hashFile(this.#options.labels),
+			},
+			controls,
 		)
-			throw new Error('attempt-to-packet bijection mismatch')
-		const errors = [...manifest.errors]
-		if (!manifest.complete) errors.push('incomplete generation')
-		for (const context of corpus.contexts) {
-			const rows = attempts.filter((attempt) => attempt.context === context.id)
-			if (rows.length === 0 || rows.length > manifest.settings.retry + 1)
-				throw new Error('attempt coverage mismatch')
-			let failures: readonly AggregateFailure[] = []
-			for (const [ordinal, attempt] of rows.entries()) {
-				if (ordinal > 0 && failures.length === 0)
-					throw new Error('generation continued after lexical success')
-				if (
-					attempt.ordinal !== ordinal ||
-					!isDeepStrictEqual(
-						attempt.prompt,
-						buildSummaryPrompt(
-							context.topic.key,
-							context.topic.title,
-							context.date,
-							context.sources,
-							failures,
-						),
-					)
-				)
-					throw new Error('attempt prompt sequence mismatch')
-				if (
-					attempt.key !==
-					buildSummaryKey(
-						{ model: manifest.model, sampler: SAMPLER, predict: manifest.settings.predict },
-						attempt.prompt,
-					)
-				)
-					throw new Error('summary cache identity mismatch')
-				const item = packet.find((one) => one.id === attempt.id)
-				if (!isDeepStrictEqual(item, buildRefitItem(attempt, context)))
-					throw new Error('attempt/source/packet mismatch')
-				if (
-					attempt.state !== undefined &&
-					attempt.state !== buildAgreeState({ prose: attempt.prose ?? '' }, context.sources)
-				)
-					throw new Error('attempt state mismatch')
-				if (attempt.error !== undefined || !isRefitUsage(attempt.usage))
-					errors.push('failed call or missing summary costs')
-				if (!isFiniteNumber(attempt.duration) || attempt.duration < 0)
-					errors.push('summary duration missing or invalid')
-				failures = attempt.failures ?? []
-				if (
-					failures.length === 0 &&
-					(!isRefitUsage(attempt.judge?.usage) || attempt.judge?.score === undefined)
-				)
-					errors.push('missing judge costs or required score')
-			}
-			if (failures.length > 0 && rows.length !== manifest.settings.retry + 1)
-				errors.push('incomplete lexical retry sequence')
-		}
-		if (
-			attempts.some((attempt) => !corpus.contexts.some((context) => context.id === attempt.context))
-		)
-			throw new Error('foreign attempt context')
-		const readings = [...collectReadings(attempts, corpus.contexts, labels), ...this.#controls()]
-		const diagnosis = fitReadings(readings, errors)
 		writeFileSync(
 			join(this.#options.out, 'diagnosis.json'),
-			`${JSON.stringify({ ...diagnosis, custody: { corpus: corpusHash, attempts: attemptsHash, packet: packetHash, manifest: manifestHash, labels: hashFile(this.#options.labels), controls: REFIT_CONTROL_HASHES } }, null, 2)}\n`,
+			`${JSON.stringify(diagnosis, null, 2)}\n`,
 			{ flag: 'wx' },
 		)
 		if (!diagnosis.accepted) return 3
 		writeFileSync(
 			join(this.#options.out, 'fit.json'),
-			`${JSON.stringify({ agree: diagnosis.cutoff, change: 0.56, separated: true, ...(manifest.sustained === undefined ? {} : { sustained: { runtime: manifest.sustained.runtime.hash, classification: manifest.sustained.classification.hash } }), ...(manifest.matrix === undefined ? {} : { matrix: { summarizer: manifest.matrix.summarizer, judge: manifest.matrix.judge, files: manifest.matrix.files, settings: manifest.matrix.settings.hash, seed: manifest.matrix.seed.hash }, preparation: { manifest: hashFile(join(directory, 'manifest.json')), attempts: hashFile(join(directory, 'attempts.jsonl')), corpus: hashFile(join(this.#options.corpus, 'corpus.json')), labels: hashFile(this.#options.labels) } }), custody: { corpus: corpusHash, attempts: attemptsHash, packet: packetHash, manifest: manifestHash, labels: hashFile(this.#options.labels).hash }, limitation: REFIT_LIMITATION }, null, 2)}\n`,
+			`${JSON.stringify({ agree: diagnosis.cutoff, change: 0.56, separated: true, ...(manifest.sustained === undefined ? {} : { sustained: { runtime: manifest.sustained.runtime.hash, classification: manifest.sustained.classification.hash } }), ...(manifest.matrix === undefined ? {} : { matrix: { summarizer: manifest.matrix.summarizer, judge: manifest.matrix.judge, files: manifest.matrix.files, settings: manifest.matrix.settings.hash, seed: manifest.matrix.seed.hash }, preparation: { manifest: hashFile(join(directory, 'manifest.json')), attempts: hashFile(join(directory, 'attempts.jsonl')), corpus: hashFile(join(this.#options.corpus, 'corpus.json')), labels: hashFile(this.#options.labels) } }), custody: { corpus: diagnosis.custody.corpus, attempts: diagnosis.custody.attempts, packet: diagnosis.custody.packet, manifest: diagnosis.custody.manifest, labels: hashFile(this.#options.labels).hash }, limitation: REFIT_LIMITATION }, null, 2)}\n`,
 			{ flag: 'wx' },
 		)
 		return 0

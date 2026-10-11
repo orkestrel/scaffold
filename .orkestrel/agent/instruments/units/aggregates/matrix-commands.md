@@ -145,7 +145,7 @@ foreach ($Stage in @('A', 'B', 'C')) {
 }
 ```
 
-Build the final report, including preparation attempts that no feasible evaluated cell referenced. The input construction that follows includes generation costs explicitly only when no accepted referenced fit already supplies them; repeated identical manifest references are deduplicated, but two different manifests exposing the same calibration generation are not automatically normalized into one cost row.
+Build the final report, including preparation attempts that no feasible evaluated cell referenced. The input construction that follows includes generation costs explicitly only when no accepted referenced fit already supplies them; repeated references and fit-diagnosis aliases of the same verified generation are deduplicated into one cost row. Distinct generation manifests remain separate even when their measured totals match.
 
 ```powershell
 [string[]]$Evidence = @()
@@ -176,7 +176,7 @@ if (Test-Path -LiteralPath "$MatrixRoot/shadows") {
 Invoke-MatrixCommand 'comparison' 240 (@("$Harness/.build/bench5/compare.js", 'report', '--base', "$MatrixRoot/runs", '--out', "$MatrixRoot/comparison.json", '--packet', "$MatrixRoot/audit/packet.json", '--keys', "$MatrixRoot/private/keys.json", '--labels', "$MatrixRoot/audit/labels.json") + $Plans + $Evidence) @(0)
 ```
 
-If every configuration is infeasible and no goal was served, `blind` correctly refuses an empty packet. Produce the same report command without `--packet/--keys/--labels`; it will show the infeasibility population with no audited answer claim. If a generation crashes before a complete generation manifest, its raw retained artifacts and diagnosis remain evidence; no invented token total can replace missing usage.
+If every configuration is infeasible and no goal was served, `blind` correctly refuses an empty packet. Produce the same report command without `--packet/--keys/--labels`; it will show the infeasibility population with no audited answer claim. If generation fails operationally, its retained artifacts remain preparation evidence, not ranked infeasibility; no invented token total can replace missing usage. Refit preparation costs charge only retained sent fresh requests. Pre-aborted operations, offline cache misses, and cache hits add no request or missing-usage charge. Attempts without a retained request-boundary fact remain explicitly unmeasured. Resource, full-view, and pilot commands retain operational faults and return a non-3 error before a fault can advance the reserve ladder. HTTP/transport faults do not establish resource refusal, regardless of capacity wording in an error message.
 
 The explicitly separate historical report entry is:
 
@@ -185,4 +185,3 @@ node "$Harness/.build/bench5/report.js" --archive --base "$Work/.orkestrel/agent
 ```
 
 Its success depends on the preserved archive actually containing that complete pair; it is never an l6 cell and does not relax modern custody checks.
-

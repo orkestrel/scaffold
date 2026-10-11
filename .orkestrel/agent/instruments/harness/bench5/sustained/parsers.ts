@@ -1,13 +1,12 @@
-import type { SustainedPreparation, SustainedRun } from './types.js'
+import type { SustainedPreparation, SustainedReading } from './types.js'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
-import { readJSON, readRows, readWireReading } from '../helpers.js'
+import { readJSON, readRows } from '../helpers.js'
 import { projectCopy } from '../endurance/helpers.js'
 import { MATRIX_FILES } from '../matrix/constants.js'
 import {
-	listResourceFailures,
 	listWireInvariantFailures,
 	matchesMatrixExposure,
 	measureMatrixCosts,
@@ -21,11 +20,11 @@ import {
 	isMatrixRow,
 	isMatrixSelection,
 } from '../matrix/validators.js'
-import { hashFile, verifyFiles } from '../refit/helpers.js'
+import { hashFile, verifyFiles, measureRefitCosts, readRefitAssessment } from '../refit/helpers.js'
 import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validators.js'
 import { buildTimeline, parseAggregates } from '../shadow.js'
 import { INSTRUCTION_SUMMARIES } from '../aggregates/constants.js'
-import { readClassification, readSustainedExecution } from './helpers.js'
+import { readClassification, readSustainedExecution, readSustainedBoundary } from './helpers.js'
 import {
 	isSustainedClassification,
 	isSustainedExecution,
@@ -38,7 +37,7 @@ import {
  * @param path - Driver output directory
  * @returns Revalidated evidence and explicit integrity failures
  */
-export function readSustainedRun(path: string): SustainedRun {
+export function readSustainedRun(path: string): SustainedReading {
 	const info = readJSON(join(path, 'run.json'))
 	if (
 		!isRecord(info) ||
@@ -84,7 +83,9 @@ export function readSustainedRun(path: string): SustainedRun {
 		typeof info.gauge.overhead === 'number'
 			? { scale: info.gauge.scale, overhead: info.gauge.overhead }
 			: undefined
-	const failures: string[] = []
+	const boundary = readSustainedBoundary(info, requests, execution, frozen)
+	const failures: string[] = [...boundary.failures]
+	const errors: string[] = [...boundary.errors]
 	if (execution.classification !== undefined) {
 		const classification = readClassification(
 			execution.classification,
@@ -102,11 +103,11 @@ export function readSustainedRun(path: string): SustainedRun {
 			!isRefitFile(info.lineage.before[0]) ||
 			info.lineage.before[0].hash !== classification.cache.hash
 		)
-			failures.push('initial scenario cache ancestry differs')
+			errors.push('initial scenario cache ancestry differs')
 	}
 	if (info.status !== 'complete') failures.push(`run status ${info.status}`)
 	if (gauge === undefined || !Number.isFinite(gauge.scale) || gauge.scale <= 0)
-		failures.push('missing calibrated gauge')
+		(boundary.failures.length === 0 ? errors : failures).push('missing calibrated gauge')
 	if (
 		!isDeepStrictEqual(
 			info.goals,
@@ -117,7 +118,9 @@ export function readSustainedRun(path: string): SustainedRun {
 			runtime.goals.map((goal) => goal.id),
 		)
 	)
-		failures.push('incomplete or reordered continuous horizon')
+		(boundary.failures.length === 0 ? errors : failures).push(
+			'incomplete or reordered continuous horizon',
+		)
 	if (
 		rows.length !== observations.length ||
 		!isDeepStrictEqual(
@@ -125,59 +128,13 @@ export function readSustainedRun(path: string): SustainedRun {
 			observations.map((one) => one.goal),
 		)
 	)
-		failures.push('observation membership mismatch')
+		errors.push('observation membership mismatch')
 	const turns = readRows(join(path, 'turns.jsonl'))
 	if (info.sent !== requests.filter((one) => one.sent).length || info.turns !== turns.length)
-		failures.push('actual request or turn counts differ')
-	let tokens = 0
-	for (const [at, request] of requests.entries()) {
-		const reading = readWireReading({ body: request.request }, { text: request.response })
-		const role =
-			request.role === 'summarizer'
-				? frozen.summarizer
-				: request.role === 'judge'
-					? frozen.judge
-					: frozen.decision
+		errors.push('actual request or turn counts differ')
+	for (const request of requests) {
 		if (
-			request.sequence !== at + 1 ||
-			!isRecord(request.request) ||
-			request.request.model !== role.model ||
-			request.error !== undefined ||
-			!request.sent ||
-			(request.status ?? 500) >= 400
-		)
-			failures.push(`request ${request.sequence}: transport or role integrity`)
-		if (
-			reading.prompt === undefined ||
-			reading.completion === undefined ||
-			!reading.complete ||
-			request.prompt !== reading.prompt ||
-			request.completion !== reading.completion
-		)
-			failures.push(`request ${request.sequence}: missing or altered actual usage`)
-		tokens += (reading.prompt ?? 0) + (reading.completion ?? 0)
-		if (request.goal !== undefined) {
-			const resource = listResourceFailures(
-				request.role,
-				request.request,
-				request.response,
-				execution.budget,
-				request.status,
-				request.error,
-			)
-			if (!isDeepStrictEqual(resource, request.failures))
-				failures.push(`request ${request.sequence}: resource reading differs`)
-			failures.push(...resource.map((failure) => `request ${request.sequence}: ${failure}`))
-		}
-		if (request.role !== 'judge' && (!isRecord(request.request) || request.request.think !== false))
-			failures.push(`request ${request.sequence}: thinking differs`)
-		if (
-			request.role === 'summarizer' &&
-			(!isRecord(request.request) ||
-				!isDeepStrictEqual(request.request.options, frozen.summarizer.sampler))
-		)
-			failures.push(`request ${request.sequence}: summarizer configuration differs`)
-		if (
+			request.sent &&
 			request.role === 'agent' &&
 			request.goal !== undefined &&
 			!turns.some(
@@ -188,16 +145,9 @@ export function readSustainedRun(path: string): SustainedRun {
 					turn.estimate === request.estimate,
 			)
 		)
-			failures.push(`request ${request.sequence}: missing actual turn`)
+			errors.push(`request ${request.sequence}: missing actual turn`)
 	}
-	if (
-		requests.filter((one) => one.sent).length > execution.limits.calls ||
-		tokens > execution.limits.tokens ||
-		typeof info.wall !== 'number' ||
-		info.wall > execution.limits.wall ||
-		tokens !== info.tokens
-	)
-		failures.push('whole-trajectory limits exceeded or counts differ')
+
 	for (const [at, row] of rows.entries()) {
 		if (
 			row.partial ||
@@ -206,7 +156,9 @@ export function readSustainedRun(path: string): SustainedRun {
 			(row.resource?.length ?? 0) !== 0 ||
 			row.sole > 0
 		)
-			failures.push(`${row.goal}: incomplete or unsupported response`)
+			(boundary.failures.length === 0 ? errors : failures).push(
+				`${row.goal}: incomplete or unsupported response`,
+			)
 		const observation = observations[at]
 		const goal = runtime.goals[at]
 		if (observation === undefined || goal === undefined) continue
@@ -216,21 +168,30 @@ export function readSustainedRun(path: string): SustainedRun {
 			observation.after !== goal.after ||
 			!observation.complete
 		)
-			failures.push(`${row.goal}: incomplete or changed observation`)
+			(boundary.failures.length === 0 ? errors : failures).push(
+				`${row.goal}: incomplete or changed observation`,
+			)
 		if (
 			observation.checkpoint !==
 			(observation.complete && goal.shift % 4 === 0 && runtime.goals[at + 1]?.shift !== goal.shift)
 		)
-			failures.push(`${row.goal}: checkpoint differs from complete continuous horizon`)
+			errors.push(`${row.goal}: checkpoint differs from complete continuous horizon`)
 		if (
-			!messages.some(
-				(message) =>
-					message.role === 'assistant' &&
-					message.goal === row.goal &&
-					message.content === row.reply,
-			)
+			!(
+				at === rows.length - 1 &&
+				row.partial === true &&
+				row.reply === '' &&
+				boundary.failures.length !== 0
+			) &&
+			(row.reply === '' ||
+				!messages.some(
+					(message) =>
+						message.role === 'assistant' &&
+						message.goal === row.goal &&
+						message.content === row.reply,
+				))
 		)
-			failures.push(`${row.goal}: response differs from actual conversation product`)
+			errors.push(`${row.goal}: response differs from actual conversation product`)
 		if (
 			!isDeepStrictEqual(
 				observation.products.slice().sort(),
@@ -245,24 +206,24 @@ export function readSustainedRun(path: string): SustainedRun {
 					.sort(),
 			)
 		)
-			failures.push(`${row.goal}: earlier product population differs`)
+			errors.push(`${row.goal}: earlier product population differs`)
 		if (observation.exposed !== matchesMatrixExposure({ execution, picks, requests }, row.goal))
-			failures.push(`${row.goal}: exposure differs from actual request`)
+			errors.push(`${row.goal}: exposure differs from actual request`)
 		const available = [...observation.sources, ...observation.products].sort()
 		if (
 			new Set(available).size !== available.length ||
 			!isDeepStrictEqual([...observation.selected, ...observation.omitted].sort(), available)
 		)
-			failures.push(`${row.goal}: selected/omitted partition differs`)
+			errors.push(`${row.goal}: selected/omitted partition differs`)
 		for (const id of observation.conversation)
 			if (!id.startsWith('message:') || !messages.some((message) => message.id === id.slice(8)))
-				failures.push(`${row.goal}: unknown prior message`)
+				errors.push(`${row.goal}: unknown prior message`)
 		for (const id of observation.products)
 			if (
 				!id.startsWith('product:') ||
 				!rows.slice(0, at).some((earlier) => earlier.goal === id.slice(8))
 			)
-				failures.push(`${row.goal}: future or invented prior product`)
+				errors.push(`${row.goal}: future or invented prior product`)
 		for (const id of observation.sources)
 			if (
 				!(
@@ -280,7 +241,7 @@ export function readSustainedRun(path: string): SustainedRun {
 					)
 				)
 			)
-				failures.push(`${row.goal}: source not yet available`)
+				errors.push(`${row.goal}: source not yet available`)
 	}
 	for (const receipt of receipts) {
 		const goal = runtime.goals.find((one) => one.id === receipt.goal)
@@ -296,7 +257,7 @@ export function readSustainedRun(path: string): SustainedRun {
 					message.content === receipt.content,
 			)
 		)
-			failures.push('tool receipt lacks actual conversation outcome')
+			errors.push('tool receipt lacks actual conversation outcome')
 		if (
 			receipt.version !== undefined &&
 			!runtime.lookups.some(
@@ -307,7 +268,7 @@ export function readSustainedRun(path: string): SustainedRun {
 					lookup.from <= receipt.after,
 			)
 		)
-			failures.push('tool receipt uses unavailable version')
+			errors.push('tool receipt uses unavailable version')
 	}
 	const journal = existsSync(join(path, 'aggregates.jsonl'))
 		? readRows(join(path, 'aggregates.jsonl'))
@@ -320,7 +281,9 @@ export function readSustainedRun(path: string): SustainedRun {
 			const marker = journal[end]
 			const snapshot = buildTimeline(parseAggregates(journal.slice(0, end + 1))).at(-1)
 			if (!isRecord(marker) || marker.status !== 'complete')
-				failures.push(`${row.goal}: maintenance incomplete`)
+				(boundary.failures.length === 0 ? errors : failures).push(
+					`${row.goal}: maintenance incomplete`,
+				)
 			for (const pick of picks.filter((one) => one.goal === row.goal))
 				for (const binding of pick.aggregates ?? [])
 					if (
@@ -328,7 +291,7 @@ export function readSustainedRun(path: string): SustainedRun {
 						binding.state.goal !== row.goal ||
 						!pick.instructions[INSTRUCTION_SUMMARIES.name]?.includes(binding.prose)
 					)
-						failures.push(`${row.goal}: maintenance binding differs`)
+						errors.push(`${row.goal}: maintenance binding differs`)
 		}
 	}
 	failures.push(...listWireInvariantFailures({ picks, requests, gauge }, projectCopy(runtime)))
@@ -371,7 +334,8 @@ export function readSustainedRun(path: string): SustainedRun {
 		gauge,
 		journal,
 		files: [...new Map(files.map((file) => [`${file.path}:${file.hash}`, file])).values()],
-		failures,
+		failures: [...failures, ...errors],
+		errors,
 		costs: measureMatrixCosts({ path, rows, requests }),
 	}
 }
@@ -414,42 +378,31 @@ export function readSustainedPreparation(path: string): readonly SustainedPrepar
 		verifyFiles([value.evidence, ...value.files])
 		const rows = readRows(attempts.path)
 		if (!rows.every(isRefitAttempt)) throw new Error('invalid generation attempts')
-		const wire = ['summarizer', 'judge'].map((role) => {
-			const fresh = rows.flatMap((row) =>
-				role === 'judge'
-					? row.judge === undefined || row.judge.cached
-						? []
-						: [{ usage: row.judge.usage, wall: row.judge.wall }]
-					: row.cached
-						? []
-						: [{ usage: row.usage, wall: row.duration ?? row.wall }],
-			)
-			return {
-				phase: 'trajectory' as const,
-				role,
-				requests: fresh.length,
-				wall: fresh.reduce((total, one) => total + one.wall, 0),
-				prompt: fresh.reduce((total, one) => total + (one.usage?.prompt ?? 0), 0),
-				completion: fresh.reduce((total, one) => total + (one.usage?.completion ?? 0), 0),
-				missing: fresh.filter((one) => one.usage === undefined).length,
-			}
-		})
+		const measured = measureRefitCosts(rows)
 		return [
 			{
 				identity: reference.hash,
 				phase: 'generation',
 				files: [reference, attempts, value.evidence, ...value.files],
 				costs: {
-					wire,
+					wire: measured.wire,
 					judge: undefined,
 					lineage: value.lineage,
 					elapsed: undefined,
 					stage: 0,
 					flush: 0,
 				},
-				failures: value.errors,
+				failures: [...value.errors, ...measured.failures],
 			},
 		]
+	}
+	if (isRecord(value) && value.accepted !== undefined && value.preparation !== undefined) {
+		const diagnosis = readRefitAssessment(reference)
+		return readSustainedPreparation(diagnosis.preparation.manifest.path).map((preparation) => ({
+			...preparation,
+			files: [...preparation.files, reference, ...Object.values(diagnosis.preparation)],
+			failures: [...preparation.failures, ...diagnosis.reasons],
+		}))
 	}
 	if (isRecord(value) && isRecord(value.preparation) && isRefitFile(value.preparation.manifest)) {
 		verifyFiles([value.preparation.manifest])

@@ -5,6 +5,8 @@ export interface PeerOptions {
 	readonly yes: number
 	readonly no: number
 	readonly usage: boolean
+	readonly judge?: boolean
+	readonly abort?: AbortController
 }
 import type { RefitEvidence, RefitGeneration, RefitFile } from '../../refit/types.js'
 

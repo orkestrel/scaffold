@@ -6,7 +6,7 @@ import type {
 } from './types.js'
 import { SUSTAINED_CONTROLS } from './constants.js'
 import { SustainedAuditError } from './errors.js'
-import { matchesFactualEvidence, readAuditCitation } from './helpers.js'
+import { matchesCompletionEvidence, matchesFactualEvidence, readAuditCitation } from './helpers.js'
 
 /** Validates complete custody-bound root adjudication without generating quality labels. */
 export class Adjudication {
@@ -116,10 +116,18 @@ export class Adjudication {
 		for (const critical of label.critical) this.#evidence(item, critical.evidence)
 		for (const obligation of label.obligations) {
 			const references = this.#evidence(item, obligation.evidence)
-			if (!item.obligations.some((entry) => entry.id === obligation.id))
+			const definition = item.obligations.find((entry) => entry.id === obligation.id)
+			if (definition === undefined)
 				throw new SustainedAuditError(`unrelated obligation ${obligation.id}`)
 			if (
-				(obligation.disposition === 'completed' || obligation.disposition === 'repaired') &&
+				obligation.disposition === 'completed' &&
+				!matchesCompletionEvidence(item, definition, references)
+			)
+				throw new SustainedAuditError(
+					`downstream outcome lacks bound completion evidence ${obligation.id}`,
+				)
+			if (
+				obligation.disposition === 'repaired' &&
 				!references.some(
 					(reference) => reference.startsWith('source:') || reference.startsWith('receipt:'),
 				)

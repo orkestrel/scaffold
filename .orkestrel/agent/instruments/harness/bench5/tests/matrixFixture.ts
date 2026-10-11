@@ -11,6 +11,7 @@ export class MatrixPeer {
 	missing = false
 	support = false
 	escalations = false
+	fault = false
 	readonly #server = createServer((request, response) => {
 		void this.#respond(request, response).catch((error: unknown) =>
 			response.writeHead(500).end(String(error)),
@@ -93,6 +94,13 @@ export class MatrixPeer {
 		}
 		if (request.url !== '/api/chat' || !Array.isArray(body.messages) || !isRecord(body.options))
 			throw new Error('fixture expected chat')
+		if (this.fault && body.options.num_predict !== 1) {
+			response.writeHead(500, { 'content-type': 'application/json' })
+			response.end(
+				JSON.stringify({ error: 'context capacity exceeded by fixture transport fault' }),
+			)
+			return
+		}
 		const prompt = body.messages.reduce(
 			(total: number, message: unknown) =>
 				total + (isRecord(message) ? Math.ceil(String(message.content).length / 4) + 4 : 0),

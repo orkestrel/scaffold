@@ -8,7 +8,7 @@ import { isRecord } from '@orkestrel/contract'
 import { COPIES_DIR } from '../constants.js'
 import { readCopy } from '../Driver.js'
 import { computeDigest, readJSON, readRows } from '../helpers.js'
-import { hashFile, verifyFiles } from '../refit/helpers.js'
+import { hashFile, verifyFiles, measureRefitCosts, readRefitAssessment } from '../refit/helpers.js'
 import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validators.js'
 import { collectTransitions } from '../transitions/helpers.js'
 import { parseMatrixRun } from './parsers.js'
@@ -256,6 +256,7 @@ export class Comparison {
 	#preparation(runs: readonly MatrixRun[], paths: readonly string[]): readonly unknown[] {
 		const costs: unknown[] = []
 		const seen = new Set<string>()
+		const generations = new Set<string>()
 		for (const reference of [
 			...paths.map(hashFile),
 			...runs.flatMap((run) => [
@@ -298,19 +299,26 @@ export class Comparison {
 				isRefitFile(preparation.manifest)
 			) {
 				verifyFiles([preparation.attempts, preparation.manifest])
-				if (isRefitGeneration(manifest) && manifest.attempts !== preparation.attempts.hash)
+				if (isRecord(manifest) && manifest.accepted !== undefined) readRefitAssessment(reference)
+				const generation = readJSON(preparation.manifest.path)
+				if (!isRefitGeneration(generation) || generation.attempts !== preparation.attempts.hash)
 					throw new Error('calibration cost custody differs')
 				const rows = readRows(preparation.attempts.path)
 				if (!rows.every(isRefitAttempt)) throw new Error('invalid calibration cost evidence')
+				if (generations.has(preparation.manifest.hash)) continue
+				generations.add(preparation.manifest.hash)
 				costs.push({
 					manifest: reference,
+					identity: preparation.manifest.hash,
 					phase: 'fit-calibration',
-					generation: readJSON(preparation.manifest.path),
+					...measureRefitCosts(rows),
+					generation,
 					summary: rows.map((row) => ({
 						cached: row.cached,
+						sent: row.sent,
 						wall: row.wall,
 						duration: row.duration,
-						freshUsage: row.cached === true ? undefined : row.usage,
+						freshUsage: row.sent === true && row.cached !== true ? row.usage : undefined,
 					})),
 					agree: rows.flatMap((row) =>
 						row.judge === undefined
@@ -318,8 +326,10 @@ export class Comparison {
 							: [
 									{
 										cached: row.judge.cached,
+										sent: row.judge.sent,
 										wall: row.judge.wall,
-										freshUsage: row.judge.cached ? undefined : row.judge.usage,
+										freshUsage:
+											row.judge.sent === true && !row.judge.cached ? row.judge.usage : undefined,
 									},
 								],
 					),

@@ -1,5 +1,9 @@
+import type { AggregateFailure } from '../types.js'
 import type {
 	RefitAttempt,
+	RefitPreparation,
+	RefitAssessment,
+	RefitCosts,
 	RefitContext,
 	RefitCorpus,
 	RefitDiagnosis,
@@ -11,9 +15,22 @@ import type {
 	RefitReading,
 	RefitRecall,
 } from './types.js'
+import { createOllamaJudge } from '../../vendor/ollama/index.js'
+import { arrayOf, isRecord, isString, isFiniteNumber } from '@orkestrel/contract'
+import {
+	isRefitAttempt,
+	isRefitCorpus,
+	isRefitGeneration,
+	isRefitItem,
+	isRefitLabels,
+	isRefitEvidence,
+	isRefitUsage,
+	isRefitVerdict,
+	isRefitPreparation,
+} from './validators.js'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { resolve, dirname, join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { AGREE_QUESTION } from '../aggregates/constants.js'
 import {
@@ -23,9 +40,16 @@ import {
 	collectStaleTokens,
 	renderSource,
 } from '../aggregates/helpers.js'
-import { SAMPLER } from '../constants.js'
-import { buildCacheKey, buildSummaryKey, computeDigest } from '../helpers.js'
-import { REFIT_GRID, REFIT_LIMITATION } from './constants.js'
+import {
+	HARNESS,
+	SAMPLER,
+	MICA_MODEL,
+	MICA_SYSTEM,
+	MICA_CONTEXT,
+	MICA_CALIBRATION,
+} from '../constants.js'
+import { buildCacheKey, buildSummaryKey, computeDigest, readJSON, readRows } from '../helpers.js'
+import { REFIT_GRID, REFIT_LIMITATION, REFIT_CONTROLS, REFIT_CONTROL_HASHES } from './constants.js'
 
 /** Reads a file's exact SHA-256 identity.
  * @param path - The file
@@ -297,4 +321,271 @@ export function collectReadings(
 			score: attempt.judge?.score,
 		}
 	})
+}
+
+/** Reads the fixed archived semantic controls and verifies their source custody.
+ * @param controls - Archived control directory
+ * @returns Independently adjudicated control readings
+ */
+export function readRefitControls(controls: string): readonly RefitReading[] {
+	for (const [name, hash] of Object.entries(REFIT_CONTROL_HASHES))
+		if (hashFile(join(controls, name)).hash !== hash)
+			throw new Error(`archived control custody mismatch: ${name}`)
+	const adjudication = readJSON(join(controls, 'adjudication.json'))
+	const packet = readRows(join(controls, 'packet.jsonl'))
+	const mapping = readRows(join(controls, 'mapping.jsonl'))
+	if (
+		!isRecord(adjudication) ||
+		!Array.isArray(adjudication.rows) ||
+		adjudication.rows.length !== 12 ||
+		packet.length !== 12 ||
+		mapping.length !== 12
+	)
+		throw new Error('incomplete archived controls')
+	return adjudication.rows.map((row: unknown) => {
+		if (!isRecord(row) || !isString(row.id)) throw new Error('invalid archived verdict')
+		const verdict = row.verdict === 'genuinely ambiguous' ? 'ambiguous' : row.verdict
+		if (!isRefitVerdict(verdict)) throw new Error('invalid archived verdict')
+		const item = packet.find((candidate) => isRecord(candidate) && candidate.id === row.id)
+		const mapped = mapping.find((candidate) => isRecord(candidate) && candidate.id === row.id)
+		if (
+			!isRecord(item) ||
+			!isRecord(mapped) ||
+			!isString(item.state) ||
+			!Array.isArray(mapped.sources)
+		)
+			throw new Error('missing archived source mapping')
+		const score = typeof row.score === 'number' ? row.score : undefined
+		if (
+			!isRecord(mapped.input) ||
+			!Array.isArray(mapped.input.files) ||
+			!isRecord(mapped.original) ||
+			!Number.isInteger(mapped.original.index) ||
+			typeof mapped.original.index !== 'number'
+		)
+			throw new Error('missing archived build custody')
+		const file: unknown = mapped.input.files.find(
+			(candidate: unknown) =>
+				isRecord(candidate) &&
+				isString(candidate.path) &&
+				candidate.path.endsWith('/aggregates.jsonl'),
+		)
+		if (!isRecord(file) || !isString(file.path) || !isString(file.sha256))
+			throw new Error('missing archived build path')
+		const path = resolve(HARNESS, '../../../..', file.path)
+		if (hashFile(path).hash !== file.sha256) throw new Error('archived build file custody mismatch')
+		const build = readRows(path)[mapped.original.index]
+		if (
+			!isRecord(build) ||
+			!Array.isArray(build.failures) ||
+			computeDigest(build) !== mapped.input.row
+		)
+			throw new Error('archived build row custody mismatch')
+		const lexical = build.failures.every(
+			(failure: unknown) => isRecord(failure) && failure.kind === 'agree',
+		)
+		if (isRecord(mapped.original.score) && mapped.original.score.agree !== score)
+			throw new Error('archived score mismatch')
+		return {
+			id: row.id,
+			identity: computeDigest([item.question, item.state, mapped.sources]),
+			generated: false,
+			verdict,
+			lexical,
+			score,
+		}
+	})
+}
+
+/** Recomputes fitting from its bound generation and independent labels.
+ * @param preparation - Exact input references
+ * @param controls - Verified archived readings
+ * @returns The recomputed diagnosis
+ */
+export function computeRefitAssessment(
+	preparation: RefitPreparation,
+	controls: readonly RefitReading[],
+): RefitAssessment {
+	verifyFiles(Object.values(preparation))
+	const manifest = readJSON(preparation.manifest.path)
+	const corpus = readJSON(preparation.corpus.path)
+	const attempts = readRows(preparation.attempts.path)
+	const packet = readRows(preparation.packet.path)
+	const labels = readJSON(preparation.labels.path)
+	if (
+		!isRefitGeneration(manifest) ||
+		!isRefitCorpus(corpus) ||
+		!arrayOf(isRefitAttempt)(attempts) ||
+		!arrayOf(isRefitItem)(packet) ||
+		!isRefitLabels(labels)
+	)
+		throw new Error('invalid generation or root label contract')
+	if (
+		labels.manifest !== preparation.manifest.hash ||
+		manifest.corpus !== preparation.corpus.hash ||
+		labels.corpus !== preparation.corpus.hash ||
+		manifest.attempts !== preparation.attempts.hash ||
+		labels.attempts !== preparation.attempts.hash ||
+		manifest.packet !== preparation.packet.hash ||
+		labels.packet !== preparation.packet.hash
+	)
+		throw new Error('corpus/attempt/packet/manifest custody mismatch')
+	if (!isDeepStrictEqual(manifest.sustained, corpus.sustained))
+		throw new Error('development corpus transfer identity differs')
+	verifyCorpus(corpus)
+	verifyFiles([...manifest.files, ...corpus.files, manifest.evidence])
+	if (
+		resolve(manifest.evidence.path) !== resolve(dirname(preparation.manifest.path), 'evidence.json')
+	)
+		throw new Error('retained evidence path mismatch')
+	const evidence = readJSON(manifest.evidence.path)
+	if (!isRefitEvidence(evidence)) throw new Error('invalid retained cache evidence')
+	verifyEvidence(
+		attempts,
+		evidence,
+		manifest,
+		createOllamaJudge({
+			model: MICA_MODEL,
+			system: MICA_SYSTEM,
+			calibration: { temperature: MICA_CALIBRATION },
+			options: { num_ctx: MICA_CONTEXT },
+		}).model,
+	)
+	verifyLabels(packet, labels)
+	if (
+		attempts.length !== packet.length ||
+		new Set(attempts.map((attempt) => attempt.id)).size !== attempts.length
+	)
+		throw new Error('attempt-to-packet bijection mismatch')
+	const errors = [...manifest.errors]
+	if (!manifest.complete) errors.push('incomplete generation')
+	for (const context of corpus.contexts) {
+		const rows = attempts.filter((attempt) => attempt.context === context.id)
+		if (rows.length === 0 || rows.length > manifest.settings.retry + 1)
+			throw new Error('attempt coverage mismatch')
+		let failures: readonly AggregateFailure[] = []
+		for (const [ordinal, attempt] of rows.entries()) {
+			if (ordinal > 0 && failures.length === 0)
+				throw new Error('generation continued after lexical success')
+			if (
+				attempt.ordinal !== ordinal ||
+				!isDeepStrictEqual(
+					attempt.prompt,
+					buildSummaryPrompt(
+						context.topic.key,
+						context.topic.title,
+						context.date,
+						context.sources,
+						failures,
+					),
+				)
+			)
+				throw new Error('attempt prompt sequence mismatch')
+			if (
+				attempt.key !==
+				buildSummaryKey(
+					{ model: manifest.model, sampler: SAMPLER, predict: manifest.settings.predict },
+					attempt.prompt,
+				)
+			)
+				throw new Error('summary cache identity mismatch')
+			const item = packet.find((one) => one.id === attempt.id)
+			if (!isDeepStrictEqual(item, buildRefitItem(attempt, context)))
+				throw new Error('attempt/source/packet mismatch')
+			if (
+				attempt.state !== undefined &&
+				attempt.state !== buildAgreeState({ prose: attempt.prose ?? '' }, context.sources)
+			)
+				throw new Error('attempt state mismatch')
+			if (attempt.error !== undefined || !isRefitUsage(attempt.usage))
+				errors.push('failed call or missing summary costs')
+			if (!isFiniteNumber(attempt.duration) || attempt.duration < 0)
+				errors.push('summary duration missing or invalid')
+			failures = attempt.failures ?? []
+			if (
+				failures.length === 0 &&
+				(!isRefitUsage(attempt.judge?.usage) || attempt.judge?.score === undefined)
+			)
+				errors.push('missing judge costs or required score')
+		}
+		if (failures.length > 0 && rows.length !== manifest.settings.retry + 1)
+			errors.push('incomplete lexical retry sequence')
+	}
+	if (
+		attempts.some((attempt) => !corpus.contexts.some((context) => context.id === attempt.context))
+	)
+		throw new Error('foreign attempt context')
+	return {
+		...fitReadings([...collectReadings(attempts, corpus.contexts, labels), ...controls], errors),
+		preparation,
+		custody: {
+			corpus: preparation.corpus.hash,
+			attempts: preparation.attempts.hash,
+			packet: preparation.packet.hash,
+			manifest: preparation.manifest.hash,
+			labels: preparation.labels,
+			controls: REFIT_CONTROL_HASHES,
+		},
+	}
+}
+
+/** Verifies a retained diagnosis against the original fixed fitting engine.
+ * @param reference - Emitted diagnosis
+ * @returns The recomputed assessment with verified input custody
+ */
+export function readRefitAssessment(reference: RefitFile): RefitAssessment {
+	verifyFiles([reference])
+	const value = readJSON(reference.path)
+	if (!isRecord(value) || !isRefitPreparation(value.preparation))
+		throw new Error('reproducible refit diagnosis required')
+	const expected = computeRefitAssessment(value.preparation, readRefitControls(REFIT_CONTROLS))
+	if (!isDeepStrictEqual(value, JSON.parse(JSON.stringify(expected))))
+		throw new Error('refit diagnosis contradicts bound evidence')
+	return expected
+}
+
+/** Measures only fresh sent requests and reports unmeasured historical boundaries.
+ * @param rows - Retained generation attempts
+ * @returns Per-role wire costs and measurement limitations
+ */
+export function measureRefitCosts(rows: readonly RefitAttempt[]): RefitCosts {
+	const failures: string[] = []
+	const wire = ['summarizer', 'judge'].map((role) => {
+		const attempts = rows.flatMap((row) =>
+			role === 'judge'
+				? row.judge === undefined
+					? []
+					: [
+							{
+								sent: row.judge.sent,
+								cached: row.judge.cached,
+								usage: row.judge.usage,
+								wall: row.judge.wall,
+							},
+						]
+				: [
+						{
+							sent: row.sent,
+							cached: row.cached,
+							usage: row.usage,
+							wall: row.duration ?? row.wall,
+						},
+					],
+		)
+		if (attempts.some((entry) => entry.sent === undefined))
+			failures.push(role + ' request boundary unmeasured in historical evidence')
+		if (attempts.some((entry) => entry.sent === true && entry.cached === true))
+			throw new Error('sent refit request contradicts cache replay')
+		const fresh = attempts.filter((entry) => entry.sent === true && entry.cached !== true)
+		return {
+			phase: 'trajectory' as const,
+			role,
+			requests: fresh.length,
+			wall: fresh.reduce((total, one) => total + one.wall, 0),
+			prompt: fresh.reduce((total, one) => total + (one.usage?.prompt ?? 0), 0),
+			completion: fresh.reduce((total, one) => total + (one.usage?.completion ?? 0), 0),
+			missing: fresh.filter((one) => one.usage === undefined).length,
+		}
+	})
+	return { wire, failures }
 }
