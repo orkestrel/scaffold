@@ -1,5 +1,9 @@
 # The context and selection campaign for `@orkestrel/agent`
 
+Agent 0.0.30 was published and registry-confirmed on 2026-10-11 from verified main at `ee734c3`. The prior publication hold is superseded by the user-authorized release. See [publication and archive identity](instruments/units/agent-0030/publication.md) and [release verification](instruments/units/agent-0030/release-checkpoint.md). Desk published-package pins and checks still depend on its owner publishing an X2-compatible Ollama release.
+
+## Historical plan
+
 Plan of record for the live campaign under `.orkestrel/agent/`, written 2026-10-07 against agent 0.0.28 (release commit `7784837`, fix commit `c8ab2c5`) on the branch `claude/confident-maxwell-6nd0f3` of every checkout it names. This file is the one home of unit order and status. [context.md](context.md) is the verdict of the refactor seam and [refine.md](refine.md) is the verdict of the judge, judgments, selection, and scope seams; each carries its design and points here for order, acceptance, and status, so no second plan table can drift. A line citation in either record resolves by symbol, because the judge and the scope-dispatch commits moved lines after they were written. The folder is deleted in the acceptance commit; git history is the archive.
 
 Two kinds of sentence appear, as in the records: a measured fact names the file, test, command, or run it came from; a ruling is a decision for this codebase.
