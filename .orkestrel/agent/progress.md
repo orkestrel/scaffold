@@ -1,10 +1,18 @@
 # Release and aggregate progress
 
+The l13 blind quality audit is accepted. Records, aggregate, and full view score correct content at 12/24, 10/24, and 7/24, and complete work at 3/24, 4/24, and 4/24. Records and aggregate each retain one ambiguous content/completion result. The full-view failure has no final semantic answer and remains incomplete. Root read every joined reason and preserved the sealed judgments unchanged. See [the comparison archive](instruments/units/aggregates/reports/resumption-l13-quality/README.md) and [concise results](../../RESULTS.md).
+
+The checker validated all 72 packet, judgment, and join identities against retained hashes and references. Root's direct checker review found the inherited seed-boundary regex did not cover nested content pointers; a bounded supplement checked all 227 such pointers and refused a later-seed control. The separate served-answer control also passed. These checks changed no judgment or run.
+
+The raw comparison and accepted completion direction are pushed at `f9c78495f`. Native Astra applies the bounded matrix/sustained admission change and runs reached deterministic proofs. Its initial fixture omissions and repeated diagnosis read are retained as implementation findings; no live model call is authorized. Native Luna prepared final-source l14 freeze/calibration command arrays while implementation proceeded. Final source verification and independent labels remain required before execution advances.
+
+## Closed l13 execution
+
 L13 records, aggregate, and full view each emitted all 24 planned rows on source `0913a0966641298f9cf732f1ed62a30fe783dfcb` and manifest `51880a44f7f11e509e0c797e8b3321c6921c551fcc24ff26b2d1c0f97747da9b`. Their launchers exited 0 uncapped in 387868 ms, 1117586 ms, and 936483 ms. Root read the complete bare outputs; Luna confirmed source, build, deployment, and process closure. The parent daemon remains live.
 
 Aggregate used 351495 input and 8591 output tokens across 348 sent requests, all with known usage. Records used 101937 input and 3294 output tokens across 78 sent requests, all with known usage. Full view recorded 269257 input and 2493 output tokens; its 65 sent requests include one HTTP 500 with unknown usage, followed by an unsent event. All failed goals remain in the denominator. Existing raw-body exposure checking confirms summaries on 15 of 24 aggregate goals. Six capped summary updates were withheld locally.
 
-Clean analyst Astra is grading the combined public packet of 72 goals, SHA256 `01f28cdafe52cb531a7fa9aa063e7dded9f2155c8756bfe40ef7de5384fb6b2e`, against the original authored scenario. The packet retains exact answers, goal-local actions, operational status, and eligible seed boundaries; identities remain private until judgments are sealed. No l13 quality verdict is accepted yet.
+Clean analyst Astra graded the combined public packet of 72 goals, SHA256 `01f28cdafe52cb531a7fa9aa063e7dded9f2155c8756bfe40ef7de5384fb6b2e`, against the original authored scenario. The packet retains exact answers, goal-local actions, operational status, and eligible seed boundaries. The sealed judgment hash is `92313a8faf324e4b263bce2fcef7d0bfedda00848e3628e4edc7242dfe570fef`; identities were joined only after sealing.
 
 Root accepts the [remaining comparison direction](instruments/units/aggregates/reports/resumption-comparison-completion-direction.md) after actual Claude Opus 5.5 planning, independent Astra analysis, and the offline calibration-custody refusal. Native Astra prepares bounded matrix and sustained admission patches without canonical changes. The next source release follows the closed-evidence checkpoint; strict qualification and adoption remain unchanged.
 
