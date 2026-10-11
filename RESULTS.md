@@ -1,6 +1,6 @@
 # Results
 
-Agent 0.0.30 proceeds independently of the aggregate experiment. Main is verified at `ee734c3`; the registry serves 0.0.29. The independent audit found no additional agent source fix in the subsequent campaign findings: the repaired defects belong to the harness. The isolated release worktree is `agent/tmp/worktrees/agent-0030-fixes`, branch `codex/agent-0030-fixes`. Package-byte and publication-readiness checks are in progress. Aggregate adoption is reserved for possible 0.0.31. See [the release relevance audit](.orkestrel/agent/instruments/units/agent-0030/release-relevance.md).
+Agent 0.0.30 is prepared for publication. The primary agent checkout is clean on main at `ee734c3`; the isolated worktree is `agent/tmp/worktrees/agent-0030-fixes`, branch `codex/agent-0030-fixes`. The independent audit found no additional agent source fix in the subsequent campaign findings. A fresh 633936-byte package matches the entire verified release archive by SHA-256. The registry serves 0.0.29, and npm authentication has expired; operator login and upload remain pending. Aggregate adoption is reserved for possible 0.0.31. See [the release relevance audit](.orkestrel/agent/instruments/units/agent-0030/release-relevance.md) and [package verification](.orkestrel/agent/instruments/units/agent-0030/publication-readiness.md).
 
 ## Development comparison
 
@@ -30,7 +30,7 @@ Earlier thinking-disabled records resource checks completed for Qwen 2B, Qwen 4B
 
 ## Release checks
 
-Agent prepublication gates passed 1857 tests with 2 applicability skips. The recorded replay passed 108 of 108, and raw comparison found no differences or incomplete copies across 618 requests per build. Desk checks passed 532 tests with 4 skips; the Ollama patch passed 811 with 2 skips. Publication, published-package consumer pins, and verification required by any release fix remain pending. See [the release measurements](.orkestrel/agent/progress.md).
+Agent prepublication gates passed 1857 tests with 2 applicability skips. The recorded replay passed 108 of 108, and raw comparison found no differences or incomplete copies across 618 requests per build. Desk checks passed 532 tests with 4 skips; the Ollama patch passed 811 with 2 skips. The package remains byte-identical to that verified release. Publication and published-package consumer pins remain pending. See [the release checkpoint](.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md).
 
 ## Remaining work
 
