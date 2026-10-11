@@ -122,6 +122,10 @@ Root accepted `support-audit-7ac2` after reading every distinct proposition anal
 
 Root dispatched separate clean-context native analyst Astra under checked `support-audit-c38f` for the immutable g2 packet, SHA-256 `d634d4b39f4993a80452e8a579772e8b07d1db15dbaf7482605076a1a1880bb9`. The analyst sees only the opaque packet and named law. Model identity, settings, scores, other audits, and generation metadata remain excluded. Native verifier Luna continues serial generation without another GPU client.
 
+Root accepted Gemma 2B generation after the separate completed custody report, raw launcher results, and direct artifact-hash checks. The run returned 162 complete packet occurrences in 828161 ms, with no errors. Blind support review remains separate. The canonical resource/full-view brief is prepared but unlaunched pending calibration closure.
+
+Root dispatched native analyst Astra under `aggregate-calibration-diagnosis` for the concrete Qwen 2B refusal: trace the date-format false rejection and semantic failure mechanisms, then propose a bounded development response. The analyst reads only accepted q2 evidence and directly named mechanisms, makes no model calls, and edits no source or labels. This diagnosis does not change the frozen result or authorize a successor implementation. The user's later tuning instruction supersedes the historical matrix prohibition on another prompt repair.
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.

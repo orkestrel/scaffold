@@ -22,6 +22,18 @@ The immutable native report is primary `tmp/units/aggregate-live-freeze-calibrat
 
 Qwen 2B's adjudicated labels contain 1 supported, 122 unsupported, 123 contradicted, and 5 ambiguous occurrences. The fit returned child exit 3 uncapped in 2273 ms, with end-to-end supported admission 0 against the required 0.5. The supported draft's spelled-out dates failed the exact-number check before scoring. The candidate cutoff 0.91 is not an accepted fit. See [the root adjudication and diagnosis](resumption-q2-adjudication.md).
 
-The verifier reports Gemma 2B generation exit 0 uncapped in 828161 ms, with 162 packet occurrences covering the corpus and no errors. The immutable packet SHA-256 is `d634d4b39f4993a80452e8a579772e8b07d1db15dbaf7482605076a1a1880bb9`. Root checked the byte identity and supplied only an opaque copy to a separate clean-context Astra analyst under `support-audit-c38f`. Full generation acceptance follows the verifier's completed custody report; semantic adjudication and fitting remain pending.
+Root accepts Gemma 2B generation after reading the complete verifier report and raw launcher results and independently checking retained artifact hashes. Corpus preparation exited 0 uncapped in 2439 ms; generation exited 0 uncapped in 828161 ms. Its 162 packet occurrences cover every corpus context, with exact attempt/packet ID membership and no errors. The verifier checked every corpus and generation file binding; the model process exited before Gemma 4B started. The immutable custody report is primary `tmp/units/aggregate-live-calibration-g2-report.md`, SHA-256 `1210e1eaf2980e2040b559e84f56583cd4866585801c877d882c663956ed90fa`.
+
+The accepted g2 artifacts have these identities.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| corpus/corpus.json | `d96d5b0df18c952e86b94cc44196eb17a23459a6a31b216520babf27c710f44d` |
+| generation/attempts.jsonl | `6290ed2d3d369fa3539c5afbec86d2243320736aa4140415799a969cabc2ce04` |
+| generation/packet.jsonl | `d634d4b39f4993a80452e8a579772e8b07d1db15dbaf7482605076a1a1880bb9` |
+| generation/evidence.json | `d0b0182bacb877669d60b38b5d705c926e8fb65231e22ef908e6e82b642ba8b4` |
+| generation/manifest.json | `28fb1257f768651ce636ef3475491aef22e466502f2890ebbcb66a2f48819650` |
+
+These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/g2`. Root supplied only a byte-identical opaque packet copy to a separate clean-context Astra analyst under `support-audit-c38f`. Semantic adjudication and fitting remain pending.
 
 Resource preflight, pilots, matrix quality, separate judge runs, and the mandatory continuous comparison remain pending. Publication remains held.
