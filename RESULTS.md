@@ -4,6 +4,8 @@ Publication is on hold until the aggregate experiment and adoption verdict finis
 
 The immediate MVP is Qwen 2B with thinking disabled, the same 24 development goals, and three conditions: records, living aggregate, and full view. Report per-goal quality, aggregate exposure, failures and costs before expanding conditions. Verification is limited to the paths this run uses; the wider matrix and sustained-work checks remain required before adoption. No new reporting interface or diagnostic campaign is planned.
 
+Claude Opus 5.5 reviewed that plan through the Claude CLI and supports the existing commands and scope. Focused verification passed 375 of 378 tests; resource-refusal classification and two refit cache expectations still fail. Those failures are under bounded diagnosis. Fresh calibration comes next, with independent labeling alongside records/full-view runs. An aggregate pilot must still qualify and actually expose summaries. See [Opus's planning report](.orkestrel/agent/instruments/units/aggregates/reports/resumption-mvp-opus.md).
+
 ## Actual answer quality available now
 
 An independent semantic review of the historical Qwen 2B records run found **11 correct answers, 12 failures and 1 ambiguous answer across 24 goals**. Its stored pattern scorer reported 14 passes. Excluding the protocol's g06 leaves 11–12 content passes out of 23. Four otherwise correct answers omitted the lookup required by the scenario's order-handling rule; tool compliance is reported separately from content quality.
