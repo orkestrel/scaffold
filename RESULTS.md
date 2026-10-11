@@ -1,6 +1,6 @@
 # Results
 
-Agent 0.0.30 is published. Aggregate adoption for possible 0.0.31 remains undecided. Records and full view completed the Qwen 2B development comparison and blind grading. The l12 aggregate successor answered 2 of 24 goals, then stopped when a summary exhausted its output budget. Opus and an independent analyst are reviewing whether that failure must withhold the affected summary while the task continues.
+Agent 0.0.30 is published. Aggregate adoption for possible 0.0.31 remains undecided. Records and full view completed the Qwen 2B development comparison and blind grading. The l12 aggregate successor answered 2 of 24 goals, then stopped when a summary exhausted its output budget. Following independent Opus and Astra review, a bounded revision is being implemented: withhold that failed update and continue the task.
 
 ## Blind quality results
 
@@ -24,7 +24,7 @@ The harness rejected an intentional one-token judge response solely because its 
 
 L12 answered g01 and g02 with nonzero summary exposure. Request 46, a summarizer call at g03, reached its 160-token output cap mid-sentence. The frozen policy stopped the trajectory: g03 has no answer and the remaining 21 goals were unattempted. The 46 sent requests consumed 37853 input and 1042 output tokens, with complete usage; the later unsent attempts incurred no inference cost. See [the retained l12 failure](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l12-development-run.md).
 
-The proposed successor treats this exact capped summary as an unavailable update while preserving the task's records and valid summaries. Truncated or stale summaries remain excluded. The direction requires an explicit policy amendment, a reached regression, and fresh execution. The development policy remains unqualified: strict calibration at 0.93 admitted no supported drafts; development uses AGREE 0.67 and CHANGE 0.56. These observations cannot establish adoption.
+The accepted direction treats this exact capped summary as an unavailable update while preserving the task's records and valid summaries. Truncated or stale summaries remain excluded. Verification and fresh execution are pending. See [the policy ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l12-maintenance-direction.md). The development policy remains unqualified: strict calibration at 0.93 admitted no supported drafts; development uses AGREE 0.67 and CHANGE 0.56. These observations cannot establish adoption.
 
 The feasible Qwen/Gemma 2B/4B quality conditions with thinking enabled and disabled remain pending beyond this Qwen 2B observation. The mandatory final continuous long-work records-main-versus-aggregate comparison has not run. Complete those measurements, justified bounded tuning, and the blind analysis before deciding whether to integrate aggregates.
 
