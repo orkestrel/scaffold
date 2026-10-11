@@ -1,5 +1,13 @@
 # Routing ledger for the `@orkestrel/agent` context campaign
 
+Root completed the authorized 0.0.30 upload with the fresh user code through the built publish skill. The runner reported accepted and confirmed, exit 0 uncapped in 77708 ms. A separate registry read returned the verified archive SHA-1 and SHA-512 integrity; agent main remains clean. No source change or repeated release gate was needed.
+
+Root read the exact builder option and resource emission and accepts Luna's omitted fixture-manifest diagnosis. Checked aggregate-development-flush-verifier successor2 authorizes only the existing resource argument, the unresolved sustained tests, original mutation controls, byte restoration, and canonical build. No retained source repair or inference is authorized in this verification window.
+
+Root ran the user-requested agent login and OTP publication through the publish skill. Authentication succeeded; the upload was refused with EOTP, exit 3 uncapped in 2690 ms. The registry still reports 0.0.30 absent. The rejected code is not reused or recorded. A fresh code is pending.
+
+Native verifier Luna completed the flush correction static gates and five-file test population: 14 passed and two sustained fixture preflight failures, 237822 ms. The real Driver flush regression passed. Controls did not run because the prerequisite population failed. Root dispatched checked aggregate-workload-binding-scout to the same Luna agent for a read-only lookup of the resource match count and supported build invocation; no private oracle reading, source mutation, or inference is authorized.
+
 Native Luna completed the publication-readiness check and its numbered evidence-root correction. The predecessor looked for scaffold evidence under agent; root supplied the exact historical scaffold checkpoint. The successor found the named retained archive and mechanically proved complete byte identity with the fresh pack. No release source repair or repeated gate is required. Root accepts the unchanged package, switched primary agent to clean main ee734c3, and requested operator availability because the npm session is unauthenticated. No upload ran.
 
 Native analyst Astra diagnosed the reached l10 flush refusal and prescribed one inline exception for its intentional nonthinking one-token completion, preserving all-role validation and surrounding failure checks. Root accepts that prescription. Native builder Sol receives checked aggregate-development-flush-fix after pushed record checkpoint a7d249c6f, owning the helper and real-path fixture/tests only. No inference is active. Independent controls and a fresh successor execution follow the correction.
