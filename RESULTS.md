@@ -21,6 +21,8 @@ The admission diagnostics recorded complete requests and matching score calculat
 
 ## Model runs
 
+The complete-summary screen passed independent offline review and tests in 3480 ms, with 12 positive tests passing and all 97 packet bindings matching. Its fixed live run is queued behind the capacity diagnostic. See [the operator acceptance](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-boundaries/README.md).
+
 The corrected statement-support test passed: supported text scored 0.7571 and unsupported text scored 0.3958 in both request orders. All 4 requests completed in 14698 ms with matching raw-score calculations. Each check retained the complete summary as context and used only conversation sources as evidence. This local result follows independent review and offline verification; complete-summary and boundary controls must pass before full admission calibration. No canonical admission change or work-quality verdict follows from this result. See [the test and raw evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-support/README.md).
 
 Independent review settled the next screen's 14 complete candidates: 6 supported, 6 contradicted, 1 unsupported, and 1 ambiguous. The earlier supported statement belongs to an ambiguous complete summary because another statement overstates contact-information availability. The frozen boundary test retains that distinction and requires each supported boundary candidate to outrank its unsafe counterpart. Its 88-request sequence has not run. See [the labels and frozen test](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-boundaries/root-label-ruling.md).
@@ -40,7 +42,7 @@ Qwen 2B full-view preflight failed with an HTTP 500 XML parse error in 1043149 m
 
 The historical pilot passed 9 of 12 goals in each arm, but supplied no aggregate summaries and changed the initial seed context. Its STOP result cannot establish quality equivalence. See [the original pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-pilot-stop.md).
 
-The full-view capacity probe passed independent offline verification in 2297 ms. Its fixed plan contains 30 diagnostic inference requests for Qwen, Gemma, and the judge route. Source review leaves native persistence failures unproved; root requires actual saved-byte and receipt checks before accepting any live observation. A controlled daemon start and live execution remain pending. This proof must establish the deployed retention controls before the quality comparison can claim a full-view reference. See [the retained probe and scope](.orkestrel/agent/instruments/units/aggregates/diagnostics/capacity-controls/README.md).
+The full-view capacity probe passed independent offline verification in 2297 ms. Its fixed plan contains 30 diagnostic inference requests for Qwen, Gemma, and the judge route. Source review leaves native persistence failures unproved; root requires actual saved-byte and receipt checks before accepting any live observation. The controlled daemon started at 2026-10-11T11:00:49.815Z, and the fixed live diagnostic is dispatched. No capacity conclusion exists yet. This proof must establish the deployed retention controls before the quality comparison can claim a full-view reference. See [the retained probe and scope](.orkestrel/agent/instruments/units/aggregates/diagnostics/capacity-controls/README.md).
 
 ## Release and implementation
 

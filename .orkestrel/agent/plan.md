@@ -20,6 +20,8 @@ The control audit corrected the admission discriminator's presumed positive befo
 
 Complete the aggregate work in this order.
 
+The complete-candidate screen's operator is accepted after independent review and offline gates. Execute its frozen final packet after the capacity diagnostic's inference process closes; do not repeat preparation or settled-label review. The operator acceptance closes the implementation and verification action in step 3. See [the accepted boundary operator](instruments/units/aggregates/diagnostics/focused-boundaries/README.md).
+
 The admission-mechanism design round named in step 3 is complete. Its successor is the independently verified contextual-focus discriminator, followed only on success by the frozen complete-candidate and boundary screen. See [the instrument acceptance](instruments/units/aggregates/diagnostics/focused-support/README.md). Full-view work proceeds through a bounded deployed-service proof before capacity implementation; see [the capacity direction](instruments/units/aggregates/reports/resumption-full-admission-direction.md).
 
 1. Accepted: the partial-refusal, request-accounting, failed-preparation, receipt, completion, packet-control, recommendation, transport, and saved-filing repairs passed independent composed verification. Preserve preceding failures and repaired-source evidence; see [the accepted instrument checkpoint](instruments/units/aggregates/reports/resumption-composed-checkpoint.md).

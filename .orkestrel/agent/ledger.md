@@ -2,6 +2,12 @@
 
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
+## Parallel capacity observation and boundary verification of 2026-10-11
+
+Root accepts native builder Sol's boundary operator after clean-context analyst Astra confirmed the added claims and verifier Luna passed the scoped gates in 3480 ms, exit 0 uncapped. Root read the complete reports, bare outputs, and decision-bearing composition/reduction/execution source. Audit citations resolve. The bounded acceptance concerns offline wiring and fixed population reduction; actual model discrimination remains pending. Root prepared the fixed live brief, queued behind the capacity client. See [the retained operator and independent evidence](instruments/units/aggregates/diagnostics/focused-boundaries/README.md).
+
+After pushed checkpoint `a8713ab2b`, root terminated recorded old daemon PID60740 and descendant47420, and confirmed both and launcher47380 gone. Root started the controlled attached daemon through the canonical launcher, read its complete receipt, and confirmed PID38284 listening. Native verifier Luna owns the fixed capacity live sequence and is the sole service client. Independent clean-context analyst Astra audits the boundary operator's added composition, while separate verifier Luna runs its offline gates. Root owns disjoint records; no lane changes the canonical build or launches another inference client.
+
 ## Capacity offline verification of 2026-10-11
 
 Independent analyst Astra confirmed the fixed admission, sequence, and offline controls, and identified unchecked native write counts as conditional source concerns. Its separate factual clarification found no permitted runtime reproducer through the unmodified Windows instrument. Root retains the report and leaves general persistence-failure behavior unproved; the bounded observational release requires independent actual-file byte/hash checks and a parsed daemon receipt. No all-confirmed audit or production capture acceptance is claimed. See [the root ruling](instruments/units/aggregates/diagnostics/capacity-controls/root-ruling.md).
