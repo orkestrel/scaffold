@@ -26,6 +26,10 @@ The independent bounded daemon lookup resolves part of the full-view uncertainty
 
 ## Release evidence
 
+The successor design round is reconciled. Root selects exact contextual statement checks for a bounded offline instrument and fixed forward/reverse discriminator, with complete source evidence and unchanged judge settings. Detached claims are rejected because text coverage alone cannot preserve cross-sentence meaning. The live test, full qualification, and any canonical change remain gated. Opus returned through its original resumed session; its missed instruction reads and rejected-read deviation are recorded without treating the proposal as acceptance. See [the focused-support ruling](instruments/units/aggregates/reports/resumption-focused-ruling.md).
+
+The capacity metadata lookup returned service version 0.40.2 and Qwen context metadata 262144, but no active model entry. Root accepts that observation and leaves effective per-request allocation unresolved. Source mapping will identify observable evidence before a capacity implementation is accepted. See [the metadata record](instruments/units/aggregates/diagnostics/q2-capacity-metadata/README.md).
+
 The completed release runs establish the following results. See [the agent 0.0.30 release checkpoint](https://github.com/orkestrel/scaffold/blob/68060778df1e737e51ab083e90af81683c49671c/.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md) for scope, hashes, skips, and consumer limits. The same record is available in the primary scaffold checkout under `.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md`.
 
 | Run                        | Result                                                               | Scope                                                                                                  |

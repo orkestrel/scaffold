@@ -21,6 +21,8 @@ The original controlled judge test scored an unsupported summary at 0.8425 and i
 
 ## Model runs
 
+Root selected a bounded statement-support test after Astra and Cursor Opus returned their proposals. Each check keeps the full summary for interpreting the focused statement and uses only the conversation as evidence. Offline implementation and independent checks precede the fixed live test; no canonical admission change is accepted. See [the reconciled direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-focused-ruling.md).
+
 Thinking-disabled records resource checks passed at a 3072-token context and 512-token reserve. Each run served 24 development goals. These checks establish resource feasibility, not held-out answer quality.
 
 | Decision model | Requests | Duration | Thinking-enabled resource | Held-out quality matrix |

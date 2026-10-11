@@ -206,4 +206,8 @@ Root accepted native verifier Luna's Qwen 4B thinking-disabled records preflight
 
 ## Long-running commands
 
+Root reconciles the independent admission-mechanism proposals into the contextual-focus discriminator. Native analyst Astra returned the objective proposal. Cursor Opus 5.5 session `b087b788-4362-4a6e-93e5-c8881beefc93` capped without an answer after 900170 ms, then returned through the same session in 112569 ms wrapper time, exit 0 uncapped. Its disclosed read rejection and omitted instruction reads remain procedural deviations; root independently rules on the retained proposal. See [the focused-support ruling](instruments/units/aggregates/reports/resumption-focused-ruling.md). No canonical code changed.
+
+Native verifier Luna completed the metadata-only capacity lookup. The raw responses, timestamps, and request policy are retained under diagnostics/q2-capacity-metadata. Report SHA-256 is `7966ca66c5480ce6857babebf5dc4b4f7b09114c337c353f628016dc0fdf8792`. Model metadata reports 262144, and the running-model response is empty. Root accepts the observation, not capacity qualification. Cursor Grok 4.7 Extra High bench returned READY in 12662 ms, session `74517009-66d7-4239-9140-f03574bb1712`, before the bounded service-evidence map.
+
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.
