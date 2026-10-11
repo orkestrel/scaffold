@@ -1,6 +1,6 @@
 # Live calibration progress
 
-The corrected model conditions froze successfully on 2026-10-11. Qwen 2B calibration completed with an admission refusal. Gemma 2B generation completed and is under independent blind review; Gemma 4B generation is active. No goal-quality comparison or adoption verdict follows from calibration alone.
+The corrected model conditions froze successfully on 2026-10-11. Qwen 2B and Gemma 2B calibration completed with admission refusals. Gemma 4B generation completed and is under independent blind review; Qwen 4B generation is active. No goal-quality comparison or adoption verdict follows from calibration alone.
 
 Native verifier Luna ran the accepted primary preparation driver on session checkpoint `2897ba0e4`, using canonical harness build `eb254fd9ff13d2a95fcde5c856a1b0e977e9c9dd363c43c9938498bc1af00b57`. Every requested Qwen/Gemma size and decision-thinking condition froze with exit 0 uncapped. Each freeze binds the same 75 source files, settings, seed, model census, and tag identities; independent hashing found no mismatch. Freeze manifests are under [the l6 result directory](../../../results/l6/).
 
@@ -34,6 +34,22 @@ The accepted g2 artifacts have these identities.
 | generation/evidence.json | `d0b0182bacb877669d60b38b5d705c926e8fb65231e22ef908e6e82b642ba8b4` |
 | generation/manifest.json | `28fb1257f768651ce636ef3475491aef22e466502f2890ebbcb66a2f48819650` |
 
-These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/g2`. Root supplied only a byte-identical opaque packet copy to a separate clean-context Astra analyst under `support-audit-c38f`. Semantic adjudication and fitting remain pending.
+These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/g2`. Root supplied only a byte-identical opaque packet copy to a separate clean-context Astra analyst under `support-audit-c38f`. Root adjudicated every distinct analysis before fitting, including a disclosed supported-to-ambiguous correction for a joined instruction's actor. The resulting labels contain 55 supported, 55 unsupported, 26 contradicted, and 26 ambiguous occurrences. The fit returned child exit 3 uncapped in 2274 ms: all supported occurrences were scored, but none reached the candidate cutoff 0.88. See [the Gemma 2B adjudication](resumption-g2-adjudication.md).
+
+Root accepts Gemma 4B generation after the complete custody report, raw launcher results, and direct retained-hash checks. Corpus preparation exited 0 uncapped in 2390 ms; generation exited 0 uncapped in 1099747 ms. Its 162 packet occurrences cover all corpus contexts, with exact attempt/packet ID membership, unchanged file bindings, and no errors. The model process exited before Qwen 4B started. The immutable custody report is primary `tmp/units/aggregate-live-calibration-g4-report.md`, SHA-256 `97ca73dce62e092f55ceb40aea4a5a762d17256c15e233ae59e9afba804483d9`.
+
+The accepted g4 artifacts have these identities.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| corpus/corpus.json | `cd2aedd390de0533012b9b8edffd70e09921239d542e3bdbd4d3eb346dffff6f` |
+| generation/attempts.jsonl | `255f1dcfd45a0b876a28c6a76b37f32c46cda0e3d5b367c7e7e9cc5118d8ecb7` |
+| generation/packet.jsonl | `9ef9164e8f0dad5828d1f36aac0d4169dec0a6f623980849bbcb60c4ee985733` |
+| generation/evidence.json | `c5099a3620d51dbe13dd3d7d9415c513a0ba0ef76ae637f900c0e7e953466621` |
+| generation/manifest.json | `3d20b473c0d142e73fe38a37ae1d43e22268b2ab1615bb363a3b529a767d6e8c` |
+
+These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/g4`. A separate clean-context Astra analyst receives only the opaque byte-identical packet under `support-audit-e64b`. Root retains adjudication and fitting.
+
+The accepted objective Qwen diagnosis proposes a source-clause prompt experiment with unchanged lexical, judge, fit, and admission requirements. Its report is primary `tmp/units/aggregate-calibration-diagnosis-report.md`, SHA-256 `a92f53386397f1b345a9d9ce24c60383cf32dbb4d38025d2664a124d92e65ab0`. The original supported draft's retry passed lexical checks but introduced factual errors. The highest scored negative forced cutoff 0.91, while generated supported judge sensitivity remained unmeasured. Cursor Opus is giving the proposed direction a bounded subjective design pass; no successor source or prompt has been implemented.
 
 Resource preflight, pilots, matrix quality, separate judge runs, and the mandatory continuous comparison remain pending. Publication remains held.

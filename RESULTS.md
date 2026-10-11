@@ -16,7 +16,16 @@ The historical Qwen 2B pilot is retained as a stopped experiment. Records and ag
 
 The corrected experiment preserves identical initial records context. The aggregate persists across read points and must update, revalidate, or retire summaries when their evidence changes. Records, aggregate, and full view will be compared on answer and work quality; full view has an explicitly larger context allowance. Separate judge runs test summaries against conversation evidence.
 
-The requested comparisons remain pending. All model/thinking conditions have been frozen. Qwen 2B calibration produced 251 draft occurrences in 271800 ms: blind review found 1 supported, 122 unsupported, 123 contradicted, and 5 ambiguous. Its fit refused admission because the supported draft failed the exact-number check on spelled-out dates. Gemma 2B generated 162 occurrences in 828161 ms and is under blind review; Gemma 4B generation is active. Calibration drafts are not goal-quality scores. See [the calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-live-calibration.md).
+The requested comparisons remain pending. All model/thinking conditions have been frozen. Calibration has the following measured status; these drafts are not goal-quality scores. See [the calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-live-calibration.md).
+
+| Summarizer |      Draft occurrences | Supported after adjudication | Fit outcome                                                       |
+| ---------- | ---------------------: | ---------------------------: | ----------------------------------------------------------------- |
+| Qwen 2B    |                    251 |                            1 | Refused: supported draft rejected for spelled-out dates           |
+| Gemma 2B   |                    162 |                           55 | Refused: none passed the cutoff needed to reject incorrect drafts |
+| Gemma 4B   |                    162 |           Review in progress | Pending                                                           |
+| Qwen 4B    | Generation in progress |                      Pending | Pending                                                           |
+
+Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, and 1099747 ms for Gemma 4B. A focused objective diagnosis and Cursor Opus design pass inform a bounded development revision; the frozen results remain intact.
 
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
