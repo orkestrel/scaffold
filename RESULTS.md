@@ -23,6 +23,8 @@ The admission diagnostics recorded complete requests and matching score calculat
 
 The corrected statement-support test passed: supported text scored 0.7571 and unsupported text scored 0.3958 in both request orders. All 4 requests completed in 14698 ms with matching raw-score calculations. Each check retained the complete summary as context and used only conversation sources as evidence. This local result follows independent review and offline verification; complete-summary and boundary controls must pass before full admission calibration. No canonical admission change or work-quality verdict follows from this result. See [the test and raw evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-support/README.md).
 
+Independent review settled the next screen's 14 complete candidates: 6 supported, 6 contradicted, 1 unsupported, and 1 ambiguous. The earlier supported statement belongs to an ambiguous complete summary because another statement overstates contact-information availability. The frozen boundary test retains that distinction and requires each supported boundary candidate to outrank its unsafe counterpart. Its 88-request sequence has not run. See [the labels and frozen test](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-boundaries/root-label-ruling.md).
+
 Thinking-disabled records resource checks passed at a 3072-token context and 512-token reserve. Each run served 24 development goals. These checks establish resource feasibility, not held-out answer quality.
 
 | Decision model | Requests | Duration | Thinking-enabled resource | Held-out quality matrix |
@@ -37,6 +39,8 @@ See the resource evidence for [Qwen 2B](.orkestrel/agent/instruments/units/aggre
 Qwen 2B full-view preflight failed with an HTTP 500 XML parse error in 1043149 ms. That is an operational failure, not model infeasibility. Daemon evidence shows that its requested 1068663-token window was clamped to 262144; the final successful prompt used 12685 tokens. Full-view qualification must bind effective capacity separately from the requested window. Further feasibility runs wait for the admission implementation decision because a canonical change requires fresh resource evidence. See [the failure and recovery evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/q2-full-failure/README.md), [the capacity finding](.orkestrel/agent/instruments/units/aggregates/diagnostics/q2-full-capacity/README.md), and [the custody contract](.orkestrel/agent/instruments/units/aggregates/reports/resumption-feasibility-custody.md).
 
 The historical pilot passed 9 of 12 goals in each arm, but supplied no aggregate summaries and changed the initial seed context. Its STOP result cannot establish quality equivalence. See [the original pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-pilot-stop.md).
+
+The full-view capacity probe is prepared for Qwen and Gemma and the judge route. Its fixed plan contains 30 diagnostic inference requests. Independent source review and offline verification precede a controlled daemon start and live execution. This proof must establish the deployed retention controls before the quality comparison can claim a full-view reference. See [the capacity direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-full-admission-direction.md).
 
 ## Release and implementation
 
