@@ -8,6 +8,8 @@ On 2026-10-11, the independent composed harness passed 410 of 410 tests across 8
 
 The aggregate branch and root RESULTS.md are available in the normal scaffold directory. The aggregate branch stays separate from main. Git lists only the primary scaffold checkout. Local patches, raw proofs, and build evidence from removed worktrees are retained. See [the consolidation record](instruments/units/aggregates/reports/resumption-consolidation.md) for historical path mappings and the residual cleanup rejected by automatic approval review.
 
+Live preparation has started on the accepted instrument. All requested model/thinking conditions froze successfully. Qwen 2B generated 251 calibration draft occurrences in 271800 ms, with complete source/output custody and no operational errors. Independent blind support review is in progress while the remaining models generate sequentially. See [the live calibration record](instruments/units/aggregates/reports/resumption-live-calibration.md). Goal-quality comparisons and adoption remain pending.
+
 ## Release evidence
 
 The completed release runs establish the following results. See [the agent 0.0.30 release checkpoint](https://github.com/orkestrel/scaffold/blob/68060778df1e737e51ab083e90af81683c49671c/.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md) for scope, hashes, skips, and consumer limits. The same record is available in the primary scaffold checkout under `.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md`.

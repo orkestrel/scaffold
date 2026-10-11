@@ -14,4 +14,8 @@ Independent verification found all 484 harness sources, 202 compiler inputs, and
 
 Historical command documents retain the original worktree prefix. For execution, the accepted primary operators resolve the scaffold root to `C:/Users/mikes/WebstormProjects/scaffold`; no command uses the removed agent-session checkout. The experiment contracts and model settings are unchanged.
 
+The agent root RESULTS.md pointer is committed and pushed on its session branch at `e549b4d`; agent main remains the verified `ee734c3` release candidate. The agent worktree list contains only its normal checkout.
+
+The desk consumer branch is also checked out in the normal desk directory at `29c7f6bf919a50c830ea9d07a34209fd69ddbf23`. Its default branch remains `a1db16d153f400288e1373d3a1fa0798abc59b70`. Before removal, native scout Luna verified clean primary and consumer trees, the session's matching remote-tracking reference, and ordinary dependency directories without traversing them. Root moved the consumer's ignored tmp and dist directories within the same filesystem to `C:/Users/mikes/WebstormProjects/desk/tmp/units/worktree-evidence/agent-0030/retained`. Historical desk proof paths under `tmp/worktrees/agent-0030/tmp` resolve under that archive's tmp directory. Root then removed the registered consumer worktree and switched the clean primary to its existing session branch. Git lists only the normal desk checkout, and the removed worktree path is absent. The desk's published-agent re-pin and subsequent consumer checks remain held until publication; this relocation does not claim a refreshed dependency install.
+
 Publication remains held through the live matrix, final continuous comparison, analysis, and adoption decision.

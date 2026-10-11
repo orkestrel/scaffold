@@ -110,6 +110,14 @@ The session branch occupies the normal scaffold checkout. Git lists only that sc
 
 The next unit is native verifier Luna under primary `tmp/units/aggregate-live-freeze-calibration-q2-brief.md`: freeze every requested model/thinking condition, then freeze and generate Qwen 2B calibration. The accepted primary preparation driver binds manifest `eb254fd9ff13d2a95fcde5c856a1b0e977e9c9dd363c43c9938498bc1af00b57`. Execution follows the accepted checkpoint push. Blind proposition labels and root adjudication remain separate from generation. Publication remains held through comparison and adoption.
 
+### Live calibration and directory consolidation
+
+Native verifier Luna completed `aggregate-live-freeze-calibration-q2`: every requested condition froze successfully; q2 corpus preparation exited 0 in 2435 ms; q2 generation exited 0 uncapped in 271800 ms. Its 251 attempts cover all 162 contexts. Root read the full custody report and launcher result, checked the packet hash, and accepted generation for independent semantic adjudication. See [the live calibration record](instruments/units/aggregates/reports/resumption-live-calibration.md).
+
+Root dispatched clean-context native analyst Astra through the opaque `support-audit-7ac2` brief. The analyst receives only the byte-identical public packet and returns proposition support with exact source quotations. Root owns adjudication and fitting. Native verifier Luna owns the separate `aggregate-live-calibration-remaining` unit for serial g2, g4, and q4 generation. No concurrent GPU client is assigned.
+
+Native scout Luna inventoried the remaining desk consumer worktree through `desk-worktree-custody`. Root preserved its ignored proof/build directories, removed the unused registered worktree, and switched the clean normal desk checkout to the existing session branch. Default branches remain unchanged. The agent root result pointer is pushed at `e549b4d`. See [the consolidation record](instruments/units/aggregates/reports/resumption-consolidation.md).
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.

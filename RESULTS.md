@@ -16,7 +16,7 @@ The historical Qwen 2B pilot is retained as a stopped experiment. Records and ag
 
 The corrected experiment preserves identical initial records context. The aggregate persists across read points and must update, revalidate, or retire summaries when their evidence changes. Records, aggregate, and full view will be compared on answer and work quality; full view has an explicitly larger context allowance. Separate judge runs test summaries against conversation evidence.
 
-The requested comparisons remain pending.
+The requested comparisons remain pending. All model/thinking conditions have been frozen. Qwen 2B calibration generated 251 draft occurrences in 271800 ms; independent blind support review is in progress. Calibration drafts are not goal-quality scores.
 
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
