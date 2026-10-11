@@ -1,6 +1,6 @@
 # Live calibration progress
 
-The corrected model conditions froze successfully on 2026-10-11. Qwen 2B and Gemma 2B calibration completed with admission refusals. Gemma 4B generation completed and is under independent blind review; Qwen 4B generation is active. No goal-quality comparison or adoption verdict follows from calibration alone.
+The corrected model conditions froze successfully on 2026-10-11. Qwen 2B, Gemma 2B, and Gemma 4B calibration completed with admission refusals. Qwen 4B generation completed and is under independent blind review. No goal-quality comparison or adoption verdict follows from calibration alone.
 
 Native verifier Luna ran the accepted primary preparation driver on session checkpoint `2897ba0e4`, using canonical harness build `eb254fd9ff13d2a95fcde5c856a1b0e977e9c9dd363c43c9938498bc1af00b57`. Every requested Qwen/Gemma size and decision-thinking condition froze with exit 0 uncapped. Each freeze binds the same 75 source files, settings, seed, model census, and tag identities; independent hashing found no mismatch. Freeze manifests are under [the l6 result directory](../../../results/l6/).
 
@@ -48,8 +48,22 @@ The accepted g4 artifacts have these identities.
 | generation/evidence.json | `c5099a3620d51dbe13dd3d7d9415c513a0ba0ef76ae637f900c0e7e953466621` |
 | generation/manifest.json | `3d20b473c0d142e73fe38a37ae1d43e22268b2ab1615bb363a3b529a767d6e8c` |
 
-These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/g4`. A separate clean-context Astra analyst receives only the opaque byte-identical packet under `support-audit-e64b`. Root retains adjudication and fitting.
+These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/g4`. The separate clean-context Astra analyst reviewed only the opaque byte-identical packet under `support-audit-e64b`. Root adjudicated every distinct analysis before score inspection, correcting unsupported release-actor and reported-cause attributions. The resulting labels contain 93 supported, 36 unsupported, 20 contradicted, and 13 ambiguous occurrences. Native verifier Luna ran the offline fit: child exit 3 uncapped in 2046 ms, with all 93 supported occurrences scored and none admitted at candidate cutoff 0.82. See [the Gemma 4B adjudication](resumption-g4-adjudication.md).
 
-The accepted objective Qwen diagnosis proposes a source-clause prompt experiment with unchanged lexical, judge, fit, and admission requirements. Its report is primary `tmp/units/aggregate-calibration-diagnosis-report.md`, SHA-256 `a92f53386397f1b345a9d9ce24c60383cf32dbb4d38025d2664a124d92e65ab0`. The original supported draft's retry passed lexical checks but introduced factual errors. The highest scored negative forced cutoff 0.91, while generated supported judge sensitivity remained unmeasured. Cursor Opus is giving the proposed direction a bounded subjective design pass; no successor source or prompt has been implemented.
+Root accepts Qwen 4B generation after the complete custody report, raw launcher results, and direct retained-hash checks. Corpus preparation exited 0 uncapped in 2569 ms; generation exited 0 uncapped in 839550 ms. Its 163 packet occurrences cover all 162 corpus contexts, with exact attempt/packet ID membership, unchanged file bindings, and no errors. The model process and descendants exited. The immutable custody report is primary `tmp/units/aggregate-live-calibration-q4-report.md`, SHA-256 `a4a70270fb83886cd794905a4416199eee04759e0a9449c255f08d7162a5de19`.
+
+The accepted q4 artifacts have these identities.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| corpus/corpus.json | `8bf2e93126be0a5af34a54d78f15970dc18ab7bbeb97818be1dab0e2e74eafde` |
+| generation/attempts.jsonl | `15b970b7ee14ec5184c2f731ec07d0c40972bb4c47c88318a6ce7d0019dbb6c7` |
+| generation/packet.jsonl | `7eeba7b8fa135fe4ad8adcd12323a593cb7167ccc2d889e227709781cde1b0c1` |
+| generation/evidence.json | `95c0a837d6c3d634ad1f45f9870c787d42d568f2d56f636da11eb46ddad7487e` |
+| generation/manifest.json | `9756c24da51b4db6e21263547b06c3961b579cf964b0323ddd1890b3ee5380b4` |
+
+These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/q4`. A separate clean-context Astra analyst receives only the opaque byte-identical packet under `support-audit-f92d`. Root retains adjudication and fitting.
+
+The accepted objective Qwen diagnosis proposes a source-clause prompt experiment with unchanged lexical, judge, fit, and admission requirements. Its report is primary `tmp/units/aggregate-calibration-diagnosis-report.md`, SHA-256 `a92f53386397f1b345a9d9ce24c60383cf32dbb4d38025d2664a124d92e65ab0`. The original supported draft's retry passed lexical checks but introduced factual errors. The highest scored negative forced cutoff 0.91, while generated supported judge sensitivity remained unmeasured. Cursor Opus completed its bounded subjective design pass in 258648 ms, exit 0 uncapped, in session `c9c60b0b-33b7-4b41-b53c-216c964b86d4`. Its captured report SHA-256 is `3b7b904cd1687a5f99538d05e7253c1a8f7db87a39427eb8a2f064003a5f6252`; the report lives at primary `tmp/cursor/aggregate-calibration-prompt-design-report.md`. Its source citations resolve against the explicitly named aggregate source directory. Root is reconciling the proposed source-date framing, unresolved-pronoun risk, and useful-coverage limit. No successor source or prompt has been implemented.
 
 Resource preflight, pilots, matrix quality, separate judge runs, and the mandatory continuous comparison remain pending. Publication remains held.

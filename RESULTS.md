@@ -18,14 +18,14 @@ The corrected experiment preserves identical initial records context. The aggreg
 
 The requested comparisons remain pending. All model/thinking conditions have been frozen. Calibration has the following measured status; these drafts are not goal-quality scores. See [the calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-live-calibration.md).
 
-| Summarizer |      Draft occurrences | Supported after adjudication | Fit outcome                                                       |
-| ---------- | ---------------------: | ---------------------------: | ----------------------------------------------------------------- |
-| Qwen 2B    |                    251 |                            1 | Refused: supported draft rejected for spelled-out dates           |
-| Gemma 2B   |                    162 |                           55 | Refused: none passed the cutoff needed to reject incorrect drafts |
-| Gemma 4B   |                    162 |           Review in progress | Pending                                                           |
-| Qwen 4B    | Generation in progress |                      Pending | Pending                                                           |
+| Summarizer | Draft occurrences | Supported after adjudication | Fit outcome                                                       |
+| ---------- | ----------------: | ---------------------------: | ----------------------------------------------------------------- |
+| Qwen 2B    |               251 |                            1 | Refused: supported draft rejected for spelled-out dates           |
+| Gemma 2B   |               162 |                           55 | Refused: none passed the cutoff needed to reject incorrect drafts |
+| Gemma 4B   |               162 |                           93 | Refused: none passed the cutoff needed to reject incorrect drafts |
+| Qwen 4B    |               163 |           Review in progress | Pending                                                           |
 
-Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, and 1099747 ms for Gemma 4B. A focused objective diagnosis and Cursor Opus design pass inform a bounded development revision; the frozen results remain intact.
+Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, 1099747 ms for Gemma 4B, and 839550 ms for Qwen 4B. The focused objective diagnosis and completed Cursor Opus design pass propose a bounded source-clause prompt experiment. Root has not changed the frozen method; Qwen 4B adjudication remains pending.
 
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
