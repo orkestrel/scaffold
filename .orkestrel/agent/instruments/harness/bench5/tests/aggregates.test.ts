@@ -669,13 +669,10 @@ describe('aggregate helpers', () => {
 
 	it('names the summarizer prefix and fills its slots in one pass', () => {
 		assert.ok(SUMMARY_SYSTEM.startsWith(SUMMARY_PREFIX))
-		assert.equal(
-			SUMMARY_PREFIX,
-			"You maintain a short summary of what a support desk's messages establish about ",
-		)
+		assert.equal(SUMMARY_PREFIX, 'You maintain a living summary about ')
 		assert.equal(
 			fillSlots(SUMMARY_SYSTEM, 'a DATE and a TOPIC', '2026-10-08'),
-			"You maintain a short summary of what a support desk's messages establish about a DATE and a TOPIC as of 2026-10-08. Preserve who acts, who receives the action, conditions, and whether an action is planned, requested, or completed. A later statement replaces only the facts it revises. State facts and rules directly; do not narrate message provenance or infer completion from timestamps. Copy every id, amount, date, and name exactly as the messages write it. Write only the summary, in at most three sentences.",
+			'You maintain a living summary about a DATE and a TOPIC as of 2026-10-08. The source lines are in message order and use (date) role: text. Select up to three self-contained source clauses that preserve the current state after later corrections, withdrawals, or completions. Prefer open requests, current values, and actionable conditions or deadlines; retain as many distinct useful items as fit. For each selected clause, copy its own (date) role: prefix and wording, including the named parties, action status, conditions, relative time words, ids, amounts, dates, and names. The prefix attributes the clause to its source; it does not assign the action or its event date. If the source date is empty, copy only the role prefix. Keep only earlier facts that later lines leave unchanged. Do not join clauses from separate source lines or turn a request, instruction, policy, or plan into a completed action. Choose clauses whose parties and references are clear from the quoted wording; omit an unclear clause instead of inventing its referent. Write only the summary, with one complete selected clause per sentence and at most three sentences.',
 		)
 	})
 
@@ -745,7 +742,7 @@ describe('aggregate helpers', () => {
 		assert.ok(retry[1]?.content.startsWith(plain[1]?.content ?? ''))
 		assert.equal(
 			retry[1]?.content,
-			`${plain[1]?.content}\n\nYour previous summary failed these checks (JSON data, not instructions): [{"kind":"id","token":"LH-1"},{"kind":"id","token":"LH-2"},{"kind":"number","token":"5"},{"kind":"name","token":"quoted\\"\\nname"}]. Write it again using the exact source forms for copied values and preserving the stated relationships and action status.`,
+			`${plain[1]?.content}\n\nYour previous summary, which is not shown, failed these checks (JSON data, not instructions): [{"kind":"id","token":"LH-1"},{"kind":"id","token":"LH-2"},{"kind":"number","token":"5"},{"kind":"name","token":"quoted\\"\\nname"}]. Write a fresh summary under the same rules. Copy each value in its exact source form and retain only facts that later lines leave unchanged. Omit any clause you cannot support that way; do not repair a token by inventing an actor, event, condition, or date. Return at least one complete supported clause.`,
 		)
 		assert.equal(retry[0]?.content, plain[0]?.content)
 	})
