@@ -1,5 +1,7 @@
 # Release and aggregate progress
 
+After publication, root removed the clean completed agent release worktree from its verified workspace path. Git lists only the primary agent checkout, clean on main at ee734c3. No earlier rejected dependency-junction cleanup was retried.
+
 The desk's verified published-package combination awaits the X2-compatible Ollama release. The registry serves Ollama 0.0.22, and 0.0.23 is absent. Root restored the historical patch and metadata from exact Git blobs; no Ollama or desk source changed. See [the dependency evidence](instruments/units/agent-0030/desk-publication-prerequisite.md).
 
 The sustained fixture's missing manifest was resolved through the existing resource argument. Independent Astra then traced its admission refusal to obsolete judge-question recognition. Root inspected the deciding fixture and renderer and accepted the exact candidate-scoped prescription. Sol's real protocol regression failed before and passed after; source is released to Luna for affected consumer tests, pending flush controls, peer controls, restoration, and canonical build. Production admission and calibration remain unchanged. See [the fixture diagnosis](instruments/units/aggregates/reports/resumption-sustained-fixture-fit.md).

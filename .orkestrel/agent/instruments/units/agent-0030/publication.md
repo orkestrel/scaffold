@@ -2,6 +2,8 @@
 
 Agent 0.0.30 is published and registry-confirmed on 2026-10-11. The primary agent checkout remains clean on verified main ee734c3; no source or package bytes changed. Desk published-package pins and checks remain pending.
 
+The completed `agent-0030-fixes` worktree was clean at ee734c3 and contained no dependency junction. Root verified its absolute path under the agent workspace, removed it with `git worktree remove`, and confirmed Git lists only the clean primary checkout. Historical dependency-junction cleanup was not retried.
+
 The fresh user-authorized OTP upload succeeded. The publish runner reported acceptance and registry confirmation, exit 0 uncapped in 77708 ms under PID19112. A separate `npm view @orkestrel/agent@0.0.30 version dist.shasum dist.integrity --json` call returned version 0.0.30, SHA-1 `1bb0bb123e4a2414a9a99b5dc73ad41e5566b2ca`, and integrity `sha512-HQkhs+rq9iLoPiXQ4/Bw1TeLvwQChPECVBMzMTC23o9aUW3BNpBCVeCZFMcQTjeSjiJobVrTSpA+1W2uhDaFhw==`. Both archive identifiers match the independently verified release archive. An initial E404 during npm processing resolved without another upload.
 
 The successful runner journals remain local to agent at `tmp/units/agent-0030-publish-otp-2.stdout.log` and `tmp/units/agent-0030-publish-otp-2.stderr.log`.
