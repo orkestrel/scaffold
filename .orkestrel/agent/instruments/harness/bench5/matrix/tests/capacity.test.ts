@@ -362,3 +362,69 @@ it('admits only successful intentional one-token nonthinking length-terminated f
 		rmSync(directory, { recursive: true, force: true })
 	}
 })
+it('limits judge length completion to the exact raw single-token logprob protocol', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-judge-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const budget = buildBudget(512)
+		const body = {
+			model: MODELS.q2,
+			raw: true,
+			stream: false,
+			logprobs: true,
+			top_logprobs: 20,
+			options: { num_ctx: 4096, num_predict: 1, temperature: 1 },
+		}
+		const response = {
+			done: true,
+			done_reason: 'length',
+			response: 'No',
+			prompt_eval_count: 805,
+			eval_count: 1,
+		}
+		const judge = writeCapacityRequest(directory, {
+			role: 'judge',
+			request: body,
+			response: JSON.stringify(response),
+		})
+		assert.equal(readRequestOutcome(judge, budget, frozen), 'complete')
+		for (const changes of [
+			{ sent: false },
+			{ status: 500 },
+			{ error: 'connection closed' },
+			{ response: '{"done":true' },
+			{ response: JSON.stringify({ ...response, done: false }) },
+			{ response: JSON.stringify({ done: true, done_reason: 'length' }) },
+			{ response: JSON.stringify({ ...response, prompt_eval_count: undefined }) },
+			{ response: JSON.stringify({ ...response, eval_count: undefined }) },
+		])
+			assert.equal(readRequestOutcome({ ...judge, ...changes }, budget, frozen), 'fault')
+		for (const changes of [
+			{ response: JSON.stringify({ ...response, truncated: true }) },
+			{ response: JSON.stringify({ ...response, truncation: true }) },
+			{ response: JSON.stringify({ ...response, prompt_eval_count: 4095 }) },
+			{ response: JSON.stringify({ ...response, eval_count: 0 }) },
+			{ response: JSON.stringify({ ...response, eval_count: 2 }) },
+			{ request: { ...body, raw: undefined } },
+			{ request: { ...body, raw: false } },
+			{ request: { ...body, stream: undefined } },
+			{ request: { ...body, stream: true } },
+			{ request: { ...body, logprobs: undefined } },
+			{ request: { ...body, logprobs: false } },
+			{ request: { ...body, top_logprobs: undefined } },
+			{ request: { ...body, top_logprobs: 19 } },
+			{ request: { ...body, options: undefined } },
+			{ request: { ...body, options: { ...body.options, num_predict: 2 } } },
+			{ request: { ...body, options: { ...body.options, temperature: 0 } } },
+			{ request: { model: body.model, messages: [], options: body.options } },
+		])
+			assert.equal(readRequestOutcome({ ...judge, ...changes }, budget, frozen), 'refused')
+		assert.equal(readRequestOutcome({ ...judge, role: 'summarizer' }, budget, frozen), 'refused')
+		assert.equal(
+			readRequestOutcome({ ...judge, request: { ...body, think: false } }, budget, frozen),
+			'complete',
+		)
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})

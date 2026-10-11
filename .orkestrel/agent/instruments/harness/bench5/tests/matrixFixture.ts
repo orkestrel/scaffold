@@ -18,6 +18,13 @@ export class MatrixPeer {
 	escalations = false
 	fault = false
 	faults = 0
+	judge: {
+		length: boolean
+		malformed: boolean
+		duplicate: boolean
+		missing: boolean
+		response: string | undefined
+	} = { length: false, malformed: false, duplicate: false, missing: false, response: undefined }
 	parser: number | undefined
 	decisions = 0
 	metadata = 200
@@ -124,18 +131,24 @@ export class MatrixPeer {
 				JSON.stringify({
 					model: body.model,
 					done: true,
-					done_reason: 'stop',
-					response: winner,
+					done_reason: this.judge.length ? 'length' : 'stop',
+					response: this.judge.response ?? winner,
 					prompt_eval_count: 50,
 					eval_count: 1,
 					logprobs: [
 						{
 							token: winner,
 							logprob: -0.01,
-							top_logprobs: tokens.map((token) => ({
+							top_logprobs: (this.judge.missing
+								? tokens.slice(1)
+								: this.judge.duplicate
+									? [...tokens, ...tokens.slice(0, 1)]
+									: tokens
+							).map((token) => ({
 								token,
-								logprob:
-									agreement === undefined
+								logprob: this.judge.malformed
+									? 'invalid'
+									: agreement === undefined
 										? token === winner
 											? -0.01
 											: -8

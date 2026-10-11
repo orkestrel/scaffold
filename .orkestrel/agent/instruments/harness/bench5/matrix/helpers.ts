@@ -841,6 +841,15 @@ export function readRequestOutcome(
 		(reading.reason === 'length' &&
 			!(
 				(request.role === 'agent' && request.goal === undefined && failures.length === 0) ||
+				(request.role === 'judge' &&
+					request.request.raw === true &&
+					request.request.stream === false &&
+					request.request.logprobs === true &&
+					request.request.top_logprobs === 20 &&
+					isRecord(options) &&
+					options.num_predict === 1 &&
+					options.temperature === 1 &&
+					reading.completion === 1) ||
 				(request.role === 'flush' &&
 					request.request.think === false &&
 					isRecord(options) &&

@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { join, resolve } from 'node:path'
 import { isRecord } from '@orkestrel/contract'
 import { Driver, parseFlags, readCopy } from '../Driver.js'
-import { HARNESS, COPIES_DIR } from '../constants.js'
+import { HARNESS, COPIES_DIR, MICA_MODEL, MICA_SYSTEM } from '../constants.js'
 import { readJSON, readRows } from '../helpers.js'
 import { hashFile } from '../refit/helpers.js'
 import { Matrix } from '../matrix/Matrix.js'
@@ -29,7 +29,200 @@ import {
 	readRequestOutcome,
 } from '../matrix/helpers.js'
 import { MatrixPeer } from './matrixFixture.js'
+import { JudgeCache } from '../JudgeCache.js'
+import { createOllamaJudge } from '../../vendor/ollama/index.js'
 import { writeDevelopmentFixture } from './refit/helpers.js'
+
+it('continues real aggregate development after a fresh single-token length-terminated judge answer', async () => {
+	const parent = resolve('tmp/units/aggregate-l11-judge-length-fix-fixtures')
+	mkdirSync(parent, { recursive: true })
+	const directory = mkdtempSync(join(parent, 'development-'))
+	const peer = new MatrixPeer()
+	peer.support = true
+	peer.agreement = 0.75
+	peer.judge.length = true
+	peer.judge.response = 'No'
+	const url = await peer.start()
+	try {
+		const seed = join(directory, 'seed.jsonl')
+		writeFileSync(seed, '', { flag: 'wx' })
+		const frozenPath = join(directory, 'freeze/manifest.json')
+		assert.equal(
+			await Matrix.execute([
+				'freeze',
+				'--deployment',
+				writeDeploymentFixture(directory),
+				'--key',
+				'q2',
+				'--think',
+				'false',
+				'--seed',
+				seed,
+				'--settings',
+				join(HARNESS, 'bench5/settings.json'),
+				'--out',
+				join(directory, 'freeze'),
+				'--live',
+				'--url',
+				url,
+			]),
+			0,
+		)
+		const frozen = readFrozen(hashFile(frozenPath))
+		const policy = writeDevelopmentFixture(directory, frozenPath)
+		const policyPath = join(directory, 'development.json')
+		writeFileSync(policyPath, JSON.stringify(policy), { flag: 'wx' })
+		const execution: MatrixExecution = {
+			protocol: 'l6',
+			phase: 'development',
+			key: 'q2',
+			think: false,
+			arm: 'aggregate',
+			copy: 1,
+			frozen: hashFile(frozenPath),
+			budget: policy.paired,
+			development: hashFile(policyPath),
+		}
+		const manifest = join(directory, 'execution.json')
+		writeFileSync(manifest, JSON.stringify(execution), { flag: 'wx' })
+		const cache = join(directory, 'cache')
+		const out = join(directory, 'run')
+		const config = parseFlags([
+			'--run',
+			'--live',
+			'--copy',
+			'1',
+			'--manifest',
+			manifest,
+			'--cache',
+			cache,
+			'--out',
+			out,
+			'--url',
+			url,
+		])
+		assert.ok(config.success, config.success ? '' : config.error)
+		const result: unknown = await new Driver(config.value)
+			.execute()
+			.catch((error: unknown) => error)
+		const requests = readRows(join(out, 'requests.jsonl'))
+		assert.ok(requests.every(isMatrixRequest))
+		const judge = requests.find((entry) => entry.role === 'judge' && entry.sent)
+		assert.ok(judge && isRecord(judge.request) && isRecord(judge.request.options))
+		assert.equal(judge.status, 200)
+		assert.equal(judge.reason, 'length')
+		assert.equal(judge.completion, 1)
+		assert.equal(judge.request.raw, true)
+		assert.equal(judge.request.stream, false)
+		assert.equal(judge.request.logprobs, true)
+		assert.equal(judge.request.top_logprobs, 20)
+		assert.equal(judge.request.options.num_predict, 1)
+		assert.equal(judge.request.options.temperature, 1)
+		const wire: unknown = JSON.parse(judge.response ?? '')
+		assert.ok(isRecord(wire))
+		assert.equal(wire.done, true)
+		assert.equal(wire.done_reason, 'length')
+		assert.equal(wire.eval_count, 1)
+		assert.equal(wire.response, peer.judge.response)
+		assert.equal(result, 0, 'length-terminated fresh judge must complete and work must continue')
+		assert.equal(readRequestOutcome(judge, policy.paired, frozen), 'complete')
+		assert.ok(
+			requests.some((entry) => entry.sent && entry.sequence > judge.sequence),
+			'work must send a request after the completed fresh judge',
+		)
+		const rows = readRows(join(cache, 'judge.jsonl'))
+		assert.ok(
+			rows.some(
+				(entry) =>
+					isRecord(entry) &&
+					isRecord(entry.answer) &&
+					entry.error === undefined &&
+					entry.refusal === undefined &&
+					entry.origin === 'live',
+			),
+			'the real judge must persist a successful fresh answer',
+		)
+		const run = parseMatrixRun(out)
+		assert.ok(run)
+		assert.equal(run.status, 'development-failed-goals')
+		assert.ok(run.requests.every((entry) => entry.error === undefined && !isParserRequest(entry)))
+		assert.ok(run.rows.every((entry) => entry.error === undefined && entry.partial === false))
+		const outcomes = readRows(join(out, 'rows.jsonl'))
+		assert.ok(outcomes.every(isRecord))
+		assert.ok(outcomes.every((entry) => entry.error === undefined && entry.faults === 0))
+		assert.ok(
+			outcomes.some(
+				(entry) =>
+					entry.success === false &&
+					entry.reply === 'Fixture answer.' &&
+					Array.isArray(entry.missing) &&
+					entry.missing.length > 0,
+			),
+			'ordinary fixture answer mismatches must explain the failed-goal status',
+		)
+		console.log(`SINGLE_TOKEN_JUDGE_DEVELOPMENT_FIXTURE ${directory}`)
+	} finally {
+		await peer.destroy()
+	}
+})
+
+it('retains real single-token judge protocol errors and missing-label refusals', async () => {
+	const parent = resolve('tmp/units/aggregate-l11-judge-length-fix-fixtures')
+	mkdirSync(parent, { recursive: true })
+	const directory = mkdtempSync(join(parent, 'reader-'))
+	const peer = new MatrixPeer()
+	peer.judge.length = true
+	const url = await peer.start()
+	try {
+		for (const control of ['malformed', 'duplicate', 'missing']) {
+			peer.judge.malformed = control === 'malformed'
+			peer.judge.duplicate = control === 'duplicate'
+			peer.judge.missing = control === 'missing'
+			const path = join(directory, `${control}.jsonl`)
+			const judge = new JudgeCache({
+				judge: createOllamaJudge({
+					model: MICA_MODEL,
+					system: MICA_SYSTEM,
+					url,
+					options: { num_ctx: 4096 },
+				}),
+				path,
+				live: true,
+				retry: 0,
+			})
+			const request = {
+				state: 'The recorded fixture state.',
+				questions: {
+					question: { form: 'noul', instructions: 'Check the recorded fixture state.' },
+				},
+			} as const
+			if (control === 'missing') {
+				const result = await judge.ask(request, new AbortController().signal)
+				assert.deepEqual(result.answers, {})
+				assert.deepEqual(result.refusals?.question?.missing, ['true'])
+			} else {
+				await assert.rejects(
+					judge.ask(request, new AbortController().signal),
+					/invalid or duplicate top logprob token/,
+				)
+			}
+			const rows = readRows(path)
+			assert.equal(rows.length, 1)
+			const row = rows[0]
+			assert.ok(isRecord(row))
+			assert.equal(row.answer, undefined)
+			if (control === 'missing') {
+				assert.equal(row.error, undefined)
+				assert.deepEqual(row.refusal, { missing: ['true'] })
+			} else {
+				assert.match(String(row.error), /invalid or duplicate top logprob token/)
+				assert.equal(row.refusal, undefined)
+			}
+		}
+	} finally {
+		await peer.destroy()
+	}
+})
 
 it('retries sent judge transport in real matrix development without admitting missing usage', async () => {
 	const parent = resolve('tmp/units/aggregate-sustained-transport-fix-fixtures')
