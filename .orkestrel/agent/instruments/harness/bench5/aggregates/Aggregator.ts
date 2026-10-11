@@ -23,6 +23,7 @@ import { describeError, findDay } from '../helpers.js'
 import { AGREE_HEAD, CHANGE_HEAD } from './constants.js'
 import { Support } from './Support.js'
 import { readDevelopment, readFrozen } from '../matrix/helpers.js'
+import { readSustainedExploration } from '../sustained/helpers.js'
 import {
 	reduceSupport,
 	buildChangeQuestion,
@@ -75,7 +76,21 @@ export class Aggregator {
 	 * @param options - The mirror, summarizer, judge, cutoffs, settings, days, seed indices, rows file, and logger
 	 */
 	constructor(options: AggregatorOptions) {
-		if (options.development !== undefined) {
+		if (options.study?.policy !== undefined) {
+			if (options.development !== undefined || options.study.arm !== 'aggregate')
+				throw new Error('conflicting exploratory aggregate admission')
+			const admission = readSustainedExploration(options.study, readFrozen(options.study.frozen))
+			if (
+				admission.fit === undefined ||
+				admission.failures.length !== 0 ||
+				options.fit.agree !== admission.fit.agree ||
+				options.fit.change !== admission.fit.change ||
+				options.fit.separated !== admission.fit.separated
+			)
+				throw new Error(
+					'aggregate exploratory sustained admission differs from independent diagnosis',
+				)
+		} else if (options.development !== undefined) {
 			if (options.development.arm !== 'aggregate')
 				throw new Error('aggregate development arm required')
 			const policy = readDevelopment(options.development, readFrozen(options.development.frozen))

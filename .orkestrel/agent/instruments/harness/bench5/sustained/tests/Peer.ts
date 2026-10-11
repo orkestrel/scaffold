@@ -17,6 +17,10 @@ export class Peer {
 	boundary = false
 	faults = 0
 	status = 500
+	hold = false
+	disconnect = false
+	readonly arrivals = new EventTarget()
+	summary = { enabled: false, capped: false, topic: '', counts: new Map<string, number>() }
 	readonly #server = createServer((request, response) => {
 		void this.#respond(request, response).catch((error: unknown) =>
 			response.writeHead(500).end(String(error)),
@@ -71,6 +75,23 @@ export class Peer {
 		const body: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'))
 		if (!isRecord(body)) throw new Error('invalid peer request')
 		this.calls.push(body)
+		if (
+			request.url === '/api/chat' &&
+			isRecord(body.options) &&
+			body.options.num_predict !== 1 &&
+			body.options.num_predict !== 160
+		) {
+			if (this.disconnect) {
+				response.destroy()
+				return
+			}
+			if (this.hold) {
+				const closed = once(response, 'close')
+				this.arrivals.dispatchEvent(new Event('hold'))
+				await closed
+				return
+			}
+		}
 		if (isRecord(body.options))
 			this.#loaded = [
 				{
@@ -97,7 +118,9 @@ export class Peer {
 				? ((prompt.includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
 						prompt.includes(`Question: ${AGREE_QUESTION.instructions}\n`)) &&
 						prompt.includes('\n "candidate": "The standing rule applies to this topic."')) ||
-					prompt.includes('The message concerns policies:')
+					prompt.includes('The message concerns policies:') ||
+					(this.summary.enabled &&
+						prompt.includes('Does the event change what the summary states about'))
 					? 'Yes'
 					: 'No'
 				: 'A'
@@ -155,11 +178,26 @@ export class Peer {
 			(total, message) => total + Math.ceil(String(message.content).length / 4) + 4,
 			11,
 		)
+		const title = messages.flatMap((message) =>
+			message.role === 'system'
+				? (/living summary about (.*?) as of/.exec(String(message.content))?.[1] ?? [])
+				: [],
+		)[0]
+		let summary = false
+		if (this.summary.enabled && title !== undefined && body.options.num_predict === 160) {
+			const count = (this.summary.counts.get(title) ?? 0) + 1
+			this.summary.counts.set(title, count)
+			summary = !this.summary.capped && count > 1
+			if (summary) this.summary = { ...this.summary, capped: true, topic: title }
+		}
 		const length =
-			this.lengthAt !== undefined && goal.includes(this.lengthAt) && body.options.num_predict !== 1
+			summary ||
+			(this.lengthAt !== undefined &&
+				goal.includes(this.lengthAt) &&
+				body.options.num_predict !== 1)
 		response.setHeader('content-type', 'application/x-ndjson')
 		response.end(
-			`${JSON.stringify({ model: body.model, done: true, done_reason: length ? 'length' : 'stop', message: { role: 'assistant', content: invoke ? '' : reply, ...(tool === undefined ? {} : { tool_calls: tool }) }, ...(this.missingAt !== undefined && goal.includes(this.missingAt) && body.options.num_predict !== 1 ? {} : { prompt_eval_count: prompt, eval_count: body.options.num_predict === 1 ? 1 : length ? body.options.num_predict : invoke ? 20 : body.options.num_predict === 160 ? 10 : 350 }) })}\n`,
+			`${JSON.stringify({ model: body.model, done: true, done_reason: length ? 'length' : 'stop', message: { role: 'assistant', content: summary ? 'Incomplete withheld fixture summary' : invoke ? '' : reply, ...(tool === undefined ? {} : { tool_calls: tool }) }, ...(this.missingAt !== undefined && goal.includes(this.missingAt) && body.options.num_predict !== 1 ? {} : { prompt_eval_count: prompt, eval_count: body.options.num_predict === 1 ? 1 : length ? body.options.num_predict : invoke ? 20 : body.options.num_predict === 160 ? 10 : 350 }) })}\n`,
 		)
 	}
 }

@@ -8,12 +8,106 @@ import { MatrixPeer } from '../../tests/matrixFixture.js'
 import { hashFile } from '../../refit/helpers.js'
 import { readJSON } from '../../helpers.js'
 import { readSustainedRun } from '../parsers.js'
-import { readSustainedExecution, readSustainedSelection } from '../helpers.js'
+import { readSustainedExecution, readSustainedSelection, readSustainedPolicy } from '../helpers.js'
 import { readWorkload } from '../../build/helpers.js'
 import { inspectOracle, readOracle } from '../../endurance/helpers.js'
 import { Peer } from './Peer.js'
-import { runCommand, writeFixtureLabels, prepareRuntimeFixture } from './helpers.js'
+import {
+	runCommand,
+	writeFixtureLabels,
+	prepareRuntimeFixture,
+	prepareExploratoryFixture,
+} from './helpers.js'
 import { isRecord } from '@orkestrel/contract'
+
+it('executes exploratory sustained custody after qualified paired refusal and withholds capped rebuilt summaries', async () => {
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
+	mkdirSync(parent, { recursive: true })
+	const directory = mkdtempSync(join(parent, 'sustained-'))
+	const peer = new Peer(500)
+	const matrix = new MatrixPeer()
+	matrix.support = true
+	const url = await peer.start()
+	const matrixURL = await matrix.start()
+	try {
+		const { policy, runtime, evaluation } = await prepareExploratoryFixture(
+			directory,
+			peer,
+			url,
+			matrixURL,
+		)
+		const selection = join(directory, 'exploratory-selection.json')
+		assert.equal(
+			await runCommand('sustained', [
+				'select',
+				'--policy',
+				policy,
+				'--development',
+				runtime,
+				'--evaluation',
+				evaluation,
+				'--seed',
+				'17',
+				'--candidate',
+				join(directory, 'exploratory-development/candidate.json'),
+				'--out',
+				selection,
+			]),
+			0,
+		)
+		const selected = readSustainedSelection(selection)
+		assert.equal(selected.chosen, 'q4')
+		const incompatible = join(directory, 'accepted-policy.json')
+		writeFileSync(incompatible, JSON.stringify({ qualified: hashFile(selection), withhold: true }))
+		assert.throws(() => readSustainedPolicy(hashFile(incompatible)), /refused qualified/)
+		const changed = join(directory, 'changed-selection.json')
+		writeFileSync(
+			changed,
+			JSON.stringify({
+				...selected,
+				candidates: selected.candidates.map((candidate) => ({ ...candidate, key: 'g4' })),
+			}),
+		)
+		assert.throws(() => readSustainedSelection(changed), /ranking skipped/)
+		assert.equal(
+			await runCommand('sustained', [
+				'filing',
+				'--selection',
+				selection,
+				'--out',
+				join(directory, 'evaluation-filing'),
+				'--live',
+				'--url',
+				url,
+			]),
+			0,
+		)
+		peer.summary.enabled = false
+		assert.equal(
+			await runCommand('sustained', [
+				'evaluate',
+				'--selection',
+				selection,
+				'--classification',
+				join(directory, 'evaluation-filing/classification.json'),
+				'--out',
+				join(directory, 'exploratory-evaluation'),
+				'--live',
+				'--url',
+				url,
+			]),
+			0,
+		)
+		const held = readSustainedRun(join(directory, 'exploratory-evaluation/aggregate/run'))
+		assert.equal(held.rows.length, held.runtime.goals.length)
+		assert.deepEqual(held.errors, [])
+		assert.deepEqual(held.execution.policy, hashFile(policy))
+		console.log(`EXPLORATORY_SUSTAINED_FIXTURE ${directory}`)
+	} finally {
+		await peer.destroy()
+		await matrix.destroy()
+	}
+})
 
 it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a fresh refit, and retains late invalidity', async () => {
 	const parent = resolve('tmp/units/aggregate-runtime-fixtures')

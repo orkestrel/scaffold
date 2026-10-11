@@ -1,6 +1,11 @@
+import { Driver, parseFlags } from '../../Driver.js'
+import { Matrix } from '../../matrix/Matrix.js'
+import { Refit } from '../../refit/Refit.js'
+import { MatrixPeer } from '../matrixFixture.js'
+import { isMatrixResource } from '../../matrix/validators.js'
 import { buildSupportRows } from '../support/helpers.js'
 import type { MatrixDevelopment } from '../../matrix/types.js'
-import { readFrozen, buildBudget } from '../../matrix/helpers.js'
+import { readFrozen, readResource } from '../../matrix/helpers.js'
 import type { EvidenceCase, MembershipCase } from './types.js'
 import type {
 	RefitAttempt,
@@ -12,7 +17,7 @@ import type {
 	RefitOptions,
 	RefitVerdict,
 } from '../../refit/types.js'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createOllamaJudge } from '../../../vendor/ollama/index.js'
 import { AGREE_QUESTION } from '../../aggregates/constants.js'
@@ -28,135 +33,186 @@ import {
 } from '../../constants.js'
 import { buildSummaryKey, computeDigest, readJSON, readRows } from '../../helpers.js'
 import { REFIT_CONTROLS } from '../../refit/constants.js'
-import { buildRefitItem, hashFile, readRefitControls } from '../../refit/helpers.js'
+import {
+	buildRefitItem,
+	hashFile,
+	readRefitControls,
+	readRefitAssessment,
+	selectMajorityCutoff,
+} from '../../refit/helpers.js'
 import {
 	isRefitAttempt,
 	isRefitControl,
 	isRefitCorpus,
 	isRefitGeneration,
+	isRefitItem,
 } from '../../refit/validators.js'
 
-/** Writes inert predecessor artifacts while using the real successor freeze and policy validator. */
-export function writeDevelopmentFixture(
+/** Writes fresh calibration and actual cell resource/full evidence through existing operators. */
+export async function writeDevelopmentFixture(
 	directory: string,
 	frozenPath: string,
 	withhold?: boolean,
-): MatrixDevelopment {
-	const frozen = readFrozen(hashFile(frozenPath))
-	const previous = { ...frozen, census: frozen.seed }
-	const predecessor = join(directory, 'predecessor.json')
-	writeFileSync(predecessor, JSON.stringify(previous))
-	const packet = join(directory, 'packet.jsonl')
-	const labels = join(directory, 'labels.json')
-	const generation = join(directory, 'generation.json')
-	const diagnosis = join(directory, 'diagnosis.json')
-	const resource = join(directory, 'resource.json')
-	const full = join(directory, 'full.json')
-	writeFileSync(packet, '')
-	writeFileSync(labels, '{}')
-	writeFileSync(generation, JSON.stringify({ matrix: previous }))
-	writeFileSync(
-		diagnosis,
-		JSON.stringify({
-			accepted: false,
-			cutoff: 0.93,
+): Promise<MatrixDevelopment> {
+	const peer = new MatrixPeer()
+	peer.support = true
+	peer.agreement = 0.75
+	const url = await peer.start()
+	try {
+		const frozen = readFrozen(hashFile(frozenPath))
+		const resourcePath = join(directory, 'admission-resource')
+		if (
+			(await Matrix.execute([
+				'resource',
+				'--frozen',
+				frozenPath,
+				'--out',
+				resourcePath,
+				'--live',
+				'--url',
+				url,
+			])) !== 0
+		)
+			throw new Error('fixture resource preparation failed')
+		const resource = readResource(
+			hashFile(join(resourcePath, 'manifest.json')),
+			hashFile(frozenPath),
+		)
+		const attempt = resource.attempts.at(-1)
+		if (attempt === undefined || resource.budget === undefined)
+			throw new Error('fixture resource evidence missing')
+		const cache = join(directory, 'admission-seed-cache')
+		mkdirSync(cache)
+		writeFileSync(join(cache, 'judge.jsonl'), readFileSync(frozen.seed.path))
+		const fullPath = join(directory, 'admission-full')
+		await Matrix.execute([
+			'full',
+			'--frozen',
+			frozenPath,
+			'--resource',
+			join(resourcePath, 'manifest.json'),
+			'--out',
+			fullPath,
+			'--live',
+			'--url',
+			url,
+		])
+		const corpus = join(directory, 'admission-corpus')
+		const generation = join(directory, 'admission-generation')
+		const common = ['--frozen', frozenPath, '--model', frozen.summarizer.model]
+		if ((await Refit.run(['freeze', ...common, '--cache', cache, '--out', corpus])) !== 0)
+			throw new Error('fixture corpus freeze failed')
+		if (
+			(await Refit.run([
+				'generate',
+				...common,
+				'--corpus',
+				corpus,
+				'--cache',
+				join(directory, 'admission-generation-cache'),
+				'--out',
+				generation,
+				'--live',
+				'--url',
+				url,
+			])) !== 0
+		)
+			throw new Error('fixture generation failed')
+		const manifest = readJSON(join(generation, 'manifest.json'))
+		const packet = readRows(join(generation, 'packet.jsonl'))
+		if (!isRefitGeneration(manifest) || !packet.every(isRefitItem))
+			throw new Error('fixture generation malformed')
+		const labels = join(directory, 'admission-labels.json')
+		writeFileSync(
+			labels,
+			JSON.stringify({
+				authority: 'root-adjudicated',
+				corpus: manifest.corpus,
+				attempts: manifest.attempts,
+				packet: manifest.packet,
+				manifest: hashFile(join(generation, 'manifest.json')).hash,
+				labels: packet.map((item) => ({
+					id: item.id,
+					item: computeDigest(item),
+					verdict: 'supported',
+					propositions: [
+						{ text: item.candidate, verdict: 'supported', evidence: [item.sources[0]?.text ?? ''] },
+					],
+				})),
+			}),
+		)
+		const fitted = join(directory, 'admission-fit')
+		if (
+			(await Refit.run([
+				'fit',
+				...common,
+				'--corpus',
+				corpus,
+				'--attempts',
+				generation,
+				'--labels',
+				labels,
+				'--out',
+				fitted,
+			])) !== 3
+		)
+			throw new Error('fixture must retain a strict calibration refusal')
+		const diagnosis = hashFile(join(fitted, 'diagnosis.json'))
+		const agree = selectMajorityCutoff(readRefitAssessment(diagnosis))
+		if (agree === undefined) throw new Error('fixture exploratory cutoff absent')
+		const full = readJSON(join(fullPath, 'manifest.json'))
+		if (!isMatrixResource(full) || full.attempts[0] === undefined)
+			throw new Error('fixture full evidence absent')
+		return {
+			phase: 'development',
+			frozen: hashFile(frozenPath),
+			calibration: hashFile(frozenPath),
+			diagnosis,
+			labels: hashFile(labels),
+			packet: hashFile(join(generation, 'packet.jsonl')),
+			generation: hashFile(join(generation, 'manifest.json')),
+			resource: hashFile(join(resourcePath, 'manifest.json')),
+			full: hashFile(join(fullPath, 'manifest.json')),
+			agree,
 			change: 0.56,
-			preparation: {
-				manifest: hashFile(generation),
-				packet: hashFile(packet),
-				labels: hashFile(labels),
-				corpus: hashFile(packet),
-				attempts: hashFile(packet),
-			},
-		}),
-	)
-	const expanded = { reserve: 512, window: 1068663, ceiling: 262144, predict: 0 }
-	const resourceExecution = join(directory, 'resource-execution.json')
-	const fullExecution = join(directory, 'full-execution.json')
-	writeFileSync(
-		resourceExecution,
-		JSON.stringify({
-			protocol: 'l6',
-			key: 'q2',
-			think: false,
-			phase: 'resource',
-			arm: 'records',
-			copy: 1,
-			frozen: hashFile(predecessor),
-			budget: buildBudget(512),
-		}),
-	)
-	writeFileSync(
-		fullExecution,
-		JSON.stringify({
-			protocol: 'l6',
-			key: 'q2',
-			think: false,
-			phase: 'full',
-			arm: 'full',
-			copy: 1,
-			frozen: hashFile(predecessor),
-			budget: expanded,
-		}),
-	)
-	writeFileSync(
-		resource,
-		JSON.stringify({
-			protocol: 'l6',
-			frozen: hashFile(predecessor),
-			accepted: true,
-			budget: buildBudget(512),
-			attempts: [
-				{
-					execution: hashFile(resourceExecution),
-					run: directory,
-					budget: buildBudget(512),
-					accepted: true,
-					failures: [],
-					resource: false,
-					files: [],
-				},
-			],
-		}),
-	)
-	writeFileSync(
-		full,
-		JSON.stringify({
-			protocol: 'l6',
-			frozen: hashFile(predecessor),
-			accepted: false,
-			bound: { window: expanded.window },
-			attempts: [
-				{
-					execution: hashFile(fullExecution),
-					run: directory,
-					budget: expanded,
-					accepted: false,
-					failures: ['transport'],
-					resource: false,
-					files: [],
-				},
-			],
-		}),
-	)
-	return {
-		phase: 'development',
-		frozen: hashFile(frozenPath),
-		predecessor: hashFile(predecessor),
-		diagnosis: hashFile(diagnosis),
-		labels: hashFile(labels),
-		packet: hashFile(packet),
-		generation: hashFile(generation),
-		resource: hashFile(resource),
-		full: hashFile(full),
-		agree: 0.67,
-		change: 0.56,
-		selection: 'highest-grid-majority-occurrences-and-identities',
-		continuation: 'failed-goal-after-xml-function-parameter-error',
-		...(withhold === undefined ? {} : { withhold }),
-		limitation: 'seed-candidates-do-not-certify-diverged-history',
-		paired: buildBudget(512),
-		expanded,
+			selection: 'highest-grid-majority-occurrences-and-identities',
+			continuation: 'failed-goal-after-xml-function-parameter-error',
+			...(withhold === undefined ? {} : { withhold }),
+			limitation: 'seed-candidates-do-not-certify-diverged-history',
+			paired: resource.budget,
+			expanded: full.attempts[0].budget,
+		}
+	} finally {
+		await peer.destroy()
+	}
+}
+
+/** Writes real seed classification before the cell freeze binds its immutable bytes. */
+export async function writeDevelopmentSeed(directory: string, path: string): Promise<void> {
+	const peer = new MatrixPeer()
+	peer.support = true
+	peer.agreement = 0.75
+	const url = await peer.start()
+	try {
+		const cache = join(directory, 'seed-preparation-cache')
+		const config = parseFlags([
+			'--seed',
+			'--live',
+			'--copy',
+			'1',
+			'--fixture',
+			'--cache',
+			cache,
+			'--out',
+			join(directory, 'seed-preparation'),
+			'--url',
+			url,
+		])
+		if (!config.success) throw new Error(config.error)
+		await new Driver(config.value).execute()
+		writeFileSync(path, readFileSync(join(cache, 'judge.jsonl')), { flag: 'wx' })
+	} finally {
+		await peer.destroy()
 	}
 }
 

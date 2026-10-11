@@ -1,6 +1,7 @@
 import { it } from 'node:test'
 import type { MatrixDevelopment, MatrixExecution, MatrixOutcome } from '../types.js'
 import type { CallRole } from '../../types.js'
+import type { SustainedExecution } from '../../sustained/types.js'
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -29,7 +30,7 @@ it('admits only explicitly permitted measured capped summaries and preserves eve
 		const policy: MatrixDevelopment = {
 			phase: 'development',
 			frozen: reference,
-			predecessor: reference,
+			calibration: reference,
 			diagnosis: reference,
 			labels: reference,
 			packet: reference,
@@ -77,6 +78,47 @@ it('admits only explicitly permitted measured capped summaries and preserves eve
 		})
 		assert.equal(readRequestOutcome(request, policy.paired, frozen), 'refused')
 		assert.equal(matchesCappedSummary(request, frozen, execution, policy, false), true)
+		const study: SustainedExecution = {
+			protocol: 'e1',
+			key: 'q2',
+			think: false,
+			arm: 'aggregate',
+			phase: 'development',
+			frozen: reference,
+			resource: reference,
+			runtime: reference,
+			budget: policy.paired,
+			policy: reference,
+			limits: {
+				calls: 1,
+				tokens: 1000,
+				retries: 0,
+				wall: 1000,
+				goals: 1,
+				derivation: 'fixture',
+				evidence: [reference],
+			},
+		}
+		const route = { qualified: reference, withhold: true }
+		assert.equal(matchesCappedSummary(request, frozen, study, route, false), true)
+		assert.equal(
+			matchesCappedSummary(request, frozen, { ...study, phase: 'evaluation' }, route, false),
+			true,
+		)
+		assert.equal(
+			matchesCappedSummary(request, frozen, { ...study, phase: 'filing' }, route, false),
+			false,
+		)
+		assert.equal(
+			matchesCappedSummary(request, frozen, { ...study, policy: undefined }, route, false),
+			false,
+		)
+		assert.equal(
+			matchesCappedSummary(request, frozen, study, { ...route, withhold: false }, false),
+			false,
+		)
+		assert.equal(matchesCappedSummary(request, frozen, study, route, true), false)
+		assert.equal(matchesCappedSummary(request, frozen, study, route, false, 'earlier stop'), false)
 		for (const changed of [
 			{ sent: false },
 			{ status: 500 },

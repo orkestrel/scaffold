@@ -14,6 +14,7 @@ import type {
 	RefitItem,
 	RefitLabels,
 	RefitReading,
+	RefitPopulation,
 	RefitRecall,
 } from './types.js'
 import { createOllamaJudge } from '../../vendor/ollama/index.js'
@@ -278,19 +279,9 @@ export function fitReadings(
 	)
 		reasons.push('invalid score')
 	const occurrences = measureRecall(readings, cutoff ?? 1)
-	const identities = new Map<string, RefitReading>()
-	for (const reading of readings) {
-		const previous = identities.get(reading.identity)
-		if (
-			previous !== undefined &&
-			(previous.verdict !== reading.verdict ||
-				previous.lexical !== reading.lexical ||
-				previous.score !== reading.score)
-		)
-			reasons.push('inconsistent duplicate identity')
-		else identities.set(reading.identity, reading)
-	}
-	const distinct = measureRecall([...identities.values()], cutoff ?? 1)
+	const identities = collectRefitIdentities(readings)
+	reasons.push(...identities.errors)
+	const distinct = measureRecall(identities.readings, cutoff ?? 1)
 	if (occurrences.supported === 0) reasons.push('absent supported generated population')
 	if (occurrences.admission < 0.5) reasons.push('end-to-end admission below 0.5')
 	return {
@@ -568,6 +559,7 @@ export function computeRefitAssessment(
 			[...collectReadings(attempts, corpus.contexts, labels), ...controlReadings],
 			errors,
 		),
+		errors: [...new Set(errors)],
 		preparation,
 		custody: {
 			corpus: preparation.corpus.hash,
@@ -593,6 +585,53 @@ export function readRefitAssessment(reference: RefitFile): RefitAssessment {
 	if (!isDeepStrictEqual(value, JSON.parse(JSON.stringify(expected))))
 		throw new Error('refit diagnosis contradicts bound evidence')
 	return expected
+}
+
+/** Derives the highest declared grid cutoff admitting supported occurrences and identities.
+ * @param assessment - The fully recomputed assessment
+ * @returns The cutoff whose supported occurrence and identity admissions each reach one half, or absence when no grid member qualifies
+ */
+export function selectMajorityCutoff(assessment: RefitAssessment): number | undefined {
+	if (assessment.errors.length !== 0)
+		throw new Error('operational preparation failure cannot admit exploration')
+	for (const reading of assessment.readings) {
+		if (
+			(reading.lexical && reading.score === undefined) ||
+			(reading.score !== undefined &&
+				(!Number.isFinite(reading.score) || reading.score < 0 || reading.score > 1))
+		)
+			throw new Error('exploratory calibration has missing or invalid scores')
+	}
+	const identities = collectRefitIdentities(assessment.readings)
+	if (identities.errors.length !== 0)
+		throw new Error('exploratory calibration has inconsistent duplicate identity')
+	const cutoff = REFIT_GRID.findLast(
+		(candidate) =>
+			measureRecall(assessment.readings, candidate).admission >= 0.5 &&
+			measureRecall(identities.readings, candidate).admission >= 0.5,
+	)
+	return cutoff
+}
+
+/** Collects distinct support identities with the strict fitting engine's consistency rule.
+ * @param readings - The generated and archived support readings
+ * @returns The retained identity population and consistency errors
+ */
+export function collectRefitIdentities(readings: readonly RefitReading[]): RefitPopulation {
+	const identities = new Map<string, RefitReading>()
+	const errors: string[] = []
+	for (const reading of readings) {
+		const previous = identities.get(reading.identity)
+		if (
+			previous !== undefined &&
+			(previous.verdict !== reading.verdict ||
+				previous.lexical !== reading.lexical ||
+				previous.score !== reading.score)
+		)
+			errors.push('inconsistent duplicate identity')
+		else identities.set(reading.identity, reading)
+	}
+	return { readings: [...identities.values()], errors }
 }
 
 /** Measures only fresh sent requests and reports unmeasured historical boundaries.

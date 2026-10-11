@@ -131,7 +131,7 @@ export function isMatrixDevelopment(value: unknown): value is MatrixDevelopment 
 			value.accepted === undefined &&
 			[
 				'frozen',
-				'predecessor',
+				'calibration',
 				'diagnosis',
 				'labels',
 				'packet',
@@ -139,7 +139,9 @@ export function isMatrixDevelopment(value: unknown): value is MatrixDevelopment 
 				'resource',
 				'full',
 			].every((key) => isRefitFile(value[key])) &&
-			value.agree === 0.67 &&
+			isFiniteNumber(value.agree) &&
+			value.agree > 0.5 &&
+			value.agree <= 1 &&
 			value.change === 0.56 &&
 			value.selection === 'highest-grid-majority-occurrences-and-identities' &&
 			value.continuation === 'failed-goal-after-xml-function-parameter-error' &&
@@ -192,6 +194,13 @@ export function isMatrixRequest(value: unknown): value is MatrixRequest {
 			isFiniteNumber(value.started) &&
 			isFiniteNumber(value.finished) &&
 			value.finished >= value.started &&
+			(value.abort === undefined ||
+				((value.abort === 'wall' || value.abort === 'caller') &&
+					value.sent === true &&
+					isString(value.error) &&
+					value.buffered === undefined &&
+					value.response === undefined &&
+					value.capacity === undefined)) &&
 			(value.buffered === undefined ||
 				(isFiniteNumber(value.buffered) &&
 					value.buffered >= value.started &&

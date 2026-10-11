@@ -24,6 +24,9 @@ import {
 	SUSTAINED_RANK,
 	readClassification,
 	readSustainedSelection,
+	readSustainedPolicy,
+	readSustainedExploration,
+	verifyMatrixRefusal,
 	readPreparationFailure,
 	readPilotFeasibility,
 	buildEvaluationLimits,
@@ -32,7 +35,7 @@ import {
 import { isMatrixRequest } from '../matrix/validators.js'
 import { isRecord } from '@orkestrel/contract'
 import { readSustainedRun } from './parsers.js'
-import { isSustainedCandidate } from './validators.js'
+import { isSustainedCandidate, isSustainedExploration } from './validators.js'
 
 function write(path: string, value: unknown): void {
 	mkdirSync(dirname(path), { recursive: true })
@@ -101,6 +104,10 @@ export class Sustained {
 				evaluation: { type: 'string' },
 				candidate: { type: 'string', multiple: true },
 				selection: { type: 'string' },
+				policy: { type: 'string' },
+				exploration: { type: 'string' },
+				refusal: { type: 'string' },
+				withhold: { type: 'boolean', default: false },
 				seed: { type: 'string' },
 				url: { type: 'string', default: DAEMON },
 				live: { type: 'boolean', default: false },
@@ -114,6 +121,23 @@ export class Sustained {
 		const out = resolve(values.out)
 		if (existsSync(out)) throw new Error('phase output already exists; evidence cannot restart')
 		const runner = new Sustained()
+		if (phase === 'policy') {
+			if (values.selection === undefined)
+				throw new Error('policy requires a refused qualified --selection')
+			const qualified = hashFile(resolve(values.selection))
+			const selection = readSustainedSelection(qualified.path)
+			if (selection.accepted || selection.policy !== undefined)
+				throw new Error('policy requires a refused qualified selection')
+			write(out, { qualified, withhold: values.withhold })
+			readSustainedPolicy(hashFile(out))
+			return 0
+		}
+		const policy = values.policy === undefined ? undefined : hashFile(resolve(values.policy))
+		if (policy !== undefined) readSustainedPolicy(policy)
+		const exploration =
+			values.exploration === undefined ? undefined : readJSON(resolve(values.exploration))
+		if (exploration !== undefined && (!isSustainedExploration(exploration) || policy === undefined))
+			throw new Error('exploration requires valid evidence and explicit policy')
 		if (phase === 'select') {
 			if (
 				values.development === undefined ||
@@ -130,6 +154,7 @@ export class Sustained {
 				values.candidate,
 				Number(values.seed),
 				out,
+				policy,
 			)
 		}
 		if (phase === 'evaluate') {
@@ -160,6 +185,34 @@ export class Sustained {
 		if (frozen.think || !SUSTAINED_RANK.includes(frozen.key))
 			throw new Error('endurance uses ranked thinking-false configurations')
 		if (phase === 'candidate') {
+			if (policy !== undefined) {
+				const admission =
+					resource.accepted && exploration !== undefined
+						? readSustainedExploration(
+								{ policy, exploration, frozen: frozenRef, resource: resourceRef },
+								frozen,
+							)
+						: undefined
+				if (resource.accepted && (admission === undefined || admission.failures.length === 0))
+					throw new Error(
+						'exploratory candidate requires measured matrix/support refusal or actual paired development',
+					)
+				const candidate: SustainedCandidate = {
+					key: frozen.key,
+					frozen: frozenRef,
+					resource: resourceRef,
+					policy,
+					exploration,
+					classification: admission?.classification,
+					attempts: [],
+					accepted: false,
+					failures: admission?.failures ?? ['matrix resource infeasible'],
+				}
+				write(out, candidate)
+				return 3
+			}
+			const refusal = values.refusal === undefined ? undefined : hashFile(resolve(values.refusal))
+			if (refusal !== undefined) verifyMatrixRefusal(refusal, frozen)
 			const pilot = values.pilot === undefined ? undefined : hashFile(resolve(values.pilot))
 			const preparation =
 				values.preparation === undefined ? undefined : hashFile(resolve(values.preparation))
@@ -170,6 +223,7 @@ export class Sustained {
 			}
 			if (
 				resource.accepted &&
+				refusal === undefined &&
 				preparation === undefined &&
 				(pilot === undefined || readPilotFeasibility(pilot, frozenRef, resourceRef))
 			)
@@ -181,15 +235,18 @@ export class Sustained {
 				frozen: frozenRef,
 				resource: resourceRef,
 				pilot,
+				refusal,
 				preparation,
 				attempts: [],
 				accepted: false,
 				failures: [
-					preparation !== undefined
-						? 'development preparation infeasible'
-						: resource.accepted
-							? 'matrix pilot infeasible'
-							: 'matrix resource infeasible',
+					refusal !== undefined
+						? 'matrix strict calibration refused'
+						: preparation !== undefined
+							? 'development preparation infeasible'
+							: resource.accepted
+								? 'matrix pilot infeasible'
+								: 'matrix resource infeasible',
 				],
 			}
 			write(out, candidate)
@@ -224,23 +281,27 @@ export class Sustained {
 		if (phase === 'filing') return await runner.#filing(execution, out, values.url)
 		if (
 			phase !== 'development' ||
-			values.pilot === undefined ||
 			values.classification === undefined ||
-			values.fit === undefined
+			(policy === undefined
+				? values.pilot === undefined || values.fit === undefined
+				: exploration === undefined)
 		)
 			throw new Error('development requires --pilot --classification --fit')
-		const pilot = hashFile(resolve(values.pilot))
-		if (!readPilotFeasibility(pilot, frozenRef, resourceRef))
+		const pilot = values.pilot === undefined ? undefined : hashFile(resolve(values.pilot))
+		if (
+			policy === undefined &&
+			(pilot === undefined || !readPilotFeasibility(pilot, frozenRef, resourceRef))
+		)
 			throw new Error('development requires accepted exact matrix pilot')
 		const classification = hashFile(resolve(values.classification))
 		readClassification(classification, runtimeRef, frozenRef)
-		const fit = hashFile(resolve(values.fit))
+		const fit = values.fit === undefined ? undefined : hashFile(resolve(values.fit))
 		mkdirSync(out, { recursive: true })
 		const attempts: SustainedAttempt[] = []
 		for (const arm of ['records', 'aggregate'] as const)
 			attempts.push(
 				await runner.#attempt(
-					{ ...execution, arm, classification, fit },
+					{ ...execution, arm, classification, fit, policy, exploration },
 					join(out, arm),
 					values.url,
 				),
@@ -254,6 +315,8 @@ export class Sustained {
 			frozen: frozenRef,
 			resource: resourceRef,
 			pilot,
+			policy,
+			exploration,
 			classification,
 			fit,
 			attempts,
@@ -377,6 +440,7 @@ export class Sustained {
 		paths: readonly string[],
 		seed: number,
 		out: string,
+		policy?: RefitFile,
 	): number {
 		if (!Number.isSafeInteger(seed) || seed < 0)
 			throw new Error('seed must be a nonnegative safe integer')
@@ -399,6 +463,7 @@ export class Sustained {
 		}
 		const accepted = chosen?.accepted === true
 		const selection: SustainedSelection = {
+			policy,
 			protocol: 'e1',
 			development,
 			evaluation,
@@ -428,7 +493,7 @@ export class Sustained {
 			!selection.accepted ||
 			candidate === undefined ||
 			selection.limits === undefined ||
-			candidate.fit === undefined
+			(selection.policy === undefined && candidate.fit === undefined)
 		)
 			throw new Error('no feasible frozen evaluation choice')
 		const resource = readResource(candidate.resource, candidate.frozen)
@@ -455,6 +520,8 @@ export class Sustained {
 						classification,
 						fit: candidate.fit,
 						selection: selectionRef,
+						policy: selection.policy,
+						exploration: candidate.exploration,
 					},
 					join(out, arm),
 					url,

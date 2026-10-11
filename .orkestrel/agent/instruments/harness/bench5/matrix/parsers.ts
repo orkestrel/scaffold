@@ -18,6 +18,9 @@ import {
 	readFrozen,
 	readModelDigest,
 	readDevelopment,
+	permitsContinuation,
+	matchesCappedSummary,
+	readRequestOutcome,
 	isStoppedRequest,
 } from './helpers.js'
 import { isMatrixExecution, isMatrixRequest, isMatrixRow, isMatrixSelection } from './validators.js'
@@ -37,7 +40,8 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 		return undefined
 	const execution = info.execution
 	const frozen = readFrozen(execution.frozen)
-	if (execution.phase === 'development') readDevelopment(execution, frozen)
+	const development =
+		execution.phase === 'development' ? readDevelopment(execution, frozen) : undefined
 	if (execution.key !== frozen.key || execution.think !== frozen.think)
 		throw new Error('run decision identity differs from freeze')
 	if (!isDeepStrictEqual(info.frozen, frozen) || info.identity !== nameMatrix(execution))
@@ -61,7 +65,10 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 			: undefined
 	const failures: string[] = [...listCapacityFailures(requests, frozen, execution.budget)]
 	for (const row of rows) {
-		if (row.partial === true || row.error !== undefined)
+		if (
+			(row.partial === true || row.error !== undefined) &&
+			(development === undefined || !permitsContinuation(requests, frozen, execution, row.goal))
+		)
 			failures.push(`${row.goal}: incomplete or failed execution`)
 		if (row.sole > 0) failures.push(`${row.goal}: sole-carried summary token`)
 	}
@@ -79,7 +86,15 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 		!isDeepStrictEqual(info.goals, goals)
 	)
 		failures.push('incomplete or reordered trajectory')
-	if (info.status !== 'complete') failures.push(`run status ${info.status}`)
+	if (
+		info.status !==
+		(development === undefined
+			? 'complete'
+			: rows.some((row) => !row.success)
+				? 'development-failed-goals'
+				: 'development-complete')
+	)
+		failures.push(`run status ${info.status}`)
 	if (gauge === undefined || gauge.scale <= 0) failures.push('missing calibrated gauge')
 	if (isRecord(info.judge) && info.judge.transient !== 0) failures.push('transient judge fault')
 	if (info.sent !== requests.filter((request) => request.sent).length)
@@ -87,6 +102,20 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 	const turns = readRows(join(path, 'turns.jsonl'))
 	if (info.turns !== turns.length) failures.push('turn observation count mismatch')
 	for (const request of requests) {
+		const continued =
+			development !== undefined &&
+			request.goal !== undefined &&
+			permitsContinuation(requests, frozen, execution, request.goal)
+		const withheld =
+			development !== undefined &&
+			matchesCappedSummary(request, frozen, execution, development, false)
+		if (
+			development !== undefined &&
+			!continued &&
+			!withheld &&
+			readRequestOutcome(request, execution.budget, frozen) !== 'complete'
+		)
+			failures.push(`request ${request.sequence}: invalid exploratory completion`)
 		const resource = listResourceFailures(
 			request.role,
 			request.request,
@@ -99,7 +128,8 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 		)
 		if (!isDeepStrictEqual(resource, request.failures))
 			failures.push(`request ${request.sequence}: resource reading mismatch`)
-		for (const failure of resource) failures.push(`request ${request.sequence}: ${failure}`)
+		if (!continued)
+			for (const failure of resource) failures.push(`request ${request.sequence}: ${failure}`)
 		const usage = readWireReading({ body: request.request }, { text: request.response })
 		if (
 			request.prompt !== usage.prompt ||

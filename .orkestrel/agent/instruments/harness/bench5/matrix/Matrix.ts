@@ -1,19 +1,16 @@
 import type {
 	MatrixAttempt,
-	MatrixBound,
 	MatrixExecution,
 	MatrixFreeze,
 	MatrixFull,
 	MatrixPilot,
 	MatrixResource,
-	MatrixRun,
 } from './types.js'
 import type { PlanEntry } from '../types.js'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
-import { DEFAULT_LEDGER_LIMIT, estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import {
 	COPIES_DIR,
 	DAEMON,
@@ -23,13 +20,14 @@ import {
 	MODELS,
 	SAMPLER,
 } from '../constants.js'
-import { Driver, parseFlags, readCopy, readSettings } from '../Driver.js'
-import { buildSystem, describeError, readJSON } from '../helpers.js'
+import { Driver, parseFlags, readSettings } from '../Driver.js'
+import { describeError, readJSON } from '../helpers.js'
 import { hashFile } from '../refit/helpers.js'
 import { collectTransitions } from '../transitions/helpers.js'
 import { MATRIX_RESERVES, MATRIX_STAGES } from './constants.js'
 import {
 	buildBudget,
+	buildMatrixBound,
 	listMatrixPairFailures,
 	matchesMatrixExposure,
 	nameMatrix,
@@ -260,80 +258,6 @@ export class Matrix {
 		return 3
 	}
 
-	#bound(run: MatrixRun): MatrixBound {
-		const copy = readCopy(join(COPIES_DIR, 'v1.json'))
-		const copies = Array.from({ length: 8 }, (_value, at) =>
-			hashFile(join(COPIES_DIR, `v${at + 1}.json`)),
-		)
-		const scenarios = copies.map((entry) => readCopy(entry.path))
-		if (run.gauge === undefined)
-			throw new Error('full-view bound requires calibrated development pricing')
-		const seed = Math.max(
-			...scenarios.map((scenario) =>
-				estimateMessages([
-					{
-						id: 'system',
-						role: 'system',
-						content: buildSystem({ ledger: { system: scenario.system } }),
-					},
-					...scenario.seed.map((message, at) => ({ ...message, id: `seed-${at}` })),
-				]),
-			),
-		)
-		const requests = Math.max(
-			...scenarios.flatMap((scenario) =>
-				scenario.goals.map((goal) =>
-					estimateMessages([{ id: 'request', role: 'user', content: goal.request }]),
-				),
-			),
-		)
-		const payloads = scenarios.flatMap((scenario) => [
-			...Object.values(scenario.tables.tools).flatMap((table) => Object.values(table)),
-			...scenario.tables.lookups.map((lookup) => lookup.text),
-			scenario.seed.map((message) => message.content).join('\n'),
-		])
-		const payload = Math.max(
-			...payloads.map((content) => estimateMessages([{ id: 'tool', role: 'tool', content }])),
-		)
-		const sent = run.requests.filter(
-			(request) => request.role === 'agent' && request.goal !== undefined && request.sent,
-		)
-		const observed = Math.max(...sent.map((request) => request.prompt ?? 0))
-		const growth = Math.max(
-			run.execution.budget.reserve,
-			...run.rows.map((row) =>
-				estimateMessages([{ id: 'reply', role: 'assistant', content: row.reply }]),
-			),
-		)
-		// This is a declared finite empirical envelope. Preflight and every wire request still prove feasibility.
-		const window = Math.ceil(
-			(seed +
-				copy.goals.length *
-					(requests + (DEFAULT_LEDGER_LIMIT + 1) * (growth + payload + requests))) *
-				run.gauge.scale +
-				run.gauge.overhead +
-				observed +
-				run.execution.budget.reserve,
-		)
-		return {
-			scenario: hashFile(join(COPIES_DIR, 'v1.json')),
-			copies,
-			development: run.files,
-			gauge: run.gauge,
-			goals: copy.goals.length,
-			turns: DEFAULT_LEDGER_LIMIT + 1,
-			reserve: run.execution.budget.reserve,
-			seed,
-			requests,
-			payload,
-			growth,
-			observed,
-			window,
-			limitation:
-				'Finite empirical envelope from all copy inputs, largest reachable payload including the complete recall seed, declared turn/completion caps, calibrated pricing, and measured development output. It is not a tokenizer worst-case guarantee; complete copy-1 preflight and actual wire capacity checks must pass. No text is trimmed.',
-		}
-	}
-
 	async #full(path: string, resourcePath: string, out: string, url: string): Promise<number> {
 		const reference = hashFile(path)
 		const frozen = readFrozen(reference)
@@ -344,7 +268,7 @@ export class Matrix {
 			throw new Error('full-view preflight requires accepted records resource development')
 		const reading = parseMatrixRun(prior.run)
 		if (reading === undefined) throw new Error('missing complete records development trace')
-		const bound = this.#bound(reading)
+		const bound = buildMatrixBound(reading)
 		writeFileSync(join(out, 'bound.json'), `${JSON.stringify(bound, null, 2)}\n`, { flag: 'wx' })
 		const budget = {
 			...accepted.budget,

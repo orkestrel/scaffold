@@ -175,6 +175,12 @@ export interface RefitRecall {
 	readonly admission: number
 }
 
+/** Holds distinct support identities and their consistency failures. */
+export interface RefitPopulation {
+	readonly readings: readonly RefitReading[]
+	readonly errors: readonly string[]
+}
+
 /** Holds a refused or usable fit diagnosis. */
 export interface RefitDiagnosis {
 	readonly accepted: boolean
@@ -198,6 +204,8 @@ export interface RefitPreparation {
 
 /** Holds the reproducible fitted diagnosis and its underlying evidence. */
 export interface RefitAssessment extends RefitDiagnosis {
+	/** Retains preparation and cost failures independently of strict separation. */
+	readonly errors: readonly string[]
 	readonly preparation: RefitPreparation
 	readonly custody: {
 		readonly corpus: string

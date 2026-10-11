@@ -146,6 +146,7 @@ export interface SustainedInterval {
 
 /** Holds the private evidence-backed sustained-work comparison without an independence claim. */
 export interface SustainedReport {
+	readonly policy?: RefitFile
 	readonly protocol: 'e1'
 	readonly selection: RefitFile
 	readonly packet?: RefitFile

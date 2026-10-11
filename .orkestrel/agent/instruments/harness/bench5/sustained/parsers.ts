@@ -13,9 +13,11 @@ import {
 	measureMatrixCosts,
 	readAttempt,
 	readModelDigest,
+	readDevelopment,
 } from '../matrix/helpers.js'
 import {
 	isMatrixAttempt,
+	isMatrixExecution,
 	isMatrixRequest,
 	isMatrixResource,
 	isMatrixRow,
@@ -26,6 +28,7 @@ import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validat
 import { buildTimeline, parseAggregates } from '../shadow.js'
 import { INSTRUCTION_SUMMARIES } from '../aggregates/constants.js'
 import { readClassification, readSustainedExecution, readSustainedBoundary } from './helpers.js'
+import { parseMatrixRun } from '../matrix/parsers.js'
 import {
 	isSustainedClassification,
 	isSustainedExecution,
@@ -426,6 +429,26 @@ export function readSustainedPreparation(path: string): readonly SustainedPrepar
 				...(value.separated === false ? ['development fit does not separate'] : []),
 			],
 		}))
+	}
+	if (
+		isRecord(value) &&
+		isMatrixExecution(value.execution) &&
+		value.execution.phase === 'development'
+	) {
+		const run = parseMatrixRun(dirname(path))
+		if (run === undefined) throw new Error('exploratory matrix preparation lacks raw evidence')
+		const policy = readDevelopment(run.execution, run.frozen)
+		return [
+			...readSustainedPreparation(policy.diagnosis.path),
+			...readSustainedPreparation(policy.full.path),
+			{
+				identity: reference.hash,
+				phase: 'matrix',
+				files: [reference, ...run.files],
+				costs: measureMatrixCosts(run),
+				failures: run.failures,
+			},
+		]
 	}
 	const attempts = isMatrixResource(value)
 		? value.attempts

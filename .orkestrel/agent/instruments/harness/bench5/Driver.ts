@@ -13,6 +13,7 @@ import type {
 	MatrixSnapshot,
 	MatrixFailure,
 	MatrixRequest,
+	MatrixInterval,
 } from './matrix/types.js'
 import { createHash } from 'node:crypto'
 import type { RefitFile } from './refit/types.js'
@@ -127,13 +128,19 @@ import {
 	readFrozen,
 	permitsContinuation,
 	matchesCappedSummary,
+	matchesInterruptedTransport,
 } from './matrix/helpers.js'
 import { readWireReading } from './helpers.js'
 import { matchesSummaryBlock } from './helpers.js'
 import { collectSummaryBodies } from './aggregates/helpers.js'
 import { hashFile } from './refit/helpers.js'
 import { readBuild } from './build/helpers.js'
-import { readClassification, readSustainedExecution } from './sustained/helpers.js'
+import {
+	readClassification,
+	readSustainedExecution,
+	readSustainedPolicy,
+	readSustainedExploration,
+} from './sustained/helpers.js'
 import { projectCopy, measureText } from './endurance/helpers.js'
 import type { SustainedObservation, SustainedReceipt } from './sustained/types.js'
 
@@ -880,11 +887,21 @@ export class Driver {
 			execution?.phase === 'development'
 				? readDevelopment(execution, readFrozen(execution.frozen))
 				: undefined
+		const exploration =
+			this.#config.study?.policy === undefined
+				? undefined
+				: readSustainedExploration(this.#config.study, readFrozen(this.#config.study.frozen))
+		if (
+			exploration !== undefined &&
+			(exploration.fit === undefined || exploration.failures.length !== 0)
+		)
+			throw new Error('exploratory sustained fit unavailable')
 		const fit: Fit =
-			development === undefined
+			exploration?.fit ??
+			(development === undefined
 				? readFit(fitPath)
-				: { agree: development.agree, change: development.change, separated: false }
-		if (arm === 'aggregate' && development === undefined)
+				: { agree: development.agree, change: development.change, separated: false })
+		if (arm === 'aggregate' && development === undefined && exploration === undefined)
 			checks.push(this.#compare('fit.separated', fit.separated, true))
 		return { copy, settings, fit, goals, checks }
 	}
@@ -920,6 +937,9 @@ export class Driver {
 		let result: Response
 		let qualification: Error | undefined
 		let signal: AbortSignal | undefined
+		let deadline: AbortSignal | undefined
+		let combined: AbortSignal | undefined
+		let aborted: MatrixRequest['abort']
 		const turn = role === 'agent' && !this.#calibrating ? this.#turn : undefined
 		try {
 			const request = new Request(input, init)
@@ -943,17 +963,17 @@ export class Driver {
 			raw = JSON.parse(body)
 			sent = true
 			this.#sent += 1
+			deadline =
+				limits === undefined
+					? undefined
+					: AbortSignal.timeout(Math.max(1, limits.wall - (Date.now() - this.#started)))
+			combined =
+				deadline === undefined ? request.signal : AbortSignal.any([request.signal, deadline])
 			const response = await globalThis.fetch(request.url, {
 				method: request.method,
 				headers: request.headers,
 				body,
-				signal:
-					limits === undefined
-						? request.signal
-						: AbortSignal.any([
-								request.signal,
-								AbortSignal.timeout(Math.max(1, limits.wall - (Date.now() - this.#started))),
-							]),
+				signal: combined,
 			})
 			status = response.status
 			const bytes = new Uint8Array(await response.arrayBuffer())
@@ -968,6 +988,10 @@ export class Driver {
 			})
 		} catch (cause) {
 			error = describeError(cause)
+			if (sent && buffered === undefined && combined?.aborted === true) {
+				if (deadline?.aborted === true && combined.reason === deadline.reason) aborted = 'wall'
+				else if (signal?.aborted === true && combined.reason === signal.reason) aborted = 'caller'
+			}
 			throw cause
 		} finally {
 			const budget =
@@ -994,6 +1018,7 @@ export class Driver {
 			)
 				this.#exposed = true
 			const evidence: MatrixRequest = {
+				abort: aborted,
 				started,
 				buffered,
 				finished: Date.now(),
@@ -1018,7 +1043,12 @@ export class Driver {
 				role === 'judge' &&
 				sent &&
 				(error !== undefined || (status !== undefined && (status < 200 || status >= 300)))
-			if (role === 'agent' && sent && this.#config.frozen !== undefined) {
+			if (
+				role === 'agent' &&
+				sent &&
+				!matchesInterruptedTransport(evidence) &&
+				this.#config.frozen !== undefined
+			) {
 				try {
 					readCapacity(evidence, this.#config.frozen)
 				} catch {
@@ -1027,11 +1057,34 @@ export class Driver {
 			}
 			for (const failure of failures) this.#invalid.add(failure)
 			this.#observations.push({ ...evidence, failures })
+			const invocation = this.#config.study ?? this.#config.execution
+			const policy =
+				role !== 'summarizer' ||
+				!sent ||
+				this.#config.frozen === undefined ||
+				readRequestOutcome({ ...evidence, failures }, budget, this.#config.frozen) !== 'refused'
+					? undefined
+					: this.#config.study?.policy !== undefined
+						? readSustainedPolicy(this.#config.study.policy).policy
+						: this.#config.execution?.phase === 'development' && this.#config.frozen !== undefined
+							? readDevelopment(this.#config.execution, this.#config.frozen)
+							: undefined
+			const withheld =
+				this.#config.frozen !== undefined &&
+				matchesCappedSummary(
+					{ ...evidence, failures },
+					this.#config.frozen,
+					invocation,
+					policy,
+					signal?.aborted ?? true,
+					this.#stopped,
+				)
 			if (this.#config.study !== undefined) {
 				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
 				if (
 					!sent ||
 					(!transport &&
+						!withheld &&
 						readRequestOutcome(evidence, budget, this.#config.frozen) !== 'complete') ||
 					this.#tokensUsed > this.#config.study.limits.tokens ||
 					Date.now() - this.#started > this.#config.study.limits.wall
@@ -1059,24 +1112,12 @@ export class Driver {
 				sent &&
 				this.#config.frozen !== undefined &&
 				((role === 'agent' && failures.length !== 0) ||
-					(this.#config.execution?.phase === 'development' &&
+					((this.#config.execution?.phase === 'development' || this.#config.study !== undefined) &&
 						!transport &&
 						readRequestOutcome({ ...evidence, failures }, budget, this.#config.frozen) !==
 							'complete'))
 			) {
-				const execution = this.#config.execution
-				if (
-					this.#config.study === undefined &&
-					execution?.phase === 'development' &&
-					matchesCappedSummary(
-						{ ...evidence, failures },
-						this.#config.frozen,
-						execution,
-						readDevelopment(execution, this.#config.frozen),
-						signal?.aborted ?? true,
-						this.#stopped,
-					)
-				)
+				if (withheld && this.#stopped === undefined)
 					qualification = new Error(`local capped summary unavailable at request ${sequence}`)
 				else {
 					this.#stopped ??=
@@ -1450,6 +1491,7 @@ export class Driver {
 						}),
 						judge: cache,
 						fit,
+						study: this.#config.study,
 						development:
 							this.#config.execution?.phase === 'development' ? this.#config.execution : undefined,
 						settings,
@@ -2067,6 +2109,7 @@ export class Driver {
 	}
 
 	#report(out: string, prepared: Preparation, status: string, error: string | undefined): void {
+		const interval: MatrixInterval = { started: this.#started, finished: Date.now() }
 		const config = this.#config
 		writeFileSync(
 			join(out, FILES.run),
@@ -2126,7 +2169,8 @@ export class Driver {
 					checks: prepared.checks.map(({ name, equal }) => ({ name, equal })),
 					requests: this.#sequence,
 					walls: Object.fromEntries(this.#walls),
-					wall: Date.now() - this.#started,
+					...interval,
+					wall: interval.finished - interval.started,
 				},
 				null,
 				2,

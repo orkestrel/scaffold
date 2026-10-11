@@ -15,6 +15,7 @@ export class MatrixPeer {
 	missing = false
 	support = false
 	agreement: number | undefined
+	refused: string | undefined
 	escalations = false
 	fault = false
 	faults = 0
@@ -29,6 +30,7 @@ export class MatrixPeer {
 	decisions = 0
 	summary = { rebuild: false, topic: '', capped: false }
 	readonly #summaries = new Map<string, number>()
+	#topic: string | undefined
 	metadata = 200
 	flush = {
 		length: false,
@@ -123,11 +125,16 @@ export class MatrixPeer {
 							.includes(topic.slice(0, -1))))
 			const winner = noul ? (positive ? 'Yes' : 'No') : 'A'
 			const agreement =
-				this.agreement !== undefined &&
+				this.refused !== undefined &&
+				this.#topic === this.refused &&
 				(String(body.prompt).includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
 					String(body.prompt).includes(`Question: ${AGREE_QUESTION.instructions}\n`))
-					? this.agreement
-					: undefined
+					? 0.25
+					: this.agreement !== undefined &&
+						  (String(body.prompt).includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
+								String(body.prompt).includes(`Question: ${AGREE_QUESTION.instructions}\n`))
+						? this.agreement
+						: undefined
 			response.setHeader('content-type', 'application/json')
 			response.end(
 				JSON.stringify({
@@ -216,6 +223,7 @@ export class MatrixPeer {
 		)[0]
 		let summary = false
 		if (body.options.num_predict === 160 && title !== undefined) {
+			this.#topic = title
 			const count = (this.#summaries.get(title) ?? 0) + 1
 			this.#summaries.set(title, count)
 			summary = this.summary.rebuild && !this.summary.capped && count > 1

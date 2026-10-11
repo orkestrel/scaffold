@@ -39,6 +39,7 @@ export class Comparison {
 			throw new SustainedAuditError('accepted selection requires actual pair and root adjudication')
 		return {
 			protocol: 'e1',
+			policy: selection.policy,
 			selection: reference,
 			valid: false,
 			failures: selection.failures,
@@ -126,7 +127,15 @@ export class Comparison {
 				'A conservative gain with completed or repaired downstream work is absent overall or in the final interval.',
 			)
 		let recommendation: SustainedReport['recommendation'] = 'inconclusive'
-		if (valid && intervals.every((interval) => interval.exposure.majority)) {
+		if (input.selection.policy !== undefined)
+			reasons.push(
+				'Exploratory provenance does not qualify support or permit an adoption recommendation.',
+			)
+		if (
+			input.selection.policy === undefined &&
+			valid &&
+			intervals.every((interval) => interval.exposure.majority)
+		) {
 			if (reasons.length === 0) recommendation = 'conditional'
 			else if (overall.regressions.length > 0 || overall.gain.high <= 0 || final.gain.high <= 0)
 				recommendation = 'negative'
@@ -139,6 +148,7 @@ export class Comparison {
 		const aggregate = measureAuditCosts(input.aggregate)
 		return {
 			protocol: 'e1',
+			policy: input.selection.policy,
 			selection: input.reference,
 			packet: input.packet,
 			labels: input.labels,

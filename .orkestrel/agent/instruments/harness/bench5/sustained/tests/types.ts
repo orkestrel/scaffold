@@ -10,3 +10,9 @@ export interface SustainedFixture {
 	readonly classified: RefitFile
 	readonly fit: string
 }
+
+/** Holds a reached exploratory development pair and its source-bound policy. */
+export interface SustainedExploratoryFixture extends SustainedFixture {
+	readonly policy: string
+	readonly evaluation: string
+}

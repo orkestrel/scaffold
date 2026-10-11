@@ -1,6 +1,12 @@
 # The context and selection campaign for `@orkestrel/agent`
 
+The bounded aggregate repair is accepted after independent review, scoped gates, complete runtime proof, and canonical live-build equality. Commit and push the verified source, then run the checked fixed l14 calibration sequence with no further harness audit. Keep that source/build frozen through measurement. Downstream Toolbox and Ollama uploads are authorized and accepted by npm; confirm the registry and finish Desk's re-pin in parallel. Supervisor and Tactica remain excluded. See [the downstream record](../release.md#agent-0030-downstream-re-pins).
+
 ## Immediate measurement milestone
+
+The agent 0.0.30 publication record is complete on scaffold main at `8252622`. Keep subsequent aggregate source, measurements, and decisions on the session branch. Desk remains dependent on its owner's X2-compatible Ollama publication.
+
+Parallelize independent opaque labeling after each fixed generation closes; keep generation arguments immutable and withhold root adjudication and fitting until the complete generation sequence closes. This scheduling change supplies no feedback to generation and changes no calibration criterion.
 
 L13 records, aggregate, and full view have closed on source `0913a0966`, with all 24 planned goal rows per arm. The combined blind audit and mechanical join are accepted: correct content is 12/24, 10/24, and 7/24; completed work is 3/24, 4/24, and 4/24. Records and aggregate each retain one ambiguous content/completion judgment. Root read every reason; no verdict changed after unblinding. See [the sealed comparison](instruments/units/aggregates/reports/resumption-l13-quality/README.md) and root `RESULTS.md`.
 

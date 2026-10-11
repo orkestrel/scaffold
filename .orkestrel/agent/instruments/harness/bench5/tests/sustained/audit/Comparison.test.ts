@@ -71,6 +71,26 @@ test('positive gains without completed or repaired downstream work remain inconc
 	])
 })
 
+test('refuses conditional adoption from exploratory provenance despite every positive quality condition', () => {
+	const input = buildComparisonInput(buildAuditFixture())
+	assert.equal(new Comparison().build(input).recommendation, 'conditional')
+	const policy = { ...AUDIT_REFERENCE, path: 'exploratory-policy.json' }
+	const report = new Comparison().build({
+		...input,
+		selection: { ...input.selection, policy },
+		records: { ...input.records, execution: { ...input.records.execution, policy } },
+		aggregate: { ...input.aggregate, execution: { ...input.aggregate.execution, policy } },
+	})
+	assert.equal(report.valid, true)
+	assert.deepEqual(report.policy, policy)
+	assert.equal(report.recommendation, 'inconclusive')
+	assert.ok(
+		report.reasons.includes(
+			'Exploratory provenance does not qualify support or permit an adoption recommendation.',
+		),
+	)
+})
+
 test('a missed packet control invalidates products in every reporting interval', () => {
 	const fixture = buildAuditFixture()
 	const key = fixture.blind.keys.find((entry) => entry.control?.verdict === 'stale')

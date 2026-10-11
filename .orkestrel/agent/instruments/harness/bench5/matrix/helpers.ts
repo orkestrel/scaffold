@@ -1,5 +1,6 @@
 import type {
 	MatrixAttempt,
+	MatrixBound,
 	MatrixBudget,
 	MatrixCosts,
 	MatrixExecution,
@@ -16,14 +17,19 @@ import type {
 	MatrixModel,
 	MatrixCapacity,
 } from './types.js'
+import type { SustainedExecution, SustainedPolicy } from '../sustained/types.js'
 import type { RefitFile } from '../refit/types.js'
 import type { CallRole, Copy } from '../types.js'
 import { readdirSync, readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { join, relative, resolve } from 'node:path'
+import { join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
-import { LEDGER_SCALE_DRIFT } from '../../vendor/agent-0.0.30-trimmed/index.js'
+import {
+	LEDGER_SCALE_DRIFT,
+	DEFAULT_LEDGER_LIMIT,
+	estimateMessages,
+} from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { readCopy } from '../Driver.js'
 import {
 	COPIES_DIR,
@@ -35,6 +41,7 @@ import {
 	SAMPLER,
 } from '../constants.js'
 import {
+	buildSystem,
 	matchesExposure,
 	describeError,
 	matchesSummaryBlock,
@@ -44,7 +51,12 @@ import {
 } from '../helpers.js'
 import { INSTRUCTION_SUMMARIES, SUMMARIES_HEADING } from '../aggregates/constants.js'
 import { collectSummaryBodies, countSoleTokens } from '../aggregates/helpers.js'
-import { hashFile, verifyFiles } from '../refit/helpers.js'
+import {
+	hashFile,
+	verifyFiles,
+	readRefitAssessment,
+	selectMajorityCutoff,
+} from '../refit/helpers.js'
 import { MATRIX_ADMISSION, MATRIX_RESERVES } from './constants.js'
 import {
 	isMatrixAttempt,
@@ -56,8 +68,9 @@ import {
 	isMatrixSnapshot,
 } from './validators.js'
 import { parseMatrixRun } from './parsers.js'
+import { isSustainedPolicy } from '../sustained/validators.js'
 import { BUILD, readBuild } from '../build/helpers.js'
-import { isRefitFile } from '../refit/validators.js'
+import { isRefitGeneration } from '../refit/validators.js'
 
 /** Reads all hash-bound deployment evidence supplied by root. */
 export function readDeployment(reference: RefitFile): MatrixDeployment {
@@ -194,9 +207,11 @@ export function listCapacityFailures(
 		finished = request.finished
 		if (request.role !== 'agent' || !request.sent) continue
 		try {
-			const capacity = readCapacity(request, frozen)
-			if ((capacity.window ?? 0) < budget.ceiling)
-				failures.push(`request ${request.sequence}: loaded capacity below frozen ceiling`)
+			if (!matchesInterruptedTransport(request)) {
+				const capacity = readCapacity(request, frozen)
+				if ((capacity.window ?? 0) < budget.ceiling)
+					failures.push(`request ${request.sequence}: loaded capacity below frozen ceiling`)
+			}
 		} catch (error) {
 			failures.push(`request ${request.sequence}: ${String(error)}`)
 		}
@@ -209,6 +224,19 @@ export function listCapacityFailures(
 			failures.push(`request ${request.sequence}: decision sampler differs`)
 	}
 	return failures
+}
+
+/** Checks whether transport failed before a response could require an immediate observation.
+ * @param request - Retained HTTP boundary evidence
+ * @returns True only for an errored transport with no buffered response or capacity
+ */
+export function matchesInterruptedTransport(request: MatrixRequest): boolean {
+	return (
+		request.error !== undefined &&
+		request.buffered === undefined &&
+		request.response === undefined &&
+		request.capacity === undefined
+	)
 }
 
 /** Includes every retained raw snapshot in the run's custody population. */
@@ -416,7 +444,88 @@ export function readAttempt(attempt: MatrixAttempt): MatrixRun | undefined {
 	return run
 }
 
-/** Validates development custody without requalifying historical source or calibration. */
+/** Computes the unchanged finite full-view bound from its actual records resource run.
+ * @param run - The measured records resource run
+ * @returns Its finite empirical envelope
+ */
+export function buildMatrixBound(run: MatrixRun): MatrixBound {
+	const copy = readCopy(join(COPIES_DIR, 'v1.json'))
+	const copies = Array.from({ length: 8 }, (_value, at) =>
+		hashFile(join(COPIES_DIR, `v${at + 1}.json`)),
+	)
+	const scenarios = copies.map((entry) => readCopy(entry.path))
+	if (run.gauge === undefined)
+		throw new Error('full-view bound requires calibrated development pricing')
+	const seed = Math.max(
+		...scenarios.map((scenario) =>
+			estimateMessages([
+				{
+					id: 'system',
+					role: 'system',
+					content: buildSystem({ ledger: { system: scenario.system } }),
+				},
+				...scenario.seed.map((message, at) => ({ ...message, id: `seed-${at}` })),
+			]),
+		),
+	)
+	const requests = Math.max(
+		...scenarios.flatMap((scenario) =>
+			scenario.goals.map((goal) =>
+				estimateMessages([{ id: 'request', role: 'user', content: goal.request }]),
+			),
+		),
+	)
+	const payloads = scenarios.flatMap((scenario) => [
+		...Object.values(scenario.tables.tools).flatMap((table) => Object.values(table)),
+		...scenario.tables.lookups.map((lookup) => lookup.text),
+		scenario.seed.map((message) => message.content).join('\n'),
+	])
+	const payload = Math.max(
+		...payloads.map((content) => estimateMessages([{ id: 'tool', role: 'tool', content }])),
+	)
+	const sent = run.requests.filter(
+		(request) => request.role === 'agent' && request.goal !== undefined && request.sent,
+	)
+	const observed = Math.max(...sent.map((request) => request.prompt ?? 0))
+	const growth = Math.max(
+		run.execution.budget.reserve,
+		...run.rows.map((row) =>
+			estimateMessages([{ id: 'reply', role: 'assistant', content: row.reply }]),
+		),
+	)
+	// This is a declared finite empirical envelope. Preflight and every wire request still prove feasibility.
+	const window = Math.ceil(
+		(seed +
+			copy.goals.length * (requests + (DEFAULT_LEDGER_LIMIT + 1) * (growth + payload + requests))) *
+			run.gauge.scale +
+			run.gauge.overhead +
+			observed +
+			run.execution.budget.reserve,
+	)
+	return {
+		scenario: hashFile(join(COPIES_DIR, 'v1.json')),
+		copies,
+		development: run.files,
+		gauge: run.gauge,
+		goals: copy.goals.length,
+		turns: DEFAULT_LEDGER_LIMIT + 1,
+		reserve: run.execution.budget.reserve,
+		seed,
+		requests,
+		payload,
+		growth,
+		observed,
+		window,
+		limitation:
+			'Finite empirical envelope from all copy inputs, largest reachable payload including the complete recall seed, declared turn/completion caps, calibrated pricing, and measured development output. It is not a tokenizer worst-case guarantee; complete copy-1 preflight and actual wire capacity checks must pass. No text is trimmed.',
+	}
+}
+
+/** Validates fresh calibration and cell-specific development custody.
+ * @param execution - The explicit exploratory copy-1 execution
+ * @param frozen - The validated target cell freeze
+ * @returns The policy with its independently recomputed cutoff and budgets
+ */
 export function readDevelopment(
 	execution: MatrixExecution,
 	frozen: MatrixFreeze,
@@ -424,131 +533,94 @@ export function readDevelopment(
 	if (
 		!isMatrixExecution(execution) ||
 		execution.phase !== 'development' ||
-		execution.development === undefined
+		execution.copy !== 1 ||
+		execution.development === undefined ||
+		execution.key !== frozen.key ||
+		execution.think !== frozen.think
 	)
-		throw new Error('development execution required')
-	if (execution.key !== frozen.key || execution.think !== frozen.think)
-		throw new Error('development execution identity differs from freeze')
+		throw new Error('exact copy-1 development execution required')
+	if (!isDeepStrictEqual(frozen, readFrozen(execution.frozen)))
+		throw new Error('development frozen identity differs from exact cell custody')
 	verifyFiles([execution.development])
 	const policy = readJSON(execution.development.path)
-	if (
-		!isMatrixDevelopment(policy) ||
-		!isDeepStrictEqual(policy.frozen, execution.frozen) ||
-		policy.frozen.hash === policy.predecessor.hash
-	)
-		throw new Error('invalid development policy or successor freeze')
-	verifyFiles([
-		policy.predecessor,
-		policy.diagnosis,
-		policy.labels,
-		policy.packet,
-		policy.generation,
-		policy.resource,
-		policy.full,
-	])
-	const previous = readJSON(policy.predecessor.path)
-	if (!isMatrixFreeze(previous)) throw new Error('invalid development predecessor')
-	const identities: ReadonlyArray<keyof MatrixFreeze> = [
-		'key',
-		'think',
-		'decision',
+	if (!isMatrixDevelopment(policy) || !isDeepStrictEqual(policy.frozen, execution.frozen))
+		throw new Error('development policy belongs to another cell')
+	verifyFiles([policy.diagnosis, policy.labels, policy.packet, policy.generation])
+	const calibration = readFrozen(policy.calibration)
+	const shared: ReadonlyArray<keyof MatrixFreeze> = [
 		'summarizer',
 		'judge',
-		'seed',
+		'files',
 		'settings',
+		'seed',
 		'configuration',
-		'deployment',
 	]
-	for (const key of identities)
-		if (!isDeepStrictEqual(previous[key], frozen[key]))
-			throw new Error(`development ${key} changed`)
-	// Execution and constructor admission are reviewed directly; all semantic inputs retain their bytes.
-	const changed = [
-		'.build/build-manifest.json',
-		'bench5/types.ts',
-		'bench5/Driver.ts',
-		'bench5/aggregates/Aggregator.ts',
-		'bench5/matrix/types.ts',
-		'bench5/matrix/validators.ts',
-		'bench5/matrix/helpers.ts',
-		'bench5/matrix/parsers.ts',
-		'bench5/matrix/Comparison.ts',
-		'bench5/matrix/Matrix.ts',
-	]
-	if (previous.files.length !== frozen.files.length)
-		throw new Error('development source population changed')
-	for (const file of previous.files) {
-		const successor = frozen.files.find((entry) => resolve(entry.path) === resolve(file.path))
-		if (successor === undefined) throw new Error('development source membership changed')
-		if (
-			!changed.includes(relative(HARNESS, file.path).replaceAll('\\', '/')) &&
-			file.hash !== successor.hash
-		)
-			throw new Error(`development semantic input changed: ${file.path}`)
-	}
-	const diagnosis = readJSON(policy.diagnosis.path)
+	for (const key of shared)
+		if (!isDeepStrictEqual(calibration[key], frozen[key]))
+			throw new Error(`development calibration ${key} differs from cell`)
+	const assessment = readRefitAssessment(policy.diagnosis)
 	const generation = readJSON(policy.generation.path)
 	if (
-		!isRecord(diagnosis) ||
-		diagnosis.accepted !== false ||
-		diagnosis.cutoff !== 0.93 ||
-		diagnosis.change !== policy.change ||
-		!isRecord(diagnosis.preparation) ||
-		!isDeepStrictEqual(diagnosis.preparation.manifest, policy.generation) ||
-		!isDeepStrictEqual(diagnosis.preparation.packet, policy.packet) ||
-		!isDeepStrictEqual(diagnosis.preparation.labels, policy.labels) ||
-		!isRefitFile(diagnosis.preparation.corpus) ||
-		!isRefitFile(diagnosis.preparation.attempts) ||
-		!isRecord(generation) ||
-		!isDeepStrictEqual(generation.matrix, previous)
+		assessment.accepted ||
+		assessment.errors.length !== 0 ||
+		!isDeepStrictEqual(assessment.preparation.manifest, policy.generation) ||
+		!isDeepStrictEqual(assessment.preparation.packet, policy.packet) ||
+		!isDeepStrictEqual(assessment.preparation.labels, policy.labels) ||
+		!isRefitGeneration(generation) ||
+		!generation.complete ||
+		generation.errors.length !== 0 ||
+		generation.sustained !== undefined ||
+		!isDeepStrictEqual(generation.matrix, calibration) ||
+		generation.model !== calibration.summarizer.model ||
+		!isDeepStrictEqual(generation.settings, calibration.configuration) ||
+		assessment.change !== policy.change ||
+		selectMajorityCutoff(assessment) !== policy.agree
 	)
-		throw new Error('development refusal or calibration custody differs')
-	verifyFiles([diagnosis.preparation.corpus, diagnosis.preparation.attempts])
-	const resource = readJSON(policy.resource.path)
+		throw new Error('development cutoff or fresh calibration custody differs')
+	const resource = readResource(policy.resource, policy.frozen)
+	const previous = resource.attempts.at(-1)
+	if (!resource.accepted || previous === undefined || resource.budget === undefined)
+		throw new Error('development requires accepted cell resource evidence')
+	const records = readAttempt(previous)
+	if (records === undefined) throw new Error('development resource lacks raw evidence')
+	const bound = buildMatrixBound(records)
+	verifyFiles([policy.full])
 	const full = readJSON(policy.full.path)
-	if (
-		!isMatrixResource(resource) ||
-		!resource.accepted ||
-		!isDeepStrictEqual(resource.frozen, policy.predecessor) ||
-		resource.attempts.length === 0 ||
-		resource.attempts.at(-1)?.accepted !== true ||
-		!isDeepStrictEqual(resource.attempts.at(-1)?.budget, policy.paired) ||
-		!isDeepStrictEqual(resource.budget, policy.paired) ||
-		!isDeepStrictEqual(policy.paired, buildBudget(512)) ||
-		!isMatrixResource(full) ||
-		full.accepted ||
-		full.attempts.length !== 1 ||
-		!isRecord(full) ||
-		!isDeepStrictEqual(full.frozen, policy.predecessor) ||
-		!isRecord(full.bound) ||
-		full.bound.window !== policy.expanded.window ||
-		!isDeepStrictEqual(full.attempts.at(-1)?.budget, policy.expanded) ||
-		!isDeepStrictEqual(policy.expanded, {
-			reserve: 512,
-			window: 1068663,
-			ceiling: 262144,
-			predict: 0,
-		})
-	)
-		throw new Error('development declared budget provenance differs')
-	for (const attempt of [...resource.attempts, ...full.attempts]) {
-		verifyFiles([attempt.execution, ...attempt.files])
-		const prior = readJSON(attempt.execution.path)
-		if (
-			!isMatrixExecution(prior) ||
-			!isDeepStrictEqual(prior.frozen, policy.predecessor) ||
-			!isDeepStrictEqual(prior.budget, attempt.budget) ||
-			prior.copy !== 1 ||
-			(resource.attempts.includes(attempt)
-				? prior.phase !== 'resource' || prior.arm !== 'records'
-				: prior.phase !== 'full' || prior.arm !== 'full')
-		)
-			throw new Error('development predecessor execution custody differs')
+	const expanded: MatrixBudget = {
+		...resource.budget,
+		window: bound.window,
+		ceiling: Math.min(
+			bound.window,
+			readDeploymentModel(readDeployment(frozen.deployment), frozen.decision).context,
+		),
 	}
 	if (
-		!isDeepStrictEqual(execution.budget, execution.arm === 'full' ? policy.expanded : policy.paired)
+		!isMatrixResource(full) ||
+		!isRecord(full) ||
+		!isDeepStrictEqual(full.frozen, policy.frozen) ||
+		!isDeepStrictEqual(full.bound, bound) ||
+		full.attempts.length !== 1 ||
+		!isDeepStrictEqual(policy.paired, resource.budget) ||
+		!isDeepStrictEqual(policy.expanded, expanded)
 	)
-		throw new Error('development execution budget differs')
+		throw new Error('development resource or full-bound custody differs')
+	const attempt = full.attempts[0]
+	if (attempt === undefined) throw new Error('development full-view attempt absent')
+	const run = readAttempt(attempt)
+	verifyMatrixFeasibility(run)
+	if (
+		run === undefined ||
+		run.execution.phase !== 'full' ||
+		run.execution.arm !== 'full' ||
+		run.execution.copy !== 1 ||
+		!isDeepStrictEqual(run.execution.frozen, policy.frozen) ||
+		!isDeepStrictEqual(run.execution.resource, policy.resource) ||
+		!isDeepStrictEqual(run.execution.budget, expanded) ||
+		full.accepted !== attempt.accepted ||
+		(full.accepted && !isDeepStrictEqual(full.budget, expanded)) ||
+		!isDeepStrictEqual(execution.budget, execution.arm === 'full' ? expanded : resource.budget)
+	)
+		throw new Error('development full-view or execution budget differs')
 	return policy
 }
 
@@ -892,17 +964,21 @@ export function readRequestOutcome(
 export function matchesCappedSummary(
 	request: MatrixRequest,
 	frozen: MatrixFreeze,
-	execution: MatrixExecution | undefined,
-	policy: MatrixDevelopment | undefined,
+	execution: MatrixExecution | SustainedExecution | undefined,
+	policy: MatrixDevelopment | SustainedPolicy | undefined,
 	aborted: boolean,
 	stopped?: string,
 ): boolean {
 	if (
 		aborted ||
 		stopped !== undefined ||
-		execution?.phase !== 'development' ||
-		!isMatrixDevelopment(policy) ||
-		policy.withhold !== true ||
+		execution === undefined ||
+		(execution.protocol === 'l6'
+			? execution.phase !== 'development' || !isMatrixDevelopment(policy)
+			: execution.phase === 'filing' ||
+				execution.policy === undefined ||
+				!isSustainedPolicy(policy)) ||
+		policy?.withhold !== true ||
 		request.role !== 'summarizer' ||
 		!isRecord(request.request) ||
 		request.request.model !== frozen.summarizer.model ||

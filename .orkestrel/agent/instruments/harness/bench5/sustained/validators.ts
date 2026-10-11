@@ -1,5 +1,7 @@
 import type {
 	SustainedAttempt,
+	SustainedPolicy,
+	SustainedExploration,
 	SustainedCandidate,
 	SustainedClassification,
 	SustainedExecution,
@@ -15,6 +17,31 @@ import { isMatrixBudget } from '../matrix/validators.js'
 
 function isCount(value: unknown): value is number {
 	return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+}
+
+/** Checks an explicit exploratory route without duplicate qualification claims. */
+export function isSustainedPolicy(value: unknown): value is SustainedPolicy {
+	return (
+		isRecord(value) &&
+		Object.keys(value).every((key) => ['qualified', 'withhold'].includes(key)) &&
+		isRefitFile(value.qualified) &&
+		typeof value.withhold === 'boolean'
+	)
+}
+
+/** Checks exactly one form of matrix exposure and optional refused-candidate diagnosis. */
+export function isSustainedExploration(value: unknown): value is SustainedExploration {
+	return (
+		isRecord(value) &&
+		Object.keys(value).every((key) => ['matrix', 'diagnosis'].includes(key)) &&
+		(value.diagnosis === undefined || isRefitFile(value.diagnosis)) &&
+		isRecord(value.matrix) &&
+		('pilot' in value.matrix
+			? Object.keys(value.matrix).length === 1 && isRefitFile(value.matrix.pilot)
+			: Object.keys(value.matrix).length === 2 &&
+				isRefitFile(value.matrix.records) &&
+				isRefitFile(value.matrix.aggregate))
+	)
 }
 
 /** Checks finite whole-run limits. */
@@ -48,6 +75,8 @@ export function isSustainedExecution(value: unknown): value is SustainedExecutio
 				'classification',
 				'fit',
 				'selection',
+				'policy',
+				'exploration',
 			].includes(key),
 		) &&
 		value.protocol === 'e1' &&
@@ -60,7 +89,9 @@ export function isSustainedExecution(value: unknown): value is SustainedExecutio
 		isRefitFile(value.runtime) &&
 		isMatrixBudget(value.budget) &&
 		isSustainedLimits(value.limits) &&
-		['classification', 'fit', 'selection'].every(
+		(value.exploration === undefined ||
+			(isRefitFile(value.policy) && isSustainedExploration(value.exploration))) &&
+		['classification', 'fit', 'selection', 'policy'].every(
 			(key) => value[key] === undefined || isRefitFile(value[key]),
 		)
 	)
@@ -101,7 +132,9 @@ export function isSustainedCandidate(value: unknown): value is SustainedCandidat
 		isString(value.key) &&
 		isRefitFile(value.frozen) &&
 		isRefitFile(value.resource) &&
-		['pilot', 'classification', 'fit', 'preparation'].every(
+		(value.exploration === undefined ||
+			(isRefitFile(value.policy) && isSustainedExploration(value.exploration))) &&
+		['pilot', 'classification', 'fit', 'preparation', 'refusal', 'policy'].every(
 			(key) => value[key] === undefined || isRefitFile(value[key]),
 		) &&
 		arrayOf(isSustainedAttempt)(value.attempts) &&
@@ -115,6 +148,7 @@ export function isSustainedSelection(value: unknown): value is SustainedSelectio
 	return (
 		isRecord(value) &&
 		value.protocol === 'e1' &&
+		(value.policy === undefined || isRefitFile(value.policy)) &&
 		isRefitFile(value.development) &&
 		isRefitFile(value.evaluation) &&
 		arrayOf(isSustainedCandidate)(value.candidates) &&

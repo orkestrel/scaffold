@@ -8,10 +8,40 @@ import type {
 	MatrixRow,
 } from '../matrix/types.js'
 import type { RefitFile } from '../refit/types.js'
-import type { SelectionRecord } from '../types.js'
+import type { Fit, SelectionRecord } from '../types.js'
 
 /** Names one arm of the continuous held-out comparison. */
 export type SustainedArm = 'records' | 'aggregate'
+
+/** Binds exploratory continuation to a refused qualified sustained selection. */
+export interface SustainedPolicy {
+	readonly qualified: RefitFile
+	readonly withhold: boolean
+}
+
+/** Binds matrix exposure and independent endurance support calibration. */
+export interface SustainedExploration {
+	readonly matrix:
+		| { readonly pilot: RefitFile }
+		| {
+				readonly records: RefitFile
+				readonly aggregate: RefitFile
+		  }
+	readonly diagnosis?: RefitFile
+}
+
+/** Holds the independently validated qualified prerequisite of an exploratory route. */
+export interface SustainedPrerequisite {
+	readonly policy: SustainedPolicy
+	readonly selection: SustainedSelection
+}
+
+/** Holds independent scenario admission and measured candidate failures. */
+export interface SustainedAdmission {
+	readonly fit?: Fit
+	readonly classification?: RefitFile
+	readonly failures: readonly string[]
+}
 
 /** Holds finite whole-trajectory limits frozen before its first request. */
 export interface SustainedLimits {
@@ -50,6 +80,8 @@ export interface SustainedExecution {
 	readonly classification?: RefitFile
 	readonly fit?: RefitFile
 	readonly selection?: RefitFile
+	readonly policy?: RefitFile
+	readonly exploration?: SustainedExploration
 }
 
 /** Holds a complete or explicitly refused development trajectory. */
@@ -65,6 +97,9 @@ export interface SustainedAttempt {
 
 /** Holds one ranked candidate's feasibility evidence without answer-quality results. */
 export interface SustainedCandidate {
+	readonly policy?: RefitFile
+	readonly exploration?: SustainedExploration
+	readonly refusal?: RefitFile
 	readonly key: string
 	readonly frozen: RefitFile
 	readonly resource: RefitFile
@@ -79,6 +114,7 @@ export interface SustainedCandidate {
 
 /** Freezes the feasibility-only choice, held-out runtime, arm order, and execution limits. */
 export interface SustainedSelection {
+	readonly policy?: RefitFile
 	readonly protocol: 'e1'
 	readonly development: RefitFile
 	readonly evaluation: RefitFile

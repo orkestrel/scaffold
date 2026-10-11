@@ -712,6 +712,7 @@ export interface AggregateRow {
 
 /** Configures an aggregator with its mirror, summarizer, judge, cutoffs, settings, days, seed indices, rows file, and logger. */
 export interface AggregatorOptions {
+	readonly study?: SustainedExecution
 	readonly development?: MatrixExecution
 	readonly mirror: MirrorInterface
 	readonly summarizer: SummarizerInterface

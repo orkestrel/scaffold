@@ -68,6 +68,8 @@ export type MatrixFailure =
 
 /** Holds the evidence for one actual sent request or an explicitly unsent observation. */
 export interface MatrixRequest {
+	/** Names the native signal that interrupted a sent transport before response buffering. */
+	readonly abort?: 'wall' | 'caller'
 	readonly started: number
 	readonly buffered?: number
 	readonly finished: number
@@ -89,6 +91,12 @@ export interface MatrixRequest {
 	readonly wall: number
 }
 
+/** Holds the whole-run interval against which a study deadline is validated. */
+export interface MatrixInterval {
+	readonly started: number
+	readonly finished: number
+}
+
 /** Binds a driver invocation to frozen input and accepted phase evidence. */
 export interface MatrixExecution extends MatrixIdentity {
 	readonly phase: 'resource' | 'full' | 'pilot' | 'evaluation' | 'development'
@@ -105,14 +113,14 @@ export interface MatrixExecution extends MatrixIdentity {
 export interface MatrixDevelopment {
 	readonly phase: 'development'
 	readonly frozen: RefitFile
-	readonly predecessor: RefitFile
+	readonly calibration: RefitFile
 	readonly diagnosis: RefitFile
 	readonly labels: RefitFile
 	readonly packet: RefitFile
 	readonly generation: RefitFile
 	readonly resource: RefitFile
 	readonly full: RefitFile
-	readonly agree: 0.67
+	readonly agree: number
 	readonly change: 0.56
 	readonly selection: 'highest-grid-majority-occurrences-and-identities'
 	readonly continuation: 'failed-goal-after-xml-function-parameter-error'

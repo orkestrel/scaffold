@@ -1,4 +1,4 @@
-import type { MatrixExecution, MatrixRun } from '../matrix/types.js'
+import type { MatrixDevelopment, MatrixExecution, MatrixRun } from '../matrix/types.js'
 import type { Config, RunArm } from '../types.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -8,14 +8,21 @@ import { isRecord } from '@orkestrel/contract'
 import { Driver, parseFlags, readCopy } from '../Driver.js'
 import { HARNESS, COPIES_DIR, MICA_MODEL, MICA_SYSTEM } from '../constants.js'
 import { readJSON, readRows } from '../helpers.js'
-import { hashFile } from '../refit/helpers.js'
+import { hashFile, readRefitAssessment, selectMajorityCutoff } from '../refit/helpers.js'
+import { readSustainedMatrix, verifyMatrixRefusal } from '../sustained/helpers.js'
 import { Matrix } from '../matrix/Matrix.js'
 import { Comparison } from '../matrix/Comparison.js'
 import { writeDeploymentFixture } from '../matrix/tests/helpers.js'
 import { parseMatrixRun } from '../matrix/parsers.js'
-import { isMatrixDevelopment, isMatrixExecution, isMatrixRequest } from '../matrix/validators.js'
+import {
+	isMatrixDevelopment,
+	isMatrixExecution,
+	isMatrixRequest,
+	isMatrixResource,
+} from '../matrix/validators.js'
 import {
 	readExecution,
+	readResource,
 	readDevelopment,
 	readFrozen,
 	readAttempt,
@@ -26,15 +33,227 @@ import {
 	verifyMatrixFeasibility,
 	listMatrixPairFailures,
 	measureMatrixCosts,
+	matchesMatrixExposure,
 	readRequestOutcome,
 } from '../matrix/helpers.js'
 import { MatrixPeer } from './matrixFixture.js'
 import { JudgeCache } from '../JudgeCache.js'
 import { createOllamaJudge } from '../../vendor/ollama/index.js'
-import { writeDevelopmentFixture } from './refit/helpers.js'
+import { writeDevelopmentFixture, writeDevelopmentSeed } from './refit/helpers.js'
+import { readSustainedPreparation } from '../sustained/parsers.js'
+import { collectPreparations } from '../sustained/audit/helpers.js'
+
+it('admits shared thinking calibration and own-model generation while refusing forged fresh custody', async () => {
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
+	mkdirSync(parent, { recursive: true })
+	const directory = mkdtempSync(join(parent, 'custody-'))
+	const peer = new MatrixPeer()
+	peer.support = true
+	peer.agreement = 0.75
+	const url = await peer.start()
+	try {
+		const seed = join(directory, 'seed.jsonl')
+		await writeDevelopmentSeed(directory, seed)
+		let shared: MatrixDevelopment | undefined
+		for (const [key, think] of [
+			['q2', false],
+			['q2', true],
+			['q4', false],
+		] as const) {
+			const cell = join(directory, `${key}-${think}`)
+			mkdirSync(cell)
+			const path = join(cell, 'freeze/manifest.json')
+			assert.equal(
+				await Matrix.execute([
+					'freeze',
+					'--deployment',
+					writeDeploymentFixture(cell),
+					'--key',
+					key,
+					'--think',
+					String(think),
+					'--seed',
+					seed,
+					'--settings',
+					join(HARNESS, 'bench5/settings.json'),
+					'--out',
+					join(cell, 'freeze'),
+					'--live',
+					'--url',
+					url,
+				]),
+				0,
+			)
+			const frozen = readFrozen(hashFile(path))
+			let policy: MatrixDevelopment
+			if (think) {
+				assert.ok(shared)
+				const resource = join(cell, 'resource/manifest.json')
+				assert.equal(
+					await Matrix.execute([
+						'resource',
+						'--frozen',
+						path,
+						'--out',
+						join(cell, 'resource'),
+						'--live',
+						'--url',
+						url,
+					]),
+					0,
+				)
+				await Matrix.execute([
+					'full',
+					'--frozen',
+					path,
+					'--resource',
+					resource,
+					'--out',
+					join(cell, 'full'),
+					'--live',
+					'--url',
+					url,
+				])
+				const measured = readResource(hashFile(resource), hashFile(path))
+				const full = readJSON(join(cell, 'full/manifest.json'))
+				assert.ok(measured.budget && isMatrixResource(full) && full.attempts[0])
+				policy = {
+					...shared,
+					frozen: hashFile(path),
+					resource: hashFile(resource),
+					full: hashFile(join(cell, 'full/manifest.json')),
+					paired: measured.budget,
+					expanded: full.attempts[0].budget,
+				}
+			} else policy = await writeDevelopmentFixture(cell, path)
+			const policyPath = join(cell, 'policy.json')
+			writeFileSync(policyPath, JSON.stringify(policy))
+			const execution: MatrixExecution = {
+				protocol: 'l6',
+				phase: 'development',
+				key,
+				think,
+				arm: 'aggregate',
+				copy: 1,
+				frozen: hashFile(path),
+				budget: policy.paired,
+				development: hashFile(policyPath),
+			}
+			assert.deepEqual(readDevelopment(execution, frozen), policy)
+			verifyMatrixRefusal(policy.diagnosis, frozen)
+			if (shared !== undefined) {
+				const foreign = join(cell, 'foreign-policy.json')
+				writeFileSync(
+					foreign,
+					JSON.stringify(
+						think
+							? { ...policy, resource: shared.resource }
+							: {
+									...policy,
+									calibration: shared.calibration,
+									diagnosis: shared.diagnosis,
+									generation: shared.generation,
+									labels: shared.labels,
+									packet: shared.packet,
+								},
+					),
+				)
+				assert.throws(
+					() => readDevelopment({ ...execution, development: hashFile(foreign) }, frozen),
+					think ? /resource|cell|frozen/ : /calibration summarizer/,
+				)
+			}
+			if (key === 'q2' && !think) {
+				shared = policy
+				for (const [name, changed] of [
+					['cutoff', { agree: 0.51 }],
+					['labels', { labels: policy.packet }],
+					['generation', { generation: policy.labels }],
+					['packet', { packet: policy.labels }],
+					['budget', { paired: { ...policy.paired, reserve: policy.paired.reserve + 1 } }],
+					['full', { full: policy.resource }],
+				] as const) {
+					const changedPath = join(cell, `${name}.json`)
+					writeFileSync(changedPath, JSON.stringify({ ...policy, ...changed }))
+					assert.throws(
+						() => readDevelopment({ ...execution, development: hashFile(changedPath) }, frozen),
+						/calibration|policy|budget|bound/,
+						name,
+					)
+				}
+				const malformed = join(cell, 'malformed-generation.json')
+				writeFileSync(malformed, '{')
+				const malformedPolicy = join(cell, 'malformed-policy.json')
+				writeFileSync(
+					malformedPolicy,
+					JSON.stringify({ ...policy, generation: hashFile(malformed) }),
+				)
+				assert.throws(
+					() => readDevelopment({ ...execution, development: hashFile(malformedPolicy) }, frozen),
+					SyntaxError,
+				)
+				for (const [name, changed] of [
+					['model', { summarizer: { ...frozen.summarizer, model: 'foreign' } }],
+					['digest', { summarizer: { ...frozen.summarizer, digest: '0'.repeat(64) } }],
+					['seed', { seed: frozen.settings }],
+					['source', { files: frozen.files.slice(1) }],
+					[
+						'settings',
+						{
+							configuration: { ...frozen.configuration, predict: frozen.configuration.predict + 1 },
+						},
+					],
+				] as const) {
+					const changedFreeze = join(cell, `${name}-freeze.json`)
+					writeFileSync(changedFreeze, JSON.stringify({ ...frozen, ...changed }))
+					const changedPath = join(cell, `${name}-policy.json`)
+					writeFileSync(
+						changedPath,
+						JSON.stringify({ ...policy, calibration: hashFile(changedFreeze) }),
+					)
+					assert.throws(
+						() => readDevelopment({ ...execution, development: hashFile(changedPath) }, frozen),
+						/role|digest|seed|source|settings|configuration/,
+						name,
+					)
+				}
+				const assessment = readRefitAssessment(policy.diagnosis)
+				assert.equal(selectMajorityCutoff(assessment), policy.agree)
+				assert.throws(
+					() => selectMajorityCutoff({ ...assessment, errors: ['missing usage'] }),
+					/operational/,
+				)
+				assert.throws(
+					() =>
+						selectMajorityCutoff({
+							...assessment,
+							readings: assessment.readings.map((reading) => ({
+								...reading,
+								lexical: true,
+								score: undefined,
+							})),
+						}),
+					/missing/,
+				)
+				const first = assessment.readings[0]
+				assert.ok(first)
+				assert.throws(
+					() =>
+						selectMajorityCutoff({
+							...assessment,
+							readings: [...assessment.readings, { ...first, score: first.score === 0 ? 1 : 0 }],
+						}),
+					/duplicate identity/,
+				)
+			}
+		}
+	} finally {
+		await peer.destroy()
+	}
+})
 
 it('withholds a capped rebuilt summary while real development decisions and later recovery continue', async () => {
-	const parent = resolve('tmp/units/aggregate-l12-maintenance-fix-fixtures')
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'development-'))
 	const peer = new MatrixPeer()
@@ -43,7 +262,7 @@ it('withholds a capped rebuilt summary while real development decisions and late
 	const url = await peer.start()
 	try {
 		const seed = join(directory, 'seed.jsonl')
-		writeFileSync(seed, '')
+		await writeDevelopmentSeed(directory, seed)
 		const frozenPath = join(directory, 'freeze/manifest.json')
 		assert.equal(
 			await Matrix.execute([
@@ -67,7 +286,7 @@ it('withholds a capped rebuilt summary while real development decisions and late
 			0,
 		)
 		const frozen = readFrozen(hashFile(frozenPath))
-		const policy = writeDevelopmentFixture(directory, frozenPath, true)
+		const policy = await writeDevelopmentFixture(directory, frozenPath, true)
 		for (const withhold of [undefined, false, true])
 			assert.equal(isMatrixDevelopment({ ...policy, withhold }), true)
 		for (const withhold of [null, 1, 'true', {}, []])
@@ -174,6 +393,24 @@ it('withholds a capped rebuilt summary while real development decisions and late
 		const aggregate = runs.get('aggregate')
 		assert.ok(records && aggregate)
 		assert.deepEqual(listMatrixPairFailures(records, aggregate), [])
+		assert.ok(
+			aggregate.failures.length > 0,
+			'the original fixture must retain its stale identifier raw refusal',
+		)
+		assert.throws(
+			() =>
+				readSustainedMatrix(
+					{
+						matrix: {
+							records: hashFile(join(directory, 'records/run.json')),
+							aggregate: hashFile(join(directory, 'aggregate/run.json')),
+						},
+					},
+					hashFile(frozenPath),
+					policy.resource,
+				),
+			/invalid raw evidence/,
+		)
 		const refused = aggregate.requests.find(
 			(entry) => entry.role === 'summarizer' && entry.reason === 'length',
 		)
@@ -287,13 +524,118 @@ it('withholds a capped rebuilt summary while real development decisions and late
 			'all-role accounting must charge the refused completion',
 		)
 		console.log(`DEVELOPMENT_CAPPED_SUMMARY_FIXTURE ${directory} topic=${peer.summary.topic}`)
+		peer.summary.rebuild = false
+		peer.refused = 'refunds'
+		const clean = new Map<RunArm, MatrixRun>()
+		for (const arm of ['records', 'aggregate'] as const) {
+			const out = join(directory, `clean-${arm}`)
+			const config = parseFlags([
+				'--run',
+				'--live',
+				'--copy',
+				'1',
+				'--manifest',
+				join(directory, `${arm}-execution.json`),
+				'--cache',
+				join(directory, `clean-${arm}-cache`),
+				'--out',
+				out,
+				'--url',
+				url,
+			])
+			assert.ok(config.success, config.success ? '' : config.error)
+			assert.equal(await new Driver(config.value).execute(), 0)
+			const run = parseMatrixRun(out)
+			assert.ok(run)
+			assert.deepEqual(run.failures, [], `${arm} raw evidence must be clean before admission`)
+			clean.set(arm, run)
+		}
+		const cleanRecords = clean.get('records')
+		const cleanAggregate = clean.get('aggregate')
+		assert.ok(cleanRecords && cleanAggregate)
+		assert.ok(
+			cleanAggregate.rows.filter((row) => matchesMatrixExposure(cleanAggregate, row.goal)).length >
+				cleanAggregate.rows.length / 2,
+		)
+		assert.ok(
+			cleanAggregate.requests.some(
+				(request) =>
+					request.role === 'judge' &&
+					request.sent &&
+					JSON.stringify(request.request).includes('refunds') &&
+					request.status === 200,
+			),
+		)
+		assert.deepEqual(listMatrixPairFailures(cleanRecords, cleanAggregate), [])
+		assert.deepEqual(
+			readSustainedMatrix(
+				{
+					matrix: {
+						records: hashFile(join(cleanRecords.path, 'run.json')),
+						aggregate: hashFile(join(cleanAggregate.path, 'run.json')),
+					},
+				},
+				hashFile(frozenPath),
+				policy.resource,
+			),
+			[],
+		)
+		assert.throws(
+			() =>
+				readSustainedMatrix(
+					{
+						matrix: {
+							records: hashFile(join(cleanAggregate.path, 'run.json')),
+							aggregate: hashFile(join(cleanRecords.path, 'run.json')),
+						},
+					},
+					hashFile(frozenPath),
+					policy.resource,
+				),
+			/records and aggregate/,
+		)
+		const full = readSustainedPreparation(policy.full.path)
+		assert.ok(
+			full.length > 0 &&
+				full.some((entry) => entry.costs.wire.some((wire) => wire.prompt + wire.completion > 0)),
+		)
+		const preparation = ['records', 'aggregate'].flatMap((arm) =>
+			readSustainedPreparation(join(directory, `clean-${arm}`, 'run.json')),
+		)
+		const unique = collectPreparations(preparation)
+		assert.ok(
+			full.every((entry) => unique.some((one) => one.identity === entry.identity)),
+			'paired preparation must include required measured full preflight',
+		)
+		assert.deepEqual(
+			collectPreparations([...preparation, ...full]),
+			unique,
+			'an explicit full-preflight alias must add no charge',
+		)
+		const first = full[0]
+		assert.ok(first)
+		assert.throws(
+			() =>
+				collectPreparations([
+					...preparation,
+					{
+						...first,
+						costs: {
+							...first.costs,
+							metadata: { ...first.costs.metadata, requests: first.costs.metadata.requests + 1 },
+						},
+					},
+				]),
+			/conflicting preparation identity/,
+		)
+		console.log(`DEVELOPMENT_CLEAN_PAIR_FIXTURE ${directory}`)
 	} finally {
 		await peer.destroy()
 	}
 })
 
 it('continues real aggregate development after a fresh single-token length-terminated judge answer', async () => {
-	const parent = resolve('tmp/units/aggregate-l11-judge-length-fix-fixtures')
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'development-'))
 	const peer = new MatrixPeer()
@@ -304,7 +646,7 @@ it('continues real aggregate development after a fresh single-token length-termi
 	const url = await peer.start()
 	try {
 		const seed = join(directory, 'seed.jsonl')
-		writeFileSync(seed, '', { flag: 'wx' })
+		await writeDevelopmentSeed(directory, seed)
 		const frozenPath = join(directory, 'freeze/manifest.json')
 		assert.equal(
 			await Matrix.execute([
@@ -328,7 +670,7 @@ it('continues real aggregate development after a fresh single-token length-termi
 			0,
 		)
 		const frozen = readFrozen(hashFile(frozenPath))
-		const policy = writeDevelopmentFixture(directory, frozenPath)
+		const policy = await writeDevelopmentFixture(directory, frozenPath)
 		const policyPath = join(directory, 'development.json')
 		writeFileSync(policyPath, JSON.stringify(policy), { flag: 'wx' })
 		const execution: MatrixExecution = {
@@ -426,7 +768,7 @@ it('continues real aggregate development after a fresh single-token length-termi
 })
 
 it('retains real single-token judge protocol errors and missing-label refusals', async () => {
-	const parent = resolve('tmp/units/aggregate-l11-judge-length-fix-fixtures')
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'reader-'))
 	const peer = new MatrixPeer()
@@ -484,7 +826,7 @@ it('retains real single-token judge protocol errors and missing-label refusals',
 })
 
 it('retries sent judge transport in real matrix development without admitting missing usage', async () => {
-	const parent = resolve('tmp/units/aggregate-sustained-transport-fix-fixtures')
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'development-'))
 	const peer = new MatrixPeer()
@@ -493,7 +835,7 @@ it('retries sent judge transport in real matrix development without admitting mi
 	const url = await peer.start()
 	try {
 		const seed = join(directory, 'seed.jsonl')
-		writeFileSync(seed, '', { flag: 'wx' })
+		await writeDevelopmentSeed(directory, seed)
 		const frozenPath = join(directory, 'freeze/manifest.json')
 		assert.equal(
 			await Matrix.execute([
@@ -517,7 +859,7 @@ it('retries sent judge transport in real matrix development without admitting mi
 			0,
 		)
 		const frozen = readFrozen(hashFile(frozenPath))
-		const policy = writeDevelopmentFixture(directory, frozenPath)
+		const policy = await writeDevelopmentFixture(directory, frozenPath)
 		const policyPath = join(directory, 'development.json')
 		writeFileSync(policyPath, JSON.stringify(policy), { flag: 'wx' })
 		const retries = frozen.configuration.retry
@@ -615,7 +957,7 @@ it('retries sent judge transport in real matrix development without admitting mi
 })
 
 it('runs length-terminated production flushes in every real development arm and refuses invalid flushes', async () => {
-	const parent = resolve('tmp/units/aggregate-development-execution-fixtures')
+	const parent = resolve('tmp/units/aggregate-exploration-admission-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'development-'))
 	const peer = new MatrixPeer()
@@ -625,7 +967,7 @@ it('runs length-terminated production flushes in every real development arm and 
 	const url = await peer.start()
 	try {
 		const seed = join(directory, 'seed.jsonl')
-		writeFileSync(seed, '')
+		await writeDevelopmentSeed(directory, seed)
 		const frozenPath = join(directory, 'freeze', 'manifest.json')
 		await Matrix.execute([
 			'freeze',
@@ -646,12 +988,12 @@ it('runs length-terminated production flushes in every real development arm and 
 			url,
 		])
 		const frozen = readFrozen(hashFile(frozenPath))
-		const policy = writeDevelopmentFixture(directory, frozenPath)
+		const policy = await writeDevelopmentFixture(directory, frozenPath)
 		const policyPath = join(directory, 'development.json')
 		writeFileSync(policyPath, JSON.stringify(policy))
 		assert.ok(isMatrixDevelopment(policy))
 		for (const change of [
-			{ agree: 0.68 },
+			{ agree: Number.NaN },
 			{ change: 0.57 },
 			{ separated: true },
 			{ accepted: true },
@@ -682,11 +1024,11 @@ it('runs length-terminated production flushes in every real development arm and 
 		assert.throws(() => readDevelopment({ ...base, budget: policy.expanded }, frozen), /budget/)
 		assert.throws(
 			() => readDevelopment({ ...base, key: 'g2' }, frozen),
-			/execution identity differs/,
+			/exact copy-1 development execution required/,
 		)
 		assert.throws(
 			() => readDevelopment({ ...base, think: true }, frozen),
-			/execution identity differs/,
+			/exact copy-1 development execution required/,
 		)
 		assert.throws(
 			() =>
@@ -694,9 +1036,12 @@ it('runs length-terminated production flushes in every real development arm and 
 					...frozen,
 					decision: { ...frozen.decision, digest: '0'.repeat(64) },
 				}),
-			/decision changed/,
+			/frozen identity differs/,
 		)
-		assert.throws(() => readDevelopment(base, { ...frozen, seed: frozen.settings }), /seed changed/)
+		assert.throws(
+			() => readDevelopment(base, { ...frozen, seed: frozen.settings }),
+			/frozen identity differs/,
+		)
 		assert.throws(
 			() =>
 				readDevelopment(base, {
@@ -705,7 +1050,7 @@ it('runs length-terminated production flushes in every real development arm and 
 						file.path.endsWith('Support.ts') ? { ...file, hash: '0'.repeat(64) } : file,
 					),
 				}),
-			/semantic input changed/,
+			/frozen identity differs/,
 		)
 		const stale = readFileSync(policyPath, 'utf8')
 		writeFileSync(policyPath, `${stale}\n`)
@@ -957,7 +1302,7 @@ it('runs length-terminated production flushes in every real development arm and 
 			)
 			const report = readJSON(join(out, 'run.json'))
 			assert.ok(isRecord(report) && isRecord(report.fit))
-			assert.deepEqual(report.fit, { agree: 0.67, change: 0.56, separated: false })
+			assert.deepEqual(report.fit, { agree: policy.agree, change: 0.56, separated: false })
 		}
 		const records = runs.get('records')
 		const aggregate = runs.get('aggregate')

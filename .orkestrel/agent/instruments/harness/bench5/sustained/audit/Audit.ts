@@ -7,7 +7,7 @@ import { isDeepStrictEqual, parseArgs } from 'node:util'
 import { readWorkload } from '../../build/helpers.js'
 import { readOracle } from '../../endurance/helpers.js'
 import { hashFile, verifyFiles } from '../../refit/helpers.js'
-import { readSustainedSelection } from '../helpers.js'
+import { readSustainedSelection, readSustainedPolicy } from '../helpers.js'
 import { readSustainedPreparation, readSustainedRun } from '../parsers.js'
 import { Adjudication } from './Adjudication.js'
 import { Comparison } from './Comparison.js'
@@ -221,15 +221,24 @@ export class Audit {
 		additional: readonly string[],
 	): readonly SustainedPreparation[] {
 		const references = new Set([...paths.map((path) => resolve(path)), ...additional])
-		for (const candidate of selection.candidates) {
+		const candidates =
+			selection.policy === undefined
+				? selection.candidates
+				: [...readSustainedPolicy(selection.policy).selection.candidates, ...selection.candidates]
+		for (const candidate of candidates) {
 			for (const file of [
 				candidate.resource,
 				candidate.pilot,
 				candidate.classification,
 				candidate.fit,
 				candidate.preparation,
+				candidate.refusal,
+				candidate.exploration?.diagnosis,
 			])
 				if (file !== undefined) references.add(file.path)
+			if (candidate.exploration !== undefined) {
+				for (const file of Object.values(candidate.exploration.matrix)) references.add(file.path)
+			}
 			for (const attempt of candidate.attempts)
 				if (attempt.files.length > 0) references.add(join(attempt.run, 'run.json'))
 		}
