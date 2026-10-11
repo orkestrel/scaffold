@@ -2,6 +2,12 @@
 
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
+## Admission screen and Gemma resource acceptance of 2026-10-11
+
+Root accepts the r2 presentation-screen instrument after native Luna independent verification and independent Astra audit. Native Sol wrote the bounded instrument and its conformance successor. The successor removes the forbidden type assertion without changing the fixed question, population, judge, settings, thresholds, or ranking. The positive run passed 5 tests; the 7 negative controls failed at their intended assertions. Packet regeneration matched 58309 bytes, with 72 runtime/input bindings unchanged. Grouped verification exited 0 uncapped in 2810 ms; the disclosed missing offline guard ran separately, exit 0 uncapped in 165 ms. The audit confirmed every supplied claim and closes. See [the accepted instrument and proof bounds](instruments/units/aggregates/diagnostics/admission-l8/README.md). Root releases only its fixed live sequence after this checkpoint; no model ordering or quality result exists at acceptance.
+
+Native Luna completed Gemma 4B thinking-disabled records resource preflight: reserve 512, window 3072, 24 goals, 75 HTTP 200 requests with complete usage, exit 0 uncapped in 269897 ms. All 79 frozen inputs and 10 output references matched; both recorded processes and descendants closed. Fresh usage was 83105 prompt plus 2233 completion tokens. The row sum includes replayed judge-cache usage and does not measure fresh inference cost. Root retains the [immutable raw report](instruments/units/aggregates/reports/resumption-l7-g4-feasibility-raw.md) and a [citation-normalized copy](instruments/units/aggregates/reports/resumption-l7-g4-feasibility.md); the latter only expands abbreviated Driver, JudgeCache, and emitted index paths. No finding changed.
+
 ## Bench readings
 
 | Date       | Bench               | Reading                                                                                                                               |
@@ -180,8 +186,8 @@ Root accepted Gemma 2B thinking-disabled records resource preflight after the co
 
 Root reconciled native analyst Astra and Cursor Opus 5.5 into the frozen l8 admission screen. Cursor session `71bbe56b-41aa-44f0-a6a8-fdf36dadf8fa` completed uncapped in 425817 ms including its wrapper. The selected exact question and JSON evidence/candidate rendering are a combined empirical hypothesis; the model, readout, summarizer, and thresholds remain fixed. Calibration retries are lexical, and successor archived controls require fresh scores. Native builder Sol prepares an isolated offline operator reusing the accepted recorder and completion boundary. Independent verification and review precede live execution. See [the development ruling](instruments/units/aggregates/reports/resumption-admission-l8.md).
 
-## Long-running commands
-
 Root accepted native verifier Luna's Qwen 4B thinking-disabled records preflight after full custody and bare logs: inner exit 0 uncapped in 274754 ms, reserve 512, window 3072, 24 goal rows, and 67 HTTP 200 requests with complete usage. The 900-second outer operational watchdog left the existing 14400-second inner watchdog unchanged; neither capped. Native Sol prepares the l8 screen offline in disjoint files. Native verifier Luna separately checked Qwen 2B full-view recovery without inference: all frozen and retained bindings match, the direct full command supports a vacant retry output, and the automatic plan cannot discover that output. Future evaluation must bind an accepted retry explicitly; copying path-bound manifests is refused. No retry or source change followed from the preparation alone.
+
+## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.

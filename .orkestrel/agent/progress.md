@@ -16,9 +16,11 @@ The fixed relation-deletion diagnostic completed with full prospective request a
 
 Records resource preflights passed for Qwen 2B and Gemma 2B with thinking disabled at reserve 512 and window 3072, in 133738 ms and 158503 ms respectively. Gemma recorded 67 requests with complete usage. Qwen full view failed with an HTTP 500 XML parse error in 1043149 ms; this is an operational failure, not model infeasibility. Full-view recovery and other conditions remain pending. See [the Qwen custody](instruments/units/aggregates/reports/resumption-l7-q2-feasibility.md) and [the Gemma custody](instruments/units/aggregates/reports/resumption-l7-g2-feasibility.md).
 
-## Release evidence
-
 Qwen 4B thinking-disabled records resource preflight also passed at reserve 512 and window 3072: 24 development goal rows and 67 HTTP 200 requests with complete usage, exit 0 uncapped in 274754 ms. Root read the immutable verifier report and both launch records. See [the Qwen 4B custody](instruments/units/aggregates/reports/resumption-l7-q4-feasibility.md). The Qwen 2B full-view retry is prepared without inference; its accepted result would need an explicit execution-manifest binding because the automatic planner hard-codes the original full-result path. See [the failure diagnosis](instruments/units/aggregates/diagnostics/q2-full-failure/README.md) and [the recovery contract](instruments/units/aggregates/diagnostics/q2-full-failure/recovery-preparation.md).
+
+Root accepts the r2 admission screen after independent Luna verification and Astra audit. The positive suite passed 5 tests, the 7 negative controls failed at their intended assertions, and packet regeneration matched every byte. The live screen remains pending. See [the screen acceptance](instruments/units/aggregates/diagnostics/admission-l8/README.md). Gemma 4B thinking-disabled records resource preflight also passed at reserve 512 and window 3072: 24 goals, 75 HTTP 200 requests with complete usage, exit 0 uncapped in 269897 ms. Fresh request usage was 85338 tokens; row totals include replayed judge usage and are not fresh inference cost. See [the Gemma 4B custody](instruments/units/aggregates/reports/resumption-l7-g4-feasibility.md).
+
+## Release evidence
 
 The completed release runs establish the following results. See [the agent 0.0.30 release checkpoint](https://github.com/orkestrel/scaffold/blob/68060778df1e737e51ab083e90af81683c49671c/.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md) for scope, hashes, skips, and consumer limits. The same record is available in the primary scaffold checkout under `.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md`.
 
