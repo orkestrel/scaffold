@@ -29,6 +29,8 @@ Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, 1099747 ms for Ge
 
 The revised Qwen 2B run produced 168 drafts in 259460 ms; root adjudication supports 131, but the fit admits only 1 at cutoff 0.85 and refuses. Gemma 2B produced 174 drafts in 758004 ms; root supports 132, but the fit admits none at cutoff 0.78 and refuses. Gemma 4B produced 179 drafts in 1032491 ms and is under blind review. Qwen 4B generation runs. The fit requires at least 50% supported admission while rejecting every scored nonpositive calibration item. These draft occurrences include repetitions; they are not independent samples or goal-quality scores. See [the Qwen 2B adjudication](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q2-adjudication.md), [the Gemma 2B adjudication](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g2-adjudication.md), and [the successor calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-calibration.md).
 
+The Qwen 2B diagnosis finds that the fixed Mica 4B judge scores an unsupported summary above almost every supported summary. Logical request joins, score direction, and cutoff arithmetic agree with the implementation. Historical raw response probabilities and a runtime dependency binding are missing, so the exact cause remains unresolved. A bounded diagnostic is being prepared to remove the unsupported relationships while preserving the sources and judge settings. See [the judge diagnosis](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-judge-diagnosis.md).
+
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
 | Qwen 2B        | Pending           | Pending          |
