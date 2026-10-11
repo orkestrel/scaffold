@@ -17,6 +17,8 @@ import {
 	nameMatrix,
 	readFrozen,
 	readModelDigest,
+	readDevelopment,
+	isStoppedRequest,
 } from './helpers.js'
 import { isMatrixExecution, isMatrixRequest, isMatrixRow, isMatrixSelection } from './validators.js'
 
@@ -35,6 +37,7 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 		return undefined
 	const execution = info.execution
 	const frozen = readFrozen(execution.frozen)
+	if (execution.phase === 'development') readDevelopment(execution, frozen)
 	if (execution.key !== frozen.key || execution.think !== frozen.think)
 		throw new Error('run decision identity differs from freeze')
 	if (!isDeepStrictEqual(info.frozen, frozen) || info.identity !== nameMatrix(execution))
@@ -104,6 +107,7 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 			request.reason !== usage.reason
 		)
 			failures.push(`request ${request.sequence}: altered actual usage`)
+		if (isStoppedRequest(request, requests)) continue
 		const role =
 			request.role === 'summarizer'
 				? frozen.summarizer

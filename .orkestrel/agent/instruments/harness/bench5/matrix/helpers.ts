@@ -3,6 +3,7 @@ import type {
 	MatrixBudget,
 	MatrixCosts,
 	MatrixExecution,
+	MatrixDevelopment,
 	MatrixFailure,
 	MatrixFreeze,
 	MatrixIdentity,
@@ -19,7 +20,7 @@ import type { RefitFile } from '../refit/types.js'
 import type { CallRole, Copy } from '../types.js'
 import { readdirSync, readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { join } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
 import { LEDGER_SCALE_DRIFT } from '../../vendor/agent-0.0.30-trimmed/index.js'
@@ -48,6 +49,7 @@ import { MATRIX_ADMISSION, MATRIX_RESERVES } from './constants.js'
 import {
 	isMatrixAttempt,
 	isMatrixExecution,
+	isMatrixDevelopment,
 	isMatrixFreeze,
 	isMatrixResource,
 	isMatrixDeployment,
@@ -55,6 +57,7 @@ import {
 } from './validators.js'
 import { parseMatrixRun } from './parsers.js'
 import { BUILD, readBuild } from '../build/helpers.js'
+import { isRefitFile } from '../refit/validators.js'
 
 /** Reads all hash-bound deployment evidence supplied by root. */
 export function readDeployment(reference: RefitFile): MatrixDeployment {
@@ -391,7 +394,11 @@ export function readResource(reference: RefitFile, frozen: RefitFile): MatrixRes
 export function readAttempt(attempt: MatrixAttempt): MatrixRun | undefined {
 	verifyFiles([attempt.execution, ...attempt.files])
 	const execution = readJSON(attempt.execution.path)
-	if (!isMatrixExecution(execution) || !isDeepStrictEqual(execution.budget, attempt.budget))
+	if (
+		!isMatrixExecution(execution) ||
+		execution.phase === 'development' ||
+		!isDeepStrictEqual(execution.budget, attempt.budget)
+	)
 		throw new Error('attempt execution differs')
 	const run = attempt.files.length === 0 ? undefined : parseMatrixRun(attempt.run)
 	if (
@@ -407,6 +414,142 @@ export function readAttempt(attempt: MatrixAttempt): MatrixRun | undefined {
 	if (attempt.resource !== (run !== undefined && permitsReserve(run.requests)))
 		throw new Error('reserve advancement differs from raw resource evidence')
 	return run
+}
+
+/** Validates development custody without requalifying historical source or calibration. */
+export function readDevelopment(
+	execution: MatrixExecution,
+	frozen: MatrixFreeze,
+): MatrixDevelopment {
+	if (
+		!isMatrixExecution(execution) ||
+		execution.phase !== 'development' ||
+		execution.development === undefined
+	)
+		throw new Error('development execution required')
+	if (execution.key !== frozen.key || execution.think !== frozen.think)
+		throw new Error('development execution identity differs from freeze')
+	verifyFiles([execution.development])
+	const policy = readJSON(execution.development.path)
+	if (
+		!isMatrixDevelopment(policy) ||
+		!isDeepStrictEqual(policy.frozen, execution.frozen) ||
+		policy.frozen.hash === policy.predecessor.hash
+	)
+		throw new Error('invalid development policy or successor freeze')
+	verifyFiles([
+		policy.predecessor,
+		policy.diagnosis,
+		policy.labels,
+		policy.packet,
+		policy.generation,
+		policy.resource,
+		policy.full,
+	])
+	const previous = readJSON(policy.predecessor.path)
+	if (!isMatrixFreeze(previous)) throw new Error('invalid development predecessor')
+	const identities: ReadonlyArray<keyof MatrixFreeze> = [
+		'key',
+		'think',
+		'decision',
+		'summarizer',
+		'judge',
+		'seed',
+		'settings',
+		'configuration',
+		'deployment',
+	]
+	for (const key of identities)
+		if (!isDeepStrictEqual(previous[key], frozen[key]))
+			throw new Error(`development ${key} changed`)
+	// Execution and constructor admission are reviewed directly; all semantic inputs retain their bytes.
+	const changed = [
+		'.build/build-manifest.json',
+		'bench5/types.ts',
+		'bench5/Driver.ts',
+		'bench5/aggregates/Aggregator.ts',
+		'bench5/matrix/types.ts',
+		'bench5/matrix/validators.ts',
+		'bench5/matrix/helpers.ts',
+		'bench5/matrix/parsers.ts',
+		'bench5/matrix/Comparison.ts',
+		'bench5/matrix/Matrix.ts',
+	]
+	if (previous.files.length !== frozen.files.length)
+		throw new Error('development source population changed')
+	for (const file of previous.files) {
+		const successor = frozen.files.find((entry) => resolve(entry.path) === resolve(file.path))
+		if (successor === undefined) throw new Error('development source membership changed')
+		if (
+			!changed.includes(relative(HARNESS, file.path).replaceAll('\\', '/')) &&
+			file.hash !== successor.hash
+		)
+			throw new Error(`development semantic input changed: ${file.path}`)
+	}
+	const diagnosis = readJSON(policy.diagnosis.path)
+	const generation = readJSON(policy.generation.path)
+	if (
+		!isRecord(diagnosis) ||
+		diagnosis.accepted !== false ||
+		diagnosis.cutoff !== 0.93 ||
+		diagnosis.change !== policy.change ||
+		!isRecord(diagnosis.preparation) ||
+		!isDeepStrictEqual(diagnosis.preparation.manifest, policy.generation) ||
+		!isDeepStrictEqual(diagnosis.preparation.packet, policy.packet) ||
+		!isDeepStrictEqual(diagnosis.preparation.labels, policy.labels) ||
+		!isRefitFile(diagnosis.preparation.corpus) ||
+		!isRefitFile(diagnosis.preparation.attempts) ||
+		!isRecord(generation) ||
+		!isDeepStrictEqual(generation.matrix, previous)
+	)
+		throw new Error('development refusal or calibration custody differs')
+	verifyFiles([diagnosis.preparation.corpus, diagnosis.preparation.attempts])
+	const resource = readJSON(policy.resource.path)
+	const full = readJSON(policy.full.path)
+	if (
+		!isMatrixResource(resource) ||
+		!resource.accepted ||
+		!isDeepStrictEqual(resource.frozen, policy.predecessor) ||
+		resource.attempts.length === 0 ||
+		resource.attempts.at(-1)?.accepted !== true ||
+		!isDeepStrictEqual(resource.attempts.at(-1)?.budget, policy.paired) ||
+		!isDeepStrictEqual(resource.budget, policy.paired) ||
+		!isDeepStrictEqual(policy.paired, buildBudget(512)) ||
+		!isMatrixResource(full) ||
+		full.accepted ||
+		full.attempts.length !== 1 ||
+		!isRecord(full) ||
+		!isDeepStrictEqual(full.frozen, policy.predecessor) ||
+		!isRecord(full.bound) ||
+		full.bound.window !== policy.expanded.window ||
+		!isDeepStrictEqual(full.attempts.at(-1)?.budget, policy.expanded) ||
+		!isDeepStrictEqual(policy.expanded, {
+			reserve: 512,
+			window: 1068663,
+			ceiling: 262144,
+			predict: 0,
+		})
+	)
+		throw new Error('development declared budget provenance differs')
+	for (const attempt of [...resource.attempts, ...full.attempts]) {
+		verifyFiles([attempt.execution, ...attempt.files])
+		const prior = readJSON(attempt.execution.path)
+		if (
+			!isMatrixExecution(prior) ||
+			!isDeepStrictEqual(prior.frozen, policy.predecessor) ||
+			!isDeepStrictEqual(prior.budget, attempt.budget) ||
+			prior.copy !== 1 ||
+			(resource.attempts.includes(attempt)
+				? prior.phase !== 'resource' || prior.arm !== 'records'
+				: prior.phase !== 'full' || prior.arm !== 'full')
+		)
+			throw new Error('development predecessor execution custody differs')
+	}
+	if (
+		!isDeepStrictEqual(execution.budget, execution.arm === 'full' ? policy.expanded : policy.paired)
+	)
+		throw new Error('development execution budget differs')
+	return policy
 }
 
 /** Validates phase admission and immutable execution custody.
@@ -447,6 +590,10 @@ export function readExecution(path: string): {
 		throw new Error('full preflight must use full')
 	if (execution.phase === 'pilot' && execution.arm !== 'aggregate')
 		throw new Error('pilot must use aggregate')
+	if (execution.phase === 'development') {
+		readDevelopment(execution, frozen)
+		return { execution, frozen }
+	}
 	if (execution.phase !== 'resource') {
 		if (execution.resource === undefined) throw new Error('accepted resource manifest required')
 		const resource = readResource(execution.resource, execution.frozen)
@@ -717,7 +864,7 @@ export function isStoppedRequest(
 	request: MatrixRequest,
 	requests: readonly MatrixRequest[],
 ): boolean {
-	const previous = requests.findLast((entry) => entry.sent && entry.sequence < request.sequence)
+	const previous = requests.find((entry) => entry.sequence === request.sequence - 1)
 	return (
 		!request.sent &&
 		request.role === 'agent' &&
@@ -731,15 +878,84 @@ export function isStoppedRequest(
 		request.failures.length === 1 &&
 		request.failures[0] === 'transport' &&
 		previous !== undefined &&
+		previous.sent &&
 		previous.role === 'agent' &&
+		previous.goal === request.goal &&
+		previous.turn !== undefined &&
+		request.turn === previous.turn + 1 &&
+		request.started >= previous.finished &&
 		previous.error === undefined &&
 		previous.failures.length > 0 &&
-		previous.failures.every((failure) =>
-			['length', 'capacity', 'completion', 'truncation'].includes(failure),
-		) &&
+		(isParserRequest(previous) ||
+			previous.failures.every((failure) =>
+				['length', 'capacity', 'completion', 'truncation'].includes(failure),
+			)) &&
 		request.error ===
 			describeError(new Error(`decision qualification failed: ${previous.failures.join(', ')}`))
 	)
+}
+
+/** Recognizes only the retained decision server's XML function/parameter parser error. */
+export function isParserRequest(request: MatrixRequest): boolean {
+	if (
+		!request.sent ||
+		request.role !== 'agent' ||
+		request.goal === undefined ||
+		request.turn === undefined ||
+		request.error !== undefined ||
+		request.status === undefined ||
+		(request.status >= 200 && request.status < 300) ||
+		request.response === undefined ||
+		!isRecord(request.request) ||
+		!Array.isArray(request.request.tools) ||
+		request.request.tools.length === 0 ||
+		request.prompt !== undefined ||
+		request.completion !== undefined ||
+		request.reason !== undefined ||
+		!isDeepStrictEqual(request.failures, ['transport'])
+	)
+		return false
+	try {
+		const body: unknown = JSON.parse(request.response)
+		return (
+			isRecord(body) &&
+			Object.keys(body).length === 1 &&
+			typeof body.error === 'string' &&
+			/^XML syntax error on line [1-9][0-9]*: element <function> closed by <\/parameter>$/.test(
+				body.error,
+			)
+		)
+	} catch {
+		return false
+	}
+}
+
+/** Releases only the originating development goal's exact parser stop and local follower. */
+export function permitsContinuation(
+	requests: readonly MatrixRequest[],
+	frozen: MatrixFreeze,
+	execution: MatrixExecution,
+	goal: string,
+): boolean {
+	if (execution.phase !== 'development' || requests.length === 0) return false
+	const current = requests.filter((request) => request.goal === goal)
+	if (
+		current.filter(isParserRequest).length !== 1 ||
+		listCapacityFailures(requests, frozen, execution.budget).length !== 0
+	)
+		return false
+	return current.every((request) => {
+		if (isStoppedRequest(request, requests)) return true
+		if (!isParserRequest(request))
+			return readRequestOutcome(request, execution.budget, frozen) === 'complete'
+		return (
+			isRecord(request.request) &&
+			request.request.think === execution.think &&
+			request.request.truncate === false &&
+			request.request.shift === false &&
+			request.request.model === frozen.decision.model
+		)
+	})
 }
 
 /** Refuses operational matrix faults as evidence for eliminating a configuration.
@@ -753,6 +969,8 @@ export function verifyMatrixFeasibility(run: MatrixRun | undefined): void {
 	)
 	if (listCapacityFailures(run.requests, run.frozen, run.execution.budget).length !== 0)
 		throw new Error('operational matrix fault has invalid capacity custody')
+	if (requests.some(isParserRequest))
+		throw new Error('operational matrix fault is not configuration infeasibility')
 	for (const request of requests) {
 		const pick = run.picks.findLast(
 			(entry) => entry.goal === request.goal && entry.sequence < request.sequence,

@@ -13,8 +13,11 @@ export class MatrixPeer {
 	length = false
 	missing = false
 	support = false
+	agreement: number | undefined
 	escalations = false
 	fault = false
+	parser: number | undefined
+	decisions = 0
 	metadata = 200
 	readonly #server = createServer((request, response) => {
 		void this.#respond(request, response).catch((error: unknown) =>
@@ -93,6 +96,12 @@ export class MatrixPeer {
 							?.toLowerCase()
 							.includes(topic.slice(0, -1))))
 			const winner = noul ? (positive ? 'Yes' : 'No') : 'A'
+			const agreement =
+				this.agreement !== undefined &&
+				(String(body.prompt).includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
+					String(body.prompt).includes(`Question: ${AGREE_QUESTION.instructions}\n`))
+					? this.agreement
+					: undefined
 			response.setHeader('content-type', 'application/json')
 			response.end(
 				JSON.stringify({
@@ -108,7 +117,12 @@ export class MatrixPeer {
 							logprob: -0.01,
 							top_logprobs: tokens.map((token) => ({
 								token,
-								logprob: token === winner ? -0.01 : -8,
+								logprob:
+									agreement === undefined
+										? token === winner
+											? -0.01
+											: -8
+										: Math.log(token === 'Yes' ? agreement : 1 - agreement),
 							})),
 						},
 					],
@@ -118,6 +132,18 @@ export class MatrixPeer {
 		}
 		if (request.url !== '/api/chat' || !Array.isArray(body.messages) || !isRecord(body.options))
 			throw new Error('fixture expected chat')
+		if (body.options.num_predict === 512 && Array.isArray(body.tools) && body.tools.length > 0) {
+			this.decisions += 1
+			if (this.decisions === this.parser) {
+				response.writeHead(500, { 'content-type': 'application/json' })
+				response.end(
+					JSON.stringify({
+						error: 'XML syntax error on line 6: element <function> closed by </parameter>',
+					}),
+				)
+				return
+			}
+		}
 		if (this.fault && body.options.num_predict !== 1) {
 			response.writeHead(500, { 'content-type': 'application/json' })
 			response.end(

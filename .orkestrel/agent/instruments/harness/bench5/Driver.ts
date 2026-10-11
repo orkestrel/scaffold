@@ -123,6 +123,9 @@ import {
 	readModelDigest,
 	readRequestOutcome,
 	readCapacity,
+	readDevelopment,
+	readFrozen,
+	permitsContinuation,
 } from './matrix/helpers.js'
 import { readWireReading } from './helpers.js'
 import { matchesSummaryBlock } from './helpers.js'
@@ -746,6 +749,7 @@ export class Driver {
 	readonly #requests = new Set<string>()
 	readonly #tags = new Map<string, string>()
 	readonly #receipts: SustainedReceipt[] = []
+	readonly #observations: MatrixRequest[] = []
 	readonly #selectedSources = new Set<string>()
 	#history: readonly Message[] = []
 	#tokensUsed = 0
@@ -800,6 +804,32 @@ export class Driver {
 	 */
 	async execute(): Promise<number> {
 		readBuild()
+		const config = this.#config
+		const execution = config.execution
+		if (execution?.phase === 'development') {
+			const frozen = readFrozen(execution.frozen)
+			readDevelopment(execution, frozen)
+			if (
+				config.copy !== 1 ||
+				config.copy !== execution.copy ||
+				config.goals.length !== 0 ||
+				config.key !== execution.key ||
+				config.model !== frozen.decision.model ||
+				config.arm !== execution.arm ||
+				config.think !== execution.think ||
+				config.reserve !== execution.budget.reserve ||
+				!isDeepStrictEqual(config.frozen, frozen) ||
+				config.settings !== frozen.settings.path ||
+				config.fit !== resolveRoot(join('bench5', 'fit.json')) ||
+				config.allowance !== undefined ||
+				config.retry !== undefined ||
+				config.predict !== undefined ||
+				config.study !== undefined ||
+				config.studyPath !== undefined ||
+				config.runtime !== undefined
+			)
+				throw new Error('effective development configuration differs from frozen execution')
+		}
 		if (this.#config.studyPath !== undefined) readSustainedExecution(this.#config.studyPath)
 		const prepared = this.#prepare()
 		const failed = prepared.checks.filter((check) => !check.equal)
@@ -844,8 +874,17 @@ export class Driver {
 				: []),
 			this.#compare('capacity', SAMPLER.num_ctx, 3072),
 		)
-		const fit = readFit(fitPath)
-		if (arm === 'aggregate') checks.push(this.#compare('fit.separated', fit.separated, true))
+		const execution = this.#config.execution
+		const development =
+			execution?.phase === 'development'
+				? readDevelopment(execution, readFrozen(execution.frozen))
+				: undefined
+		const fit: Fit =
+			development === undefined
+				? readFit(fitPath)
+				: { agree: development.agree, change: development.change, separated: false }
+		if (arm === 'aggregate' && development === undefined)
+			checks.push(this.#compare('fit.separated', fit.separated, true))
 		return { copy, settings, fit, goals, checks }
 	}
 
@@ -980,6 +1019,7 @@ export class Driver {
 				}
 			}
 			for (const failure of failures) this.#invalid.add(failure)
+			this.#observations.push({ ...evidence, failures })
 			if (this.#config.study !== undefined) {
 				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
 				if (
@@ -1007,8 +1047,18 @@ export class Driver {
 				...(error === undefined ? {} : { error }),
 				...(role === 'agent' && this.#estimate !== undefined ? { estimate: this.#estimate } : {}),
 			})
-			if (role === 'agent' && sent && this.#config.frozen !== undefined && failures.length !== 0) {
-				this.#stopped = `decision qualification failed: ${failures.join(', ')}`
+			if (
+				sent &&
+				this.#config.frozen !== undefined &&
+				((role === 'agent' && failures.length !== 0) ||
+					(this.#config.execution?.phase === 'development' &&
+						readRequestOutcome({ ...evidence, failures }, budget, this.#config.frozen) !==
+							'complete'))
+			) {
+				this.#stopped ??=
+					failures.length === 0
+						? `development integrity failure at request ${sequence}`
+						: `decision qualification failed: ${failures.join(', ')}`
 				qualification = new Error(this.#stopped)
 			}
 		}
@@ -1209,6 +1259,8 @@ export class Driver {
 			}
 			const manifest = join(this.#config.cache, 'lineage.json')
 			const seed = readFileSync(frozen.seed.path, 'utf8')
+			if (execution.phase === 'development' && existsSync(manifest))
+				throw new Error('development requires a fresh seeded cache for each arm')
 			if (existsSync(manifest)) {
 				if (!isDeepStrictEqual(readJSON(manifest), origin))
 					throw new Error('cache belongs to another frozen decision configuration, arm, or copy')
@@ -1373,6 +1425,8 @@ export class Driver {
 						}),
 						judge: cache,
 						fit,
+						development:
+							this.#config.execution?.phase === 'development' ? this.#config.execution : undefined,
 						settings,
 						days: copy.days,
 						seeds,
@@ -1470,7 +1524,16 @@ export class Driver {
 			rig = this.#build(prepared, system, cache, gauge, this.#share, abort, out)
 			this.#advance(rig, first.after)
 			for (const goal of goals) await this.#serve(rig, goal, prepared, out)
-			this.#report(out, prepared, 'complete', undefined)
+			this.#report(
+				out,
+				prepared,
+				this.#config.execution?.phase === 'development'
+					? readRows(join(out, FILES.rows)).some((row) => isRecord(row) && row.success !== true)
+						? 'development-failed-goals'
+						: 'development-complete'
+					: 'complete',
+				undefined,
+			)
 			return 0
 		} catch (error) {
 			this.#report(out, prepared, abort.signal.aborted ? 'fault' : 'failed', describeError(error))
@@ -1819,6 +1882,12 @@ export class Driver {
 		for (const message of rig.ledger.conversation.messages().slice(length))
 			this.#tags.set(message.id, goal.id)
 		if (rig.cache.fault !== undefined) throw rig.cache.fault
+		const continued =
+			this.#stopped === 'decision qualification failed: transport' &&
+			this.#config.execution !== undefined &&
+			this.#config.frozen !== undefined &&
+			permitsContinuation(this.#observations, this.#config.frozen, this.#config.execution, goal.id)
+		if (this.#stopped !== undefined) error ??= this.#stopped
 		const reply = result === undefined || result.partial ? '' : result.content.trim()
 		const score = this.#score(goal, reply)
 		const prompt = Math.max(0, ...this.#prompts)
@@ -1865,6 +1934,7 @@ export class Driver {
 		appendFileSync(join(out, FILES.rows), `${JSON.stringify(row)}\n`)
 		this.#observeWork(rig, goal, row, out)
 		this.#report(out, prepared, 'running', undefined)
+		if (continued) this.#stopped = undefined
 		if (this.#stopped !== undefined) throw new Error(this.#stopped)
 		if (
 			this.#config.study !== undefined &&

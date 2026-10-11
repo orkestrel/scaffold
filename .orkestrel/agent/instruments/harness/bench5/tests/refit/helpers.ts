@@ -1,4 +1,6 @@
 import { buildSupportRows } from '../support/helpers.js'
+import type { MatrixDevelopment } from '../../matrix/types.js'
+import { readFrozen, buildBudget } from '../../matrix/helpers.js'
 import type { EvidenceCase, MembershipCase } from './types.js'
 import type {
 	RefitAttempt,
@@ -33,6 +35,125 @@ import {
 	isRefitCorpus,
 	isRefitGeneration,
 } from '../../refit/validators.js'
+
+/** Writes inert predecessor artifacts while using the real successor freeze and policy validator. */
+export function writeDevelopmentFixture(directory: string, frozenPath: string): MatrixDevelopment {
+	const frozen = readFrozen(hashFile(frozenPath))
+	const previous = { ...frozen, census: frozen.seed }
+	const predecessor = join(directory, 'predecessor.json')
+	writeFileSync(predecessor, JSON.stringify(previous))
+	const packet = join(directory, 'packet.jsonl')
+	const labels = join(directory, 'labels.json')
+	const generation = join(directory, 'generation.json')
+	const diagnosis = join(directory, 'diagnosis.json')
+	const resource = join(directory, 'resource.json')
+	const full = join(directory, 'full.json')
+	writeFileSync(packet, '')
+	writeFileSync(labels, '{}')
+	writeFileSync(generation, JSON.stringify({ matrix: previous }))
+	writeFileSync(
+		diagnosis,
+		JSON.stringify({
+			accepted: false,
+			cutoff: 0.93,
+			change: 0.56,
+			preparation: {
+				manifest: hashFile(generation),
+				packet: hashFile(packet),
+				labels: hashFile(labels),
+				corpus: hashFile(packet),
+				attempts: hashFile(packet),
+			},
+		}),
+	)
+	const expanded = { reserve: 512, window: 1068663, ceiling: 262144, predict: 0 }
+	const resourceExecution = join(directory, 'resource-execution.json')
+	const fullExecution = join(directory, 'full-execution.json')
+	writeFileSync(
+		resourceExecution,
+		JSON.stringify({
+			protocol: 'l6',
+			key: 'q2',
+			think: false,
+			phase: 'resource',
+			arm: 'records',
+			copy: 1,
+			frozen: hashFile(predecessor),
+			budget: buildBudget(512),
+		}),
+	)
+	writeFileSync(
+		fullExecution,
+		JSON.stringify({
+			protocol: 'l6',
+			key: 'q2',
+			think: false,
+			phase: 'full',
+			arm: 'full',
+			copy: 1,
+			frozen: hashFile(predecessor),
+			budget: expanded,
+		}),
+	)
+	writeFileSync(
+		resource,
+		JSON.stringify({
+			protocol: 'l6',
+			frozen: hashFile(predecessor),
+			accepted: true,
+			budget: buildBudget(512),
+			attempts: [
+				{
+					execution: hashFile(resourceExecution),
+					run: directory,
+					budget: buildBudget(512),
+					accepted: true,
+					failures: [],
+					resource: false,
+					files: [],
+				},
+			],
+		}),
+	)
+	writeFileSync(
+		full,
+		JSON.stringify({
+			protocol: 'l6',
+			frozen: hashFile(predecessor),
+			accepted: false,
+			bound: { window: expanded.window },
+			attempts: [
+				{
+					execution: hashFile(fullExecution),
+					run: directory,
+					budget: expanded,
+					accepted: false,
+					failures: ['transport'],
+					resource: false,
+					files: [],
+				},
+			],
+		}),
+	)
+	return {
+		phase: 'development',
+		frozen: hashFile(frozenPath),
+		predecessor: hashFile(predecessor),
+		diagnosis: hashFile(diagnosis),
+		labels: hashFile(labels),
+		packet: hashFile(packet),
+		generation: hashFile(generation),
+		resource: hashFile(resource),
+		full: hashFile(full),
+		agree: 0.67,
+		change: 0.56,
+		selection: 'highest-grid-majority-occurrences-and-identities',
+		continuation: 'failed-goal-after-xml-function-parameter-error',
+		limitation: 'seed-candidates-do-not-certify-diverged-history',
+		paired: buildBudget(512),
+		expanded,
+	}
+}
 
 /** Reads the separately retained whole-control observations. */
 export function readControls(path: string) {

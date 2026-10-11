@@ -22,6 +22,7 @@ import { LEDGER_OWNER_PREFIX } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { describeError, findDay } from '../helpers.js'
 import { AGREE_HEAD, CHANGE_HEAD } from './constants.js'
 import { Support } from './Support.js'
+import { readDevelopment, readFrozen } from '../matrix/helpers.js'
 import {
 	reduceSupport,
 	buildChangeQuestion,
@@ -74,7 +75,18 @@ export class Aggregator {
 	 * @param options - The mirror, summarizer, judge, cutoffs, settings, days, seed indices, rows file, and logger
 	 */
 	constructor(options: AggregatorOptions) {
-		if (!options.fit.separated) throw new Error('aggregate execution requires a separating fit')
+		if (options.development !== undefined) {
+			if (options.development.arm !== 'aggregate')
+				throw new Error('aggregate development arm required')
+			const policy = readDevelopment(options.development, readFrozen(options.development.frozen))
+			if (
+				options.fit.separated ||
+				options.fit.agree !== policy.agree ||
+				options.fit.change !== policy.change
+			)
+				throw new Error('aggregate development admission differs from policy')
+		} else if (!options.fit.separated)
+			throw new Error('aggregate execution requires a separating fit')
 		this.#options = options
 		mkdirSync(dirname(options.path), { recursive: true })
 	}

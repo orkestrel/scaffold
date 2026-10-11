@@ -2,6 +2,7 @@ import type {
 	MatrixAttempt,
 	MatrixBudget,
 	MatrixExecution,
+	MatrixDevelopment,
 	MatrixFreeze,
 	MatrixIdentity,
 	MatrixRequest,
@@ -105,12 +106,46 @@ export function isMatrixExecution(value: unknown): value is MatrixExecution {
 		() =>
 			isMatrixIdentity(value) &&
 			isRecord(value) &&
-			['resource', 'full', 'pilot', 'evaluation'].includes(String(value.phase)) &&
+			['resource', 'full', 'pilot', 'evaluation', 'development'].includes(String(value.phase)) &&
+			(value.phase === 'development'
+				? value.copy === 1 &&
+					isRefitFile(value.development) &&
+					['resource', 'full', 'fit', 'pilot'].every((key) => value[key] === undefined)
+				: value.development === undefined) &&
 			isRefitFile(value.frozen) &&
 			isMatrixBudget(value.budget) &&
 			['resource', 'full', 'fit', 'pilot'].every(
 				(key) => value[key] === undefined || isRefitFile(value[key]),
 			),
+	)
+	return result.success && result.value
+}
+
+/** Checks the fixed development policy and refuses qualification claims. */
+export function isMatrixDevelopment(value: unknown): value is MatrixDevelopment {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			value.phase === 'development' &&
+			value.separated === undefined &&
+			value.accepted === undefined &&
+			[
+				'frozen',
+				'predecessor',
+				'diagnosis',
+				'labels',
+				'packet',
+				'generation',
+				'resource',
+				'full',
+			].every((key) => isRefitFile(value[key])) &&
+			value.agree === 0.67 &&
+			value.change === 0.56 &&
+			value.selection === 'highest-grid-majority-occurrences-and-identities' &&
+			value.continuation === 'failed-goal-after-xml-function-parameter-error' &&
+			value.limitation === 'seed-candidates-do-not-certify-diverged-history' &&
+			isMatrixBudget(value.paired) &&
+			isMatrixBudget(value.expanded),
 	)
 	return result.success && result.value
 }

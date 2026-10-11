@@ -270,6 +270,11 @@ export class Comparison {
 			seen.add(reference.hash)
 			verifyFiles([reference])
 			const manifest = readJSON(reference.path)
+			if (
+				isRecord(manifest) &&
+				(manifest.phase === 'development' || manifest.development !== undefined)
+			)
+				throw new Error('development evidence cannot enter qualified comparison')
 			const attempts = isMatrixResource(manifest)
 				? manifest.attempts
 				: isRecord(manifest) && isMatrixAttempt(manifest.attempt)

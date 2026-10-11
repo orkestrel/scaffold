@@ -91,13 +91,34 @@ export interface MatrixRequest {
 
 /** Binds a driver invocation to frozen input and accepted phase evidence. */
 export interface MatrixExecution extends MatrixIdentity {
-	readonly phase: 'resource' | 'full' | 'pilot' | 'evaluation'
+	readonly phase: 'resource' | 'full' | 'pilot' | 'evaluation' | 'development'
+	readonly development?: RefitFile
 	readonly frozen: RefitFile
 	readonly budget: MatrixBudget
 	readonly resource?: RefitFile
 	readonly full?: RefitFile
 	readonly fit?: RefitFile
 	readonly pilot?: RefitFile
+}
+
+/** Binds exploratory admission to retained evidence without claiming qualification. */
+export interface MatrixDevelopment {
+	readonly phase: 'development'
+	readonly frozen: RefitFile
+	readonly predecessor: RefitFile
+	readonly diagnosis: RefitFile
+	readonly labels: RefitFile
+	readonly packet: RefitFile
+	readonly generation: RefitFile
+	readonly resource: RefitFile
+	readonly full: RefitFile
+	readonly agree: 0.67
+	readonly change: 0.56
+	readonly selection: 'highest-grid-majority-occurrences-and-identities'
+	readonly continuation: 'failed-goal-after-xml-function-parameter-error'
+	readonly limitation: 'seed-candidates-do-not-certify-diverged-history'
+	readonly paired: MatrixBudget
+	readonly expanded: MatrixBudget
 }
 
 /** Holds an unscored complete-trajectory attempt. */
