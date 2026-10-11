@@ -23,9 +23,9 @@ The requested comparisons remain pending. All model/thinking conditions have bee
 | Qwen 2B    |               251 |                            1 | Refused: supported draft rejected for spelled-out dates           |
 | Gemma 2B   |               162 |                           55 | Refused: none passed the cutoff needed to reject incorrect drafts |
 | Gemma 4B   |               162 |                           93 | Refused: none passed the cutoff needed to reject incorrect drafts |
-| Qwen 4B    |               163 |           Review in progress | Pending                                                           |
+| Qwen 4B    |               163 |                           43 | Refused: none passed the cutoff needed to reject incorrect drafts |
 
-Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, 1099747 ms for Gemma 4B, and 839550 ms for Qwen 4B. The focused objective diagnosis and completed Cursor Opus design pass propose a bounded source-clause prompt experiment. Root has not changed the frozen method; Qwen 4B adjudication remains pending.
+Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, 1099747 ms for Gemma 4B, and 839550 ms for Qwen 4B. Every original fit refused admission. Root has authorized a bounded source-clause prompt revision after objective diagnosis and the requested Cursor Opus design pass. The revision preserves the judge, admission rule, and budgets; its calibration has not run. See [the development ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-prompt-l7.md).
 
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
