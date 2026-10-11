@@ -21,7 +21,7 @@ The admission diagnostics recorded complete requests and matching score calculat
 
 ## Model runs
 
-Root selected a bounded statement-support test after Astra and Cursor Opus returned their proposals. Each check keeps the full summary for interpreting the focused statement and uses only the conversation as evidence. The corrected instrument passed independent review and offline verification: 8 positive tests passed and 11 intentional negative controls failed correctly. Its fixed live test follows; no canonical admission change is accepted. See [the instrument acceptance](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-support/README.md).
+The corrected statement-support test passed: supported text scored 0.7571 and unsupported text scored 0.3958 in both request orders. All 4 requests completed in 14698 ms with matching raw-score calculations. Each check retained the complete summary as context and used only conversation sources as evidence. This local result follows independent review and offline verification; complete-summary and boundary controls must pass before full admission calibration. No canonical admission change or work-quality verdict follows from this result. See [the test and raw evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-support/README.md).
 
 Thinking-disabled records resource checks passed at a 3072-token context and 512-token reserve. Each run served 24 development goals. These checks establish resource feasibility, not held-out answer quality.
 

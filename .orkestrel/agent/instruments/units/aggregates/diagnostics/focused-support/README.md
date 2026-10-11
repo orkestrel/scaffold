@@ -20,4 +20,15 @@ Root authorizes only the fixed sequence statement-a, statement-b, statement-b, s
 
 Exact offline token fit and service non-truncation are unproved. Complete request bytes, actual usage below the unchanged 4096-token window, and the one-token readout are required observations, but do not independently attest service history retention. This bounded test can establish local ordering only. Full-candidate controls, calibration qualification, resource qualification, held-out work quality, and adoption remain outside its acceptance.
 
-No live result is recorded at this checkpoint.
+## Live result
+
+Root accepts the complete local discriminator: the supported focus outranked the unsupported focus in both request orders. Native verifier Luna ran the fixed sequence without a retry, exit 0 uncapped in 14698 ms. All 4 requests and 2 daemon checks completed; every transmitted body matched its frozen bytes, and every raw score replay differed from the library score by zero. All 76 bindings matched after execution. See [the immutable live report](aggregate-focused-screen-live-report.md), [raw evidence](live/), and [the ranking](live/ranking.json).
+
+| Pass | Supported statement-b | Unsupported statement-a | Outcome |
+| --- | ---: | ---: | --- |
+| Forward | 0.7570881646437931 | 0.3957718403070372 | Passed |
+| Reverse | 0.7570881646437931 | 0.3957718403070372 | Passed |
+
+Recorded usage totals 5632 prompt tokens and 4 completion tokens. Cached prompt counts total 3207 and are included in prompt usage. Maximum prompt plus completion was 1420, below the 4096-token window. The intentional one-token judge readout ended with length in every response; this is distinct from a length-stopped work answer. The tag/digest remained unchanged, and the recorded process exited.
+
+This result closes local forwarding, arithmetic, and ordering observations. It does not label the complete candidates, prove general support discrimination, or qualify an aggregate treatment. The next admission unit freezes complete-candidate and paired boundary controls before their inference and settles their labels independently. Its proposed score remains the minimum of all contextual focus scores and the unchanged l8 whole-candidate guard. No fragment selection, threshold relaxation, or canonical change follows from this local pass.
