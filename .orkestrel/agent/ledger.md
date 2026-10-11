@@ -176,6 +176,10 @@ Root accepts the fixed live relation-deletion diagnostic after native verifier L
 
 Qwen 2B records resource preflight accepted in 133738 ms at reserve512/window3072. Full view retained all24 development goal rows but request20 returned HTTP500 with an XML parse error; child/operator exit1 uncapped in1043149ms. The operational failure is separate from model infeasibility. Native analyst Astra diagnosed the retained failure through checked `aggregate-q2-full-failure`; root is reviewing its recommendation for an unchanged fresh preflight. No source change or retry is accepted by that report alone. See [the retained resource/full custody](instruments/units/aggregates/reports/resumption-l7-q2-feasibility.md).
 
+Root accepted Gemma 2B thinking-disabled records resource preflight after the complete verifier report and bare logs: exit 0 uncapped in 158503 ms, reserve 512, window 3072, 24 goal rows, and 67 HTTP 200 requests with complete usage. Both recorded process trees exited. See [the Gemma custody record](instruments/units/aggregates/reports/resumption-l7-g2-feasibility.md).
+
+Root reconciled native analyst Astra and Cursor Opus 5.5 into the frozen l8 admission screen. Cursor session `71bbe56b-41aa-44f0-a6a8-fdf36dadf8fa` completed uncapped in 425817 ms including its wrapper. The selected exact question and JSON evidence/candidate rendering are a combined empirical hypothesis; the model, readout, summarizer, and thresholds remain fixed. Calibration retries are lexical, and successor archived controls require fresh scores. Native builder Sol prepares an isolated offline operator reusing the accepted recorder and completion boundary. Independent verification and review precede live execution. See [the development ruling](instruments/units/aggregates/reports/resumption-admission-l8.md).
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.
