@@ -2,7 +2,13 @@
 
 Publication is on hold until the aggregate experiment and adoption verdict finish. Agent 0.0.30 is verified. The corrected records-versus-aggregate-versus-full-view quality comparison has not run.
 
-The next milestone is the first same-goal development comparison, with per-goal results, aggregate exposure, failures and costs. Harness work expanded too far before that measurement. Finish the current admission and effective-capacity repairs, verify their changed behavior, then run Qwen 2B with thinking disabled through the existing calibration and comparison path before expanding to the remaining conditions. Preserve held-out evaluation and the mandatory continuous comparison for the adoption verdict. No additional diagnostic campaign is planned.
+The immediate MVP is Qwen 2B with thinking disabled, the same 24 development goals, and three conditions: records, living aggregate, and full view. Report per-goal quality, aggregate exposure, failures and costs before expanding conditions. Verification is limited to the paths this run uses; the wider matrix and sustained-work checks remain required before adoption. No new reporting interface or diagnostic campaign is planned.
+
+## Actual answer quality available now
+
+An independent semantic review of the historical Qwen 2B records run found **11 correct answers, 12 failures and 1 ambiguous answer across 24 goals**. Its stored pattern scorer reported 14 passes. Excluding the protocol's g06 leaves 11–12 content passes out of 23. Four otherwise correct answers omitted the lookup required by the scenario's order-handling rule; tool compliance is reported separately from content quality.
+
+Failures include using superseded contacts, applying one customer's shipment state to another, and treating reopened tickets as closed. This is an unblinded historical baseline, not the corrected three-arm result. See [all per-goal findings and raw references](.orkestrel/agent/instruments/units/aggregates/reports/resumption-q2-historical-quality.md).
 
 ## Admission blocker
 
@@ -23,7 +29,7 @@ The admission diagnostics recorded complete requests and matching score calculat
 
 ## Model runs
 
-The complete-summary screen passed its fixed live test: 88 requests in 135266 ms, with every supported boundary candidate outranking its unsafe counterpart in both directions. Independent raw-score calculations and all 97 packet bindings matched. Canonical contextual statement checks, exact checked-prose rendering, and fresh calibration/control evidence are now being implemented. Independent review and gates precede full calibration. See [the accepted live screen](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-boundaries/README.md) and [the implementation map](.orkestrel/agent/instruments/units/aggregates/reports/resumption-contextual-integration-map.md).
+The complete-summary screen passed its fixed live test: 88 requests in 135266 ms, with every supported boundary candidate outranking its unsafe counterpart in both directions. Independent source audits passed, but integrated execution found failures: build/type/format/lint passed, then 402 of 423 tests passed and 21 failed. The causes are now bounded to source-extension validation, stale synthetic judge/summary expectations, an archived request expectation missing the approved shift flag, and handling unsent attempts after a measured refusal. Exact repairs are in progress. The first Qwen 2B model commands are prepared; no fresh comparison has started. See [the accepted live screen](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-boundaries/README.md), [the admission source audit](.orkestrel/agent/instruments/units/aggregates/reports/resumption-contextual-audit.md), and [the capacity source audit](.orkestrel/agent/instruments/units/aggregates/reports/resumption-capacity-audit.md).
 
 The corrected statement-support test passed: supported text scored 0.7571 and unsupported text scored 0.3958 in both request orders. All 4 requests completed in 14698 ms with matching raw-score calculations. Each check retained the complete summary as context and used only conversation sources as evidence. This local result follows independent review and offline verification; complete-summary and boundary controls must pass before full admission calibration. No canonical admission change or work-quality verdict follows from this result. See [the test and raw evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/focused-support/README.md).
 

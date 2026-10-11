@@ -1,3 +1,6 @@
 # Preserve the returned lookup report's recorded bytes.
 resumption-focus-impact.md -text
 resumption-full-admission-clarification.md -text
+resumption-contextual-audit.md -text
+resumption-capacity-audit.md -text
+resumption-q2-historical-quality.md -text
