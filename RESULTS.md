@@ -20,7 +20,7 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 ## Work in progress
 
-The bounded admission change is being implemented so each requested model can receive its own evidence-based exploratory run when strict qualification refuses it. Actual Claude Opus 5.5 planning and independent Astra analysis informed [the accepted direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-comparison-completion-direction.md). Strict qualification and adoption requirements remain intact.
+Verification found a wall-expiry classification defect and omitted full-view preparation costs; both are reproduced. The development fixture also needs valid manifest inputs and a clean positive pair. A bounded repair is next, followed by the remaining scoped gates. The actual model plan is checked, but no l14 inference or continuous pair has run. Actual Claude Opus 5.5 and independent Astra analysis informed [the accepted direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-comparison-completion-direction.md). Strict qualification and adoption requirements remain unchanged. See [the repair decision and failed-gate measurements](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-repair.md).
 
 The remaining measurements are:
 
