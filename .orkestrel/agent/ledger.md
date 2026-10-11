@@ -2,6 +2,14 @@
 
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
+## Boundary acceptance and capacity observation of 2026-10-11
+
+Native verifier Luna completed the fixed boundary screen in 135266 ms, exit 0 uncapped. Root accepts its complete paired ordering after raw custody and independent arithmetic. The preceding malformed launch argument caused local refusal before inference; the successor changed only that argument. Root corrected a preliminary extraction omission by requiring the native cached-prompt field; the final report retains 31326 cached tokens within 59724 prompt tokens. See [the live boundary acceptance](instruments/units/aggregates/diagnostics/focused-boundaries/README.md).
+
+Native verifier Luna completed the capacity sequence in 306155 ms, and its independent custody checks matched all 70 captures and 353 payload files. A scoped scout supplement retained the runner interval without the startup environment map; an incidental search output of that map is disclosed. Root accepts the bounded observations and leaves Gemma 2B generation exhaustion unresolved. Native builder Sol prepares checked aggregate-capacity-g2-control offline, with unchanged capture behavior and only the fixed padded population. See [the capacity ruling](instruments/units/aggregates/diagnostics/capacity-controls/README.md).
+
+Cursor Grok 4.7 Extra High maps only the canonical contextual-support integration seam through checked aggregate-focused-integration. Session `d09b8018-80e2-4ea2-9d03-24676db64653`, journal tmp/cursor/aggregate-focused-integration.jsonl, recorded child PID64004, cap 900 seconds. The earlier source map took 719344 ms; this cap includes allowance. Root confirmed advancing tool events. The lane returns evidence only; root owns implementation and acceptance. No canonical source or quality workload has run in this dispatch.
+
 ## Parallel capacity observation and boundary verification of 2026-10-11
 
 Root accepts native builder Sol's boundary operator after clean-context analyst Astra confirmed the added claims and verifier Luna passed the scoped gates in 3480 ms, exit 0 uncapped. Root read the complete reports, bare outputs, and decision-bearing composition/reduction/execution source. Audit citations resolve. The bounded acceptance concerns offline wiring and fixed population reduction; actual model discrimination remains pending. Root prepared the fixed live brief, queued behind the capacity client. See [the retained operator and independent evidence](instruments/units/aggregates/diagnostics/focused-boundaries/README.md).
