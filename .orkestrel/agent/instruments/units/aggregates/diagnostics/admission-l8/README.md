@@ -10,4 +10,21 @@ Native Luna independently ran the strict type check, syntax checks, the positive
 
 Independent Astra confirmed rendering custody, application dependency bindings and execution refusal checks, completion wiring, and strict per-pass ranking. Root read the report, the actual source and diff, and the bare positive, negative, preparation, and guard outputs. The claim set had distinguishing mutations and the audit closes without another pass. Actual live forwarding remains an observation owed by the screen. Application custody excludes replacement of Node itself or arbitrary injected loaders; the offline proof does not mutate every live failure guard. See [the immutable audit](aggregate-admission-screen-audit-report.md), SHA-256 `98317c614ff8dffbd882ce37a8850ac329315df7edef89e3bf805daab9a5cd97`.
 
-The archive carries native gate logs, raw output, reports, and source/configuration evidence. It carries no external bench journal. The live sequence remains pending at this checkpoint.
+The archive carries native gate logs, raw output, reports, and source/configuration evidence. It carries no external bench journal.
+
+## Live ruling
+
+Root accepts the complete live measurement and refuses the presentation revision under its frozen rule. The run exited 0 uncapped in 23826 ms through the canonical built launcher, with 8 completed model requests and 2 matching daemon checks. The verifier used the built twin rather than the source launcher named in the brief; the recorded child command, cap, raw evidence, and completion outcome are unchanged. All 72 packet bindings remained stable, every request body matched its frozen rendering, and every score matched independent raw-probability replay. Root read the full report, bare launcher output, ranking, representative actual request and raw responses, and independently recomputed the decisive scores. PID 64040 and its descendants are absent. See [the immutable live report](aggregate-admission-screen-live-report.md), SHA-256 `697340166e123a8f4e34016f95ff282b5f1d94fadbd4594fea877f9fa985b665`.
+
+The readings repeat exactly in the reverse pass:
+
+| Candidate | Settled support | Forward score | Reverse score |
+| --- | --- | ---: | ---: |
+| Original | Unsupported | 0.6475513594308746 | 0.6475513594308746 |
+| Repair prerequisite removed | Unsupported cause retained | 0.6335111001434612 | 0.6335111001434612 |
+| Cause removed | Unsupported repair prerequisite retained | 0.8429336143254792 | 0.8429336143254792 |
+| Both removed | Supported | 0.8021873696606229 | 0.8021873696606229 |
+
+The supported candidate fails the comparison with the cause-removed variant in each pass. The latter invents an electrician's repair as a prerequisite to replacement; the sources describe the electrician discovering cracked glass and do not impose that prerequisite. The result preserves the settled labels. It neither proves the cause of Mica's error nor rules on aggregate work quality. The canonical harness remains unchanged; this failed revision will not enter qualification.
+
+The run recorded 10176 prompt tokens and 8 completion tokens. Its cached-prompt field totals 5858 and remains separate. Raw evidence is preserved under [the live output](r2/live-forward-reverse/outcome.json); the archive copy compared byte-for-byte with the working directory. No retry ran. A successor must address the admission mechanism through a bounded test before canonical integration. The offline instrument audit is closed; no further audit of its unchanged claims is warranted.

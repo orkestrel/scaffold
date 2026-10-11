@@ -1,64 +1,59 @@
 # Results
 
-Publication is on hold. Agent 0.0.30 has passed its release checks. Aggregate adoption remains undecided; the corrected live comparison has not run.
+Publication is on hold until the aggregate experiment and adoption verdict finish. Agent 0.0.30 is verified. The corrected records-versus-aggregate-versus-full-view quality comparison has not run.
 
-The release evidence is recorded in [the release checkpoint](.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md).
+## Admission blocker
 
-| Completed run                              | Result                                                                             |
-| ------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Agent main `ee734c3`, prepublication gates | 1,857 passed, 2 applicability skips                                                |
-| Recorded replay                            | 108 of 108 passed                                                                  |
-| Raw request comparison                     | 618 requests per build; no differences or incomplete copies                        |
-| Desk packed-consumer checks                | 532 passed, 4 applicability skips                                                  |
-| Ollama consumer patch checks               | 811 passed, 2 applicability skips; owner retains live-service and publication work |
+The aggregate can produce supported summaries, but its admission judge does not separate them reliably from unsupported summaries. Running with useful summaries withheld would repeat the original pilot's empty treatment.
 
-The historical Qwen 2B pilot is retained as a stopped experiment. Records and aggregate each passed 9 of 12 goals, but the aggregate supplied no summaries and removed seed context that records retained. Those scores do not establish aggregate quality or equivalence. See [the pilot evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-pilot-stop.md).
+The revised source-clause prompt improved development support, but every fit refused. Qualification requires at least 50% supported admission while rejecting every scored nonpositive calibration item. These are draft occurrences, including repetitions, rather than independent samples or work-quality scores.
 
-The corrected experiment preserves identical initial records context. The aggregate persists across read points and must update, revalidate, or retire summaries when their evidence changes. Records, aggregate, and full view will be compared on answer and work quality; full view has an explicitly larger context allowance. Separate judge runs test summaries against conversation evidence.
+| Summarizer | Supported drafts / occurrences | Supported admitted |
+| --- | ---: | ---: |
+| Qwen 2B | 131 / 168 | 1 |
+| Gemma 2B | 132 / 174 | 0 |
+| Gemma 4B | 137 / 179 | 5 |
+| Qwen 4B | 154 / 171 | 1 |
 
-The requested comparisons remain pending. All model/thinking conditions have been frozen. Calibration has the following measured status; these drafts are not goal-quality scores. See [the calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-live-calibration.md).
+See [the calibration evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-calibration.md).
 
-| Summarizer | Draft occurrences | Supported after adjudication | Fit outcome                                                       |
-| ---------- | ----------------: | ---------------------------: | ----------------------------------------------------------------- |
-| Qwen 2B    |               251 |                            1 | Refused: supported draft rejected for spelled-out dates           |
-| Gemma 2B   |               162 |                           55 | Refused: none passed the cutoff needed to reject incorrect drafts |
-| Gemma 4B   |               162 |                           93 | Refused: none passed the cutoff needed to reject incorrect drafts |
-| Qwen 4B    |               163 |                           43 | Refused: none passed the cutoff needed to reject incorrect drafts |
+The original controlled judge test scored an unsupported summary at 0.8425 and its supported correction at 0.8410. Independent Astra analysis and the requested Cursor Opus design pass led to a fixed test separating source evidence from the candidate. Its offline verification and audit passed. The live screen exited 0 uncapped in 23826 ms, but its ranking refused the revision: the supported candidate scored 0.8022, while a candidate retaining an invented repair prerequisite scored 0.8429 in both passes. Independent verification confirmed complete request custody and matching score calculations. Root accepts this measured refusal. These local scores are not an adoption verdict. See [the original diagnostic](.orkestrel/agent/instruments/units/aggregates/diagnostics/judge-relations/README.md), [the design ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-l8.md), and [the screen evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/admission-l8/README.md).
 
-Generation took 271800 ms for Qwen 2B, 828161 ms for Gemma 2B, 1099747 ms for Gemma 4B, and 839550 ms for Qwen 4B. Every original fit refused admission. The bounded source-clause prompt revision is implemented after objective diagnosis and the requested Cursor Opus design pass. Independent verification passed its full 44-test aggregate file, formatting, canonical build, and artifact bindings. The revision preserves the judge, admission rule, and budgets; its live calibration follows this checkpoint. See [the development ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-prompt-l7.md).
+## Model runs
 
-The revised calibration is complete. Every fit refuses admission:
+Thinking-disabled records resource checks passed at a 3072-token context and 512-token reserve. Each run served 24 development goals. These checks establish resource feasibility, not held-out answer quality.
 
-| Summarizer | Draft occurrences | Supported | Supported admitted | Separating cutoff |
-| --- | ---: | ---: | ---: | ---: |
-| Qwen 2B | 168 | 131 | 1 | 0.85 |
-| Gemma 2B | 174 | 132 | 0 | 0.78 |
-| Gemma 4B | 179 | 137 | 5 | 0.78 |
-| Qwen 4B | 171 | 154 | 1 | 0.78 |
+| Decision model | Requests | Duration | Thinking-enabled resource | Held-out quality matrix |
+| --- | ---: | ---: | --- | --- |
+| Qwen 2B | 78 | 133738 ms | Pending | Pending |
+| Gemma 2B | 67 | 158503 ms | Pending | Pending |
+| Qwen 4B | 67 | 274754 ms | Pending | Pending |
+| Gemma 4B | 75 | 269897 ms | Pending | Pending |
 
-Generation took 259460, 758004, 1032491, and 850165 ms respectively. The fit requires at least 50% supported admission while rejecting every scored nonpositive calibration item. These draft occurrences include repetitions; they are not independent samples or goal-quality scores. See [the Qwen 2B adjudication](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q2-adjudication.md), [the Gemma 2B adjudication](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g2-adjudication.md), [the Gemma 4B adjudication](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g4-adjudication.md), [the Qwen 4B adjudication](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q4-adjudication.md), and [the successor calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-calibration.md).
+See the resource evidence for [Qwen 2B](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q2-feasibility.md), [Gemma 2B](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g2-feasibility.md), [Qwen 4B](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q4-feasibility.md), and [Gemma 4B](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g4-feasibility.md).
 
-The fixed judge diagnostic confirms poor separation on the decisive example. The unsupported original scores 0.8425; removing both invented relationships yields a supported summary scoring 0.8410. Both readings repeat exactly, with independent calculations matching the raw response probabilities. The instrument ran 8 requests in 22635 ms. This supports revising admission before aggregate quality trials; it does not establish that aggregates help or harm work. Independent Astra analysis and the requested Cursor Opus design challenge are complete. Root accepts a bounded screen of explicit source evidence and candidate separation, with the judge model and thresholds fixed. Independent offline verification and the Astra audit passed; the live screen is next and has no measured result. See [the judge diagnostic](.orkestrel/agent/instruments/units/aggregates/diagnostics/judge-relations/README.md), [the admission development ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-l8.md), and [the screen acceptance](.orkestrel/agent/instruments/units/aggregates/diagnostics/admission-l8/README.md).
+Qwen 2B full-view preflight failed with an HTTP 500 XML parse error in 1043149 ms. That is an operational failure, not model infeasibility. An unchanged retry is prepared; effective full-view capacity remains unproven. Further feasibility runs wait for the admission implementation decision because a canonical change requires fresh resource evidence under the successor build. The completed readings remain historical evidence. See [the recovery evidence](.orkestrel/agent/instruments/units/aggregates/diagnostics/q2-full-failure/README.md) and [the custody contract](.orkestrel/agent/instruments/units/aggregates/reports/resumption-feasibility-custody.md).
 
-Qwen 2B with thinking disabled completed its records resource preflight: 24 development goals, 78 recorded requests, a 3072-token context, and a 512-token reserve. Its full-view preflight stopped with an HTTP 500 XML parse error in 1043149 ms. That operational failure does not establish model infeasibility. The full-view request used a derived context allowance of 1068663 tokens; the largest observed successful prompt was 12685 tokens. Effective service capacity remains unproven. See [the preflight evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q2-feasibility.md). The held-out quality comparison remains pending.
+The historical pilot passed 9 of 12 goals in each arm, but supplied no aggregate summaries and changed the initial seed context. Its STOP result cannot establish quality equivalence. See [the original pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-pilot-stop.md).
 
-| Decision model | Thinking disabled | Thinking enabled |
-| -------------- | ----------------- | ---------------- |
-| Qwen 2B        | Pending           | Pending          |
-| Qwen 4B        | Pending           | Pending          |
-| Gemma 2B       | Pending           | Pending          |
-| Gemma 4B       | Pending           | Pending          |
+## Release and implementation
 
-Gemma 2B with thinking disabled also passed its records resource preflight: 24 development goals, 67 requests with complete usage, a 3072-token context, and a 512-token reserve, in 158503 ms. This establishes operational feasibility at that reserve; it is not a held-out quality result. See [the Gemma preflight evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g2-feasibility.md).
+The completed checks passed with the following scope. See [the release checkpoint](.orkestrel/agent/instruments/units/agent-0030/release-checkpoint.md) and [the instrument checkpoint](.orkestrel/agent/instruments/units/aggregates/reports/resumption-composed-checkpoint.md).
 
-Qwen 4B with thinking disabled passed the same records resource preflight: 24 development goals, 67 requests with complete usage, a 3072-token context, and a 512-token reserve, in 274754 ms. See [the Qwen 4B preflight evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-q4-feasibility.md). Qwen 2B full-view recovery is prepared but unexecuted; a successful retry needs an explicit downstream manifest binding because the automatic planner expects the original result path. See [the recovery finding](.orkestrel/agent/instruments/units/aggregates/diagnostics/q2-full-failure/recovery-preparation.md).
+| Check | Result |
+| --- | --- |
+| Agent main `ee734c3`, prepublication gates | 1857 passed; 2 applicability skips |
+| Recorded replay | 108 of 108 passed |
+| Raw request comparison | 618 requests per build; no differences or incomplete copies |
+| Desk packed-consumer checks | 532 passed; 4 applicability skips |
+| Ollama consumer patch checks | 811 passed; 2 applicability skips; owner retains live-service and publication work |
+| Aggregate harness | 410 of 410 passed |
+| Scaffold | 1968 passed; 16 applicability skips; static and build gates passed |
 
-The independent aggregate harness passed 410 of 410 tests with no skips or failures in 953310 ms. Scaffold tests passed with 1,968 passes, 16 applicability skips, and no failures in 415328 ms. Build, formatting, lint, type, generated-inventory, and relocated operator checks passed. These are instrument checks, not model-quality results. See [the accepted instrument checkpoint](.orkestrel/agent/instruments/units/aggregates/reports/resumption-composed-checkpoint.md).
+## Remaining work and location
 
-Gemma 4B with thinking disabled passed records resource preflight in 269897 ms: 24 development goals and 75 requests with complete usage, at the same 3072-token context and 512-token reserve. All requested models have passed this thinking-disabled records check. Thinking-enabled, full-view, aggregate exposure, and held-out quality checks remain separate outstanding work. See [the Gemma 4B preflight evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l7-g4-feasibility.md).
+Resolve admission from the retained failures, complete resource/full-view qualification, and run feasible records, maintained-aggregate, and full-view cells with thinking disabled and enabled. Then complete the separate judge shadow, blind work-quality audit, justified development tuning, and fresh held-out evaluation. The final long continuous records-main-versus-aggregate comparison remains mandatory before adoption. Publication and the desk re-pin follow that decision and final release checks.
 
-The aggregate session branch is checked out in the normal scaffold directory. Its committed changes are visible by comparing that branch against main. Scaffold main retains release-only records. Git lists only the primary scaffold checkout; patches and raw evidence from removed worktrees are preserved. Automatic approval review blocked removal of a residual dependency junction, so residual directories remain. See [the consolidation record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-consolidation.md).
+The aggregate branch is checked out in the normal scaffold directory: `claude/confident-maxwell-6nd0f3`. Compare that branch against main to see committed changes. Scaffold main retains release-only records. Registered worktrees are removed; their patches and evidence are preserved. Residual directories remain after automatic approval review rejected dependency-junction cleanup. See [the consolidation record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-consolidation.md).
 
-The remaining work follows [the campaign plan](.orkestrel/agent/plan.md): resolve the admission judge and complete resource feasibility; select the sustained-work configuration from development evidence; run the model matrix and judge comparison; run the mandatory held-out continuous records-versus-aggregate pair; audit quality, apply justified development tuning, and evaluate on fresh held-out work before ruling on adoption. Publication and the desk re-pin follow the adoption decision and final release checks.
-
-See [detailed progress](.orkestrel/agent/progress.md) for evidence and [the routing ledger](.orkestrel/agent/ledger.md) for unit decisions.
+See [the plan](.orkestrel/agent/plan.md), [detailed progress](.orkestrel/agent/progress.md), and [the routing ledger](.orkestrel/agent/ledger.md).
