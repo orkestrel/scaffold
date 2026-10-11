@@ -1,6 +1,6 @@
 # Live calibration progress
 
-The corrected model conditions froze successfully on 2026-10-11. Qwen 2B generation completed; independent blind support labels and cutoff fitting remain pending. No goal-quality comparison or adoption verdict follows from generation alone.
+The corrected model conditions froze successfully on 2026-10-11. Qwen 2B calibration completed with an admission refusal. Gemma 2B generation completed and is under independent blind review; Gemma 4B generation is active. No goal-quality comparison or adoption verdict follows from calibration alone.
 
 Native verifier Luna ran the accepted primary preparation driver on session checkpoint `2897ba0e4`, using canonical harness build `eb254fd9ff13d2a95fcde5c856a1b0e977e9c9dd363c43c9938498bc1af00b57`. Every requested Qwen/Gemma size and decision-thinking condition froze with exit 0 uncapped. Each freeze binds the same 75 source files, settings, seed, model census, and tag identities; independent hashing found no mismatch. Freeze manifests are under [the l6 result directory](../../../results/l6/).
 
@@ -18,4 +18,10 @@ The accepted q2 artifacts have these identities.
 
 These paths resolve under `.orkestrel/agent/instruments/results/l6/calibration/q2`. Root read the complete verifier report and launcher result and verified the packet's byte identity before staging an opaque copy for a clean-context Astra analyst. That analyst receives the packet without model names, settings, scores, attempts, or the private generation path. Root adjudicates proposition evidence before fitting.
 
-The immutable native report is primary `tmp/units/aggregate-live-freeze-calibration-q2-report.md`, SHA-256 `580f7c08f93b840199ca304e208cbd9749064fb9714aa736ed1462f259d66e02`. Raw launcher evidence remains under l6/logs. Root accepted the unit and dispatched the remaining g2, g4, and q4 calibrations sequentially; independent cloud labeling can overlap later model generation. Resource preflight, pilots, matrix quality, separate judge runs, and the mandatory continuous comparison remain pending. Publication remains held.
+The immutable native report is primary `tmp/units/aggregate-live-freeze-calibration-q2-report.md`, SHA-256 `580f7c08f93b840199ca304e208cbd9749064fb9714aa736ed1462f259d66e02`. Raw launcher evidence remains under l6/logs. Root accepted the unit and dispatched the remaining g2, g4, and q4 calibrations sequentially; independent cloud labeling can overlap later model generation.
+
+Qwen 2B's adjudicated labels contain 1 supported, 122 unsupported, 123 contradicted, and 5 ambiguous occurrences. The fit returned child exit 3 uncapped in 2273 ms, with end-to-end supported admission 0 against the required 0.5. The supported draft's spelled-out dates failed the exact-number check before scoring. The candidate cutoff 0.91 is not an accepted fit. See [the root adjudication and diagnosis](resumption-q2-adjudication.md).
+
+The verifier reports Gemma 2B generation exit 0 uncapped in 828161 ms, with 162 packet occurrences covering the corpus and no errors. The immutable packet SHA-256 is `d634d4b39f4993a80452e8a579772e8b07d1db15dbaf7482605076a1a1880bb9`. Root checked the byte identity and supplied only an opaque copy to a separate clean-context Astra analyst under `support-audit-c38f`. Full generation acceptance follows the verifier's completed custody report; semantic adjudication and fitting remain pending.
+
+Resource preflight, pilots, matrix quality, separate judge runs, and the mandatory continuous comparison remain pending. Publication remains held.

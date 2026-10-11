@@ -118,6 +118,10 @@ Root dispatched clean-context native analyst Astra through the opaque `support-a
 
 Native scout Luna inventoried the remaining desk consumer worktree through `desk-worktree-custody`. Root preserved its ignored proof/build directories, removed the unused registered worktree, and switched the clean normal desk checkout to the existing session branch. Default branches remain unchanged. The agent root result pointer is pushed at `e549b4d`. See [the consolidation record](instruments/units/aggregates/reports/resumption-consolidation.md).
 
+Root accepted `support-audit-7ac2` after reading every distinct proposition analysis and adjudicating the supported item and material actor, time, and completion ambiguities. The label container preserves the analyst's judgments: 1 supported, 122 unsupported, 123 contradicted, and 5 ambiguous occurrences. The offline q2 fit returned child exit 3 uncapped in 2273 ms, with supported admission 0 below the required 0.5. The supported draft's spelled-out dates failed the exact-number check. Root retains that measured refusal and the concrete false rejection for development analysis. See [the adjudication](instruments/units/aggregates/reports/resumption-q2-adjudication.md).
+
+Root dispatched separate clean-context native analyst Astra under checked `support-audit-c38f` for the immutable g2 packet, SHA-256 `d634d4b39f4993a80452e8a579772e8b07d1db15dbaf7482605076a1a1880bb9`. The analyst sees only the opaque packet and named law. Model identity, settings, scores, other audits, and generation metadata remain excluded. Native verifier Luna continues serial generation without another GPU client.
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.

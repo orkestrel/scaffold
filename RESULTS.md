@@ -16,7 +16,7 @@ The historical Qwen 2B pilot is retained as a stopped experiment. Records and ag
 
 The corrected experiment preserves identical initial records context. The aggregate persists across read points and must update, revalidate, or retire summaries when their evidence changes. Records, aggregate, and full view will be compared on answer and work quality; full view has an explicitly larger context allowance. Separate judge runs test summaries against conversation evidence.
 
-The requested comparisons remain pending. All model/thinking conditions have been frozen. Qwen 2B calibration generated 251 draft occurrences in 271800 ms; independent blind support review is in progress. Calibration drafts are not goal-quality scores.
+The requested comparisons remain pending. All model/thinking conditions have been frozen. Qwen 2B calibration produced 251 draft occurrences in 271800 ms: blind review found 1 supported, 122 unsupported, 123 contradicted, and 5 ambiguous. Its fit refused admission because the supported draft failed the exact-number check on spelled-out dates. Gemma 2B generated 162 occurrences in 828161 ms and is under blind review; Gemma 4B generation is active. Calibration drafts are not goal-quality scores. See [the calibration record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-live-calibration.md).
 
 | Decision model | Thinking disabled | Thinking enabled |
 | -------------- | ----------------- | ---------------- |
@@ -29,6 +29,6 @@ The independent aggregate harness passed 410 of 410 tests with no skips or failu
 
 The aggregate session branch is checked out in the normal scaffold directory. Its committed changes are visible by comparing that branch against main. Scaffold main retains release-only records. Git lists only the primary scaffold checkout; patches and raw evidence from removed worktrees are preserved. Automatic approval review blocked removal of a residual dependency junction, so residual directories remain. See [the consolidation record](.orkestrel/agent/instruments/units/aggregates/reports/resumption-consolidation.md).
 
-The remaining work follows [the campaign plan](.orkestrel/agent/plan.md): freeze the model conditions; run blind calibration and resource feasibility; select the sustained-work configuration from development evidence; run the model matrix and judge comparison; run the mandatory held-out continuous records-versus-aggregate pair; audit quality, apply justified development tuning, and evaluate on fresh held-out work before ruling on adoption. Publication and the desk re-pin follow the adoption decision and final release checks.
+The remaining work follows [the campaign plan](.orkestrel/agent/plan.md): finish blind calibration and resource feasibility; select the sustained-work configuration from development evidence; run the model matrix and judge comparison; run the mandatory held-out continuous records-versus-aggregate pair; audit quality, apply justified development tuning, and evaluate on fresh held-out work before ruling on adoption. Publication and the desk re-pin follow the adoption decision and final release checks.
 
 See [detailed progress](.orkestrel/agent/progress.md) for evidence and [the routing ledger](.orkestrel/agent/ledger.md) for unit decisions.
