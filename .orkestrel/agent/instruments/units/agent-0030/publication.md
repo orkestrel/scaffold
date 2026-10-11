@@ -6,8 +6,10 @@ The fresh user-authorized OTP upload succeeded. The publish runner reported acce
 
 The successful runner journals remain local to agent at `tmp/units/agent-0030-publish-otp-2.stdout.log` and `tmp/units/agent-0030-publish-otp-2.stderr.log`.
 
-The user explicitly requested that Codex run the login and OTP upload. A direct `npm whoami` call succeeded before upload. The publish skill's built window runner submitted the package from the primary clone through the dispatch launcher under a 300-second cap. The runner exited 3 uncapped in 2690 ms and reported `refused EOTP`; its process PID58944 is gone. No retry reused that code. The following registry read returned E404 for 0.0.30.
+The user explicitly requested that Codex run the login and OTP upload. A direct `npm whoami` call succeeded before upload. The first publish attempt through the built window runner exited 3 uncapped in 2690 ms and reported `refused EOTP`; its process PID58944 is gone. No retry reused that code. The registry still returned E404 before the successful fresh-code attempt.
 
 Local agent evidence is retained at `tmp/units/agent-0030-publish-otp.stdout.log`, `tmp/units/agent-0030-publish-otp.stderr.log`, and `tmp/units/publish--orkestrel-agent.log`. These local journals are not committed. Authentication files and user codes are not part of the release record.
 
-See [package verification](publication-readiness.md) for complete identity to the verified archive. Complete the published-package consumer checks after resolving each consumer's required registry dependencies.
+The verified desk dependency combination requires the X2-compatible Ollama artifact. npm serves Ollama 0.0.22 with agent ^0.0.29; Ollama 0.0.23 is absent. The [original X2 patch](consumers/ollama-x2.patch), its metadata, and packed hashes are restored from their exact historical Git blobs. Ollama publication remains with its owning session under the user's original scope. See [the desk prerequisite](desk-publication-prerequisite.md).
+
+See [package verification](publication-readiness.md) for complete identity to the verified archive. Complete the desk pins and published-package checks after that dependency release.

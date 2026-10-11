@@ -1,5 +1,9 @@
 # Routing ledger for the `@orkestrel/agent` context campaign
 
+Native scout Luna confirmed the desk's verified combination requires an unpublished X2-compatible Ollama release. Root restored the original X2 patch, metadata, and packed hashes from exact Git blobs and left desk and Ollama unchanged. Agent 0.0.30 publication remains complete.
+
+Native analyst Astra diagnosed the reached sustained refit refusal from retained component scores: the protocol fixture recognizes an obsolete support question. Root verified the deciding source and all 17 citations and accepted the exact current-question predicate restricted to the known synthetic candidate. Native builder Sol applied it and added a real judge protocol regression, failing before and passing after. Root read the full test and exact diff, confirmed source release, and dispatched native Luna verifier successor3 with final hashes and actual diff/status. The affected consumer population and deliberate-break controls remain pending; no inference is released.
+
 Root completed the authorized 0.0.30 upload with the fresh user code through the built publish skill. The runner reported accepted and confirmed, exit 0 uncapped in 77708 ms. A separate registry read returned the verified archive SHA-1 and SHA-512 integrity; agent main remains clean. No source change or repeated release gate was needed.
 
 Root read the exact builder option and resource emission and accepts Luna's omitted fixture-manifest diagnosis. Checked aggregate-development-flush-verifier successor2 authorizes only the existing resource argument, the unresolved sustained tests, original mutation controls, byte restoration, and canonical build. No retained source repair or inference is authorized in this verification window.

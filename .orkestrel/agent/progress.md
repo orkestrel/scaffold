@@ -1,5 +1,9 @@
 # Release and aggregate progress
 
+The desk's verified published-package combination awaits the X2-compatible Ollama release. The registry serves Ollama 0.0.22, and 0.0.23 is absent. Root restored the historical patch and metadata from exact Git blobs; no Ollama or desk source changed. See [the dependency evidence](instruments/units/agent-0030/desk-publication-prerequisite.md).
+
+The sustained fixture's missing manifest was resolved through the existing resource argument. Independent Astra then traced its admission refusal to obsolete judge-question recognition. Root inspected the deciding fixture and renderer and accepted the exact candidate-scoped prescription. Sol's real protocol regression failed before and passed after; source is released to Luna for affected consumer tests, pending flush controls, peer controls, restoration, and canonical build. Production admission and calibration remain unchanged. See [the fixture diagnosis](instruments/units/aggregates/reports/resumption-sustained-fixture-fit.md).
+
 Agent 0.0.30 is published and registry-confirmed. The fresh user-authorized OTP upload completed with exit 0 uncapped in 77708 ms; the separate registry read returned the exact verified archive integrity. Agent main remains clean at ee734c3. This closes publication and supersedes the pending upload entries; desk published-package pins and checks remain open. See [the publication record](instruments/units/agent-0030/publication.md).
 
 The user-authorized agent 0.0.30 upload was refused with EOTP after successful login. The publish runner exited 3 uncapped in 2690 ms; a following registry read returned E404 for 0.0.30. Root requested a fresh code and did not retry the rejected code. See [the publication record](instruments/units/agent-0030/publication.md). This result supersedes the unauthenticated and unattempted status in the preceding release preparation.
