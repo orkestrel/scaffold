@@ -1,6 +1,6 @@
 # Source-clause calibration
 
-The source-clause successor has completed Qwen 2B generation and entered independent blind support review. No successor fit or downstream quality verdict exists. The original cohort remains in [the original calibration record](resumption-live-calibration.md).
+The source-clause successor's Qwen 2B fit refuses supported admission despite improved factual support. Gemma 2B generation is complete and under blind review; Gemma 4B generation runs before Qwen 4B. No downstream quality verdict exists. The original cohort remains in [the original calibration record](resumption-live-calibration.md).
 
 The accepted source checkpoint is `8c9176feae3ea8e8060bdc0cfca1b49f1e1f6aad`; canonical build manifest SHA-256 is `09c7d936ffaec46ed9deb5bdd300deb0f9643ad639519762d8d84e38ef513ecf`. See [the bounded revision and verification](resumption-prompt-l7.md). The judge, fit rule, lexical checks, budgets, and source population remain unchanged. The result root is `results/l7`; manifest protocol and generated run names retain the unchanged `l6` schema.
 
@@ -19,6 +19,21 @@ The Qwen 2B artifacts under `results/l7/calibration/q2` have these identities.
 | `generation/evidence.json` | `24fddf4bfc7d870a49395ad72b62d5bf8429ebb27e56d18e8f3d666fc1ba81b2` |
 | `generation/manifest.json` | `7cc0e6af513f8f9a65d0cdf35afa6b94b7ab350465328a95e380f42ac9b79216` |
 
-The recorded completion usage reaches the unchanged 160-token limit in 6 attempt occurrences. Prose length ranges from 100 to 545 characters. These measurements describe output size, not support or coverage. The independent analyst receives only the byte-identical opaque packet under `support-audit-93d1`, without model identity, scores, generation metadata, or other audits. The review keeps omission alone separate from support errors and reports prominent coverage losses independently. Root will settle labels before inspecting scores or fitting.
+The recorded completion usage reaches the unchanged 160-token limit in 6 attempt occurrences. Prose length ranges from 100 to 545 characters. These measurements describe output size, not support or coverage. The independent analyst received only the byte-identical opaque packet under `support-audit-93d1`, without model identity, scores, generation metadata, or other audits. Root settled 131 supported, 12 unsupported, 10 contradicted, and 15 ambiguous occurrences before reading scores. The unchanged fit refused in 2079 ms: candidate cutoff 0.85 admits only 1 of 131 supported occurrences. See [the complete adjudication and fit](resumption-l7-q2-adjudication.md).
 
-Gemma 2B, Gemma 4B, and Qwen 4B generation are assigned serially to native verifier Luna. Completed packet reviews can overlap a later model's generation. Only the verifier's active generation uses the local daemon; no concurrent local model client is assigned. Resource feasibility, pilots, matrix answer comparisons, the judge shadow, and the mandatory continuous comparison follow the declared prerequisites. See [the baseline execution finding](resumption-baseline-execution.md) for preserving records and full-view results when aggregate admission refuses.
+Gemma 2B corpus preparation exited 0 uncapped in 2541 ms, with 24 points and 162 contexts. Generation exited 0 uncapped in 758004 ms, producing 174 attempts and matching packet records, `complete: true`, and no listed errors. The verifier checked every generation-manifest binding against disk. The recorded PID 22980 and descendants exited; root read the complete custody report and raw logs before staging the independent audit. Completion usage reaches the 160-token limit in 31 attempt occurrences; prose lengths range from 227 to 493 characters. Repeated occurrences are not independent model requests.
+
+The Gemma 2B artifacts under `results/l7/calibration/g2` have these identities.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `corpus/corpus.json` | `c224e6bdb03cb40371a45b0d3096900cd390d0352257b262a1f0539aa607b397` |
+| `corpus/manifest.json` | `cf703128bbcdca5d0c95f12ef910e4c0e616242218e9f53a9ac399cb535c0ff1` |
+| `generation/attempts.jsonl` | `3fc356f66e3d26caaf1b0fbd7d78b6efcaae75ebddf3fcfb95073abf7576786b` |
+| `generation/packet.jsonl` | `962fdb27b0043304631d65eca1620e5e69db8c908bfb43aca0f39273f40ca23c` |
+| `generation/evidence.json` | `2043850d86095b9a2ae5f115a43af13d6cfff8f79cd7097d2c18b6a2020c00cb` |
+| `generation/manifest.json` | `c9451e0a2b405b23a553bb90a3e3e2a09cdfe9265e3d8918f02573df122d4a0e` |
+
+The Gemma 2B custody report is primary `tmp/units/aggregate-l7-g2-calibration-report.md`, SHA-256 `696e2aa034a112df27edbb444c6d42bd784ce14ab8371515ee03f97da29cceca`. Clean-context analyst Astra owns the byte-identical opaque `support-audit-b47e` packet. Its brief explicitly applies the same provenance reading to source-date and role headings and keeps useful-information omissions separate from support. Root retains adjudication before score inspection.
+
+Gemma 4B and Qwen 4B generation continue serially under native verifier Luna. Completed packet reviews and offline fitting overlap later generation. Only the verifier's active generation uses the local daemon; no concurrent local model client is assigned. Resource feasibility, pilots, matrix answer comparisons, the judge shadow, and the mandatory continuous comparison follow the declared prerequisites. See [the baseline execution finding](resumption-baseline-execution.md) for preserving records and full-view results when aggregate admission refuses.
