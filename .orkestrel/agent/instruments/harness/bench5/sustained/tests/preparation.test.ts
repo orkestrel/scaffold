@@ -388,7 +388,18 @@ it('retains authentic exposure-only pilots and rejected fits through ranked inco
 				const calibration: unknown = value.preparation[0]
 				assert.ok(isRecord(calibration))
 				assert.equal(calibration.identity, generationHash)
-				assert.deepEqual(calibration.wire, generationCosts.costs.wire)
+				assert.deepEqual(
+					calibration.wire,
+					generationCosts.costs.wire.filter((cost) => cost.phase === 'trajectory'),
+				)
+				assert.ok(Array.isArray(calibration.controls))
+				assert.deepEqual(
+					calibration.controls.map((cost: unknown) => {
+						assert.ok(isRecord(cost))
+						return { ...cost, phase: 'calibration' }
+					}),
+					generationCosts.costs.wire.filter((cost) => cost.phase === 'calibration'),
+				)
 			}
 			const altered = join(base, 'altered-diagnosis.json')
 			writeFileSync(altered, JSON.stringify({ ...assessment, reasons: ['invented refusal'] }))

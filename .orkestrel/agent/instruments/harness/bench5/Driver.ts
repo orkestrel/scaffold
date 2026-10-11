@@ -1011,6 +1011,10 @@ export class Driver {
 				failures,
 				wall: inference || Date.now() - started,
 			}
+			const transport =
+				role === 'judge' &&
+				sent &&
+				(error !== undefined || (status !== undefined && (status < 200 || status >= 300)))
 			if (role === 'agent' && sent && this.#config.frozen !== undefined) {
 				try {
 					readCapacity(evidence, this.#config.frozen)
@@ -1024,7 +1028,8 @@ export class Driver {
 				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
 				if (
 					!sent ||
-					readRequestOutcome(evidence, budget, this.#config.frozen) !== 'complete' ||
+					(!transport &&
+						readRequestOutcome(evidence, budget, this.#config.frozen) !== 'complete') ||
 					this.#tokensUsed > this.#config.study.limits.tokens ||
 					Date.now() - this.#started > this.#config.study.limits.wall
 				)
@@ -1052,6 +1057,7 @@ export class Driver {
 				this.#config.frozen !== undefined &&
 				((role === 'agent' && failures.length !== 0) ||
 					(this.#config.execution?.phase === 'development' &&
+						!transport &&
 						readRequestOutcome({ ...evidence, failures }, budget, this.#config.frozen) !==
 							'complete'))
 			) {

@@ -4,6 +4,7 @@ import { once } from 'node:events'
 import { isRecord } from '@orkestrel/contract'
 import { MICA_MODEL, MODELS } from '../constants.js'
 import { AGREE_QUESTION, FOCUS_QUESTION } from '../aggregates/constants.js'
+import { FLUSH_SYSTEM } from '../Driver.js'
 
 /** Serves actual Ollama wire boundaries for matrix admission tests. */
 export class MatrixPeer {
@@ -16,9 +17,19 @@ export class MatrixPeer {
 	agreement: number | undefined
 	escalations = false
 	fault = false
+	faults = 0
 	parser: number | undefined
 	decisions = 0
 	metadata = 200
+	flush = {
+		length: false,
+		fault: false,
+		incomplete: false,
+		missing: false,
+		truncated: false,
+		completion: 1,
+		boundary: false,
+	}
 	readonly #server = createServer((request, response) => {
 		void this.#respond(request, response).catch((error: unknown) =>
 			response.writeHead(500).end(String(error)),
@@ -81,6 +92,12 @@ export class MatrixPeer {
 				},
 			]
 		if (request.url === '/api/generate') {
+			if (this.faults > 0) {
+				this.faults -= 1
+				response.writeHead(500, { 'content-type': 'application/json' })
+				response.end(JSON.stringify({ error: 'context capacity wording in a transport fault' }))
+				return
+			}
 			const noul = String(body.prompt).includes('Answer Yes if true, or No if false.')
 			const tokens = noul ? ['Yes', 'No'] : ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 			const topic = /The message concerns (\w+):/.exec(String(body.prompt))?.[1]
@@ -132,6 +149,22 @@ export class MatrixPeer {
 		}
 		if (request.url !== '/api/chat' || !Array.isArray(body.messages) || !isRecord(body.options))
 			throw new Error('fixture expected chat')
+		const flush =
+			body.think === false &&
+			body.options.num_predict === 1 &&
+			body.tools === undefined &&
+			body.messages.length === 2 &&
+			body.messages.every(
+				(message: unknown, index: number) =>
+					isRecord(message) &&
+					message.role === (index === 0 ? 'system' : 'user') &&
+					message.content === (index === 0 ? FLUSH_SYSTEM : ''),
+			)
+		if (flush && this.flush.fault) {
+			response.writeHead(500, { 'content-type': 'application/json' })
+			response.end(JSON.stringify({ error: 'fixture flush HTTP failure' }))
+			return
+		}
 		if (body.options.num_predict === 512 && Array.isArray(body.tools) && body.tools.length > 0) {
 			this.decisions += 1
 			if (this.decisions === this.parser) {
@@ -161,10 +194,16 @@ export class MatrixPeer {
 			body.options.num_predict === 512 &&
 			Array.isArray(body.tools) &&
 			body.tools.length > 0
-		const completion = body.options.num_predict === 1 ? 1 : capped ? 512 : 5
+		const completion = flush
+			? this.flush.completion
+			: body.options.num_predict === 1
+				? 1
+				: capped
+					? 512
+					: 5
 		response.setHeader('content-type', 'application/x-ndjson')
 		response.end(
-			`${JSON.stringify({ model: body.model, done: true, done_reason: capped ? 'length' : 'stop', message: { role: 'assistant', content: this.support && body.options.num_predict === 160 ? 'The standing rule applies to this topic.' : 'Fixture answer.' }, ...(this.missing && body.options.num_predict !== 1 ? {} : { prompt_eval_count: prompt, eval_count: completion }) })}\n`,
+			`${JSON.stringify({ model: body.model, done: !(flush && this.flush.incomplete), done_reason: capped || (flush && this.flush.length) ? 'length' : 'stop', message: { role: 'assistant', content: this.support && body.options.num_predict === 160 ? 'The standing rule applies to this topic.' : 'Fixture answer.' }, ...(flush && this.flush.truncated ? { truncated: true } : {}), ...((this.missing && body.options.num_predict !== 1) || (flush && this.flush.missing) ? {} : { prompt_eval_count: flush && this.flush.boundary ? Number(body.options.num_ctx) - completion : prompt, eval_count: completion }) })}\n`,
 		)
 	}
 }

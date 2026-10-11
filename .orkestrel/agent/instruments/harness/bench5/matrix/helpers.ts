@@ -839,7 +839,14 @@ export function readRequestOutcome(
 		reading.prompt === undefined ||
 		reading.completion === undefined ||
 		(reading.reason === 'length' &&
-			!(request.role === 'agent' && request.goal === undefined && failures.length === 0)) ||
+			!(
+				(request.role === 'agent' && request.goal === undefined && failures.length === 0) ||
+				(request.role === 'flush' &&
+					request.request.think === false &&
+					isRecord(options) &&
+					options.num_predict === 1 &&
+					reading.completion === 1)
+			)) ||
 		truncated ||
 		failures.length !== 0 ||
 		(isRecord(options) &&

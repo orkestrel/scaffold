@@ -1,5 +1,6 @@
 import { it } from 'node:test'
 import type { MatrixOutcome } from '../types.js'
+import type { CallRole } from '../../types.js'
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -14,7 +15,7 @@ import {
 } from '../helpers.js'
 import { isMatrixBudget, isMatrixRequest } from '../validators.js'
 import { MODELS, SAMPLER } from '../../constants.js'
-import { shapeBody } from '../../Driver.js'
+import { FLUSH_SYSTEM, shapeBody } from '../../Driver.js'
 import { buildCapacityFreeze, writeCapacityRequest } from './helpers.js'
 
 it('requires observed allocation, raw integer usage, exact controls, and the frozen strict ceiling', () => {
@@ -297,6 +298,66 @@ it('limits the length-finish exception to intentional one-token nonthinking gaug
 			'refused',
 		)
 		assert.equal(readRequestOutcome({ ...gauge, capacity: undefined }, budget, frozen), 'fault')
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})
+
+it('admits only successful intentional one-token nonthinking length-terminated flushes', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-flush-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const budget = buildBudget(512)
+		const body = {
+			model: MODELS.q2,
+			think: false,
+			options: { ...SAMPLER, num_ctx: 3072, num_predict: 1 },
+			messages: [
+				{ role: 'system', content: FLUSH_SYSTEM },
+				{ role: 'user', content: '' },
+			],
+		}
+		const response = {
+			done: true,
+			done_reason: 'length',
+			prompt_eval_count: 22,
+			eval_count: 1,
+		}
+		const flush = writeCapacityRequest(directory, {
+			role: 'flush',
+			request: body,
+			response: JSON.stringify(response),
+		})
+		assert.equal(readRequestOutcome(flush, budget, frozen), 'complete')
+		assert.equal(
+			readRequestOutcome(
+				{ ...flush, response: JSON.stringify({ ...response, done_reason: 'stop' }) },
+				budget,
+				frozen,
+			),
+			'complete',
+		)
+		for (const changes of [
+			{ status: 500 },
+			{ response: JSON.stringify({ ...response, done: false }) },
+			{ response: JSON.stringify({ done: true, done_reason: 'length' }) },
+			{ response: '{"done":true' },
+		])
+			assert.equal(readRequestOutcome({ ...flush, ...changes }, budget, frozen), 'fault')
+		for (const changes of [
+			{ response: JSON.stringify({ ...response, truncated: true }) },
+			{ response: JSON.stringify({ ...response, prompt_eval_count: 3071 }) },
+			{ response: JSON.stringify({ ...response, eval_count: 0 }) },
+			{ response: JSON.stringify({ ...response, eval_count: 2 }) },
+			{ request: { ...body, options: { ...body.options, num_predict: 2 } } },
+			{ request: { ...body, think: true } },
+		])
+			assert.equal(readRequestOutcome({ ...flush, ...changes }, budget, frozen), 'refused')
+		const roles: readonly CallRole[] = ['judge', 'summarizer']
+		for (const role of roles)
+			assert.equal(readRequestOutcome({ ...flush, role }, budget, frozen), 'refused')
+		const decision = writeCapacityRequest(directory, { response: JSON.stringify(response) })
+		assert.equal(readRequestOutcome(decision, budget, frozen), 'refused')
 	} finally {
 		rmSync(directory, { recursive: true, force: true })
 	}

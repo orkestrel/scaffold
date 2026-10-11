@@ -26,17 +26,150 @@ import {
 	verifyMatrixFeasibility,
 	listMatrixPairFailures,
 	measureMatrixCosts,
+	readRequestOutcome,
 } from '../matrix/helpers.js'
 import { MatrixPeer } from './matrixFixture.js'
 import { writeDevelopmentFixture } from './refit/helpers.js'
 
-it('runs the fixed development policy in every real arm, retains parser-failed work, and isolates qualification', async () => {
+it('retries sent judge transport in real matrix development without admitting missing usage', async () => {
+	const parent = resolve('tmp/units/aggregate-sustained-transport-fix-fixtures')
+	mkdirSync(parent, { recursive: true })
+	const directory = mkdtempSync(join(parent, 'development-'))
+	const peer = new MatrixPeer()
+	peer.support = true
+	peer.agreement = 0.75
+	const url = await peer.start()
+	try {
+		const seed = join(directory, 'seed.jsonl')
+		writeFileSync(seed, '', { flag: 'wx' })
+		const frozenPath = join(directory, 'freeze/manifest.json')
+		assert.equal(
+			await Matrix.execute([
+				'freeze',
+				'--deployment',
+				writeDeploymentFixture(directory),
+				'--key',
+				'q2',
+				'--think',
+				'false',
+				'--seed',
+				seed,
+				'--settings',
+				join(HARNESS, 'bench5/settings.json'),
+				'--out',
+				join(directory, 'freeze'),
+				'--live',
+				'--url',
+				url,
+			]),
+			0,
+		)
+		const frozen = readFrozen(hashFile(frozenPath))
+		const policy = writeDevelopmentFixture(directory, frozenPath)
+		const policyPath = join(directory, 'development.json')
+		writeFileSync(policyPath, JSON.stringify(policy), { flag: 'wx' })
+		const retries = frozen.configuration.retry
+		assert.ok(retries > 0)
+		for (const faults of [1, retries + 1]) {
+			peer.faults = faults
+			const execution: MatrixExecution = {
+				protocol: 'l6',
+				phase: 'development',
+				key: 'q2',
+				think: false,
+				arm: 'aggregate',
+				copy: 1,
+				frozen: hashFile(frozenPath),
+				budget: policy.paired,
+				development: hashFile(policyPath),
+			}
+			const manifest = join(directory, `retry-${faults}-execution.json`)
+			writeFileSync(manifest, JSON.stringify(execution), { flag: 'wx' })
+			const out = join(directory, `retry-${faults}`)
+			const config = parseFlags([
+				'--run',
+				'--live',
+				'--copy',
+				'1',
+				'--manifest',
+				manifest,
+				'--cache',
+				join(directory, `retry-${faults}-cache`),
+				'--out',
+				out,
+				'--url',
+				url,
+			])
+			assert.ok(config.success, config.success ? '' : config.error)
+			const result: unknown = await new Driver(config.value)
+				.execute()
+				.catch((error: unknown) => error)
+			const requests = readRows(join(out, 'requests.jsonl'))
+			assert.ok(requests.every(isMatrixRequest))
+			const judges = requests.filter((request) => request.role === 'judge')
+			const fault = judges.find((request) => request.status === 500)
+			assert.ok(fault && isRecord(fault.request))
+			const same = judges.filter(
+				(request) =>
+					isRecord(request.request) &&
+					isRecord(fault.request) &&
+					request.request.prompt === fault.request.prompt,
+			)
+			assert.equal(
+				same.filter((request) => request.sent).length,
+				faults === 1 ? 2 : retries + 1,
+				'matrix development must send every budget-permitted judge retry',
+			)
+			assert.equal(same.length, faults === 1 ? 2 : retries + 1)
+			assert.ok(same.every((request) => request.sent))
+			assert.equal(judges.filter((request) => request.status === 500).length, faults)
+			assert.equal(peer.faults, 0)
+			for (const failed of same.filter((request) => request.status === 500)) {
+				assert.equal(failed.prompt, undefined)
+				assert.equal(failed.completion, undefined)
+				assert.equal(
+					readRequestOutcome({ ...failed, failures: ['capacity'] }, policy.paired, frozen),
+					'fault',
+				)
+			}
+			if (faults === 1) {
+				assert.equal(same.at(-1)?.status, 200)
+				assert.equal(result, 0)
+			} else {
+				assert.ok(result instanceof Error)
+				assert.match(result.message, /harness fault: the judge failed/)
+				assert.equal(judges.length, retries + 1)
+			}
+			const run = parseMatrixRun(out)
+			assert.ok(run)
+			assert.throws(
+				() => verifyMatrixFeasibility(run),
+				/operational matrix fault is not configuration infeasibility/,
+			)
+			const costs = measureMatrixCosts(run).wire.filter((cost) => cost.role === 'judge')
+			assert.equal(
+				costs.reduce((total, cost) => total + cost.requests, 0),
+				judges.filter((request) => request.sent).length,
+			)
+			assert.equal(
+				costs.reduce((total, cost) => total + cost.missing, 0),
+				faults,
+			)
+		}
+		console.log(`DEVELOPMENT_JUDGE_TRANSPORT_FIXTURE ${directory}`)
+	} finally {
+		await peer.destroy()
+	}
+})
+
+it('runs length-terminated production flushes in every real development arm and refuses invalid flushes', async () => {
 	const parent = resolve('tmp/units/aggregate-development-execution-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'development-'))
 	const peer = new MatrixPeer()
 	peer.support = true
 	peer.agreement = 0.75
+	peer.flush.length = true
 	const url = await peer.start()
 	try {
 		const seed = join(directory, 'seed.jsonl')
@@ -240,7 +373,33 @@ it('runs the fixed development policy in every real arm, retains parser-failed w
 					assert.equal(existsSync(output), false)
 				}
 			}
-			assert.equal(await new Driver(config.value).execute(), 0)
+			const result: unknown = await new Driver(config.value)
+				.execute()
+				.catch((error: unknown) => error)
+			const requests = readRows(join(out, 'requests.jsonl')).filter(isMatrixRequest)
+			const flushes = requests.filter((entry) => entry.role === 'flush' && entry.sent)
+			assert.ok(flushes.length > 0, `${arm} must retain a sent production flush`)
+			for (const flush of flushes) {
+				assert.equal(flush.status, 200)
+				assert.equal(flush.reason, 'length')
+				assert.equal(flush.completion, 1)
+				assert.ok(isRecord(flush.request) && isRecord(flush.request.options))
+				assert.equal(flush.request.think, false)
+				assert.equal(flush.request.options.num_predict, 1)
+				assert.equal(flush.request.tools, undefined)
+			}
+			assert.equal(result, 0)
+			for (const flush of flushes)
+				assert.ok(
+					requests.some(
+						(entry) =>
+							entry.role === 'agent' &&
+							entry.sent &&
+							entry.goal === flush.goal &&
+							entry.sequence > flush.sequence,
+					),
+					`${arm} must send a later decision for flush goal ${flush.goal}`,
+				)
 			const run = parseMatrixRun(out)
 			assert.ok(run)
 			runs.set(arm, run)
@@ -403,6 +562,95 @@ it('runs the fixed development policy in every real arm, retains parser-failed w
 			assert.ok(
 				readRows(join(out, 'rows.jsonl')).length <
 					readCopy(join(COPIES_DIR, 'v1.json')).goals.length,
+			)
+		}
+		peer.fault = false
+		peer.length = false
+		peer.missing = false
+		peer.metadata = 200
+		for (const control of ['http', 'terminal', 'usage', 'truncation', 'completion', 'boundary']) {
+			peer.decisions = 0
+			peer.flush = {
+				length: true,
+				fault: control === 'http',
+				incomplete: control === 'terminal',
+				missing: control === 'usage',
+				truncated: control === 'truncation',
+				completion: control === 'completion' ? 2 : 1,
+				boundary: control === 'boundary',
+			}
+			const out = join(directory, `flush-${control}`)
+			const config = parseFlags([
+				'--run',
+				'--live',
+				'--copy',
+				'1',
+				'--manifest',
+				join(directory, 'records-development.json'),
+				'--cache',
+				join(directory, `flush-${control}-cache`),
+				'--out',
+				out,
+				'--url',
+				url,
+			])
+			assert.ok(config.success, config.success ? '' : config.error)
+			const rejection =
+				control === 'http'
+					? /decision qualification failed: transport/
+					: /development integrity failure/
+			await assert.rejects(new Driver(config.value).execute(), rejection)
+			const requests = readRows(join(out, 'requests.jsonl')).filter(isMatrixRequest)
+			const flush = requests.find((entry) => entry.role === 'flush' && entry.sent)
+			assert.ok(flush, `${control} must reach the production flush`)
+			const calibration = requests.find(
+				(entry) => entry.role === 'agent' && entry.sent && entry.goal === undefined,
+			)
+			assert.ok(calibration && calibration.sequence < flush.sequence)
+			assert.equal(readRequestOutcome(calibration, policy.paired, frozen), 'complete')
+			assert.ok(isRecord(flush.request) && isRecord(flush.request.options))
+			assert.equal(flush.request.think, false)
+			assert.equal(flush.request.options.num_predict, 1)
+			assert.equal(flush.request.tools, undefined)
+			assert.equal(flush.status, control === 'http' ? 500 : 200)
+			assert.equal(
+				readRequestOutcome(flush, policy.paired, frozen),
+				['http', 'terminal', 'usage'].includes(control) ? 'fault' : 'refused',
+			)
+			assert.ok(flush.response)
+			const response: unknown = JSON.parse(flush.response)
+			assert.ok(isRecord(response))
+			if (control === 'http') assert.equal(response.error, 'fixture flush HTTP failure')
+			else {
+				assert.equal(response.done, control !== 'terminal')
+				assert.equal(response.done_reason, 'length')
+				assert.equal(response.truncated, control === 'truncation' ? true : undefined)
+				assert.equal(
+					response.eval_count,
+					control === 'usage' ? undefined : control === 'completion' ? 2 : 1,
+				)
+				if (control === 'boundary')
+					assert.equal(
+						Number(response.prompt_eval_count) + Number(response.eval_count),
+						flush.request.options.num_ctx,
+					)
+			}
+			const rows = readRows(join(out, 'rows.jsonl'))
+			const row = rows.find((entry) => isRecord(entry) && entry.goal === flush.goal)
+			assert.ok(isRecord(row))
+			assert.equal(row.success, false)
+			assert.equal(row.partial, true)
+			assert.match(String(row.error), rejection)
+			assert.ok(rows.length < readCopy(join(COPIES_DIR, 'v1.json')).goals.length)
+			assert.equal(
+				requests.some(
+					(entry) =>
+						entry.role === 'agent' &&
+						entry.sent &&
+						entry.goal === flush.goal &&
+						entry.sequence > flush.sequence,
+				),
+				false,
 			)
 		}
 	} finally {

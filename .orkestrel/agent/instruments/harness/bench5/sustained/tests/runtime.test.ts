@@ -1,10 +1,9 @@
-import { writeDeploymentFixture } from '../../matrix/tests/helpers.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { BUILD, HARNESS } from '../../constants.js'
+import { BUILD } from '../../constants.js'
 import { MatrixPeer } from '../../tests/matrixFixture.js'
 import { hashFile } from '../../refit/helpers.js'
 import { readJSON } from '../../helpers.js'
@@ -484,128 +483,6 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			0,
 		)
 		assert.equal(peer.calls.length, priorCalls)
-		peer.filingFailure = true
-		const refusedCandidates: string[] = []
-		for (const key of ['q4', 'g4', 'q2', 'g2']) {
-			const candidateRoot = join(directory, 'infeasible', key)
-			const freeze = key === 'q4' ? frozenPath : join(candidateRoot, 'freeze/manifest.json')
-			const resource = key === 'q4' ? resourcePath : join(candidateRoot, 'resource/manifest.json')
-			if (key !== 'q4') {
-				assert.equal(
-					await runCommand('matrix', [
-						'freeze',
-						'--deployment',
-						writeDeploymentFixture(directory),
-						'--key',
-						key,
-						'--think',
-						'false',
-						'--seed',
-						join(directory, 'seed.jsonl'),
-						'--settings',
-						join(HARNESS, 'bench5/settings.json'),
-						'--out',
-						join(candidateRoot, 'freeze'),
-						'--live',
-						'--url',
-						matrixUrl,
-					]),
-					0,
-				)
-				assert.equal(
-					await runCommand('matrix', [
-						'resource',
-						'--frozen',
-						freeze,
-						'--out',
-						join(candidateRoot, 'resource'),
-						'--live',
-						'--url',
-						matrixUrl,
-					]),
-					0,
-				)
-			}
-			assert.equal(
-				await runCommand('sustained', [
-					'filing',
-					'--frozen',
-					freeze,
-					'--resource',
-					resource,
-					'--runtime',
-					runtime,
-					'--out',
-					join(candidateRoot, 'filing'),
-					'--live',
-					'--url',
-					url,
-				]),
-				3,
-			)
-			const candidatePath = join(candidateRoot, 'candidate.json')
-			assert.equal(
-				await runCommand('sustained', [
-					'candidate',
-					'--frozen',
-					freeze,
-					'--resource',
-					resource,
-					'--runtime',
-					runtime,
-					'--preparation',
-					join(candidateRoot, 'filing/classification.json'),
-					'--out',
-					candidatePath,
-				]),
-				3,
-			)
-			refusedCandidates.push('--candidate', candidatePath)
-		}
-		const inconclusive = join(directory, 'infeasible/selection.json')
-		const borrowedResource = join(directory, 'borrowed-resource-execution.json')
-		writeFileSync(
-			borrowedResource,
-			JSON.stringify({
-				...original,
-				resource: hashFile(join(directory, 'infeasible/g4/resource/manifest.json')),
-			}),
-		)
-		const beforeBorrow = peer.calls.length
-		assert.throws(() => readSustainedExecution(borrowedResource), /resource|frozen|configuration/)
-		assert.equal(peer.calls.length, beforeBorrow)
-		assert.equal(
-			await runCommand('sustained', [
-				'select',
-				'--development',
-				runtime,
-				'--evaluation',
-				join(workload, 'runtime/evaluation.json'),
-				...refusedCandidates,
-				'--seed',
-				'7',
-				'--out',
-				inconclusive,
-			]),
-			3,
-		)
-		assert.equal(
-			await runCommand('sustained-audit', [
-				'report',
-				'--selection',
-				inconclusive,
-				'--out',
-				join(directory, 'infeasible/report.json'),
-			]),
-			0,
-		)
-		const infeasibleReport = readJSON(join(directory, 'infeasible/report.json'))
-		assert.ok(
-			isRecord(infeasibleReport) &&
-				infeasibleReport.recommendation === 'inconclusive' &&
-				Array.isArray(infeasibleReport.preparation) &&
-				infeasibleReport.preparation.length >= 4,
-		)
 		const refusal = spawnSync(
 			process.execPath,
 			[

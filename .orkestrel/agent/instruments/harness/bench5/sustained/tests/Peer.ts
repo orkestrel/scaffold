@@ -4,6 +4,7 @@ import { once } from 'node:events'
 import { setTimeout } from 'node:timers/promises'
 import { isRecord } from '@orkestrel/contract'
 import { MICA_MODEL, MODELS } from '../../constants.js'
+import { AGREE_QUESTION, FOCUS_QUESTION } from '../../aggregates/constants.js'
 
 /** Serves only an ephemeral real Ollama protocol boundary for continuous-history proofs. */
 export class Peer {
@@ -13,6 +14,7 @@ export class Peer {
 	missingAt: string | undefined
 	lengthAt: string | undefined
 	filingFailure = false
+	boundary = false
 	faults = 0
 	status = 500
 	readonly #server = createServer((request, response) => {
@@ -92,7 +94,9 @@ export class Peer {
 			const prompt = String(body.prompt)
 			const noul = prompt.includes('Answer Yes if true, or No if false.')
 			const winner = noul
-				? prompt.includes('Does the summary agree') ||
+				? ((prompt.includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
+						prompt.includes(`Question: ${AGREE_QUESTION.instructions}\n`)) &&
+						prompt.includes('\n "candidate": "The standing rule applies to this topic."')) ||
 					prompt.includes('The message concerns policies:')
 					? 'Yes'
 					: 'No'
@@ -105,7 +109,13 @@ export class Peer {
 					done: true,
 					done_reason: 'stop',
 					response: winner,
-					...(this.filingFailure ? {} : { prompt_eval_count: 50, eval_count: 1 }),
+					...(this.filingFailure
+						? {}
+						: {
+								prompt_eval_count:
+									this.boundary && isRecord(body.options) ? Number(body.options.num_ctx) - 1 : 50,
+								eval_count: 1,
+							}),
 					logprobs: [
 						{
 							token: winner,
