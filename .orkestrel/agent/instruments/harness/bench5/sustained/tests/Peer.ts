@@ -7,6 +7,7 @@ import { MICA_MODEL, MODELS } from '../../constants.js'
 
 /** Serves only an ephemeral real Ollama protocol boundary for continuous-history proofs. */
 export class Peer {
+	readonly #latency: number
 	readonly calls: unknown[] = []
 	missingAt: string | undefined
 	lengthAt: string | undefined
@@ -18,6 +19,13 @@ export class Peer {
 			response.writeHead(500).end(String(error)),
 		)
 	})
+
+	/** Configures uniform protocol service work.
+	 * @param latency - Real service duration in milliseconds for chat and generate requests
+	 */
+	constructor(latency = 10) {
+		this.#latency = latency
+	}
 
 	/** Opens the owned protocol peer. */
 	async start(): Promise<string> {
@@ -55,7 +63,7 @@ export class Peer {
 		const body: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'))
 		if (!isRecord(body)) throw new Error('invalid peer request')
 		this.calls.push(body)
-		await setTimeout(10)
+		await setTimeout(this.#latency)
 		if (request.url === '/api/generate') {
 			if (this.faults > 0) {
 				this.faults -= 1

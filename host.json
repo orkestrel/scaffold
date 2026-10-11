@@ -802,7 +802,7 @@
 			"storage": "dotfiles/gitignore",
 			"destination": ".gitignore",
 			"executable": false,
-			"digest": "e8789a7b46ab16a8a4127127fa5e9f131f7fb559936c878ef07d59afafcc08cb"
+			"digest": "357faf2a11a929f5446886473b1dece6a16ecc7121f4730fe5af805fa5b88e91"
 		},
 		{
 			"storage": "dotfiles/mcp.json",
@@ -2120,5 +2120,5 @@
 			]
 		}
 	],
-	"digest": "02465e7741dd4ed39f82545b88c24ce6143881532e6b506d6fec0820ca898315"
+	"digest": "88f591cfe3da3f0d674c165315c3d1444a9b32c9fc1bf811150b4f63ca837308"
 }

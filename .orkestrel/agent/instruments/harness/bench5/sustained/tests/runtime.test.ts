@@ -19,7 +19,7 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 	const parent = resolve('tmp/units/aggregate-runtime-fixtures')
 	mkdirSync(parent, { recursive: true })
 	const directory = mkdtempSync(join(parent, 'proof-'))
-	const peer = new Peer()
+	const peer = new Peer(100)
 	const matrixPeer = new MatrixPeer()
 	matrixPeer.support = true
 	const url = await peer.start()
@@ -70,6 +70,62 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			records.observations.some((one) => one.omitted.some((id) => id.startsWith('product:'))),
 		)
 		assert.equal(hashFile(classified.path).hash, classified.hash)
+		const developmentExecution = readSustainedExecution(
+			join(directory, 'development/records/execution.json'),
+		).execution
+		const wallExecution = join(directory, 'wall-execution.json')
+		writeFileSync(
+			wallExecution,
+			JSON.stringify({
+				...developmentExecution,
+				limits: { ...developmentExecution.limits, wall: 1 },
+			}),
+			{ flag: 'wx' },
+		)
+		const wallPath = join(directory, 'wall-refusal')
+		const wallBefore = peer.calls.length
+		const wallStatus = await runCommand('bench', [
+			'--run',
+			'--live',
+			'--study',
+			wallExecution,
+			'--cache',
+			join(directory, 'wall-cache'),
+			'--out',
+			wallPath,
+			'--url',
+			url,
+		])
+		const wallAfter = peer.calls.length
+		const wallRun = readSustainedRun(wallPath)
+		const wallMetadata = readJSON(join(wallPath, 'run.json'))
+		assert.ok(isRecord(wallMetadata) && typeof wallMetadata.wall === 'number')
+		writeFileSync(
+			join(directory, 'wall-proof.json'),
+			JSON.stringify({
+				wall: 1,
+				elapsed: wallMetadata.wall,
+				status: wallStatus,
+				before: wallBefore,
+				after: wallAfter,
+				calls: peer.calls.slice(wallBefore),
+				requests: hashFile(join(wallPath, 'requests.jsonl')),
+				run: hashFile(join(wallPath, 'run.json')),
+				failures: wallRun.failures,
+				errors: wallRun.errors,
+			}),
+			{ flag: 'wx' },
+		)
+		assert.notEqual(wallStatus, 0, 'expired wall must refuse the real driver')
+		assert.deepEqual(wallRun.errors, [])
+		assert.equal(wallRun.execution.limits.wall, 1)
+		assert.ok(wallMetadata.wall >= wallRun.execution.limits.wall)
+		assert.ok(
+			wallRun.failures.some((failure) => /whole-trajectory (wall )?limit reached/.test(failure)),
+		)
+		assert.ok(wallRun.requests.length > 0)
+		assert.ok(wallRun.requests.every((request) => !request.sent))
+		assert.equal(wallAfter, wallBefore)
 		const selection = join(directory, 'selection.json')
 		assert.equal(
 			await runCommand('sustained', [
@@ -116,8 +172,71 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			0,
 		)
 		const evaluation = readSustainedRun(join(directory, 'evaluation/aggregate/run'))
+		const evaluationRecords = readSustainedRun(join(directory, 'evaluation/records/run'))
 		assert.equal(evaluation.runtime.id, 'fixture-evaluation-e1')
-		assert.deepEqual(evaluation.failures, [])
+		for (const run of [evaluationRecords, evaluation]) {
+			assert.equal(run.rows.length, 32)
+			assert.equal(run.status, 'complete')
+			assert.deepEqual(run.errors, [])
+			assert.deepEqual(run.failures, [])
+			assert.deepEqual(
+				run.observations.filter((one) => one.checkpoint).map((one) => one.shift),
+				[4, 8],
+			)
+		}
+		const development = [records, aggregate]
+		const scale =
+			evaluation.runtime.goals.length /
+			Math.max(...development.map((run) => run.runtime.goals.length))
+		const elapsed = development.map((run) => {
+			const metadata = readJSON(join(run.path, 'run.json'))
+			assert.ok(isRecord(metadata) && typeof metadata.wall === 'number')
+			return metadata.wall
+		})
+		const ceilings = {
+			calls: Math.max(
+				1,
+				Math.ceil(
+					Math.max(
+						...development.map((run) => run.requests.filter((request) => request.sent).length),
+					) *
+						scale *
+						2,
+				),
+			),
+			tokens: Math.max(
+				1,
+				Math.ceil(
+					Math.max(
+						...development.map((run) =>
+							run.requests.reduce(
+								(total, request) => total + (request.prompt ?? 0) + (request.completion ?? 0),
+								0,
+							),
+						),
+					) *
+						scale *
+						2,
+				),
+			),
+			wall: Math.max(1, Math.ceil(Math.max(...elapsed) * scale * 2)),
+			retries: records.frozen.configuration.retry,
+			goals: evaluation.runtime.goals.length,
+			derivation: `Twice the maximum complete same-configuration development expenditure, scaled by evaluation/development goals (${scale}); all roles included; no reserve/window/retry change. Wall is whole-run elapsed, never the sum of overlapping timers.`,
+			evidence: development.flatMap((run) => run.files),
+		}
+		assert.deepEqual(readSustainedSelection(selection).limits, ceilings)
+		const completion = [evaluationRecords, evaluation].map((run) => {
+			assert.deepEqual(
+				readSustainedExecution(join(directory, 'evaluation', run.execution.arm, 'execution.json'))
+					.execution.limits,
+				ceilings,
+			)
+			assert.equal(typeof run.costs.elapsed, 'number')
+			const wall = run.costs.elapsed
+			assert.ok(typeof wall === 'number' && wall < ceilings.wall)
+			return { arm: run.execution.arm, wall, ceiling: ceilings.wall, margin: ceilings.wall - wall }
+		})
 		const blind = join(directory, 'blind/packet.json')
 		const keys = join(directory, 'private/keys.json')
 		const auditArgs = [
@@ -317,9 +436,6 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 		assert.ok(truncated.failures.some((failure) => failure.includes('length')))
 		assert.ok(truncated.observations.some((one) => one.checkpoint && one.shift === 4))
 		peer.lengthAt = undefined
-		const developmentExecution = readSustainedExecution(
-			join(directory, 'development/records/execution.json'),
-		).execution
 		const limited = join(directory, 'limited-execution.json')
 		writeFileSync(
 			limited,
@@ -511,6 +627,9 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 					records: records.path,
 					aggregate: aggregate.path,
 					evaluation: join(directory, 'evaluation'),
+					completion,
+					ceilings,
+					wall: join(directory, 'wall-proof.json'),
 					partial: partialPath,
 					workload: readWorkload(hashFile(runtime)),
 					packet: blind,
