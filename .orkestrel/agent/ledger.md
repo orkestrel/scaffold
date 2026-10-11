@@ -102,6 +102,14 @@ The resolved independent gate on 2026-10-11 passed 410 of 410 harness tests acro
 
 The user requests the aggregate branch in the normal scaffold directory, a root RESULTS.md, and removal of unused worktrees. Native scout Luna inventoried the registered trees, dirty paths, and dependency junctions under aggregate-worktree-custody-brief.md. Root owns consolidation and removal, with local patches and raw evidence preserved first. Main stays at its release-only checkpoint. The prepared feasibility check is held until its operator path is relocated. Publication remains held through comparison and adoption.
 
+### Primary-checkout acceptance on 2026-10-11
+
+Root accepts source checkpoint `4f3e0220d` after native verifier Luna completed the relocated scaffold and operator checks. Scaffold npm test passed with 1,968 passes, 16 applicability skips, and no failures in 415328 ms. Build and format passed; host inventory remained byte-identical. The preceding independent 410-of-410 aggregate harness pass remains the harness proof. Source/compiler/output relocation parity and exact operator command/refusal controls passed without a model request. See [the accepted instrument checkpoint](instruments/units/aggregates/reports/resumption-composed-checkpoint.md).
+
+The session branch occupies the normal scaffold checkout. Git lists only that scaffold checkout; raw evidence and patches from removed worktrees are preserved with path mappings in [the consolidation record](instruments/units/aggregates/reports/resumption-consolidation.md). Automatic approval review rejected a residual dependency-junction removal with "blocked by policy" and supplied no further reason. Root retained the residual directories without retrying deletion through another mechanism. Main remains at its release-only checkpoint.
+
+The next unit is native verifier Luna under primary `tmp/units/aggregate-live-freeze-calibration-q2-brief.md`: freeze every requested model/thinking condition, then freeze and generate Qwen 2B calibration. The accepted primary preparation driver binds manifest `eb254fd9ff13d2a95fcde5c856a1b0e977e9c9dd363c43c9938498bc1af00b57`. Execution follows the accepted checkpoint push. Blind proposition labels and root adjudication remain separate from generation. Publication remains held through comparison and adoption.
+
 ## Long-running commands
 
 Live runs through `a4-refined-v6` ran from `tmp/bench/results/v7/tools/run-one.sh`, a bash script outside `launch.ts`. From `a4-refined-v7` on, each live run launches through the dispatch skill's `launch.ts` under a cap, running `tmp/bench/results/v7/tools/run-one.ts`.

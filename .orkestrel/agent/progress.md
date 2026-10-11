@@ -2,11 +2,11 @@
 
 The existing release candidate is verified, but publication is deferred by the user until the aggregate comparison and adoption verdict finish. Aggregate model-quality evaluation remains pending. This record distinguishes release-source verification, the stopped pilot, and offline instrument proofs. For remaining work and its order, see [the resumption plan](plan.md#resume-from-the-verified-state-of-2026-10-10).
 
-The active aggregate checkout is `C:/Users/mikes/WebstormProjects/scaffold/tmp/worktrees/agent-session`, on `claude/confident-maxwell-6nd0f3`. Scaffold main at `215a103595e57d0536d0d2ca23980a0506838ae2` carries release records only, including the publication hold. The session checkpoint is `07d17d18be0283f47ae0027d35c16a5ac2ee4f2b`; the composed repairs are preserved locally and remain unaccepted and unpushed.
+The active aggregate checkout is `C:/Users/mikes/WebstormProjects/scaffold`, on `claude/confident-maxwell-6nd0f3`. Scaffold main stays at `215a103595e57d0536d0d2ca23980a0506838ae2` with release records only, including the publication hold. Root accepts the instrument at source checkpoint `4f3e0220d` after the completed independent gates. See [the concise results](../../RESULTS.md).
 
-On 2026-10-11, the independent composed harness passed 410 of 410 tests across 81 suites, with no skips, cancellations, or todo tests, in 953310 ms. The canonical build and scaffold format, lint, type, and build commands passed. The gate then stopped because scaffold build regenerated the host inventory for the branch's existing ignore rule. Root retains that exact generated correction; inventory idempotence and the remaining scaffold tests are owed. See [the composed checkpoint](instruments/units/aggregates/reports/resumption-composed-checkpoint.md). Live freezes and corrected model comparisons remain held.
+On 2026-10-11, the independent composed harness passed 410 of 410 tests across 81 suites, with no skips, cancellations, or todo tests, in 953310 ms. The canonical build and scaffold format, lint, type, and build commands passed. The successor proved idempotent host-inventory regeneration and passed scaffold tests: 1,968 passes, 16 applicability skips, and no failures in 415328 ms. Relocated source, emitted-build, and operator checks passed. See [the accepted instrument checkpoint](instruments/units/aggregates/reports/resumption-composed-checkpoint.md). Live freezes and blind calibration are the next phase; corrected model-quality results remain pending.
 
-The user requests consolidation into the normal scaffold directory, a root RESULTS.md file, and removal of unused worktrees. After the gate processes exited, root began that transition. The aggregate branch stays separate from main. Local patches, raw proofs, and build evidence are preserved before worktree removal.
+The aggregate branch and root RESULTS.md are available in the normal scaffold directory. The aggregate branch stays separate from main. Git lists only the primary scaffold checkout. Local patches, raw proofs, and build evidence from removed worktrees are retained. See [the consolidation record](instruments/units/aggregates/reports/resumption-consolidation.md) for historical path mappings and the residual cleanup rejected by automatic approval review.
 
 ## Release evidence
 
@@ -54,7 +54,7 @@ The final pair uses the configuration selected by the frozen development feasibi
 
 ## Instrument verification
 
-The following runs test the measurement implementation with real components and controlled local inputs. They are not live model-quality results and their counts must not be added together.
+The following historical runs test the measurement implementation with real components and controlled local inputs. Their pending boundaries describe each run when recorded; the accepted checkpoint preceding this section closes composed verification. They are not live model-quality results and their counts must not be added together.
 
 | Evidence                                   | Result                                                                                                                               | Acceptance boundary                                                                                                                                            |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
