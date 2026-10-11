@@ -30,8 +30,10 @@ import { isArray, isNumber, isRecord, isString } from '@orkestrel/contract'
 import { splitSentences } from '../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../vendor/ollama/index.js'
 import { AGREE_HEAD, AGREE_QUESTION, CHANGE_HEAD } from './aggregates/constants.js'
+import { Support } from './aggregates/Support.js'
 import {
 	buildAgreeState,
+	reduceSupport,
 	buildChangeQuestion,
 	buildChangeState,
 	buildSummaryPrompt,
@@ -462,6 +464,7 @@ export function buildItems(
 			after,
 			events: [],
 			swap: swap === undefined ? undefined : `${swap.from} -> ${swap.to}`,
+			support: { candidate: text, sources },
 			state: buildAgreeState({ prose: text }, sources),
 			question: AGREE_QUESTION,
 		})
@@ -566,10 +569,28 @@ export function fitAsked(
 		collectNouls(asked, AGREE_HEAD, true),
 		collectNouls(asked, AGREE_HEAD, false),
 	)
+	const support = asked.filter((one) => one.item.head === AGREE_HEAD)
+	const complete =
+		support.length > 0 &&
+		support.every(
+			(one) =>
+				one.support !== undefined &&
+				one.item.support !== undefined &&
+				one.support.candidate === one.item.support.candidate &&
+				JSON.stringify(one.support.sources) === JSON.stringify(one.item.support.sources) &&
+				reduceSupport(one.support) !== undefined &&
+				reduceSupport(one.support) === one.noul,
+		)
+	const positives = support.filter((one) => one.item.label)
+	const admitted = positives.filter(
+		(one) => one.noul !== undefined && one.noul >= agree.cutoff,
+	).length
+	const qualified =
+		agree.separated && complete && positives.length > 0 && admitted / positives.length >= 0.5
 	return {
 		change: change.cutoff,
 		agree: agree.cutoff,
-		separated: change.separated && agree.separated,
+		separated: change.separated && qualified,
 		counts: {
 			summaries: counts,
 			change: countTally(
@@ -580,7 +601,7 @@ export function fitAsked(
 			agree: countTally(
 				asked.filter((one) => one.item.head === AGREE_HEAD),
 				agree.cutoff,
-				agree.separated,
+				qualified,
 			),
 		},
 	}
@@ -650,7 +671,7 @@ export class Calibrator {
 					asked.push(one)
 					appendFileSync(
 						join(out, FILES.items),
-						`${JSON.stringify({ ...item, noul: one.noul, outcome: one.outcome, cached: one.cached, wall: one.wall })}\n`,
+						`${JSON.stringify({ ...item, bundle: one.support, noul: one.noul, outcome: one.outcome, cached: one.cached, wall: one.wall })}\n`,
 					)
 				}
 			}
@@ -746,6 +767,26 @@ export class Calibrator {
 	}
 
 	async #ask(cache: JudgeCache, item: CalibrateItem): Promise<CalibrateAsked> {
+		if (item.head === AGREE_HEAD) {
+			if (item.support === undefined)
+				throw new Error('complete contextual calibration input required')
+			const support = await new Support({ judge: cache }).evaluate(
+				item.support.candidate,
+				item.support.sources,
+				this.#abort.signal,
+			)
+			const noul = reduceSupport(support)
+			return {
+				item,
+				support,
+				noul,
+				outcome: noul === undefined ? 'failed' : 'answered',
+				cached:
+					support.components.length > 0 &&
+					support.components.every((component) => component.cached),
+				wall: support.wall,
+			}
+		}
 		const head = extractHead(item.id)
 		const before = cache.stats().hits[head] ?? 0
 		const started = performance.now()

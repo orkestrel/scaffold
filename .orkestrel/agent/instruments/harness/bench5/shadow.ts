@@ -763,6 +763,7 @@ export class Shadow {
 
 	async #fetch(input: Parameters<typeof fetch>[0], init?: RequestInit): Promise<Response> {
 		const started = performance.now()
+		const timestamp = Date.now()
 		const request: unknown = typeof init?.body === 'string' ? JSON.parse(init.body) : undefined
 		const sequence = this.#requests.length + 1
 		try {
@@ -772,6 +773,8 @@ export class Shadow {
 			this.#requests.push({
 				sequence,
 				role: 'judge',
+				started: timestamp,
+				finished: Date.now(),
 				sent: true,
 				request,
 				response: text,
@@ -787,6 +790,8 @@ export class Shadow {
 			this.#requests.push({
 				sequence,
 				role: 'judge',
+				started: timestamp,
+				finished: Date.now(),
 				sent: true,
 				request,
 				error: describeError(error),

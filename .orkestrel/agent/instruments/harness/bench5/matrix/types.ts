@@ -31,6 +31,7 @@ export interface MatrixRole {
 
 /** Freezes the independent roles and every input before development calls. */
 export interface MatrixFreeze {
+	readonly deployment: RefitFile
 	readonly protocol: 'l6'
 	readonly key: string
 	readonly think: boolean
@@ -47,6 +48,7 @@ export interface MatrixFreeze {
 
 /** Holds the physical and planner reservations independently. */
 export interface MatrixBudget {
+	readonly ceiling: number
 	readonly reserve: number
 	readonly window: number
 	readonly predict: number
@@ -62,9 +64,14 @@ export type MatrixFailure =
 	| 'request'
 	| 'transport'
 	| 'configuration'
+	| 'observation'
 
 /** Holds the evidence for one actual sent request or an explicitly unsent observation. */
 export interface MatrixRequest {
+	readonly started: number
+	readonly buffered?: number
+	readonly finished: number
+	readonly capacity?: MatrixCapacity
 	readonly sequence: number
 	readonly role: CallRole
 	readonly goal?: string
@@ -166,6 +173,7 @@ export interface MatrixRun {
 
 /** Separates actual wire expenditure from cache reuse and elapsed maintenance. */
 export interface MatrixCosts {
+	readonly metadata: { readonly requests: number; readonly wall: number }
 	readonly wire: ReadonlyArray<{
 		readonly phase: 'calibration' | 'trajectory'
 		readonly role: string
@@ -180,6 +188,50 @@ export interface MatrixCosts {
 	readonly elapsed: unknown
 	readonly stage: number
 	readonly flush: number
+}
+
+/** Binds the root's accepted deployment and declared model metadata, not process attestation. */
+export interface MatrixDeployment {
+	readonly receipt: RefitFile
+	readonly executable: RefitFile
+	readonly runner: RefitFile
+	readonly version: string
+	readonly environment: Readonly<Record<string, string>>
+	readonly exclusive: true
+	readonly controls: readonly RefitFile[]
+	readonly models: readonly MatrixModel[]
+}
+
+/** Names an explicitly observed tag/manifest/backend mapping and its metadata ceiling. */
+export interface MatrixModel {
+	readonly model: string
+	readonly digest: string
+	readonly backend: 'llamacpp'
+	readonly context: number
+	readonly field: string
+	readonly metadata: RefitFile
+}
+
+/** Points to the exact immediate observation; window is rederived from its raw bytes. */
+export interface MatrixCapacity {
+	readonly evidence: RefitFile
+	readonly window?: number
+	readonly wall: number
+}
+
+/** Retains even failed or partial metadata responses and the exact decision association. */
+export interface MatrixSnapshot {
+	readonly sequence: number
+	readonly role: 'agent'
+	readonly model: string
+	readonly request: string
+	readonly buffered: number
+	readonly started: number
+	readonly finished: number
+	readonly status?: number
+	readonly error?: string
+	readonly raw: string
+	readonly hash: string
 }
 
 /** Holds the goal evidence the matrix comparison consumes. */

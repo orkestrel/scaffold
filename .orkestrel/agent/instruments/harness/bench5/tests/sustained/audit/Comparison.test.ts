@@ -433,6 +433,8 @@ test('keeps missing usage and actual failed requests without inventing retry all
 		...input.records,
 		requests: [
 			{
+				started: 1,
+				finished: 2,
 				sequence: 1,
 				role: 'agent',
 				goal: 'goal-0',
@@ -448,6 +450,8 @@ test('keeps missing usage and actual failed requests without inventing retry all
 		...input.aggregate,
 		requests: [
 			{
+				started: 1,
+				finished: 2,
 				sequence: 1,
 				role: 'judge',
 				goal: 'goal-0',

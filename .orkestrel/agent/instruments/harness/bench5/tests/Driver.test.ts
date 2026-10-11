@@ -12,7 +12,12 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { compileRules, scoreText } from '../../bench/rescore.mjs'
 import { estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
-import { SUMMARIES_HEADING, SUMMARY_PREFIX } from '../aggregates/constants.js'
+import {
+	AGREE_QUESTION,
+	FOCUS_QUESTION,
+	SUMMARIES_HEADING,
+	SUMMARY_PREFIX,
+} from '../aggregates/constants.js'
 import { COPIES_DIR, HARNESS, SAMPLER, VENDOR_AGENT } from '../constants.js'
 import { FLUSH_SYSTEM, classifyMisses, describeLookups, parseFlags, shapeBody } from '../Driver.js'
 import { computeDigest, isMessageRole, readJSON, readRows } from '../helpers.js'
@@ -114,7 +119,8 @@ function answerJudge(prompt: string): string {
 		const topic = /The message concerns (\w+):/.exec(prompt)?.[1] ?? ''
 		const pattern: unknown = Reflect.get(TOPICS, topic)
 		const yes =
-			prompt.includes('Does the summary agree') ||
+			prompt.includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
+			prompt.includes(`Question: ${AGREE_QUESTION.instructions}\n`) ||
 			(pattern instanceof RegExp &&
 				pattern.test(state.toLowerCase()) &&
 				!prompt.includes('Does the event change'))
@@ -165,6 +171,24 @@ function buildToolReply(
 function startStub(fixture: Fixture, requests: ReadonlyMap<string, string>): Promise<Server> {
 	const exchange = loadExchange()
 	const server = createServer((request: IncomingMessage, response: ServerResponse) => {
+		if (request.url === '/api/ps') {
+			const prior = wire.chat.at(-1)
+			response.writeHead(200, { 'content-type': 'application/json' })
+			response.end(
+				JSON.stringify({
+					models: [
+						{
+							name: readField(prior, 'model'),
+							digest: '1'.repeat(64),
+							runner: 'llamacpp',
+							context_length: readField(readField(prior, 'options'), 'num_ctx'),
+							expires_at: new Date(Date.now() + 1800000).toISOString(),
+						},
+					],
+				}),
+			)
+			return
+		}
 		readBody(request)
 			.then(async (text) => {
 				const body: unknown = JSON.parse(text)
@@ -511,11 +535,13 @@ describe('Driver', () => {
 			const body = JSON.stringify({ model: 'm', options: { num_ctx: 3072, temperature: 0 } })
 			const options = { num_ctx: 3072, temperature: 0 }
 			assert.deepEqual(JSON.parse(shapeBody('agent', body, false)), {
+				shift: false,
 				model: 'm',
 				options,
 				truncate: false,
 			})
 			assert.deepEqual(JSON.parse(shapeBody('agent', body, true)), {
+				shift: false,
 				model: 'm',
 				options: { ...options, num_predict: 1 },
 				think: false,
@@ -896,13 +922,20 @@ describe('Driver', () => {
 			const cases = [
 				{
 					goal: 'g11',
+					topic: 'escalations',
 					at: 1,
 					name: 'Adeyemi',
 					summaries: readProse('squeeze', 'escalations', 'g01'),
 				},
-				{ goal: 'g19', at: 2, name: 'WKND15', summaries: readProse('squeeze', 'delivery', 'g19') },
+				{
+					goal: 'g19',
+					topic: 'delivery',
+					at: 2,
+					name: 'WKND15',
+					summaries: readProse('squeeze', 'delivery', 'g19'),
+				},
 			]
-			for (const { goal, at, name, summaries } of cases) {
+			for (const { goal, topic, at, name, summaries } of cases) {
 				const shown = shownAt('squeeze', goal, at)
 				const absent = !shown.toLowerCase().includes(name.toLowerCase())
 				assert.ok(summaries.includes(name), `${name} is in the unfiltered prose`)
@@ -919,10 +952,31 @@ describe('Driver', () => {
 					`${goal}: soleScored over the rendered block`,
 				)
 				const row = findGoal(rows, goal)
-				if (absent) assert.ok(readNumber(row, 'filtered') >= 1, `${goal}: filtered`)
+				const selection = listFile('squeeze', 'selections.jsonl').find((entry) =>
+					readText(entry, 'goal').startsWith(goal),
+				)
+				assert.ok(selection !== undefined)
+				const bindings = readList(selection, 'aggregates')
+				if (absent) {
+					assert.ok(readNumber(row, 'filtered') >= 1, `${goal}: filtered`)
+					assert.ok(!readList(row, 'rendered').includes(topic), `${goal}: withheld topic`)
+					assert.ok(bindings.every((binding) => readText(binding, 'topic') !== topic))
+				}
+				for (const binding of bindings) {
+					const state = readField(binding, 'state')
+					const maintenance = listFile('squeeze', 'aggregates.jsonl').find(
+						(entry) =>
+							['build', 'keep'].includes(readText(entry, 'event')) &&
+							readText(entry, 'topic') === readText(binding, 'topic') &&
+							readText(entry, 'goal') === readText(state, 'goal') &&
+							readField(entry, 'version') === readField(state, 'version'),
+					)
+					assert.ok(maintenance !== undefined)
+					assert.equal(readText(binding, 'prose'), readText(maintenance, 'prose'))
+					assert.ok(readBlock('squeeze', goal).includes(readText(maintenance, 'prose')))
+				}
 				assert.equal(readNumber(row, 'sole'), 0, `${goal}: sole`)
 			}
-			assert.ok(readBlock('squeeze', 'g11').includes('The standing rule applies to this topic.'))
 		})
 	})
 

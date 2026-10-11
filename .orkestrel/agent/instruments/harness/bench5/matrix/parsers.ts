@@ -11,6 +11,8 @@ import { buildTimeline, parseAggregates } from '../shadow.js'
 import { MATRIX_FILES } from './constants.js'
 import {
 	listMatrixWireFailures,
+	listCapacityFailures,
+	listCapacityFiles,
 	listResourceFailures,
 	nameMatrix,
 	readFrozen,
@@ -54,7 +56,7 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 		isRecord(info.gauge) && isFiniteNumber(info.gauge.scale) && isFiniteNumber(info.gauge.overhead)
 			? { scale: info.gauge.scale, overhead: info.gauge.overhead }
 			: undefined
-	const failures: string[] = []
+	const failures: string[] = [...listCapacityFailures(requests, frozen, execution.budget)]
 	for (const row of rows) {
 		if (row.partial === true || row.error !== undefined)
 			failures.push(`${row.goal}: incomplete or failed execution`)
@@ -82,6 +84,26 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 	const turns = readRows(join(path, 'turns.jsonl'))
 	if (info.turns !== turns.length) failures.push('turn observation count mismatch')
 	for (const request of requests) {
+		const resource = listResourceFailures(
+			request.role,
+			request.request,
+			request.response,
+			execution.budget,
+			request.status,
+			request.error,
+			request.capacity,
+			request.goal === undefined,
+		)
+		if (!isDeepStrictEqual(resource, request.failures))
+			failures.push(`request ${request.sequence}: resource reading mismatch`)
+		for (const failure of resource) failures.push(`request ${request.sequence}: ${failure}`)
+		const usage = readWireReading({ body: request.request }, { text: request.response })
+		if (
+			request.prompt !== usage.prompt ||
+			request.completion !== usage.completion ||
+			request.reason !== usage.reason
+		)
+			failures.push(`request ${request.sequence}: altered actual usage`)
 		const role =
 			request.role === 'summarizer'
 				? frozen.summarizer
@@ -114,6 +136,7 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 					!isRecord(request.request) ||
 					request.request.think !== false ||
 					request.request.truncate !== false ||
+					request.request.shift !== false ||
 					!isRecord(request.request.options) ||
 					request.request.options.num_predict !== 1
 				)
@@ -121,17 +144,6 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 			}
 			continue
 		}
-		const actual = listResourceFailures(
-			request.role,
-			request.request,
-			request.response,
-			execution.budget,
-			request.status,
-			request.error,
-		)
-		if (!isDeepStrictEqual(actual, request.failures))
-			failures.push(`request ${request.sequence}: resource reading mismatch`)
-		for (const failure of actual) failures.push(`request ${request.sequence}: ${failure}`)
 		if (request.role === 'agent') {
 			if (
 				request.turn === undefined ||
@@ -209,6 +221,7 @@ export function parseMatrixRun(path: string): MatrixRun | undefined {
 		gauge,
 		journal,
 		files: [
+			...listCapacityFiles(requests),
 			...MATRIX_FILES.map((file) => hashFile(join(path, file))),
 			...(journal.length === 0 ? [] : [hashFile(join(path, 'aggregates.jsonl'))]),
 		],

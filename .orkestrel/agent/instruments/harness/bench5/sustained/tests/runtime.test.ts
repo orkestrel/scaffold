@@ -1,3 +1,4 @@
+import { writeDeploymentFixture } from '../../matrix/tests/helpers.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
@@ -386,7 +387,10 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 		const altered = join(directory, 'altered.json')
 		writeFileSync(
 			altered,
-			JSON.stringify({ ...original, budget: { reserve: 1024, window: 3584, predict: 512 } }),
+			JSON.stringify({
+				...original,
+				budget: { reserve: 1024, window: 3584, ceiling: 3584, predict: 512 },
+			}),
 		)
 		const before = peer.calls.length
 		assert.throws(() => readSustainedExecution(altered), /resource budget/)
@@ -409,8 +413,7 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 			0,
 		)
 		const partial = readSustainedRun(partialPath)
-		assert.deepEqual(partial.errors, [])
-		assert.ok(partial.failures.some((failure) => failure.includes('usage')))
+		assert.ok(partial.errors.some((error) => error.includes('operational')))
 		assert.ok(partial.observations.some((one) => one.checkpoint && one.shift === 4))
 		assert.ok(partial.rows.length < 32 && partial.rows.length > 16)
 		peer.missingAt = undefined
@@ -491,6 +494,8 @@ it('runs real bounded continuous ledgers, seals runtime-only filing, transfers a
 				assert.equal(
 					await runCommand('matrix', [
 						'freeze',
+						'--deployment',
+						writeDeploymentFixture(directory),
 						'--key',
 						key,
 						'--think',

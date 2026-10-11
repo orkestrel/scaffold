@@ -149,7 +149,7 @@ export function buildAuditRun(runtime: EnduranceRuntime, arm: SustainedArm): Sus
 			frozen: AUDIT_REFERENCE,
 			resource: AUDIT_REFERENCE,
 			runtime: AUDIT_REFERENCE,
-			budget: { reserve: 512, window: 3072, predict: 0 },
+			budget: { reserve: 512, window: 3072, ceiling: 3072, predict: 0 },
 			limits: {
 				calls: 100,
 				tokens: 1000,

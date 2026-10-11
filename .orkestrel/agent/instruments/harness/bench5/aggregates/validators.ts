@@ -1,6 +1,82 @@
-import type { AggregateSource, AggregateState } from '../types.js'
-import { arrayOf, isNonNegativeInteger, isString, recordOf, whereOf } from '@orkestrel/contract'
-import { isMessageRole } from '../helpers.js'
+import type {
+	AggregateSource,
+	AggregateState,
+	AggregateComponent,
+	AggregateObservation,
+	AggregateBundle,
+} from '../types.js'
+import {
+	arrayOf,
+	attempt,
+	isRecord,
+	isFiniteNumber,
+	isNonNegativeInteger,
+	isString,
+	objectOf,
+	recordOf,
+	whereOf,
+} from '@orkestrel/contract'
+import { isMessageRole, isUsage } from '../helpers.js'
+
+/** Checks one native support request and its exact optional focus. */
+export function isAggregateComponent(value: unknown): value is AggregateComponent {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isString(value.id) &&
+			isString(value.state) &&
+			isRecord(value.question) &&
+			value.question.form === 'noul' &&
+			isString(value.question.instructions) &&
+			isRecord(value.question.criteria) &&
+			isString(value.question.criteria.true) &&
+			isString(value.question.criteria.false) &&
+			(value.focus === undefined ||
+				(isRecord(value.focus) &&
+					isNonNegativeInteger(value.focus.start) &&
+					isNonNegativeInteger(value.focus.end) &&
+					isString(value.focus.text))),
+	)
+	return result.success && result.value
+}
+
+/** Checks an attempted component without treating absent scores as zero. */
+export function isAggregateObservation(value: unknown): value is AggregateObservation {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isAggregateComponent(value) &&
+			isString(value.key) &&
+			isFiniteNumber(value.wall) &&
+			value.wall >= 0 &&
+			typeof value.cached === 'boolean' &&
+			(value.sent === undefined || typeof value.sent === 'boolean') &&
+			(value.score === undefined ||
+				(isFiniteNumber(value.score) && value.score >= 0 && value.score <= 1)) &&
+			(value.error === undefined || isString(value.error)) &&
+			(value.usage === undefined || isUsage(value.usage)) &&
+			(value.refusal === undefined || isRecord(value.refusal)),
+	)
+	return result.success && result.value
+}
+
+/** Checks retained bundle structure; reduction independently checks exhaustive membership. */
+export function isAggregateBundle(value: unknown): value is AggregateBundle {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isString(value.revision) &&
+			isString(value.candidate) &&
+			isString(value.context) &&
+			isString(value.model) &&
+			isFiniteNumber(value.wall) &&
+			value.wall >= 0 &&
+			(value.error === undefined || isString(value.error)) &&
+			arrayOf(isAggregateSource)(value.sources) &&
+			arrayOf(isAggregateObservation)(value.components),
+	)
+	return result.success && result.value
+}
 
 /**
  * Checks a recorded source projection line without coercion.
@@ -8,13 +84,16 @@ import { isMessageRole } from '../helpers.js'
  * @returns True if the line carries source identity, role, text, and day; false otherwise
  */
 export function isAggregateSource(value: unknown): value is AggregateSource {
-	return recordOf({
-		id: isString,
-		sentence: isNonNegativeInteger,
-		role: isMessageRole,
-		text: isString,
-		day: isString,
-	})(value)
+	return (
+		isRecord(value) &&
+		objectOf({
+			id: isString,
+			sentence: isNonNegativeInteger,
+			role: isMessageRole,
+			text: isString,
+			day: isString,
+		})(value)
+	)
 }
 
 /**

@@ -1,3 +1,4 @@
+import { buildSupportRows } from './support/helpers.js'
 import { BUILD } from '../constants.js'
 import type { JudgeQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
@@ -255,16 +256,22 @@ function writeCache(
 	answer: (item: CalibrateItem) => number,
 ): void {
 	mkdirSync(join(path, '..'), { recursive: true })
-	const rows = items.map((item): CacheRow => ({
-		key: buildCacheKey(JUDGE, item.state, item.question),
-		model: JUDGE,
-		state: item.state,
-		question: item.question,
-		answer: { form: 'noul', noul: answer(item) },
-		wall: 1,
-		origin: 'live',
-		at: 1,
-	}))
+	const rows = items.flatMap((item): readonly CacheRow[] =>
+		item.support === undefined
+			? [
+					{
+						key: buildCacheKey(JUDGE, item.state, item.question),
+						model: JUDGE,
+						state: item.state,
+						question: item.question,
+						answer: { form: 'noul', noul: answer(item) },
+						wall: 1,
+						origin: 'live',
+						at: 1,
+					},
+				]
+			: buildSupportRows(JUDGE, item.support.candidate, item.support.sources, answer(item)),
+	)
 	writeFileSync(path, rows.map((row) => `${JSON.stringify(row)}\n`).join(''))
 }
 
@@ -674,11 +681,19 @@ describe('building items', () => {
 				['cross', false, 'MX-4486 -> EX-2219'],
 			],
 		)
-		const sources =
-			'Source messages:\n(2026-10-08) user: Marcus rotated the code.\n(2026-10-08) user: Use MX-4486 from now on.'
-		assert.equal(items[0]?.state, `${prose}\n${sources}`)
-		assert.equal(items[1]?.state, `Marcus rotated the code to MX-4471.\n${sources}`)
-		assert.equal(items[2]?.state, `Marcus rotated the code to EX-2219.\n${sources}`)
+		const evidence = [
+			'(2026-10-08) user: Marcus rotated the code.',
+			'(2026-10-08) user: Use MX-4486 from now on.',
+		]
+		assert.equal(items[0]?.state, JSON.stringify({ evidence, candidate: prose }, null, 1))
+		assert.equal(
+			items[1]?.state,
+			JSON.stringify({ evidence, candidate: 'Marcus rotated the code to MX-4471.' }, null, 1),
+		)
+		assert.equal(
+			items[2]?.state,
+			JSON.stringify({ evidence, candidate: 'Marcus rotated the code to EX-2219.' }, null, 1),
+		)
 		assert.equal(items[1]?.id, '["agree","refunds",4,"stale"]')
 		assert.deepEqual(items[0]?.question, AGREE_QUESTION)
 		assert.equal(items[0]?.state, buildAgreeState({ prose }, summary.sources))
@@ -758,6 +773,19 @@ describe('fitting a cutoff', () => {
 })
 
 describe('counting items', () => {
+	it('refuses a separating scalar-only historical AGREE fit', () => {
+		const fit = fitAsked(
+			[
+				buildAsked(CHANGE_HEAD, true, 0.9),
+				buildAsked(CHANGE_HEAD, false, 0.2),
+				buildAsked(AGREE_HEAD, true, 0.9),
+				buildAsked(AGREE_HEAD, false, 0.2),
+			],
+			{ asked: 1, passed: 1, failed: 0 },
+		)
+		assert.equal(fit.separated, false)
+		assert.equal(fit.counts.agree.separated, false)
+	})
 	it('tallies positives, negatives, and the answers at the cutoff', () => {
 		const asked = [
 			buildAsked(CHANGE_HEAD, true, 0.9, 'answered', true),
@@ -917,7 +945,7 @@ describe('Calibrator', () => {
 		assert.equal(await new Calibrator(offline).execute(), 0)
 		assert.equal(fixture.requests.length, count)
 		assert.deepEqual(readOutput(offline), live)
-		assert.deepEqual(readRows(join(config.cache, 'judge.jsonl')).length, planItems().length)
+		assert.equal(readRows(join(config.cache, 'judge.jsonl')).length, 28)
 	})
 
 	it('throws on an offline summary miss and on an offline judge miss, and writes no fit', async () => {

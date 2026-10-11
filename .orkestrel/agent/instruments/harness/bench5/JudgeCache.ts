@@ -44,7 +44,14 @@ export class JudgeCache implements JudgeInterface {
 		this.#options = options
 		if (existsSync(options.path)) {
 			for (const row of readRows(options.path)) {
-				if (isCacheRow(row)) this.#rows.set(row.key, row)
+				if (isCacheRow(row)) {
+					if (
+						row.context !== undefined &&
+						row.key !== buildCacheKey(row.model, row.state, row.question, row.context)
+					)
+						throw new Error('support cache custody mismatch')
+					this.#rows.set(row.key, row)
+				}
 			}
 		}
 		if (options.live) mkdirSync(dirname(options.path), { recursive: true })
@@ -86,7 +93,7 @@ export class JudgeCache implements JudgeInterface {
 	 * @returns The recorded or fresh result
 	 * @remarks Thrown when the request holds more than one question, when a recorded error row matches, when an offline miss occurs, or when a live miss fails every attempt; the last case also sets `fault` and calls `abort`.
 	 */
-	async ask(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult> {
+	async ask(request: JudgeRequest, signal: AbortSignal, context?: string): Promise<JudgeResult> {
 		const entries = Object.entries(request.questions)
 		if (entries.length > 1)
 			throw new Error(`judge cache: expected one question, received ${entries.length}`)
@@ -94,7 +101,7 @@ export class JudgeCache implements JudgeInterface {
 		if (entry === undefined) return { model: this.model, answers: {} }
 		const [id, question] = entry
 		const head = extractHead(id)
-		const row = this.#rows.get(buildCacheKey(this.model, request.state, question))
+		const row = this.#rows.get(buildCacheKey(this.model, request.state, question, context))
 		if (row !== undefined) {
 			this.#count(this.#hits, head)
 			return this.#replay(row, id)
@@ -102,7 +109,7 @@ export class JudgeCache implements JudgeInterface {
 		this.#count(this.#misses, head)
 		if (!this.#options.live) throw new Error(JUDGE_MISS)
 		if (this.#fault !== undefined) throw this.#fault
-		return await this.#forward(request, id, question, signal)
+		return await this.#forward(request, id, question, signal, context)
 	}
 
 	#count(counts: Map<string, number>, head: string): void {
@@ -124,6 +131,7 @@ export class JudgeCache implements JudgeInterface {
 		id: string,
 		question: JudgeQuestion,
 		signal: AbortSignal,
+		context?: string,
 	): Promise<JudgeResult> {
 		const attempts = Math.max(0, this.#options.retry) + 1
 		let last: unknown
@@ -137,7 +145,7 @@ export class JudgeCache implements JudgeInterface {
 				if (signal.aborted) throw error
 				if (matchesDeterministic(error)) {
 					const text = describeError(error)
-					this.#append(request, question, started, { error: text })
+					this.#append(request, question, started, { error: text }, context)
 					throw new Error(text, { cause: error })
 				}
 				this.#transient += 1
@@ -151,11 +159,17 @@ export class JudgeCache implements JudgeInterface {
 				last = new Error('judge result lacks the question')
 				continue
 			}
-			this.#append(request, question, started, {
-				...(answer === undefined ? {} : { answer }),
-				...(refusal === undefined ? {} : { refusal }),
-				...(result.usage === undefined ? {} : { usage: result.usage }),
-			})
+			this.#append(
+				request,
+				question,
+				started,
+				{
+					...(answer === undefined ? {} : { answer }),
+					...(refusal === undefined ? {} : { refusal }),
+					...(result.usage === undefined ? {} : { usage: result.usage }),
+				},
+				context,
+			)
 			return result
 		}
 		const fault = new Error(
@@ -174,9 +188,11 @@ export class JudgeCache implements JudgeInterface {
 		question: JudgeQuestion,
 		started: number,
 		outcome: Pick<CacheRow, 'answer' | 'refusal' | 'error' | 'usage'>,
+		context?: string,
 	): void {
 		const row: CacheRow = {
-			key: buildCacheKey(this.model, request.state, question),
+			key: buildCacheKey(this.model, request.state, question, context),
+			...(context === undefined ? {} : { context }),
 			model: this.model,
 			state: request.state,
 			question,

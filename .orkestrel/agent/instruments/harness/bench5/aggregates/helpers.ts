@@ -1,5 +1,8 @@
 import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
+	AggregateFocus,
+	AggregatePlan,
+	AggregateBundle,
 	AggregateBlock,
 	AggregateAdmission,
 	AggregateEntry,
@@ -27,7 +30,9 @@ import {
 	splitSentences,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import {
-	AGREE_STATE_SOURCES,
+	AGREE_QUESTION,
+	FOCUS_QUESTION,
+	SUPPORT_REVISION,
 	ANY_WORD,
 	CHANGE_CRITERIA,
 	CHANGE_INSTRUCTIONS,
@@ -46,6 +51,8 @@ import {
 	SUMMARY_SYSTEM,
 	SUMMARY_TOPIC_SLOT,
 } from './constants.js'
+import { buildCacheKey } from '../helpers.js'
+import { isDeepStrictEqual } from 'node:util'
 
 /**
  * Fills the `TOPIC` and `DATE` slots of a template in one pass.
@@ -450,7 +457,135 @@ export function buildAgreeState(
 	version: Pick<AggregateVersion, 'prose'>,
 	sources: readonly AggregateSource[],
 ): string {
-	return `${version.prose}\n${AGREE_STATE_SOURCES}\n${sources.map(renderSource).join('\n')}`
+	return JSON.stringify({ evidence: sources.map(renderSource), candidate: version.prose }, null, 1)
+}
+
+/** Partitions exact lines with the installed sentence splitter and refuses uncovered text.
+ * @param candidate - Unchanged complete prose
+ * @returns Ordered UTF-16 spans covering every nonwhitespace character
+ */
+export function partitionCandidate(candidate: string): readonly AggregateFocus[] {
+	const spans: AggregateFocus[] = []
+	let offset = 0
+	for (const line of candidate.split(/\r\n|\n/)) {
+		let cursor = 0
+		if (line.trim() !== '')
+			for (const text of splitSentences(line)) {
+				const start = line.indexOf(text, cursor)
+				if (
+					text.trim() === '' ||
+					start < cursor ||
+					start < 0 ||
+					/\S/u.test(line.slice(cursor, start))
+				)
+					throw new Error('Malformed sentence coverage')
+				const end = start + text.length
+				spans.push({ start: offset + start, end: offset + end, text })
+				cursor = end
+			}
+		if (/\S/u.test(line.slice(cursor))) throw new Error('Uncovered line suffix')
+		offset += line.length
+		if (candidate.slice(offset, offset + 2) === '\r\n') offset += 2
+		else if (candidate[offset] === '\n') offset += 1
+	}
+	validateCoverage(candidate, spans)
+	return spans
+}
+
+/** Refuses omitted, overlapping, changed, and empty coverage.
+ * @param candidate - Complete unchanged prose
+ * @param spans - Exact proposed spans
+ */
+export function validateCoverage(candidate: string, spans: readonly AggregateFocus[]): void {
+	if (spans.length === 0) throw new Error('Empty candidate coverage')
+	let cursor = 0
+	for (const span of spans) {
+		if (
+			!Number.isSafeInteger(span.start) ||
+			!Number.isSafeInteger(span.end) ||
+			span.start < cursor ||
+			span.end <= span.start ||
+			span.end > candidate.length ||
+			span.text.trim() === '' ||
+			candidate.slice(span.start, span.end) !== span.text
+		)
+			throw new Error('Span offset/text custody mismatch')
+		if (/\S/u.test(candidate.slice(cursor, span.start)))
+			throw new Error('Dropped nonwhitespace span coverage')
+		cursor = span.end
+	}
+	if (/\S/u.test(candidate.slice(cursor))) throw new Error('Dropped nonwhitespace suffix coverage')
+}
+
+/** Builds all focused requests followed by the unchanged whole guard.
+ * @param candidate - Complete unchanged prose
+ * @param sources - Complete ordered source objects, including message grouping
+ * @returns Native request fields and separate cache custody
+ */
+export function buildSupportPlan(
+	candidate: string,
+	sources: readonly AggregateSource[],
+): AggregatePlan {
+	return {
+		revision: SUPPORT_REVISION,
+		candidate,
+		sources,
+		context: JSON.stringify({ revision: SUPPORT_REVISION, candidate, sources }),
+		components: [
+			...partitionCandidate(candidate).map((focus) => ({
+				id: `focus:${focus.start}:${focus.end}`,
+				focus,
+				state: JSON.stringify({ evidence: sources.map(renderSource), candidate, focus }, null, 1),
+				question: FOCUS_QUESTION,
+			})),
+			{
+				id: 'guard',
+				state: buildAgreeState({ prose: candidate }, sources),
+				question: AGREE_QUESTION,
+			},
+		],
+	}
+}
+
+/** Recomputes the minimum only for complete exact membership and valid scores.
+ * @param bundle - Attempted support evidence
+ * @returns The weakest component, or absence for incomplete or invalid evidence
+ */
+export function reduceSupport(bundle: AggregateBundle): number | undefined {
+	try {
+		const plan = buildSupportPlan(bundle.candidate, bundle.sources)
+		if (
+			bundle.error !== undefined ||
+			bundle.revision !== plan.revision ||
+			bundle.context !== plan.context ||
+			bundle.components.length !== plan.components.length
+		)
+			return undefined
+		const scores: number[] = []
+		for (const [index, expected] of plan.components.entries()) {
+			const observed = bundle.components[index]
+			if (
+				observed === undefined ||
+				observed.id !== expected.id ||
+				observed.state !== expected.state ||
+				!isDeepStrictEqual(observed.focus, expected.focus) ||
+				!isDeepStrictEqual(observed.question, expected.question) ||
+				observed.key !==
+					buildCacheKey(bundle.model, expected.state, expected.question, plan.context) ||
+				observed.error !== undefined ||
+				observed.refusal !== undefined ||
+				observed.score === undefined ||
+				!Number.isFinite(observed.score) ||
+				observed.score < 0 ||
+				observed.score > 1
+			)
+				return undefined
+			scores.push(observed.score)
+		}
+		return Math.min(...scores)
+	} catch {
+		return undefined
+	}
 }
 
 /**

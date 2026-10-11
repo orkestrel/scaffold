@@ -37,8 +37,8 @@ import { isDeepStrictEqual, parseArgs } from 'node:util'
 import { LEDGER_SCALE_DRIFT, matchesCutLine } from '../vendor/agent-0.0.30-trimmed/index.js'
 import { Comparison } from './matrix/Comparison.js'
 import { INSTRUCTION_SUMMARIES } from './aggregates/constants.js'
-import { readTokens } from './aggregates/helpers.js'
-import { isAggregateSource, isAggregateState } from './aggregates/validators.js'
+import { readTokens, reduceSupport } from './aggregates/helpers.js'
+import { isAggregateSource, isAggregateState, isAggregateBundle } from './aggregates/validators.js'
 import { buildTimeline, parseAggregates } from './shadow.js'
 import { COPIES_DIR, MODELS, SAMPLER } from './constants.js'
 import { readCopy } from './Driver.js'
@@ -87,7 +87,7 @@ type AggregateReading = Pick<
 	Partial<
 		Pick<
 			AggregateRow,
-			'lastSeed' | 'version' | 'title' | 'prose' | 'prior' | 'result' | 'projection'
+			'lastSeed' | 'version' | 'title' | 'prose' | 'prior' | 'result' | 'projection' | 'support'
 		>
 	>
 
@@ -165,7 +165,14 @@ interface AggregateReport {
 	readonly builds: number
 	readonly triggers: Readonly<Record<string, number>>
 	readonly change: { readonly asked: number; readonly yes: number }
-	readonly agree: { readonly asked: number; readonly failed: number }
+	readonly agree: {
+		readonly asked: number
+		readonly failed: number
+		readonly components: number
+		readonly replay: number
+		readonly prompt: number
+		readonly completion: number
+	}
 	/** Counts the failed checks of the builds by kind. */
 	readonly failures: Readonly<Record<string, number>>
 	/** Counts the builds with at least one failed check. */
@@ -570,6 +577,14 @@ function readJournal(value: unknown, label: string): AggregateJournal {
 }
 
 function readEvent(value: unknown, label: string): AggregateReading {
+	const support = readField(value, 'support')
+	if (support !== undefined && !isAggregateBundle(support))
+		throw new Error(label + ': invalid contextual support')
+	if (
+		support !== undefined &&
+		readNumbers(value, 'answers', label).agree !== reduceSupport(support)
+	)
+		throw new Error(label + ': support minimum differs')
 	const event = readField(value, 'event')
 	const status = readField(value, 'status')
 	const trigger = readField(value, 'trigger')
@@ -585,6 +600,7 @@ function readEvent(value: unknown, label: string): AggregateReading {
 		throw new Error(`${label}: event or status is not a member of its set`)
 	return {
 		topic: readText(value, 'topic', label),
+		support,
 		goal: readText(value, 'goal', label),
 		event,
 		status,
@@ -825,6 +841,23 @@ function sumQuestions(rows: readonly Reading[]): Readonly<Record<string, Questio
 }
 
 function sumSeconds(events: readonly AggregateReading[], kind: AggregateEvent): number {
+	if (kind === 'agree')
+		return (
+			events
+				.filter((event) => event.event === kind)
+				.reduce(
+					(sum, event) =>
+						sum +
+						(event.support === undefined
+							? event.cached
+								? 0
+								: event.wall
+							: event.support.components
+									.filter((component) => !component.cached)
+									.reduce((total, component) => total + component.wall, 0)),
+					0,
+				) / 1000
+		)
 	return (
 		events
 			.filter((event) => event.event === kind && !event.cached)
@@ -837,6 +870,7 @@ function measureAggregate(run: Run, leaks: readonly Leak[]): AggregateReport {
 	const builds = events.filter((event) => event.event === 'build')
 	const asked = events.filter((event) => event.event === 'change')
 	const agreed = events.filter((event) => event.event === 'agree')
+	const components = agreed.flatMap((event) => event.support?.components ?? [])
 	const failed = builds.filter((event) => event.failures.length > 0)
 	const change = sumSeconds(events, 'change')
 	const agree = sumSeconds(events, 'agree')
@@ -850,6 +884,14 @@ function measureAggregate(run: Run, leaks: readonly Leak[]): AggregateReport {
 		agree: {
 			asked: agreed.length,
 			failed: agreed.filter((event) => event.status === 'stale').length,
+			components: components.length,
+			replay: components.filter((component) => component.cached).length,
+			prompt: components
+				.filter((component) => !component.cached)
+				.reduce((sum, component) => sum + (component.usage?.prompt ?? 0), 0),
+			completion: components
+				.filter((component) => !component.cached)
+				.reduce((sum, component) => sum + (component.usage?.completion ?? 0), 0),
 		},
 		failures: countBy(builds.flatMap((event) => event.failures.map((failure) => failure.kind))),
 		failed: failed.length,

@@ -8,6 +8,7 @@ import { projectCopy } from '../endurance/helpers.js'
 import { MATRIX_FILES } from '../matrix/constants.js'
 import {
 	listWireInvariantFailures,
+	listCapacityFiles,
 	matchesMatrixExposure,
 	measureMatrixCosts,
 	readAttempt,
@@ -20,7 +21,7 @@ import {
 	isMatrixRow,
 	isMatrixSelection,
 } from '../matrix/validators.js'
-import { hashFile, verifyFiles, measureRefitCosts, readRefitAssessment } from '../refit/helpers.js'
+import { hashFile, verifyFiles, readRefitCosts, readRefitAssessment } from '../refit/helpers.js'
 import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validators.js'
 import { buildTimeline, parseAggregates } from '../shadow.js'
 import { INSTRUCTION_SUMMARIES } from '../aggregates/constants.js'
@@ -333,7 +334,14 @@ export function readSustainedRun(path: string): SustainedReading {
 		messages,
 		gauge,
 		journal,
-		files: [...new Map(files.map((file) => [`${file.path}:${file.hash}`, file])).values()],
+		files: [
+			...new Map(
+				[...files, ...listCapacityFiles(requests)].map((file) => [
+					`${file.path}:${file.hash}`,
+					file,
+				]),
+			).values(),
+		],
 		failures: [...failures, ...errors],
 		errors,
 		costs: measureMatrixCosts({ path, rows, requests }),
@@ -378,14 +386,18 @@ export function readSustainedPreparation(path: string): readonly SustainedPrepar
 		verifyFiles([value.evidence, ...value.files])
 		const rows = readRows(attempts.path)
 		if (!rows.every(isRefitAttempt)) throw new Error('invalid generation attempts')
-		const measured = measureRefitCosts(rows)
+		const measured = readRefitCosts(rows, value)
 		return [
 			{
 				identity: reference.hash,
 				phase: 'generation',
-				files: [reference, attempts, value.evidence, ...value.files],
+				files: [reference, attempts, value.evidence, value.controls, ...value.files],
 				costs: {
-					wire: measured.wire,
+					metadata: { requests: 0, wall: 0 },
+					wire: [
+						...measured.wire,
+						...measured.controls.map((cost) => ({ ...cost, phase: 'calibration' as const })),
+					],
 					judge: undefined,
 					lineage: value.lineage,
 					elapsed: undefined,

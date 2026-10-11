@@ -2,6 +2,7 @@ import type { Message } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type { TokenUsage } from '@orkestrel/budget'
 import type {
 	RefitAttempt,
+	RefitControl,
 	RefitPreparation,
 	RefitContext,
 	RefitCorpus,
@@ -15,6 +16,7 @@ import type {
 } from './types.js'
 import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
 import { isCacheRow, isMessageRole, isSummaryRow, isUsage } from '../helpers.js'
+import { isAggregateBundle, isAggregateComponent } from '../aggregates/validators.js'
 import { isMatrixFreeze } from '../matrix/validators.js'
 
 /** Checks a serialized projected source, including seed grouping. */
@@ -132,17 +134,7 @@ export function isRefitAttempt(value: unknown): value is RefitAttempt {
 							['empty', 'id', 'number', 'name', 'stale', 'agree'].includes(String(failure.kind)) &&
 							isString(failure.token),
 					))) &&
-			(value.judge === undefined ||
-				(isRecord(value.judge) &&
-					isString(value.judge.key) &&
-					(value.judge.sent === undefined || typeof value.judge.sent === 'boolean') &&
-					typeof value.judge.cached === 'boolean' &&
-					isFiniteNumber(value.judge.wall) &&
-					(value.judge.usage === undefined || isUsage(value.judge.usage)) &&
-					(value.judge.score === undefined ||
-						(isFiniteNumber(value.judge.score) &&
-							value.judge.score >= 0 &&
-							value.judge.score <= 1)))),
+			(value.judge === undefined || isAggregateBundle(value.judge)),
 	)
 	return result.success && result.value
 }
@@ -171,6 +163,9 @@ export function isRefitItem(value: unknown): value is RefitItem {
 			isRecord(value) &&
 			isString(value.id) &&
 			isString(value.state) &&
+			isString(value.candidate) &&
+			isString(value.revision) &&
+			arrayOf(isAggregateComponent)(value.components) &&
 			arrayOf(isRefitSource)(value.sources) &&
 			isRecord(value.question) &&
 			value.question.form === 'noul' &&
@@ -196,6 +191,7 @@ export function isRefitGeneration(value: unknown): value is RefitGeneration {
 			isString(value.attempts) &&
 			isString(value.packet) &&
 			isRefitFile(value.evidence) &&
+			isRefitFile(value.controls) &&
 			isString(value.model) &&
 			typeof value.complete === 'boolean' &&
 			arrayOf(isString)(value.errors) &&
@@ -282,6 +278,25 @@ export function isRefitUsage(value: unknown): value is TokenUsage {
 				(count) => Number.isFinite(count) && count >= 0,
 			) &&
 			value.total === value.prompt + value.completion,
+	)
+	return result.success && result.value
+}
+
+/** Checks archived whole-label transfer and separately evaluated support. */
+export function isRefitControl(value: unknown): value is RefitControl {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isString(value.id) &&
+			isString(value.candidate) &&
+			arrayOf(isRefitSource)(value.sources) &&
+			isRefitVerdict(value.verdict) &&
+			typeof value.lexical === 'boolean' &&
+			isRecord(value.original) &&
+			isString(value.original.item) &&
+			isString(value.original.mapping) &&
+			isString(value.original.build) &&
+			(value.support === undefined || isAggregateBundle(value.support)),
 	)
 	return result.success && result.value
 }

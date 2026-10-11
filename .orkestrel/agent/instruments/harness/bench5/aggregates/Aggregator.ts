@@ -20,9 +20,10 @@ import { dirname } from 'node:path'
 // The vendored build is the one import of the agent in bench5; repoint this path when a later build is vendored.
 import { LEDGER_OWNER_PREFIX } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { describeError, findDay } from '../helpers.js'
-import { AGREE_HEAD, AGREE_QUESTION, CHANGE_HEAD } from './constants.js'
+import { AGREE_HEAD, CHANGE_HEAD } from './constants.js'
+import { Support } from './Support.js'
 import {
-	buildAgreeState,
+	reduceSupport,
 	buildChangeQuestion,
 	buildChangeState,
 	buildRefs,
@@ -242,14 +243,14 @@ export class Aggregator {
 			}
 			const kept = filterProse(version.prose, version.ids, shown)
 			filtered.push(...kept.dropped.map((sentence): AggregateDrop => ({ topic: key, sentence })))
-			if (kept.prose === '') emptied.push(key)
+			if (kept.dropped.length > 0 || kept.prose === '') emptied.push(key)
 			else
 				entries.push({
 					key,
 					title: version.title,
 					date: version.asOf,
 					ids: kept.ids,
-					prose: kept.prose,
+					prose: version.prose,
 				})
 		}
 		const block = renderSummaries(
@@ -370,43 +371,31 @@ export class Aggregator {
 		sources: readonly AggregateSource[],
 		context: AggregateContext,
 	): Promise<boolean> {
-		const started = performance.now()
-		try {
-			const asked = await this.#ask(
-				AGREE_HEAD,
-				[AGREE_HEAD, topic.key, version.version],
-				buildAgreeState(version, sources),
-				AGREE_QUESTION,
-				context.signal,
-			)
-			const agreed = asked.noul >= this.#options.fit.agree
-			this.#pending.push(
-				this.#row(topic, context, {
-					event: 'agree',
-					version: version.version,
-					status: agreed ? 'current' : 'stale',
-					sources: buildRefs(sources, this.#options.seeds),
-					answers: { [AGREE_HEAD]: asked.noul },
-					wall: asked.wall,
-					cached: asked.cached,
-				}),
-			)
-			return agreed
-		} catch (error) {
-			context.signal.throwIfAborted()
-			this.#pending.push(
-				this.#row(topic, context, {
-					event: 'agree',
-					version: version.version,
-					status: 'stale',
-					sources: buildRefs(sources, this.#options.seeds),
-					error: describeError(error),
-					failures: [{ kind: 'agree', token: '' }],
-					wall: performance.now() - started,
-				}),
-			)
-			return false
-		}
+		const support = await new Support({ judge: this.#options.judge }).evaluate(
+			version.prose,
+			sources,
+			context.signal,
+		)
+		const score = reduceSupport(support)
+		const agreed = score !== undefined && score >= this.#options.fit.agree
+		this.#pending.push(
+			this.#row(topic, context, {
+				event: 'agree',
+				version: version.version,
+				status: agreed ? 'current' : 'stale',
+				sources: buildRefs(sources, this.#options.seeds),
+				answers: score === undefined ? {} : { [AGREE_HEAD]: score },
+				support,
+				wall: support.wall,
+				cached:
+					support.components.length > 0 &&
+					support.components.every((component) => component.cached),
+				failures: agreed ? [] : [{ kind: 'agree', token: '' }],
+				error: support.error,
+			}),
+		)
+		context.signal.throwIfAborted()
+		return agreed
 	}
 
 	// Builds the topic until a version passes the code check and AGREE, or the retries end and the topic is withheld.

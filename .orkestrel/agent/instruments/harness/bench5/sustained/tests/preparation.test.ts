@@ -1,3 +1,4 @@
+import { writeDeploymentFixture } from '../../matrix/tests/helpers.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
@@ -41,6 +42,8 @@ it('retains authentic exposure-only pilots and rejected fits through ranked inco
 			assert.equal(
 				await runCommand('matrix', [
 					'freeze',
+					'--deployment',
+					writeDeploymentFixture(directory),
 					'--key',
 					key,
 					'--think',

@@ -8,7 +8,7 @@ import { isRecord } from '@orkestrel/contract'
 import { COPIES_DIR } from '../constants.js'
 import { readCopy } from '../Driver.js'
 import { computeDigest, readJSON, readRows } from '../helpers.js'
-import { hashFile, verifyFiles, measureRefitCosts, readRefitAssessment } from '../refit/helpers.js'
+import { hashFile, verifyFiles, readRefitCosts, readRefitAssessment } from '../refit/helpers.js'
 import { isRefitAttempt, isRefitFile, isRefitGeneration } from '../refit/validators.js'
 import { collectTransitions } from '../transitions/helpers.js'
 import { parseMatrixRun } from './parsers.js'
@@ -311,7 +311,7 @@ export class Comparison {
 					manifest: reference,
 					identity: preparation.manifest.hash,
 					phase: 'fit-calibration',
-					...measureRefitCosts(rows),
+					...readRefitCosts(rows, generation),
 					generation,
 					summary: rows.map((row) => ({
 						cached: row.cached,
@@ -323,15 +323,14 @@ export class Comparison {
 					agree: rows.flatMap((row) =>
 						row.judge === undefined
 							? []
-							: [
-									{
-										cached: row.judge.cached,
-										sent: row.judge.sent,
-										wall: row.judge.wall,
-										freshUsage:
-											row.judge.sent === true && !row.judge.cached ? row.judge.usage : undefined,
-									},
-								],
+							: row.judge.components.map((component) => ({
+									key: component.key,
+									cached: component.cached,
+									sent: component.sent,
+									wall: component.wall,
+									freshUsage:
+										component.sent === true && !component.cached ? component.usage : undefined,
+								})),
 					),
 				})
 			} else if (attempts.length === 0) costs.push({ manifest: reference, artifact: manifest })

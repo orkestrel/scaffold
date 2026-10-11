@@ -21,6 +21,7 @@ import {
 	readAttempt,
 	readRequestOutcome,
 	listResourceFailures,
+	listCapacityFailures,
 	verifyMatrixFeasibility,
 } from '../matrix/helpers.js'
 import { verifyFiles, readRefitAssessment } from '../refit/helpers.js'
@@ -51,7 +52,7 @@ export function readSustainedBoundary(
 	execution: SustainedExecution,
 	frozen: MatrixFreeze,
 ): SustainedBoundary {
-	const errors: string[] = []
+	const errors: string[] = [...listCapacityFailures(requests, frozen, execution.budget)]
 	const failures: string[] = []
 	let calls = 0
 	let tokens = 0
@@ -67,7 +68,7 @@ export function readSustainedBoundary(
 		}
 		if (failures.length !== 0)
 			errors.push(`request ${request.sequence}: sent after resource refusal`)
-		const outcome = readRequestOutcome(request, execution.budget)
+		const outcome = readRequestOutcome(request, execution.budget, frozen)
 		if (outcome === 'fault') {
 			if (expired && request.sent && request.error !== undefined)
 				failures.push('whole-trajectory wall limit reached')
@@ -99,17 +100,16 @@ export function readSustainedBoundary(
 			request.reason !== reading.reason
 		)
 			errors.push(`request ${request.sequence}: altered actual usage`)
-		const resource =
-			request.goal === undefined
-				? []
-				: listResourceFailures(
-						request.role,
-						request.request,
-						request.response,
-						execution.budget,
-						request.status,
-						request.error,
-					)
+		const resource = listResourceFailures(
+			request.role,
+			request.request,
+			request.response,
+			execution.budget,
+			request.status,
+			request.error,
+			request.capacity,
+			request.goal === undefined,
+		)
 		if (!isDeepStrictEqual(resource, request.failures))
 			errors.push(`request ${request.sequence}: resource reading differs`)
 		if (outcome === 'refused')
@@ -209,7 +209,7 @@ export function readPreparationFailure(
 		)
 			throw new Error('generation is successful or foreign')
 		readClassification(value.sustained.classification, runtime, frozen)
-		verifyFiles([value.evidence, ...value.files])
+		verifyFiles([value.evidence, value.controls, ...value.files])
 		throw new Error('operational generation fault is not configuration infeasibility')
 	}
 	const diagnosis = readRefitAssessment(reference)
@@ -337,7 +337,7 @@ export function verifySustainedFit(
 		fit.custody.labels !== fit.preparation.labels.hash
 	)
 		throw new Error('development fit generation or adjudication differs')
-	verifyFiles([generation.evidence, ...generation.files])
+	verifyFiles([generation.evidence, generation.controls, ...generation.files])
 }
 
 /** Reads the retained first-feasible choice, including a fully evidenced inconclusive result.

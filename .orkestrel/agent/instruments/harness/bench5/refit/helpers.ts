@@ -1,6 +1,7 @@
 import type { AggregateFailure } from '../types.js'
 import type {
 	RefitAttempt,
+	RefitControl,
 	RefitPreparation,
 	RefitAssessment,
 	RefitCosts,
@@ -19,6 +20,8 @@ import { createOllamaJudge } from '../../vendor/ollama/index.js'
 import { arrayOf, isRecord, isString, isFiniteNumber } from '@orkestrel/contract'
 import {
 	isRefitAttempt,
+	isRefitControl,
+	isRefitSource,
 	isRefitCorpus,
 	isRefitGeneration,
 	isRefitItem,
@@ -32,9 +35,11 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
-import { AGREE_QUESTION } from '../aggregates/constants.js'
+import { AGREE_QUESTION, SUPPORT_REVISION } from '../aggregates/constants.js'
 import {
 	buildAgreeState,
+	buildSupportPlan,
+	reduceSupport,
 	buildSummaryPrompt,
 	checkProse,
 	collectStaleTokens,
@@ -78,6 +83,7 @@ export function verifyEvidence(
 	evidence: RefitEvidence,
 	manifest: RefitGeneration,
 	model: string,
+	controls: readonly RefitControl[] = [],
 ): void {
 	const summaries = new Set<string>()
 	const judgments = new Set<string>()
@@ -99,27 +105,36 @@ export function verifyEvidence(
 				throw new Error('summary observation mismatch')
 			summaries.add(row.key)
 		}
-		if (attempt.judge !== undefined) {
-			const entry = evidence.judge.find((one) => one.row.key === attempt.judge?.key)
+	}
+	for (const bundle of [
+		...attempts.flatMap((attempt) => (attempt.judge === undefined ? [] : [attempt.judge])),
+		...controls.flatMap((control) => (control.support === undefined ? [] : [control.support])),
+	]) {
+		if (bundle.model !== model) throw new Error('judge model mismatch')
+		for (const component of bundle.components) {
+			const entry = evidence.judge.find((one) => one.row.key === component.key)
 			if (entry === undefined) {
-				if (attempt.error === undefined) throw new Error('missing observed judge row')
+				if (component.error === undefined) throw new Error('missing observed judge row')
 				continue
 			}
 			const row = entry.row
 			if (
 				row.model !== model ||
-				row.state !== attempt.state ||
-				!isDeepStrictEqual(row.question, AGREE_QUESTION) ||
-				row.key !== buildCacheKey(model, row.state, AGREE_QUESTION) ||
-				(attempt.error === undefined &&
+				row.context !== bundle.context ||
+				row.state !== component.state ||
+				!isDeepStrictEqual(row.question, component.question) ||
+				row.key !== buildCacheKey(model, row.state, row.question, bundle.context) ||
+				(component.error === undefined &&
 					(row.error !== undefined || row.refusal !== undefined || row.answer?.form !== 'noul')) ||
-				(row.answer?.form === 'noul' ? row.answer.noul : undefined) !== attempt.judge.score ||
-				!isDeepStrictEqual(row.usage, attempt.judge.usage)
+				(row.answer?.form === 'noul' ? row.answer.noul : undefined) !== component.score ||
+				!isDeepStrictEqual(row.usage, component.usage) ||
+				!isDeepStrictEqual(row.refusal, component.refusal)
 			)
 				throw new Error('judge observation mismatch')
 			judgments.add(row.key)
 		}
 	}
+
 	if (summaries.size !== evidence.summary.length || judgments.size !== evidence.judge.length)
 		throw new Error('cache observation membership mismatch')
 	for (const entry of [...evidence.summary, ...evidence.judge])
@@ -174,6 +189,12 @@ export function verifyCorpus(corpus: RefitCorpus): void {
 export function buildRefitItem(attempt: RefitAttempt, context: RefitContext): RefitItem {
 	return {
 		id: attempt.id,
+		revision: SUPPORT_REVISION,
+		candidate: attempt.prose ?? '',
+		components:
+			(attempt.prose ?? '').trim() === ''
+				? []
+				: buildSupportPlan(attempt.prose ?? '', context.sources).components,
 		question: AGREE_QUESTION,
 		state: buildAgreeState({ prose: attempt.prose ?? '' }, context.sources),
 		sources: context.sources,
@@ -308,6 +329,12 @@ export function collectReadings(
 		)
 		if (attempt.failures !== undefined && !isDeepStrictEqual(failures, attempt.failures))
 			throw new Error('lexical evidence mismatch')
+		if (
+			attempt.judge !== undefined &&
+			(attempt.judge.candidate !== attempt.prose ||
+				!isDeepStrictEqual(attempt.judge.sources, context.sources))
+		)
+			throw new Error('support candidate/source mismatch')
 		return {
 			id: attempt.id,
 			identity: computeDigest([
@@ -318,7 +345,7 @@ export function collectReadings(
 			generated: true,
 			verdict: label.verdict,
 			lexical: failures.length === 0,
-			score: attempt.judge?.score,
+			score: attempt.judge === undefined ? undefined : reduceSupport(attempt.judge),
 		}
 	})
 }
@@ -327,7 +354,7 @@ export function collectReadings(
  * @param controls - Archived control directory
  * @returns Independently adjudicated control readings
  */
-export function readRefitControls(controls: string): readonly RefitReading[] {
+export function readRefitControls(controls: string): readonly RefitControl[] {
 	for (const [name, hash] of Object.entries(REFIT_CONTROL_HASHES))
 		if (hashFile(join(controls, name)).hash !== hash)
 			throw new Error(`archived control custody mismatch: ${name}`)
@@ -352,7 +379,7 @@ export function readRefitControls(controls: string): readonly RefitReading[] {
 			!isRecord(item) ||
 			!isRecord(mapped) ||
 			!isString(item.state) ||
-			!Array.isArray(mapped.sources)
+			!arrayOf(isRefitSource)(mapped.sources)
 		)
 			throw new Error('missing archived source mapping')
 		const score = typeof row.score === 'number' ? row.score : undefined
@@ -377,6 +404,7 @@ export function readRefitControls(controls: string): readonly RefitReading[] {
 		const build = readRows(path)[mapped.original.index]
 		if (
 			!isRecord(build) ||
+			!isString(build.prose) ||
 			!Array.isArray(build.failures) ||
 			computeDigest(build) !== mapped.input.row
 		)
@@ -386,13 +414,22 @@ export function readRefitControls(controls: string): readonly RefitReading[] {
 		)
 		if (isRecord(mapped.original.score) && mapped.original.score.agree !== score)
 			throw new Error('archived score mismatch')
+		if (
+			item.state !==
+			build.prose + '\nSource messages:\n' + mapped.sources.map(renderSource).join('\n')
+		)
+			throw new Error('archived semantic input mismatch')
 		return {
 			id: row.id,
-			identity: computeDigest([item.question, item.state, mapped.sources]),
-			generated: false,
+			candidate: build.prose,
+			sources: mapped.sources,
 			verdict,
 			lexical,
-			score,
+			original: {
+				item: computeDigest(item),
+				mapping: computeDigest(mapped),
+				build: computeDigest(build),
+			},
 		}
 	})
 }
@@ -404,7 +441,7 @@ export function readRefitControls(controls: string): readonly RefitReading[] {
  */
 export function computeRefitAssessment(
 	preparation: RefitPreparation,
-	controls: readonly RefitReading[],
+	controls: readonly RefitControl[],
 ): RefitAssessment {
 	verifyFiles(Object.values(preparation))
 	const manifest = readJSON(preparation.manifest.path)
@@ -433,13 +470,21 @@ export function computeRefitAssessment(
 	if (!isDeepStrictEqual(manifest.sustained, corpus.sustained))
 		throw new Error('development corpus transfer identity differs')
 	verifyCorpus(corpus)
-	verifyFiles([...manifest.files, ...corpus.files, manifest.evidence])
+	verifyFiles([...manifest.files, ...corpus.files, manifest.evidence, manifest.controls])
 	if (
 		resolve(manifest.evidence.path) !== resolve(dirname(preparation.manifest.path), 'evidence.json')
 	)
 		throw new Error('retained evidence path mismatch')
+	if (
+		resolve(manifest.controls.path) !==
+		resolve(dirname(preparation.manifest.path), 'controls.jsonl')
+	)
+		throw new Error('retained control path mismatch')
 	const evidence = readJSON(manifest.evidence.path)
 	if (!isRefitEvidence(evidence)) throw new Error('invalid retained cache evidence')
+	const observed = readRows(manifest.controls.path)
+	if (!arrayOf(isRefitControl)(observed)) throw new Error('invalid fresh control evidence')
+	const controlReadings = collectControlReadings(controls, observed)
 	verifyEvidence(
 		attempts,
 		evidence,
@@ -450,6 +495,7 @@ export function computeRefitAssessment(
 			calibration: { temperature: MICA_CALIBRATION },
 			options: { num_ctx: MICA_CONTEXT },
 		}).model,
+		observed,
 	)
 	verifyLabels(packet, labels)
 	if (
@@ -504,7 +550,9 @@ export function computeRefitAssessment(
 			failures = attempt.failures ?? []
 			if (
 				failures.length === 0 &&
-				(!isRefitUsage(attempt.judge?.usage) || attempt.judge?.score === undefined)
+				(attempt.judge === undefined ||
+					reduceSupport(attempt.judge) === undefined ||
+					attempt.judge.components.some((component) => !isRefitUsage(component.usage)))
 			)
 				errors.push('missing judge costs or required score')
 		}
@@ -516,7 +564,10 @@ export function computeRefitAssessment(
 	)
 		throw new Error('foreign attempt context')
 	return {
-		...fitReadings([...collectReadings(attempts, corpus.contexts, labels), ...controls], errors),
+		...fitReadings(
+			[...collectReadings(attempts, corpus.contexts, labels), ...controlReadings],
+			errors,
+		),
 		preparation,
 		custody: {
 			corpus: preparation.corpus.hash,
@@ -548,21 +599,20 @@ export function readRefitAssessment(reference: RefitFile): RefitAssessment {
  * @param rows - Retained generation attempts
  * @returns Per-role wire costs and measurement limitations
  */
-export function measureRefitCosts(rows: readonly RefitAttempt[]): RefitCosts {
+export function measureRefitCosts(
+	rows: readonly RefitAttempt[],
+	controls: readonly RefitControl[] = [],
+): RefitCosts {
 	const failures: string[] = []
 	const wire = ['summarizer', 'judge'].map((role) => {
 		const attempts = rows.flatMap((row) =>
 			role === 'judge'
-				? row.judge === undefined
-					? []
-					: [
-							{
-								sent: row.judge.sent,
-								cached: row.judge.cached,
-								usage: row.judge.usage,
-								wall: row.judge.wall,
-							},
-						]
+				? (row.judge?.components ?? []).map((component) => ({
+						sent: component.sent,
+						cached: component.cached,
+						usage: component.usage,
+						wall: component.wall,
+					}))
 				: [
 						{
 							sent: row.sent,
@@ -587,5 +637,89 @@ export function measureRefitCosts(rows: readonly RefitAttempt[]): RefitCosts {
 			missing: fresh.filter((one) => one.usage === undefined).length,
 		}
 	})
-	return { wire, failures }
+	const components = controls.flatMap((control) => control.support?.components ?? [])
+	const fresh = components.filter((component) => component.sent === true && !component.cached)
+	if (components.some((component) => component.sent === undefined))
+		failures.push('control request boundary unmeasured')
+	if (components.some((component) => component.sent === true && component.cached))
+		throw new Error('sent control request contradicts cache replay')
+	return {
+		wire,
+		failures,
+		controls: [
+			{
+				role: 'judge',
+				requests: fresh.length,
+				wall: fresh.reduce((sum, component) => sum + component.wall, 0),
+				prompt: fresh.reduce((sum, component) => sum + (component.usage?.prompt ?? 0), 0),
+				completion: fresh.reduce((sum, component) => sum + (component.usage?.completion ?? 0), 0),
+				missing: fresh.filter((component) => component.usage === undefined).length,
+			},
+		],
+		replay: [...rows.flatMap((row) => row.judge?.components ?? []), ...components].filter(
+			(component) => component.cached,
+		).length,
+	}
+}
+
+/** Reads generation-bound control costs separately from draft preparation costs.
+ * @param rows - Retained generated attempts
+ * @param manifest - Exact generation manifest
+ * @returns Component expenditure and cache replay counts
+ */
+export function readRefitCosts(
+	rows: readonly RefitAttempt[],
+	manifest: RefitGeneration,
+): RefitCosts {
+	verifyFiles([manifest.controls])
+	const controls = readRows(manifest.controls.path)
+	if (!arrayOf(isRefitControl)(controls)) throw new Error('invalid control cost evidence')
+	return measureRefitCosts(rows, controls)
+}
+
+/** Verifies the exact archived-label bijection and recomputes fresh control minima.
+ * @param archived - Custody-checked immutable controls
+ * @param observed - Separately retained successor evaluations
+ * @returns Whole-candidate readings; no historical score enters fitting
+ */
+export function collectControlReadings(
+	archived: readonly RefitControl[],
+	observed: readonly RefitControl[],
+): readonly RefitReading[] {
+	if (
+		archived.length !== 12 ||
+		observed.length !== archived.length ||
+		new Set(observed.map((control) => control.id)).size !== archived.length
+	)
+		throw new Error('incomplete fresh control membership')
+	return archived.map((control) => {
+		const current = observed.find((one) => one.id === control.id)
+		if (current === undefined) throw new Error('missing fresh control')
+		const { support, ...input } = current
+		if (!isDeepStrictEqual(input, control))
+			throw new Error('archived control semantic bijection mismatch')
+		if (
+			support !== undefined &&
+			(support.candidate !== control.candidate ||
+				!isDeepStrictEqual(support.sources, control.sources))
+		)
+			throw new Error('fresh control source/candidate mismatch')
+		if (
+			control.lexical &&
+			(support === undefined ||
+				reduceSupport(support) === undefined ||
+				support.components.some((component) => !isRefitUsage(component.usage)))
+		)
+			throw new Error('missing fresh eligible control evidence')
+		if (!control.lexical && support !== undefined)
+			throw new Error('lexically ineligible control was scored')
+		return {
+			id: control.id,
+			identity: computeDigest([control.candidate, control.sources]),
+			generated: false,
+			verdict: control.verdict,
+			lexical: control.lexical,
+			score: support === undefined ? undefined : reduceSupport(support),
+		}
+	})
 }

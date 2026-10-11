@@ -323,8 +323,15 @@ export function resolveLookup(
  * @param question - The question
  * @returns The SHA-256 of the JSON text of the three, in that order
  */
-export function buildCacheKey(model: string, state: JudgeState, question: JudgeQuestion): string {
-	return computeDigest([model, state, question])
+export function buildCacheKey(
+	model: string,
+	state: JudgeState,
+	question: JudgeQuestion,
+	context?: string,
+): string {
+	return computeDigest(
+		context === undefined ? [model, state, question] : [model, state, question, context],
+	)
 }
 
 /**
@@ -439,6 +446,8 @@ export function isCacheRow(value: unknown): value is CacheRow {
 	const error: unknown = Reflect.get(value, 'error')
 	return (
 		typeof Reflect.get(value, 'key') === 'string' &&
+		(Reflect.get(value, 'context') === undefined ||
+			typeof Reflect.get(value, 'context') === 'string') &&
 		typeof Reflect.get(value, 'model') === 'string' &&
 		state !== undefined &&
 		state !== null &&

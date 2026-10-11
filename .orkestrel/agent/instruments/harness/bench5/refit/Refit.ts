@@ -1,6 +1,7 @@
 import type { AggregateFailure, MirrorRead } from '../types.js'
 import type {
 	RefitAttempt,
+	RefitControl,
 	RefitContext,
 	RefitCorpus,
 	RefitEvidence,
@@ -22,9 +23,10 @@ import {
 	matchEntities,
 } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { createOllama, createOllamaJudge } from '../../vendor/ollama/index.js'
-import { AGREE_QUESTION } from '../aggregates/constants.js'
+import { Support } from '../aggregates/Support.js'
 import {
 	buildAgreeState,
+	reduceSupport,
 	buildSummaryPrompt,
 	checkProse,
 	collectStaleTokens,
@@ -48,7 +50,6 @@ import {
 } from '../constants.js'
 import { appendSeed, readCopy, readSettings } from '../Driver.js'
 import {
-	buildCacheKey,
 	buildSummaryKey,
 	buildSystem,
 	computeDigest,
@@ -91,6 +92,7 @@ export class Refit {
 	#signal = this.#abort.signal
 	#request: 'summarizer' | 'judge' | undefined
 	#sent = new Set<string>()
+	#requests = 0
 
 	/** Creates a command runner from the closed CLI options.
 	 * @param options - Explicit phase, paths, model, and live permission
@@ -233,6 +235,7 @@ export class Refit {
 		this.#signal.throwIfAborted()
 		init?.signal?.throwIfAborted()
 		if (this.#request !== undefined) this.#sent.add(this.#request)
+		if (this.#request === 'judge') this.#requests += 1
 		return fetch(input, init)
 	}
 
@@ -526,8 +529,6 @@ export class Refit {
 				this.#sent.clear()
 				this.#request = 'summarizer'
 				const started = performance.now()
-				let judging: number | undefined
-				const hits = judge.stats().hits.agree ?? 0
 				let attempt: RefitAttempt = {
 					id: randomUUID(),
 					context: context.id,
@@ -562,52 +563,22 @@ export class Refit {
 						throw new Error('summary duration missing or invalid')
 					if (!isRefitUsage(result.usage)) throw new Error('summary usage missing or invalid')
 					if (failures.length === 0) {
-						const state = buildAgreeState({ prose: result.prose }, context.sources)
-						const id = JSON.stringify(['agree', context.topic.key, ordinal + 1])
-						const asked = performance.now()
-						judging = asked
 						this.#request = 'judge'
-						attempt = {
-							...attempt,
-							judge: {
-								key: buildCacheKey(judge.model, state, AGREE_QUESTION),
-								cached: false,
-								wall: 0,
-							},
-						}
-						const response = await judge.ask(
-							{ state, questions: { [id]: AGREE_QUESTION } },
+						const support = await new Support({ judge, sent: () => this.#requests }).evaluate(
+							result.prose,
+							context.sources,
 							this.#signal,
 						)
-						const answer = response.answers[id]
-						const score = answer?.form === 'noul' ? answer.noul : undefined
-						attempt = {
-							...attempt,
-							judge: {
-								key: buildCacheKey(judge.model, state, AGREE_QUESTION),
-								cached: (judge.stats().hits.agree ?? 0) > hits,
-								wall: performance.now() - asked,
-								usage: response.usage,
-								score,
-							},
-						}
-						if (score === undefined || !Number.isFinite(score) || score < 0 || score > 1)
-							throw new Error('required AGREE score missing or invalid')
-						if (!isRefitUsage(response.usage)) throw new Error('judge usage missing or invalid')
+						attempt = { ...attempt, judge: support }
+						if (reduceSupport(support) === undefined)
+							throw new Error('required contextual score missing or invalid')
+						if (support.components.some((component) => !isRefitUsage(component.usage)))
+							throw new Error('judge usage missing or invalid')
 					}
 				} catch (error) {
 					attempt = {
 						...attempt,
 						error: describeError(error),
-						...(judging === undefined || attempt.judge === undefined
-							? {}
-							: {
-									judge: {
-										...attempt.judge,
-										cached: (judge.stats().hits.agree ?? 0) > hits,
-										wall: performance.now() - judging,
-									},
-								}),
 					}
 					errors.push(`${attempt.id}: ${attempt.error}`)
 				}
@@ -615,25 +586,47 @@ export class Refit {
 					...attempt,
 					wall: performance.now() - started,
 					sent: this.#sent.has('summarizer'),
-					...(attempt.judge === undefined
-						? {}
-						: { judge: { ...attempt.judge, sent: this.#sent.has('judge') } }),
 				}
 				this.#request = undefined
-				if (attempt.judge !== undefined) {
-					const path = join(this.#options.cache, 'judge.jsonl')
-					const row = existsSync(path)
-						? readRows(path)
-								.filter(isCacheRow)
-								.findLast((one) => one.key === attempt.judge?.key)
-						: undefined
-					if (row !== undefined) judgments.set(row.key, { path, row })
-				}
+				if (attempt.judge !== undefined)
+					this.#retain(
+						attempt.judge.components.map((component) => component.key),
+						judgments,
+					)
+
 				attempts.push(attempt)
 				appendFileSync(join(this.#options.out, 'attempts.jsonl'), `${JSON.stringify(attempt)}\n`)
 				if (attempt.error !== undefined || failures.length === 0) break
 			}
 			if (this.#signal.aborted) break
+		}
+		const controls: RefitControl[] = []
+		const archived = readRefitControls(this.#options.controls)
+		const controlPath = join(this.#options.out, 'controls.jsonl')
+		writeFileSync(controlPath, '', { flag: 'wx' })
+		for (const control of archived) {
+			let observed = control
+			if (control.lexical && !this.#signal.aborted) {
+				this.#request = 'judge'
+				const support = await new Support({ judge, sent: () => this.#requests }).evaluate(
+					control.candidate,
+					control.sources,
+					this.#signal,
+				)
+				this.#request = undefined
+				observed = { ...control, support }
+				this.#retain(
+					support.components.map((component) => component.key),
+					judgments,
+				)
+				if (
+					reduceSupport(support) === undefined ||
+					support.components.some((component) => !isRefitUsage(component.usage))
+				)
+					errors.push(control.id + ': incomplete fresh control support')
+			} else if (control.lexical) errors.push(control.id + ': aborted control support')
+			controls.push(observed)
+			appendFileSync(controlPath, JSON.stringify(observed) + '\n')
 		}
 		const packet = attempts
 			.map((attempt) => {
@@ -657,6 +650,7 @@ export class Refit {
 		const retained = join(this.#options.out, 'evidence.json')
 		writeFileSync(retained, `${JSON.stringify(evidence, null, 2)}\n`, { flag: 'wx' })
 		const manifest: RefitGeneration = {
+			controls: hashFile(controlPath),
 			sustained: corpus.sustained,
 			...(this.#options.frozen === undefined
 				? {}
@@ -672,13 +666,22 @@ export class Refit {
 			errors,
 			lineage: { before, after: this.#lineage() },
 		}
-		if (manifest.complete) verifyEvidence(attempts, evidence, manifest, judge.model)
+		if (manifest.complete) verifyEvidence(attempts, evidence, manifest, judge.model, controls)
 		writeFileSync(
 			join(this.#options.out, 'manifest.json'),
 			`${JSON.stringify(manifest, null, 2)}\n`,
 			{ flag: 'wx' },
 		)
 		return manifest.complete ? 0 : 3
+	}
+
+	#retain(keys: readonly string[], judgments: Map<string, RefitEvidence['judge'][number]>): void {
+		const path = join(this.#options.cache, 'judge.jsonl')
+		const rows = existsSync(path) ? readRows(path).filter(isCacheRow) : []
+		for (const key of keys) {
+			const row = rows.findLast((one) => one.key === key)
+			if (row !== undefined) judgments.set(key, { path, row })
+		}
 	}
 
 	#fit(): number {

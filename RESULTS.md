@@ -4,7 +4,7 @@ Publication is on hold until the aggregate experiment and adoption verdict finis
 
 The immediate MVP is Qwen 2B with thinking disabled, the same 24 development goals, and three conditions: records, living aggregate, and full view. Report per-goal quality, aggregate exposure, failures and costs before expanding conditions. Verification is limited to the paths this run uses; the wider matrix and sustained-work checks remain required before adoption. No new reporting interface or diagnostic campaign is planned.
 
-Claude Opus 5.5 reviewed that plan through the Claude CLI and supports the existing commands and scope. Focused verification passed 375 of 378 tests; resource-refusal classification and two refit cache expectations still fail. Those failures are under bounded diagnosis. Fresh calibration comes next, with independent labeling alongside records/full-view runs. An aggregate pilot must still qualify and actually expose summaries. See [Opus's planning report](.orkestrel/agent/instruments/units/aggregates/reports/resumption-mvp-opus.md).
+Claude Opus 5.5 reviewed that plan through the Claude CLI and supports the existing commands and scope. The MVP path is now verified: the repaired resource-ladder test and all 23 refit/capacity tests pass, and the three prescribed deliberate break tests fail as intended. Source was restored exactly and the final canonical build passed. This composes with the earlier passing tests; it is not a fresh full-campaign pass. Fresh calibration is next, with independent labeling alongside records/full-view runs. An aggregate pilot must still qualify and actually expose summaries. See [Opus's planning report](.orkestrel/agent/instruments/units/aggregates/reports/resumption-mvp-opus.md) and [verification evidence](.orkestrel/agent/instruments/units/aggregates/reports/resumption-mvp-verification.md).
 
 ## Actual answer quality available now
 
@@ -65,7 +65,7 @@ The completed checks passed with the following scope. See [the release checkpoin
 | Raw request comparison | 618 requests per build; no differences or incomplete copies |
 | Desk packed-consumer checks | 532 passed; 4 applicability skips |
 | Ollama consumer patch checks | 811 passed; 2 applicability skips; owner retains live-service and publication work |
-| Aggregate harness | 410 of 410 passed |
+| Earlier aggregate harness checkpoint | 410 of 410 passed; current admission/capacity changes are under the focused verification described above |
 | Scaffold | 1968 passed; 16 applicability skips; static and build gates passed |
 
 ## Remaining work and location

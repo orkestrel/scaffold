@@ -9,6 +9,7 @@ import type {
 	JudgeInterface,
 	JudgeQuestion,
 	JudgeRequest,
+	JudgeResult,
 	LedgerInterface,
 	LedgerLine,
 	LedgerLookupReading,
@@ -51,6 +52,7 @@ export type AssignCategory = 'fact' | 'chatter'
 
 /** Holds one judge answer under the content key of its model, state, and question. */
 export interface CacheRow {
+	readonly context?: string
 	readonly key: string
 	readonly model: string
 	readonly state: JudgeState
@@ -425,6 +427,7 @@ export interface MirrorInterface {
 
 /** Answers questions as a judge and counts the questions it answered from its rows. */
 export interface JudgeCacheInterface extends JudgeInterface {
+	ask(request: JudgeRequest, signal: AbortSignal, context?: string): Promise<JudgeResult>
 	stats(): JudgeStats
 }
 
@@ -471,6 +474,56 @@ export interface AggregateSource {
 	readonly role: MessageRole
 	readonly text: string
 	readonly day: string
+}
+
+/** Holds an exact UTF-16 span of the complete candidate. */
+export interface AggregateFocus {
+	readonly start: number
+	readonly end: number
+	readonly text: string
+}
+
+/** Holds one required native question without cache-only custody fields. */
+export interface AggregateComponent {
+	readonly id: string
+	readonly state: string
+	readonly question: JudgeQuestion
+	readonly focus?: AggregateFocus
+}
+
+/** Binds the exhaustive operation to its complete semantic inputs. */
+export interface AggregatePlan {
+	readonly revision: string
+	readonly candidate: string
+	readonly sources: readonly AggregateSource[]
+	readonly context: string
+	readonly components: readonly AggregateComponent[]
+}
+
+/** Retains an attempted component, including unsuccessful and cached work. */
+export interface AggregateObservation extends AggregateComponent {
+	readonly key: string
+	readonly score?: number
+	readonly error?: string
+	readonly refusal?: Refusal
+	readonly usage?: TokenUsage
+	readonly cached: boolean
+	readonly sent?: boolean
+	readonly wall: number
+}
+
+/** Retains complete input custody and every attempted component; its score is recomputed. */
+export interface AggregateBundle extends Omit<AggregatePlan, 'components'> {
+	readonly model: string
+	readonly components: readonly AggregateObservation[]
+	readonly wall: number
+	readonly error?: string
+}
+
+/** Configures contextual support and an optional measured wire boundary. */
+export interface AggregateSupportOptions {
+	readonly judge: JudgeCacheInterface
+	readonly sent?: () => number
 }
 
 /** Holds a source's message id, seed index, and sentence index. */
@@ -633,6 +686,7 @@ export interface AggregateContext {
 
 /** Holds one line of the aggregate rows file. */
 export interface AggregateRow {
+	readonly support?: AggregateBundle
 	/** Records the complete attempted source projection, or absence when a pass failed before reading it. */
 	readonly projection: readonly AggregateSource[] | undefined
 	readonly prior: AggregateState | undefined
@@ -859,6 +913,7 @@ export interface CalibrateSwap {
 
 /** Holds one labelled judge item. */
 export interface CalibrateItem {
+	readonly support?: { readonly candidate: string; readonly sources: readonly AggregateSource[] }
 	readonly id: string
 	readonly head: CalibrateHead
 	readonly variant: CalibrateVariant
@@ -876,6 +931,7 @@ export interface CalibrateItem {
 
 /** Holds an item with the judge's answer. */
 export interface CalibrateAsked {
+	readonly support?: AggregateBundle
 	readonly item: CalibrateItem
 	readonly noul: number | undefined
 	readonly outcome: CalibrateOutcome

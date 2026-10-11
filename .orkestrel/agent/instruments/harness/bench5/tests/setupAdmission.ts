@@ -43,6 +43,7 @@ export async function replayAdmission(
 	)
 		throw new Error('the archive has no served goals')
 	const goals = fixture.complete === true ? archived.goals.join(',') : 'g01'
+	const calls = readRows(join(archive, 'l5-q2-control-v1', 'calls.jsonl'))
 	const expected = Array.from(
 		{ length: fixture.complete === true ? 40 : 5 },
 		(_, at) => at + 1,
@@ -54,9 +55,13 @@ export async function replayAdmission(
 			throw new Error('the archive request has no options')
 		const body = envelope.body
 		const options = envelope.body.options
+		const call = calls.find((entry) => isRecord(entry) && entry.sequence === sequence)
+		if (!isRecord(call) || (call.role !== 'agent' && call.role !== 'flush'))
+			throw new Error('the archive request has no chat role')
 		return JSON.stringify({
 			...body,
 			options: { ...options, num_predict: options.num_predict ?? 512 },
+			...(call.role === 'agent' ? { shift: false } : {}),
 		})
 	})
 	const requests: string[] = []

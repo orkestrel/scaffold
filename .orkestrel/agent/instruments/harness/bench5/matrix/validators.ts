@@ -8,6 +8,8 @@ import type {
 	MatrixResource,
 	MatrixRole,
 	MatrixRow,
+	MatrixDeployment,
+	MatrixSnapshot,
 } from './types.js'
 import type { SelectionRecord } from '../types.js'
 import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
@@ -38,11 +40,15 @@ export function isMatrixBudget(value: unknown): value is MatrixBudget {
 	const result = attempt(
 		() =>
 			isRecord(value) &&
-			[value.reserve, value.window, value.predict].every(
+			[value.reserve, value.window, value.predict, value.ceiling].every(
 				(entry) => isFiniteNumber(entry) && Number.isSafeInteger(entry) && entry >= 0,
 			) &&
 			isFiniteNumber(value.reserve) &&
 			value.reserve > 0 &&
+			isFiniteNumber(value.ceiling) &&
+			value.ceiling > 0 &&
+			isFiniteNumber(value.window) &&
+			value.ceiling <= value.window &&
 			isFiniteNumber(value.window) &&
 			value.window > value.reserve,
 	)
@@ -80,6 +86,7 @@ export function isMatrixFreeze(value: unknown): value is MatrixFreeze {
 			isRefitFile(value.seed) &&
 			isRefitFile(value.settings) &&
 			isRefitFile(value.tags) &&
+			isRefitFile(value.deployment) &&
 			isRefitFile(value.census) &&
 			isRecord(value.configuration) &&
 			isFiniteNumber(value.configuration.allowance) &&
@@ -144,6 +151,24 @@ export function isMatrixRequest(value: unknown): value is MatrixRequest {
 		() =>
 			isRecord(value) &&
 			isFiniteNumber(value.sequence) &&
+			Number.isSafeInteger(value.sequence) &&
+			value.sequence > 0 &&
+			isFiniteNumber(value.started) &&
+			isFiniteNumber(value.finished) &&
+			value.finished >= value.started &&
+			(value.buffered === undefined ||
+				(isFiniteNumber(value.buffered) &&
+					value.buffered >= value.started &&
+					value.buffered <= value.finished)) &&
+			(value.capacity === undefined ||
+				(isRecord(value.capacity) &&
+					isRefitFile(value.capacity.evidence) &&
+					isFiniteNumber(value.capacity.wall) &&
+					value.capacity.wall >= 0 &&
+					(value.capacity.window === undefined ||
+						(isFiniteNumber(value.capacity.window) &&
+							Number.isSafeInteger(value.capacity.window) &&
+							value.capacity.window > 0)))) &&
 			['agent', 'judge', 'summarizer', 'flush'].includes(String(value.role)) &&
 			typeof value.sent === 'boolean' &&
 			'request' in value &&
@@ -166,6 +191,7 @@ export function isMatrixRequest(value: unknown): value is MatrixRequest {
 					'request',
 					'transport',
 					'configuration',
+					'observation',
 				].includes(String(entry)),
 			),
 	)
@@ -197,6 +223,7 @@ export function isMatrixRow(value: unknown): value is MatrixRow {
 					'request',
 					'transport',
 					'configuration',
+					'observation',
 				].includes(String(entry)),
 			) &&
 			isRecord(value.briefing) &&
@@ -204,6 +231,65 @@ export function isMatrixRow(value: unknown): value is MatrixRow {
 			['tokens', 'facts', 'stale'].every(
 				(key) => isRecord(value.briefing) && isFiniteNumber(value.briefing[key]),
 			),
+	)
+	return result.success && result.value
+}
+
+/** Checks the declared, hash-bound deployment input without reading host environment. */
+export function isMatrixDeployment(value: unknown): value is MatrixDeployment {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isRefitFile(value.receipt) &&
+			isRefitFile(value.executable) &&
+			isRefitFile(value.runner) &&
+			isString(value.version) &&
+			value.version.length > 0 &&
+			value.exclusive === true &&
+			isRecord(value.environment) &&
+			Object.values(value.environment).every(isString) &&
+			arrayOf(isRefitFile)(value.controls) &&
+			value.controls.length > 0 &&
+			Array.isArray(value.models) &&
+			value.models.length > 0 &&
+			value.models.every(
+				(model: unknown) =>
+					isRecord(model) &&
+					isString(model.model) &&
+					isString(model.digest) &&
+					/^(sha256:)?[a-f0-9]{64}$/.test(model.digest) &&
+					model.backend === 'llamacpp' &&
+					isFiniteNumber(model.context) &&
+					Number.isSafeInteger(model.context) &&
+					model.context > 0 &&
+					isString(model.field) &&
+					model.field.endsWith('.context_length') &&
+					isRefitFile(model.metadata),
+			),
+	)
+	return result.success && result.value
+}
+
+/** Checks snapshot transport custody; semantic association is checked against the request. */
+export function isMatrixSnapshot(value: unknown): value is MatrixSnapshot {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			value.role === 'agent' &&
+			isFiniteNumber(value.sequence) &&
+			Number.isSafeInteger(value.sequence) &&
+			value.sequence > 0 &&
+			isString(value.model) &&
+			isString(value.request) &&
+			isString(value.raw) &&
+			isString(value.hash) &&
+			isFiniteNumber(value.buffered) &&
+			isFiniteNumber(value.started) &&
+			isFiniteNumber(value.finished) &&
+			value.buffered <= value.started &&
+			value.started <= value.finished &&
+			(value.status === undefined || isFiniteNumber(value.status)) &&
+			(value.error === undefined || isString(value.error)),
 	)
 	return result.success && result.value
 }

@@ -1,3 +1,4 @@
+import { writeDeploymentFixture } from '../../matrix/tests/helpers.js'
 import type { SustainedFixture } from './types.js'
 import { HARNESS } from '../../constants.js'
 import { readFrozen } from '../../matrix/helpers.js'
@@ -220,6 +221,8 @@ export async function prepareRuntimeFixture(
 	assert.equal(
 		await runCommand('matrix', [
 			'freeze',
+			'--deployment',
+			writeDeploymentFixture(directory),
 			'--key',
 			'q4',
 			'--think',

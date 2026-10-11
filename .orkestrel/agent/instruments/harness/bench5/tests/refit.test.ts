@@ -1,3 +1,4 @@
+import { reduceSupport } from '../aggregates/helpers.js'
 import type { RefitCorpus, RefitReading } from '../refit/types.js'
 import type { AggregatorOptions } from '../types.js'
 import { before, describe, it } from 'node:test'
@@ -33,7 +34,14 @@ import {
 	SAMPLER,
 } from '../constants.js'
 import { appendSeed, readCopy } from '../Driver.js'
-import { buildSystem, computeDigest, readJSON, readLookup, readRows } from '../helpers.js'
+import {
+	buildSystem,
+	computeDigest,
+	isCacheRow,
+	readJSON,
+	readLookup,
+	readRows,
+} from '../helpers.js'
 import { JudgeCache } from '../JudgeCache.js'
 import { Mirror } from '../Mirror.js'
 import { Summarizer } from '../Summarizer.js'
@@ -45,11 +53,13 @@ import {
 	hashFile,
 	measureRecall,
 	measureRefitCosts,
+	readRefitControls,
 	verifyCorpus,
 	verifyEvidence,
 	verifyFiles,
 	verifyLabels,
 } from '../refit/helpers.js'
+import { REFIT_CONTROLS } from '../refit/constants.js'
 import {
 	isRefitAttempt,
 	isRefitContext,
@@ -71,6 +81,8 @@ import {
 	buildMembershipCases,
 	buildOptions,
 	readAttempts,
+	readControls,
+	writeControlCache,
 	readCorpus,
 	writeCorpus,
 	writeCache,
@@ -298,7 +310,7 @@ describe('refit generation and fit custody', () => {
 			assert.ok(attempt)
 			assert.equal(attempt.cached, true)
 			assert.equal(attempt.sent, false)
-			assert.equal(attempt.judge?.sent, false)
+			assert.ok(attempt.judge?.components.every((component) => component.sent === false))
 			assert.ok(
 				measureRefitCosts(readAttempts(generated)).wire.every(
 					(cost) => cost.requests === 0 && cost.missing === 0,
@@ -317,7 +329,24 @@ describe('refit generation and fit custody', () => {
 			)
 			assert.deepEqual(
 				evidence.judge.map((entry) => entry.row),
-				readRows(join(cache, 'judge.jsonl')),
+				[
+					...new Map(
+						readRows(join(cache, 'judge.jsonl'))
+							.filter(isCacheRow)
+							.map((row) => [row.key, row]),
+					).values(),
+				],
+			)
+			assert.deepEqual(
+				new Set(evidence.judge.map((entry) => entry.row.key)),
+				new Set([
+					...readAttempts(generated)
+						.flatMap((entry) => entry.judge?.components ?? [])
+						.map((component) => component.key),
+					...readControls(generated)
+						.flatMap((control) => control.support?.components ?? [])
+						.map((component) => component.key),
+				]),
 			)
 			for (const name of ['summary', 'judge']) {
 				const row = readRows(join(cache, `${name}.jsonl`))[0]
@@ -368,7 +397,7 @@ describe('refit generation and fit custody', () => {
 		const attempts = readAttempts(generated)
 		const model = evidence.judge[0]?.row.model
 		assert.ok(model)
-		verifyEvidence(attempts, evidence, manifest, model)
+		verifyEvidence(attempts, evidence, manifest, model, readControls(generated))
 		// Removing the live row leaves the immutable observation available to adjudication.
 		writeFileSync(join(cache, 'judge.jsonl'), '')
 		assert.throws(() => verifyFiles(manifest.lineage.after), /custody mismatch/)
@@ -520,6 +549,7 @@ describe('refit generation and fit custody', () => {
 		const peer = new Peer({ initial: 'MX-9999', retry: 'MX-9999', yes: 0, no: -100, usage: true })
 		const url = await peer.start()
 		const out = join(DIRECTORY, 'exhausted')
+		writeControlCache(join(DIRECTORY, 'exhausted-cache'))
 		try {
 			assert.equal(
 				await new Refit(
@@ -548,10 +578,21 @@ describe('refit generation and fit custody', () => {
 			assert.equal(new Set(packet.filter(isRefitItem).map((item) => item.id)).size, 3)
 			const manifest = readJSON(join(out, 'manifest.json'))
 			assert.ok(isRefitGeneration(manifest))
-			assert.deepEqual(manifest.lineage.before, [])
+			assert.ok(manifest.lineage.before.some((file) => file.path.endsWith('judge.jsonl')))
 			const evidence = readJSON(manifest.evidence.path)
 			assert.ok(isRefitEvidence(evidence))
-			assert.deepEqual(evidence.judge, [])
+			assert.deepEqual(
+				new Set(evidence.judge.map((entry) => entry.row.key)),
+				new Set(
+					readControls(out)
+						.flatMap((control) => control.support?.components ?? [])
+						.map((component) => component.key),
+				),
+			)
+			assert.deepEqual(
+				readControls(out).map((control) => control.id),
+				readRefitControls(REFIT_CONTROLS).map((control) => control.id),
+			)
 			assert.equal(evidence.summary.length, 2)
 			const labels = join(DIRECTORY, 'exhausted-labels.json')
 			writeLabels(labels, out, context)
@@ -592,8 +633,9 @@ describe('refit generation and fit custody', () => {
 				).execute(),
 				0,
 			)
-			const prefix = [...peer.requests]
-			assert.equal(prefix.length, 3)
+			const boundary = peer.requests.length
+			const prefix = peer.requests.slice(0, 4)
+			assert.equal(prefix.length, 4)
 			const copy = readCopy(join(COPIES_DIR, 'v1.json'))
 			const goal = copy.goals[0]
 			assert.ok(goal)
@@ -686,7 +728,7 @@ describe('refit generation and fit custody', () => {
 				goal.after,
 				new AbortController().signal,
 			)
-			assert.deepEqual(peer.requests.slice(3, 6), prefix)
+			assert.deepEqual(peer.requests.slice(boundary, boundary + 4), prefix)
 			const decision = readRows(options.path).find((row) => isRecord(row) && row.event === 'agree')
 			assert.ok(isRecord(decision) && isRecord(decision.answers))
 			assert.equal(decision.topic, context.topic.key)
@@ -726,9 +768,20 @@ describe('refit generation and fit custody', () => {
 			assert.equal(attempts.length, 2)
 			assert.ok(attempts[0]?.failures?.some((failure) => failure.token === 'MX-9999'))
 			assert.ok(attempts[1]?.prompt[1]?.content.includes('"token":"MX-9999"'))
-			assert.equal(attempts[1]?.judge?.score, 0)
+			assert.ok(attempts[1]?.judge)
+			assert.equal(reduceSupport(attempts[1].judge), 0)
 			assert.deepEqual(attempts[1]?.failures, [])
-			assert.equal(peer.requests.length, 3)
+			const requests = peer.requests.length
+			assert.equal(
+				requests,
+				2 +
+					attempts
+						.flatMap((attempt) => attempt.judge?.components ?? [])
+						.filter((component) => component.sent).length +
+					readControls(out)
+						.flatMap((control) => control.support?.components ?? [])
+						.filter((component) => component.sent).length,
+			)
 			const offline = join(DIRECTORY, 'zero-replay')
 			assert.equal(
 				await new Refit(
@@ -736,7 +789,7 @@ describe('refit generation and fit custody', () => {
 				).execute(),
 				0,
 			)
-			assert.equal(peer.requests.length, 3)
+			assert.equal(peer.requests.length, requests)
 			assert.ok(readAttempts(offline).every((attempt) => attempt.cached))
 			assert.ok(
 				measureRefitCosts(readAttempts(offline)).wire.every(
@@ -763,13 +816,15 @@ describe('refit generation and fit custody', () => {
 					(cost) => cost.requests === 0 && cost.missing === 0,
 				),
 			)
-			assert.equal(peer.requests.length, 3)
+			assert.equal(peer.requests.length, requests)
 			const packet = readRows(join(out, 'packet.jsonl'))
 			assert.ok(packet.every(isRefitItem))
 			assert.ok(
 				packet.every(
 					(item) =>
-						isRecord(item) && Object.keys(item).sort().join(',') === 'id,question,sources,state',
+						isRecord(item) &&
+						Object.keys(item).sort().join(',') ===
+							'candidate,components,id,question,revision,sources,state',
 				),
 			)
 			assert.equal(packet.length, attempts.length)
@@ -791,6 +846,7 @@ describe('refit generation and fit custody', () => {
 			usage: false,
 		})
 		const url = await peer.start()
+		writeControlCache(join(DIRECTORY, 'usage-cache'))
 		try {
 			const out = join(DIRECTORY, 'missing-usage')
 			assert.equal(
@@ -851,6 +907,7 @@ describe('refit generation and fit custody', () => {
 			const url = await peer.start()
 			try {
 				const out = join(DIRECTORY, `sent-${operation}`)
+				writeControlCache(join(DIRECTORY, `sent-${operation}-cache`))
 				assert.equal(
 					await new Refit(
 						buildOptions(out, {
@@ -872,14 +929,24 @@ describe('refit generation and fit custody', () => {
 				assert.equal(
 					costs.wire.find((cost) => cost.role === (operation === 'judge' ? 'judge' : 'summarizer'))
 						?.missing,
-					1,
+					operation === 'judge' ? attempts[0]?.judge?.components.length : 1,
 				)
 				assert.equal(attempts[0]?.sent, true)
-				if (operation === 'judge') assert.equal(attempts[0]?.judge?.sent, true)
+				if (operation === 'judge')
+					assert.ok(attempts[0]?.judge?.components.some((component) => component.sent === true))
 				const historical = attempts.map((attempt) => ({
 					...attempt,
 					sent: undefined,
-					judge: attempt.judge === undefined ? undefined : { ...attempt.judge, sent: undefined },
+					judge:
+						attempt.judge === undefined
+							? undefined
+							: {
+									...attempt.judge,
+									components: attempt.judge.components.map((component) => ({
+										...component,
+										sent: undefined,
+									})),
+								},
 				}))
 				const unmeasured = measureRefitCosts(historical)
 				assert.ok(unmeasured.failures.some((failure) => failure.includes('unmeasured')))
@@ -911,6 +978,7 @@ describe('refit generation and fit custody', () => {
 		})
 		const url = await peer.start()
 		const generated = join(DIRECTORY, 'generated')
+		writeControlCache(join(DIRECTORY, 'fit-cache'))
 		try {
 			assert.equal(
 				await new Refit(

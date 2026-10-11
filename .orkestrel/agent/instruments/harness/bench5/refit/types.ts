@@ -3,6 +3,8 @@ import type { MatrixFreeze } from '../matrix/types.js'
 import type { Message, NoulQuestion } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import type {
 	AggregateFailure,
+	AggregateBundle,
+	AggregateComponent,
 	AggregateSource,
 	AggregateTopic,
 	CacheRow,
@@ -76,19 +78,15 @@ export interface RefitAttempt {
 	readonly duration?: number
 	readonly cached?: boolean
 	readonly state?: string
-	readonly judge?: {
-		readonly sent?: boolean
-		readonly key: string
-		readonly cached: boolean
-		readonly wall: number
-		readonly usage?: TokenUsage
-		readonly score?: number
-	}
+	readonly judge?: AggregateBundle
 	readonly error?: string
 }
 
 /** Holds blinded support evidence with opaque ids and explicit message grouping. */
 export interface RefitItem {
+	readonly revision: string
+	readonly candidate: string
+	readonly components: readonly AggregateComponent[]
 	readonly id: string
 	readonly question: NoulQuestion
 	readonly state: string
@@ -97,6 +95,7 @@ export interface RefitItem {
 
 /** Holds a completed generation manifest and its exact artifact identities. */
 export interface RefitGeneration {
+	readonly controls: RefitFile
 	readonly sustained?: { readonly runtime: RefitFile; readonly classification: RefitFile }
 	readonly matrix?: MatrixFreeze
 	readonly corpus: string
@@ -152,6 +151,21 @@ export interface RefitReading {
 	readonly score?: number
 }
 
+/** Binds a whole-candidate archived label to unchanged semantic inputs and successor support. */
+export interface RefitControl {
+	readonly id: string
+	readonly candidate: string
+	readonly sources: readonly RefitSource[]
+	readonly verdict: RefitVerdict
+	readonly lexical: boolean
+	readonly original: {
+		readonly item: string
+		readonly mapping: string
+		readonly build: string
+	}
+	readonly support?: AggregateBundle
+}
+
 /** Holds occurrence or distinct-identity admission readings. */
 export interface RefitRecall {
 	readonly supported: number
@@ -197,6 +211,15 @@ export interface RefitAssessment extends RefitDiagnosis {
 
 /** Holds sent fresh preparation expenditure independently of overlapping timers. */
 export interface RefitCosts {
+	readonly controls: ReadonlyArray<{
+		readonly role: 'judge'
+		readonly requests: number
+		readonly wall: number
+		readonly prompt: number
+		readonly completion: number
+		readonly missing: number
+	}>
+	readonly replay: number
 	readonly wire: ReadonlyArray<{
 		readonly phase: 'trajectory'
 		readonly role: string

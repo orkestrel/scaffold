@@ -9,6 +9,7 @@ import { MICA_MODEL, MODELS } from '../../constants.js'
 export class Peer {
 	readonly #latency: number
 	readonly calls: unknown[] = []
+	#loaded: unknown[] = []
 	missingAt: string | undefined
 	lengthAt: string | undefined
 	filingFailure = false
@@ -45,6 +46,11 @@ export class Peer {
 
 	async #respond(request: IncomingMessage, response: ServerResponse): Promise<void> {
 		response.setHeader('connection', 'close')
+		if (request.url === '/api/ps') {
+			response.setHeader('content-type', 'application/json')
+			response.end(JSON.stringify({ models: this.#loaded }))
+			return
+		}
 		if (request.url === '/api/tags') {
 			response.setHeader('content-type', 'application/json')
 			response.end(
@@ -63,6 +69,18 @@ export class Peer {
 		const body: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'))
 		if (!isRecord(body)) throw new Error('invalid peer request')
 		this.calls.push(body)
+		if (isRecord(body.options))
+			this.#loaded = [
+				{
+					name: body.model,
+					digest: String(
+						[...Object.values(MODELS), MICA_MODEL].indexOf(String(body.model)) + 1,
+					).repeat(64),
+					runner: 'llamacpp',
+					context_length: Math.min(Number(body.options.num_ctx), 262144),
+					expires_at: new Date(Date.now() + 1800000).toISOString(),
+				},
+			]
 		await setTimeout(this.#latency)
 		if (request.url === '/api/generate') {
 			if (this.faults > 0) {

@@ -1,0 +1,303 @@
+import { it } from 'node:test'
+import type { MatrixOutcome } from '../types.js'
+import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import {
+	buildBudget,
+	readCapacity,
+	readRequestOutcome,
+	listCapacityFailures,
+	listCapacityFiles,
+	listResourceFailures,
+} from '../helpers.js'
+import { isMatrixBudget, isMatrixRequest } from '../validators.js'
+import { MODELS, SAMPLER } from '../../constants.js'
+import { shapeBody } from '../../Driver.js'
+import { buildCapacityFreeze, writeCapacityRequest } from './helpers.js'
+
+it('requires observed allocation, raw integer usage, exact controls, and the frozen strict ceiling', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-proof-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const budget = buildBudget(512)
+		const request = writeCapacityRequest(directory)
+		assert.equal(readRequestOutcome(request, budget, frozen), 'complete')
+		assert.deepEqual(listCapacityFailures([request], frozen, budget), [])
+		assert.deepEqual(listCapacityFiles([request]), [request.capacity?.evidence])
+		assert.equal(readRequestOutcome({ ...request, capacity: undefined }, budget, frozen), 'fault')
+		assert.equal(
+			readRequestOutcome(
+				{ ...request, response: '{"done":true,"done_reason":"stop"}' },
+				budget,
+				frozen,
+			),
+			'fault',
+		)
+		assert.equal(
+			readRequestOutcome({ ...request, response: '{"done":false}' }, budget, frozen),
+			'fault',
+		)
+		assert.equal(
+			readRequestOutcome(
+				{ ...request, response: '{"error":"context exceeded"}', status: 500 },
+				budget,
+				frozen,
+			),
+			'fault',
+		)
+		for (const count of [-1, 1.5, Infinity, NaN, '12', null]) {
+			const response = JSON.stringify({
+				done: true,
+				done_reason: 'stop',
+				prompt_eval_count: count,
+				eval_count: 1,
+			})
+			assert.equal(readRequestOutcome({ ...request, response }, budget, frozen), 'fault')
+		}
+		const cases: ReadonlyArray<readonly [number, number, MatrixOutcome]> = [
+			[2559, 512, 'complete'],
+			[2560, 512, 'refused'],
+			[2558, 513, 'refused'],
+		]
+		for (const [prompt, completion, outcome] of cases) {
+			const response = JSON.stringify({
+				done: true,
+				done_reason: 'stop',
+				prompt_eval_count: prompt,
+				eval_count: completion,
+				prompt_eval_cached: prompt,
+			})
+			assert.equal(readRequestOutcome({ ...request, response }, budget, frozen), outcome)
+		}
+		assert.equal(
+			readRequestOutcome(
+				{ ...request, response: request.response?.replace('stop', 'length') },
+				budget,
+				frozen,
+			),
+			'refused',
+		)
+		assert.equal(
+			readRequestOutcome(
+				{
+					...request,
+					response: request.response?.replace('"done":true', '"done":true,"truncated":true'),
+				},
+				budget,
+				frozen,
+			),
+			'refused',
+		)
+		for (const controls of [
+			{ shift: undefined, truncate: false },
+			{ shift: false, truncate: undefined },
+		]) {
+			const changed = writeCapacityRequest(directory, {
+				request: {
+					model: MODELS.q2,
+					...controls,
+					options: { ...SAMPLER, num_ctx: 3072, num_predict: 512 },
+				},
+			})
+			assert.equal(readRequestOutcome(changed, budget, frozen), 'fault')
+		}
+		const clamped = writeCapacityRequest(
+			directory,
+			{},
+			{
+				models: [
+					{
+						name: MODELS.q2,
+						digest: '1'.repeat(64),
+						runner: 'llamacpp',
+						context_length: 2048,
+						expires_at: '2099-01-01T00:00:00Z',
+					},
+				],
+			},
+		)
+		assert.ok(clamped.capacity)
+		assert.equal(
+			readRequestOutcome(
+				{ ...clamped, capacity: { ...clamped.capacity, window: 2048 } },
+				budget,
+				frozen,
+			),
+			'fault',
+		)
+		assert.equal(
+			readRequestOutcome(clamped, budget, frozen),
+			'fault',
+			'requested W copied into A does not match raw snapshot',
+		)
+		assert.equal(isMatrixBudget({ ...budget, ceiling: undefined }), false)
+		assert.equal(isMatrixRequest({ ...request, started: undefined }), false)
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})
+
+it('admits finite full trajectories with B above metadata C and refuses adapting C to the output', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-full-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const budget = { ...buildBudget(512), window: 1000000, ceiling: 262144 }
+		const request = writeCapacityRequest(
+			directory,
+			{
+				request: {
+					model: MODELS.q2,
+					shift: false,
+					truncate: false,
+					think: false,
+					options: { ...SAMPLER, num_ctx: budget.window, num_predict: 512 },
+				},
+			},
+			{
+				models: [
+					{
+						name: MODELS.q2,
+						digest: '1'.repeat(64),
+						runner: 'llamacpp',
+						context_length: 262144,
+						expires_at: '2099-01-01T00:00:00Z',
+					},
+				],
+			},
+		)
+		assert.ok(request.capacity)
+		const observed = { ...request, capacity: { ...request.capacity, window: 262144 } }
+		assert.equal(readRequestOutcome(observed, budget, frozen), 'complete')
+		assert.deepEqual(listCapacityFailures([observed], frozen, budget), [])
+		assert.equal(readRequestOutcome(observed, { ...budget, ceiling: 3072 }, frozen), 'fault')
+		assert.equal(
+			readRequestOutcome(observed, { ...budget, ceiling: budget.window }, frozen),
+			'fault',
+		)
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})
+
+it('rejects stale, foreign, ambiguous, reordered and failed snapshots while retaining the raw inference', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-custody-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const budget = buildBudget(512)
+		const entry = {
+			name: MODELS.q2,
+			digest: '1'.repeat(64),
+			runner: 'llamacpp',
+			context_length: 3072,
+			expires_at: '2099-01-01T00:00:00Z',
+		}
+		for (const models of [
+			[],
+			[entry, entry],
+			[{ ...entry, name: MODELS.q4 }],
+			[{ ...entry, digest: '9'.repeat(64) }],
+			[{ ...entry, runner: 'unknown' }],
+			[{ ...entry, expires_at: '1970-01-01T00:00:00Z' }],
+		]) {
+			const request = writeCapacityRequest(directory, {}, { models })
+			assert.equal(readRequestOutcome(request, budget, frozen), 'fault')
+		}
+		for (const snapshot of [
+			{ sequence: 2 },
+			{ request: 'other' },
+			{ buffered: 19 },
+			{ started: 19 },
+			{ finished: 31 },
+			{ status: 500 },
+			{ error: 'metadata connection closed' },
+			{ raw: 'partial', hash: 'invalid' },
+		]) {
+			const request = writeCapacityRequest(directory, {}, undefined, snapshot)
+			assert.equal(readRequestOutcome(request, budget, frozen), 'fault')
+			assert.ok(request.response?.includes('prompt_eval_count'))
+		}
+		const request = writeCapacityRequest(directory)
+		assert.throws(() => readCapacity({ ...request, role: 'judge' }, frozen))
+		assert.throws(() => readCapacity({ ...request, sequence: 2 }, frozen))
+		assert.ok(
+			listCapacityFailures([request, { ...request, sequence: 2 }], frozen, budget).some((failure) =>
+				failure.includes('order'),
+			),
+		)
+		assert.ok(
+			listCapacityFailures([request], frozen, { ...budget, window: 9999 }).some((failure) =>
+				failure.includes('sampler'),
+			),
+		)
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})
+
+it('limits the length-finish exception to intentional one-token nonthinking gauge calibration', () => {
+	const directory = mkdtempSync(join(tmpdir(), 'capacity-gauge-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const budget = buildBudget(512)
+		const body: unknown = JSON.parse(
+			shapeBody(
+				'agent',
+				JSON.stringify({
+					model: MODELS.q2,
+					options: { ...SAMPLER, num_predict: 512 },
+					think: true,
+				}),
+				true,
+			),
+		)
+		const gauge = writeCapacityRequest(directory, {
+			goal: undefined,
+			request: body,
+			response: JSON.stringify({
+				done: true,
+				done_reason: 'length',
+				prompt_eval_count: 200,
+				eval_count: 1,
+			}),
+		})
+		assert.equal(readRequestOutcome(gauge, budget, frozen), 'complete')
+		assert.deepEqual(
+			listResourceFailures(
+				'agent',
+				body,
+				gauge.response,
+				budget,
+				200,
+				undefined,
+				gauge.capacity,
+				true,
+			),
+			[],
+		)
+		assert.equal(readRequestOutcome({ ...gauge, goal: 'decision' }, budget, frozen), 'fault')
+		assert.equal(
+			readRequestOutcome(
+				{ ...gauge, response: gauge.response?.replace('"eval_count":1', '"eval_count":2') },
+				budget,
+				frozen,
+			),
+			'refused',
+		)
+		assert.equal(
+			readRequestOutcome(
+				{
+					...gauge,
+					response: gauge.response?.replace('"prompt_eval_count":200', '"prompt_eval_count":3071'),
+				},
+				budget,
+				frozen,
+			),
+			'refused',
+		)
+		assert.equal(readRequestOutcome({ ...gauge, capacity: undefined }, budget, frozen), 'fault')
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
+	}
+})

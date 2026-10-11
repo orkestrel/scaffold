@@ -11,10 +11,14 @@ import type {
 	MatrixResource,
 	MatrixRole,
 	MatrixRun,
+	MatrixDeployment,
+	MatrixModel,
+	MatrixCapacity,
 } from './types.js'
 import type { RefitFile } from '../refit/types.js'
 import type { CallRole, Copy } from '../types.js'
 import { readdirSync, readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
@@ -31,6 +35,7 @@ import {
 } from '../constants.js'
 import {
 	matchesExposure,
+	describeError,
 	matchesSummaryBlock,
 	readJSON,
 	readScoreCarriers,
@@ -45,9 +50,170 @@ import {
 	isMatrixExecution,
 	isMatrixFreeze,
 	isMatrixResource,
+	isMatrixDeployment,
+	isMatrixSnapshot,
 } from './validators.js'
 import { parseMatrixRun } from './parsers.js'
 import { BUILD, readBuild } from '../build/helpers.js'
+
+/** Reads all hash-bound deployment evidence supplied by root. */
+export function readDeployment(reference: RefitFile): MatrixDeployment {
+	verifyFiles([reference])
+	const value = readJSON(reference.path)
+	if (!isMatrixDeployment(value)) throw new Error('invalid deployment receipt')
+	if (
+		value.environment.OLLAMA_NUM_PARALLEL !== '1' ||
+		(value.environment.LLAMA_ARG_CONTEXT_SHIFT !== undefined &&
+			value.environment.LLAMA_ARG_CONTEXT_SHIFT !== 'false' &&
+			value.environment.LLAMA_ARG_CONTEXT_SHIFT !== '0')
+	)
+		throw new Error('deployment lacks serial allocation or disabled context shifting')
+	verifyFiles([
+		value.receipt,
+		value.executable,
+		value.runner,
+		...value.controls,
+		...value.models.map((model) => model.metadata),
+	])
+	if (new Set(value.models.map((model) => model.model)).size !== value.models.length)
+		throw new Error('ambiguous deployment model mapping')
+	for (const model of value.models) {
+		const metadata = readJSON(model.metadata.path)
+		if (
+			!isRecord(metadata) ||
+			!isRecord(metadata.model_info) ||
+			metadata.model_info[model.field] !== model.context
+		)
+			throw new Error('deployment context metadata differs')
+	}
+	return value
+}
+
+/** Resolves only the explicit accepted manifest/backend mapping. */
+export function readDeploymentModel(
+	deployment: MatrixDeployment,
+	role: Pick<MatrixRole, 'model' | 'digest'>,
+): MatrixModel {
+	const matches = deployment.models.filter(
+		(model) =>
+			model.model === role.model && model.digest === role.digest && model.backend === 'llamacpp',
+	)
+	const model = matches[0]
+	if (matches.length !== 1 || model === undefined)
+		throw new Error('unobserved deployment model identity')
+	return model
+}
+
+/** Reconstructs configured context from an exact, fresh immediate raw snapshot. */
+export function readCapacity(request: MatrixRequest, frozen: MatrixFreeze): MatrixCapacity {
+	const capacity = request.capacity
+	if (
+		request.role !== 'agent' ||
+		!request.sent ||
+		capacity === undefined ||
+		request.buffered === undefined ||
+		!isRecord(request.request)
+	)
+		throw new Error('missing immediate decision capacity observation')
+	verifyFiles([capacity.evidence])
+	const snapshot = readJSON(capacity.evidence.path)
+	if (
+		!isMatrixSnapshot(snapshot) ||
+		snapshot.sequence !== request.sequence ||
+		snapshot.model !== request.request.model ||
+		snapshot.request !==
+			createHash('sha256').update(JSON.stringify(request.request)).digest('hex') ||
+		snapshot.buffered !== request.buffered ||
+		snapshot.started < request.buffered ||
+		snapshot.finished > request.finished ||
+		snapshot.status !== 200 ||
+		snapshot.error !== undefined ||
+		capacity.wall !== snapshot.finished - snapshot.started
+	)
+		throw new Error('capacity observation association or transport differs')
+	const bytes = Buffer.from(snapshot.raw, 'base64')
+	if (
+		bytes.toString('base64') !== snapshot.raw ||
+		createHash('sha256').update(bytes).digest('hex') !== snapshot.hash
+	)
+		throw new Error('capacity raw bytes differ')
+	const raw: unknown = JSON.parse(bytes.toString('utf8'))
+	const model = readDeploymentModel(readDeployment(frozen.deployment), frozen.decision)
+	if (!isRecord(raw) || !Array.isArray(raw.models)) throw new Error('missing loaded models')
+	const matches = raw.models.filter(
+		(entry: unknown) =>
+			isRecord(entry) && (entry.name === model.model || entry.model === model.model),
+	)
+	const entry: unknown = matches[0]
+	if (
+		matches.length !== 1 ||
+		!isRecord(entry) ||
+		entry.digest !== model.digest ||
+		entry.runner !== model.backend ||
+		typeof entry.context_length !== 'number' ||
+		!Number.isSafeInteger(entry.context_length) ||
+		entry.context_length <= 0 ||
+		typeof entry.expires_at !== 'string' ||
+		!Number.isFinite(Date.parse(entry.expires_at)) ||
+		Date.parse(entry.expires_at) <= snapshot.finished ||
+		request.request.model !== model.model ||
+		capacity.window !== entry.context_length
+	)
+		throw new Error('unmatched, stale, ambiguous, or changed loaded capacity')
+	return { ...capacity, window: entry.context_length }
+}
+
+/** Checks serial observation order and actual decision sampler overrides. */
+export function listCapacityFailures(
+	requests: readonly MatrixRequest[],
+	frozen: MatrixFreeze,
+	budget: MatrixBudget,
+): readonly string[] {
+	const failures: string[] = []
+	if (
+		!Number.isSafeInteger(budget.ceiling) ||
+		budget.ceiling <= 0 ||
+		budget.ceiling !==
+			Math.min(
+				budget.window,
+				readDeploymentModel(readDeployment(frozen.deployment), frozen.decision).context,
+			)
+	)
+		failures.push('qualification ceiling differs from frozen model metadata and requested window')
+	let finished = 0
+	for (const [at, request] of requests.entries()) {
+		if (
+			request.sequence !== at + 1 ||
+			request.started < finished ||
+			request.finished < request.started
+		)
+			failures.push(`request ${request.sequence}: snapshot/request order differs`)
+		finished = request.finished
+		if (request.role !== 'agent' || !request.sent) continue
+		try {
+			const capacity = readCapacity(request, frozen)
+			if ((capacity.window ?? 0) < budget.ceiling)
+				failures.push(`request ${request.sequence}: loaded capacity below frozen ceiling`)
+		} catch (error) {
+			failures.push(`request ${request.sequence}: ${String(error)}`)
+		}
+		const expected = {
+			...frozen.decision.sampler,
+			num_ctx: budget.window,
+			num_predict: request.goal === undefined ? 1 : budget.reserve,
+		}
+		if (!isRecord(request.request) || !isDeepStrictEqual(request.request.options, expected))
+			failures.push(`request ${request.sequence}: decision sampler differs`)
+	}
+	return failures
+}
+
+/** Includes every retained raw snapshot in the run's custody population. */
+export function listCapacityFiles(requests: readonly MatrixRequest[]): readonly RefitFile[] {
+	return requests.flatMap((request) =>
+		request.capacity === undefined ? [] : [request.capacity.evidence],
+	)
+}
 
 /** Returns an unambiguous protocol, role-policy, arm, and copy result key.
  * @param cell - The explicit l6 identity
@@ -63,7 +229,12 @@ export function nameMatrix(cell: MatrixIdentity): string {
  */
 export function buildBudget(reserve: number): MatrixBudget {
 	if (!MATRIX_RESERVES.includes(reserve)) throw new Error('reserve is outside the fixed ladder')
-	return { reserve, window: MATRIX_ADMISSION + reserve, predict: reserve - 512 }
+	return {
+		reserve,
+		window: MATRIX_ADMISSION + reserve,
+		ceiling: MATRIX_ADMISSION + reserve,
+		predict: reserve - 512,
+	}
 }
 
 /** Lists all executable bench5 sources recursively, excluding test and frozen data.
@@ -133,7 +304,15 @@ export function readFrozen(reference: RefitFile): MatrixFreeze {
 	verifyFiles([reference])
 	const frozen = readJSON(reference.path)
 	if (!isMatrixFreeze(frozen)) throw new Error('invalid l6 freeze manifest')
-	verifyFiles([...frozen.files, frozen.settings, frozen.seed, frozen.census, frozen.tags])
+	verifyFiles([
+		...frozen.files,
+		frozen.settings,
+		frozen.seed,
+		frozen.census,
+		frozen.tags,
+		frozen.deployment,
+	])
+	readDeploymentModel(readDeployment(frozen.deployment), frozen.decision)
 	if (!isDeepStrictEqual(frozen.files, readMatrixFiles()))
 		throw new Error('stale source or scenario population; re-freeze required')
 	const model = Object.entries(MODELS).find(([key]) => key === frozen.key)?.[1]
@@ -243,6 +422,16 @@ export function readExecution(path: string): {
 	const frozen = readFrozen(execution.frozen)
 	if (execution.key !== frozen.key || execution.think !== frozen.think)
 		throw new Error('decision configuration mismatch')
+	if (
+		execution.budget.ceiling !==
+		(execution.arm === 'full'
+			? Math.min(
+					execution.budget.window,
+					readDeploymentModel(readDeployment(frozen.deployment), frozen.decision).context,
+				)
+			: execution.budget.window)
+	)
+		throw new Error('qualification ceiling differs from pre-trajectory contract')
 	if (
 		execution.arm !== 'full' &&
 		!isDeepStrictEqual(execution.budget, buildBudget(execution.budget.reserve))
@@ -360,39 +549,63 @@ export function listResourceFailures(
 	budget: MatrixBudget,
 	status?: number,
 	error?: string,
+	capacity?: MatrixCapacity,
+	calibrating = false,
 ): readonly MatrixFailure[] {
 	if (role !== 'agent') return error !== undefined || (status ?? 0) >= 400 ? ['transport'] : []
 	const failures = new Set<MatrixFailure>()
-	if (error !== undefined || (status ?? 0) >= 400) return ['transport']
+	if (error !== undefined || status === undefined || status < 200 || status >= 300)
+		return ['transport']
 	if (
 		!isRecord(request) ||
 		request.truncate !== false ||
+		request.shift !== false ||
 		!isRecord(request.options) ||
 		request.options.num_ctx !== budget.window ||
-		request.options.num_predict !== budget.reserve
+		request.options.num_predict !== (calibrating ? 1 : budget.reserve) ||
+		(calibrating && request.think !== false)
 	)
 		failures.add('request')
 	const reading = readWireReading({ body: request }, { text: response })
 	if (
 		!reading.complete ||
 		reading.prompt === undefined ||
+		!Number.isSafeInteger(reading.prompt) ||
+		reading.prompt < 0 ||
 		reading.completion === undefined ||
+		!Number.isSafeInteger(reading.completion) ||
+		reading.completion < 0 ||
 		reading.reason === undefined
 	)
 		failures.add('usage')
-	if (reading.reason === 'length') failures.add('length')
-	if (reading.completion !== undefined && reading.completion > budget.reserve)
+	if (capacity?.window === undefined) failures.add('observation')
+	else if (capacity.window < budget.ceiling) failures.add('observation')
+	if (
+		reading.reason === 'length' &&
+		!(
+			calibrating &&
+			isRecord(request) &&
+			request.think === false &&
+			isRecord(request.options) &&
+			request.options.num_predict === 1 &&
+			reading.completion !== undefined &&
+			reading.completion <= 1
+		)
+	)
+		failures.add('length')
+	if (reading.completion !== undefined && reading.completion > (calibrating ? 1 : budget.reserve))
 		failures.add('completion')
 	if (
 		reading.prompt !== undefined &&
 		reading.completion !== undefined &&
-		reading.prompt + reading.completion >= budget.window
+		reading.prompt + reading.completion >= budget.ceiling
 	)
 		failures.add('capacity')
 	for (const line of (response ?? '').split(/\r\n|\n/)) {
 		if (line.trim() === '') continue
 		try {
 			const value: unknown = JSON.parse(line)
+			if (!isRecord(value) || value.error !== undefined) failures.add('transport')
 			if (isRecord(value) && (value.truncated === true || value.truncation === true))
 				failures.add('truncation')
 		} catch {
@@ -407,7 +620,11 @@ export function listResourceFailures(
  * @param budget - Frozen decision bounds
  * @returns A completed request, measured resource refusal, or operational fault
  */
-export function readRequestOutcome(request: MatrixRequest, budget: MatrixBudget): MatrixOutcome {
+export function readRequestOutcome(
+	request: MatrixRequest,
+	budget: MatrixBudget,
+	frozen?: MatrixFreeze,
+): MatrixOutcome {
 	if (
 		!request.sent ||
 		request.error !== undefined ||
@@ -423,30 +640,59 @@ export function readRequestOutcome(request: MatrixRequest, budget: MatrixBudget)
 			.split(/\r\n|\n/)
 			.filter((entry) => entry.trim() !== '')) {
 			const value: unknown = JSON.parse(line)
-			if (!isRecord(value)) return 'fault'
+			if (!isRecord(value) || value.error !== undefined) return 'fault'
 			truncated ||= value.truncated === true || value.truncation === true
 		}
 	} catch {
 		return 'fault'
 	}
 	const reading = readWireReading({ body: request.request }, { text: request.response })
-	if (!reading.complete) return 'fault'
-	const failures =
-		request.goal === undefined
-			? []
-			: listResourceFailures(
-					request.role,
-					request.request,
-					request.response,
-					budget,
-					request.status,
+	if (
+		!reading.complete ||
+		reading.prompt === undefined ||
+		reading.completion === undefined ||
+		reading.reason === undefined
+	)
+		return 'fault'
+	let capacity: MatrixCapacity | undefined
+	if (request.role === 'agent') {
+		if (frozen === undefined) return 'fault'
+		try {
+			if (
+				budget.ceiling !==
+				Math.min(
+					budget.window,
+					readDeploymentModel(readDeployment(frozen.deployment), frozen.decision).context,
 				)
-	if (failures.includes('request')) return 'fault'
+			)
+				return 'fault'
+			capacity = readCapacity(request, frozen)
+		} catch {
+			return 'fault'
+		}
+	}
+	const failures = listResourceFailures(
+		request.role,
+		request.request,
+		request.response,
+		budget,
+		request.status,
+		request.error,
+		capacity,
+		request.goal === undefined,
+	)
+	if (
+		failures.some(
+			(failure) => !['length', 'capacity', 'completion', 'truncation'].includes(failure),
+		)
+	)
+		return 'fault'
 	const options = request.request.options
 	if (
 		reading.prompt === undefined ||
 		reading.completion === undefined ||
-		reading.reason === 'length' ||
+		(reading.reason === 'length' &&
+			!(request.role === 'agent' && request.goal === undefined && failures.length === 0)) ||
 		truncated ||
 		failures.length !== 0 ||
 		(isRecord(options) &&
@@ -458,13 +704,66 @@ export function readRequestOutcome(request: MatrixRequest, budget: MatrixBudget)
 	return 'complete'
 }
 
+/** Checks whether an unsent attempt retains the preceding measured refusal's stop reason.
+ * @param request - Retained attempt to qualify
+ * @param requests - Original retained request sequence
+ * @returns True if the attempt was blocked by the preceding sent agent resource refusal; false otherwise
+ * @example
+ * ```ts
+ * const stopped = isStoppedRequest(request, requests)
+ * ```
+ */
+export function isStoppedRequest(
+	request: MatrixRequest,
+	requests: readonly MatrixRequest[],
+): boolean {
+	const previous = requests.findLast((entry) => entry.sent && entry.sequence < request.sequence)
+	return (
+		!request.sent &&
+		request.role === 'agent' &&
+		request.request === null &&
+		request.status === undefined &&
+		request.response === undefined &&
+		request.capacity === undefined &&
+		request.prompt === undefined &&
+		request.completion === undefined &&
+		request.reason === undefined &&
+		request.failures.length === 1 &&
+		request.failures[0] === 'transport' &&
+		previous !== undefined &&
+		previous.role === 'agent' &&
+		previous.error === undefined &&
+		previous.failures.length > 0 &&
+		previous.failures.every((failure) =>
+			['length', 'capacity', 'completion', 'truncation'].includes(failure),
+		) &&
+		request.error ===
+			describeError(new Error(`decision qualification failed: ${previous.failures.join(', ')}`))
+	)
+}
+
 /** Refuses operational matrix faults as evidence for eliminating a configuration.
  * @param run - Decoded retained matrix evidence
  */
 export function verifyMatrixFeasibility(run: MatrixRun | undefined): void {
 	if (run === undefined) throw new Error('operational matrix fault lacks raw evidence')
-	const outcomes = run.requests.map((request) => readRequestOutcome(request, run.execution.budget))
-	for (const request of run.requests) {
+	const requests = run.requests.filter((request) => !isStoppedRequest(request, run.requests))
+	const outcomes = requests.map((request) =>
+		readRequestOutcome(request, run.execution.budget, run.frozen),
+	)
+	if (listCapacityFailures(run.requests, run.frozen, run.execution.budget).length !== 0)
+		throw new Error('operational matrix fault has invalid capacity custody')
+	for (const request of requests) {
+		const pick = run.picks.findLast(
+			(entry) => entry.goal === request.goal && entry.sequence < request.sequence,
+		)
+		if (
+			request.role === 'agent' &&
+			(!isRecord(request.request) ||
+				request.request.think !==
+					(request.goal === undefined || (pick?.pass ?? 1) > 1 ? false : run.execution.think))
+		)
+			throw new Error('operational matrix fault has invalid thinking custody')
 		const role =
 			request.role === 'summarizer'
 				? run.frozen.summarizer
@@ -487,8 +786,11 @@ export function verifyMatrixFeasibility(run: MatrixRun | undefined): void {
  * @returns Whether an explicit resource refusal occurred with no other cause
  */
 export function permitsReserve(requests: readonly MatrixRequest[]): boolean {
-	const failures = requests.flatMap((request) => request.failures)
+	const failures = requests
+		.filter((request) => !isStoppedRequest(request, requests))
+		.flatMap((request) => request.failures)
 	return (
+		requests.every((request) => request.sent || isStoppedRequest(request, requests)) &&
 		failures.length > 0 &&
 		failures.every(
 			(failure) =>
@@ -654,6 +956,10 @@ export function measureMatrixCosts(
 ): MatrixCosts {
 	const info = readJSON(join(run.path, 'run.json'))
 	return {
+		metadata: {
+			requests: run.requests.filter((request) => request.capacity !== undefined).length,
+			wall: run.requests.reduce((total, request) => total + (request.capacity?.wall ?? 0), 0),
+		},
 		wire: ['agent', 'judge', 'summarizer', 'flush'].flatMap((role) =>
 			(['calibration', 'trajectory'] as const).map((phase) => {
 				const requests = run.requests.filter(

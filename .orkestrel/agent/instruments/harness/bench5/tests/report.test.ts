@@ -1,4 +1,6 @@
 import { BUILD } from '../constants.js'
+import { buildSupportPlan } from '../aggregates/helpers.js'
+import { buildCacheKey } from '../helpers.js'
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -637,7 +639,14 @@ describe('report.ts', () => {
 			assert.equal(dig(aggregate, 'builds'), 4)
 			assert.deepEqual(dig(aggregate, 'triggers'), { first: 1, change: 1, check: 1, retry: 1 })
 			assert.deepEqual(dig(aggregate, 'change'), { asked: 2, yes: 1 })
-			assert.deepEqual(dig(aggregate, 'agree'), { asked: 2, failed: 1 })
+			assert.deepEqual(dig(aggregate, 'agree'), {
+				asked: 2,
+				failed: 1,
+				components: 0,
+				replay: 0,
+				prompt: 0,
+				completion: 0,
+			})
 			assert.deepEqual(dig(aggregate, 'failures'), { id: 1, number: 1 })
 			assert.equal(dig(aggregate, 'failed'), 1)
 			assert.equal(dig(aggregate, 'consistency'), 0.25)
@@ -647,6 +656,47 @@ describe('report.ts', () => {
 			expectClose(readNumberAt(aggregate, 'mica', 'change'), 0.3, 'change seconds')
 			expectClose(readNumberAt(aggregate, 'mica', 'agree'), 0.4, 'agree seconds')
 			expectClose(readNumberAt(aggregate, 'mica', 'ledger'), 0.9, 'ledger seconds')
+		})
+
+		it('counts whole candidates separately from complete component expenditure and replay', () => {
+			const plan = buildSupportPlan('First. Second.', [
+				{ id: 'one', sentence: 0, role: 'user', day: '', text: 'First. Second.' },
+			])
+			const support = {
+				...plan,
+				model: 'inert',
+				wall: 999,
+				components: plan.components.map((component, index) => ({
+					...component,
+					key: buildCacheKey('inert', component.state, component.question, plan.context),
+					score: 0.9,
+					cached: index === 0,
+					wall: 100,
+					usage: { prompt: 30, completion: 1, total: 31 },
+				})),
+			}
+			const events: Tweak = onCopy(1, 'aggregate', (data) => ({
+				...data,
+				events: data.events.map((event) =>
+					event.event === 'agree' ? { ...event, support } : event,
+				),
+			}))
+			const aggregate = dig(
+				readPair(writeBase(POSITIVE, events)),
+				'copies',
+				0,
+				'aggregate',
+				'aggregate',
+			)
+			assert.deepEqual(dig(aggregate, 'agree'), {
+				asked: 1,
+				failed: 0,
+				components: 3,
+				replay: 1,
+				prompt: 60,
+				completion: 2,
+			})
+			expectClose(readNumberAt(aggregate, 'mica', 'agree'), 0.2, 'uncached component seconds')
 		})
 
 		it('reports the facts and stale tokens that the rendered summaries carry for each goal', () => {

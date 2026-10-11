@@ -1,3 +1,9 @@
+import type { MatrixRequest } from '../matrix/types.js'
+import {
+	writeDeploymentFixture,
+	buildCapacityFreeze,
+	writeCapacityRequest,
+} from '../matrix/tests/helpers.js'
 import { BUILD } from '../constants.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -15,9 +21,12 @@ import {
 	readExecution,
 	readFrozen,
 	readResource,
+	isStoppedRequest,
+	permitsReserve,
+	verifyMatrixFeasibility,
 } from '../matrix/helpers.js'
 import { parseMatrixRun } from '../matrix/parsers.js'
-import { isMatrixIdentity, isMatrixResource } from '../matrix/validators.js'
+import { isMatrixIdentity, isMatrixResource, isMatrixRequest } from '../matrix/validators.js'
 import { HARNESS, MODELS } from '../constants.js'
 import { hashFile } from '../refit/helpers.js'
 import { readJSON, readRows } from '../helpers.js'
@@ -73,7 +82,12 @@ it('separates l5 from every explicit l6 model, thinking, arm, and copy identity'
 				}
 	assert.equal(isMatrixIdentity({ protocol: 'l5', key: 'q2', arm: 'control', copy: 1 }), false)
 	assert.equal(isMatrixIdentity({ protocol: 'l6', key: 'q2', arm: 'records', copy: 1 }), false)
-	assert.deepEqual(buildBudget(8192), { reserve: 8192, window: 10752, predict: 7680 })
+	assert.deepEqual(buildBudget(8192), {
+		reserve: 8192,
+		window: 10752,
+		ceiling: 10752,
+		predict: 7680,
+	})
 	assert.throws(() => buildBudget(513), /ladder/)
 })
 
@@ -95,6 +109,8 @@ it('plans all three arms in both thinking states, refuses exposure laundering, a
 			assert.equal(
 				await Matrix.execute([
 					'freeze',
+					'--deployment',
+					writeDeploymentFixture(directory),
 					'--key',
 					'q2',
 					'--think',
@@ -395,6 +411,8 @@ it('refuses a real frozen corpus from another source/settings population before 
 		const frozen = join(directory, 'freeze', 'manifest.json')
 		await Matrix.execute([
 			'freeze',
+			'--deployment',
+			writeDeploymentFixture(directory),
 			'--key',
 			'q2',
 			'--think',
@@ -438,96 +456,117 @@ it('refuses a real frozen corpus from another source/settings population before 
 	}
 })
 
-it('classifies raw usage, length, explicit refusal, truncation, and capacity without consulting answer scores', () => {
-	const request = { truncate: false, options: { num_ctx: 3072, num_predict: 512 }, messages: [] }
-	const response = JSON.stringify({
-		done: true,
-		done_reason: 'stop',
-		prompt_eval_count: 2559,
-		eval_count: 512,
-	})
-	assert.deepEqual(listResourceFailures('agent', request, response, buildBudget(512), 200), [])
-	const captured = {
-		sequence: 1,
-		role: 'agent' as const,
-		goal: 'fixture',
-		sent: true,
-		request,
-		response,
-		status: 200,
-		failures: [],
-		wall: 1,
+it('classifies raw usage and HTTP500 without consulting answer scores', () => {
+	const directory = mkdtempSync(join(resolve('tmp'), 'capacity-outcome-'))
+	try {
+		const frozen = buildCapacityFreeze(directory)
+		const request = writeCapacityRequest(directory)
+		assert.equal(readRequestOutcome(request, buildBudget(512), frozen), 'complete')
+		assert.deepEqual(
+			listResourceFailures(
+				'agent',
+				request.request,
+				request.response,
+				buildBudget(512),
+				200,
+				undefined,
+				request.capacity,
+			),
+			[],
+		)
+		assert.equal(
+			readRequestOutcome(
+				{
+					...request,
+					status: 500,
+					response: '{"error":"context capacity exceeded"}',
+					failures: ['capacity'],
+				},
+				buildBudget(512),
+				frozen,
+			),
+			'fault',
+		)
+		assert.equal(
+			readRequestOutcome(
+				{ ...request, response: '{"done":true,"done_reason":"stop"}' },
+				buildBudget(512),
+				frozen,
+			),
+			'fault',
+		)
+		assert.equal(
+			readRequestOutcome(
+				{ ...request, response: request.response?.replace('stop', 'length') },
+				buildBudget(512),
+				frozen,
+			),
+			'refused',
+		)
+	} finally {
+		rmSync(directory, { recursive: true, force: true })
 	}
-	assert.equal(readRequestOutcome(captured, buildBudget(512)), 'complete')
-	assert.equal(
-		readRequestOutcome(
-			{
-				...captured,
-				status: 500,
-				response: '{"error":"context capacity exceeded"}',
-				failures: ['capacity'],
-			},
-			buildBudget(512),
-		),
-		'fault',
-	)
-	assert.equal(
-		readRequestOutcome({ ...captured, response: 'malformed host response' }, buildBudget(512)),
-		'fault',
-	)
-	assert.equal(
-		readRequestOutcome({ ...captured, response: '{"done":false}' }, buildBudget(512)),
-		'fault',
-	)
-	assert.equal(
-		readRequestOutcome(
-			{ ...captured, response: '{"done":true,"done_reason":"stop"}' },
-			buildBudget(512),
-		),
-		'refused',
-	)
-	assert.equal(
-		readRequestOutcome(
-			{ ...captured, response: response.replace('stop', 'length') },
-			buildBudget(512),
-		),
-		'refused',
-	)
-	assert.deepEqual(
-		listResourceFailures(
-			'agent',
-			request,
-			JSON.stringify({ done: true, done_reason: 'stop', prompt_eval_count: 2560, eval_count: 512 }),
-			buildBudget(512),
-			200,
-		),
-		['capacity'],
-	)
-	assert.deepEqual(listResourceFailures('agent', request, '{}', buildBudget(512), 200), ['usage'])
-	assert.deepEqual(
-		listResourceFailures('agent', request, '{"error":"out of memory"}', buildBudget(512), 500),
-		['transport'],
-	)
-	assert.deepEqual(
-		listResourceFailures(
-			'agent',
-			request,
-			response.replace('stop', 'length'),
-			buildBudget(512),
-			200,
-		),
-		['length'],
-	)
-	assert.deepEqual(
-		listResourceFailures(
-			'agent',
-			request,
-			response.replace('"done":true', '"done":true,"truncated":true'),
-			buildBudget(512),
-			200,
-		),
-		['truncation'],
-	)
+})
+
+it('captures exactly one immediate snapshot after a completed inference and rejects metadata errors without another role call', async () => {
+	const directory = mkdtempSync(join(resolve('tmp'), 'capacity-transport-'))
+	const peer = new MatrixPeer()
+	const url = await peer.start()
+	try {
+		writeFileSync(join(directory, 'seed.jsonl'), '')
+		await Matrix.execute([
+			'freeze',
+			'--key',
+			'q2',
+			'--think',
+			'false',
+			'--seed',
+			join(directory, 'seed.jsonl'),
+			'--settings',
+			join(HARNESS, 'bench5/settings.json'),
+			'--deployment',
+			writeDeploymentFixture(directory),
+			'--out',
+			join(directory, 'freeze'),
+			'--live',
+			'--url',
+			url,
+		])
+		peer.metadata = 500
+		await assert.rejects(
+			() =>
+				Matrix.execute([
+					'resource',
+					'--frozen',
+					join(directory, 'freeze/manifest.json'),
+					'--out',
+					join(directory, 'resource'),
+					'--live',
+					'--url',
+					url,
+				]),
+			/operational/,
+		)
+		const run = join(directory, 'resource/reserve-512/l6-q2-think0-records-v1')
+		const requests = readRows(join(run, 'requests.jsonl'))
+		assert.equal(requests.length, 1)
+		const request = requests[0]
+		assert.ok(isMatrixRequest(request))
+		assert.equal(request.status, 200)
+		assert.ok(request.response?.includes('prompt_eval_count'))
+		assert.ok(request.capacity)
+		const snapshot = readJSON(request.capacity.evidence.path)
+		assert.ok(isRecord(snapshot))
+		assert.equal(snapshot.status, 500)
+		assert.deepEqual(peer.routes.slice(-2), ['/api/chat', '/api/ps'])
+		assert.equal(peer.routes.filter((route) => route === '/api/ps').length, 1)
+		const info = readJSON(join(run, 'run.json'))
+		assert.ok(isRecord(info))
+		assert.equal(info.sent, 1)
+	} finally {
+		await peer.destroy()
+		rmSync(directory, { recursive: true, force: true })
+	}
 })
 
 it('runs the complete real-component resource ladder, ignores wrong answers, freezes the first valid reserve, and refuses changed settings', async () => {
@@ -545,6 +584,8 @@ it('runs the complete real-component resource ladder, ignores wrong answers, fre
 		assert.equal(
 			await Matrix.execute([
 				'freeze',
+				'--deployment',
+				writeDeploymentFixture(directory),
 				'--key',
 				'q2',
 				'--think',
@@ -584,18 +625,142 @@ it('runs the complete real-component resource ladder, ignores wrong answers, fre
 			resource.attempts.map((attempt) => attempt.budget.reserve),
 			[512, 1024],
 		)
+		const failed = resource.attempts[0]
+		assert.ok(failed)
+		assert.equal(failed.budget.reserve, 512)
+		assert.equal(failed.accepted, false)
+		assert.equal(failed.resource, true)
+		const refused = parseMatrixRun(failed.run)
+		assert.ok(refused)
+		writeFileSync(
+			resolve('tmp/units/aggregate-mvp-gate-repairs-resource-sequence.json'),
+			JSON.stringify({ budget: failed.budget, status: refused.status, requests: refused.requests }),
+		)
+		assert.notEqual(refused.status, 'complete')
+		const prior = refused.requests.findLast(
+			(request) => request.sent && request.role === 'agent' && request.failures.length > 0,
+		)
+		assert.ok(prior)
+		assert.ok(prior.capacity)
+		assert.equal(readRequestOutcome(prior, refused.execution.budget, refused.frozen), 'refused')
+		const blocked = refused.requests.find((request) => !request.sent)
+		assert.ok(blocked)
+		assert.equal(blocked.request, null)
+		assert.equal(
+			blocked.error,
+			`Error: decision qualification failed: ${prior.failures.join(', ')}`,
+		)
+		assert.ok(
+			refused.requests
+				.filter((request) => !request.sent)
+				.every((request) => isStoppedRequest(request, refused.requests)),
+		)
+		assert.ok(
+			!refused.requests.some((request) => request.sent && request.sequence > prior.sequence),
+		)
+		assert.equal(
+			peer.calls.filter(
+				(body) =>
+					isRecord(body) &&
+					body.shift === false &&
+					isRecord(body.options) &&
+					body.options.num_ctx === failed.budget.window,
+			).length,
+			refused.requests.filter((request) => request.sent && request.role === 'agent').length,
+		)
+		assert.doesNotThrow(() => verifyMatrixFeasibility(refused))
+		assert.equal(permitsReserve(refused.requests), true)
+		assert.equal(isStoppedRequest(blocked, [blocked]), false)
+		assert.throws(() => verifyMatrixFeasibility({ ...refused, requests: [blocked] }), /operational/)
+		const invalid: readonly MatrixRequest[] = [
+			{ ...blocked, error: `decision qualification failed: ${prior.failures.join(', ')}` },
+			{ ...blocked, error: 'different stop reason' },
+			{ ...blocked, request: {} },
+			{ ...blocked, status: 200 },
+			{ ...blocked, response: '{}' },
+			{ ...blocked, capacity: prior.capacity },
+			{ ...blocked, prompt: 1 },
+			{ ...blocked, completion: 1 },
+			{ ...blocked, reason: 'stop' },
+			{ ...blocked, role: 'flush' },
+			{ ...blocked, failures: [] },
+			{ ...blocked, failures: ['transport', 'length'] },
+		]
+		for (const request of invalid) {
+			const requests: readonly MatrixRequest[] = [prior, request]
+			assert.equal(isStoppedRequest(request, requests), false)
+			assert.equal(permitsReserve(requests), false)
+			assert.throws(() => verifyMatrixFeasibility({ ...refused, requests }), /operational/)
+		}
+		for (const failure of ['transport', 'usage', 'observation'] as const) {
+			const requests: readonly MatrixRequest[] = [{ ...prior, failures: [failure] }, blocked]
+			assert.equal(isStoppedRequest(blocked, requests), false)
+			assert.equal(permitsReserve(requests), false)
+			assert.throws(() => verifyMatrixFeasibility({ ...refused, requests }), /operational/)
+		}
+		const interrupted: readonly MatrixRequest[] = [
+			{ ...prior, error: 'operational fault' },
+			blocked,
+		]
+		assert.equal(isStoppedRequest(blocked, interrupted), false)
+		assert.throws(
+			() => verifyMatrixFeasibility({ ...refused, requests: interrupted }),
+			/operational/,
+		)
+		assert.ok(isRecord(prior.request))
+		const body = prior.request
+		assert.equal(body.think, true)
+		assert.throws(
+			() =>
+				verifyMatrixFeasibility({
+					...refused,
+					requests: refused.requests.map((request) =>
+						request.sequence === prior.sequence
+							? { ...request, request: { ...body, think: false } }
+							: request,
+					),
+				}),
+			/capacity custody/,
+		)
+		assert.throws(
+			() =>
+				verifyMatrixFeasibility({
+					...refused,
+					execution: { ...refused.execution, think: false },
+				}),
+			/thinking custody/,
+		)
+		const later: MatrixRequest = {
+			...prior,
+			sequence: blocked.sequence + 1,
+			error: 'later sent transport fault',
+			failures: ['transport'],
+		}
+		const subsequent = [...refused.requests, later]
+		assert.equal(permitsReserve(subsequent), false)
+		assert.throws(
+			() => verifyMatrixFeasibility({ ...refused, requests: subsequent }),
+			/operational/,
+		)
 		const last = resource.attempts.at(-1)
 		assert.ok(last)
+		assert.equal(last.accepted, true)
 		const run = parseMatrixRun(last.run)
 		assert.ok(run)
 		assert.equal(run.rows.length, 24)
 		assert.ok(run.rows.every((row) => row.success === false))
 		assert.equal(run.failures.length, 0)
-		assert.ok(
-			run.requests
-				.filter((request) => request.role === 'agent' && request.goal !== undefined)
-				.every((request) => isRecord(request.request) && request.request.think === true),
-		)
+		for (const measured of [refused, run]) {
+			for (const request of measured.requests.filter(
+				(entry) => entry.sent && entry.role === 'agent',
+			)) {
+				const pick = measured.picks.findLast(
+					(entry) => entry.goal === request.goal && entry.sequence < request.sequence,
+				)
+				assert.ok(isRecord(request.request))
+				assert.equal(request.request.think, request.goal !== undefined && (pick?.pass ?? 1) <= 1)
+			}
+		}
 		peer.length = false
 		const before = peer.calls.length
 		assert.equal(
@@ -642,18 +807,19 @@ it('runs the complete real-component resource ladder, ignores wrong answers, fre
 			fullRun.picks.every((pick) => pick.briefing === '' && (pick.aggregates?.length ?? 0) === 0),
 		)
 		peer.missing = true
-		assert.equal(
-			await Matrix.execute([
-				'resource',
-				'--frozen',
-				frozen,
-				'--out',
-				join(directory, 'missing'),
-				'--live',
-				'--url',
-				url,
-			]),
-			3,
+		await assert.rejects(
+			() =>
+				Matrix.execute([
+					'resource',
+					'--frozen',
+					frozen,
+					'--out',
+					join(directory, 'missing'),
+					'--live',
+					'--url',
+					url,
+				]),
+			/operational/,
 		)
 		const missing = readJSON(join(directory, 'missing', 'manifest.json'))
 		assert.ok(isMatrixResource(missing))

@@ -9,6 +9,7 @@ export const AUDIT_REFERENCE: RefitFile = Object.freeze({
 
 /** Holds cost records for pure calculations, without claiming measured provider usage. */
 export const AUDIT_COSTS: MatrixCosts = Object.freeze({
+	metadata: { requests: 0, wall: 0 },
 	wire: [],
 	judge: {},
 	lineage: {},
@@ -19,6 +20,7 @@ export const AUDIT_COSTS: MatrixCosts = Object.freeze({
 
 /** Holds inert frozen role settings for pure packet assembly tests. */
 export const AUDIT_FREEZE: MatrixFreeze = Object.freeze({
+	deployment: AUDIT_REFERENCE,
 	protocol: 'l6',
 	key: 'q4',
 	think: false,

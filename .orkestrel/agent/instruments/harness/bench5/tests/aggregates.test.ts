@@ -1,3 +1,18 @@
+import type { JudgeQuestion as InstalledJudgeQuestion } from '@orkestrel/agent'
+import { buildSupportRows } from './support/helpers.js'
+import { SUPPORT_SPECIMEN } from './support/constants.js'
+import { Support } from '../aggregates/Support.js'
+import {
+	buildSupportPlan,
+	partitionCandidate,
+	reduceSupport,
+	validateCoverage,
+} from '../aggregates/helpers.js'
+import { collectControlReadings, readRefitControls, measureRefitCosts } from '../refit/helpers.js'
+import { REFIT_CONTROLS, REFIT_IMPLEMENTATION } from '../refit/constants.js'
+import { isRefitAttempt } from '../refit/validators.js'
+import { createOllamaJudge } from '../../vendor/ollama/index.js'
+import { MICA_SYSTEM, MICA_CONTEXT, MICA_CALIBRATION } from '../constants.js'
 import type {
 	JudgeAnswer,
 	JudgeInterface,
@@ -42,6 +57,7 @@ import { createOllama } from '../../vendor/ollama/index.js'
 import { Aggregator } from '../aggregates/Aggregator.js'
 import {
 	AGREE_QUESTION,
+	FOCUS_QUESTION,
 	CHANGE_QUESTION,
 	INSTRUCTION_DATE,
 	INSTRUCTION_SUMMARIES,
@@ -397,12 +413,8 @@ function listKeys(rig: Rig): readonly string[] {
 	)
 }
 
-function buildAgreeRow(rig: Rig, key: string, prose: string, agree: number): CacheRow {
-	return buildRow(
-		buildAgreeState({ prose }, readSources(rig, key).sources),
-		AGREE_QUESTION,
-		buildNoul(agree),
-	)
+function buildAgreeRow(rig: Rig, key: string, prose: string, agree: number): readonly CacheRow[] {
+	return buildSupportRows(MICA_MODEL, prose, readSources(rig, key).sources, agree)
 }
 
 function buildAgreeRows(
@@ -412,7 +424,7 @@ function buildAgreeRows(
 ): readonly CacheRow[] {
 	return listKeys(rig)
 		.filter((key) => !(plan.skip ?? []).includes(key))
-		.map((key) => buildAgreeRow(rig, key, summaries[key] ?? '', plan.agree ?? AGREED))
+		.flatMap((key) => buildAgreeRow(rig, key, summaries[key] ?? '', plan.agree ?? AGREED))
 }
 
 type Kind = 'first' | 'correct' | 'news'
@@ -440,7 +452,7 @@ async function computeRows(plan: Plan): Promise<readonly CacheRow[]> {
 	const contacts = readSources(rig, 'contacts')
 	if (plan.kind === 'correct') {
 		await rig.advance(CORRECTION)
-		rows.push(buildAgreeRow(rig, 'refunds', REFUNDS_AFTER, plan.agree ?? AGREED))
+		rows.push(...buildAgreeRow(rig, 'refunds', REFUNDS_AFTER, plan.agree ?? AGREED))
 	}
 	if (plan.kind === 'news') {
 		const news = await rig.advance(NEWS)
@@ -458,7 +470,7 @@ async function computeRows(plan: Plan): Promise<readonly CacheRow[]> {
 			),
 		)
 		rows.push(
-			buildAgreeRow(
+			...buildAgreeRow(
 				rig,
 				'contacts',
 				plan.replacement ?? CONTACTS_AFTER,
@@ -472,7 +484,9 @@ async function computeRows(plan: Plan): Promise<readonly CacheRow[]> {
 			plan.retained ?? AGREED,
 		)
 		rows.push(
-			plan.refused ? { ...retained, answer: undefined, refusal: { missing: ['true'] } } : retained,
+			...retained.map((row) =>
+				plan.refused ? { ...row, answer: undefined, refusal: { missing: ['true'] } } : row,
+			),
 		)
 	}
 	return rows
@@ -545,12 +559,22 @@ async function createRun(plan: Plan, retry = 1, fit: Fit = FITS): Promise<Run> {
 		name: 'inert judge',
 		model: MICA_MODEL,
 		ask(request) {
-			return Promise.reject(
-				new Error(`the inert judge was asked: ${JSON.stringify(request.questions)}`),
+			const entry = Object.entries(request.questions)[0]
+			assert.ok(entry)
+			const row = computed.find(
+				(one) =>
+					one.state === request.state && JSON.stringify(one.question) === JSON.stringify(entry[1]),
 			)
+			if (row === undefined) return Promise.reject(new Error('missing inert protocol input'))
+			return Promise.resolve({
+				model: MICA_MODEL,
+				answers: row.answer === undefined ? {} : { [entry[0]]: row.answer },
+				refusals: row.refusal === undefined ? undefined : { [entry[0]]: row.refusal },
+				usage: row.usage,
+			})
 		},
 	}
-	const judge = new JudgeCache({ judge: inert, path: judgePath, live: false, retry: 0 })
+	const judge = new JudgeCache({ judge: inert, path: judgePath, live: true, retry: 0 })
 	const provider = createOllama({
 		url: fixture.url,
 		model: MODELS.q2,
@@ -667,6 +691,14 @@ describe('aggregate helpers', () => {
 			assert.equal(isAggregateState(value), false)
 	})
 
+	it('accepts extended retained sources while rejecting invalid declared fields', () => {
+		const source = { ...first, seed: 6, rendered: '(2026-10-08) user: retained source' }
+		assert.equal(isAggregateSource(source), true)
+		assert.equal(isAggregateState({ version: 1, goal: 'g01', point: 0, sources: [source] }), true)
+		assert.equal(isAggregateSource({ ...source, sentence: -1 }), false)
+		assert.equal(isAggregateSource({ ...source, role: 'unknown' }), false)
+	})
+
 	it('names the summarizer prefix and fills its slots in one pass', () => {
 		assert.ok(SUMMARY_SYSTEM.startsWith(SUMMARY_PREFIX))
 		assert.equal(SUMMARY_PREFIX, 'You maintain a living summary about ')
@@ -690,15 +722,13 @@ describe('aggregate helpers', () => {
 			instructions: 'Does the event change what the summary states about refunds?',
 			criteria: CHANGE_QUESTION.criteria,
 		})
-		assert.deepEqual(AGREE_QUESTION, {
-			form: 'noul',
-			instructions: 'Does the summary agree with its source messages?',
-			criteria: {
-				true: 'Every statement in the summary matches the source messages, a later message replacing an earlier one',
-				false:
-					'The summary states something the source messages contradict, replace, or do not state',
-			},
-		})
+		assert.deepEqual(
+			AGREE_QUESTION,
+			readField(
+				readJSON(join(HARNESS, '..', 'units', 'aggregates', 'admission-l8.json')),
+				'question',
+			),
+		)
 		assert.equal(SUMMARIES_HEADING, '### Topic summaries')
 		assert.deepEqual([INSTRUCTION_DATE.name, INSTRUCTION_SUMMARIES.name], ['date', 'summaries'])
 		assert.ok(INSTRUCTION_DATE.priority > INSTRUCTION_SUMMARIES.priority)
@@ -722,7 +752,7 @@ describe('aggregate helpers', () => {
 		)
 		assert.equal(
 			buildAgreeState(version, sources.slice(0, 1)),
-			'Refunds need MX-4486.\nSource messages:\n(2026-10-08) user: Refunds over $200 need approval code MX-4486.',
+			'{\n "evidence": [\n  "(2026-10-08) user: Refunds over $200 need approval code MX-4486."\n ],\n "candidate": "Refunds need MX-4486."\n}',
 		)
 		assert.equal(
 			renderSource(first),
@@ -980,7 +1010,7 @@ describe('Aggregator', () => {
 			assert.match(builds.find((row) => row.topic === 'refunds')?.ids ?? '', /MX-4486/)
 		})
 
-		it('maintains only the owners that the request names, and asks AGREE once per build and CHANGE never', async () => {
+		it('maintains only the owners that the request names, and asks a complete contextual bundle per build and CHANGE never', async () => {
 			const run = await start({ kind: 'first' })
 			await run.maintain('g01', LAST)
 			assert.ok(run.rig.mirror.input().owners.size > 1)
@@ -993,13 +1023,15 @@ describe('Aggregator', () => {
 			assert.equal(agrees.length, DESK.length + 1)
 			for (const row of agrees) {
 				assert.equal(row.answers['agree'], AGREED)
-				assert.equal(row.cached, true)
+				assert.equal(row.cached, false)
 				assert.equal(row.status, 'current')
 			}
 			assert.deepEqual(pick(rows, 'change'), [])
 			assert.deepEqual(run.judge.stats(), {
-				hits: { agree: DESK.length + 1 },
-				misses: {},
+				hits: {},
+				misses: {
+					agree: agrees.reduce((count, row) => count + (row.support?.components.length ?? 0), 0),
+				},
 				transient: 0,
 			})
 			assert.deepEqual(run.rig.asked, [])
@@ -1043,7 +1075,12 @@ describe('Aggregator', () => {
 			)
 			await run.maintain('g02', SEEDED)
 			assert.deepEqual(run.judge.stats().hits['change'] ?? 0, stats.hits['change'] ?? 0)
-			assert.deepEqual(run.judge.stats().misses, {})
+			assert.equal(
+				run.judge.stats().misses.agree,
+				pick(run.rows(), 'agree')
+					.flatMap((row) => row.support?.components ?? [])
+					.filter((component) => !component.cached).length,
+			)
 			const rows = run.rows()
 			assert.deepEqual(pick(rows, 'change'), [])
 			const rebuilt = pick(rows, 'build').filter((row) => row.version > 1)
@@ -1080,7 +1117,7 @@ describe('Aggregator', () => {
 			const run = await start({ kind: 'news', change: 0.1 })
 			await run.maintain('g01', LAST)
 			const requests = run.summarizing().length
-			const agrees = run.judge.stats().hits['agree']
+			const agrees = run.judge.stats().misses['agree']
 			await run.rig.advance(NEWS)
 			await run.maintain('g02', SEEDED)
 			const changes = pick(run.rows(), 'change')
@@ -1093,7 +1130,7 @@ describe('Aggregator', () => {
 				[SEEDED],
 			)
 			assert.equal(run.summarizing().length, requests)
-			assert.equal(run.judge.stats().hits['agree'], (agrees ?? 0) + 1)
+			assert.equal(run.judge.stats().misses['agree'], (agrees ?? 0) + 3)
 			const kept = pick(run.rows(), 'keep', 'contacts').at(-1)
 			assert.equal(kept?.result?.version, 1)
 			assert.equal(kept?.result?.point, SEEDED)
@@ -1144,7 +1181,12 @@ describe('Aggregator', () => {
 				pick(rows, 'agree', 'contacts').map((row) => row.version),
 				[1, 2],
 			)
-			assert.deepEqual(run.judge.stats().misses, {})
+			assert.equal(
+				run.judge.stats().misses.agree,
+				pick(run.rows(), 'agree')
+					.flatMap((row) => row.support?.components ?? [])
+					.filter((component) => !component.cached).length,
+			)
 		})
 	})
 
@@ -1168,7 +1210,11 @@ describe('Aggregator', () => {
 			await run.rig.advance(NEWS)
 			await run.maintain('g02', SEEDED)
 			const rows = run.rows().filter((row) => row.goal === 'g02' && row.topic === 'contacts')
-			assert.match(pick(rows, 'agree')[0]?.error ?? '', /no noul/)
+			assert.ok(
+				pick(rows, 'agree')[0]?.support?.components.every((component) =>
+					component.error?.includes('refused'),
+				),
+			)
 			assert.equal(pick(rows, 'build')[0]?.result?.version, 2)
 		})
 
@@ -1429,7 +1475,7 @@ describe('Aggregator', () => {
 		it('orders the request owners before its desk topics and renders the heading, ids, and prose', async () => {
 			const { run, shown } = await prepare()
 			const rendered = run.aggregator.render(
-				select(run, shown),
+				select(run, `${shown}\nThe tool says $289.00 until 2026-10-21.`),
 				run.rig.request,
 				run.rig.system,
 				'Today is Thursday 2026-10-08.',
@@ -1451,6 +1497,23 @@ describe('Aggregator', () => {
 			assert.ok(rendered.text.includes(REFUNDS.join(' ')))
 			assert.ok(rendered.text.includes(RETURNS.join(' ')))
 			assert.ok(rendered.tokens > 0)
+		})
+
+		it('preserves checked multiline whitespace byte-for-byte in the exposed binding', async () => {
+			const prose = REFUNDS.join('  \r\n\t')
+			const run = await start({ kind: 'first', summaries: { refunds: prose } })
+			await run.maintain('g01', LAST)
+			const rendered = run.aggregator.render(
+				select(run, Object.values(SUMMARIES).join('\n')),
+				run.rig.request,
+				run.rig.system,
+				'',
+				1,
+				() => true,
+			)
+			assert.equal(rendered.states.find((state) => state.topic === 'refunds')?.prose, prose)
+			assert.ok(rendered.text.includes(prose))
+			assert.equal(pick(run.rows(), 'agree', 'refunds')[0]?.support?.candidate, prose)
 		})
 
 		it('binds the exact rendered version and refuses source changes before the next maintenance', async () => {
@@ -1498,7 +1561,7 @@ describe('Aggregator', () => {
 			assert.equal(second.states.find((one) => one.topic === 'refunds')?.state.version, 2)
 		})
 
-		it('drops a sentence whose amount the selection lacks, keeps the others, and reads no sole token', async () => {
+		it('withholds the whole entry when a sentence would be dropped', async () => {
 			const { run, shown } = await prepare()
 			const rendered = run.aggregator.render(
 				select(run, shown),
@@ -1509,7 +1572,9 @@ describe('Aggregator', () => {
 				() => true,
 			)
 			assert.deepEqual(rendered.filtered, [{ topic: OWNER, sentence: OWNER_PROSE[1] }])
-			assert.ok(rendered.text.includes(OWNER_PROSE[0] ?? ''))
+			assert.ok(!rendered.topics.includes(OWNER))
+			assert.ok(rendered.emptied.includes(OWNER))
+			assert.ok(!rendered.states.some((state) => state.topic === OWNER))
 			assert.ok(!rendered.text.includes('289'))
 			assert.ok(!rendered.text.includes('2026-10-21'))
 			assert.match(rendered.text, /Ids: LH-44870, LH-79215\n/)
@@ -1556,7 +1621,7 @@ describe('Aggregator', () => {
 
 		it('cuts whole topics from the end to fit the allowance at the supplied scale', async () => {
 			const { run, shown } = await prepare()
-			const selection = select(run, shown)
+			const selection = select(run, `${shown}\nThe tool says $289.00 until 2026-10-21.`)
 			const full = run.aggregator.render(
 				selection,
 				run.rig.request,
@@ -1617,6 +1682,308 @@ describe('Aggregator', () => {
 			assert.deepEqual(rendered.withheld, ['returns'])
 			assert.ok(!rendered.topics.includes('returns'))
 		})
+	})
+})
+
+describe('complete contextual support', () => {
+	const supportDirectory = mkdtempSync(join(tmpdir(), 'bench5-support-'))
+	after(() => rmSync(supportDirectory, { recursive: true, force: true }))
+	it('matches the accepted independent specimen and native rendered request bytes', async () => {
+		const installed: InstalledJudgeQuestion = FOCUS_QUESTION
+		const vendored: JudgeQuestion = installed
+		assert.deepEqual(vendored, FOCUS_QUESTION)
+		const plan = buildSupportPlan(SUPPORT_SPECIMEN.candidate, SUPPORT_SPECIMEN.sources)
+		assert.equal(plan.components.length, SUPPORT_SPECIMEN.components.length)
+		const bodies: unknown[] = []
+		const judge = createOllamaJudge({
+			model: MICA_MODEL,
+			system: MICA_SYSTEM,
+			calibration: { temperature: MICA_CALIBRATION },
+			options: { num_ctx: MICA_CONTEXT },
+			fetch: (_input, init) => {
+				bodies.push(init?.body)
+				return Promise.reject(new Error('captured native body'))
+			},
+		})
+		for (const [index, component] of plan.components.entries()) {
+			const expected = SUPPORT_SPECIMEN.components[index]
+			assert.ok(expected)
+			assert.equal(component.state, expected.state)
+			assert.deepEqual(component.question, expected.question)
+			assert.deepEqual(component.focus, expected.focus)
+			await assert.rejects(
+				judge.ask(
+					{ state: component.state, questions: { question: component.question } },
+					new AbortController().signal,
+				),
+			)
+			assert.equal(bodies[index], expected.body)
+		}
+	})
+
+	it('covers CRLF, repeated text, date prefixes, Unicode offsets, and every suffix', () => {
+		const candidate = '  Repeat. Repeat.\r\n(2026-10-10) user: Wait.\n\t😀 done.  '
+		assert.deepEqual(partitionCandidate(candidate), [
+			{ start: 2, end: 9, text: 'Repeat.' },
+			{ start: 10, end: 17, text: 'Repeat.' },
+			{ start: 19, end: 43, text: '(2026-10-10) user: Wait.' },
+			{ start: 45, end: 53, text: '😀 done.' },
+		])
+		assert.throws(() => partitionCandidate(' \r\n\t'), /Empty/)
+		const spans = partitionCandidate(candidate)
+		assert.throws(() => validateCoverage(candidate, spans.slice(1)), /coverage/)
+		assert.throws(() => validateCoverage(candidate, spans.slice(0, -1)), /suffix/)
+		assert.throws(() => validateCoverage(candidate, [...spans, ...spans]), /custody/)
+		assert.throws(
+			() =>
+				validateCoverage(
+					candidate,
+					spans.map((span) => ({ ...span, end: span.end + 1 })),
+				),
+			/custody/,
+		)
+	})
+
+	it('requires complete membership, retains low components, and replays only identical semantic input', async () => {
+		const candidate = 'First. Second.'
+		const sources: readonly AggregateSource[] = [
+			{ id: 'one', sentence: 0, role: 'user', day: '2026-10-10', text: candidate },
+			{ id: 'two', sentence: 0, role: 'user', day: '', text: 'Confirmed.' },
+		]
+		const path = join(supportDirectory, 'contextual-rows.jsonl')
+		const rows = buildSupportRows(MICA_MODEL, candidate, sources, 0.9).map((row, index) =>
+			index === 1 ? { ...row, answer: buildNoul(0.2) } : row,
+		)
+		writeRows(path, rows)
+		const cache = new JudgeCache({
+			path,
+			live: false,
+			retry: 0,
+			judge: {
+				id: 'inert',
+				name: 'inert',
+				model: MICA_MODEL,
+				ask: () => Promise.reject(new Error('unexpected send')),
+			},
+		})
+		const support = new Support({ judge: cache, sent: () => 0 })
+		const bundle = await support.evaluate(candidate, sources, new AbortController().signal)
+		assert.equal(reduceSupport(bundle), 0.2)
+		assert.equal(bundle.components.length, 3)
+		assert.ok(
+			bundle.components.every(
+				(component) =>
+					component.cached && component.sent === false && component.usage?.prompt === 30,
+			),
+		)
+		const replay = await support.evaluate(candidate, sources, new AbortController().signal)
+		assert.equal(reduceSupport(replay), 0.2)
+		assert.equal(cache.stats().hits.agree, 6)
+		for (const components of [
+			bundle.components.slice(1),
+			[...bundle.components, ...bundle.components],
+			bundle.components.toReversed(),
+			bundle.components.map((component) => ({ ...component, state: 'foreign' })),
+			bundle.components.map((component) => ({ ...component, score: undefined })),
+			bundle.components.map((component) => ({ ...component, score: Number.NaN })),
+			bundle.components.map((component) => ({ ...component, score: 1.01 })),
+			bundle.components.map((component) => ({ ...component, error: 'refused' })),
+			bundle.components.map((component) => ({
+				...component,
+				focus: { start: 0, end: 1, text: 'F' },
+			})),
+		])
+			assert.equal(reduceSupport({ ...bundle, components }), undefined)
+		assert.equal(reduceSupport({ ...bundle, revision: 'foreign' }), undefined)
+		assert.equal(reduceSupport({ ...bundle, model: 'foreign' }), undefined)
+		for (const changed of [
+			sources.toReversed(),
+			sources.map((source) => ({ ...source, id: 'regrouped' })),
+			sources.map((source) => ({ ...source, day: '2026-10-11' })),
+		]) {
+			const result = await support.evaluate(candidate, changed, new AbortController().signal)
+			assert.equal(reduceSupport(result), undefined)
+			assert.equal(result.components.length, 3)
+			assert.ok(
+				result.components.every(
+					(component) =>
+						!component.cached && component.sent === false && component.error !== undefined,
+				),
+			)
+		}
+		assert.equal(
+			reduceSupport(await support.evaluate(candidate + ' ', sources, new AbortController().signal)),
+			undefined,
+		)
+		assert.equal(
+			buildCacheKey(MICA_MODEL, rows[0]?.state ?? '', FOCUS_QUESTION),
+			buildCacheKey(MICA_MODEL, rows[0]?.state ?? '', FOCUS_QUESTION, undefined),
+		)
+	})
+
+	it('retains refusal and abort attempts without scoring a prefix', async () => {
+		const candidate = 'First. Second.'
+		const sources: readonly AggregateSource[] = [
+			{ id: 'one', sentence: 0, role: 'user', day: '', text: candidate },
+		]
+		const path = join(supportDirectory, 'contextual-refusal.jsonl')
+		writeRows(
+			path,
+			buildSupportRows(MICA_MODEL, candidate, sources, 0.8).map((row, index) =>
+				index === 0 ? { ...row, answer: undefined, refusal: { missing: ['true'] } } : row,
+			),
+		)
+		const cache = new JudgeCache({
+			path,
+			live: false,
+			retry: 0,
+			judge: {
+				id: 'inert',
+				name: 'inert',
+				model: MICA_MODEL,
+				ask: () => Promise.reject(new Error('unexpected send')),
+			},
+		})
+		const refused = await new Support({ judge: cache }).evaluate(
+			candidate,
+			sources,
+			new AbortController().signal,
+		)
+		assert.equal(refused.components.length, 3)
+		assert.ok(refused.components[0]?.refusal)
+		assert.equal(reduceSupport(refused), undefined)
+		const abort = new AbortController()
+		const live = new JudgeCache({
+			path: join(supportDirectory, 'contextual-abort.jsonl'),
+			live: true,
+			retry: 0,
+			judge: {
+				id: 'inert',
+				name: 'inert',
+				model: MICA_MODEL,
+				ask: () => {
+					abort.abort(new Error('stopped'))
+					return Promise.reject(new Error('stopped'))
+				},
+			},
+		})
+		const stopped = await new Support({ judge: live }).evaluate(candidate, sources, abort.signal)
+		assert.equal(stopped.components.length, 1)
+		assert.match(stopped.components[0]?.error ?? '', /stopped/)
+		assert.equal(reduceSupport(stopped), undefined)
+	})
+
+	it('binds fresh archived controls, refuses historical singular evidence, and sums every component cost', async () => {
+		const archived = readRefitControls(REFIT_CONTROLS)
+		assert.equal(archived.length, 12)
+		assert.throws(() => collectControlReadings(archived, archived), /fresh eligible/)
+		const path = join(supportDirectory, 'contextual-controls.jsonl')
+		writeRows(
+			path,
+			archived.flatMap((control) =>
+				control.lexical
+					? buildSupportRows(
+							MICA_MODEL,
+							control.candidate,
+							control.sources,
+							control.verdict === 'supported' ? 0.9 : 0.2,
+						)
+					: [],
+			),
+		)
+		const support = new Support({
+			judge: new JudgeCache({
+				path,
+				live: false,
+				retry: 0,
+				judge: {
+					id: 'inert',
+					name: 'inert',
+					model: MICA_MODEL,
+					ask: () => Promise.reject(new Error('unexpected send')),
+				},
+			}),
+			sent: () => 0,
+		})
+		const observed = await Promise.all(
+			archived.map(async (control) =>
+				control.lexical
+					? {
+							...control,
+							support: await support.evaluate(
+								control.candidate,
+								control.sources,
+								new AbortController().signal,
+							),
+						}
+					: control,
+			),
+		)
+		const readings = collectControlReadings(archived, observed)
+		assert.ok(
+			readings.every(
+				(reading) =>
+					!reading.generated &&
+					(!reading.lexical || reading.score === (reading.verdict === 'supported' ? 0.9 : 0.2)),
+			),
+		)
+		assert.throws(() => collectControlReadings(archived, observed.slice(1)), /membership/)
+		assert.throws(
+			() =>
+				collectControlReadings(
+					archived,
+					observed.map((control) => ({ ...control, candidate: control.candidate + ' ' })),
+				),
+			/bijection/,
+		)
+		assert.equal(
+			isRefitAttempt({
+				id: 'one',
+				context: 'one',
+				ordinal: 0,
+				prompt: [],
+				key: 'key',
+				wall: 0,
+				judge: { key: 'historical', score: 1, cached: true, wall: 0 },
+			}),
+			false,
+		)
+		const components = observed.flatMap((control) => control.support?.components ?? [])
+		const replay = measureRefitCosts([], observed)
+		assert.equal(replay.controls[0]?.requests, 0)
+		assert.equal(replay.replay, components.length)
+		const fresh = observed.map((control) =>
+			control.support === undefined
+				? control
+				: {
+						...control,
+						support: {
+							...control.support,
+							components: control.support.components.map((component) => ({
+								...component,
+								cached: false,
+								sent: true,
+								wall: 7,
+							})),
+						},
+					},
+		)
+		const costs = measureRefitCosts([], fresh)
+		assert.equal(costs.controls[0]?.requests, components.length)
+		assert.equal(costs.controls[0]?.prompt, components.length * 30)
+		assert.equal(costs.controls[0]?.completion, components.length)
+		assert.equal(costs.controls[0]?.wall, components.length * 7)
+		for (const file of [
+			'bench5/types.ts',
+			'bench5/aggregates/Support.ts',
+			'bench5/aggregates/validators.ts',
+			'bench5/refit/validators.ts',
+			'bench5/calibrate.ts',
+			'bench5/report.ts',
+			'vendor/agent-0.0.30-trimmed/index.d.ts',
+			'vendor/ollama/index.d.ts',
+		])
+			assert.ok(REFIT_IMPLEMENTATION.includes(file))
 	})
 })
 

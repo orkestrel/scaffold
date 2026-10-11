@@ -8,7 +8,13 @@ import type {
 	ProviderInterface,
 	Selection,
 } from '../vendor/agent-0.0.30-trimmed/index.js'
-import type { MatrixFailure, MatrixRequest } from './matrix/types.js'
+import type {
+	MatrixCapacity,
+	MatrixSnapshot,
+	MatrixFailure,
+	MatrixRequest,
+} from './matrix/types.js'
+import { createHash } from 'node:crypto'
 import type { RefitFile } from './refit/types.js'
 import type { ToolCall, ToolResult } from '@orkestrel/tool'
 import type {
@@ -116,6 +122,7 @@ import {
 	readExecution,
 	readModelDigest,
 	readRequestOutcome,
+	readCapacity,
 } from './matrix/helpers.js'
 import { readWireReading } from './helpers.js'
 import { matchesSummaryBlock } from './helpers.js'
@@ -651,6 +658,7 @@ export function shapeBody(role: CallRole, text: string, calibrating: boolean): s
 	return JSON.stringify({
 		...body,
 		truncate: false,
+		...(role === 'agent' ? { shift: false } : {}),
 		...(calibrating && role === 'agent'
 			? { think: false, options: { ...options, num_predict: 1 } }
 			: {}),
@@ -866,9 +874,15 @@ export class Driver {
 		let sent = false
 		let raw: unknown
 		let responseText: string | undefined
+		let buffered: number | undefined
+		let capacity: MatrixCapacity | undefined
+		let inference = 0
+		let result: Response
+		let qualification: Error | undefined
 		const turn = role === 'agent' && !this.#calibrating ? this.#turn : undefined
 		try {
 			const request = new Request(input, init)
+			if (this.#stopped !== undefined) throw new Error(this.#stopped)
 			const limits = this.#config.study?.limits
 			if (
 				limits !== undefined &&
@@ -902,7 +916,10 @@ export class Driver {
 			status = response.status
 			const bytes = new Uint8Array(await response.arrayBuffer())
 			responseText = new TextDecoder().decode(bytes)
-			return new Response(NO_BODY.includes(status) ? null : bytes, {
+			buffered = Date.now()
+			inference = buffered - started
+			if (role === 'agent') capacity = await this.#snapshot(sequence, raw, buffered)
+			result = new Response(NO_BODY.includes(status) ? null : bytes, {
 				status,
 				statusText: response.statusText,
 				headers: response.headers,
@@ -915,10 +932,16 @@ export class Driver {
 				this.#config.study?.budget ??
 				this.#config.execution?.budget ??
 				buildBudget(this.#config.reserve)
-			const failures = this.#calibrating
-				? []
-				: listResourceFailures(role, raw, responseText, budget, status, error)
-			for (const failure of failures) this.#invalid.add(failure)
+			let failures = listResourceFailures(
+				role,
+				raw,
+				responseText,
+				budget,
+				status,
+				error,
+				capacity,
+				this.#calibrating,
+			)
 			const reading = readWireReading({ body: raw }, { text: responseText })
 			const summary = this.#picks.at(-1)?.instructions[INSTRUCTION_SUMMARIES.name] ?? ''
 			if (
@@ -929,6 +952,10 @@ export class Driver {
 			)
 				this.#exposed = true
 			const evidence: MatrixRequest = {
+				started,
+				buffered,
+				finished: Date.now(),
+				capacity,
 				sequence,
 				role,
 				goal,
@@ -943,20 +970,31 @@ export class Driver {
 				completion: reading.completion,
 				reason: reading.reason,
 				failures,
-				wall: Date.now() - started,
+				wall: inference || Date.now() - started,
 			}
+			if (role === 'agent' && sent && this.#config.frozen !== undefined) {
+				try {
+					readCapacity(evidence, this.#config.frozen)
+				} catch {
+					failures = [...new Set<MatrixFailure>([...failures, 'observation'])]
+				}
+			}
+			for (const failure of failures) this.#invalid.add(failure)
 			if (this.#config.study !== undefined) {
 				this.#tokensUsed += (reading.prompt ?? 0) + (reading.completion ?? 0)
 				if (
 					!sent ||
-					readRequestOutcome(evidence, budget) === 'refused' ||
+					readRequestOutcome(evidence, budget, this.#config.frozen) !== 'complete' ||
 					this.#tokensUsed > this.#config.study.limits.tokens ||
 					Date.now() - this.#started > this.#config.study.limits.wall
 				)
 					this.#stopped = `e1 integrity/resource failure at request ${sequence}`
 			}
 			if (this.#out !== undefined)
-				appendFileSync(join(this.#out, 'requests.jsonl'), `${JSON.stringify(evidence)}\n`)
+				appendFileSync(
+					join(this.#out, 'requests.jsonl'),
+					`${JSON.stringify({ ...evidence, failures })}\n`,
+				)
 			this.#record({
 				sent,
 				turn,
@@ -964,12 +1002,89 @@ export class Driver {
 				role,
 				goal,
 				started,
-				wall: Date.now() - started,
+				wall: inference || Date.now() - started,
 				status,
 				...(error === undefined ? {} : { error }),
 				...(role === 'agent' && this.#estimate !== undefined ? { estimate: this.#estimate } : {}),
 			})
+			if (role === 'agent' && sent && this.#config.frozen !== undefined && failures.length !== 0) {
+				this.#stopped = `decision qualification failed: ${failures.join(', ')}`
+				qualification = new Error(this.#stopped)
+			}
 		}
+		if (qualification !== undefined) throw qualification
+		return result
+	}
+
+	async #snapshot(
+		sequence: number,
+		request: unknown,
+		buffered: number,
+	): Promise<MatrixCapacity | undefined> {
+		const started = Date.now()
+		let status: number | undefined
+		let error: string | undefined
+		const chunks: Uint8Array[] = []
+		try {
+			const response = await globalThis.fetch(new URL('/api/ps', this.#config.url), {
+				signal: AbortSignal.timeout(TIMEOUT),
+			})
+			status = response.status
+			const reader = response.body?.getReader()
+			if (reader !== undefined) {
+				try {
+					for (;;) {
+						const next = await reader.read()
+						if (next.done) break
+						chunks.push(next.value)
+					}
+				} finally {
+					reader.releaseLock()
+				}
+			}
+		} catch (cause) {
+			error = describeError(cause)
+		}
+		const finished = Date.now()
+		const bytes = Buffer.concat(chunks)
+		const model = isRecord(request) && typeof request.model === 'string' ? request.model : ''
+		const snapshot: MatrixSnapshot = {
+			sequence,
+			role: 'agent',
+			model,
+			request: createHash('sha256').update(JSON.stringify(request)).digest('hex'),
+			buffered,
+			started,
+			finished,
+			status,
+			error,
+			raw: bytes.toString('base64'),
+			hash: createHash('sha256').update(bytes).digest('hex'),
+		}
+		if (this.#out === undefined) return undefined
+		const path = join(this.#out, `capacity-${sequence}.json`)
+		writeFileSync(path, `${JSON.stringify(snapshot)}\n`, { flag: 'wx' })
+		let window: number | undefined
+		try {
+			const raw: unknown = JSON.parse(bytes.toString('utf8'))
+			if (isRecord(raw) && Array.isArray(raw.models)) {
+				const matches = raw.models.filter(
+					(entry: unknown) => isRecord(entry) && (entry.name === model || entry.model === model),
+				)
+				const entry: unknown = matches[0]
+				if (
+					matches.length === 1 &&
+					isRecord(entry) &&
+					typeof entry.context_length === 'number' &&
+					Number.isSafeInteger(entry.context_length) &&
+					entry.context_length > 0
+				)
+					window = entry.context_length
+			}
+		} catch {
+			/* The exact failed bytes remain in the snapshot. */
+		}
+		return { evidence: hashFile(path), window, wall: finished - started }
 	}
 
 	#createProvider(role: CallRole, options: Readonly<Record<string, number>>): ProviderInterface {
@@ -1750,6 +1865,7 @@ export class Driver {
 		appendFileSync(join(out, FILES.rows), `${JSON.stringify(row)}\n`)
 		this.#observeWork(rig, goal, row, out)
 		this.#report(out, prepared, 'running', undefined)
+		if (this.#stopped !== undefined) throw new Error(this.#stopped)
 		if (
 			this.#config.study !== undefined &&
 			(this.#stopped !== undefined || row.partial || row.error !== undefined || row.reply === '')

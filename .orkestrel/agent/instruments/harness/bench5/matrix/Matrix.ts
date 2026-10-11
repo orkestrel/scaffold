@@ -36,6 +36,8 @@ import {
 	permitsReserve,
 	readExecution,
 	readFrozen,
+	readDeployment,
+	readDeploymentModel,
 	readMatrixFiles,
 	readModelDigest,
 	readResource,
@@ -63,6 +65,7 @@ export class Matrix {
 				think: { type: 'string' },
 				seed: { type: 'string' },
 				settings: { type: 'string' },
+				deployment: { type: 'string' },
 				frozen: { type: 'string' },
 				resource: { type: 'string' },
 				fit: { type: 'string' },
@@ -73,7 +76,7 @@ export class Matrix {
 		})
 		if (positionals.length !== 1 || values.out === undefined)
 			throw new Error(
-				'usage: matrix.ts freeze|resource|full|pilot|plan --out PATH [--frozen FILE --resource FILE --fit FILE] [--key KEY --think true|false --seed FILE --settings FILE] [--root DIR --stage A|B|C] [--live --url URL]',
+				'usage: matrix.ts freeze|resource|full|pilot|plan --out PATH [--frozen FILE --resource FILE --fit FILE] [--key KEY --think true|false --seed FILE --settings FILE --deployment FILE] [--root DIR --stage A|B|C] [--live --url URL]',
 			)
 		const phase = positionals[0]
 		const out = resolve(values.out)
@@ -88,6 +91,7 @@ export class Matrix {
 				values.think,
 				values.seed,
 				values.settings,
+				values.deployment,
 				out,
 				values.url,
 			)
@@ -108,6 +112,7 @@ export class Matrix {
 		think: string | undefined,
 		seed: string | undefined,
 		settings: string | undefined,
+		deployment: string | undefined,
 		out: string,
 		url: string,
 	): Promise<number> {
@@ -117,9 +122,14 @@ export class Matrix {
 			model === undefined ||
 			(think !== 'true' && think !== 'false') ||
 			seed === undefined ||
-			settings === undefined
+			settings === undefined ||
+			deployment === undefined
 		)
-			throw new Error('freeze requires --key, explicit --think, --seed, and --settings')
+			throw new Error(
+				'freeze requires --key, explicit --think, --seed, --settings, and --deployment',
+			)
+		const receipt = hashFile(resolve(deployment))
+		readDeployment(receipt)
 		const response = await fetch(new URL('/api/tags', url))
 		if (!response.ok) throw new Error(`model inventory HTTP ${response.status}`)
 		const tags: unknown = await response.json()
@@ -132,6 +142,7 @@ export class Matrix {
 			{ flag: 'wx' },
 		)
 		const frozen: MatrixFreeze = {
+			deployment: receipt,
 			protocol: 'l6',
 			key,
 			think: think === 'true',
@@ -335,7 +346,14 @@ export class Matrix {
 		if (reading === undefined) throw new Error('missing complete records development trace')
 		const bound = this.#bound(reading)
 		writeFileSync(join(out, 'bound.json'), `${JSON.stringify(bound, null, 2)}\n`, { flag: 'wx' })
-		const budget = { ...accepted.budget, window: bound.window }
+		const budget = {
+			...accepted.budget,
+			window: bound.window,
+			ceiling: Math.min(
+				bound.window,
+				readDeploymentModel(readDeployment(frozen.deployment), frozen.decision).context,
+			),
+		}
 		const execution: MatrixExecution = {
 			protocol: 'l6',
 			key: frozen.key,
@@ -503,7 +521,17 @@ export class Matrix {
 							execution = {
 								...execution,
 								full: hashFile(fullPath),
-								budget: { ...decision.budget, window: full.budget.window },
+								budget: {
+									...decision.budget,
+									window: full.budget.window,
+									ceiling: Math.min(
+										full.budget.window,
+										readDeploymentModel(
+											readDeployment(readFrozen(frozen).deployment),
+											readFrozen(frozen).decision,
+										).context,
+									),
+								},
 							}
 						}
 						const name = nameMatrix(execution)

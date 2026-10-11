@@ -3,15 +3,19 @@ import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { isRecord } from '@orkestrel/contract'
 import { MICA_MODEL, MODELS } from '../constants.js'
+import { AGREE_QUESTION, FOCUS_QUESTION } from '../aggregates/constants.js'
 
 /** Serves actual Ollama wire boundaries for matrix admission tests. */
 export class MatrixPeer {
 	readonly calls: unknown[] = []
+	readonly routes: string[] = []
+	#loaded: unknown[] = []
 	length = false
 	missing = false
 	support = false
 	escalations = false
 	fault = false
+	metadata = 200
 	readonly #server = createServer((request, response) => {
 		void this.#respond(request, response).catch((error: unknown) =>
 			response.writeHead(500).end(String(error)),
@@ -35,7 +39,14 @@ export class MatrixPeer {
 	}
 
 	async #respond(request: IncomingMessage, response: ServerResponse): Promise<void> {
+		this.routes.push(request.url ?? '')
 		response.setHeader('connection', 'close')
+		if (request.url === '/api/ps') {
+			response.statusCode = this.metadata
+			response.setHeader('content-type', 'application/json')
+			response.end(JSON.stringify({ models: this.#loaded }))
+			return
+		}
 		if (request.url === '/api/tags') {
 			response.setHeader('content-type', 'application/json')
 			response.end(
@@ -54,13 +65,26 @@ export class MatrixPeer {
 		const body: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'))
 		if (!isRecord(body)) throw new Error('fixture expected an object')
 		this.calls.push(body)
+		if (isRecord(body.options))
+			this.#loaded = [
+				{
+					name: body.model,
+					digest: String(
+						[...Object.values(MODELS), MICA_MODEL].indexOf(String(body.model)) + 1,
+					).repeat(64),
+					runner: 'llamacpp',
+					context_length: Math.min(Number(body.options.num_ctx), 262144),
+					expires_at: new Date(Date.now() + 1800000).toISOString(),
+				},
+			]
 		if (request.url === '/api/generate') {
 			const noul = String(body.prompt).includes('Answer Yes if true, or No if false.')
 			const tokens = noul ? ['Yes', 'No'] : ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 			const topic = /The message concerns (\w+):/.exec(String(body.prompt))?.[1]
 			const positive =
 				this.support &&
-				(String(body.prompt).includes('Does the summary agree') ||
+				(String(body.prompt).includes(`Question: ${FOCUS_QUESTION.instructions}\n`) ||
+					String(body.prompt).includes(`Question: ${AGREE_QUESTION.instructions}\n`) ||
 					(topic !== undefined &&
 						(topic !== 'escalations' || this.escalations) &&
 						String(body.prompt)

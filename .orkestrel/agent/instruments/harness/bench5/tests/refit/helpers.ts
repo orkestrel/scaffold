@@ -1,3 +1,4 @@
+import { buildSupportRows } from '../support/helpers.js'
 import type { EvidenceCase, MembershipCase } from './types.js'
 import type {
 	RefitAttempt,
@@ -13,7 +14,6 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createOllamaJudge } from '../../../vendor/ollama/index.js'
 import { AGREE_QUESTION } from '../../aggregates/constants.js'
-import { buildAgreeState } from '../../aggregates/helpers.js'
 import {
 	COPIES_DIR,
 	HARNESS,
@@ -24,10 +24,50 @@ import {
 	MICA_CALIBRATION,
 	MICA_CONTEXT,
 } from '../../constants.js'
-import { buildCacheKey, buildSummaryKey, computeDigest, readJSON, readRows } from '../../helpers.js'
+import { buildSummaryKey, computeDigest, readJSON, readRows } from '../../helpers.js'
 import { REFIT_CONTROLS } from '../../refit/constants.js'
-import { buildRefitItem, hashFile } from '../../refit/helpers.js'
-import { isRefitAttempt, isRefitCorpus, isRefitGeneration } from '../../refit/validators.js'
+import { buildRefitItem, hashFile, readRefitControls } from '../../refit/helpers.js'
+import {
+	isRefitAttempt,
+	isRefitControl,
+	isRefitCorpus,
+	isRefitGeneration,
+} from '../../refit/validators.js'
+
+/** Reads the separately retained whole-control observations. */
+export function readControls(path: string) {
+	return readRows(join(path, 'controls.jsonl')).map((value) => {
+		if (!isRefitControl(value)) throw new Error('invalid test control')
+		return value
+	})
+}
+
+/** Seeds current component observations without reusing archived scalar scores. */
+export function writeControlCache(path: string): void {
+	mkdirSync(path)
+	const model = createOllamaJudge({
+		model: MICA_MODEL,
+		system: MICA_SYSTEM,
+		calibration: { temperature: MICA_CALIBRATION },
+		options: { num_ctx: MICA_CONTEXT },
+	}).model
+	writeFileSync(
+		join(path, 'judge.jsonl'),
+		readRefitControls(REFIT_CONTROLS)
+			.flatMap((control) =>
+				control.lexical
+					? buildSupportRows(
+							model,
+							control.candidate,
+							control.sources,
+							control.verdict === 'supported' ? 1 : 0.77,
+						)
+					: [],
+			)
+			.map((row) => JSON.stringify(row))
+			.join('\n') + '\n',
+	)
+}
 
 /** Builds explicit command options for isolated fixtures. */
 export function buildOptions(out: string, overrides: Partial<RefitOptions> = {}): RefitOptions {
@@ -88,7 +128,6 @@ export function writeCache(
 ): void {
 	mkdirSync(path)
 	const prose = context.sources[0]?.text ?? ''
-	const state = buildAgreeState({ prose }, context.sources)
 	const model = createOllamaJudge({
 		model: MICA_MODEL,
 		system: MICA_SYSTEM,
@@ -112,17 +151,21 @@ export function writeCache(
 	)
 	writeFileSync(
 		join(path, 'judge.jsonl'),
-		JSON.stringify({
-			key: buildCacheKey(model, state, AGREE_QUESTION),
-			model,
-			state,
-			question: AGREE_QUESTION,
-			answer: { form: 'noul', noul: 1 },
-			usage: { prompt: 30, completion: 1, total: 31 },
-			wall: 20,
-			origin: 'live',
-			at: 1,
-		}) + '\n',
+		[
+			...buildSupportRows(model, prose, context.sources, 1),
+			...readRefitControls(REFIT_CONTROLS).flatMap((control) =>
+				control.lexical
+					? buildSupportRows(
+							model,
+							control.candidate,
+							control.sources,
+							control.verdict === 'supported' ? 1 : 0.77,
+						)
+					: [],
+			),
+		]
+			.map((row) => JSON.stringify(row))
+			.join('\n') + '\n',
 	)
 }
 
