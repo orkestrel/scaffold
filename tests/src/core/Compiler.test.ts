@@ -97,6 +97,7 @@ describe('Compiler artifacts', () => {
 				'.claude/agents/orkestrel.md',
 				...[
 					'enterprise-bootstrap',
+					'enterprise-veneer',
 					'orkestrel-build',
 					'orkestrel-debrief',
 					'orkestrel-falsify',
@@ -154,7 +155,22 @@ describe('Compiler artifacts', () => {
 				.filter((artifact) => !skills.includes(artifact))
 				.map(({ path, origin }) => `${path}:${origin}`),
 		).toStrictEqual(['AGENTS.md:template', '.claude/agents/orkestrel.md:host'])
-		expect(skills).toHaveLength(21)
+		expect(skills.map(({ path }) => path)).toStrictEqual(
+			[
+				'enterprise-bootstrap',
+				'enterprise-veneer',
+				'orkestrel-build',
+				'orkestrel-debrief',
+				'orkestrel-falsify',
+				'orkestrel-harden',
+				'orkestrel-journey',
+				'orkestrel-polish',
+			].flatMap((name) => [
+				`.claude/skills/${name}/SKILL.md`,
+				`.agents/skills/${name}/agents/openai.yaml`,
+				`.agents/skills/${name}/SKILL.md`,
+			]),
+		)
 		expect(
 			skills.every(({ origin, ownership }) => origin === 'host' && ownership === 'presence'),
 		).toBe(true)

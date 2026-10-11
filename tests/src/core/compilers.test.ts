@@ -3606,6 +3606,7 @@ describe('content artifact compilers', () => {
 	it('plans the skill pointer set for each package-facing skill in order', () => {
 		const names = [
 			'enterprise-bootstrap',
+			'enterprise-veneer',
 			'orkestrel-build',
 			'orkestrel-debrief',
 			'orkestrel-falsify',

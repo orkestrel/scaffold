@@ -79,6 +79,18 @@
 			"digest": "84a7c3eec5d280ba67b103418a69b4643434b9fa9fe39ee8c1b305f1ba4f94c0"
 		},
 		{
+			"storage": "agents/skills/enterprise-veneer/SKILL.md",
+			"destination": ".agents/skills/enterprise-veneer/SKILL.md",
+			"executable": false,
+			"digest": "81a89de9de9c0f5bbd30c80d7ebff07ca089cc059af0591f951d71f5b36e7727"
+		},
+		{
+			"storage": "agents/skills/enterprise-veneer/agents/openai.yaml",
+			"destination": ".agents/skills/enterprise-veneer/agents/openai.yaml",
+			"executable": false,
+			"digest": "8aec530977a33ea41bf81885a2ff901398f4cdb508ca0c0de69b6fc0bac53212"
+		},
+		{
 			"storage": "agents/skills/orkestrel-align/SKILL.md",
 			"destination": ".agents/skills/orkestrel-align/SKILL.md",
 			"executable": false,
@@ -617,6 +629,12 @@
 			"destination": ".claude/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
 			"digest": "fa921603faab546635aacce370ad9f245ddf9fd62cfb4c4f04e36b84f0beddbe"
+		},
+		{
+			"storage": "claude/skills/enterprise-veneer/SKILL.md",
+			"destination": ".claude/skills/enterprise-veneer/SKILL.md",
+			"executable": false,
+			"digest": "61b2b5c2217ce659d3c6fa3282f928e15be1e54678b3a84b1662f49592ce2dd6"
 		},
 		{
 			"storage": "claude/skills/orkestrel-align/SKILL.md",
@@ -1200,6 +1218,8 @@
 		".agents/skills/enterprise-bootstrap",
 		".agents/skills/enterprise-bootstrap/agents",
 		".agents/skills/enterprise-bootstrap/references",
+		".agents/skills/enterprise-veneer",
+		".agents/skills/enterprise-veneer/agents",
 		".agents/skills/orkestrel-align",
 		".agents/skills/orkestrel-align/agents",
 		".agents/skills/orkestrel-align/references",
@@ -1238,6 +1258,7 @@
 		".claude/rules",
 		".claude/skills",
 		".claude/skills/enterprise-bootstrap",
+		".claude/skills/enterprise-veneer",
 		".claude/skills/orkestrel-align",
 		".claude/skills/orkestrel-build",
 		".claude/skills/orkestrel-debrief",
@@ -2120,5 +2141,5 @@
 			]
 		}
 	],
-	"digest": "88f591cfe3da3f0d674c165315c3d1444a9b32c9fc1bf811150b4f63ca837308"
+	"digest": "0942ae0482d3dad97b540bf6597e283d565904df29a92c648443bb807ab2be96"
 }

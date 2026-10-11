@@ -2005,7 +2005,6 @@ describe('Materializer skill pointers', () => {
 					.written.filter(
 						(path) => path.startsWith('.agents/skills/') || path.startsWith('.claude/skills/'),
 					)
-				expect(written).toHaveLength(21)
 				expect(written.toSorted()).toStrictEqual(Object.keys(SKILL_CANON_FILES).toSorted())
 				expect(written).not.toContain('.agents/skills/orkestrel-dispatch/SKILL.md')
 				for (const name of TARGET_SKILL_NAMES) {
@@ -2031,7 +2030,7 @@ describe('Materializer skill pointers', () => {
 				const skills = materializer
 					.audit(plan, target)
 					.findings.filter((finding) => written.includes(finding.path))
-				expect(skills).toHaveLength(21)
+				expect(skills.map(({ path }) => path).toSorted()).toStrictEqual(written.toSorted())
 				for (const finding of skills) {
 					expect(finding).toMatchObject({ ownership: 'content', drift: 'aligned' })
 				}
