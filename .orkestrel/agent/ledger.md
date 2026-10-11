@@ -2,6 +2,12 @@
 
 Every dispatch, its engine, and every substitution, newest first. The briefing benchmark lives in the agent checkout's `tmp/bench3/`; its results live under `tmp/bench/results/v9/`.
 
+## Contextual integration dispatch of 2026-10-11
+
+Cursor Grok completed the integration map: session `d09b8018-80e2-4ea2-9d03-24676db64653`, journal tmp/cursor/aggregate-focused-integration.jsonl, wrapper 479527 ms, model 476463 ms, exit 0 uncapped. Root read the answer, confirmed PID64004 gone, expanded its paragraph-relative citations without changing factual prose, and checked all 131 citations. The initial citation check could not resolve abbreviated paths; the raw and normalized reports preserve that distinction. Root directly read the authoritative types and decision-bearing runtime/refit/cache seams before dispatching native Astra for the [canonical integration](instruments/units/aggregates/reports/resumption-contextual-integration-map.md). Checked aggregate-contextual-integration owns the named harness source/tests only; root owns disjoint records. No canonical build or service request is authorized in that writing lane.
+
+Native clean-context analyst Astra confirmed all three changed-population claims for the padded Gemma2 control. Its real positive receipt admission and refusal controls made no HTTP request or output directory. Native verifier Luna independently checks the unchanged original runtime, adapting only the proof's output paths. Live release remains pending those gates. No capacity or quality verdict follows from the audit.
+
 ## Boundary acceptance and capacity observation of 2026-10-11
 
 Native verifier Luna completed the fixed boundary screen in 135266 ms, exit 0 uncapped. Root accepts its complete paired ordering after raw custody and independent arithmetic. The preceding malformed launch argument caused local refusal before inference; the successor changed only that argument. Root corrected a preliminary extraction omission by requiring the native cached-prompt field; the final report retains 31326 cached tokens within 59724 prompt tokens. See [the live boundary acceptance](instruments/units/aggregates/diagnostics/focused-boundaries/README.md).
