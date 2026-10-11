@@ -1,5 +1,7 @@
 # Release and aggregate progress
 
+Flush verifier successor3 stopped at the sustained runtime test's later resource-refusal assertion: expected exit 3, observed operational exit 1. Build, scoped static checks, and direct Peer protocol test passed; no mutation control ran. Source bytes remain unchanged, and the generated build retains the test resource binding. The exact failure and process closure are preserved in [the verifier report](instruments/units/aggregates/reports/resumption-development-flush-verifier-3.md). Diagnose the reached refusal fixture, then complete the remaining consumers and controls before l11; no live comparison is claimed.
+
 After publication, root removed the clean completed agent release worktree from its verified workspace path. Git lists only the primary agent checkout, clean on main at ee734c3. No earlier rejected dependency-junction cleanup was retried.
 
 The desk's verified published-package combination awaits the X2-compatible Ollama release. The registry serves Ollama 0.0.22, and 0.0.23 is absent. Root restored the historical patch and metadata from exact Git blobs; no Ollama or desk source changed. See [the dependency evidence](instruments/units/agent-0030/desk-publication-prerequisite.md).
