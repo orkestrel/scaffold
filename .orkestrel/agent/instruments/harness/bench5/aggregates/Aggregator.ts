@@ -276,7 +276,7 @@ export class Aggregator {
 					key,
 					title: version.title,
 					date: version.asOf,
-					ids: kept.ids,
+					ids: [],
 					prose: version.prose,
 				})
 		}

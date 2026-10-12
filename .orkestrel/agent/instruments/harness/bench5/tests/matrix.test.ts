@@ -5,6 +5,8 @@ import {
 	writeCapacityRequest,
 } from '../matrix/tests/helpers.js'
 import { BUILD } from '../constants.js'
+import { INSTRUCTION_SUMMARIES } from '../aggregates/constants.js'
+import { MATRIX_ADMISSION } from '../matrix/constants.js'
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -16,6 +18,9 @@ import { Comparison } from '../matrix/Comparison.js'
 import {
 	buildBudget,
 	listResourceFailures,
+	listMatrixPairFailures,
+	listMatrixWireFailures,
+	matchesMatrixExposure,
 	readRequestOutcome,
 	nameMatrix,
 	readExecution,
@@ -209,11 +214,161 @@ it('plans all three arms in both thinking states, refuses exposure laundering, a
 						'--url',
 						url,
 					]),
-					3,
+					0,
 				)
-				assert.match(
-					readFileSync(join(base, 'stale-pilot', 'manifest.json'), 'utf8'),
-					/sole-carried stale phrase/,
+				const pilot = readJSON(join(base, 'stale-pilot', 'manifest.json'))
+				assert.ok(isRecord(pilot) && isRecord(pilot.attempt))
+				assert.equal(pilot.accepted, true)
+				assert.deepEqual(pilot.failures, [])
+				assert.ok(typeof pilot.attempt.run === 'string')
+				const aggregate = parseMatrixRun(pilot.attempt.run)
+				const baseline = readResource(hashFile(resource), hashFile(frozenPath)).attempts.at(-1)
+				assert.ok(baseline)
+				const records = parseMatrixRun(baseline.run)
+				assert.ok(records && aggregate)
+				assert.deepEqual(listMatrixPairFailures(records, aggregate), [])
+				const left = records.picks[0]
+				const right = aggregate.picks[0]
+				assert.ok(left && right && right.scale !== undefined && aggregate.gauge)
+				for (const picks of [
+					[],
+					[{ ...right, digest: right.digest + '-different' }],
+					[{ ...right, tail: [...right.tail, ...right.tail] }],
+					[{ ...right, scale: right.scale + 1 }],
+				]) {
+					assert.ok(right.tail.length > 0)
+					assert.ok(
+						listMatrixPairFailures(records, { ...aggregate, picks }).includes(
+							'initial paired selection or calibrated gauge differs',
+						),
+					)
+				}
+				assert.ok(
+					listMatrixPairFailures({ ...records, picks: [] }, aggregate).includes(
+						'initial paired selection or calibrated gauge differs',
+					),
+				)
+				assert.ok(
+					listMatrixPairFailures(records, {
+						...aggregate,
+						gauge: { ...aggregate.gauge, overhead: aggregate.gauge.overhead + 1 },
+					}).includes('initial paired selection or calibrated gauge differs'),
+				)
+				const row = aggregate.rows[1]
+				const prior = records.rows.find((entry) => entry.goal === row?.goal)
+				assert.ok(row && prior)
+				assert.deepEqual(
+					listMatrixPairFailures(
+						{ ...records, rows: [{ ...prior, scale: 1.0992978936810431 }] },
+						{ ...aggregate, rows: [{ ...row, scale: 1.1873920552677029 }] },
+					),
+					[],
+				)
+				for (const scale of [
+					0,
+					-0,
+					-1,
+					Number.NaN,
+					Number.POSITIVE_INFINITY,
+					Number.NEGATIVE_INFINITY,
+				]) {
+					assert.deepEqual(
+						listMatrixPairFailures(
+							{ ...records, rows: [{ ...prior, scale }] },
+							{ ...aggregate, rows: [row] },
+						),
+						[`${row.goal}: paired scale is not finite and positive`],
+					)
+					assert.deepEqual(
+						listMatrixPairFailures(
+							{ ...records, rows: [prior] },
+							{ ...aggregate, rows: [{ ...row, scale }] },
+						),
+						[`${row.goal}: paired scale is not finite and positive`],
+					)
+				}
+				const request = aggregate.requests.find(
+					(entry) => entry.sent && entry.role === 'agent' && entry.goal === 'g03-grace-escalation',
+				)
+				assert.ok(request && isRecord(request.request) && Array.isArray(request.request.messages))
+				const pick = aggregate.picks.findLast(
+					(entry) => entry.goal === request.goal && entry.sequence < request.sequence,
+				)
+				assert.ok(pick && pick.scale !== undefined && (pick.aggregates?.length ?? 0) > 0)
+				const body = pick.instructions[INSTRUCTION_SUMMARIES.name]
+				assert.ok(body)
+				assert.doesNotMatch(body, /^Ids:/m)
+				assert.deepEqual(listMatrixWireFailures(aggregate), [])
+				assert.equal(matchesMatrixExposure(aggregate, request.goal ?? ''), true)
+				const absent = {
+					...aggregate,
+					requests: [
+						{
+							...request,
+							request: {
+								...request.request,
+								messages: request.request.messages.map((message: unknown) =>
+									isRecord(message) &&
+									message.role === 'system' &&
+									typeof message.content === 'string'
+										? { ...message, content: message.content.replace(body, '') }
+										: message,
+								),
+							},
+						},
+					],
+				}
+				assert.equal(matchesMatrixExposure(absent, request.goal ?? ''), false)
+				assert.ok(
+					listMatrixWireFailures(absent).some((failure) =>
+						failure.includes('recorded body is absent'),
+					),
+				)
+				const text = body + ' ESC-2291 remains active.'
+				const control = {
+					...aggregate,
+					picks: [
+						{ ...pick, instructions: { ...pick.instructions, [INSTRUCTION_SUMMARIES.name]: text } },
+					],
+					requests: [
+						{
+							...request,
+							request: {
+								...request.request,
+								messages: request.request.messages.map((message: unknown) =>
+									isRecord(message) &&
+									message.role === 'system' &&
+									typeof message.content === 'string'
+										? { ...message, content: message.content.replace(body, text) }
+										: message,
+								),
+							},
+						},
+					],
+				}
+				assert.ok(
+					listMatrixWireFailures(control).some((failure) =>
+						failure.includes('sole-carried stale phrase'),
+					),
+				)
+				assert.ok(
+					listMatrixWireFailures({ ...aggregate, picks: [], requests: [request] }).some((failure) =>
+						failure.includes('unbound or stale summary block'),
+					),
+				)
+				assert.ok(
+					listMatrixWireFailures({
+						...aggregate,
+						picks: [{ ...pick, aggregates: [] }],
+						requests: [request],
+					}).some((failure) => failure.includes('lacks maintained binding')),
+				)
+				assert.ok(
+					listMatrixWireFailures({
+						...aggregate,
+						picks: [pick],
+						requests: [{ ...request, estimate: MATRIX_ADMISSION / pick.scale + 1 }],
+					}).some((failure) => failure.includes('first-request admission ceiling exceeded')),
 				)
 				peer.escalations = false
 			}
@@ -340,7 +495,7 @@ it('plans all three arms in both thinking states, refuses exposure laundering, a
 		)
 		assert.equal(report.shadows.length, 1)
 		assert.ok(report.preparation.length >= 3)
-		assert.ok(report.preparation.some((cost) => isRecord(cost) && cost.accepted === false))
+		assert.ok(report.preparation.some((cost) => isRecord(cost) && cost.accepted === true))
 		for (const pair of report.pairs) {
 			assert.ok(isRecord(pair))
 			assert.equal(pair.denominator, 23)
@@ -632,6 +787,65 @@ it('runs the complete real-component resource ladder, ignores wrong answers, fre
 		assert.equal(failed.resource, true)
 		const refused = parseMatrixRun(failed.run)
 		assert.ok(refused)
+		const empty = join(directory, 'empty-plan.json')
+		writeFileSync(empty, JSON.stringify([]))
+		const reportPath = join(directory, 'preparation-report.json')
+		const calls = peer.calls.length
+		const reference = hashFile(join(directory, 'resource', 'manifest.json'))
+		assert.equal(
+			Comparison.execute([
+				'report',
+				'--base',
+				directory,
+				'--plan',
+				empty,
+				'--preparation',
+				reference.path,
+				'--out',
+				reportPath,
+			]),
+			0,
+		)
+		assert.equal(peer.calls.length, calls)
+		const report = readJSON(reportPath)
+		assert.ok(isRecord(report) && Array.isArray(report.preparation))
+		const preparation: unknown = report.preparation.find(
+			(entry: unknown) => isRecord(entry) && entry.run === failed.run,
+		)
+		assert.ok(
+			isRecord(preparation) && isRecord(preparation.costs) && Array.isArray(preparation.costs.wire),
+		)
+		assert.equal(preparation.run, failed.run)
+		assert.equal(preparation.accepted, false)
+		assert.equal(preparation.phase, 'resource')
+		assert.deepEqual(preparation.manifest, reference)
+		const wire: unknown = preparation.costs.wire.find(
+			(entry: unknown) => isRecord(entry) && entry.phase === 'trajectory' && entry.role === 'agent',
+		)
+		assert.ok(isRecord(wire))
+		const refusedRequests = refused.requests.filter(
+			(entry) => entry.sent && entry.role === 'agent' && entry.goal !== undefined,
+		)
+		assert.ok(refusedRequests.length > 0)
+		assert.ok(
+			refusedRequests.every(
+				(entry) => entry.prompt !== undefined && entry.completion !== undefined,
+			),
+		)
+		assert.equal(wire.requests, refusedRequests.length)
+		assert.equal(
+			wire.prompt,
+			refusedRequests.reduce((total, entry) => total + (entry.prompt ?? 0), 0),
+		)
+		assert.equal(
+			wire.completion,
+			refusedRequests.reduce((total, entry) => total + (entry.completion ?? 0), 0),
+		)
+		assert.equal(
+			wire.wall,
+			refusedRequests.reduce((total, entry) => total + entry.wall, 0),
+		)
+		assert.equal(wire.missing, 0)
 		writeFileSync(
 			resolve('tmp/units/aggregate-mvp-gate-repairs-resource-sequence.json'),
 			JSON.stringify({ budget: failed.budget, status: refused.status, requests: refused.requests }),

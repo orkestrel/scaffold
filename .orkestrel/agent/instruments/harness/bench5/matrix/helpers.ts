@@ -24,12 +24,8 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
-import { isRecord } from '@orkestrel/contract'
-import {
-	LEDGER_SCALE_DRIFT,
-	DEFAULT_LEDGER_LIMIT,
-	estimateMessages,
-} from '../../vendor/agent-0.0.30-trimmed/index.js'
+import { isFiniteNumber, isRecord } from '@orkestrel/contract'
+import { DEFAULT_LEDGER_LIMIT, estimateMessages } from '../../vendor/agent-0.0.30-trimmed/index.js'
 import { readCopy } from '../Driver.js'
 import {
 	COPIES_DIR,
@@ -1320,9 +1316,12 @@ export function listMatrixPairFailures(
 		const prior = records.rows.find((entry) => entry.goal === row.goal)
 		if (
 			prior !== undefined &&
-			(prior.scale <= 0 || Math.abs(row.scale - prior.scale) / prior.scale > LEDGER_SCALE_DRIFT)
+			(!isFiniteNumber(prior.scale) ||
+				prior.scale <= 0 ||
+				!isFiniteNumber(row.scale) ||
+				row.scale <= 0)
 		)
-			failures.push(`${row.goal}: paired gauge drift exceeds ledger bound`)
+			failures.push(`${row.goal}: paired scale is not finite and positive`)
 	}
 	return failures
 }

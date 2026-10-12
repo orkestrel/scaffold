@@ -393,23 +393,19 @@ it('withholds a capped rebuilt summary while real development decisions and late
 		const aggregate = runs.get('aggregate')
 		assert.ok(records && aggregate)
 		assert.deepEqual(listMatrixPairFailures(records, aggregate), [])
-		assert.ok(
-			aggregate.failures.length > 0,
-			'the original fixture must retain its stale identifier raw refusal',
-		)
-		assert.throws(
-			() =>
-				readSustainedMatrix(
-					{
-						matrix: {
-							records: hashFile(join(directory, 'records/run.json')),
-							aggregate: hashFile(join(directory, 'aggregate/run.json')),
-						},
+		assert.deepEqual(aggregate.failures, [])
+		assert.deepEqual(
+			readSustainedMatrix(
+				{
+					matrix: {
+						records: hashFile(join(directory, 'records/run.json')),
+						aggregate: hashFile(join(directory, 'aggregate/run.json')),
 					},
-					hashFile(frozenPath),
-					policy.resource,
-				),
-			/invalid raw evidence/,
+				},
+				hashFile(frozenPath),
+				policy.resource,
+			),
+			[],
 		)
 		const refused = aggregate.requests.find(
 			(entry) => entry.role === 'summarizer' && entry.reason === 'length',

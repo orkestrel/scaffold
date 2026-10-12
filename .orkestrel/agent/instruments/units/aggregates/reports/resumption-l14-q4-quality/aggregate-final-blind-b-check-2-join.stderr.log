@@ -1,0 +1,9 @@
+file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/units/aggregate-l14-b-quality-join-2.ts:99
+		if (!allowsVerdict(key, verdict, status, reply)) throw new Error(`Invalid sealed verdict ${verdict} at ${label}/${key}`)
+		                                                       ^
+
+Error: Invalid sealed verdict unattempted at 5aa4589dfcdaeae856136f8b9c8a0f79/systemTool
+    at validateVerdicts (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/units/aggregate-l14-b-quality-join-2.ts:99:58)
+    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/units/aggregate-l14-b-quality-join-2.ts:217:19
+
+Node.js v24.21.0

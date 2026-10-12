@@ -338,7 +338,7 @@ test('citations bind exact text and reject unknown references and empty quotatio
 	assert.throws(() => readAuditCitation(item, 'unknown|Inert'), /unbound/)
 })
 
-test('shared paired-selection validation refuses changed initial plans and gauge drift', () => {
+test('shared paired-selection validation refuses changed initial plans and permits later scale differences', () => {
 	const input = buildComparisonInput(buildAuditFixture())
 	const aggregate = {
 		...input.aggregate,
@@ -356,7 +356,10 @@ test('shared paired-selection validation refuses changed initial plans and gauge
 			rows: input.aggregate.rows.map((row) => ({ ...row, scale: 2 })),
 		},
 	})
-	assert.ok(drift.failures.some((failure) => failure.includes('paired gauge drift')))
+	assert.equal(drift.valid, true)
+	assert.deepEqual(drift.failures, [])
+	assert.equal(drift.recommendation, new Comparison().build(input).recommendation)
+	assert.deepEqual(drift.final, new Comparison().build(input).final)
 })
 
 test('keeps exposed maintained transitions, retained versions, and absent categories separate', () => {

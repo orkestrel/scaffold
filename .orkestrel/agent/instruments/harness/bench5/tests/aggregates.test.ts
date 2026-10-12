@@ -1472,7 +1472,7 @@ describe('Aggregator', () => {
 			return { run, shown }
 		}
 
-		it('orders the request owners before its desk topics and renders the heading, ids, and prose', async () => {
+		it('orders the request owners before its desk topics and renders the heading and prose', async () => {
 			const { run, shown } = await prepare()
 			const rendered = run.aggregator.render(
 				select(run, `${shown}\nThe tool says $289.00 until 2026-10-21.`),
@@ -1486,7 +1486,7 @@ describe('Aggregator', () => {
 			assert.deepEqual([rendered.cut, rendered.withheld, rendered.emptied], [[], [], []])
 			assert.ok(
 				rendered.text.startsWith(
-					`${SUMMARIES_HEADING}\n\n#### Luis Ferreira (account LH-44870), as of 2026-10-08\nIds: `,
+					`${SUMMARIES_HEADING}\n\n#### Luis Ferreira (account LH-44870), as of 2026-10-08\n`,
 				),
 			)
 			assert.ok(
@@ -1497,6 +1497,12 @@ describe('Aggregator', () => {
 			assert.ok(rendered.text.includes(REFUNDS.join(' ')))
 			assert.ok(rendered.text.includes(RETURNS.join(' ')))
 			assert.ok(rendered.tokens > 0)
+			assert.doesNotMatch(rendered.text, /^Ids:/m)
+			assert.equal(
+				rendered.tokens,
+				estimateMessages([{ id: 'summaries', role: 'system', content: rendered.text }]),
+			)
+			assert.equal(rendered.sole, 0)
 		})
 
 		it('preserves checked multiline whitespace byte-for-byte in the exposed binding', async () => {
@@ -1559,6 +1565,26 @@ describe('Aggregator', () => {
 				pick(run.rows(), 'build', 'refunds').at(-1)?.result,
 			)
 			assert.equal(second.states.find((one) => one.topic === 'refunds')?.state.version, 2)
+			const initialBuild = pick(run.rows(), 'build', 'refunds')[0]
+			const updatedBuild = pick(run.rows(), 'build', 'refunds').at(-1)
+			assert.ok(initialBuild?.ids && updatedBuild?.ids)
+			assert.match(initialBuild.ids, /MX-4471/)
+			assert.match(initialBuild.ids, /MX-4486/)
+			assert.match(updatedBuild.ids, /MX-4486/)
+			assert.match(updatedBuild.ids, /MX-4490/)
+			const block = second.text
+				.split(/\n\n(?=#### )/)
+				.find((entry) => entry.startsWith('#### refunds,'))
+			assert.equal(block, `#### refunds, as of 2026-10-08\n${REFUNDS_AFTER}`)
+			assert.doesNotMatch(second.text, /^Ids:/m)
+			assert.ok(collectSummaryBodies(second.text).includes(`refunds\n\n${REFUNDS_AFTER}`))
+			assert.equal(second.sole, 0)
+			assert.equal(
+				second.tokens,
+				estimateMessages([{ id: 'summaries', role: 'system', content: second.text }]),
+			)
+			await run.maintain('g03', SEEDED)
+			assert.equal(pick(run.rows(), 'keep', 'refunds').at(-1)?.ids, updatedBuild.ids)
 		})
 
 		it('withholds the whole entry when a sentence would be dropped', async () => {
@@ -1577,7 +1603,7 @@ describe('Aggregator', () => {
 			assert.ok(!rendered.states.some((state) => state.topic === OWNER))
 			assert.ok(!rendered.text.includes('289'))
 			assert.ok(!rendered.text.includes('2026-10-21'))
-			assert.match(rendered.text, /Ids: LH-44870, LH-79215\n/)
+			assert.doesNotMatch(rendered.text, /^Ids:/m)
 			assert.equal(rendered.sole, 0)
 			const withAmount = run.aggregator.render(
 				select(run, `${shown}\nThe tool says $289.00 until 2026-10-21.`),

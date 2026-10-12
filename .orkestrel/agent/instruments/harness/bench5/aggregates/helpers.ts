@@ -358,7 +358,7 @@ export function compareSources(
 }
 
 /**
- * Collects the ids that code copies into the `Ids:` line.
+ * Collects the identifiers retained with maintained summary evidence.
  *
  * @param sources - The sources
  * @returns The uppercased hyphenated ids that hold a digit, in the order the sources first name them

@@ -1,6 +1,20 @@
 # Results
 
-Qwen 2B and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have run and received blind quality audits. Neither establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
+Qwen 2B, Qwen 4B, and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have received blind quality audits. None establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
+
+## Qwen 3.5 4B, thinking disabled
+
+Records and aggregate served all 24 planned goals on frozen l14 source `5b9935430`. Full view served 22, failed at g23, and left g24 unattempted. Independent Astra graded the anonymous combined packet before identities were joined; failed and unattempted goals remain in the denominator.
+
+| Arm | Correct content | Ambiguous content | Required system actions | Complete work | Run tokens | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Records | 17/24 | 1/24 | 4/24 | 3/24 | 82123 | 524338 ms |
+| Living aggregate | 13/24 | 2/24 | 4/24 | 3/24 | 349528 | 1835032 ms |
+| Full view | 16/24 | 1/24 | 5/24 | 3/24 | 148479 | 1490075 ms |
+
+Aggregate preserved the current refund approval and buyer corrections but added unsupported escalation recipients and delivery timing, misattributed a contact field, and made a callback route ambiguous. All arms frequently omitted mandatory fresh lookups; all missed active shipment-chase changes. Correct content alone does not count as completed work. Excluding the predeclared protocol-sensitive g06 leaves correct content at 17/23, 13/23, and 16/23, and complete work at 3/23 in every arm. Under the narrower per-goal tool lists, compliance is 17/23, 17/23, and 14/23; those lists do not waive system requirements.
+
+Summaries reached 18/24 aggregate goals. Aggregate used 4.26 times the records tokens and 3.50 times the duration, counting all recorded roles with no unknown usage. Separate calibration costs remain in the campaign record. Full view used its disclosed larger input budget and remains operationally unresolved after an empty loaded-model response; the result does not establish a capacity limit. These are single development runs. The historical qualification refusal and all blind grades remain unchanged by the prospective harness correction. See [the sealed Qwen4 comparison and per-goal reasons](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-quality/README.md).
 
 ## Gemma 4 E2B, thinking disabled
 
@@ -36,6 +50,8 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 ## Work in progress
 
+The bounded qualification correction is accepted after independent Astra review, static checks, a canonical build, and 423 passing tests. It preserves identical starting context, permits valid later adaptive scale differences, and removes the collected ID index from decision-side summaries while retaining maintained prose and its checks. The next run is fresh Qwen4 calibration followed by independently labeled fitting and comparison. Historical results remain unchanged. See [the correction acceptance](.orkestrel/agent/instruments/units/aggregates/reports/resumption-qualification-correction/README.md).
+
 The repaired measurement code is pushed at `5b9935430`. Independent review and scoped checks passed, including the complete exploratory runtime fixture in 2137628 ms; the canonical live build preserves all 624 tested output hashes. Actual Claude Opus 5.5 and independent Astra analysis informed [the accepted direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-comparison-completion-direction.md). Strict qualification and adoption requirements remain unchanged. See [the repair decision and failed-gate measurements](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-repair.md).
 
 L14 has frozen all eight decision-mode configurations and completed its fixed calibration generations and independent labels. The actual goal-run status is:
@@ -57,7 +73,7 @@ Qwen 2B's resource preparation passed at reserve 512 with a 3072-token window: 3
 
 Gemma's l14 blind comparison is complete; its results are reported earlier in this file. See [preparation](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md) and [the aggregate run, costs and refusal evidence](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-pilot-report-2.md).
 
-Qwen 4B records completed in 524338 ms with 67 sent requests and 82123 tokens. Full view stopped at g23 after 22 served goals, in 1490075 ms, with 52 sent requests and 148479 tokens. Every sent request has usage. Request 52's capacity endpoint returned HTTP 200 with an empty loaded-model list. The daemon records eviction during Qwen4 generation followed by another Qwen2B request; client ownership remains unproved. The run remains operationally unresolved. The aggregate pilot served all 24 goals and exposed summaries on 18, using 349528 tokens in 1835032 ms with complete usage. Its frozen qualification was refused for stale-pattern and later-scale findings. Blind quality grading is running on every planned goal from all arms. See [the retained pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-pilot/README.md). See [the closed Qwen report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-q4-cell-report.md). No full-view retry is authorized.
+Qwen 4B's blind quality comparison is complete and reported earlier in this file. The daemon records eviction during full-view generation followed by another Qwen2B request; client ownership remains unproved. The historical run remains operationally unresolved, and its aggregate qualification remains refused. See [the retained pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-pilot/README.md) and [the closed Qwen report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-q4-cell-report.md). No historical full-view retry is authorized.
 
 The bounded successor correction removes the unsupported later gauge-difference gate and the code-generated identifier index in the decision summary. Earlier runs and grades remain unchanged. The closed pilot retains its frozen source and qualification. See [the correction and execution ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-qualification-correction-direction.md) and [the retained Qwen4 daemon diagnosis](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-diagnostic/README.md).
 
