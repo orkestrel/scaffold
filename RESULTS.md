@@ -2,7 +2,21 @@
 
 Qwen 2B, Qwen 4B, and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have received blind quality audits. None establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
 
-## Qwen 3.5 4B, thinking disabled
+## Latest: Qwen 3.5 4B, thinking disabled
+
+All three l15 arms answered all 24 planned goals after the bounded qualification correction. A clean Astra auditor graded 72 anonymous entries before arm identities were joined. The grades and their source boundaries passed independent mechanical validation; root reviewed every joined reason without changing a grade.
+
+| Arm | Correct content | Ambiguous content | Required system actions | Complete work | Run tokens | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Records | 18/24 | 1/24 | 4/24 | 3/24 | 82123 | 559417 ms |
+| Living aggregate | 17/24 | 1/24 | 4/24 | 3/24 | 350266 known | 3030068 ms |
+| Full view | 16/24 | 1/24 | 5/24 | 2/24 | 157589 | 1674884 ms |
+
+Full view also has one ambiguous complete-work result. Aggregate matched records on 23 semantic verdicts and lost on one: it turned the buyer's contact details into the account manager's contact route. Both arms missed the closed callback, completed shipment chases, expired sign-off cover, and reopened damage claim. Most incomplete work across all arms comes from missing mandatory fresh lookups; correct wording does not fulfill those actions. Excluding the predeclared protocol-sensitive g06 leaves correct content at 18/23, 17/23, and 16/23, and complete work at 3/23, 3/23, and 2/23. The narrower per-goal action lists pass 17/23, 17/23, and 16/23 and do not waive system requirements.
+
+Summaries reached 18/24 aggregate goals. Aggregate used at least 4.26 times the records tokens, counting all run roles; separate calibration costs remain recorded. Its judge and flush requests each timed out once, leaving two unknown usage readings and an operationally unaccepted pilot. Another Ollama service shared the GPU, so its duration is confounded. This single development comparison establishes no aggregate benefit or causal improvement over earlier runs. Earlier independent audits and grades remain unchanged. See [the sealed latest comparison and every per-goal reason](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l15-q4-quality/README.md).
+
+## Historical Qwen 3.5 4B, thinking disabled
 
 Records and aggregate served all 24 planned goals on frozen l14 source `5b9935430`. Full view served 22, failed at g23, and left g24 unattempted. Independent Astra graded the anonymous combined packet before identities were joined; failed and unattempted goals remain in the denominator.
 
@@ -52,7 +66,7 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 The l15 Qwen4 thinking-disabled records and full-view runs each served all 24 goals. Records used 82123 tokens in 559417 ms; full view used 157589 tokens in 1674884 ms, with complete usage and no operational failure. Aggregate emitted 24 goal rows, with summaries exposed on 18, but exited 1 after 3030068 ms because a judge request and a flush request had headers timeouts. Its 343 sent requests used 350266 known tokens, plus unknown usage on those failed requests. Another Ollama service shared the GPU, so elapsed time is confounded. The pilot remains operationally unresolved; it was not retried.
 
-Independent Astra is grading the sealed anonymous packet of all 72 planned entries. L15 quality results remain pending. Qwen4 thinking-enabled commands passed dry validation but have not run; further model execution waits for the competing GPU workload to clear or its owner to identify the service.
+The l15 blind quality audit is complete and reported above. Qwen4 thinking-enabled commands passed dry validation but have not run; further model execution waits for the competing GPU workload to clear or its owner to identify the service. The remaining model operators are prepared. No additional harness audit or rebuild precedes those measurements.
 
 The bounded qualification correction is accepted and pushed at `9273347a1` after independent Astra review, static checks, a canonical build, and 423 passing tests. It preserves identical starting context, permits valid later adaptive scale differences, and removes the collected ID index from decision-side summaries while retaining maintained prose and its checks. Fresh l15 Qwen4 generation completed in 1373580 ms and is retained at `318a81fa7`. Root accepted the blind support labels, and the fixed fit passed at AGREE 0.61: 136/154 supported occurrences and 35/43 distinct supported identities admitted. Historical results remain unchanged. See [the correction acceptance](.orkestrel/agent/instruments/units/aggregates/reports/resumption-qualification-correction/README.md) and [the l15 evidence](.orkestrel/agent/instruments/results/l15/README.md).
 
