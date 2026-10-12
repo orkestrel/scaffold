@@ -1,6 +1,22 @@
 # Results
 
-The l13 records-versus-aggregate-versus-full-view comparison has run and received a blind quality audit. Aggregate adoption for possible 0.0.31 remains undecided. Agent 0.0.30 is published.
+Qwen 2B and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have run and received blind quality audits. Neither establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
+
+## Gemma 4 E2B, thinking disabled
+
+Each arm completed all 24 planned goals on frozen l14 source `5b9935430`. An independent Astra auditor graded the anonymous combined packet before arm identities were joined. The sealed judgments and mechanical checks passed; no verdict changed after identity disclosure.
+
+| Arm | Correct content | Ambiguous content | Required system actions | Complete work | Run tokens | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Records | 15/24 | 1/24 | 6/24 | 3/24 | 72328 | 518644 ms |
+| Living aggregate | 13/24 | 1/24 | 6/24 | 2/24 | 397608 | 1944308 ms |
+| Full view | 14/24 | 2/24 | 5/24 | 2/24 | 164065 | 797218 ms |
+
+Full view also has one ambiguous complete-work judgment. The aggregate used 5.50 times the records tokens and 3.75 times the duration, counting every recorded role with no unknown usage. Separate calibration costs remain in the campaign record. Full view used its disclosed larger input budget. These are single development runs, not repeated estimates of a general quality difference.
+
+The aggregate recovered the active refund approval code and the required callback recall. It lost correctness on the credit arithmetic, claimed an unproved ticket delivery, and reused an earlier shipment estimate for a replacement. All arms frequently omitted required fresh lookups and missed reopened work. Correct facts alone do not count as completed work. Excluding the predeclared protocol-sensitive g06 leaves correct content at 15/23, 13/23, and 14/23, and complete work at 3/23, 2/23, and 2/23. Under the narrower per-goal tool lists, compliance is 17/23, 18/23, and 16/23; those lists do not waive system requirements.
+
+Maintained summaries reached the agent on 14/24 aggregate goals, and the initial records/aggregate selection and gauge matched. The recorded strict refusal includes obsolete-identifier pattern checks and later per-goal scale deviations. Independent examination found the flagged identifiers in summary ID lists: the ticket list is ambiguous, while the approval-code prose explicitly retires the old value. Those flags do not establish harmful obsolete assertions. A separate source-contract check found that the later cross-arm scale gate conflicts with the plan, which permits later adaptive gauge differences. These findings change neither the historical refusal nor the blind answer grades; the qualification criterion needs a bounded correction before an adoption claim. See [the sealed Gemma comparison and retained diagnostic](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-g2-quality/README.md).
 
 ## Qwen 3.5 2B, thinking disabled
 
@@ -32,14 +48,16 @@ L14 has frozen all eight decision-mode configurations and completed its fixed ca
 | Gemma 2B | true | Pending | Pending | Pending |
 | Gemma 4B | false | Pending | Pending | Pending |
 | Gemma 4B | true | Pending | Pending | Pending |
-| Qwen 4B | false | Pending | Pending | Pending |
+| Qwen 4B | false | Complete | Operational failure at g23 | First pilot prepared |
 | Qwen 4B | true | Pending | Pending | Pending |
 
 Root adjudication and fixed fits are complete and pushed at `708553ef9`. Gemma 2B passed strict calibration at AGREE 0.59, admitting 112/131 supported occurrences and 21/29 distinct supported identities. Qwen 4B passed at 0.61, admitting 136/154 and 35/43. Qwen 2B and Gemma 4B were refused because their strict cutoffs admitted too few supported summaries; their predeclared exploratory cutoffs are 0.67 and 0.57. These are calibration outcomes, not task-quality wins. See [the calibration evidence and costs](.orkestrel/agent/instruments/results/l14/README.md).
 
 Qwen 2B's resource preparation passed at reserve 512 with a 3072-token window: 381774 ms, 78 requests, 105231 tokens, no unknown usage or model errors. Its full-view preflight stopped at g05 after 182687 ms: Ollama reported an XML parser HTTP 500. The failed preflight retains 20 sent requests, 45980 known tokens, and one request with unknown usage. This is an operational failure, not a measured capacity refusal. Independent analysis and root's emitted-reader check confirm that the frozen continuation rule does not admit this preflight. Qwen's l14 cell remains unresolved. No retry, source amendment, or recalibration follows from this failure.
 
-Gemma 2B completed all 24 goals in every arm. Records used 72328 tokens in 518644 ms; full view used 164065 in 797218 ms; aggregate used 397608 in 1944308 ms. All usage is observed. The aggregate exposed maintained summaries on 14/24 goals and preserved the initial records selection. Strict qualification was refused for three obsolete-identifier request checks and five later per-goal scale deviations; these are distinct from the pending blind answer-quality verdict. The independent auditor has the sealed anonymous 72-goal packet. See [preparation](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md) and [the aggregate run, costs and refusal evidence](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-pilot-report-2.md). No l14 quality verdict or continuous model pair exists yet.
+Gemma's l14 blind comparison is complete; its results are reported earlier in this file. See [preparation](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md) and [the aggregate run, costs and refusal evidence](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-pilot-report-2.md).
+
+Qwen 4B records completed in 524338 ms with 67 sent requests and 82123 tokens. Full view stopped at g23 after 22 emitted goal rows, in 1490075 ms, with 52 sent requests and 148479 tokens. Every sent request has usage. Request 52's capacity endpoint returned HTTP 200 with an empty loaded-model list; the run correctly remains operationally unresolved. The first aggregate pilot is prepared independently from its accepted records resource and strict fit. See [the closed Qwen report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-q4-cell-report.md). No full-view retry is authorized.
 
 The remaining measurements are:
 
@@ -47,7 +65,7 @@ The remaining measurements are:
 - The mandatory continuous long-work records-main-versus-aggregate pair, carrying earlier work and corrections forward without resetting the conversation.
 - Bounded tuning justified by those results, fresh evaluation where tuning changes the method, and the final adoption verdict.
 
-No continuous pair has run. No aggregate integration decision follows from l13 alone.
+No continuous pair has run. The development results do not authorize aggregate integration.
 
 ## Release and workspace
 
