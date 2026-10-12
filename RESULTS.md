@@ -2,7 +2,21 @@
 
 Qwen 2B, Qwen 4B, and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have received blind quality audits. None establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
 
-## Latest: Qwen 3.5 4B, thinking disabled
+## Qwen 3.5 4B, thinking enabled
+
+All l15 arms answered all 24 goals on frozen source. Clean Astra graded 72 anonymous entries before identities were joined. Independent checks passed, and root reviewed every reason against the original scenario without changing a judgment.
+
+| Arm | Correct content | Ambiguous content | Required system actions | Complete work | Run tokens | Duration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Records | 14/24 | 1/24 | 5/24 | 2/24 | 66490 | Selected-attempt duration unavailable |
+| Living aggregate | 14/24 | 1/24 | 5/24 | 2/24 | 345653 | 2086555 ms |
+| Full view | 16/24 | 2/24 | 7/24 | 4/24 | 205408 | 3979016 ms |
+
+Full view also has one ambiguous complete-work result. Records and aggregate received identical verdicts on every goal across all reported axes. Both missed closed work, revived superseded counter hours, added unsupported refund timing, and omitted mandatory fresh lookups. Full view recovered the required Dalia callback and reopened damage claim, but also falsely claimed an external ticket delivery and invented replacement-shipment details. Excluding the predeclared protocol-sensitive g06 leaves correct content at 14/23, 14/23, and 16/23, and complete work at 2/23, 2/23, and 4/23. Narrower per-goal action compliance is 16/23, 16/23, and 17/23; it does not waive the system requirements.
+
+Aggregate passed operational qualification with maintained-summary exposure on 18/24 goals and complete token usage. It used 5.20 times the records tokens and 1.68 times full view, counting every role. Rejected records preparation adds 11748 tokens; combined resource preparation took 706009 ms. Records and aggregate shared window 3584, reserve 1024, and output limit 512. Full view used its larger disclosed input bound. The separate Ollama service remains running at your direction; shared-GPU overlap limits elapsed-time comparisons. This development run establishes no aggregate quality advantage. Thinking-disabled results use different resource settings, so comparing modes does not isolate thinking. See [the sealed thinking-enabled comparison and per-goal reasons](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l15-q4-thinking-quality/README.md).
+
+## Qwen 3.5 4B, thinking disabled
 
 All three l15 arms answered all 24 planned goals after the bounded qualification correction. A clean Astra auditor graded 72 anonymous entries before arm identities were joined. The grades and their source boundaries passed independent mechanical validation; root reviewed every joined reason without changing a grade.
 
@@ -66,14 +80,14 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 The l15 Qwen4 thinking-disabled records and full-view runs each served all 24 goals. Records used 82123 tokens in 559417 ms; full view used 157589 tokens in 1674884 ms, with complete usage and no operational failure. Aggregate emitted 24 goal rows, with summaries exposed on 18, but exited 1 after 3030068 ms because a judge request and a flush request had headers timeouts. Its 343 sent requests used 350266 known tokens, plus unknown usage on those failed requests. Another Ollama service shared the GPU, so elapsed time is confounded. The pilot remains operationally unresolved; it was not retried.
 
-The l15 thinking-disabled blind quality audit is pushed at `bd31e6573`. Thinking-enabled execution completed on that frozen HEAD: records, full view, and aggregate each served all 24 goals. The aggregate passed operational qualification with summaries exposed on 18 goals, 341 requests, 345653 tokens, and complete usage. Its duration was 2086555 ms. Clean Astra is grading the combined anonymous packet; answer quality remains unruled. The separate service shared the GPU during full view and remains running at the user's direction, so elapsed times are not isolated speed measurements. Gemma4 fixed generation follows the evidence checkpoint while blind grading continues.
+The l15 thinking-disabled blind quality audit is pushed at `bd31e6573`, and thinking-enabled execution evidence is pushed at `26549dc37`. The thinking-enabled quality audit is accepted and retained. Gemma4 fixed calibration generation has closed: 179 items, complete source coverage, no generation errors or missing usage. Its anonymized support audit is running; records/full/aggregate goal runs follow its independently labeled fit. Qwen2 generation is next while that audit proceeds. Temporary evidence-reader errors were corrected against the existing emitted contract without another model run. The separate service remains running at your direction. No additional harness audit or rebuild precedes measurement.
 
 The current l15 goal-run status is:
 
 | Decision model | Thinking | Records | Full view | Aggregate |
 | --- | --- | --- | --- | --- |
-| Qwen 4B | false | Complete | Complete | All answers; operational failure |
-| Qwen 4B | true | Complete | Complete | Complete; blind audit running |
+| Qwen 4B | false | Complete; graded | Complete; graded | All answers graded; operational failure |
+| Qwen 4B | true | Complete; graded | Complete; graded | Complete; graded |
 | Gemma 4B | false | Pending | Pending | Pending |
 | Gemma 4B | true | Pending | Pending | Pending |
 | Qwen 2B | false | Pending | Pending | Pending |
