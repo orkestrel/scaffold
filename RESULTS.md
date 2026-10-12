@@ -2,7 +2,7 @@
 
 Qwen 2B, Qwen 4B, and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have received blind quality audits. None establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
 
-Gemma2 calibration generation completed on checkpoint `1491e6b2b`: 174 candidates, complete context coverage, and no generation errors or missing usage. Independent anonymous support labeling is underway. Qwen2's corrected offline fit refuses strict admission: cutoff 0.93 admits 0/113 supported occurrences and 0/29 distinct supported summaries; its separate exploratory cutoff is 0.68. Gemma4's exploratory cutoff is 0.61. The next live measurement is Gemma4 records, followed by full view and the exploratory aggregate. The separate Ollama service remains running at your direction; shared GPU use limits timing comparisons.
+Gemma4 thinking-disabled records and full view completed on checkpoint `4acb51125`. Records used 85364 tokens in 762618 ms; full view used 167761 tokens in 1563743 ms. Both completed 24 goals with complete usage and no execution failure. Their automatic goal checks do not establish answer quality. The exploratory aggregate is next, followed by a blind audit of the triplet. Gemma2 passed strict calibration at cutoff 0.59: 112/132 supported occurrences and 21/30 distinct supported summaries admitted. Its offline fit exited 0 in 2549 ms, with no added model calls. Qwen2's strict cutoff 0.93 admits 0/113 supported occurrences and 0/29 distinct supported summaries; its exploratory cutoff is 0.68. Gemma4's exploratory cutoff is 0.61. The separate Ollama service remains running at your direction; shared GPU use limits timing comparisons.
 
 ## Qwen 3.5 4B, thinking enabled
 
@@ -84,7 +84,7 @@ The l15 Qwen4 thinking-disabled records and full-view runs each served all 24 go
 
 The l15 Qwen4 quality audits, Gemma4 generation and strict refusal, and Qwen2 generation are pushed through `1491e6b2b`. Gemma4's accepted labels contain 136 supported, 15 contradicted, and 28 ambiguous occurrences. Strict cutoff 0.79 admits only 36/136 supported occurrences and 6/36 distinct supported summaries. Qwen2's accepted labels contain 113 supported, 11 unsupported, 21 contradicted, and 23 ambiguous occurrences; corrected fit-2 preserves the strict refusal. Root's earlier wrong-model caller attempt is retained separately. See [the Qwen2 fit and exploratory execution ruling](.orkestrel/agent/instruments/results/l15/custody/q2-fit-and-exploratory-route/README.md).
 
-Gemma2 generation closed without a cap in 1126851 ms; its generation stage took 1114591 ms. Saved-evidence validation accepted 174 items over all 162 contexts with complete usage totaling 246376 calibration tokens. Its anonymous support labels remain independent and unaccepted until review closes. See [the Gemma2 generation evidence](.orkestrel/agent/instruments/results/l15/custody/g2-generation/README.md). The existing development route can run Gemma4 and Qwen2 exploratory comparisons after their preparation checks; it changes no harness code or qualification rule. Accepted records/full preparation can supply the baseline answers after custody and pairing checks, preserving all goals and any continuation-policy difference. No broad harness audit precedes measurement.
+Gemma2 generation closed without a cap in 1126851 ms; its generation stage took 1114591 ms. Saved-evidence validation accepted 174 items over all 162 contexts with complete usage totaling 246376 calibration tokens. Support adjudication and strict calibration are accepted; see [the retained fit and Gemma4 records result](.orkestrel/agent/instruments/results/l15/custody/g2-fit-and-g4-resource/README.md). The existing development route can run Gemma4 and Qwen2 exploratory comparisons after their preparation checks; it changes no harness code or qualification rule. Accepted records/full preparation can supply the baseline answers after custody and pairing checks, preserving all goals and any continuation-policy difference. No broad harness audit precedes measurement.
 
 The current l15 goal-run status is:
 
@@ -92,7 +92,7 @@ The current l15 goal-run status is:
 | --- | --- | --- | --- | --- |
 | Qwen 4B | false | Complete; graded | Complete; graded | All answers graded; operational failure |
 | Qwen 4B | true | Complete; graded | Complete; graded | Complete; graded |
-| Gemma 4B | false | Pending | Pending | Pending |
+| Gemma 4B | false | Complete; awaiting blind grading | Running | Pending |
 | Gemma 4B | true | Pending | Pending | Pending |
 | Qwen 2B | false | Pending | Pending | Pending |
 | Qwen 2B | true | Pending | Pending | Pending |
