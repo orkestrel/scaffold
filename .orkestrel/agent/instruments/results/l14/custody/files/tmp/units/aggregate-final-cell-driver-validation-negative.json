@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+    "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+    "q9-think0"
+  ],
+  "exit": 1,
+  "signal": null,
+  "stdout": "",
+  "stderr": "Error: usage: aggregate-final-cell-driver.ts q4-think0|q4-think1|g2-think1|g4-think0|g4-think1|q2-think1 [--live]\n",
+  "unchanged": true
+}

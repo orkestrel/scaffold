@@ -1,0 +1,96 @@
+{
+  "driver": "feef1e8b51e5fa21b46f6be74d11b5f5fb0533e3e4027a6bcc0ea4df8b5f050c",
+  "results": [
+    {
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+        "q4-think0"
+      ],
+      "exit": 0,
+      "signal": null,
+      "wall": 1207,
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-plan-q4-think0-2.json",
+      "hash": "6410adb67855e29237c7c036f2356663a95174d84c950e4967981f305add8079",
+      "unchanged": true
+    },
+    {
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+        "q4-think1"
+      ],
+      "exit": 0,
+      "signal": null,
+      "wall": 1180,
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-plan-q4-think1-2.json",
+      "hash": "07fb035c63d00cd8c65ebc943d654c3bf5b6ee5a55ed4c9e8dd47ccbf06e711a",
+      "unchanged": true
+    },
+    {
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+        "g2-think1"
+      ],
+      "exit": 0,
+      "signal": null,
+      "wall": 1207,
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-plan-g2-think1-2.json",
+      "hash": "f279c410dbc36725bf0b38f92d017f0cdfc6334bc975e88fe47f3779b8008140",
+      "unchanged": true
+    },
+    {
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+        "g4-think0"
+      ],
+      "exit": 0,
+      "signal": null,
+      "wall": 1201,
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-plan-g4-think0-2.json",
+      "hash": "f1242eed07bd759fac020909b09398d9fedc73ad22e0fd9387226d82c961be24",
+      "unchanged": true
+    },
+    {
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+        "g4-think1"
+      ],
+      "exit": 0,
+      "signal": null,
+      "wall": 1178,
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-plan-g4-think1-2.json",
+      "hash": "c2800567f805f5cdde64124bbc2254a5d6870a2e0806e6504e98236d7a0e1104",
+      "unchanged": true
+    },
+    {
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+        "q2-think1"
+      ],
+      "exit": 0,
+      "signal": null,
+      "wall": 1170,
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-plan-q2-think1-2.json",
+      "hash": "677fa06a83e5550499257203ba859ae821b14468f9efad3b231fc29af4e62940",
+      "unchanged": true
+    }
+  ],
+  "negative": {
+    "argv": [
+      "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+      "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+      "q9-think0"
+    ],
+    "exit": 1,
+    "signal": null,
+    "stdout": "",
+    "stderr": "Error: usage: aggregate-final-cell-driver.ts q4-think0|q4-think1|g2-think1|g4-think0|g4-think1|q2-think1 [--live]\n",
+    "unchanged": true
+  },
+  "inference": 0
+}

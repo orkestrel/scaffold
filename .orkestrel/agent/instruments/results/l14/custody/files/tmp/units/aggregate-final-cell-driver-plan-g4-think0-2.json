@@ -1,0 +1,147 @@
+{
+  "cell": "g4-think0",
+  "live": false,
+  "frozen": {
+    "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\freeze\\manifest.json",
+    "hash": "70d5494d1152f49c1fad9f214fa03b887c77e3940c38c394b005ebe86d5f50a4"
+  },
+  "build": {
+    "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\harness\\.build\\build-manifest.json",
+    "hash": "d361e9d8ec607ae7e21bcee966904effa2be9a0ccaa972eef8d25b540e977c54"
+  },
+  "deployment": {
+    "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-daemon-deployment.json",
+    "hash": "c20472169bc4a0767cfa9882d7674825d84fa4be338b9bab1de386425c743eed"
+  },
+  "admission": "no pilot; exploratory development requires separate root admission",
+  "sequence": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-g4-think0-sequence.jsonl",
+  "paths": [
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-g4-think0-sequence.jsonl",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\resource",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.jsonl",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.err",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.jsonl.pid",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.jsonl.status-before.txt",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.jsonl.status-after.txt",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\full",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.jsonl",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.err",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.jsonl.pid",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.jsonl.status-before.txt",
+      "absent": true
+    },
+    {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.jsonl.status-after.txt",
+      "absent": true
+    }
+  ],
+  "commands": [
+    {
+      "stage": "resource",
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\resource",
+      "journal": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.jsonl",
+      "errors": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.err",
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.agents\\skills\\orkestrel-dispatch\\scripts\\launch.ts",
+        "--journal",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.jsonl",
+        "--errors",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-resource.err",
+        "--cap",
+        "7200",
+        "--status",
+        "--",
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\harness\\.build\\bench5\\matrix.js",
+        "resource",
+        "--frozen",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\freeze\\manifest.json",
+        "--out",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\resource",
+        "--live"
+      ]
+    },
+    {
+      "stage": "full",
+      "out": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\full",
+      "journal": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.jsonl",
+      "errors": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.err",
+      "argv": [
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.agents\\skills\\orkestrel-dispatch\\scripts\\launch.ts",
+        "--journal",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.jsonl",
+        "--errors",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-full.err",
+        "--cap",
+        "7200",
+        "--status",
+        "--",
+        "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\harness\\.build\\bench5\\matrix.js",
+        "full",
+        "--frozen",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\freeze\\manifest.json",
+        "--resource",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\resource\\manifest.json",
+        "--out",
+        "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\g4-think0\\full",
+        "--live"
+      ]
+    }
+  ],
+  "outer": {
+    "cap": 25920,
+    "argv": [
+      "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+      "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.agents\\skills\\orkestrel-dispatch\\scripts\\launch.ts",
+      "--journal",
+      "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-g4-think0-live.jsonl",
+      "--errors",
+      "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver-g4-think0-live.err",
+      "--cap",
+      "25920",
+      "--status",
+      "--",
+      "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+      "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\aggregate-final-cell-driver.ts",
+      "g4-think0",
+      "--live"
+    ]
+  }
+}

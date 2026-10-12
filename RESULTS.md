@@ -22,16 +22,24 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 The repaired measurement code is pushed at `5b9935430`. Independent review and scoped checks passed, including the complete exploratory runtime fixture in 2137628 ms; the canonical live build preserves all 624 tested output hashes. Actual Claude Opus 5.5 and independent Astra analysis informed [the accepted direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-comparison-completion-direction.md). Strict qualification and adoption requirements remain unchanged. See [the repair decision and failed-gate measurements](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-repair.md).
 
-L14 has frozen all eight decision-mode configurations. Its fixed calibration generations have these statuses; these are support-calibration measurements, not task-quality results.
+L14 has frozen all eight decision-mode configurations and completed its fixed calibration generations and independent labels. The actual goal-run status is:
 
-| Summarizer | Generation | Opaque items | Independent labels |
-| --- | --- | ---: | --- |
-| Qwen 2B | Closed, 594801 ms | 168 | Written; mechanical checks passed |
-| Gemma 2B | Closed, 1155940 ms | 174 | Written; mechanical checks passed |
-| Gemma 4B | Closed, 1456410 ms | 179 | Written; mechanical checks passed |
-| Qwen 4B | Closed, 1281189 ms | 171 | Written; mechanical checks passed |
+| Decision model | Thinking | Records preparation | Full-view preparation | Aggregate |
+| --- | --- | --- | --- | --- |
+| Qwen 2B | false | Accepted | Operational failure at g05 | Admission blocked |
+| Qwen 2B | true | Pending | Pending | Pending |
+| Gemma 2B | false | Accepted | Accepted | Pilot prepared |
+| Gemma 2B | true | Pending | Pending | Pending |
+| Gemma 4B | false | Pending | Pending | Pending |
+| Gemma 4B | true | Pending | Pending | Pending |
+| Qwen 4B | false | Pending | Pending | Pending |
+| Qwen 4B | true | Pending | Pending | Pending |
 
-Root adjudication and fixed fits are complete. Gemma 2B passed strict calibration at AGREE 0.59, admitting 112/131 supported occurrences and 21/29 distinct supported identities. Qwen 4B passed at 0.61, admitting 136/154 and 35/43. Qwen 2B and Gemma 4B were refused because their strict cutoffs admitted too few supported summaries; their predeclared exploratory cutoffs are 0.67 and 0.57. These are calibration outcomes, not task-quality wins. See [the calibration evidence and costs](.orkestrel/agent/instruments/results/l14/README.md). Qwen 2B resource/full preparation is next. No l14 quality verdict or continuous model pair exists yet.
+Root adjudication and fixed fits are complete and pushed at `708553ef9`. Gemma 2B passed strict calibration at AGREE 0.59, admitting 112/131 supported occurrences and 21/29 distinct supported identities. Qwen 4B passed at 0.61, admitting 136/154 and 35/43. Qwen 2B and Gemma 4B were refused because their strict cutoffs admitted too few supported summaries; their predeclared exploratory cutoffs are 0.67 and 0.57. These are calibration outcomes, not task-quality wins. See [the calibration evidence and costs](.orkestrel/agent/instruments/results/l14/README.md).
+
+Qwen 2B's resource preparation passed at reserve 512 with a 3072-token window: 381774 ms, 78 requests, 105231 tokens, no unknown usage or model errors. Its full-view preflight stopped at g05 after 182687 ms: Ollama reported an XML parser HTTP 500. The failed preflight retains 20 sent requests, 45980 known tokens, and one request with unknown usage. This is an operational failure, not a measured capacity refusal. Independent analysis and root's emitted-reader check confirm that the frozen continuation rule does not admit this preflight. Qwen's l14 cell remains unresolved. No retry, source amendment, or recalibration follows from this failure.
+
+Gemma 2B's records preparation passed at reserve 512 and window 3072 in 518644 ms: 67 requests and 72328 tokens. Its full-view run completed all 24 goals in 797218 ms: 55 requests and 164065 tokens. Both have complete usage and no model errors; emitted validators accepted the runs and confirmed the full-view bound. The aggregate pilot follows on the same frozen configuration. These are completed runs awaiting blind quality comparison; no l14 quality verdict or continuous model pair exists yet. See [the retained preparation report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md).
 
 The remaining measurements are:
 
