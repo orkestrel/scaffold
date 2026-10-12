@@ -406,7 +406,9 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 	if (values.think !== undefined && values.think !== 'true' && values.think !== 'false')
 		problems.push('--think must be true or false')
 	const think =
-		values.think === undefined ? (bound?.execution.think ?? false) : values.think === 'true'
+		values.think === undefined
+			? (study?.execution.think ?? bound?.execution.think ?? false)
+			: values.think === 'true'
 	const reserve =
 		values.reserve === undefined
 			? (study?.execution.budget.reserve ?? bound?.execution.budget.reserve ?? 512)
@@ -450,7 +452,7 @@ export function parseFlags(argv: readonly string[]): ConfigOutcome {
 		(values.copy !== undefined ||
 			model !== study.frozen.decision.model ||
 			arm !== study.execution.arm ||
-			think ||
+			think !== study.execution.think ||
 			reserve !== study.execution.budget.reserve ||
 			(mode === 'seed') !== (study.execution.phase === 'filing') ||
 			mode === 'dry')
@@ -838,7 +840,33 @@ export class Driver {
 			)
 				throw new Error('effective development configuration differs from frozen execution')
 		}
-		if (this.#config.studyPath !== undefined) readSustainedExecution(this.#config.studyPath)
+		if (config.study?.directed !== undefined && config.studyPath === undefined)
+			throw new Error('directed execution requires its exact study file')
+		if (config.studyPath !== undefined) {
+			const study = readSustainedExecution(config.studyPath)
+			if (
+				study.execution.directed !== undefined &&
+				(!isDeepStrictEqual(config.study, study.execution) ||
+					!isDeepStrictEqual(config.frozen, study.frozen) ||
+					!isDeepStrictEqual(config.runtime, study.runtime) ||
+					config.think !== study.execution.think ||
+					config.arm !== study.execution.arm ||
+					config.key !== study.execution.key ||
+					config.model !== study.frozen.decision.model ||
+					config.copy !== 1 ||
+					config.goals.length !== 0 ||
+					config.reserve !== study.execution.budget.reserve ||
+					config.settings !== study.frozen.settings.path ||
+					(study.execution.fit !== undefined && config.fit !== study.execution.fit.path) ||
+					config.allowance !== undefined ||
+					config.retry !== undefined ||
+					config.predict !== undefined ||
+					config.execution !== undefined ||
+					(config.mode === 'seed') !== (study.execution.phase === 'filing') ||
+					config.mode === 'dry')
+			)
+				throw new Error('effective directed configuration differs from frozen execution')
+		}
 		const prepared = this.#prepare()
 		const failed = prepared.checks.filter((check) => !check.equal)
 		if (this.#config.mode === 'dry') return await this.#dry(prepared, failed)

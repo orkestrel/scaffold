@@ -1,5 +1,5 @@
 import type { RefitFile } from '../../refit/types.js'
-import type { SustainedPreparation, SustainedSelection } from '../types.js'
+import type { SustainedPreparation, SustainedSelection, SustainedDirected } from '../types.js'
 import type { SustainedAuditInput, SustainedAuditPaths, SustainedKeys } from './types.js'
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -15,6 +15,7 @@ import { Packet } from './Packet.js'
 import { SustainedAuditError } from './errors.js'
 import { collectPreparations, verifyAuditIdentity, verifyOracleCustody } from './helpers.js'
 import { isSustainedKeys, isSustainedLabels } from './validators.js'
+import { readSustainedDirected, readDirectedPreparation } from '../directed/helpers.js'
 
 /** Composes the real shared readers with create-only offline packets and reports. */
 export class Audit {
@@ -29,6 +30,7 @@ export class Audit {
 			allowPositionals: true,
 			options: {
 				selection: { type: 'string' },
+				directed: { type: 'string' },
 				records: { type: 'string' },
 				aggregate: { type: 'string' },
 				oracle: { type: 'string' },
@@ -43,17 +45,19 @@ export class Audit {
 		if (
 			positionals.length !== 1 ||
 			(positionals[0] !== 'blind' && positionals[0] !== 'report') ||
-			values.selection === undefined ||
+			(values.selection === undefined) === (values.directed === undefined) ||
 			values.out === undefined
 		)
 			throw new SustainedAuditError(
 				'usage: sustained-audit.js blind|report --selection FILE --out FILE; accepted selections require --records DIR --aggregate DIR --oracle FILE and audit arguments',
 			)
 		const audit = new Audit()
-		const reference = hashFile(resolve(values.selection))
-		const selection = readSustainedSelection(reference.path)
+		const reference = hashFile(resolve(values.directed ?? values.selection ?? ''))
+		const directed =
+			values.directed === undefined ? undefined : readSustainedDirected(reference.path).directed
+		const selection = directed === undefined ? readSustainedSelection(reference.path) : undefined
 		const out = resolve(values.out)
-		if (!selection.accepted) {
+		if (selection !== undefined && !selection.accepted) {
 			if (
 				positionals[0] !== 'report' ||
 				values.records !== undefined ||
@@ -86,11 +90,16 @@ export class Audit {
 			throw new SustainedAuditError(
 				'accepted selection requires --records DIR --aggregate DIR --oracle FILE --keys FILE',
 			)
-		const input = audit.#input(selection, reference, {
-			records: resolve(values.records),
-			aggregate: resolve(values.aggregate),
-			oracle: resolve(values.oracle),
-		})
+		const input = audit.#input(
+			selection,
+			reference,
+			{
+				records: resolve(values.records),
+				aggregate: resolve(values.aggregate),
+				oracle: resolve(values.oracle),
+			},
+			directed,
+		)
 		const keys = resolve(values.keys)
 		if (positionals[0] === 'blind') {
 			if (
@@ -104,6 +113,8 @@ export class Audit {
 				throw new SustainedAuditError(
 					'blind requires --seed INTEGER and accepts no packet, labels, or preparation inputs',
 				)
+			if (directed !== undefined && Number(values.seed) !== directed.blind)
+				throw new SustainedAuditError('blind seed differs from directed manifest')
 			audit.#blind(input, Number(values.seed), out, keys, hashFile(resolve(values.oracle)))
 			return 0
 		}
@@ -124,15 +135,19 @@ export class Audit {
 	}
 
 	#input(
-		selection: SustainedSelection,
+		selection: SustainedSelection | undefined,
 		reference: RefitFile,
 		paths: SustainedAuditPaths,
+		directed?: SustainedDirected,
 	): SustainedAuditInput {
 		const records = readSustainedRun(paths.records)
 		const aggregate = readSustainedRun(paths.aggregate)
 		const oracle = readOracle(paths.oracle)
 		const workload = readWorkload(records.execution.runtime)
 		verifyOracleCustody(hashFile(paths.oracle), workload.files)
+		if (directed !== undefined)
+			return { manifest: workload.manifest, directed, reference, records, aggregate, oracle }
+		if (selection === undefined) throw new SustainedAuditError('missing audit admission')
 		return { manifest: workload.manifest, selection, reference, records, aggregate, oracle }
 	}
 
@@ -155,8 +170,10 @@ export class Audit {
 			manifest: input.manifest,
 			packet: hashFile(out),
 			oracle,
-			runtime: input.selection.evaluation,
-			selection: input.reference,
+			runtime: input.directed?.runtime ?? input.records.execution.runtime,
+			...(input.directed === undefined
+				? { selection: input.reference }
+				: { directed: input.reference }),
 			seed,
 			keys: blind.keys,
 		}
@@ -183,7 +200,7 @@ export class Audit {
 			keys.packet,
 			keys.oracle,
 			keys.runtime,
-			keys.selection,
+			...[keys.selection, keys.directed].filter((file): file is RefitFile => file !== undefined),
 			...keys.keys.flatMap((key) => key.files),
 		])
 		verifyAuditIdentity(keys, input, oracle, hashFile(packetPath))
@@ -210,17 +227,25 @@ export class Audit {
 				[input.records.execution.classification, input.aggregate.execution.classification]
 					.filter((file): file is RefitFile => file !== undefined)
 					.map((file) => file.path),
+				input.directed,
 			),
 		})
 		this.#write(out, report)
 	}
 
 	#preparation(
-		selection: SustainedSelection,
+		selection: SustainedSelection | undefined,
 		paths: readonly string[],
 		additional: readonly string[],
+		directed?: SustainedDirected,
 	): readonly SustainedPreparation[] {
 		const references = new Set([...paths.map((path) => resolve(path)), ...additional])
+		if (directed !== undefined)
+			return collectPreparations([
+				...readDirectedPreparation(directed),
+				...[...references].flatMap((path) => readSustainedPreparation(path)),
+			])
+		if (selection === undefined) throw new SustainedAuditError('missing preparation ancestry')
 		const candidates =
 			selection.policy === undefined
 				? selection.candidates

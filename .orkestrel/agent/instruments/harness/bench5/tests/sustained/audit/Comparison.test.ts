@@ -73,6 +73,8 @@ test('positive gains without completed or repaired downstream work remain inconc
 
 test('refuses conditional adoption from exploratory provenance despite every positive quality condition', () => {
 	const input = buildComparisonInput(buildAuditFixture())
+	assert.equal(input.directed, undefined)
+	assert.ok(input.selection)
 	assert.equal(new Comparison().build(input).recommendation, 'conditional')
 	const policy = { ...AUDIT_REFERENCE, path: 'exploratory-policy.json' }
 	const report = new Comparison().build({
@@ -246,6 +248,7 @@ test('aggregate-only critical regression blocks the conditional recommendation',
 
 test('an unaccepted selection needs no fabricated runs, packets, or labels', () => {
 	const fixture = buildAuditFixture()
+	assert.ok(fixture.input.selection)
 	const { chosen: _chosen, ...selection } = fixture.input.selection
 	const report = new Comparison().inconclusive(
 		{ ...selection, accepted: false, failures: ['no feasible candidate'] },
@@ -256,7 +259,7 @@ test('an unaccepted selection needs no fabricated runs, packets, or labels', () 
 	assert.equal(report.labels, undefined)
 	assert.deepEqual(report.costs, [])
 	assert.throws(
-		() => new Comparison().inconclusive(fixture.input.selection, AUDIT_REFERENCE),
+		() => new Comparison().inconclusive({ ...selection, chosen: 'q4' }, AUDIT_REFERENCE),
 		/actual pair/,
 	)
 })

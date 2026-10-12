@@ -43,6 +43,7 @@ import {
 	isSustainedSelection,
 } from './validators.js'
 import { readWorkload } from '../build/helpers.js'
+import { readSustainedDirected } from './directed/helpers.js'
 
 /** Holds the accepted feasibility-only ranking. */
 export const SUSTAINED_RANK = Object.freeze(['q4', 'g4', 'q2', 'g2'])
@@ -120,8 +121,11 @@ export function readSustainedBoundary(
 					: frozen.decision
 		if (!isRecord(request.request) || request.request.model !== role.model)
 			errors.push(`request ${request.sequence}: model role differs`)
-		if (request.role !== 'judge' && (!isRecord(request.request) || request.request.think !== false))
+		const think = request.role === 'agent' && request.goal !== undefined ? execution.think : false
+		if (request.role !== 'judge' && (!isRecord(request.request) || request.request.think !== think))
 			errors.push(`request ${request.sequence}: thinking differs`)
+		if (request.role === 'judge' && isRecord(request.request) && request.request.think === true)
+			errors.push(`request ${request.sequence}: judge thinking differs`)
 		if (
 			request.role === 'summarizer' &&
 			(!isRecord(request.request) ||
@@ -703,14 +707,34 @@ export function readSustainedExecution(path: string): {
 	if (!isSustainedExecution(execution)) throw new Error('invalid e1 execution')
 	verifyFiles([execution.runtime, ...execution.limits.evidence])
 	const frozen = readFrozen(execution.frozen)
-	const resource = readResource(execution.resource, execution.frozen)
-	if (!resource.accepted || !isDeepStrictEqual(resource.budget, execution.budget))
-		throw new Error('e1 resource budget differs from accepted matrix reserve')
+	const directed =
+		execution.directed === undefined
+			? undefined
+			: readSustainedDirected(execution.directed.path).directed
+	if (directed === undefined) {
+		const resource = readResource(execution.resource, execution.frozen)
+		if (!resource.accepted || !isDeepStrictEqual(resource.budget, execution.budget))
+			throw new Error('e1 resource budget differs from accepted matrix reserve')
+	} else {
+		if (execution.directed === undefined) throw new Error('missing directed identity')
+		verifyFiles([execution.directed])
+		if (
+			!isDeepStrictEqual(execution.frozen, directed.frozen) ||
+			!isDeepStrictEqual(execution.runtime, directed.runtime) ||
+			!isDeepStrictEqual(execution.resource, directed.transfer.resource) ||
+			!isDeepStrictEqual(execution.budget, directed.budget) ||
+			!isDeepStrictEqual(execution.limits, directed.limits) ||
+			execution.think !== directed.think ||
+			execution.key !== directed.key ||
+			(execution.phase !== 'filing' && !isDeepStrictEqual(execution.fit, directed.transfer.fit))
+		)
+			throw new Error('execution differs from directed manifest')
+	}
 	const runtime = readRuntime(execution.runtime.path)
 	readWorkload(execution.runtime)
 	if (
 		frozen.key !== execution.key ||
-		frozen.think ||
+		(directed === undefined ? frozen.think : frozen.think !== execution.think) ||
 		!isDeepStrictEqual(execution.budget, buildBudget(execution.budget.reserve)) ||
 		execution.limits.goals !== runtime.goals.length ||
 		execution.limits.retries !== frozen.configuration.retry
@@ -730,7 +754,7 @@ export function readSustainedExecution(path: string): {
 			throw new Error('sealed runtime classification required')
 		readClassification(execution.classification, execution.runtime, execution.frozen)
 		let development = execution.runtime
-		if (execution.phase === 'evaluation') {
+		if (execution.phase === 'evaluation' && directed === undefined) {
 			if (execution.selection === undefined)
 				throw new Error('held-out execution requires frozen selection')
 			verifyFiles([execution.selection])
@@ -766,7 +790,7 @@ export function readSustainedExecution(path: string): {
 					!isDeepStrictEqual(admission.classification, execution.classification))
 			)
 				throw new Error('exploratory sustained execution lacks independent feasible support')
-		} else if (execution.arm === 'aggregate') {
+		} else if (execution.arm === 'aggregate' && directed === undefined) {
 			if (execution.fit === undefined)
 				throw new Error('aggregate execution requires accepted development fit')
 			verifySustainedFit(execution.fit, frozen, development)

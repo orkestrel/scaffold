@@ -36,6 +36,7 @@ import { isMatrixRequest } from '../matrix/validators.js'
 import { isRecord } from '@orkestrel/contract'
 import { readSustainedRun } from './parsers.js'
 import { isSustainedCandidate, isSustainedExploration } from './validators.js'
+import { readSustainedDirected } from './directed/helpers.js'
 
 function write(path: string, value: unknown): void {
 	mkdirSync(dirname(path), { recursive: true })
@@ -104,6 +105,8 @@ export class Sustained {
 				evaluation: { type: 'string' },
 				candidate: { type: 'string', multiple: true },
 				selection: { type: 'string' },
+				directed: { type: 'string' },
+				arm: { type: 'string' },
 				policy: { type: 'string' },
 				exploration: { type: 'string' },
 				refusal: { type: 'string' },
@@ -121,6 +124,50 @@ export class Sustained {
 		const out = resolve(values.out)
 		if (existsSync(out)) throw new Error('phase output already exists; evidence cannot restart')
 		const runner = new Sustained()
+		if (values.directed !== undefined) {
+			if (
+				!values.live ||
+				(phase !== 'filing' && phase !== 'evaluate') ||
+				Object.entries(values).some(
+					([key, value]) =>
+						value !== undefined &&
+						value !== false &&
+						!['directed', 'out', 'url', 'live', 'classification', 'arm'].includes(key),
+				) ||
+				(phase === 'filing'
+					? values.classification !== undefined || values.arm !== undefined
+					: values.classification === undefined ||
+						(values.arm !== 'records' && values.arm !== 'aggregate'))
+			)
+				throw new Error(
+					'directed phases refuse identity overrides; evaluate requires --classification and --arm records|aggregate',
+				)
+			const reference = hashFile(resolve(values.directed))
+			const { directed } = readSustainedDirected(reference.path)
+			const execution: SustainedExecution = {
+				protocol: 'e1',
+				key: directed.key,
+				think: directed.think,
+				arm: values.arm === 'aggregate' ? 'aggregate' : 'records',
+				phase: phase === 'filing' ? 'filing' : 'evaluation',
+				frozen: directed.frozen,
+				resource: directed.transfer.resource,
+				runtime: directed.runtime,
+				budget: directed.budget,
+				limits: directed.limits,
+				directed: reference,
+				...(phase === 'filing'
+					? {}
+					: {
+							classification: hashFile(resolve(values.classification ?? '')),
+							fit: directed.transfer.fit,
+						}),
+			}
+			if (phase === 'filing') return await runner.#filing(execution, out, values.url)
+			const attempt = await runner.#attempt(execution, out, values.url)
+			return attempt.accepted ? 0 : 3
+		}
+		if (values.arm !== undefined) throw new Error('--arm requires --directed')
 		if (phase === 'policy') {
 			if (values.selection === undefined)
 				throw new Error('policy requires a refused qualified --selection')

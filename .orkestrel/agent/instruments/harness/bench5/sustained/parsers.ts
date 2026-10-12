@@ -322,7 +322,8 @@ export function readSustainedRun(path: string): SustainedReading {
 		)
 		files.push(execution.classification, classification.cache, ...classification.files)
 	}
-	for (const file of [execution.fit, execution.selection]) if (file !== undefined) files.push(file)
+	for (const file of [execution.fit, execution.selection, execution.directed])
+		if (file !== undefined) files.push(file)
 	return {
 		path,
 		execution,

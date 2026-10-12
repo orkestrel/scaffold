@@ -10,8 +10,10 @@ import type {
 	SustainedObservation,
 	SustainedReceipt,
 	SustainedSelection,
+	SustainedDirected,
+	SustainedTransfer,
 } from './types.js'
-import { arrayOf, isRecord, isString } from '@orkestrel/contract'
+import { arrayOf, attempt, isRecord, isString } from '@orkestrel/contract'
 import { isRefitFile } from '../refit/validators.js'
 import { isMatrixBudget } from '../matrix/validators.js'
 
@@ -56,6 +58,55 @@ export function isSustainedLimits(value: unknown): value is SustainedLimits {
 	)
 }
 
+/** Checks the exact retained transfer envelope.
+ * @param value - Untrusted transfer
+ * @returns True if its complete shape is valid; false otherwise
+ */
+export function isSustainedTransfer(value: unknown): value is SustainedTransfer {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			Object.keys(value).length === 8 &&
+			['receipt', 'historical', 'resource', 'fit', 'diagnosis', 'review'].every((key) =>
+				isRefitFile(value[key]),
+			) &&
+			isString(value.archive) &&
+			value.archive.length > 0 &&
+			arrayOf(isRefitFile)(value.changes),
+	)
+	return result.success && result.value
+}
+
+/** Checks an explicit directed comparison and refuses selection-shaped extra fields.
+ * @param value - Untrusted manifest
+ * @returns True if the complete directed contract is present; false otherwise
+ */
+export function isSustainedDirected(value: unknown): value is SustainedDirected {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			Object.keys(value).length === 12 &&
+			value.protocol === 'e1' &&
+			value.authority === 'user-directed' &&
+			value.key === 'q4' &&
+			typeof value.think === 'boolean' &&
+			isRefitFile(value.frozen) &&
+			isRefitFile(value.runtime) &&
+			isMatrixBudget(value.budget) &&
+			Object.keys(value.budget).length === 4 &&
+			isSustainedLimits(value.limits) &&
+			Object.keys(value.limits).length === 7 &&
+			value.seed === 18 &&
+			Array.isArray(value.order) &&
+			value.order.length === 2 &&
+			value.order[0] === 'records' &&
+			value.order[1] === 'aggregate' &&
+			value.blind === (value.think ? 31 : 29) &&
+			isSustainedTransfer(value.transfer),
+	)
+	return result.success && result.value
+}
+
 /** Checks an explicit continuous execution without accepting copy axes or hidden data. */
 export function isSustainedExecution(value: unknown): value is SustainedExecution {
 	return (
@@ -77,11 +128,19 @@ export function isSustainedExecution(value: unknown): value is SustainedExecutio
 				'selection',
 				'policy',
 				'exploration',
+				'directed',
 			].includes(key),
 		) &&
 		value.protocol === 'e1' &&
 		isString(value.key) &&
-		value.think === false &&
+		(value.directed === undefined
+			? value.think === false
+			: typeof value.think === 'boolean' &&
+				isRefitFile(value.directed) &&
+				value.phase !== 'development' &&
+				value.selection === undefined &&
+				value.policy === undefined &&
+				value.exploration === undefined) &&
 		(value.arm === 'records' || value.arm === 'aggregate') &&
 		['filing', 'development', 'evaluation'].includes(String(value.phase)) &&
 		isRefitFile(value.frozen) &&

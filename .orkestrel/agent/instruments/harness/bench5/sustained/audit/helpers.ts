@@ -45,8 +45,13 @@ export function verifyAuditIdentity(
 	if (
 		!isDeepStrictEqual(keys.manifest, input.manifest) ||
 		!isDeepStrictEqual(keys.oracle, oracle) ||
-		!isDeepStrictEqual(keys.runtime, input.selection.evaluation) ||
-		!isDeepStrictEqual(keys.selection, input.reference) ||
+		!isDeepStrictEqual(keys.runtime, input.directed?.runtime ?? input.selection?.evaluation) ||
+		!isDeepStrictEqual(
+			input.directed === undefined ? keys.selection : keys.directed,
+			input.reference,
+		) ||
+		(input.directed === undefined ? keys.directed !== undefined : keys.selection !== undefined) ||
+		(input.directed !== undefined && keys.seed !== input.directed.blind) ||
 		!isDeepStrictEqual(keys.packet, packet)
 	)
 		throw new SustainedAuditError(

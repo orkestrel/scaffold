@@ -74,17 +74,29 @@ export class Packet {
 	}
 
 	#verify(input: SustainedAuditInput): void {
-		if (!input.selection.accepted || input.selection.chosen === undefined)
+		if (
+			input.directed === undefined &&
+			(!input.selection.accepted || input.selection.chosen === undefined)
+		)
 			throw new SustainedAuditError('blind audit requires an accepted feasibility selection')
 		if (input.records.execution.arm !== 'records' || input.aggregate.execution.arm !== 'aggregate')
 			throw new SustainedAuditError('pair arms differ')
 		for (const run of [input.records, input.aggregate]) {
 			if (
 				run.execution.phase !== 'evaluation' ||
-				run.execution.key !== input.selection.chosen ||
-				run.execution.think ||
-				!isDeepStrictEqual(run.execution.selection, input.reference) ||
-				!isDeepStrictEqual(run.execution.runtime, input.selection.evaluation)
+				run.execution.key !== (input.directed?.key ?? input.selection?.chosen) ||
+				run.execution.think !== (input.directed?.think ?? false) ||
+				!isDeepStrictEqual(
+					input.directed === undefined ? run.execution.selection : run.execution.directed,
+					input.reference,
+				) ||
+				(input.directed === undefined
+					? run.execution.directed !== undefined
+					: run.execution.selection !== undefined) ||
+				!isDeepStrictEqual(
+					run.execution.runtime,
+					input.directed?.runtime ?? input.selection?.evaluation,
+				)
 			)
 				throw new SustainedAuditError('run differs from selected evaluation custody')
 			const failures = inspectOracle(run.runtime, input.oracle)

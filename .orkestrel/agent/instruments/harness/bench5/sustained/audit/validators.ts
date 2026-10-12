@@ -6,7 +6,7 @@ import type {
 	SustainedLabels,
 	SustainedObligationLabel,
 } from './types.js'
-import { arrayOf, attempt, isString } from '@orkestrel/contract'
+import { arrayOf, attempt, isString, isRecord } from '@orkestrel/contract'
 import { isExact } from '../../endurance/validators.js'
 import { isRefitFile } from '../../refit/validators.js'
 
@@ -118,13 +118,14 @@ export function isSustainedKey(value: unknown): value is SustainedKey {
 export function isSustainedKeys(value: unknown): value is SustainedKeys {
 	const result = attempt(
 		() =>
+			isRecord(value) &&
 			isExact(value, [
 				'protocol',
 				'manifest',
 				'packet',
 				'oracle',
 				'runtime',
-				'selection',
+				value.directed === undefined ? 'selection' : 'directed',
 				'seed',
 				'keys',
 			]) &&
@@ -133,7 +134,7 @@ export function isSustainedKeys(value: unknown): value is SustainedKeys {
 			isRefitFile(value.packet) &&
 			isRefitFile(value.oracle) &&
 			isRefitFile(value.runtime) &&
-			isRefitFile(value.selection) &&
+			isRefitFile(value.directed ?? value.selection) &&
 			typeof value.seed === 'number' &&
 			Number.isSafeInteger(value.seed) &&
 			arrayOf(isSustainedKey)(value.keys),

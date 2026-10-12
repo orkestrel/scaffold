@@ -64,7 +64,7 @@ export class Comparison {
 	 * @returns The quality, exposure, continuity, and cost comparison
 	 */
 	build(input: SustainedComparisonInput): SustainedReport {
-		if (!input.selection.accepted)
+		if (input.directed === undefined && !input.selection.accepted)
 			throw new SustainedAuditError('refused selection cannot carry scored runs')
 		const failures = [
 			...input.records.failures.map((failure) => `records: ${failure}`),
@@ -127,12 +127,12 @@ export class Comparison {
 				'A conservative gain with completed or repaired downstream work is absent overall or in the final interval.',
 			)
 		let recommendation: SustainedReport['recommendation'] = 'inconclusive'
-		if (input.selection.policy !== undefined)
+		if (input.selection?.policy !== undefined)
 			reasons.push(
 				'Exploratory provenance does not qualify support or permit an adoption recommendation.',
 			)
 		if (
-			input.selection.policy === undefined &&
+			input.selection?.policy === undefined &&
 			valid &&
 			intervals.every((interval) => interval.exposure.majority)
 		) {
@@ -148,8 +148,10 @@ export class Comparison {
 		const aggregate = measureAuditCosts(input.aggregate)
 		return {
 			protocol: 'e1',
-			policy: input.selection.policy,
-			selection: input.reference,
+			policy: input.selection?.policy,
+			...(input.directed === undefined
+				? { selection: input.reference }
+				: { directed: input.reference, transfer: input.directed.transfer }),
 			packet: input.packet,
 			labels: input.labels,
 			valid,
@@ -184,7 +186,11 @@ export class Comparison {
 			preparation: input.preparation,
 			recommendation,
 			reasons,
-			limitation: SUSTAINED_LIMITATION,
+			limitation:
+				SUSTAINED_LIMITATION +
+				(input.directed === undefined
+					? ''
+					: ' User-directed comparison uses transferred fixed matrix support calibration, not scenario-specific sustained calibration or ranked qualification. Requested thinking applies only to actual goal decisions; calibration, flush, summarizer, and judge remain non-thinking. Budgets differ between thinking modes. Shared GPU load and serial records-first order limit timing attribution. Root owns the scoped adoption verdict.'),
 		}
 	}
 

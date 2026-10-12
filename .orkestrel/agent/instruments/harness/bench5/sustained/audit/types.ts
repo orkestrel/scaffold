@@ -7,7 +7,14 @@ import type {
 } from '../../endurance/types.js'
 import type { MatrixCosts, MatrixRequest } from '../../matrix/types.js'
 import type { RefitFile } from '../../refit/types.js'
-import type { SustainedArm, SustainedReceipt, SustainedRun, SustainedSelection } from '../types.js'
+import type {
+	SustainedArm,
+	SustainedReceipt,
+	SustainedRun,
+	SustainedSelection,
+	SustainedDirected,
+	SustainedTransfer,
+} from '../types.js'
 
 /** Names an independently adjudicated atomic outcome without lexical acceptance. */
 export type SustainedVerdict = 'pass' | 'fail' | 'ambiguous'
@@ -66,7 +73,8 @@ export interface SustainedKeys {
 	readonly packet: RefitFile
 	readonly oracle: RefitFile
 	readonly runtime: RefitFile
-	readonly selection: RefitFile
+	readonly selection?: RefitFile
+	readonly directed?: RefitFile
 	readonly seed: number
 	readonly keys: readonly SustainedKey[]
 }
@@ -148,7 +156,9 @@ export interface SustainedInterval {
 export interface SustainedReport {
 	readonly policy?: RefitFile
 	readonly protocol: 'e1'
-	readonly selection: RefitFile
+	readonly selection?: RefitFile
+	readonly directed?: RefitFile
+	readonly transfer?: SustainedTransfer
 	readonly packet?: RefitFile
 	readonly labels?: RefitFile
 	readonly valid: boolean
@@ -200,14 +210,16 @@ export interface SustainedCostDetail {
 }
 
 /** Holds the validated pair and the separately checked private truth. */
-export interface SustainedAuditInput {
+export type SustainedAuditInput = {
 	readonly manifest: RefitFile
-	readonly selection: SustainedSelection
 	readonly reference: RefitFile
 	readonly records: SustainedRun
 	readonly aggregate: SustainedRun
 	readonly oracle: EnduranceOracle
-}
+} & (
+	| { readonly selection: SustainedSelection; readonly directed?: never }
+	| { readonly directed: SustainedDirected; readonly selection?: never }
+)
 
 /** Holds concrete paths required only for an accepted selection's audit. */
 export interface SustainedAuditPaths {
@@ -243,7 +255,7 @@ export interface SustainedJudgmentInput {
 }
 
 /** Holds report inputs after file custody and root adjudication have been checked. */
-export interface SustainedComparisonInput extends SustainedAuditInput {
+export type SustainedComparisonInput = SustainedAuditInput & {
 	readonly blind: SustainedBlindResult
 	readonly adjudication: SustainedAdjudication
 	readonly packet: RefitFile

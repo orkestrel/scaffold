@@ -54,6 +54,40 @@ export interface SustainedLimits {
 	readonly evidence: readonly RefitFile[]
 }
 
+/** Binds reviewed operator changes to retained pre-edit resource and matrix calibration proof. */
+export interface SustainedTransfer {
+	readonly receipt: RefitFile
+	readonly archive: string
+	readonly historical: RefitFile
+	readonly resource: RefitFile
+	readonly fit: RefitFile
+	readonly diagnosis: RefitFile
+	readonly review: RefitFile
+	readonly changes: readonly RefitFile[]
+}
+
+/** Pairs an original frozen identity with its preserved bytes. */
+export interface SustainedArchive {
+	readonly original: RefitFile
+	readonly retained: RefitFile
+}
+
+/** Freezes a user-directed comparison without claiming ranked feasibility or sustained calibration. */
+export interface SustainedDirected {
+	readonly protocol: 'e1'
+	readonly authority: 'user-directed'
+	readonly key: 'q4'
+	readonly think: boolean
+	readonly frozen: RefitFile
+	readonly runtime: RefitFile
+	readonly budget: MatrixBudget
+	readonly limits: SustainedLimits
+	readonly seed: number
+	readonly order: readonly SustainedArm[]
+	readonly blind: number
+	readonly transfer: SustainedTransfer
+}
+
 /** Binds runtime-only classification evidence to its exact scenario and judge ancestry. */
 export interface SustainedClassification {
 	readonly protocol: 'e1'
@@ -69,7 +103,7 @@ export interface SustainedClassification {
 export interface SustainedExecution {
 	readonly protocol: 'e1'
 	readonly key: string
-	readonly think: false
+	readonly think: boolean
 	readonly arm: SustainedArm
 	readonly phase: 'filing' | 'development' | 'evaluation'
 	readonly frozen: RefitFile
@@ -82,6 +116,7 @@ export interface SustainedExecution {
 	readonly selection?: RefitFile
 	readonly policy?: RefitFile
 	readonly exploration?: SustainedExploration
+	readonly directed?: RefitFile
 }
 
 /** Holds a complete or explicitly refused development trajectory. */
