@@ -1,16 +1,18 @@
 # The context and selection campaign for `@orkestrel/agent`
 
-## User-directed scope and hold — 2026-10-12
+## User-directed scope, resumed — 2026-10-12
 
-Wait for the user to resume. Another session is using Ollama. Start no model workload, daemon replacement, model unload, or service-control operation during this hold. The user canceled the unfinished pilot and the remaining model variations, matrix stages, full-view comparisons, separate judge shadow, and broad tuning campaign. Preserve completed results and partial evidence. Do not execute the superseded instructions that follow this section.
+The user resumed the narrowed comparison. Preserve the other session's Ollama service and workers. The user canceled the unfinished pilot and the remaining model variations, matrix stages, full-view comparisons, separate judge shadow, and broad tuning campaign. Preserve completed results and partial evidence. Do not execute the superseded instructions that follow this section.
 
-After the user resumes, run only the continuous long-work comparison with Qwen4B: records and living aggregate with thinking disabled, then records and living aggregate with thinking enabled. This scope contains four measured trajectories. Use the published Agent0.0.30 records baseline and the implemented aggregate arm. Reuse the verified build, applicable fixed calibration, and existing continuous workload; no further short pilot, model-selection matrix, or extra calibration campaign is a prerequisite authorized by this scope.
+Run only the continuous long-work comparison with Qwen4B: records and living aggregate with thinking disabled, then records and living aggregate with thinking enabled. This scope contains four measured trajectories. Use the published Agent0.0.30 records baseline and the implemented aggregate arm. Reuse the verified mechanism, applicable fixed calibration, and existing continuous workload; no further short pilot, model-selection matrix, or extra calibration campaign is a prerequisite authorized by this scope.
 
 Within each thinking mode, match the starting conversation, workload, tools, sampling settings, and resource constraints. Carry the conversation and work forward without resets. Keep corrected facts, superseded instructions, completed work, and outstanding work in the quality assessment. Disclose any resource-setting difference between thinking modes. Preserve every planned goal, failure, and unfinished outcome.
 
 Grade the replies and actual required actions blind. Compare work quality over the full trajectory and late in the conversation, complete-work outcomes, stale or unsupported claims, aggregate exposure, all-role token costs, and elapsed time. Preserve maintenance and judge costs. A clear sustained quality benefit must justify aggregate overhead; otherwise retain records. Report the limits of the paired observations. Resolve only the operator changes required by this narrower comparison after the hold ends; obsolete matrix or ranked-candidate gates must not silently restore canceled experiments.
 
-The Qwen thinking-disabled pilot-2 client was stopped at the user's request at13:03UTC. This cancellation is not a model failure or configuration refusal. Both Ollama daemons remain running. No continuous comparison has run.
+The Qwen thinking-disabled pilot-2 client was stopped at the user's request at13:03UTC. This cancellation is not a model failure or configuration refusal. No continuous comparison has run. On resumption, the dedicated daemon was absent; root restored port11435 at18:00UTC with matching binaries and environment under a separate receipt. User service32104 remains untouched.
+
+Resolve the bounded operator entry before launching. The sustained types, validators, Driver flags, and raw reader restrict thinking to false; evaluation also requires the canceled ranked selection. Preserve those historical guards while declaring the user-directed comparison and any transferred calibration honestly. Native Astra planner and analyst review that question independently after the Opus probe returned a session-limit failure. Implement only the required entry, run its scoped proof, freeze its exact inputs, and execute the paired trajectories serially. Blind grading can overlap a later trajectory after completed evidence is sealed. Record full-horizon and late-horizon work quality, actual actions, exposure, costs, and a scoped adoption verdict in root RESULTS.md.
 
 ## Superseded measurement plan
 

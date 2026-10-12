@@ -1,6 +1,8 @@
 # Release and aggregate progress
 
-The user placed model work on hold and narrowed the remaining experiment on2026-10-12. Run only continuous long-work records versus aggregate with Qwen4B thinking disabled and enabled after the user resumes. The unfinished pilot and all other variations/matrix work are canceled. Preserve existing evidence; the continuous comparison has not run. See [the superseding scope](plan.md).
+The user resumed the narrowed experiment on2026-10-12. Run only continuous long-work records versus aggregate with Qwen4B thinking disabled and enabled. The unfinished pilot and all other variations/matrix work remain canceled. No continuous trajectory has run. Native Astra planner and analyst are resolving the smallest honest entry around the historical thinking-off and ranked-selection guards. See [the superseding scope](plan.md).
+
+Root restored the dedicated endpoint at18:00:11UTC after process and port checks showed it absent. Daemon25468 runs under tracked child65068 with the accepted environment; executable and runner hashes match and the version endpoint reports0.40.2. Its separate receipt is tmp/units/aggregate-continuous-daemon-start.json. User service32104 remains running. The Opus probe returned livefalse with a session-limit response, session7f8a71eb-d4e5-41cc-9d37-b75ac20c28aa, exit1 in4822ms; native Astra holds its fallback planning lane. Historical entries that follow retain their original timing and scope.
 
 Root stopped only the recorded campaign client PID64012 at13:03UTC after checking its identity and descendant inventory. The dispatcher recorded exit1, signalnone, cappedfalse, duration781517ms. This is user cancellation, not a model failure or infeasibility result. Post-stop process inventory confirms that client and its descendants are absent and both Ollama daemons32104 and4668 remain alive. Native Luna closes the cancellation record and stops; no further workload is released.
 

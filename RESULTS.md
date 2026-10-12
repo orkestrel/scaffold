@@ -1,6 +1,8 @@
 # Results
 
-**Waiting at the user's request.** On 2026-10-12, the user canceled the remaining pilot and model/matrix variations. The only remaining experiment is continuous long-work records versus living aggregate with Qwen4B, thinking disabled and enabled: four measured trajectories. These runs have not started. Another session is using Ollama; no campaign model workload will start until the user resumes. Both Ollama daemons remain running.
+**Resumed on 2026-10-12.** The remaining experiment is continuous long-work records versus living aggregate with Qwen4B, thinking disabled and enabled: four measured trajectories. These runs have not started. The existing continuous entry enforces the canceled ranked-selection campaign and forbids thinking mode; a bounded operator change is being scoped to execute the requested comparison honestly. The canceled pilots and other model variations remain canceled.
+
+The dedicated Ollama endpoint was restored at18:00UTC on port11435 with the accepted executable, runner, and environment. The other session's service remains running. Opus's availability probe hit a session limit; separate native Astra planner and analyst lanes hold the bounded direction pass. See [the active plan](.orkestrel/agent/plan.md) and [progress record](.orkestrel/agent/progress.md).
 
 Qwen 2B, Qwen 4B, and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have received blind quality audits. None establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
 
