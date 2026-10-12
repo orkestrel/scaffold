@@ -1,0 +1,64 @@
+START q2-think0-freeze
+{"pid":34056,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think0-freeze.err"}
+{"pid":34056,"exit":0,"signal":null,"capped":false,"durationMs":1707,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think0-freeze.err"}
+{"event":"result","id":"q2-think0-freeze","pid":33740,"exit":0,"signal":null,"duration":2055}
+START q2-think1-freeze
+{"pid":72408,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think1-freeze.err"}
+{"pid":72408,"exit":0,"signal":null,"capped":false,"durationMs":1322,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-think1-freeze.err"}
+{"event":"result","id":"q2-think1-freeze","pid":23352,"exit":0,"signal":null,"duration":1617}
+START g2-think0-freeze
+{"pid":57088,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think0-freeze.err"}
+{"pid":57088,"exit":0,"signal":null,"capped":false,"durationMs":1298,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think0-freeze.err"}
+{"event":"result","id":"g2-think0-freeze","pid":36408,"exit":0,"signal":null,"duration":1565}
+START g2-think1-freeze
+{"pid":40216,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think1-freeze.err"}
+{"pid":40216,"exit":0,"signal":null,"capped":false,"durationMs":1269,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-think1-freeze.err"}
+{"event":"result","id":"g2-think1-freeze","pid":76728,"exit":0,"signal":null,"duration":1548}
+START g4-think0-freeze
+{"pid":16868,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-freeze.err"}
+{"pid":16868,"exit":0,"signal":null,"capped":false,"durationMs":1372,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think0-freeze.err"}
+{"event":"result","id":"g4-think0-freeze","pid":10120,"exit":0,"signal":null,"duration":1662}
+START g4-think1-freeze
+{"pid":37588,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think1-freeze.err"}
+{"pid":37588,"exit":0,"signal":null,"capped":false,"durationMs":1269,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-think1-freeze.err"}
+{"event":"result","id":"g4-think1-freeze","pid":16236,"exit":0,"signal":null,"duration":1553}
+START q4-think0-freeze
+{"pid":56988,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think0-freeze.err"}
+{"pid":56988,"exit":0,"signal":null,"capped":false,"durationMs":1232,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think0-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think0-freeze.err"}
+{"event":"result","id":"q4-think0-freeze","pid":37664,"exit":0,"signal":null,"duration":1490}
+START q4-think1-freeze
+{"pid":60188,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think1-freeze.err"}
+{"pid":60188,"exit":0,"signal":null,"capped":false,"durationMs":1248,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think1-freeze.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-think1-freeze.err"}
+{"event":"result","id":"q4-think1-freeze","pid":50496,"exit":0,"signal":null,"duration":1504}
+START q2-calibration-corpus
+{"pid":23404,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-corpus.err"}
+{"pid":23404,"exit":0,"signal":null,"capped":false,"durationMs":2611,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-corpus.err"}
+{"event":"result","id":"q2-calibration-corpus","pid":1488,"exit":0,"signal":null,"duration":2878}
+START q2-calibration-generate
+{"pid":6988,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-generate.err"}
+{"pid":6988,"exit":0,"signal":null,"capped":false,"durationMs":594533,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q2-calibration-generate.err"}
+{"event":"result","id":"q2-calibration-generate","pid":27172,"exit":0,"signal":null,"duration":594801}
+START g2-calibration-corpus
+{"pid":3392,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-corpus.err"}
+{"pid":3392,"exit":0,"signal":null,"capped":false,"durationMs":2625,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-corpus.err"}
+{"event":"result","id":"g2-calibration-corpus","pid":36472,"exit":0,"signal":null,"duration":2875}
+START g2-calibration-generate
+{"pid":45124,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-generate.err"}
+{"pid":45124,"exit":0,"signal":null,"capped":false,"durationMs":1155685,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g2-calibration-generate.err"}
+{"event":"result","id":"g2-calibration-generate","pid":13004,"exit":0,"signal":null,"duration":1155940}
+START g4-calibration-corpus
+{"pid":54852,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-corpus.err"}
+{"pid":54852,"exit":0,"signal":null,"capped":false,"durationMs":2604,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-corpus.err"}
+{"event":"result","id":"g4-calibration-corpus","pid":24496,"exit":0,"signal":null,"duration":2853}
+START g4-calibration-generate
+{"pid":76268,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-generate.err"}
+{"pid":76268,"exit":0,"signal":null,"capped":false,"durationMs":1456140,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\g4-calibration-generate.err"}
+{"event":"result","id":"g4-calibration-generate","pid":28916,"exit":0,"signal":null,"duration":1456410}
+START q4-calibration-corpus
+{"pid":64576,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-corpus.err"}
+{"pid":64576,"exit":0,"signal":null,"capped":false,"durationMs":3305,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-corpus.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-corpus.err"}
+{"event":"result","id":"q4-calibration-corpus","pid":49524,"exit":0,"signal":null,"duration":3737}
+START q4-calibration-generate
+{"pid":25252,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-generate.err"}
+{"pid":25252,"exit":0,"signal":null,"capped":false,"durationMs":1280842,"journal":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-generate.jsonl","errors":"C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\agent\\instruments\\results\\l14\\logs\\q4-calibration-generate.err"}
+{"event":"result","id":"q4-calibration-generate","pid":62508,"exit":0,"signal":null,"duration":1281189}

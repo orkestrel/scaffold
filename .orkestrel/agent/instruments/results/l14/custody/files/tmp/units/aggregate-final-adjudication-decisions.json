@@ -1,0 +1,108 @@
+[
+	{
+		"alias": "a",
+		"representative": "2c026287-b074-40b6-8080-46da5fba5a89",
+		"verdict": "ambiguous",
+		"propositions": [
+			{
+				"index": 2,
+				"verdict": "ambiguous",
+				"text": "The terminal FL-66 is a material incomplete identifier. The source gives FL-660412. The visible candidate does not establish whether FL-66 is a complete wrong identifier or an unfinished prefix; neither reading supports using it as the source identifier. Root retains ambiguity without completing the value."
+			}
+		]
+	},
+	{
+		"alias": "a",
+		"representative": "883c1576-5849-4e35-acda-8dbf577dce1e",
+		"verdict": "contradicted",
+		"propositions": [
+			{
+				"index": 3,
+				"verdict": "ambiguous",
+				"text": "The terminal net 3 leaves a material payment term incomplete. The source says net 30. The visible candidate could express a different term or a cut-off prefix; root does not supply the missing digit. This remains nonpositive; the separate withdrawn Owen contact keeps the whole candidate contradicted."
+			}
+		]
+	},
+	{
+		"alias": "a",
+		"representative": "76d26a0f-3111-4615-bd4e-b9795f2d1ad5",
+		"verdict": "contradicted",
+		"propositions": [
+			{
+				"index": 0,
+				"verdict": "contradicted",
+				"text": "The candidate moves the source instruction from 2026-10-08 to 2026-10-09. That source-date change is definite. Owen's later chair-arrival report suggests completion, but this slice does not explicitly link him to Copperline; root does not use that uncertain linkage as an additional definite contradiction."
+			}
+		]
+	},
+	{
+		"alias": "b",
+		"representative": "0538142f-16ba-432b-a917-ad58d09e666a",
+		"verdict": "contradicted",
+		"propositions": [
+			{
+				"index": 1,
+				"verdict": "supported",
+				"text": "Grace's earlier claims require Marcus's prior sign-off for replacement. Ruth's supplied temporary substitution ends on 2026-10-09; the complete source slice extends into 2026-10-10. That limited delegation does not permanently repeal the normal Marcus requirement. The separate superseded Halvorsen lateness still contradicts the whole candidate."
+			}
+		]
+	},
+	{
+		"alias": "b",
+		"representative": "6425424d-210d-47f0-a78a-9fe5248e693b",
+		"verdict": "contradicted",
+		"propositions": [
+			{
+				"index": 2,
+				"verdict": "supported",
+				"text": "Grace's earlier claims require Marcus's prior sign-off for replacement. Ruth's supplied substitution ends on 2026-10-09, before this slice's 2026-10-10 frame. The normal requirement remains supported after that endpoint. The separate superseded Halvorsen lateness keeps the whole candidate contradicted."
+			}
+		]
+	},
+	{
+		"alias": "b",
+		"representative": "b8ce5b30-299e-456b-bae6-4ee0e98d10df",
+		"verdict": "contradicted",
+		"propositions": [
+			{
+				"index": 1,
+				"verdict": "supported",
+				"text": "Grace's earlier claims require Marcus's prior sign-off for replacement. Ruth's temporary substitution ends on 2026-10-09, before this slice's 2026-10-10 frame. The normal Marcus requirement remains supported. The separate superseded Halvorsen lateness keeps the whole candidate contradicted."
+			}
+		]
+	},
+	{
+		"alias": "d",
+		"representative": "78e94a28-5aa6-4549-83eb-d2960b41dcf2",
+		"verdict": "contradicted",
+		"propositions": [
+			{
+				"index": 0,
+				"verdict": "contradicted",
+				"text": "The source names Marcus's absence on Friday 2026-10-09 and Ruth's substitution until that date together. The delegation therefore covers his Friday absence. In this 2026-10-09 source frame the candidate retains Marcus alone without marking that requirement inactive under Ruth's substitution. Root rules contradicted; this remains nonpositive."
+			}
+		]
+	},
+	{
+		"alias": "d",
+		"representative": "4cc9c0cd-ed5f-4947-b13a-a3b109e170a1",
+		"verdict": "supported",
+		"propositions": [
+			{
+				"index": 0,
+				"verdict": "supported",
+				"evidence": ["(2026-10-10) user: Disregard yesterday's note about the Saturday walk-in returns counter: facilities closed it all day for floor work, so walk-in returns wait until Monday."]
+			},
+			{
+				"index": 1,
+				"verdict": "supported",
+				"evidence": ["(2026-10-10) user: Dalia Moreno, account LH-66208, left a voicemail asking for a call back on 555-0175 to book a delivery slot for her sofa, order LH-86610."]
+			},
+			{
+				"index": 2,
+				"verdict": "supported",
+				"evidence": ["(2026-10-10) user: Forget everything I told you about reaching Copperline's buyer: Owen Pritchard left the company yesterday."]
+			}
+		]
+	}
+]

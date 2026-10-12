@@ -20,7 +20,18 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 ## Work in progress
 
-Verification found a wall-expiry classification defect and omitted full-view preparation costs; both are reproduced and repaired. Independent review and the boundary, development, capacity, calibration, and reporting checks passed. The corrected transport file passed 2/2 in 164268 ms, and the complete exploratory runtime fixture passed in 2137628 ms. The canonical live build preserves all 624 tested output hashes. Fixed final-source calibration is next; no l14 inference or continuous model pair has run. Actual Claude Opus 5.5 and independent Astra analysis informed [the accepted direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-comparison-completion-direction.md). Strict qualification and adoption requirements remain unchanged. See [the repair decision and failed-gate measurements](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-repair.md).
+The repaired measurement code is pushed at `5b9935430`. Independent review and scoped checks passed, including the complete exploratory runtime fixture in 2137628 ms; the canonical live build preserves all 624 tested output hashes. Actual Claude Opus 5.5 and independent Astra analysis informed [the accepted direction](.orkestrel/agent/instruments/units/aggregates/reports/resumption-comparison-completion-direction.md). Strict qualification and adoption requirements remain unchanged. See [the repair decision and failed-gate measurements](.orkestrel/agent/instruments/units/aggregates/reports/resumption-admission-repair.md).
+
+L14 has frozen all eight decision-mode configurations. Its fixed calibration generations have these statuses; these are support-calibration measurements, not task-quality results.
+
+| Summarizer | Generation | Opaque items | Independent labels |
+| --- | --- | ---: | --- |
+| Qwen 2B | Closed, 594801 ms | 168 | Written; mechanical checks passed |
+| Gemma 2B | Closed, 1155940 ms | 174 | Written; mechanical checks passed |
+| Gemma 4B | Closed, 1456410 ms | 179 | Written; mechanical checks passed |
+| Qwen 4B | Closed, 1281189 ms | 171 | Written; mechanical checks passed |
+
+Root adjudication and fixed fits are complete. Gemma 2B passed strict calibration at AGREE 0.59, admitting 112/131 supported occurrences and 21/29 distinct supported identities. Qwen 4B passed at 0.61, admitting 136/154 and 35/43. Qwen 2B and Gemma 4B were refused because their strict cutoffs admitted too few supported summaries; their predeclared exploratory cutoffs are 0.67 and 0.57. These are calibration outcomes, not task-quality wins. See [the calibration evidence and costs](.orkestrel/agent/instruments/results/l14/README.md). Qwen 2B resource/full preparation is next. No l14 quality verdict or continuous model pair exists yet.
 
 The remaining measurements are:
 
@@ -34,6 +45,6 @@ No continuous pair has run. No aggregate integration decision follows from l13 a
 
 Published agent 0.0.30 matches the verified archive. Agent main is at `ee734c3`; release checks passed 1857 tests with 2 applicability skips, replay 108/108, and a raw comparison with no differences across 618 requests per build. See [publication](.orkestrel/agent/instruments/units/agent-0030/publication.md).
 
-Toolbox 0.0.19 is pushed at `979d725`; its full release chain passed 860 tests with 2 skips in 65538 ms. Ollama 0.0.23 is pushed at `93ea1cb`; its final chain passed 899 tests with 3 skips, including 76/76 service tests, in 267354 ms. Earlier fixture failures remain recorded; the previously hidden failed predicate was not reconstructed. The user authorized both uploads, and npm accepted both. Registry confirmation and Desk's final re-pin follow. Supervisor and Tactica are excluded by user instruction. See [downstream status](.orkestrel/release.md#agent-0030-downstream-re-pins).
+Toolbox 0.0.19 (`979d725`) and Ollama 0.0.23 (`93ea1cb`) are published and registry-confirmed, matching their verified archives. Their full release chains passed 860 tests with 2 skips and 899 tests with 3 skips respectively; Ollama includes 76/76 live service tests. Earlier fixture failures remain recorded; the previously hidden failed predicate was not reconstructed. Desk's registry re-pin is pushed at `af774cd` after format, lint, type checks, 532 tests with 4 conditional skips, six browser journeys, and production build passed. Supervisor and Tactica are excluded by user instruction. See [downstream status](.orkestrel/release.md#agent-0030-downstream-re-pins).
 
-Aggregate work is in the normal scaffold checkout on `claude/confident-maxwell-6nd0f3`; compare that branch with main for committed changes. Scaffold main remains release-only at `8252622`, with publication recorded and pushed as a fast-forward. The completed release worktree is removed; the previously rejected dependency-junction cleanup remains untouched. See [the plan](.orkestrel/agent/plan.md), [progress](.orkestrel/agent/progress.md), and [routing ledger](.orkestrel/agent/ledger.md).
+Aggregate work is in the normal scaffold checkout on `claude/confident-maxwell-6nd0f3`; compare that branch with main for committed changes. Scaffold main remains release-only at `a64a80b`, with downstream closure recorded and pushed as a fast-forward. The completed Agent release and Ollama compatibility worktrees are removed; the previously rejected dependency-junction cleanup remains untouched. See [the plan](.orkestrel/agent/plan.md), [progress](.orkestrel/agent/progress.md), and [routing ledger](.orkestrel/agent/ledger.md).
