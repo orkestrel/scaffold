@@ -12,7 +12,7 @@ All three l15 arms answered all 24 planned goals after the bounded qualification
 | Living aggregate | 17/24 | 1/24 | 4/24 | 3/24 | 350266 known | 3030068 ms |
 | Full view | 16/24 | 1/24 | 5/24 | 2/24 | 157589 | 1674884 ms |
 
-Full view also has one ambiguous complete-work result. Aggregate matched records on 23 semantic verdicts and lost on one: it turned the buyer's contact details into the account manager's contact route. Both arms missed the closed callback, completed shipment chases, expired sign-off cover, and reopened damage claim. Most incomplete work across all arms comes from missing mandatory fresh lookups; correct wording does not fulfill those actions. Excluding the predeclared protocol-sensitive g06 leaves correct content at 18/23, 17/23, and 16/23, and complete work at 3/23, 3/23, and 2/23. The narrower per-goal action lists pass 17/23, 17/23, and 16/23 and do not waive system requirements.
+Full view also has one ambiguous complete-work result. Aggregate matched records on 23 semantic verdicts and lost on one: it turned the buyer's contact details into the account manager's contact route. The exact request trace found no maintained summary exposed at that goal. Both arms received identical pinned account wording; records then recalled source records. The loss remains, but summary wording is not its established cause. Both arms missed the closed callback, completed shipment chases, expired sign-off cover, and reopened damage claim. Most incomplete work across all arms comes from missing mandatory fresh lookups; correct wording does not fulfill those actions. Excluding the predeclared protocol-sensitive g06 leaves correct content at 18/23, 17/23, and 16/23, and complete work at 3/23, 3/23, and 2/23. The narrower per-goal action lists pass 17/23, 17/23, and 16/23 and do not waive system requirements.
 
 Summaries reached 18/24 aggregate goals. Aggregate used at least 4.26 times the records tokens, counting all run roles; separate calibration costs remain recorded. Its judge and flush requests each timed out once, leaving two unknown usage readings and an operationally unaccepted pilot. Another Ollama service shared the GPU, so its duration is confounded. This single development comparison establishes no aggregate benefit or causal improvement over earlier runs. Earlier independent audits and grades remain unchanged. See [the sealed latest comparison and every per-goal reason](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l15-q4-quality/README.md).
 
@@ -66,7 +66,24 @@ Maintained summaries reached the actual agent request on 15 of 24 aggregate goal
 
 The l15 Qwen4 thinking-disabled records and full-view runs each served all 24 goals. Records used 82123 tokens in 559417 ms; full view used 157589 tokens in 1674884 ms, with complete usage and no operational failure. Aggregate emitted 24 goal rows, with summaries exposed on 18, but exited 1 after 3030068 ms because a judge request and a flush request had headers timeouts. Its 343 sent requests used 350266 known tokens, plus unknown usage on those failed requests. Another Ollama service shared the GPU, so elapsed time is confounded. The pilot remains operationally unresolved; it was not retried.
 
-The l15 blind quality audit is complete and reported above. Qwen4 thinking-enabled commands passed dry validation but have not run; further model execution waits for the competing GPU workload to clear or its owner to identify the service. The remaining model operators are prepared. No additional harness audit or rebuild precedes those measurements.
+The l15 thinking-disabled blind quality audit is pushed at `bd31e6573`. Thinking-enabled execution completed on that frozen HEAD: records, full view, and aggregate each served all 24 goals. The aggregate passed operational qualification with summaries exposed on 18 goals, 341 requests, 345653 tokens, and complete usage. Its duration was 2086555 ms. Clean Astra is grading the combined anonymous packet; answer quality remains unruled. The separate service shared the GPU during full view and remains running at the user's direction, so elapsed times are not isolated speed measurements. Gemma4 fixed generation follows the evidence checkpoint while blind grading continues.
+
+The current l15 goal-run status is:
+
+| Decision model | Thinking | Records | Full view | Aggregate |
+| --- | --- | --- | --- | --- |
+| Qwen 4B | false | Complete | Complete | All answers; operational failure |
+| Qwen 4B | true | Complete | Complete | Complete; blind audit running |
+| Gemma 4B | false | Pending | Pending | Pending |
+| Gemma 4B | true | Pending | Pending | Pending |
+| Qwen 2B | false | Pending | Pending | Pending |
+| Qwen 2B | true | Pending | Pending | Pending |
+| Gemma 2B | false | Pending | Pending | Pending |
+| Gemma 2B | true | Pending | Pending | Pending |
+
+Qwen4 thinking-enabled resource preparation selected window 3584/reserve 1024/output limit 512. Its accepted records run used 66490 tokens; the rejected first budget adds 11748 preparation tokens, all with known usage. Whole resource preparation took 706009 ms; a separate selected-attempt duration is unavailable. Records and aggregate share that accepted budget. Comparing thinking modes must also disclose their different resource settings.
+
+Thinking-enabled full view answered all 24 goals and exited 0 uncapped in 3979016 ms. Its 58 requests used 205408 tokens with complete usage and no recorded operational failure. Aggregate used 5.20 times the accepted records tokens and 1.68 times the full-view tokens, counting every run role. Operational acceptance does not establish answer quality. See [the completed execution and costs](.orkestrel/agent/instruments/results/l15/README.md).
 
 The bounded qualification correction is accepted and pushed at `9273347a1` after independent Astra review, static checks, a canonical build, and 423 passing tests. It preserves identical starting context, permits valid later adaptive scale differences, and removes the collected ID index from decision-side summaries while retaining maintained prose and its checks. Fresh l15 Qwen4 generation completed in 1373580 ms and is retained at `318a81fa7`. Root accepted the blind support labels, and the fixed fit passed at AGREE 0.61: 136/154 supported occurrences and 35/43 distinct supported identities admitted. Historical results remain unchanged. See [the correction acceptance](.orkestrel/agent/instruments/units/aggregates/reports/resumption-qualification-correction/README.md) and [the l15 evidence](.orkestrel/agent/instruments/results/l15/README.md).
 
