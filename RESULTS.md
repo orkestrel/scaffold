@@ -1,8 +1,12 @@
 # Results
 
+**Waiting at the user's request.** On 2026-10-12, the user canceled the remaining pilot and model/matrix variations. The only remaining experiment is continuous long-work records versus living aggregate with Qwen4B, thinking disabled and enabled: four measured trajectories. These runs have not started. Another session is using Ollama; no campaign model workload will start until the user resumes. Both Ollama daemons remain running.
+
 Qwen 2B, Qwen 4B, and Gemma 2B records-versus-aggregate-versus-full-view development comparisons have received blind quality audits. None establishes an aggregate advantage. Aggregate adoption for possible 0.0.31 remains undecided; the mandatory continuous long-work comparison has not run. Agent 0.0.30 and its downstream package updates are published.
 
-Gemma4 thinking-disabled aggregate stopped after 16/24 goal rows. At 2026-10-12 12:33 UTC, its recorded worker and the dedicated Ollama daemon were absent, with no terminal exit record. The partial run is preserved; its cause and exit status remain unknown. Saved requests account for 249119 tokens, with final or in-flight usage unknown. Summaries reached 8/16 completed goals. This is not a completed quality comparison. The dedicated service was restored on port 11435 at 12:36 UTC with matching executable, runner, version, model digests, and explicit settings. No replacement model run has started. Your separate Ollama service remains running. See [the interruption evidence and recovery](.orkestrel/agent/instruments/results/l15/custody/g4-interruption/README.md).
+Gemma4 thinking-disabled aggregate stopped after 16/24 goal rows. At 2026-10-12 12:33 UTC, its recorded worker and the dedicated Ollama daemon were absent, with no terminal exit record. The partial run is preserved; its cause and exit status remain unknown. Saved requests account for 249119 tokens, with final or in-flight usage unknown. Summaries reached 8/16 completed goals. This is not a completed quality comparison. The dedicated service was restored on port 11435 at 12:36 UTC with matching executable, runner, version, model digests, and explicit settings. Your separate Ollama service remains running. See [the interruption evidence and recovery](.orkestrel/agent/instruments/results/l15/custody/g4-interruption/README.md).
+
+Checkpoint `06d6f6578` is pushed on the scaffold session branch. The Qwen 4B thinking-disabled pilot-2 launched on that fixed HEAD at12:50UTC and was stopped at the user's request at13:03UTC. It recorded 10 completed goals and119393known tokens before cancellation. Its dispatcher recorded exit1, uncapped, after781517ms. This is a cancellation, not a model failure or configuration refusal. Its partial evidence and the original pilot's grades remain preserved; see [the cancellation record](.orkestrel/agent/instruments/results/l15/q4-think0/pilot-2/cancellation/README.md).
 
 Gemma4 records and full view completed on checkpoint `4acb51125`. Records used 85364 tokens in 762618 ms; full view used 167761 tokens in 1563743 ms. Both completed 24 goals with complete usage and no execution failure; blind quality grading remains pending. Gemma2 passed strict calibration at cutoff 0.59, admitting 112/132 supported occurrences and 21/30 distinct supported summaries. Qwen2 and Gemma4 retain their strict calibration refusals and separate exploratory cutoffs of 0.68 and 0.61. Shared GPU use limits timing comparisons.
 
@@ -80,7 +84,9 @@ Aggregate completed one more task than records but had fewer correct answers and
 
 Maintained summaries reached the actual agent request on 15 of 24 aggregate goals. Six capped summary updates were withheld while the task continued. Run tokens include every recorded role; separate calibration and preparation costs remain in their campaign records. Full view used its disclosed larger input budget. See [the sealed audit and every per-goal reason](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l13-quality/README.md), [aggregate costs](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l13-aggregate-run.md), [records and exposure](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l13-records-run.md), and [full-view costs](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l13-full-run.md).
 
-## Work in progress
+## Superseded matrix status
+
+The unrun entries in this section were canceled by the user's narrower scope. They are historical status, not a remaining work list.
 
 The l15 Qwen4 thinking-disabled records and full-view runs each served all 24 goals. Records used 82123 tokens in 559417 ms; full view used 157589 tokens in 1674884 ms, with complete usage and no operational failure. Aggregate emitted 24 goal rows, with summaries exposed on 18, but exited 1 after 3030068 ms because a judge request and a flush request had headers timeouts. Its 343 sent requests used 350266 known tokens, plus unknown usage on those failed requests. Another Ollama service shared the GPU, so elapsed time is confounded. The pilot remains operationally unresolved; it was not retried.
 
@@ -132,13 +138,13 @@ Qwen 4B's blind quality comparison is complete and reported earlier in this file
 
 The bounded successor correction removes the unsupported later gauge-difference gate and the code-generated identifier index in the decision summary. Earlier runs and grades remain unchanged. The closed pilot retains its frozen source and qualification. See [the correction and execution ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-qualification-correction-direction.md) and [the retained Qwen4 daemon diagnosis](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-diagnostic/README.md).
 
-The remaining measurements are:
+The remaining comparison, after the user resumes, is:
 
-- Finish Gemma 4B thinking-disabled aggregate and grade its anonymous records/aggregate/full-view triplet. Run Gemma 4B thinking-enabled, Qwen 2B in both modes, and Gemma 2B in both modes, with blind grading for each triplet.
-- Resolve the Qwen 4B thinking-disabled operational prerequisite through the separately declared fresh pilot observation. Preserve the failed original and its grades; see [the bounded observation and stopping conditions](.orkestrel/agent/instruments/units/aggregates/reports/resumption-sustained-fault-direction.md).
-- Complete feasible longer matrix stages and the separate judge shadow. Analyze quality, required actions, completed work, summary exposure, and all-role costs; apply bounded tuning only where the evidence justifies it.
-- Run the mandatory continuous long-work published-agent records-versus-aggregate pair after development analysis and tuning, carrying earlier work and corrections forward without resetting the conversation.
-- Publish the final comparison and adoption verdict, retain verified evidence on the session branch, and clean completed temporary units after live work closes.
+- Qwen4B thinking disabled: records versus aggregate on the same continuous long-work scenario.
+- Qwen4B thinking enabled: records versus aggregate on the same continuous long-work scenario.
+- Blind analysis of correctness, required actions, completed work, late-conversation quality, stale claims, summary exposure, all-role tokens, and elapsed time; then a focused adoption verdict.
+
+The earlier Gemma/Qwen2 variations, short pilots, full-view runs, longer matrix stages, and separate judge shadow have no remaining execution requirement. See [the revised plan and hold](.orkestrel/agent/plan.md).
 
 No continuous pair has run. The development results do not authorize aggregate integration.
 

@@ -1,5 +1,19 @@
 # The context and selection campaign for `@orkestrel/agent`
 
+## User-directed scope and hold — 2026-10-12
+
+Wait for the user to resume. Another session is using Ollama. Start no model workload, daemon replacement, model unload, or service-control operation during this hold. The user canceled the unfinished pilot and the remaining model variations, matrix stages, full-view comparisons, separate judge shadow, and broad tuning campaign. Preserve completed results and partial evidence. Do not execute the superseded instructions that follow this section.
+
+After the user resumes, run only the continuous long-work comparison with Qwen4B: records and living aggregate with thinking disabled, then records and living aggregate with thinking enabled. This scope contains four measured trajectories. Use the published Agent0.0.30 records baseline and the implemented aggregate arm. Reuse the verified build, applicable fixed calibration, and existing continuous workload; no further short pilot, model-selection matrix, or extra calibration campaign is a prerequisite authorized by this scope.
+
+Within each thinking mode, match the starting conversation, workload, tools, sampling settings, and resource constraints. Carry the conversation and work forward without resets. Keep corrected facts, superseded instructions, completed work, and outstanding work in the quality assessment. Disclose any resource-setting difference between thinking modes. Preserve every planned goal, failure, and unfinished outcome.
+
+Grade the replies and actual required actions blind. Compare work quality over the full trajectory and late in the conversation, complete-work outcomes, stale or unsupported claims, aggregate exposure, all-role token costs, and elapsed time. Preserve maintenance and judge costs. A clear sustained quality benefit must justify aggregate overhead; otherwise retain records. Report the limits of the paired observations. Resolve only the operator changes required by this narrower comparison after the hold ends; obsolete matrix or ranked-candidate gates must not silently restore canceled experiments.
+
+The Qwen thinking-disabled pilot-2 client was stopped at the user's request at13:03UTC. This cancellation is not a model failure or configuration refusal. Both Ollama daemons remain running. No continuous comparison has run.
+
+## Superseded measurement plan
+
 The bounded aggregate repair is accepted and pushed at `5b9935430` after independent review, scoped gates, complete runtime proof, and canonical live-build equality. Fixed l14 calibration is complete on that frozen source/build. Gemma 2B and Qwen 4B have accepted strict fits; Qwen 2B and Gemma 4B have valid strict refusals and predeclared exploratory cutoffs. Continue cell preparation and comparisons; no further harness audit precedes measurement. Toolbox 0.0.19 and Ollama 0.0.23 are published and registry-confirmed. Desk's registry re-pin is verified and pushed at `af774cd`. Supervisor and Tactica remain excluded. See [the downstream record](../release.md#agent-0030-downstream-re-pins).
 
 ## Immediate measurement milestone

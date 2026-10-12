@@ -1,6 +1,6 @@
 # Handoff: 0.0.30 release and the aggregate arm (2026-10-10)
 
-For the Codex resumption state, see [the resumption plan](../plan.md#resume-from-the-verified-state-of-2026-10-10) and [the progress and results record](../progress.md). The release candidate is verified on agent main; the user defers publication until aggregate evaluation and the adoption verdict finish. The aggregate protocol has an authorized revision and remains in instrument verification. The remaining-step lists in this historical handoff are superseded by that plan. Preserve the handoff's evidence and artifacts.
+For the Codex resumption state, read the opening user-directed scope and hold in [the plan](../plan.md) and [the progress record](../progress.md). Agent0.0.30, Toolbox0.0.19, and Ollama0.0.23 are published; Desk is re-pinned. On2026-10-12 the user canceled the remaining pilot and model/matrix variations and requested a wait while another session uses Ollama. Start no further model workload until the user resumes. The only remaining experiment is continuous long-work records versus aggregate with Qwen4B thinking off/on: four measured trajectories. Both Ollama daemons remain running. The remaining-step lists and publication instructions in this historical handoff are superseded; preserve their evidence and artifacts.
 
 The next session resumes two lines of work from this file. Read it whole before acting.
 

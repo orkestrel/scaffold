@@ -1,0 +1,6 @@
+ M .orkestrel/agent/instruments/bench4/Driver.mjs
+ M .orkestrel/agent/ledger.md
+ M .orkestrel/agent/progress.md
+ M RESULTS.md
+?? .orkestrel/agent/instruments/harness/.orkestrel/
+?? .orkestrel/agent/instruments/results/l15/q4-think0/pilot-2/
