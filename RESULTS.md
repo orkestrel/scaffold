@@ -48,7 +48,7 @@ L14 has frozen all eight decision-mode configurations and completed its fixed ca
 | Gemma 2B | true | Pending | Pending | Pending |
 | Gemma 4B | false | Pending | Pending | Pending |
 | Gemma 4B | true | Pending | Pending | Pending |
-| Qwen 4B | false | Complete | Operational failure at g23 | First pilot prepared |
+| Qwen 4B | false | Complete | Operational failure at g23 | Complete; qualification refused |
 | Qwen 4B | true | Pending | Pending | Pending |
 
 Root adjudication and fixed fits are complete and pushed at `708553ef9`. Gemma 2B passed strict calibration at AGREE 0.59, admitting 112/131 supported occurrences and 21/29 distinct supported identities. Qwen 4B passed at 0.61, admitting 136/154 and 35/43. Qwen 2B and Gemma 4B were refused because their strict cutoffs admitted too few supported summaries; their predeclared exploratory cutoffs are 0.67 and 0.57. These are calibration outcomes, not task-quality wins. See [the calibration evidence and costs](.orkestrel/agent/instruments/results/l14/README.md).
@@ -57,7 +57,9 @@ Qwen 2B's resource preparation passed at reserve 512 with a 3072-token window: 3
 
 Gemma's l14 blind comparison is complete; its results are reported earlier in this file. See [preparation](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md) and [the aggregate run, costs and refusal evidence](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-pilot-report-2.md).
 
-Qwen 4B records completed in 524338 ms with 67 sent requests and 82123 tokens. Full view stopped at g23 after 22 emitted goal rows, in 1490075 ms, with 52 sent requests and 148479 tokens. Every sent request has usage. Request 52's capacity endpoint returned HTTP 200 with an empty loaded-model list; the run correctly remains operationally unresolved. The first aggregate pilot is prepared independently from its accepted records resource and strict fit. See [the closed Qwen report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-q4-cell-report.md). No full-view retry is authorized.
+Qwen 4B records completed in 524338 ms with 67 sent requests and 82123 tokens. Full view stopped at g23 after 22 served goals, in 1490075 ms, with 52 sent requests and 148479 tokens. Every sent request has usage. Request 52's capacity endpoint returned HTTP 200 with an empty loaded-model list. The daemon records eviction during Qwen4 generation followed by another Qwen2B request; client ownership remains unproved. The run remains operationally unresolved. The aggregate pilot served all 24 goals and exposed summaries on 18, using 349528 tokens in 1835032 ms with complete usage. Its frozen qualification was refused for stale-pattern and later-scale findings. Blind quality grading is running on every planned goal from all arms. See [the retained pilot](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-pilot/README.md). See [the closed Qwen report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-q4-cell-report.md). No full-view retry is authorized.
+
+The bounded successor correction removes the unsupported later gauge-difference gate and the code-generated identifier index in the decision summary. Earlier runs and grades remain unchanged. The closed pilot retains its frozen source and qualification. See [the correction and execution ruling](.orkestrel/agent/instruments/units/aggregates/reports/resumption-qualification-correction-direction.md) and [the retained Qwen4 daemon diagnosis](.orkestrel/agent/instruments/units/aggregates/reports/resumption-l14-q4-diagnostic/README.md).
 
 The remaining measurements are:
 
