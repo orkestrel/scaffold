@@ -24,11 +24,11 @@ The repaired measurement code is pushed at `5b9935430`. Independent review and s
 
 L14 has frozen all eight decision-mode configurations and completed its fixed calibration generations and independent labels. The actual goal-run status is:
 
-| Decision model | Thinking | Records preparation | Full-view preparation | Aggregate |
+| Decision model | Thinking | Records run | Full-view run | Aggregate run |
 | --- | --- | --- | --- | --- |
-| Qwen 2B | false | Accepted | Operational failure at g05 | Admission blocked |
+| Qwen 2B | false | Complete | Operational failure at g05 | Admission blocked |
 | Qwen 2B | true | Pending | Pending | Pending |
-| Gemma 2B | false | Accepted | Accepted | Pilot prepared |
+| Gemma 2B | false | Complete | Complete | Complete; qualification refused |
 | Gemma 2B | true | Pending | Pending | Pending |
 | Gemma 4B | false | Pending | Pending | Pending |
 | Gemma 4B | true | Pending | Pending | Pending |
@@ -39,7 +39,7 @@ Root adjudication and fixed fits are complete and pushed at `708553ef9`. Gemma 2
 
 Qwen 2B's resource preparation passed at reserve 512 with a 3072-token window: 381774 ms, 78 requests, 105231 tokens, no unknown usage or model errors. Its full-view preflight stopped at g05 after 182687 ms: Ollama reported an XML parser HTTP 500. The failed preflight retains 20 sent requests, 45980 known tokens, and one request with unknown usage. This is an operational failure, not a measured capacity refusal. Independent analysis and root's emitted-reader check confirm that the frozen continuation rule does not admit this preflight. Qwen's l14 cell remains unresolved. No retry, source amendment, or recalibration follows from this failure.
 
-Gemma 2B's records preparation passed at reserve 512 and window 3072 in 518644 ms: 67 requests and 72328 tokens. Its full-view run completed all 24 goals in 797218 ms: 55 requests and 164065 tokens. Both have complete usage and no model errors; emitted validators accepted the runs and confirmed the full-view bound. The aggregate pilot follows on the same frozen configuration. These are completed runs awaiting blind quality comparison; no l14 quality verdict or continuous model pair exists yet. See [the retained preparation report](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md).
+Gemma 2B completed all 24 goals in every arm. Records used 72328 tokens in 518644 ms; full view used 164065 in 797218 ms; aggregate used 397608 in 1944308 ms. All usage is observed. The aggregate exposed maintained summaries on 14/24 goals and preserved the initial records selection. Strict qualification was refused for three obsolete-identifier request checks and five later per-goal scale deviations; these are distinct from the pending blind answer-quality verdict. The independent auditor has the sealed anonymous 72-goal packet. See [preparation](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-preparation-report.md) and [the aggregate run, costs and refusal evidence](.orkestrel/agent/instruments/results/l14/custody/files/tmp/units/aggregate-final-g2-pilot-report-2.md). No l14 quality verdict or continuous model pair exists yet.
 
 The remaining measurements are:
 
