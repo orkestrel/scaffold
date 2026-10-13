@@ -1,6 +1,83 @@
 # Results
 
-**Narrowed again on 2026-10-12.** The aggregate arm is dropped. The remaining comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B, thinking disabled, one run per arm and model. The `c1` series is running on the dedicated daemon; see [the active plan](.orkestrel/agent/plan.md) and [the progress record](.orkestrel/agent/progress.md). No c1 result is graded yet.
+**Narrowed again on 2026-10-12.** The aggregate arm is dropped. The remaining comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B, thinking disabled, one run per arm and model. The `c1` series ran on 2026-10-12 and 2026-10-13 on the dedicated daemon; the graded results follow. See [the active plan](.orkestrel/agent/plan.md), [the progress record](.orkestrel/agent/progress.md), and [the ledger](.orkestrel/agent/ledger.md).
+
+## c1: records against the package's own compaction, graded 2026-10-13
+
+Protocol `c1`: one serial trajectory per arm and model on the published `@orkestrel/agent` 0.0.30 build, Qwen 3.5 4B (`q4`) and 2B (`q2`), thinking disabled, window 3072 and reserve 512 for every arm. Every served product was adjudicated blind by its own independent adjudicator (Claude Opus 5.5 for q4, Claude Sonnet 5.5 for q2, Sonnet and GPT-6.1 Sol for the q2 continue run) against the frozen oracle, with three controls frozen before labeling. Raw runs: `.orkestrel/agent/instruments/harness/tmp/c1/<key>/<arm>/` and `harness/tmp/c1-continue/q2/compaction/`; packets, labels, and reports: `.orkestrel/agent/instruments/results/c1/<key>/audit/`; keys: `.orkestrel/agent/instruments/results/c1/<key>/private/`.
+
+### Verdicts
+
+| Key | Records | Compaction | Full view | Report verdict |
+| --- | --- | --- | --- | --- |
+| q4 | complete, 96 of 96 served | complete, 96 of 96 served | context-length refusal at goal 3 | `records`: no conservative acceptable-product gain for compaction (overall -1 to 0, final 0 to 0); 40 critical regressions against records |
+| q2 | complete, 96 of 96 served | `failed` at goal 15 under the pre-registered stop policy: the model repeated one `lookup_order` call seven times until the step cap | context-length refusal at goal 3 | `records`: no gain on the 14 goals compaction served; 8 critical regressions |
+| q2, continue policy | the same records trajectory, bound to the stop manifest | complete, 89 of 96 served; 7 goals unserved on identical-lookup loops (51 repeated lookups) | not run | the report pairs nothing because the continue run binds its own manifest; the cross-report reading follows |
+
+The `full` arm is the overflow control: both models refused the third goal's prompt at the daemon's context length, as the design expected.
+
+### q4 quality: atom pass rates and critical-rule violations
+
+Overall, 96 goals, every arm served and judged:
+
+| Arm | Facts | Work | Obligations | Revision | Evidence | Critical | Folded | Omitted |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| records | 53% (213/402) | 36% (109/304) | 31% (109/350) | 26% (60/228) | 66% (126/192) | 10 | 0 | 94 |
+| compaction | 11% (43/402) | 10% (29/304) | 10% (34/350) | 10% (23/228) | 35% (68/192) | 42 | 95 | 23 |
+
+By four-shift interval, the facts pass rate and the critical violations, records then compaction:
+
+| Shifts | Facts | Critical |
+| --- | --- | --- |
+| 1 to 4 | 62% / 26% | 0 / 3 |
+| 5 to 8 | 62% / 18% | 2 / 3 |
+| 9 to 12 | 60% / 8% | 1 / 7 |
+| 13 to 16 | 49% / 10% | 2 / 10 |
+| 17 to 20 | 46% / 4% | 4 / 13 |
+| 21 to 24 | 43% / 0% | 1 / 6 |
+
+Compaction's 42 violations are 15 fabricated external completions or receipts, 2 actions through withdrawn or superseded destinations, and 25 closures without the required source evidence. No product of either arm passed every atom of its rubric, so the report's acceptable-product pairing reads 95 ties and a gain of -1 to 0; the verdict `records` follows from the absence of a conservative gain and the 40 critical regressions.
+
+### q2 quality
+
+Overall, records over 96 goals, the failed compaction run over the 14 goals it served, and the continue-policy compaction run over the 89 goals it served:
+
+| Arm | Facts | Work | Obligations | Revision | Evidence | Critical |
+| --- | --- | --- | --- | --- | --- | --- |
+| records | 39% (158/402) | 21% (63/304) | 18% (63/350) | 19% (44/228) | 63% (121/192) | 16 |
+| compaction, stop policy (14 goals) | 24% (14/59) | 0% (0/44) | 23% (14/60) | 4% (1/24) | 18% (5/28) | 8 |
+| compaction, continue policy (89 goals) | 31% (113/369) | 13% (37/282) | 19% (63/326) | 15% (30/206) | 34% (61/178) | 67 |
+
+Records on the 2B model decays with the horizon: facts 53% in shifts 1 to 4 and 22% in shifts 21 to 24, critical violations 0 and 8. The continue-policy compaction run reads 47% of facts in shifts 17 to 20 and 26% in the final interval, with 17 and 12 critical violations there, and left 7 goals unserved.
+
+### Costs
+
+| Run | Agent requests | Agent tokens, prompt and completion | Summarizer tokens | Judge calls | Wall |
+| --- | --- | --- | --- | --- | --- |
+| q4 records | 209 | 438376 and 48790 | 0 | 2626 | 109 min, 63 of them the judge |
+| q4 compaction | 129 | 230104 and 37552 | 99609 and 26991 | 0 | 53 min |
+| q2 records | 461 | 976815 and 61403 | 0 | 2627 | 100 min, 56 of them the judge |
+| q2 compaction, stop | 29 | 51780 and 7896 | 16105 and 3530 | 0 | 5 min |
+| q2 compaction, continue | 176 | 324761 and 48634 | 112825 and 25054 | 0 | 36 min |
+
+Per served goal the records arm spent about 1.3 times the agent tokens of compaction at q4 and asked the judge 27 one-token questions; the judge's prompt tokens (767130 per run) are a filing cost the compaction arm has no counterpart for.
+
+### What the runs say about the records design
+
+- On both models the records design held the work together over 96 goals where compaction did not: at q4 it carried five times the facts, work, and obligations and a quarter of the critical violations; at q2 it served every goal while compaction looped on identical lookups, and under the continue policy it still led on facts, work, and evidence with a quarter of the critical violations.
+- The gap widens with the horizon. Compaction's facts pass rate fell from 26% to 0% across the q4 intervals while records fell from 62% to 43%; compaction's critical violations climbed through shifts 13 to 20.
+- Compaction's failure mode is specific: a 2B model with a recap-only history re-issues the same lookup until the step cap, and a 4B model fabricates completions and closes cases without the evidence its recap no longer carries. The records design's recall and repeat stop kept both from happening.
+- The records design is not production-ready on these models by the oracle's bar: no product passed every atom, half of the replies hit the reserve, and the 2B run decays late. The costs are the judge filing (27 one-token calls per goal) and about 1.3 times the agent tokens.
+- Direction for the package: plan generation room above the reserve (`predict` defaults to 0, and 47 of 209 q4 records replies were cut), carry the judge's filing cost out of the request path or batch it, and keep the lookup repeat stop and the answer-pass rethrow that the hardening added.
+
+### Confounds and limits
+
+- Reserve truncation: 47 of 209 records agent replies and 39 of 129 compaction agent replies at q4 ended at the 512-token reserve, 74 of 459 and 13 of 27 at q2, and 70 of 176 in the continue run; the adjudicators judged the cut text.
+- Summarizer truncation: 69 of 93 q4 compaction recaps ended at the 320-token summarizer cap, so the compaction arm folded through cut recaps; this is the arm's frozen configuration.
+- Judge cost: the records arm paid its judge calls inside the trajectory; wall time is not comparable across arms, tokens by role are.
+- Product-text leaks: 19 q4 adjudicators recorded arm-revealing phrasing in a product (`[Summary of earlier messages]` in 14 compaction products, recall phrasing in 5 records products); they were blind to the designs, and the report counts the leaks per arm without voiding the batch. One q4, one q2, and one continue-run adjudicator missed the ambiguous control at the atom level; the reports record it.
+- The `omitted` column for the records arm (94 of 96 goals) counts required sources the prompt did not carry verbatim; the ledger carries sources as records and recalls, so the column reads the ledger's selection rather than a loss.
+- One trajectory per arm and model, a serial order, a shared GPU, and a labeling instrument whose adjudicators changed engine between packets: no independence and no model-superiority claim.
 
 **Resumed on 2026-10-12.** The remaining experiment is continuous long-work records versus living aggregate with Qwen4B, thinking disabled and enabled: four measured trajectories. These runs have not started. The existing continuous entry enforces the canceled ranked-selection campaign and forbids thinking mode; a bounded operator change is being scoped to execute the requested comparison honestly. The canceled pilots and other model variations remain canceled.
 

@@ -47,7 +47,9 @@ Every confirmed finding carries a ruling in this file's table; every `repair` ro
 | U2 | closed | `da21594` after a session-limit restart; agents 363 passed; `Ledger.test.ts` 73 unchanged |
 | D | closed | `da21594`, `c60bce1`, `9e76ccd`, `7f259c3`: guides parity 137 passed after the `createConversation` TSDoc example took the summarizer signal and the calibration proof followed the answer-pass ruling; four writer files formatted; three lint findings cleared |
 | V | closed | haiku verifier, fifth run at `7f259c3`: `format:check`, `lint:check`, `check`, `build`, `test` exit 0 (1390 core, 119 policy, 227 config, 132 setup, 137 guides); golden probe 1 passed; the Orchestrator ran the baseline control with both import rewrites: six unedited `ee734c3` ledger suites, 208 passed. Discovery marks `src:core` as reached by no `test:src:core` chain; `test:src` runs the project and the marker predates the campaign |
-| F | running | two opus lanes died at the Claude session limit; both lanes re-dispatched on GPT-6 Astra through the Codex transport from `tmp/codex/harden-F-{objective,subjective}-brief.md` on `tmp/units/harden-F-claims.md` (25 claims) |
+| F | closed | two opus lanes died at the Claude session limit; both lanes ran on GPT-6 Astra through the Codex transport on `tmp/units/harden-F-claims.md` (25 claims) and returned `VERDICT: FAIL`; the reconciled rulings are in `harden-F-audit-verdict.md` |
+| G | closed | `901c786`: GPT-6 Astra repaired `isJudgment` membership, the classifier's fault conversion and argument rendering, and the uncanonicalizable lookup identity, and aligned the `drain`, `CompactOptions`, and `save` contracts; root applied the guide and guides-test patches, re-ran one mutation, and read check, 506 scoped tests, both golden probes (the complete capture equal to its `9e84294` baseline), and guide parity 137 green |
+| V2 | running | GPT-6 Luna verifier on `901c786` from `tmp/codex/harden-V2-brief.md`: the five gates, both golden probes, the `ee734c3` baseline suites |
 
 ## Order
 
