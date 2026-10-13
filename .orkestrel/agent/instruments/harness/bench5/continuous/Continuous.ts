@@ -30,12 +30,15 @@ import {
 	ENDURANCE_RUNTIME,
 	ENDURANCE_WORKLOAD,
 } from './constants.js'
+import { Audit } from './audit/Audit.js'
 import { readContinuousManifest, readContinuousWorkload, unloadModels } from './helpers.js'
 import { Trial } from './Trial.js'
 import { isContinuousArm, isContinuousStatus } from './validators.js'
 
 const USAGE =
-	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c]'
+	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c] | blind ... | report ...'
+const AUDIT_USAGE =
+	'usage: continuous.js blind --manifest FILE --run DIR... --oracle FILE --out PACKET --keys KEYS | report --manifest FILE --run DIR... --oracle FILE --packet PACKET --keys KEYS --labels LABELS --out REPORT'
 
 /** Freezes, runs, and serializes the continuous comparison from the emitted build. */
 export class Continuous {
@@ -64,6 +67,10 @@ export class Continuous {
 				arm: { type: 'string' },
 				arms: { type: 'string' },
 				base: { type: 'string' },
+				run: { type: 'string', multiple: true },
+				keys: { type: 'string' },
+				packet: { type: 'string' },
+				labels: { type: 'string' },
 			},
 		})
 		const phase = positionals[0]
@@ -108,6 +115,26 @@ export class Continuous {
 				values.url,
 				arms,
 			)
+		}
+		const manifest = values.manifest?.[0]
+		if (
+			(phase === 'blind' || phase === 'report') &&
+			(manifest === undefined ||
+				values.manifest?.length !== 1 ||
+				values.run === undefined ||
+				values.oracle === undefined ||
+				values.out === undefined ||
+				values.keys === undefined)
+		)
+			throw new Error(AUDIT_USAGE)
+		if (phase === 'blind' && manifest !== undefined && values.run !== undefined && values.oracle !== undefined && values.out !== undefined && values.keys !== undefined) {
+			new Audit().blind(manifest, values.run, values.oracle, values.out, values.keys)
+			return 0
+		}
+		if (phase === 'report' && manifest !== undefined && values.run !== undefined && values.oracle !== undefined && values.out !== undefined && values.keys !== undefined) {
+			if (values.packet === undefined || values.labels === undefined) throw new Error(AUDIT_USAGE)
+			new Audit().report(manifest, values.run, values.oracle, values.packet, values.keys, values.labels, values.out)
+			return 0
 		}
 		throw new Error(USAGE)
 	}

@@ -1,5 +1,7 @@
 # Results
 
+**Narrowed again on 2026-10-12.** The aggregate arm is dropped. The remaining comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B, thinking disabled, one run per arm and model. The `c1` series is running on the dedicated daemon; see [the active plan](.orkestrel/agent/plan.md) and [the progress record](.orkestrel/agent/progress.md). No c1 result is graded yet.
+
 **Resumed on 2026-10-12.** The remaining experiment is continuous long-work records versus living aggregate with Qwen4B, thinking disabled and enabled: four measured trajectories. These runs have not started. The existing continuous entry enforces the canceled ranked-selection campaign and forbids thinking mode; a bounded operator change is being scoped to execute the requested comparison honestly. The canceled pilots and other model variations remain canceled.
 
 The dedicated Ollama endpoint was restored at18:00UTC on port11435 with the accepted executable, runner, and environment. The other session's service remains running. Opus's availability probe hit a session limit; separate native Astra planner and analyst lanes hold the bounded direction pass. See [the active plan](.orkestrel/agent/plan.md) and [progress record](.orkestrel/agent/progress.md).

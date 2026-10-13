@@ -1,4 +1,5 @@
 import type {
+	EnduranceControl,
 	EnduranceFact,
 	EnduranceObligation,
 	EnduranceOracle,
@@ -9,9 +10,11 @@ import type { RefitFile } from '../../refit/types.js'
 import type { SustainedPreparation, SustainedRun } from '../types.js'
 import type {
 	SustainedAuditInput,
+	SustainedAuditSource,
 	SustainedBounds,
 	SustainedCostDetail,
 	SustainedCoverage,
+	SustainedEvidence,
 	SustainedItem,
 	SustainedKeys,
 	SustainedLabel,
@@ -19,6 +22,7 @@ import type {
 import { createHash } from 'node:crypto'
 import { isDeepStrictEqual } from 'node:util'
 import { isFiniteNumber, isRecord } from '@orkestrel/contract'
+import { SUSTAINED_CONTROLS } from './constants.js'
 import { SustainedAuditError } from './errors.js'
 
 /** Refuses an oracle whose exact bytes were not pinned by the runtime's frozen workload resource.
@@ -345,6 +349,113 @@ export function matchesCompletionEvidence(
 					),
 			),
 	)
+}
+
+/** Builds one blind item from actual same-run work and the separately held truth available at its read point.
+ * @param source - The run's runtime, rows, observations, messages, and receipts
+ * @param oracle - The private truth
+ * @param goalId - The served goal
+ * @param id - The opaque item identity
+ * @param product - The product text the item carries: the actual reply or a prefrozen control artifact
+ * @returns The item with its earlier same-run products, available evidence, receipts, arrived facts, obligations, and rubric
+ * @throws SustainedAuditError when a goal, rubric, observation, conversation, earlier product, or evidence join is missing
+ */
+export function buildAuditItem(
+	source: SustainedAuditSource,
+	oracle: EnduranceOracle,
+	goalId: string,
+	id: string,
+	product: string,
+): SustainedItem {
+	const goal = source.runtime.goals.find((entry) => entry.id === goalId)
+	const rubric = oracle.goals.find((entry) => entry.goal === goalId)
+	const observation = source.observations.find((entry) => entry.goal === goalId)
+	if (goal === undefined || rubric === undefined || observation === undefined)
+		throw new SustainedAuditError(`missing product join ${goalId}`)
+	for (const reference of observation.conversation) {
+		if (
+			!reference.startsWith('message:') ||
+			!source.messages.some((message) => message.id === reference.slice(8))
+		)
+			throw new SustainedAuditError(`missing conversation join ${reference}`)
+	}
+	const earlier = rubric.earlier.map((reference) => {
+		const row = source.rows.find((entry) => entry.goal === reference)
+		const request = source.runtime.goals.find((entry) => entry.id === reference)
+		if (
+			row === undefined ||
+			request === undefined ||
+			!observation.products.includes(`product:${reference}`)
+		)
+			throw new SustainedAuditError(`missing earlier same-arm product ${reference}`)
+		return { id: reference, request: request.request, product: row.reply }
+	})
+	const evidence: SustainedEvidence[] = []
+	for (const reference of observation.sources) {
+		const found = source.runtime.seed.find((entry) => `source:${entry.id}` === reference)
+		const lookup = source.runtime.lookups.find(
+			(entry) => `lookup:${entry.id}@${entry.from}` === reference,
+		)
+		if (found !== undefined && source.runtime.seed.indexOf(found) <= goal.after)
+			evidence.push({ id: reference, content: found.content, shift: found.shift })
+		else if (
+			lookup !== undefined &&
+			lookup.from <= goal.after &&
+			source.runtime.seed[lookup.from] !== undefined
+		)
+			evidence.push({
+				id: reference,
+				content: lookup.text,
+				shift: source.runtime.seed[lookup.from]?.shift ?? 0,
+			})
+		else throw new SustainedAuditError(`missing external evidence join ${reference}`)
+	}
+	for (const atom of rubric.atoms) {
+		for (const atomSource of atom.sources)
+			if (!evidence.some((entry) => entry.id === `source:${atomSource}`))
+				throw new SustainedAuditError(`missing rubric source join ${atomSource}`)
+	}
+	for (const required of rubric.lookups) {
+		const reference = `lookup:${required.id}@${required.from}`
+		if (evidence.some((entry) => entry.id === reference)) continue
+		const lookup = source.runtime.lookups.find(
+			(entry) =>
+				entry.id === required.id && entry.tool === required.tool && entry.from === required.from,
+		)
+		const arrival = lookup === undefined ? undefined : source.runtime.seed[lookup.from]
+		if (lookup === undefined || arrival === undefined || lookup.from > goal.after)
+			throw new SustainedAuditError(`missing available lookup ${reference}`)
+		evidence.push({ id: reference, content: lookup.text, shift: arrival.shift })
+	}
+	return {
+		id,
+		point: { shift: goal.shift, after: goal.after },
+		request: goal.request,
+		product,
+		earlier,
+		evidence,
+		receipts: source.receipts.filter(
+			(receipt) =>
+				receipt.after <= goal.after &&
+				(receipt.goal === goalId || observation.products.includes(`product:${receipt.goal}`)),
+		),
+		facts: collectAuditFacts(oracle, goal.after),
+		obligations: collectAuditObligations(oracle, goal.after),
+		rubric,
+	}
+}
+
+/** Refuses a prefrozen control whose rubric lacks the critical rule its verdict names.
+ * @param item - The blind item built around the control artifact
+ * @param control - The prefrozen control
+ * @throws SustainedAuditError when a stale or fabricated control's rubric lacks its exact rule
+ */
+export function verifyAuditControl(item: SustainedItem, control: EnduranceControl): void {
+	if (
+		control.verdict !== 'ambiguous' &&
+		!item.rubric.critical.includes(SUSTAINED_CONTROLS[control.verdict])
+	)
+		throw new SustainedAuditError(`prefrozen control lacks its exact critical rule ${control.id}`)
 }
 
 /** Merges aliases of one measured preparation without charging its work twice.

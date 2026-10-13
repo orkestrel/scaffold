@@ -1,0 +1,3 @@
+/** States the limits of the dependent-trajectory evidence the c1 report carries. */
+export const CONTINUOUS_LIMITATION =
+	'Dependent trajectory evidence: one serial run per arm and model, not independent trials or model superiority. Each arm served the same external arrivals, requests, tools, sampler, window, and reserve; the records arm also paid the judge filing inside its trajectory. A prompt that carried a source only through a recap is counted as folded, not selected. Wire, flush, and elapsed intervals overlap and are never summed. Shared-GPU load and the serial arm order limit timing attribution. No user utility ceiling is assumed.'

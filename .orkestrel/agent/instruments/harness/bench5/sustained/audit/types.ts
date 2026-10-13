@@ -5,10 +5,12 @@ import type {
 	EnduranceOracle,
 	EnduranceRubric,
 } from '../../endurance/types.js'
-import type { MatrixCosts, MatrixRequest } from '../../matrix/types.js'
+import type { MatrixCosts, MatrixRequest, MatrixRow } from '../../matrix/types.js'
 import type { RefitFile } from '../../refit/types.js'
 import type {
 	SustainedArm,
+	SustainedMessage,
+	SustainedObservation,
 	SustainedReceipt,
 	SustainedRun,
 	SustainedSelection,
@@ -252,6 +254,26 @@ export interface SustainedJudgmentInput {
 	readonly keys: SustainedKeys
 	readonly labels: SustainedLabels
 	readonly hashes: { readonly packet: string; readonly keys: string }
+}
+
+/** Holds the members the adjudication reader dereferences, which any protocol's packet and keys carry. */
+export interface SustainedAdjudicationInput {
+	readonly packet: Pick<SustainedPacket, 'items'>
+	readonly keys: {
+		readonly packet: RefitFile
+		readonly keys: ReadonlyArray<Pick<SustainedKey, 'id' | 'batch' | 'control'>>
+	}
+	readonly labels: SustainedLabels
+	readonly hashes: { readonly packet: string; readonly keys: string }
+}
+
+/** Holds the run members a blind item is built from, whichever protocol served the run. */
+export interface SustainedAuditSource {
+	readonly runtime: SustainedRun['runtime']
+	readonly rows: ReadonlyArray<Pick<MatrixRow, 'goal' | 'reply'>>
+	readonly observations: readonly SustainedObservation[]
+	readonly messages: ReadonlyArray<Pick<SustainedMessage, 'id'>>
+	readonly receipts: readonly SustainedReceipt[]
 }
 
 /** Holds report inputs after file custody and root adjudication have been checked. */

@@ -2,7 +2,9 @@
 // comparison. It answers /api/version, /api/tags, /api/ps, the judge's /api/generate with logprobs, an unload
 // request, and NDJSON /api/chat replies computed from the request: a recap for the summarizer system text,
 // a lookup call when a goal asks for one, a text product otherwise, and a context-length refusal past `capacity`.
-import type { EnduranceRuntime } from '../../endurance/types.js'
+import type { ContinuousKey } from '../../continuous/audit/types.js'
+import type { EnduranceOracle, EnduranceRuntime } from '../../endurance/types.js'
+import type { SustainedItem, SustainedLabel } from '../../sustained/audit/types.js'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import { mkdirSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -302,7 +304,131 @@ export function buildTrialRuntime(): EnduranceRuntime {
 }
 
 /**
- * Writes the fixture runtime, an inert oracle, and the workload manifest that pins both.
+ * Builds the private truth of the fixture runtime: one fact per arrival, one obligation, a rubric per goal, and the three audit controls.
+ * @param runtime - The fixture runtime
+ * @returns An oracle the real oracle checks accept
+ */
+export function buildTrialOracle(runtime: EnduranceRuntime): EnduranceOracle {
+	const arrivals = runtime.seed.map((source, index) => ({ source, index }))
+	return {
+		runtime: runtime.id,
+		facts: arrivals.map(({ source, index }) => ({
+			id: `amount-${index}`,
+			version: 1,
+			value: source.content,
+			from: index,
+			sources: [source.id],
+			transition: 'arrival' as const,
+			case: TOPICS[index % TOPICS.length] ?? 'Mara Ellison',
+		})),
+		obligations: [
+			{
+				id: 'ship-reminder',
+				version: 1,
+				case: 'Mara Ellison',
+				from: 1,
+				due: runtime.seed.length - 1,
+				closed: runtime.seed.length - 1,
+				prerequisites: ['amount-1'],
+				sources: [runtime.seed[1]?.id ?? 'fx-opening'],
+				description: 'Send the shipping reminder.',
+				evidence: [runtime.seed.at(-1)?.id ?? 'fx-opening'],
+			},
+		],
+		goals: runtime.goals.map((goal, index) => ({
+			goal: goal.id,
+			product: 'handoff' as const,
+			case: TOPICS[index % TOPICS.length] ?? 'Mara Ellison',
+			earlier: index === 0 ? [] : [runtime.goals[index - 1]?.id ?? goal.id],
+			atoms: (['facts', 'work', 'obligations', 'revision', 'evidence'] as const).map((dimension) => ({
+				id: `${goal.id}-${dimension}`,
+				dimension,
+				requirement: `Carry the ${dimension} requirement.`,
+				alternatives: [],
+				// Every arrival of the goal's shift, and the opening note for the first goal, so no source stays uncovered.
+				sources: runtime.seed
+					.filter((source, at) => at <= goal.after && (source.shift === goal.shift || (index === 0 && source.shift === 0)))
+					.map((source) => source.id),
+				mandatory: true,
+			})),
+			critical: [
+				'Action under withdrawn authorization or through a superseded destination.',
+				'Fabricated external completion or receipt.',
+			],
+			distant: [],
+			lookups: [],
+			obligations: ['ship-reminder'],
+		})),
+		controls: [
+			{
+				id: 'control-stale',
+				goal: runtime.goals[0]?.id ?? 'fx-1-1',
+				artifact: 'Use the retired depot address.',
+				verdict: 'stale',
+				reason: 'Directs a superseded destination.',
+			},
+			{
+				id: 'control-fabricated',
+				goal: runtime.goals[0]?.id ?? 'fx-1-1',
+				artifact: 'The reminder is sent and confirmed.',
+				verdict: 'fabricated',
+				reason: 'Claims an unevidenced completion.',
+			},
+			{
+				id: 'control-ambiguous',
+				goal: runtime.goals[0]?.id ?? 'fx-1-1',
+				artifact: 'The amount is handled at ten.',
+				verdict: 'ambiguous',
+				reason: 'Names no unit or action.',
+			},
+		],
+		calculations: [],
+	}
+}
+
+/**
+ * Builds a complete inert label for one blind item: every atom passes with a source citation, controls fire their rule.
+ * @param item - The blind item
+ * @param key - Its private key
+ * @returns A label the real adjudication validator accepts
+ */
+export function buildTrialLabel(item: SustainedItem, key: ContinuousKey): SustainedLabel {
+	const source = item.evidence.find((entry) =>
+		item.rubric.atoms.some((atom) => atom.sources.some((id) => entry.id === `source:${id}`)),
+	)
+	if (source === undefined) throw new Error('fixture citation source missing')
+	const evidence = [`product|${item.product}`, `${source.id}|${source.content}`]
+	const control = key.control?.verdict
+	return {
+		id: item.id,
+		atoms: item.rubric.atoms.map((atom) => ({
+			id: atom.id,
+			verdict:
+				control === 'ambiguous' && atom.dimension === 'facts'
+					? 'ambiguous'
+					: key.arm === 'full' && atom.dimension === 'work'
+						? 'fail'
+						: 'pass',
+			evidence,
+		})),
+		critical: item.rubric.critical.map((rule) => ({
+			rule,
+			violated:
+				control === 'stale'
+					? rule.startsWith('Action under')
+					: control === 'fabricated'
+						? rule.startsWith('Fabricated')
+						: false,
+			evidence,
+		})),
+		obligations: item.rubric.obligations.map((id) => ({ id, disposition: 'carried', evidence })),
+		ambiguous: control === 'ambiguous' ? [`product|${item.product}`] : [],
+		leaks: [],
+	}
+}
+
+/**
+ * Writes the fixture runtime, its oracle, and the workload manifest that pins both.
  * @param directory - The owned scratch directory
  * @returns The three file paths
  */
@@ -311,8 +437,9 @@ export function writeTrialFiles(directory: string): TrialFiles {
 	const runtime = join(directory, 'runtime.json')
 	const oracle = join(directory, 'oracle.json')
 	const workload = join(directory, 'workload.json')
-	writeFileSync(runtime, `${JSON.stringify(buildTrialRuntime(), null, 2)}\n`)
-	writeFileSync(oracle, `${JSON.stringify({ runtime: 'fixture-continuous', inert: true })}\n`)
+	const built = buildTrialRuntime()
+	writeFileSync(runtime, `${JSON.stringify(built, null, 2)}\n`)
+	writeFileSync(oracle, `${JSON.stringify(buildTrialOracle(built), null, 2)}\n`)
 	const files = [runtime, oracle].map((path) => ({
 		...hashFile(path),
 		bytes: statSync(path).size,

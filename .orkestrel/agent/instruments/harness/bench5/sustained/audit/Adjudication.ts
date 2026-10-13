@@ -1,7 +1,7 @@
 import type {
 	SustainedAdjudication,
+	SustainedAdjudicationInput,
 	SustainedItem,
-	SustainedJudgmentInput,
 	SustainedLabel,
 } from './types.js'
 import { SUSTAINED_CONTROLS } from './constants.js'
@@ -11,10 +11,10 @@ import { matchesCompletionEvidence, matchesFactualEvidence, readAuditCitation } 
 /** Validates complete custody-bound root adjudication without generating quality labels. */
 export class Adjudication {
 	/** Refuses incomplete adjudication and marks missed controls or identity leaks by batch.
-	 * @param input - Exact packet/key hashes and independent root labels
+	 * @param input - Exact packet/key hashes and independent root labels; the keys carry at least each item's identity, batch, and control
 	 * @returns Checked labels and batch validity, keeping ambiguity explicit
 	 */
-	read(input: SustainedJudgmentInput): SustainedAdjudication {
+	read(input: SustainedAdjudicationInput): SustainedAdjudication {
 		if (
 			input.labels.authority !== 'root-adjudicated' ||
 			input.labels.packet !== input.hashes.packet ||

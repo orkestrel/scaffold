@@ -1,3 +1,4 @@
+import type { ContinuousKeys } from './audit/types.js'
 import type {
 	ContinuousArm,
 	ContinuousExecution,
@@ -165,6 +166,33 @@ export function isContinuousSection(value: unknown): value is ContinuousSection 
 		arrayOf(isString)(value.messages) &&
 		isCount(value.estimate)
 	)
+}
+
+/** Checks the private keys of a blind packet. */
+export function isContinuousKeys(value: unknown): value is ContinuousKeys {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			value.protocol === 'c1' &&
+			['manifest', 'workload', 'runtime', 'oracle', 'packet'].every((key) =>
+				isRefitFile(value[key]),
+			) &&
+			isCount(value.seed) &&
+			Array.isArray(value.keys) &&
+			value.keys.every(
+				(key: unknown) =>
+					isRecord(key) &&
+					[key.id, key.batch, key.run, key.goal].every(isString) &&
+					isContinuousArm(key.arm) &&
+					arrayOf(isRefitFile)(key.files) &&
+					(key.control === undefined ||
+						(isRecord(key.control) &&
+							isString(key.control.id) &&
+							['stale', 'fabricated', 'ambiguous'].includes(String(key.control.verdict)) &&
+							isString(key.control.reason))),
+			),
+	)
+	return result.success && result.value
 }
 
 /** Checks one turn estimate. */

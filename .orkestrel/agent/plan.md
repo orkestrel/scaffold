@@ -1,5 +1,15 @@
 # The context and selection campaign for `@orkestrel/agent`
 
+## User-directed scope, narrowed again — 2026-10-12, second resumption
+
+The user dropped the living-aggregate arm: across every graded development comparison it showed no quality advantage and cost 4 to 5 times the records tokens. The remaining question is the user's records design against the compaction method the package itself ships, on very long work. Do not execute the aggregate instructions in the sections that follow; they are history.
+
+Run the continuous 96-goal endurance evaluation workload through three arms on the published 0.0.30 build, one run per arm and model, Qwen 3.5 4B then 2B, thinking disabled: `records` (the ledger), `compaction` (a plain agent with the package's window compaction: 320-token recaps, at most 3 sections, keep 0), and `full` (a plain agent over the whole history, expected to end at the daemon's context-length refusal). Every arm shares the external arrivals, requests, lookups, sampler, window 3072, and reserve 512. A thinking-enabled run follows only after the user reads these results.
+
+The entry is `instruments/harness/bench5/continuous/` (protocol `c1`): `freeze` binds the model digests, daemon version, budget, compaction policy, and workload custody; `run` serves one arm; `series` serves every arm serially from a cold daemon; `blind` and `report` build the packet and the comparison from root-adjudicated labels. It reuses the Driver's wire capture, the endurance readers, the judge cache, and the adjudication validator, and carries none of the matrix freeze, deployment receipt, or calibration-transfer custody. The frozen manifests are `instruments/results/c1/q4/freeze/manifest.json` and `instruments/results/c1/q2/freeze/manifest.json`; raw runs stay under `instruments/harness/tmp/c1/`.
+
+Grade the products blind through the existing adjudication contract, compare each arm against records by interval and in the final interval, report folded and omitted required sources per arm, all-role tokens, and elapsed time, and rule retention of records unless compaction shows a positive conservative gain without a critical regression. After the runs, audit them and the package, then harden `src` under the confirmed audit findings.
+
 ## User-directed scope, resumed — 2026-10-12
 
 The user resumed the narrowed comparison. Preserve the other session's Ollama service and workers. The user canceled the unfinished pilot and the remaining model variations, matrix stages, full-view comparisons, separate judge shadow, and broad tuning campaign. Preserve completed results and partial evidence. Do not execute the superseded instructions that follow this section.
