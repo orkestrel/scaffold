@@ -1,8 +1,0 @@
-file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/units/aggregate-l14-b-quality-boundary-check.ts:73
-		if (!reference.startsWith(`${scenarioPath}#`)) throw new Error(`Scenario reference outside source: ${reference}`)
-		                                                     ^
-
-Error: Scenario reference outside source: C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/agent/instruments/harness/bench/variants/long/v1.json#/ledger/system
-    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/units/aggregate-l14-b-quality-boundary-check.ts:73:56
-
-Node.js v24.21.0
