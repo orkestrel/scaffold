@@ -59,6 +59,23 @@ export const SYSTEM_REPLACEMENTS = Object.freeze([
 export const SYSTEM_PIN_SENTENCE = / After a lookup, you must call pin\b[^.]*\./
 export const SYSTEM_HANDLE_SENTENCE = ' Never cite a handle such as m12 or r5 in your answer.'
 
+/** Names the two application lookups every arm advertises: the tool name, its argument key, and the wording the model reads. */
+export const LOOKUP_TOOLS = Object.freeze([
+	Object.freeze({
+		name: 'lookup_order',
+		key: 'id',
+		summary: 'The order id',
+		description: 'Look up a Larkspur Home order by its order id, such as LH-12345.',
+	}),
+	Object.freeze({
+		name: 'lookup_customer',
+		key: 'account',
+		summary: 'The account number',
+		description:
+			'Look up a Larkspur Home customer account by its account number, such as LH-12345.',
+	}),
+])
+
 export const LOOKUP_ORDER_ID = /\b(?:order|account|ticket)\s+([A-Z]{2,}-\d+)/gi
 export const LOOKUP_OWNER_PATTERNS = Object.freeze([
 	/\baccount\s+([A-Z]{2,}-\d+)\s*\(([^)]+)\)/gi,

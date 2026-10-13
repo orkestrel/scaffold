@@ -88,6 +88,7 @@ import {
 	DAEMON,
 	FIT,
 	HARNESS,
+	LOOKUP_TOOLS,
 	MICA_CALIBRATION,
 	MICA_CONTEXT,
 	MICA_MODEL,
@@ -177,21 +178,6 @@ const FLUSH_ROLES: ReadonlySet<CallRole> = new Set(['agent', 'summarizer', 'flus
 const NO_BODY: readonly number[] = [204, 205, 304]
 const CONTEXT_ERROR = /context|too long|exceed/i
 const GOAL_ROOT = ['seed', 'tools', 'lookups', 'days', 'ledger', 'system']
-const LOOKUP_TOOLS = Object.freeze([
-	Object.freeze({
-		name: 'lookup_order',
-		key: 'id',
-		summary: 'The order id',
-		description: 'Look up a Larkspur Home order by its order id, such as LH-12345.',
-	}),
-	Object.freeze({
-		name: 'lookup_customer',
-		key: 'account',
-		summary: 'The account number',
-		description:
-			'Look up a Larkspur Home customer account by its account number, such as LH-12345.',
-	}),
-])
 const FILES = Object.freeze({
 	rows: 'rows.jsonl',
 	selections: 'selections.jsonl',

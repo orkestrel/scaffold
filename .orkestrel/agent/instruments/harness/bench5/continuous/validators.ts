@@ -1,0 +1,178 @@
+import type {
+	ContinuousArm,
+	ContinuousExecution,
+	ContinuousManifest,
+	ContinuousObservation,
+	ContinuousRow,
+	ContinuousSection,
+	ContinuousSelection,
+	ContinuousStatus,
+	ContinuousTurn,
+} from './types.js'
+import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel/contract'
+import { isMatrixBudget } from '../matrix/validators.js'
+import { isRefitFile } from '../refit/validators.js'
+import { isSustainedObservation } from '../sustained/validators.js'
+import { CONTINUOUS_ARMS } from './constants.js'
+
+function isCount(value: unknown): value is number {
+	return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+}
+
+function isDigest(value: unknown): value is string {
+	return isString(value) && /^(sha256:)?[a-f0-9]{64}$/.test(value)
+}
+
+/** Checks an arm name. */
+export function isContinuousArm(value: unknown): value is ContinuousArm {
+	return CONTINUOUS_ARMS.some((arm) => arm === value)
+}
+
+/** Checks a trajectory status. */
+export function isContinuousStatus(value: unknown): value is ContinuousStatus {
+	return [
+		'started',
+		'calibrated',
+		'running',
+		'complete',
+		'overflow',
+		'limit',
+		'failed',
+		'fault',
+	].includes(String(value))
+}
+
+/** Checks a frozen manifest's complete shape; custody follows in `readContinuousManifest`. */
+export function isContinuousManifest(value: unknown): value is ContinuousManifest {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			value.protocol === 'c1' &&
+			isString(value.key) &&
+			typeof value.think === 'boolean' &&
+			['decision', 'summarizer', 'judge'].every(
+				(role) =>
+					isRecord(value[role]) && isString(value[role].model) && isDigest(value[role].digest),
+			) &&
+			isRecord(value.sampler) &&
+			Object.values(value.sampler).every(isFiniteNumber) &&
+			isMatrixBudget(value.budget) &&
+			isRecord(value.compaction) &&
+			isCount(value.compaction.predict) &&
+			value.compaction.predict > 0 &&
+			isCount(value.compaction.sections) &&
+			value.compaction.sections > 0 &&
+			isCount(value.compaction.keep) &&
+			isCount(value.retry) &&
+			isCount(value.timeout) &&
+			value.timeout > 0 &&
+			isRecord(value.limits) &&
+			[value.limits.calls, value.limits.tokens, value.limits.wall, value.limits.goals].every(
+				(one) => isCount(one) && one > 0,
+			) &&
+			['workload', 'runtime', 'oracle', 'agent', 'ollama', 'tags'].every((key) =>
+				isRefitFile(value[key]),
+			) &&
+			isRecord(value.daemon) &&
+			isString(value.daemon.url) &&
+			isString(value.daemon.version) &&
+			arrayOf(isContinuousArm)(value.arms) &&
+			value.arms.length > 0 &&
+			new Set(value.arms).size === value.arms.length &&
+			isCount(value.blind),
+	)
+	return result.success && result.value
+}
+
+/** Checks one trajectory's execution binding. */
+export function isContinuousExecution(value: unknown): value is ContinuousExecution {
+	return (
+		isRecord(value) &&
+		value.protocol === 'c1' &&
+		isRefitFile(value.manifest) &&
+		isContinuousArm(value.arm) &&
+		isRefitFile(value.runtime)
+	)
+}
+
+/** Checks one served row. */
+export function isContinuousRow(value: unknown): value is ContinuousRow {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isString(value.goal) &&
+			isContinuousArm(value.arm) &&
+			typeof value.success === 'boolean' &&
+			isString(value.reply) &&
+			typeof value.partial === 'boolean' &&
+			(value.error === undefined || isString(value.error)) &&
+			isCount(value.passes) &&
+			['wall', 'flush', 'first', 'last', 'prompt', 'scale', 'folds', 'merges', 'sections', 'recap'].every(
+				(key) => isFiniteNumber(value[key]),
+			) &&
+			(value.entry === undefined || isFiniteNumber(value.entry)) &&
+			typeof value.overflow === 'boolean' &&
+			arrayOf(isString)(value.failures) &&
+			isRecord(value.recalls) &&
+			isRecord(value.lookups) &&
+			isRecord(value.questions) &&
+			isRecord(value.briefing) &&
+			isFiniteNumber(value.briefing.tokens) &&
+			isString(value.briefing.digest) &&
+			isString(value.tail),
+	)
+	return result.success && result.value
+}
+
+/** Checks one selection record. */
+export function isContinuousSelection(value: unknown): value is ContinuousSelection {
+	const result = attempt(
+		() =>
+			isRecord(value) &&
+			isString(value.goal) &&
+			isCount(value.pass) &&
+			isCount(value.sequence) &&
+			isString(value.briefing) &&
+			isString(value.digest) &&
+			(value.scale === undefined || isFiniteNumber(value.scale)) &&
+			isRecord(value.instructions) &&
+			Object.values(value.instructions).every(isString) &&
+			Array.isArray(value.tail) &&
+			value.tail.every(
+				(entry: unknown) =>
+					isRecord(entry) &&
+					(entry.index === undefined || isCount(entry.index)) &&
+					isString(entry.role) &&
+					isString(entry.content),
+			),
+	)
+	return result.success && result.value
+}
+
+/** Checks one observation, including its folded partition. */
+export function isContinuousObservation(value: unknown): value is ContinuousObservation {
+	return isSustainedObservation(value) && isRecord(value) && arrayOf(isString)(value.folded)
+}
+
+/** Checks one compaction event. */
+export function isContinuousSection(value: unknown): value is ContinuousSection {
+	return (
+		isRecord(value) &&
+		isString(value.goal) &&
+		(value.event === 'compact' || value.event === 'collapse') &&
+		isString(value.id) &&
+		isString(value.summary) &&
+		arrayOf(isString)(value.messages) &&
+		isCount(value.estimate)
+	)
+}
+
+/** Checks one turn estimate. */
+export function isContinuousTurn(value: unknown): value is ContinuousTurn {
+	return (
+		isRecord(value) &&
+		isCount(value.turn) &&
+		(value.goal === undefined || isString(value.goal)) &&
+		(value.estimate === undefined || isFiniteNumber(value.estimate))
+	)
+}
