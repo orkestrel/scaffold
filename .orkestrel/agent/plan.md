@@ -10,6 +10,8 @@ The entry is `instruments/harness/bench5/continuous/` (protocol `c1`): `freeze` 
 
 Grade the products blind through the existing adjudication contract, compare each arm against records by interval and in the final interval, report folded and omitted required sources per arm, all-role tokens, and elapsed time, and rule retention of records unless compaction shows a positive conservative gain without a critical regression. After the runs, audit them and the package, then harden `src` under the confirmed audit findings.
 
+Both passes are graded (root `RESULTS.md` § c1, verdict `records` on both models) and the hardening is accepted at `901c786` with no version bump. On 2026-10-13 the user directed a thinking-enabled pass: the same three arms and two models, `think` on, frozen at the ladder's 1024 reserve (window 3584, `predict` 512, the configuration the earlier thinking run settled on after the 512 reserve cut its replies), under `instruments/results/c1/<key>-think/freeze/` with raw runs under `instruments/harness/tmp/c1-think/`. The package direction the results point at, and the proposal for keeping the harness in development use, are in [the direction note](direction.md).
+
 ## User-directed scope, resumed — 2026-10-12
 
 The user resumed the narrowed comparison. Preserve the other session's Ollama service and workers. The user canceled the unfinished pilot and the remaining model variations, matrix stages, full-view comparisons, separate judge shadow, and broad tuning campaign. Preserve completed results and partial evidence. Do not execute the superseded instructions that follow this section.

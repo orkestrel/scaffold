@@ -42,7 +42,7 @@ import { Trial } from './Trial.js'
 import { isContinuousArm, isContinuousFailurePolicy, isContinuousStatus } from './validators.js'
 
 const USAGE =
-	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--failure stop|continue] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c] | blind ... | report ...'
+	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--reserve TOKENS] [--failure stop|continue] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c] | blind ... | report ...'
 const AUDIT_USAGE =
 	'usage: continuous.js blind --manifest FILE --run DIR... --oracle FILE --out PACKET --keys KEYS | labels --packet PACKET --labels LABELS | report --manifest FILE --run DIR... --oracle FILE --packet PACKET --keys KEYS --labels LABELS --out REPORT'
 
@@ -62,6 +62,7 @@ export class Continuous {
 			options: {
 				key: { type: 'string' },
 				think: { type: 'string' },
+				reserve: { type: 'string' },
 				failure: { type: 'string' },
 				out: { type: 'string' },
 				url: { type: 'string' },
@@ -90,10 +91,14 @@ export class Continuous {
 				throw new Error('--think must be true or false')
 			if (values.failure !== undefined && !isContinuousFailurePolicy(values.failure))
 				throw new Error('--failure must be stop or continue')
+			const reserve = values.reserve === undefined ? CONTINUOUS_RESERVE : Number(values.reserve)
+			if (!Number.isSafeInteger(reserve) || reserve <= 0)
+				throw new Error('--reserve must be a positive whole number of tokens on the fixed ladder')
 			return await runner.#freeze(
 				values.key,
 				values.think === 'true',
 				values.failure ?? CONTINUOUS_FAILURE,
+				reserve,
 				resolve(values.out),
 				values.url ?? DAEMON,
 				values.workload,
@@ -163,6 +168,7 @@ export class Continuous {
 		key: string,
 		think: boolean,
 		failure: ContinuousFailurePolicy,
+		reserve: number,
 		out: string,
 		url: string,
 		workloadPath: string | undefined,
@@ -201,7 +207,7 @@ export class Continuous {
 			summarizer: { model, digest: readModelDigest(inventory, model) },
 			judge: { model: MICA_MODEL, digest: readModelDigest(inventory, MICA_MODEL) },
 			sampler: { ...SAMPLER },
-			budget: buildBudget(CONTINUOUS_RESERVE),
+			budget: buildBudget(reserve),
 			compaction: CONTINUOUS_COMPACTION,
 			retry: settings.retry,
 			timeout: TIMEOUT,
@@ -221,7 +227,7 @@ export class Continuous {
 		writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' })
 		readContinuousManifest(path)
 		console.log(
-			`frozen ${key} think=${think} failure=${failure} daemon=${reported.version} goals=${goals} at ${path}`,
+			`frozen ${key} think=${think} reserve=${reserve} failure=${failure} daemon=${reported.version} goals=${goals} at ${path}`,
 		)
 		return 0
 	}

@@ -90,6 +90,57 @@ describe('continuous', () => {
 		assert.throws(() => readContinuousManifest(unpinned), /does not pin/)
 	})
 
+	it('freezes a thinking manifest at a higher rung of the reserve ladder', async () => {
+		const out = join(directory, 'freeze-thinking')
+		assert.equal(
+			await Continuous.execute([
+				'freeze',
+				'--key',
+				'q2',
+				'--out',
+				out,
+				'--live',
+				'--url',
+				plain.url,
+				'--think',
+				'true',
+				'--reserve',
+				'1024',
+				'--workload',
+				files.workload,
+				'--runtime',
+				files.runtime,
+				'--oracle',
+				files.oracle,
+			]),
+			0,
+		)
+		const { manifest: frozen } = readContinuousManifest(join(out, 'manifest.json'))
+		assert.equal(frozen.think, true)
+		assert.deepEqual(frozen.budget, { reserve: 1024, window: 3584, ceiling: 3584, predict: 512 })
+		await assert.rejects(
+			Continuous.execute([
+				'freeze',
+				'--key',
+				'q2',
+				'--out',
+				join(directory, 'freeze-off-ladder'),
+				'--live',
+				'--url',
+				plain.url,
+				'--reserve',
+				'700',
+				'--workload',
+				files.workload,
+				'--runtime',
+				files.runtime,
+				'--oracle',
+				files.oracle,
+			]),
+			/fixed ladder/,
+		)
+	})
+
 	it('serves the records arm with live filing and retained receipts', async () => {
 		const out = join(directory, 'records')
 		const from = plain.requests.length
