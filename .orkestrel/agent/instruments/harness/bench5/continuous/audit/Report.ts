@@ -14,7 +14,12 @@ import { SUSTAINED_DIMENSIONS } from '../../sustained/audit/constants.js'
 import { SustainedAuditError } from '../../sustained/audit/errors.js'
 import { computeAcceptability } from '../../sustained/audit/helpers.js'
 import { CONTINUOUS_LIMITATION } from './constants.js'
-import { buildDimensionTally, sumRoleUsage } from './helpers.js'
+import {
+	buildDimensionTally,
+	listBlockingBatchFailures,
+	readAuditLeaks,
+	sumRoleUsage,
+} from './helpers.js'
 
 /** Reports every arm's adjudicated outcomes by interval, each arm's pairing against records, and the costs, while retaining invalid evidence. */
 export class Report {
@@ -30,9 +35,24 @@ export class Report {
 		const failures = input.runs.flatMap((run) =>
 			run.failures.map((failure) => `${run.execution.arm}: ${failure}`),
 		)
+		const audit = readAuditLeaks(
+			input.blind.keys,
+			input.adjudication.labels,
+			input.adjudication.batches.flatMap((batch) =>
+				batch.failures.filter((failure) => failure.startsWith('missed ')),
+			),
+		)
+		const blocked = new Set(
+			input.adjudication.batches
+				.filter((batch) => listBlockingBatchFailures(batch.failures).length > 0)
+				.map((batch) => batch.id),
+		)
 		for (const batch of input.adjudication.batches)
-			if (!batch.valid)
-				failures.push(`invalid audit batch ${batch.id}: ${batch.failures.join('; ')}`)
+			if (blocked.has(batch.id))
+				failures.push(
+					`invalid audit batch ${batch.id}: ${listBlockingBatchFailures(batch.failures).join('; ')}`,
+				)
+		for (const leak of audit.foreign) failures.push(`foreign identity leak ${leak}`)
 		const boundaries = runtime.goals.filter(
 			(goal, index) => goal.shift % 4 === 0 && runtime.goals[index + 1]?.shift !== goal.shift,
 		)
@@ -90,6 +110,7 @@ export class Report {
 			valid,
 			failures,
 			batches: input.adjudication.batches,
+			audit,
 			status,
 			served,
 			common,
@@ -171,7 +192,13 @@ export class Report {
 				failures.push(`${run.execution.arm}:${goal}: missing adjudicated product`)
 				continue
 			}
-			if (!input.adjudication.batches.some((batch) => batch.id === product.key.batch && batch.valid)) {
+			if (
+				!input.adjudication.batches.some(
+					(batch) =>
+						batch.id === product.key.batch &&
+						listBlockingBatchFailures(batch.failures).length === 0,
+				)
+			) {
 				failures.push(`${run.execution.arm}:${goal}: invalid batch ${product.key.batch}`)
 				continue
 			}

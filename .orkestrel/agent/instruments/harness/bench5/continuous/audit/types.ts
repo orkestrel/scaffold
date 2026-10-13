@@ -124,6 +124,16 @@ export interface ContinuousArmCost {
 }
 
 /** Holds the evidence-backed comparison of every arm without an independence claim. */
+/** Holds the adjudication readings c1 reports without voiding the batch. */
+export interface ContinuousAuditReading {
+	/** Counts, per arm, the items whose adjudicator recorded a leak in the product's own text. */
+	readonly leaks: Readonly<Record<string, number>>
+	/** Lists the leak citations that name anything but a product's own text; one voids the comparison. */
+	readonly foreign: readonly string[]
+	/** Lists the controls an adjudicator missed, each marking that adjudicator's labels. */
+	readonly controls: readonly string[]
+}
+
 export interface ContinuousReport {
 	readonly protocol: 'c1'
 	readonly manifest: RefitFile
@@ -132,6 +142,7 @@ export interface ContinuousReport {
 	readonly valid: boolean
 	readonly failures: readonly string[]
 	readonly batches: SustainedAdjudication['batches']
+	readonly audit: ContinuousAuditReading
 	readonly status: Readonly<Record<string, ContinuousStatus>>
 	readonly served: Readonly<Record<string, number>>
 	/** Holds the last fourth-shift checkpoint every arm completed. */

@@ -163,6 +163,55 @@ describe('continuous audit', () => {
 		assert.equal(report.verdict, 'records')
 		assert.ok(report.costs.some((cost) => cost.arm === 'records' && cost.judge.requests > 0))
 		assert.ok(report.costs.some((cost) => cost.arm === 'compaction' && cost.summarizer.requests > 0))
+		const ambiguous = mapping.keys.find((key) => key.control?.verdict === 'ambiguous')
+		assert.ok(ambiguous !== undefined)
+		const leaking = join(directory, 'leaking-labels.json')
+		writeFileSync(
+			leaking,
+			JSON.stringify({
+				...labels,
+				labels: labels.labels.map((label) =>
+					label.id === first.id
+						? { ...label, leaks: ['product|Done'] }
+						: label.id === ambiguous.id
+							? { ...label, atoms: label.atoms.map((atom) => ({ ...atom, verdict: 'pass' })), ambiguous: [] }
+							: label,
+				),
+			}),
+		)
+		const leakingOut = join(directory, 'report-leaking.json')
+		assert.equal(
+			await Continuous.execute(['report', '--manifest', manifest, '--run', runs.records ?? '', '--run', runs.compaction ?? '', '--run', runs.full ?? '', '--oracle', files.oracle, '--packet', packet, '--keys', keys, '--labels', leaking, '--out', leakingOut]),
+			0,
+		)
+		const tolerated = readJSON(leakingOut)
+		assert.ok(isReport(tolerated))
+		assert.equal(tolerated.valid, true)
+		assert.deepEqual(tolerated.batches.map((batch) => batch.valid), [false])
+		assert.deepEqual(tolerated.audit.leaks, { [mapping.keys.find((key) => key.id === first.id)?.arm ?? '']: 1 })
+		assert.deepEqual(tolerated.audit.foreign, [])
+		assert.ok(tolerated.audit.controls.some((control) => control.startsWith('missed ambiguous control ')))
+		assert.equal(tolerated.verdict, 'records')
+		const foreign = join(directory, 'foreign-labels.json')
+		writeFileSync(
+			foreign,
+			JSON.stringify({
+				...labels,
+				labels: labels.labels.map((label) =>
+					label.id === first.id ? { ...label, leaks: ['source:fx-opening|Opening note'] } : label,
+				),
+			}),
+		)
+		const foreignOut = join(directory, 'report-foreign.json')
+		assert.equal(
+			await Continuous.execute(['report', '--manifest', manifest, '--run', runs.records ?? '', '--run', runs.compaction ?? '', '--run', runs.full ?? '', '--oracle', files.oracle, '--packet', packet, '--keys', keys, '--labels', foreign, '--out', foreignOut]),
+			0,
+		)
+		const voided = readJSON(foreignOut)
+		assert.ok(isReport(voided))
+		assert.equal(voided.valid, false)
+		assert.ok(voided.failures.some((failure) => failure.startsWith('foreign identity leak ')))
+		assert.equal(voided.verdict, 'inconclusive')
 		const tampered = join(directory, 'tampered-labels.json')
 		writeFileSync(tampered, JSON.stringify({ ...labels, labels: labels.labels.slice(1) }))
 		await assert.rejects(
