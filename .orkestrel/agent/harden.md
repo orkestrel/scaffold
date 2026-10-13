@@ -37,6 +37,18 @@ Every confirmed finding carries a ruling in this file's table; every `repair` ro
 | F falsify | one adversarial review round over the integrated result's numbered claims | review | D | review |
 | V verifier | the five gates, the golden probe comparison, the `ee734c3` ledger suites | gates | F | gates |
 
+## Status on 2026-10-13
+
+| Unit | State | Evidence |
+| --- | --- | --- |
+| T0 | closed | `9e84294`; `tests/setup.test.ts` 130 passed; golden probe recorded before any source edit |
+| U1, U3, U5, L2 | closed | `1beea72`; their file-scoped suites green; the `types.ts` and `tests/setup.ts` patches applied by the Orchestrator |
+| U4, U6, U7 | closed | `d92878b` and `379309f`; conversations 254, ledgers, providers and integration 253 passed; U4's report recovered from its transcript after a session cut |
+| U2 | closed | `da21594` after a session-limit restart; agents 363 passed; `Ledger.test.ts` 73 unchanged |
+| D | closed | `da21594`, `c60bce1`, `9e76ccd`, `7f259c3`: guides parity 137 passed after the `createConversation` TSDoc example took the summarizer signal and the calibration proof followed the answer-pass ruling; four writer files formatted; three lint findings cleared |
+| V | closed | haiku verifier, fifth run at `7f259c3`: `format:check`, `lint:check`, `check`, `build`, `test` exit 0 (1390 core, 119 policy, 227 config, 132 setup, 137 guides); golden probe 1 passed; the Orchestrator ran the baseline control with both import rewrites: six unedited `ee734c3` ledger suites, 208 passed. Discovery marks `src:core` as reached by no `test:src:core` chain; `test:src` runs the project and the marker predates the campaign |
+| F | running | two opus lanes died at the Claude session limit; both lanes re-dispatched on GPT-6 Astra through the Codex transport from `tmp/codex/harden-F-{objective,subjective}-brief.md` on `tmp/units/harden-F-claims.md` (25 claims) |
+
 ## Order
 
 1. T0 alone: builders and the golden baseline.
@@ -51,5 +63,6 @@ Writers run file-scoped Vitest only while the c1 series is live, to keep the arm
 
 - A changed byte in a briefing, a stub, a tool result, or a judge request changes the records design under measurement: the T0 golden probe and the unedited `ee734c3` ledger suites must stay green through U1, U4, U6, and U2.
 - `renderJSON` and `hasCalls` are refactors on the gauge path: the probe compares the gauge too.
-- Breaking changes for 0.0.30 consumers (`scopes.add`, the narrower `createRelayProvider`, the stricter run guard, `keep`, and `isJudgment`): no shim; the typecheck, guide parity, and the release notes carry them; the version bumps.
+- Breaking changes for 0.0.30 consumers (`scopes.add`, the narrower `createRelayProvider`, the stricter run guard, `keep`, `isJudgment`, and, found by the falsify round, the `handleAgentRunnerJob(registry, partial, spawned, controller)` signature whose third argument is the runner's spawned-id set): no shim; the typecheck, guide parity, and the release notes carry them; the version bumps.
+- The falsify round (two GPT-6 Astra lanes, both `VERDICT: FAIL`) broke claims 2, 5, 7, 11, 14, 19, 21, 22, 23, 24, and 25 and one outside finding. Root reproduced each by reading the cited source and ruled: claims 2, 11, and 14 were overstated claims and need no change; 19 and 21 are documented limitations and an inventory entry; 23 and 24 (documentation half) and 25 (the `save` promise) are TSDoc and guide alignments; 5 (`isJudgment` exactness), 24 (`Classifier.#collectNear` rendering), 25 (uncanonicalizable lookup identity), and the outside finding (`Classifier` fault conversion) are code repairs; 7 and 22 are an instrument gap root closes with a complete golden capture re-baselined against `ee734c3`. The fix unit `harden-G` runs on GPT-6 Astra from `tmp/codex/harden-G-brief.md`; its re-audit covers the repaired claims only.
 - A rejection from `compact()` under abort must never surface unhandled: the losing promise carries a terminal catch, and U4 proves the late reject.
