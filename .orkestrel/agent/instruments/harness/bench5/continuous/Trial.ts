@@ -64,7 +64,7 @@ import { readModelDigest } from '../matrix/helpers.js'
 import { Mirror } from '../Mirror.js'
 import { hashFile } from '../refit/helpers.js'
 import { PlainArm } from './arms/PlainArm.js'
-import { CONTINUOUS_FILES } from './constants.js'
+import { CONTINUOUS_FAILURE, CONTINUOUS_FILES } from './constants.js'
 import { createLookups } from './factories.js'
 import {
 	collectHistory,
@@ -79,7 +79,7 @@ import {
  * Serves one frozen manifest's workload through one arm and retains every request, product, receipt, and read-point observation.
  *
  * @remarks
- * A trajectory calibrates the prompt price once, builds the arm, adds the seed up to each goal's read point, sends the prefix flush, serves the goal, and appends its row and observation. It ends at the horizon, at a context-length refusal, at a whole-trajectory limit, at a goal with no product, or at a judge fault.
+ * A trajectory calibrates the prompt price once, builds the arm, adds the seed up to each goal's read point, sends the prefix flush, serves the goal, and appends its row and observation. It ends at the horizon, at a context-length refusal, at a whole-trajectory limit, at a judge fault, or at a goal with no product unless the manifest's failure policy is `continue`, which records the empty row and serves the next goal.
  *
  * @example
  * ```ts
@@ -131,6 +131,7 @@ export class Trial {
 	#folds = 0
 	#merges = 0
 	#failures = new Set<MatrixFailure>()
+	#unserved = 0
 	#flushed = 0
 	#status: ContinuousStatus = 'started'
 
@@ -146,7 +147,7 @@ export class Trial {
 	/**
 	 * Runs the trajectory to its end.
 	 *
-	 * @returns 0 when every goal was served, 3 when the run ended at a design outcome: a context-length refusal, a limit, or a goal with no product
+	 * @returns 0 when every goal was served, 3 when the run ended at a design outcome (a context-length refusal, a limit, or a goal with no product) or reached the horizon past a goal with no product
 	 * @remarks Thrown when the output exists, the daemon's models or version differ from the freeze, a transport or harness fault ends the run, or the judge cache faults; the run directory keeps what was written.
 	 */
 	async execute(): Promise<number> {
@@ -196,7 +197,7 @@ export class Trial {
 			if (built !== undefined) this.#dump(built, out)
 		}
 		this.#report(out, this.#status, undefined)
-		return this.#status === 'complete' ? 0 : 3
+		return this.#status === 'complete' && this.#unserved === 0 ? 0 : 3
 	}
 
 	async #inventory(out: string): Promise<void> {
@@ -519,9 +520,11 @@ export class Trial {
 		}
 		appendFileSync(join(out, 'rows.jsonl'), `${JSON.stringify(row)}\n`)
 		this.#observeWork(arm, goal, row, out)
+		if (!row.success) this.#unserved += 1
 		if (this.#stopped !== undefined) this.#status = 'limit'
 		else if (this.#overflow) this.#status = 'overflow'
-		else if (error !== undefined || reply === '') this.#status = 'failed'
+		else if (error !== undefined || reply === '')
+			this.#status = (manifest.failure ?? CONTINUOUS_FAILURE) === 'continue' ? 'running' : 'failed'
 		else this.#status = 'running'
 		this.#report(out, this.#status, error)
 		console.log(
@@ -946,6 +949,7 @@ export class Trial {
 					gauge: this.#gauge,
 					judge: stats,
 					faults: this.#faults,
+					unserved: this.#unserved,
 					walls: Object.fromEntries(this.#walls),
 					build: { entry: VENDOR_AGENT, sha256: computeDigest(readFileSync(VENDOR_AGENT, 'utf8')) },
 					started: this.#started,

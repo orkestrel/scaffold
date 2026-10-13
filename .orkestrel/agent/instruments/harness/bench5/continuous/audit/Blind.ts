@@ -27,7 +27,7 @@ export class Blind {
 			for (const row of run.rows) {
 				if (row.reply === '') continue
 				const id = computeAuditId(seed, [input.reference.hash, run.path, row.goal])
-				items.push(buildAuditItem(run, input.oracle, row.goal, id, row.reply))
+				items.push(this.#strip(buildAuditItem(run, input.oracle, row.goal, id, row.reply)))
 				keys.push({
 					id,
 					batch,
@@ -47,7 +47,7 @@ export class Blind {
 			const id = computeAuditId(seed, [input.reference.hash, batch, run.path, control.id])
 			const item = buildAuditItem(run, input.oracle, control.goal, id, control.artifact)
 			verifyAuditControl(item, control)
-			items.push(item)
+			items.push(this.#strip(item))
 			keys.push({
 				id,
 				batch,
@@ -62,6 +62,11 @@ export class Blind {
 			packet: { protocol: 'c1', items: items.toSorted(compareAuditIds) },
 			keys: keys.toSorted(compareAuditIds),
 		}
+	}
+
+	// Drops the ledger's own recall receipts, which only the records arm produces and which name no external outcome, so an item carries no arm identity.
+	#strip(item: SustainedItem): SustainedItem {
+		return { ...item, receipts: item.receipts.filter((receipt) => receipt.tool !== 'recall') }
 	}
 
 	#verify(input: ContinuousAuditInput): void {

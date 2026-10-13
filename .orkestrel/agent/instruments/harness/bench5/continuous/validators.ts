@@ -2,6 +2,7 @@ import type { ContinuousKeys, ContinuousPacket } from './audit/types.js'
 import type {
 	ContinuousArm,
 	ContinuousExecution,
+	ContinuousFailurePolicy,
 	ContinuousManifest,
 	ContinuousObservation,
 	ContinuousRow,
@@ -14,7 +15,7 @@ import { arrayOf, attempt, isFiniteNumber, isRecord, isString } from '@orkestrel
 import { isMatrixBudget } from '../matrix/validators.js'
 import { isRefitFile } from '../refit/validators.js'
 import { isSustainedObservation } from '../sustained/validators.js'
-import { CONTINUOUS_ARMS } from './constants.js'
+import { CONTINUOUS_ARMS, CONTINUOUS_FAILURE_POLICIES } from './constants.js'
 
 function isCount(value: unknown): value is number {
 	return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
@@ -41,6 +42,11 @@ export function isContinuousStatus(value: unknown): value is ContinuousStatus {
 		'failed',
 		'fault',
 	].includes(String(value))
+}
+
+/** Checks a policy for a goal with no product. */
+export function isContinuousFailurePolicy(value: unknown): value is ContinuousFailurePolicy {
+	return CONTINUOUS_FAILURE_POLICIES.some((policy) => policy === value)
 }
 
 /** Checks a frozen manifest's complete shape; custody follows in `readContinuousManifest`. */
@@ -80,7 +86,8 @@ export function isContinuousManifest(value: unknown): value is ContinuousManifes
 			arrayOf(isContinuousArm)(value.arms) &&
 			value.arms.length > 0 &&
 			new Set(value.arms).size === value.arms.length &&
-			isCount(value.blind),
+			isCount(value.blind) &&
+			(value.failure === undefined || isContinuousFailurePolicy(value.failure)),
 	)
 	return result.success && result.value
 }

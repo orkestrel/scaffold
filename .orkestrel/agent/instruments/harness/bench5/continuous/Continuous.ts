@@ -1,4 +1,9 @@
-import type { ContinuousArm, ContinuousManifest, SeriesEntry } from './types.js'
+import type {
+	ContinuousArm,
+	ContinuousFailurePolicy,
+	ContinuousManifest,
+	SeriesEntry,
+} from './types.js'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -23,6 +28,7 @@ import {
 	CONTINUOUS_ARMS,
 	CONTINUOUS_BLIND,
 	CONTINUOUS_COMPACTION,
+	CONTINUOUS_FAILURE,
 	CONTINUOUS_LIMITS,
 	CONTINUOUS_RESERVE,
 	CONTINUOUS_TERMINAL,
@@ -33,10 +39,10 @@ import {
 import { Audit } from './audit/Audit.js'
 import { readContinuousManifest, readContinuousWorkload, unloadModels } from './helpers.js'
 import { Trial } from './Trial.js'
-import { isContinuousArm, isContinuousStatus } from './validators.js'
+import { isContinuousArm, isContinuousFailurePolicy, isContinuousStatus } from './validators.js'
 
 const USAGE =
-	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c] | blind ... | report ...'
+	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--failure stop|continue] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c] | blind ... | report ...'
 const AUDIT_USAGE =
 	'usage: continuous.js blind --manifest FILE --run DIR... --oracle FILE --out PACKET --keys KEYS | labels --packet PACKET --labels LABELS | report --manifest FILE --run DIR... --oracle FILE --packet PACKET --keys KEYS --labels LABELS --out REPORT'
 
@@ -56,6 +62,7 @@ export class Continuous {
 			options: {
 				key: { type: 'string' },
 				think: { type: 'string' },
+				failure: { type: 'string' },
 				out: { type: 'string' },
 				url: { type: 'string' },
 				live: { type: 'boolean', default: false },
@@ -81,9 +88,12 @@ export class Continuous {
 				throw new Error(USAGE)
 			if (values.think !== undefined && values.think !== 'true' && values.think !== 'false')
 				throw new Error('--think must be true or false')
+			if (values.failure !== undefined && !isContinuousFailurePolicy(values.failure))
+				throw new Error('--failure must be stop or continue')
 			return await runner.#freeze(
 				values.key,
 				values.think === 'true',
+				values.failure ?? CONTINUOUS_FAILURE,
 				resolve(values.out),
 				values.url ?? DAEMON,
 				values.workload,
@@ -152,6 +162,7 @@ export class Continuous {
 	async #freeze(
 		key: string,
 		think: boolean,
+		failure: ContinuousFailurePolicy,
 		out: string,
 		url: string,
 		workloadPath: string | undefined,
@@ -204,11 +215,14 @@ export class Continuous {
 			daemon: { url, version: reported.version },
 			arms: CONTINUOUS_ARMS,
 			blind: CONTINUOUS_BLIND,
+			failure,
 		}
 		const path = join(out, 'manifest.json')
 		writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' })
 		readContinuousManifest(path)
-		console.log(`frozen ${key} think=${think} daemon=${reported.version} goals=${goals} at ${path}`)
+		console.log(
+			`frozen ${key} think=${think} failure=${failure} daemon=${reported.version} goals=${goals} at ${path}`,
+		)
 		return 0
 	}
 

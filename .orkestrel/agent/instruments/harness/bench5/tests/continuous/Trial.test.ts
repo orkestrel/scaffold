@@ -75,6 +75,7 @@ describe('continuous', () => {
 		assert.equal(frozen.limits.goals, GOALS)
 		assert.equal(runtime.goals.length, GOALS)
 		assert.deepEqual(frozen.arms, ['records', 'compaction', 'full'])
+		assert.equal(frozen.failure, 'stop')
 		assert.equal(frozen.budget.window, 3072)
 		const altered = join(directory, 'altered-manifest.json')
 		writeFileSync(
@@ -168,6 +169,90 @@ describe('continuous', () => {
 		assert.ok(run.requests.some((request) => request.status === 400 && request.failures.includes('transport')))
 		assert.equal(run.sections.length, 0)
 		assert.ok(run.requests.every((request) => request.role !== 'judge' && request.role !== 'summarizer'))
+	})
+
+	it('ends at a goal with no product under stop, and records it then serves the rest under continue', async () => {
+		const silent = await startDaemon({
+			factor: 1,
+			capacity: 100000,
+			decision: MODELS.q2,
+			judge: MICA_MODEL,
+			silent: 'Shift 2 product 3',
+		})
+		try {
+			const stopped = join(directory, 'silent-stop')
+			assert.equal(
+				await Continuous.execute(['run', '--manifest', manifest, '--arm', 'full', '--out', stopped, '--live', '--url', silent.url]),
+				3,
+			)
+			const ended = readContinuousRun(stopped)
+			assert.equal(ended.status, 'failed')
+			assert.deepEqual(ended.failures, [])
+			assert.equal(ended.rows.length, 7)
+			const last = ended.rows.at(-1)
+			assert.ok(last !== undefined && last.goal === 'fx-2-3' && last.reply === '' && !last.success && !last.overflow)
+			assert.ok(ended.rows.slice(0, -1).every((row) => row.success))
+			const frozen = join(directory, 'freeze-continue')
+			assert.equal(
+				await Continuous.execute([
+					'freeze',
+					'--key',
+					'q2',
+					'--out',
+					frozen,
+					'--live',
+					'--url',
+					silent.url,
+					'--workload',
+					files.workload,
+					'--runtime',
+					files.runtime,
+					'--oracle',
+					files.oracle,
+					'--failure',
+					'continue',
+				]),
+				0,
+			)
+			const continuing = join(frozen, 'manifest.json')
+			assert.equal(readContinuousManifest(continuing).manifest.failure, 'continue')
+			const continued = join(directory, 'silent-continue')
+			assert.equal(
+				await Continuous.execute(['run', '--manifest', continuing, '--arm', 'full', '--out', continued, '--live', '--url', silent.url]),
+				3,
+			)
+			const run = readContinuousRun(continued)
+			assert.equal(run.status, 'complete')
+			assert.deepEqual(run.failures, [])
+			assert.equal(run.rows.length, GOALS)
+			assert.deepEqual(run.rows.filter((row) => !row.success).map((row) => row.goal), ['fx-2-3'])
+			assert.ok(run.rows.find((row) => row.goal === 'fx-2-3')?.reply === '')
+			assert.ok(run.observations.some((observation) => observation.goal === 'fx-2-3' && !observation.complete))
+			assert.ok(run.observations.filter((observation) => observation.complete).length === GOALS - 1)
+			await assert.rejects(
+				Continuous.execute([
+					'freeze',
+					'--key',
+					'q2',
+					'--out',
+					join(directory, 'freeze-retry'),
+					'--live',
+					'--url',
+					silent.url,
+					'--workload',
+					files.workload,
+					'--runtime',
+					files.runtime,
+					'--oracle',
+					files.oracle,
+					'--failure',
+					'retry',
+				]),
+				/--failure must be/,
+			)
+		} finally {
+			await silent.close()
+		}
 	})
 
 	it('refuses a daemon whose model digest or version differs from the freeze', async () => {

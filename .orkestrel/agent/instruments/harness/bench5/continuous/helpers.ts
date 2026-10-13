@@ -337,7 +337,9 @@ export function readContinuousRun(path: string): ContinuousRun {
 			row.reply !== '' &&
 			!messages.some(
 				(message) =>
-					message.role === 'assistant' && message.goal === row.goal && message.content === row.reply,
+					message.role === 'assistant' &&
+					message.goal === row.goal &&
+					message.content.trim() === row.reply,
 			)
 		)
 			failures.push(`${row.goal}: response differs from the actual conversation product`)
@@ -349,7 +351,11 @@ export function readContinuousRun(path: string): ContinuousRun {
 			observation.folded.some((id) => !observation.omitted.includes(id))
 		)
 			failures.push(`${row.goal}: selected, omitted, and folded partition differs`)
-		if (at < rows.length - 1 && (row.reply === '' || row.partial || row.error !== undefined))
+		if (
+			manifest.failure !== 'continue' &&
+			at < rows.length - 1 &&
+			(row.reply === '' || row.partial || row.error !== undefined)
+		)
 			failures.push(`${row.goal}: an incomplete product precedes a served goal`)
 	}
 	for (const receipt of receipts) {

@@ -16,6 +16,9 @@ import type { CallRole, LookupCount, QuestionCount, RecallCount, SelectionRecord
 /** Names one context design the continuous comparison serves the same workload through. */
 export type ContinuousArm = 'records' | 'compaction' | 'full'
 
+/** Names what a trajectory does at a goal with no product: `stop` ends it as `failed`, `continue` records the empty row and serves the next goal. */
+export type ContinuousFailurePolicy = 'stop' | 'continue'
+
 /** Names how a trajectory stands: its progress, its complete horizon, or the design outcome or fault that ended it early. */
 export type ContinuousStatus =
 	| 'started'
@@ -80,6 +83,8 @@ export interface ContinuousManifest {
 	readonly daemon: ContinuousDaemon
 	readonly arms: readonly ContinuousArm[]
 	readonly blind: number
+	/** Holds the policy at a goal with no product; a manifest frozen before the member existed stops. */
+	readonly failure?: ContinuousFailurePolicy
 }
 
 /** Binds one trajectory to its frozen manifest, arm, and runtime bytes. */

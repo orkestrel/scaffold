@@ -1,4 +1,9 @@
-import type { ContinuousArm, ContinuousCompaction, ContinuousLimits } from './types.js'
+import type {
+	ContinuousArm,
+	ContinuousCompaction,
+	ContinuousFailurePolicy,
+	ContinuousLimits,
+} from './types.js'
 import { join } from 'node:path'
 import { HARNESS } from '../constants.js'
 
@@ -28,6 +33,15 @@ export const CONTINUOUS_RESERVE = 512
 
 /** Holds the packet randomization seed the freeze records. */
 export const CONTINUOUS_BLIND = 29
+
+/** Names the policies a freeze may bind for a goal with no product. */
+export const CONTINUOUS_FAILURE_POLICIES: readonly ContinuousFailurePolicy[] = Object.freeze([
+	'stop',
+	'continue',
+])
+
+/** Holds the policy a manifest frozen without one follows: a goal with no product ends the trajectory as `failed`. */
+export const CONTINUOUS_FAILURE: ContinuousFailurePolicy = 'stop'
 
 /** Holds the summarizer instruction the compaction arm folds older exchanges with. */
 export const COMPACTION_SYSTEM =

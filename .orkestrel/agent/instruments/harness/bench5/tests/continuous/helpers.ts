@@ -20,6 +20,8 @@ export interface DaemonOptions {
 	readonly capacity: number
 	readonly decision: string
 	readonly judge: string
+	/** Answers a request whose text carries this marker with no content, so the goal yields no product. */
+	readonly silent?: string
 }
 
 export interface Daemon {
@@ -158,6 +160,8 @@ function answerChat(
 	if (systemText.startsWith(COMPACTION_SYSTEM))
 		return { status: 200, text: renderChat(`Recap of ${messages.length - 1} lines: ${lastText.slice(0, 60)}`, prompt), ndjson: true }
 	if (systemText === FLUSH_SYSTEM) return { status: 200, text: renderChat('ok', prompt), ndjson: true }
+	if (options.silent !== undefined && last?.role === 'user' && lastText.includes(options.silent))
+		return { status: 200, text: renderChat('', prompt), ndjson: true }
 	const tools = Array.isArray(body.tools) ? body.tools : []
 	if (last?.role === 'user' && tools.length > 0 && lastText.includes('LOOKUP') && !called.has(lastText)) {
 		called.add(lastText)
