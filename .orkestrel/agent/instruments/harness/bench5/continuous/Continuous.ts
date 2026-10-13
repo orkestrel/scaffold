@@ -38,7 +38,7 @@ import { isContinuousArm, isContinuousStatus } from './validators.js'
 const USAGE =
 	'usage: continuous.js freeze --key KEY --out DIR --live [--url URL] [--think true|false] [--workload FILE --runtime FILE --oracle FILE] | run --manifest FILE --arm ARM --out DIR --live [--url URL] | series --manifest FILE... --base DIR --live [--url URL] [--arms a,b,c] | blind ... | report ...'
 const AUDIT_USAGE =
-	'usage: continuous.js blind --manifest FILE --run DIR... --oracle FILE --out PACKET --keys KEYS | report --manifest FILE --run DIR... --oracle FILE --packet PACKET --keys KEYS --labels LABELS --out REPORT'
+	'usage: continuous.js blind --manifest FILE --run DIR... --oracle FILE --out PACKET --keys KEYS | labels --packet PACKET --labels LABELS | report --manifest FILE --run DIR... --oracle FILE --packet PACKET --keys KEYS --labels LABELS --out REPORT'
 
 /** Freezes, runs, and serializes the continuous comparison from the emitted build. */
 export class Continuous {
@@ -115,6 +115,16 @@ export class Continuous {
 				values.url,
 				arms,
 			)
+		}
+		if (phase === 'labels') {
+			if (values.packet === undefined || values.labels === undefined) throw new Error(AUDIT_USAGE)
+			const checked = new Audit().labels(resolve(values.packet), resolve(values.labels))
+			for (const entry of checked.refused)
+				console.log(`REFUSED ${entry.id}\n${entry.failures.map((failure) => `  ${failure}`).join('\n')}`)
+			console.log(
+				`labels: refused ${checked.refused.length}, unlabeled ${checked.unlabeled.length}${checked.unlabeled.length === 0 ? '' : `: ${checked.unlabeled.join(', ')}`}`,
+			)
+			return checked.refused.length === 0 ? 0 : 3
 		}
 		const manifest = values.manifest?.[0]
 		if (

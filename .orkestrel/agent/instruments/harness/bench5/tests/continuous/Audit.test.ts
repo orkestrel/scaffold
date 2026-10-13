@@ -6,6 +6,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { MICA_MODEL, MODELS } from '../../constants.js'
+import { Audit } from '../../continuous/audit/Audit.js'
 import { Continuous } from '../../continuous/Continuous.js'
 import { isContinuousKeys } from '../../continuous/validators.js'
 import { readJSON, readRows } from '../../helpers.js'
@@ -113,6 +114,22 @@ describe('continuous audit', () => {
 		assert.ok(isSustainedLabels(labels))
 		const labelsPath = join(directory, 'labels.json')
 		writeFileSync(labelsPath, JSON.stringify(labels))
+		assert.equal(await Continuous.execute(['labels', '--packet', packet, '--labels', labelsPath]), 0)
+		const partial = join(directory, 'partial-labels.json')
+		const [first, second] = labels.labels
+		assert.ok(first !== undefined && second !== undefined)
+		writeFileSync(
+			partial,
+			JSON.stringify({
+				...labels,
+				labels: [first, { ...second, atoms: second.atoms.map((atom) => ({ ...atom, evidence: ['product|not in the product'] })) }],
+			}),
+		)
+		assert.equal(await Continuous.execute(['labels', '--packet', packet, '--labels', partial]), 3)
+		const checked = new Audit().labels(packet, partial)
+		assert.deepEqual(checked.refused.map((entry) => entry.id), [second.id])
+		assert.ok(checked.refused[0]?.failures.some((failure) => failure.includes('unbound or empty evidence citation')))
+		assert.equal(checked.unlabeled.length, labels.labels.length - 2)
 		const out = join(directory, 'report.json')
 		assert.equal(
 			await Continuous.execute(['report', '--manifest', manifest, '--run', runs.records ?? '', '--run', runs.compaction ?? '', '--run', runs.full ?? '', '--oracle', files.oracle, '--packet', packet, '--keys', keys, '--labels', labelsPath, '--out', out]),

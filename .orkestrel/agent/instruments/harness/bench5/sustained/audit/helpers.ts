@@ -458,6 +458,122 @@ export function verifyAuditControl(item: SustainedItem, control: EnduranceContro
 		throw new SustainedAuditError(`prefrozen control lacks its exact critical rule ${control.id}`)
 }
 
+/** Reads every citation of one ruling, refusing an empty list or one that never cites the current product.
+ * @param item - The blinded work product
+ * @param evidence - The ruling's citations
+ * @returns The validated references, or the failures that refuse them
+ */
+export function readRulingEvidence(
+	item: SustainedItem,
+	evidence: readonly string[],
+): { readonly references: readonly string[]; readonly failures: readonly string[] } {
+	if (evidence.length === 0)
+		return { references: [], failures: [`empty adjudication evidence ${item.id}`] }
+	const references: string[] = []
+	const failures: string[] = []
+	for (const citation of evidence) {
+		try {
+			references.push(readAuditCitation(item, citation))
+		} catch (error) {
+			failures.push(error instanceof Error ? error.message : String(error))
+		}
+	}
+	if (failures.length === 0 && !references.includes('product'))
+		failures.push(`ruling does not cite current product ${item.id}`)
+	return { references, failures }
+}
+
+/** Lists every rule one label breaks against its item: populations, citations, factual support, completion custody, and ambiguity evidence.
+ * @param item - The blinded work product
+ * @param label - The independent adjudication of that product
+ * @returns The failures in reading order; empty when the label is admissible
+ */
+export function listLabelFailures(item: SustainedItem, label: SustainedLabel): readonly string[] {
+	const failures: string[] = []
+	const populations: ReadonlyArray<readonly [string, readonly string[], readonly string[]]> = [
+		['atom', item.rubric.atoms.map((atom) => atom.id), label.atoms.map((atom) => atom.id)],
+		['critical', item.rubric.critical, label.critical.map((critical) => critical.rule)],
+		[
+			'obligation',
+			item.rubric.obligations,
+			label.obligations.map((obligation) => obligation.id),
+		],
+	]
+	for (const [name, expected, actual] of populations)
+		if (
+			new Set(expected).size !== expected.length ||
+			new Set(actual).size !== actual.length ||
+			actual.length !== expected.length ||
+			actual.some((id) => !expected.includes(id))
+		)
+			failures.push(
+				`missing, duplicate, or unknown ${name} outcomes: expected ${expected.join(', ')}; found ${actual.join(', ')}`,
+			)
+	for (const atom of label.atoms) {
+		const definition = item.rubric.atoms.find((entry) => entry.id === atom.id)
+		const evidence = readRulingEvidence(item, atom.evidence)
+		failures.push(...evidence.failures.map((failure) => `${atom.id}: ${failure}`))
+		if (definition === undefined) {
+			failures.push(`unknown atom ${atom.id}`)
+			continue
+		}
+		if (
+			evidence.failures.length === 0 &&
+			atom.verdict === 'pass' &&
+			definition.dimension === 'facts' &&
+			!matchesFactualEvidence(item, evidence.references, definition.sources)
+		)
+			failures.push(`earlier work cannot supply factual credit ${atom.id}`)
+	}
+	for (const critical of label.critical)
+		failures.push(
+			...readRulingEvidence(item, critical.evidence).failures.map(
+				(failure) => `critical ${critical.rule}: ${failure}`,
+			),
+		)
+	for (const obligation of label.obligations) {
+		const evidence = readRulingEvidence(item, obligation.evidence)
+		failures.push(...evidence.failures.map((failure) => `${obligation.id}: ${failure}`))
+		const definition = item.obligations.find((entry) => entry.id === obligation.id)
+		if (definition === undefined) {
+			failures.push(`unrelated obligation ${obligation.id}`)
+			continue
+		}
+		if (evidence.failures.length > 0) continue
+		if (
+			obligation.disposition === 'completed' &&
+			!matchesCompletionEvidence(item, definition, evidence.references)
+		)
+			failures.push(`downstream outcome lacks bound completion evidence ${obligation.id}`)
+		if (
+			obligation.disposition === 'repaired' &&
+			!evidence.references.some(
+				(reference) => reference.startsWith('source:') || reference.startsWith('receipt:'),
+			)
+		)
+			failures.push(`downstream outcome lacks external evidence ${obligation.id}`)
+		if (
+			obligation.disposition === 'repaired' &&
+			!evidence.references.some((reference) => reference.startsWith('product:'))
+		)
+			failures.push(`repaired outcome lacks earlier-work evidence ${obligation.id}`)
+	}
+	if (
+		(label.atoms.some((atom) => atom.verdict === 'ambiguous') ||
+			label.obligations.some((obligation) => obligation.disposition === 'ambiguous')) &&
+		label.ambiguous.length === 0
+	)
+		failures.push(`missing ambiguity evidence ${item.id}`)
+	for (const citation of [...label.ambiguous, ...label.leaks]) {
+		try {
+			readAuditCitation(item, citation)
+		} catch (error) {
+			failures.push(error instanceof Error ? error.message : String(error))
+		}
+	}
+	return failures
+}
+
 /** Merges aliases of one measured preparation without charging its work twice.
  * @param preparations - Independently retained preparation readings
  * @returns Distinct generation or run readings with every referring manifest

@@ -1,4 +1,4 @@
-import type { ContinuousKeys } from './audit/types.js'
+import type { ContinuousKeys, ContinuousPacket } from './audit/types.js'
 import type {
 	ContinuousArm,
 	ContinuousExecution,
@@ -193,6 +193,24 @@ export function isContinuousKeys(value: unknown): value is ContinuousKeys {
 			),
 	)
 	return result.success && result.value
+}
+
+/** Checks the public packet's envelope; each item's shape is the adjudication reader's to refuse. */
+export function isContinuousPacket(value: unknown): value is ContinuousPacket {
+	return (
+		isRecord(value) &&
+		value.protocol === 'c1' &&
+		Array.isArray(value.items) &&
+		value.items.every(
+			(item: unknown) =>
+				isRecord(item) &&
+				isString(item.id) &&
+				isString(item.product) &&
+				isRecord(item.rubric) &&
+				Array.isArray(item.rubric.atoms) &&
+				Array.isArray(item.evidence),
+		)
+	)
 }
 
 /** Checks one turn estimate. */

@@ -7,10 +7,10 @@ import { readOracle } from '../../endurance/helpers.js'
 import { hashFile, verifyFiles } from '../../refit/helpers.js'
 import { Adjudication } from '../../sustained/audit/Adjudication.js'
 import { SustainedAuditError } from '../../sustained/audit/errors.js'
-import { verifyOracleCustody } from '../../sustained/audit/helpers.js'
+import { listLabelFailures, verifyOracleCustody } from '../../sustained/audit/helpers.js'
 import { isSustainedLabels } from '../../sustained/audit/validators.js'
 import { readContinuousManifest, readContinuousRun, readContinuousWorkload } from '../helpers.js'
-import { isContinuousKeys } from '../validators.js'
+import { isContinuousKeys, isContinuousPacket } from '../validators.js'
 import { Blind } from './Blind.js'
 import { Report } from './Report.js'
 
@@ -110,6 +110,36 @@ export class Audit {
 			labels: hashFile(resolve(labelsPath)),
 		})
 		this.#write(resolve(out), report)
+	}
+
+	/** Checks a partial labels file against the public packet and prints one line per refused label.
+	 * @param packetPath - The public packet
+	 * @param labelsPath - A labels file holding any subset of the packet's items
+	 * @returns The refused label ids with their failures, and the ids the file does not label
+	 * @throws SustainedAuditError when the labels file is malformed
+	 */
+	labels(
+		packetPath: string,
+		labelsPath: string,
+	): {
+		readonly refused: ReadonlyArray<{ readonly id: string; readonly failures: readonly string[] }>
+		readonly unlabeled: readonly string[]
+	} {
+		const packet: unknown = JSON.parse(readFileSync(packetPath, 'utf8'))
+		const labels: unknown = JSON.parse(readFileSync(labelsPath, 'utf8'))
+		if (!isContinuousPacket(packet)) throw new SustainedAuditError('malformed packet')
+		if (!isSustainedLabels(labels)) throw new SustainedAuditError('malformed labels')
+		const refused: Array<{ readonly id: string; readonly failures: readonly string[] }> = []
+		for (const label of labels.labels) {
+			const item = packet.items.find((entry) => entry.id === label.id)
+			const failures =
+				item === undefined ? ['label names no packet item'] : listLabelFailures(item, label)
+			if (failures.length > 0) refused.push({ id: label.id, failures })
+		}
+		const unlabeled = packet.items
+			.filter((item) => !labels.labels.some((label) => label.id === item.id))
+			.map((item) => item.id)
+		return { refused, unlabeled }
 	}
 
 	#input(manifestPath: string, paths: readonly string[], oraclePath: string): ContinuousAuditInput {
