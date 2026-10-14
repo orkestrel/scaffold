@@ -1,6 +1,6 @@
 # Results
 
-**Thinking comparison, 2026-10-14.** The comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B. The thinking-off results and the q4 thinking results are graded; q2 thinking is running. The campaign and its result custody moved to the sibling agent checkout. See [the handoff](../agent/.orkestrel/agent/handoff.md) and [the package direction](../agent/.orkestrel/agent/direction.md).
+**Thinking comparison, 2026-10-14.** The comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B. Both thinking settings are graded. With thinking enabled, the valid q4 report is inconclusive because records overflowed; the valid q2 report favors records, which served every goal while compaction served 38 of 96. The campaign and its result custody live in the sibling agent checkout. See [the handoff](../agent/.orkestrel/agent/handoff.md) and [the package direction](../agent/.orkestrel/agent/direction.md).
 
 ## c1: records against the package's own compaction, graded 2026-10-13
 
@@ -79,7 +79,7 @@ Per served goal the records arm spent about 1.3 times the agent tokens of compac
 - The `omitted` column for the records arm (94 of 96 goals) counts required sources the prompt did not carry verbatim; the ledger carries sources as records and recalls, so the column reads the ledger's selection rather than a loss.
 - One trajectory per arm and model, a serial order, a shared GPU, and a labeling instrument whose adjudicators changed engine between packets: no independence and no model-superiority claim.
 
-## c1 with thinking: q4 graded 2026-10-14
+## c1 with thinking, graded 2026-10-14
 
 The q4 report is valid and its verdict is `inconclusive`: records overflowed before completing the horizon. The thinking pass uses the same vendored 0.0.30 package and workload, with thinking enabled, reserve 1024, window 3584, `predict` 512, and the continue policy. GPT-6.1 Sol high adjudicated the blind products in disjoint batches, with at most 6 labelers running together. See [the q4 thinking report](../agent/.orkestrel/agent/instruments/results/c1/q4-think/audit/report.md).
 
@@ -104,16 +104,47 @@ On the 44 paired goals, compaction has no acceptable-product win, 1 loss, 43 tie
 
 The report records no design leaks and one missed ambiguous control. That batch's summary carries an invalid flag, while the frozen per-adjudicator control rule retains its labels and the overall report remains valid. Every packet item has an accepted label: 145 labels, including the controls, with 0 refused and 0 unlabeled. The raw integrity reader reports 0 failures for each q4 arm. The earlier daemon-interrupted compaction attempt remains excluded.
 
-The q4 trajectory costs are:
+### q2 quality and coverage
 
-| Arm | Agent requests | Agent prompt / completion tokens | Judge calls | Summarizer prompt / completion tokens | Elapsed |
+The q2 report is valid and its verdict is `records`. Records completed all 96 goals; compaction completed the trajectory under the continue policy but served only 38. Neither arm produced an acceptable product under the complete rubric. See [the q2 thinking report](../agent/.orkestrel/agent/instruments/results/c1/q2-think/audit/report.md).
+
+The q2 coverage and critical violations are:
+
+| Arm | Terminal outcome | Products graded | Acceptable products | Critical violations |
+| --- | --- | --- | --- | --- |
+| records | complete; no unserved or partial rows | 96 | 0 | 52 |
+| compaction | complete; 58 of 96 goals unserved | 38 | 0 | 17 |
+| full | overflow at attempt 5; 3 successful products | 3 | 0 | 0 |
+
+The full control completed only its first goal consecutively; later successful products do not repair the earlier unserved goal. Of compaction's 58 unserved rows, 36 carry a length failure and 22 are partial rows. Its receipts contain 150 repeated lookups across 40 goals, compared with none in records. Repeated lookups and unserved goals measure different events.
+
+The q2 atom scores cover each arm's own served products:
+
+| Arm | Facts | Work | Obligations | Revision | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| records | 136 | 288337 / 100058 | 1291 | 0 / 0 | 77 min |
-| compaction | 152 | 278308 / 113474 | 0 | 114917 / 31275 | 83 min |
+| records | 47% (187/402) | 26% (78/304) | 22% (77/350) | 25% (57/228) | 68% (130/192) |
+| compaction | 41% (61/149) | 17% (20/115) | 16% (22/141) | 24% (21/88) | 57% (43/76) |
 
-Agent figures exclude calibration. The overflow request has missing usage, so records' token totals are incomplete. The records judge accounts for about 30 elapsed minutes. The report flags length truncation in 36 records goal rows and 53 compaction goal rows; these are goal counts, not reply counts. Repeated lookups total 1 across 1 records goal and 9 across 3 compaction goals.
+On 38 paired goals, compaction has 38 acceptable-product ties, no gain, and 12 critical regressions against records. The records verdict is a relative comparison: records still has 52 critical violations across its full horizon. Its facts score falls from 68% in shifts 1 to 4 to 36% in shifts 21 to 24, while its critical violations rise from 5 to 13. Compaction serves only 2 of the final interval's 16 goals, so its 86% facts score there describes 6 of 7 atoms on those products.
 
-The q2 thinking trajectory and its queued grading remain in progress at this checkpoint. One trajectory per arm, a shared GPU, differing budgets and adjudicators between thinking settings, and cloud labeling overlapping local generation limit the conclusions. Wall times describe these runs, not an isolated speed comparison.
+Every q2 packet item has an accepted label: 140 labels including controls, with 0 refused and 0 unlabeled. The report records no design leaks and one missed ambiguous control. As at q4, that batch summary carries an invalid flag, while the frozen per-adjudicator rule retains its labels and the overall report remains valid.
+
+### Thinking costs and limits
+
+The trajectory costs are:
+
+| Key | Arm | Agent requests | Agent prompt / completion tokens | Judge calls | Summarizer prompt / completion tokens | Elapsed |
+| --- | --- | --- | --- | --- | --- | --- |
+| q4 | records | 136 | 288337 / 100058 | 1291 | 0 / 0 | 77 min |
+| q4 | compaction | 152 | 278308 / 113474 | 0 | 114917 / 31275 | 83 min |
+| q2 | records | 329 | 666705 / 224381 | 2620 | 0 / 0 | 131 min |
+| q2 | compaction | 383 | 729433 / 144533 | 0 | 91759 / 20007 | 52 min |
+
+Agent figures exclude calibration. The q4 records overflow request has missing usage, so its token totals are incomplete. The records judge accounts for about 30 elapsed minutes at q4 and 57 at q2. At q4 the report flags length truncation in 36 records goal rows and 53 compaction goal rows; at q2 those counts are 80 and 61. These are goal counts, not reply counts. Repeated q4 lookups total 1 across 1 records goal and 9 across 3 compaction goals.
+
+Excluding the calibration requests, agent replies ended at length in 40 of 136 q4 records requests, 53 of 152 q4 compaction requests, 91 of 329 q2 records requests, and 61 of 383 q2 compaction requests. Summarizer replies hit their cap in 72 of 107 q4 requests and 40 of 91 q2 requests. See [the generation summary](../agent/.orkestrel/agent/instruments/results/c1/thinking-summary.jsonl); its role totals include calibration, and its `failed` request counts include failure notes such as length cuts rather than only operational faults.
+
+Thinking-off used reserve 512, window 3072, and `predict` 0; thinking-on used 1024, 3584, and 512. The adjudicator also changed between settings. The observed q2 records facts score rises from 39% to 47%, while critical violations rise from 16 to 52; these readings do not isolate thinking as the cause. One trajectory per arm, a shared GPU, and cloud labeling overlapping local generation further limit the conclusions. Wall times describe these runs, not an isolated speed comparison. Neither thinking report establishes production readiness on these small models.
 
 ## Earlier campaign notes (superseded)
 
