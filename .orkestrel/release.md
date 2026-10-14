@@ -28,7 +28,7 @@ Release-chain notes, continued:
 
 ## 2026-10-07 round, continued: browser 0.0.27 and ollama 0.0.21 after the small-model campaign
 
-The campaign's record is `.orkestrel/veneer/lifecycle/reading/small/matrix.md`. The user's gate was the 2B's clean confirmation on the real harness; `confirm.ts 2b-final3` passed every one of the six store tasks in 16 runs of 16 (row F3), after the wire audit found the harness ran the thinking model with `think: false` (row W1).
+The campaign's record is in Agent's [small-model matrix](../../agent/.orkestrel/agent/lifecycle/reading/small/matrix.md). The user's gate was the 2B's clean confirmation on the real harness; `confirm.ts 2b-final3` passed every one of the six store tasks in 16 runs of 16 (row F3), after the wire audit found the harness ran the thinking model with `think: false` (row W1).
 
 | Code | Layer | Package | Prior | Published | Ruling | gitHead |
 | --- | --- | --- | --- | --- | --- | --- |
