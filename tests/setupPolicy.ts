@@ -3968,8 +3968,18 @@ export function inspectSheetConfiguration(project: unknown, script?: string): re
 	return failures
 }
 
-/** Lists artifact-tool paths and the computed ESM imports each boundary admits. */
+/** Lists artifact-loader paths and the computed ESM imports each boundary admits. */
 export const ARTIFACT_IMPORT_CASES: ReadonlyArray<readonly [string, boolean]> = Object.freeze([
+	['src/server/artifacts/Artifacts.ts', true],
+	['src/server/artifacts/nested/inspect.mts', true],
+	['src/server/artifacts/inspect.js', true],
+	['src/server/artifacts/inspect.mjs', true],
+	['src/server/artifacts-lookalike/inspect.ts', false],
+	['src/browser/artifacts/inspect.ts', false],
+	['src/core/artifacts/inspect.ts', false],
+	['app/server/artifacts/inspect.ts', false],
+	['src/server/artifacts/inspect.cts', false],
+	['src/server/artifacts/inspect.cjs', false],
 	['tools/artifacts/inspect.ts', true],
 	['tools/artifacts/nested/inspect.mts', true],
 	['tools/artifacts/inspect.js', true],

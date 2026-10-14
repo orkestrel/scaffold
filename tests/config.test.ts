@@ -2576,7 +2576,7 @@ createSomething({
 		expect(DATA_SOURCE_FILES).not.toContain('plugins.ts')
 	})
 
-	it('admits computed ESM imports only in artifact tools while refusing computed require', () => {
+	it('admits computed ESM imports only in artifact loaders while refusing computed require', () => {
 		const fixture = createPolicyScratch({ prefix: 'artifact-imports-' })
 		try {
 			fixture.write('configs/policy.ts', readFileSync(resolve(root, 'configs/policy.ts'), 'utf8'))
@@ -2624,6 +2624,7 @@ createSomething({
 			expect(artifact).toEqual([
 				{
 					files: [
+						'src/server/artifacts/**/*.{js,mjs,ts,mts}',
 						'tools/artifacts/**/*.{js,mjs,ts,mts}',
 						'.orkestrel/*/instruments/**/tools/artifacts/**/*.{js,mjs,ts,mts}',
 					],
@@ -3479,6 +3480,17 @@ describe('configuration helpers', () => {
 		expect(() => configHelpers.enforceOutputPath(outside, outside)).toThrow(
 			'Build output must remain inside the workspace',
 		)
+	})
+
+	it('admits computed artifact imports through Vite while retaining literal boundary inspection', async () => {
+		for (const [path, admitted] of ARTIFACT_IMPORT_CASES) {
+			const reading = configHelpers.environmentAssetSources('void import(process.argv[2])', resolve(root, path))
+			if (admitted) await expect(reading).resolves.toEqual([])
+			else await expect(reading).rejects.toThrow('Dynamic imports must use static string values')
+		}
+		await expect(configHelpers.environmentAssetSources("void import('@src/browser')", resolve(root, 'src/server/artifacts/Artifacts.ts'))).resolves.toEqual(['@src/browser'])
+		expect(configHelpers.environmentSourceError('src/server', '@src/browser')).toBeDefined()
+		await expect(configHelpers.environmentAssetSources('void import(process.argv[2])', resolve(root, '../outside/src/server/artifacts/Artifacts.ts'))).rejects.toThrow('Dynamic imports must use static string values')
 	})
 
 	it('drives each plugin through its real Vite hooks', async () => {
