@@ -1,10 +1,10 @@
 # Results
 
-**Narrowed again on 2026-10-12.** The aggregate arm is dropped. The remaining comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B, thinking disabled, one run per arm and model. The `c1` series ran on 2026-10-12 and 2026-10-13 on the dedicated daemon; the graded results follow. See [the active plan](.orkestrel/agent/plan.md), [the progress record](.orkestrel/agent/progress.md), and [the ledger](.orkestrel/agent/ledger.md).
+**Thinking comparison, 2026-10-14.** The comparison is the records design against the package's own window compaction, with the whole history as the overflow control, on the 96-goal continuous workload with Qwen 3.5 4B and 2B. The thinking-off results and the q4 thinking results are graded; q2 thinking is running. The campaign and its result custody moved to the sibling agent checkout. See [the handoff](../agent/.orkestrel/agent/handoff.md) and [the package direction](../agent/.orkestrel/agent/direction.md).
 
 ## c1: records against the package's own compaction, graded 2026-10-13
 
-Protocol `c1`: one serial trajectory per arm and model on the published `@orkestrel/agent` 0.0.30 build, Qwen 3.5 4B (`q4`) and 2B (`q2`), thinking disabled, window 3072 and reserve 512 for every arm. Every served product was adjudicated blind by its own independent adjudicator (Claude Opus 5.5 for q4, Claude Sonnet 5.5 for q2, Sonnet and GPT-6.1 Sol for the q2 continue run) against the frozen oracle, with three controls frozen before labeling. Raw runs: `.orkestrel/agent/instruments/harness/tmp/c1/<key>/<arm>/` and `harness/tmp/c1-continue/q2/compaction/`; packets, labels, and reports: `.orkestrel/agent/instruments/results/c1/<key>/audit/`; keys: `.orkestrel/agent/instruments/results/c1/<key>/private/`.
+Protocol `c1`: one serial trajectory per arm and model on the published `@orkestrel/agent` 0.0.30 build, Qwen 3.5 4B (`q4`) and 2B (`q2`), thinking disabled, window 3072 and reserve 512 for every arm. Every served product was adjudicated blind by its own independent adjudicator (Claude Opus 5.5 for q4, Claude Sonnet 5.5 for q2, Sonnet and GPT-6.1 Sol for the q2 continue run) against the frozen oracle, with three controls frozen before labeling. In the agent checkout, raw runs are under `.orkestrel/agent/instruments/harness/tmp/c1/<key>/<arm>/` and `harness/tmp/c1-continue/q2/compaction/`; packets, labels, and reports are under `.orkestrel/agent/instruments/results/c1/<key>/audit/`; keys are under `.orkestrel/agent/instruments/results/c1/<key>/private/`.
 
 ### Verdicts
 
@@ -78,6 +78,44 @@ Per served goal the records arm spent about 1.3 times the agent tokens of compac
 - Product-text leaks: 19 q4 adjudicators recorded arm-revealing phrasing in a product (`[Summary of earlier messages]` in 14 compaction products, recall phrasing in 5 records products); they were blind to the designs, and the report counts the leaks per arm without voiding the batch. One q4, one q2, and one continue-run adjudicator missed the ambiguous control at the atom level; the reports record it.
 - The `omitted` column for the records arm (94 of 96 goals) counts required sources the prompt did not carry verbatim; the ledger carries sources as records and recalls, so the column reads the ledger's selection rather than a loss.
 - One trajectory per arm and model, a serial order, a shared GPU, and a labeling instrument whose adjudicators changed engine between packets: no independence and no model-superiority claim.
+
+## c1 with thinking: q4 graded 2026-10-14
+
+The q4 report is valid and its verdict is `inconclusive`: records overflowed before completing the horizon. The thinking pass uses the same vendored 0.0.30 package and workload, with thinking enabled, reserve 1024, window 3584, `predict` 512, and the continue policy. GPT-6.1 Sol high adjudicated the blind products in disjoint batches, with at most 6 labelers running together. See [the q4 thinking report](../agent/.orkestrel/agent/instruments/results/c1/q4-think/audit/report.md).
+
+The q4 run coverage is:
+
+| Arm | Terminal outcome | Products graded | Acceptable products | Critical violations |
+| --- | --- | --- | --- | --- |
+| records | overflow at goal 48; 47 complete goals | 48 | 1 | 11 |
+| compaction | complete; 4 of 96 goals unserved | 92 | 0 | 26 |
+| full | overflow at goal 5; 2 successful products | 2 | 0 | 0 |
+
+The records overflow row retains a reply and is graded, but its observation is incomplete. The report's top-level `served` field counts attempted rows; the table uses successful products from its arm tallies. This distinction also explains why the full arm has 5 attempted rows and 2 graded products.
+
+The atom scores cover each arm's own served products, so these overall columns do not compare identical horizons:
+
+| Arm | Facts | Work | Obligations | Revision | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| records | 55% (105/190) | 37% (53/144) | 33% (58/176) | 30% (35/116) | 81% (78/96) |
+| compaction | 51% (201/391) | 28% (82/292) | 26% (87/332) | 32% (68/213) | 62% (114/184) |
+
+On the 44 paired goals, compaction has no acceptable-product win, 1 loss, 43 ties, and 9 critical regressions against records. Compaction's final-interval facts score is 51% (37/72), compared with 0% in the thinking-off run. That observed difference does not isolate thinking: the reserve, window, `predict`, and adjudicator also differ. Records has no final-interval reading because it stopped during shift 12.
+
+The report records no design leaks and one missed ambiguous control. That batch's summary carries an invalid flag, while the frozen per-adjudicator control rule retains its labels and the overall report remains valid. Every packet item has an accepted label: 145 labels, including the controls, with 0 refused and 0 unlabeled. The raw integrity reader reports 0 failures for each q4 arm. The earlier daemon-interrupted compaction attempt remains excluded.
+
+The q4 trajectory costs are:
+
+| Arm | Agent requests | Agent prompt / completion tokens | Judge calls | Summarizer prompt / completion tokens | Elapsed |
+| --- | --- | --- | --- | --- | --- |
+| records | 136 | 288337 / 100058 | 1291 | 0 / 0 | 77 min |
+| compaction | 152 | 278308 / 113474 | 0 | 114917 / 31275 | 83 min |
+
+Agent figures exclude calibration. The overflow request has missing usage, so records' token totals are incomplete. The records judge accounts for about 30 elapsed minutes. The report flags length truncation in 36 records goal rows and 53 compaction goal rows; these are goal counts, not reply counts. Repeated lookups total 1 across 1 records goal and 9 across 3 compaction goals.
+
+The q2 thinking trajectory and its queued grading remain in progress at this checkpoint. One trajectory per arm, a shared GPU, differing budgets and adjudicators between thinking settings, and cloud labeling overlapping local generation limit the conclusions. Wall times describe these runs, not an isolated speed comparison.
+
+## Earlier campaign notes (superseded)
 
 **Resumed on 2026-10-12.** The remaining experiment is continuous long-work records versus living aggregate with Qwen4B, thinking disabled and enabled: four measured trajectories. These runs have not started. The existing continuous entry enforces the canceled ranked-selection campaign and forbids thinking mode; a bounded operator change is being scoped to execute the requested comparison honestly. The canceled pilots and other model variations remain canceled.
 
