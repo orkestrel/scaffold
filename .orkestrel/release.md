@@ -6,7 +6,7 @@ The rounds of 2026-10-04 to 2026-10-06 and the 2026-10-07 re-pin check closed an
 
 ## 2026-10-07 round: the scope-at-dispatch fix, the line view, and the 2B
 
-Two agent releases landed the same day from two sessions. Code 1 is the judge round (`.orkestrel/agent/refine.md` § The judge): the judge contract and engine, the System One wire, and the helpers, visited with `scripts/wave.ts --visit` and uploaded with `scripts/window.ts --publish` (package size 445.4 kB, 9 files). The small-model campaign (`.orkestrel/veneer/lifecycle/reading/small/matrix.md`) then found that the agent loop dispatched calls to tools the active scope had withdrawn; the fix is recorded in `.orkestrel/agent/refine.md` § Scope at dispatch, and code 2 is that loop fix on top of the judge. The ollama judge wire for Mica's raw logprob readout waits in the held ollama checkout for its release; the desk re-pins when agent and ollama are both served.
+Two agent releases landed the same day from two sessions. Code 1 is the judge round (`.orkestrel/agent/refine.md` § The judge): the judge contract and engine, the System One wire, and the helpers, visited with `scripts/wave.ts --visit` and uploaded with `scripts/window.ts --publish` (package size 445.4 kB, 9 files). The small-model campaign (Agent's [small-model matrix](../../agent/.orkestrel/agent/lifecycle/reading/small/matrix.md)) then found that the agent loop dispatched calls to tools the active scope had withdrawn; the fix is recorded in `.orkestrel/agent/refine.md` § Scope at dispatch, and code 2 is that loop fix on top of the judge. The ollama judge wire for Mica's raw logprob readout waits in the held ollama checkout for its release; the desk re-pins when agent and ollama are both served.
 
 | Code | Layer | Package | Prior | Published | Ruling | gitHead |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -190,3 +190,11 @@ This authorized downstream wave is closed. Scaffold main and origin/main advance
 ## Agent 0.0.30 downstream close, 2026-10-11
 
 The user authorized Toolbox 0.0.19 and Ollama 0.0.23 publication in this session. Both are registry-confirmed at their verified archive integrities, consuming Agent ^0.0.30. Desk consumes registry Agent ^0.0.30 and Ollama ^0.0.23 on its session branch at af774cd; format, lint, type checks, 532 tests with 4 conditional skips, six browser journeys, and build passed. Supervisor and Tactica are excluded. See [versions, archive identities, gate measurements, and retained limitations](https://github.com/orkestrel/scaffold/blob/79748cd9344dc47404e53495ec43bda48b448a01/.orkestrel/agent/instruments/units/agent-0030/downstream-publication.md). This release record contains no aggregate source or measurements.
+
+## Scaffold 0.0.101 preparation, 2026-10-14
+
+Scaffold 0.0.101 is prepared on main from tested source `607c82c0e`. Publication belongs to the other session; no upload, login, or tag ran in this session. The registry reading serves 0.0.100. Distributed artifact-loader rules, configuration, proofs, and their inventory differ materially from that archive, so the release is owed. Every declared Orkestrel dependency matches its registry, installed, and locked version; runtime ranges remain unchanged. Current-version snapshots and emitted defaults carry 0.0.101.
+
+The actual `prepublishOnly` chain passed, exit 0 uncapped in 931651 ms. Format, lint, type checks, and build passed; package tests passed 1969 with 16 host/applicability skips; generated-workspace tests passed 61; release-mode distribution passed 11 with the npm-floor provisioning case skipped because ambient npm meets the floor. Raw logs and the verifier report remain under `tmp/units/scaffold-release-verifier*` for the publisher. The closing commit changes coordination and release prose only. See [publication handoff](../PARALLEL.md).
+
+Agent and Study campaign custody has left Scaffold, including the older tree recovered during main integration. After registry confirmation, Agent and Study must re-pin the Scaffold development dependency, run repair, and verify their gates against the published artifact. Those consumer visits do not authorize an Agent or Study release.
