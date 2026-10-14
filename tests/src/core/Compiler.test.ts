@@ -97,7 +97,6 @@ describe('Compiler artifacts', () => {
 				'.claude/agents/orkestrel.md',
 				...[
 					'enterprise-bootstrap',
-					'enterprise-veneer',
 					'orkestrel-build',
 					'orkestrel-debrief',
 					'orkestrel-falsify',
@@ -158,7 +157,6 @@ describe('Compiler artifacts', () => {
 		expect(skills.map(({ path }) => path)).toStrictEqual(
 			[
 				'enterprise-bootstrap',
-				'enterprise-veneer',
 				'orkestrel-build',
 				'orkestrel-debrief',
 				'orkestrel-falsify',

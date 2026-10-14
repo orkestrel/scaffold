@@ -399,7 +399,6 @@ export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
  */
 export const TARGET_SKILL_NAMES: readonly string[] = Object.freeze([
 	'enterprise-bootstrap',
-	'enterprise-veneer',
 	'orkestrel-build',
 	'orkestrel-debrief',
 	'orkestrel-falsify',

@@ -79,18 +79,6 @@
 			"digest": "84a7c3eec5d280ba67b103418a69b4643434b9fa9fe39ee8c1b305f1ba4f94c0"
 		},
 		{
-			"storage": "agents/skills/enterprise-veneer/SKILL.md",
-			"destination": ".agents/skills/enterprise-veneer/SKILL.md",
-			"executable": false,
-			"digest": "81a89de9de9c0f5bbd30c80d7ebff07ca089cc059af0591f951d71f5b36e7727"
-		},
-		{
-			"storage": "agents/skills/enterprise-veneer/agents/openai.yaml",
-			"destination": ".agents/skills/enterprise-veneer/agents/openai.yaml",
-			"executable": false,
-			"digest": "8aec530977a33ea41bf81885a2ff901398f4cdb508ca0c0de69b6fc0bac53212"
-		},
-		{
 			"storage": "agents/skills/orkestrel-align/SKILL.md",
 			"destination": ".agents/skills/orkestrel-align/SKILL.md",
 			"executable": false,
@@ -610,7 +598,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "eaa4f1ded00159157f2335bc304f01cca178c46dd4ef0097188065b0f3a85607"
+			"digest": "6a30bd6e76ebebd5abf62562444e5865120957081530cdd8c6e6095d73ff2eac"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -629,12 +617,6 @@
 			"destination": ".claude/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
 			"digest": "fa921603faab546635aacce370ad9f245ddf9fd62cfb4c4f04e36b84f0beddbe"
-		},
-		{
-			"storage": "claude/skills/enterprise-veneer/SKILL.md",
-			"destination": ".claude/skills/enterprise-veneer/SKILL.md",
-			"executable": false,
-			"digest": "61b2b5c2217ce659d3c6fa3282f928e15be1e54678b3a84b1662f49592ce2dd6"
 		},
 		{
 			"storage": "claude/skills/orkestrel-align/SKILL.md",
@@ -784,7 +766,7 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "ae5a045cf6f535037fcc38a32e2d0bfc8fdae1f1549472bf3b19737a3db490cf"
+			"digest": "24139be58fb71559f73f49fd9fe5dc39c18ed885380a9bf87bff86e23add4ca2"
 		},
 		{
 			"storage": "configs/policy.ts",
@@ -844,7 +826,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "77e6134efb2dec6339821826c5a20b2af17badc6842b272b221a5d323a663dc3"
+			"digest": "75c465335e5f14291262b66897e9622f9320f227bcf1b41e864c17459a6d93ea"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -1198,7 +1180,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "0c66fef3ce2a63c574e194fef8b765307b56ba5d522fe5e00dd07c7db6515c84"
+			"digest": "5febd711393a4ad07264f87a1bf8ff0e9749c682a56dcf8a06d02dd4735400d6"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1210,7 +1192,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "a51ff71b270a557ae10cb73900b8b9994d2ce3d8d0197f91f8530bde0100a9d6"
+			"digest": "1219f0c1d5b8fecd155c3231902d3a7d0b2507a722365ce398ba22e3bc005633"
 		}
 	],
 	"roots": [
@@ -1218,8 +1200,6 @@
 		".agents/skills/enterprise-bootstrap",
 		".agents/skills/enterprise-bootstrap/agents",
 		".agents/skills/enterprise-bootstrap/references",
-		".agents/skills/enterprise-veneer",
-		".agents/skills/enterprise-veneer/agents",
 		".agents/skills/orkestrel-align",
 		".agents/skills/orkestrel-align/agents",
 		".agents/skills/orkestrel-align/references",
@@ -1258,7 +1238,6 @@
 		".claude/rules",
 		".claude/skills",
 		".claude/skills/enterprise-bootstrap",
-		".claude/skills/enterprise-veneer",
 		".claude/skills/orkestrel-align",
 		".claude/skills/orkestrel-build",
 		".claude/skills/orkestrel-debrief",
@@ -2141,5 +2120,5 @@
 			]
 		}
 	],
-	"digest": "0942ae0482d3dad97b540bf6597e283d565904df29a92c648443bb807ab2be96"
+	"digest": "edf22fe286f6218ee78e6a1abaff876428d7eb49a58c7511c33e1244d5159971"
 }

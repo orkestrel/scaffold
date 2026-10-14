@@ -1,4 +1,0 @@
-interface:
-  display_name: 'Enterprise Veneer'
-  short_description: 'Compose Bootstrap-faithful Veneer interfaces'
-  default_prompt: 'Use $enterprise-veneer to build this interface with Veneer, Form, Table, and Bootstrap craft.'
