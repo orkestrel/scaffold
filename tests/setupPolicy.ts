@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import {
 	realpathSync,
+	chmodSync,
 	existsSync,
 	globSync,
 	lstatSync,
@@ -20,7 +21,7 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { tmpdir, userInfo } from 'node:os'
 import { basename, dirname, join, matchesGlob, relative as relativePath, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseAst, parseSync } from 'vite'
@@ -219,6 +220,52 @@ export function createPolicyScratch(options: {
 		destroy() {
 			rmSync(root, { recursive: true, force: true })
 		},
+	}
+}
+
+/**
+ * Creates a list with the given length that holds only the entries written at their indexes.
+ *
+ * @remarks
+ * A literal cannot express a hole, so the list is sized first and then written once per index. A
+ * `for…of` loop and a spread visit each hole as `undefined`, where `map`, `filter`, and `flatMap`
+ * skip it, so a caller-supplied list built here separates the two.
+ *
+ * @param length - The length of the list, holes included.
+ * @param entries - The entry to write at each index; every other index stays a hole.
+ * @returns The sparse list.
+ */
+export function createPolicySparse<T>(length: number, entries: ReadonlyMap<number, T>): T[] {
+	const list: T[] = []
+	list.length = length
+	for (const [index, entry] of entries) list[index] = entry
+	return list
+}
+
+/**
+ * Withholds read access to one file from the current user.
+ *
+ * @remarks
+ * Read permission is platform-defined. A POSIX mode of zero withholds it from every user but root,
+ * and a Windows access-control entry that denies read withholds it from the named user, an
+ * administrator included. A `package.json` that is a directory cannot stand in for this: the
+ * regular-file check refuses it before any read starts, so only a file the host refuses to open
+ * reaches the read boundary.
+ *
+ * @param path - The absolute path of an existing file.
+ * @returns A function that restores the access, to run before the owning directory is removed.
+ */
+export function denyPolicyRead(path: string): () => void {
+	const user = userInfo().username
+	if (process.platform === 'win32') {
+		spawnSync('icacls', [path, '/deny', `${user}:(R)`], { stdio: 'ignore' })
+		return () => {
+			spawnSync('icacls', [path, '/remove:d', user], { stdio: 'ignore' })
+		}
+	}
+	chmodSync(path, 0o000)
+	return () => {
+		chmodSync(path, 0o600)
 	}
 }
 
@@ -470,6 +517,24 @@ export function parsePolicyJSON(content: string): unknown {
 }
 
 /**
+ * Reads one file and parses its JSON without throwing.
+ *
+ * @remarks
+ * One boundary holds the read and the parse, so a file the host refuses to open answers as a file
+ * that holds no JSON.
+ *
+ * @param path - The absolute path of the file to read.
+ * @returns The parsed value, or `undefined` when the file cannot be read or holds no JSON.
+ */
+export function readPolicyJSON(path: string): unknown {
+	try {
+		return JSON.parse(readFileSync(path, 'utf8'))
+	} catch {
+		return undefined
+	}
+}
+
+/**
  * Extracts the lines beneath one heading, up to the next second-level heading.
  *
  * @param lines - The document lines.
@@ -541,7 +606,8 @@ export function inspectPolicyMirrorPaths(
 	tests: readonly string[],
 	modules: ReadonlySet<string>,
 ): readonly PolicyViolation[] {
-	return tests.flatMap((test) => {
+	// The spread visits a hole as `undefined`, which normalization refuses, as the loop it replaced did.
+	return [...tests].flatMap((test) => {
 		const path = normalizePolicyPath(test)
 		const stem = testToPolicyStem(path)
 		if (stem === undefined) return []
@@ -686,7 +752,8 @@ export function inspectPolicyConfiguration(configuration: unknown): readonly str
 				})),
 		...(overrides !== undefined && !Array.isArray(overrides)
 			? ['overrides must be an array when declared']
-			: (Array.isArray(overrides) ? overrides : []).flatMap((override) => {
+			: // The spread visits a hole as `undefined`, so a hole is a malformed entry as it was in the loop.
+				[...(Array.isArray(overrides) ? overrides : [])].flatMap((override) => {
 					if (!isPolicyRecord(override)) return ['override entries must be records']
 					const overrideRules: unknown = Object.getOwnPropertyDescriptor(override, 'rules')?.value
 					return isPolicyRecord(overrideRules)
@@ -730,11 +797,12 @@ export function inspectPolicyWiring(
 	const enabled = new Set(
 		records.filter(isPolicyRecord).flatMap((record) => Object.getOwnPropertyNames(record)),
 	)
+	// Each spread visits a hole as `undefined`, as the loops these replaced did.
 	return [
-		...rules.flatMap((rule) =>
+		...[...rules].flatMap((rule) =>
 			enabled.has(rule) ? [] : [`${rule} is enabled by no top-level or override rules record`],
 		),
-		...populations.flatMap((population) => {
+		...[...populations].flatMap((population) => {
 			const joined = population.join(' ')
 			return declaredPopulations.includes(joined)
 				? []
@@ -1017,11 +1085,11 @@ export function parseSkillPrompt(content: string): string | undefined {
  */
 export function matchesSkillToken(prompt: string, name: string): boolean {
 	const token = `$${name}`
-	// Each piece after the first begins where one occurrence of the token ends.
-	return prompt
-		.split(token)
-		.slice(1)
-		.some((following) => following === '' || !/[a-z-]/u.test(following.charAt(0)))
+	// A name that carries `$` makes the token overlap itself, so every start index is tried.
+	return Array.from({ length: prompt.length }, (_, index) => index).some(
+		(index) =>
+			prompt.startsWith(token, index) && !/[a-z-]/u.test(prompt.charAt(index + token.length)),
+	)
 }
 
 /**
@@ -1968,7 +2036,8 @@ export function inspectPolicyRuleMap(root: string): readonly PolicyViolation[] {
  * @returns Every unusable-name and case-collision violation in path order.
  */
 export function inspectPolicyFilenamePaths(paths: readonly string[]): readonly PolicyViolation[] {
-	const normalized = paths.map(normalizePolicyPath)
+	// `Array.from` visits a hole as `undefined`, which normalization refuses, as the loop did.
+	const normalized = Array.from(paths, normalizePolicyPath)
 	// Built from the reversed list, so the first path that folds to a key is the spelling a collision reports.
 	const folded = new Map(normalized.toReversed().map((path) => [path.toLowerCase(), path]))
 	return normalized.flatMap((path) => {
@@ -2113,7 +2182,7 @@ export function readPolicyProse(root: string): readonly string[] {
  */
 export function readPolicyPackage(root: string): string | undefined {
 	if (!isPolicyFile(root, POLICY_MANIFEST_FILE)) return undefined
-	const manifest = parsePolicyJSON(readFileSync(join(root, POLICY_MANIFEST_FILE), 'utf8'))
+	const manifest = readPolicyJSON(join(root, POLICY_MANIFEST_FILE))
 	if (!isPolicyRecord(manifest)) return undefined
 	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
 	if (typeof name !== 'string') return undefined
@@ -3916,8 +3985,9 @@ export function collectSheets(directory: string): readonly string[] {
  * Collects the study tests a workspace holds beneath `tests/studies`.
  * @param directory - The workspace root.
  * @returns Sorted workspace-relative paths of the physical `*.test.ts` files, nested or direct,
- * beneath a `tests/studies` directory whose stored name has exactly that case; empty when the
- * directory is absent, is not a directory, or holds none.
+ * beneath a `tests/studies` directory whose stored name has exactly that case, outside any
+ * `node_modules` or `.git` directory, which Vitest's default exclude never collects; empty when
+ * the directory is absent, is not a directory, or holds none.
  */
 export function collectStudies(directory: string): readonly string[] {
 	const tests = resolve(directory, 'tests')

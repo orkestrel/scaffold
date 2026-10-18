@@ -1122,8 +1122,8 @@ export class CLI implements CLIInterface {
 	// unknown because their birth-owned script is not a declaration of its list.
 	// The live-service project does not wait on that list: it follows its own
 	// readiness module, which the root configuration names by path. The study
-	// project follows the exact-case test files beneath `tests/studies`, the
-	// population its include collects.
+	// project follows the exact-case test files beneath `tests/studies` outside any
+	// `node_modules` or `.git` directory, the population its include collects.
 	#derive(target: string): Blueprint {
 		const manifest = this.#manifest(target)
 		const declared = manifestToName(manifest)

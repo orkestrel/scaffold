@@ -2279,18 +2279,15 @@ export interface TestSinkInterface {
  * ```
  */
 export function createSink(): TestSinkInterface {
-	const output: string[] = []
-	const diagnostic: string[] = []
+	const output = createRecorder<readonly [string]>()
+	const diagnostic = createRecorder<readonly [string]>()
 	return {
-		options: {
-			output: (line: string) => void output.push(line),
-			diagnostic: (line: string) => void diagnostic.push(line),
-		},
+		options: { output: output.handler, diagnostic: diagnostic.handler },
 		get output() {
-			return [...output]
+			return output.calls.map(([line]) => line)
 		},
 		get diagnostic() {
-			return [...diagnostic]
+			return diagnostic.calls.map(([line]) => line)
 		},
 	}
 }
@@ -2792,7 +2789,8 @@ export function buildTargetAudit(
 	paths: readonly string[],
 	stale: readonly string[],
 ): Audit {
-	const findings = paths.map((path): Finding => {
+	// A hole in `paths` reads as an `undefined` path, which the byte read refuses.
+	const findings = Array.from(paths, (path): Finding => {
 		const observed = readFileHex(target, path)
 		return observed === undefined
 			? { path, group: 'docs', ownership: 'content', drift: 'missing' }
@@ -3088,7 +3086,8 @@ export function buildInstalledHostReplies(
 			'/orkestrel/scaffold/refs/heads/main/host.json',
 			{ status: 200, body: JSON.stringify(floor.manifest) },
 		],
-		...floor.manifest.entries.flatMap((entry): Array<[string, TestUpstreamReply]> => {
+		// The spread reads a hole as an `undefined` entry, which the destination read refuses.
+		...[...floor.manifest.entries].flatMap((entry): Array<[string, TestUpstreamReply]> => {
 			if (isDeferredPath(entry.destination)) return []
 			const hex = floor.bytes[entry.destination]
 			return hex === undefined
@@ -3172,10 +3171,10 @@ export function writeUpstreamReply(response: ServerResponse, reply: TestUpstream
 export async function createUpstreamServer(
 	replies: Readonly<Record<string, TestUpstreamReply>>,
 ): Promise<TestUpstreamInterface> {
-	const served: string[] = []
-	const negotiated: Array<string | undefined> = []
+	const served = createRecorder<readonly [string]>()
+	const negotiated = createRecorder<readonly [string | undefined]>()
 	// Each connection event is +1 when a request opens and -1 when its response closes, in order.
-	const connections: number[] = []
+	const connections = createRecorder<readonly [number]>()
 	const pending = Object.keys(replies).map((path) => ({ path, ...Promise.withResolvers<void>() }))
 	const arrivals = new Map(
 		pending.map(({ path, promise }): [string, Promise<void>] => [path, promise]),
@@ -3183,11 +3182,11 @@ export async function createUpstreamServer(
 	const waiters = new Map(pending.map(({ path, resolve }): [string, () => void] => [path, resolve]))
 	const server = createServer((request, response) => {
 		const path = request.url ?? ''
-		served.push(path)
-		negotiated.push(request.headers.accept)
-		connections.push(1)
+		served.handler(path)
+		negotiated.handler(request.headers.accept)
+		connections.handler(1)
 		response.on('close', () => {
-			connections.push(-1)
+			connections.handler(-1)
 		})
 		waiters.get(path)?.()
 		const reply = replies[path]
@@ -3213,14 +3212,14 @@ export async function createUpstreamServer(
 	return {
 		base: loopback.url,
 		get paths() {
-			return [...served]
+			return served.calls.map(([path]) => path)
 		},
 		get accepts() {
-			return [...negotiated]
+			return negotiated.calls.map(([accept]) => accept)
 		},
 		get peak() {
-			return connections.reduce(
-				(state, delta) => ({
+			return connections.calls.reduce(
+				(state, [delta]) => ({
 					open: state.open + delta,
 					peak: Math.max(state.peak, state.open + delta),
 				}),
@@ -3679,14 +3678,14 @@ export async function executeWindowsOllama(
 export async function createOllamaServer(
 	options: TestOllamaOptions = {},
 ): Promise<TestOllamaInterface> {
-	const requests: TestOllamaRequest[] = []
+	const requests = createRecorder<readonly [TestOllamaRequest]>()
 	const server = createServer(async (request, response) => {
 		const chunks: Buffer[] = []
 		for await (const chunk of request) chunks.push(Buffer.from(chunk))
 		const text = Buffer.concat(chunks).toString('utf8')
 		const method = request.method
 		const path = request.url
-		requests.push({ method, path, body: text === '' ? undefined : parseJSON(text) })
+		requests.handler({ method, path, body: text === '' ? undefined : parseJSON(text) })
 		if (method === 'GET' && path === '/api/version') {
 			const status = options.status?.version ?? 200
 			writeUpstreamReply(
@@ -3737,7 +3736,7 @@ export async function createOllamaServer(
 	return {
 		url: loopback.url,
 		get requests() {
-			return [...requests]
+			return requests.calls.map(([request]) => request)
 		},
 		destroy() {
 			return loopback.destroy()
@@ -4717,6 +4716,30 @@ ${classification.map(({ text }) => text).join('\n')}
 }
 
 /**
+ * Builds the emitted distribution suite lifted into one module beside a stand-in stage opener.
+ *
+ * @param opener - The `openStage` function declaration that stands where packing and installing would be.
+ * @returns The lifted module text, exporting `DistributionSuite` and the `existsSync` its imports carry.
+ *
+ * @throws Thrown when the emitted proof declares no class.
+ *
+ * @remarks
+ * The class is lifted whole with the proof's own `node:` imports, so a drive reaches the real
+ * filesystem through the emitted lifecycle. The opener is the one declaration the drive writes.
+ */
+export function buildDistributionSuite(opener: string): string {
+	const statements = readStatements(buildDistributionProof(), 'proof.ts')
+	const suite = requireValue(statements.find(({ syntax }) => syntax === 'ClassDeclaration'))
+	const imports = statements
+		.filter(
+			({ syntax, specifier }) =>
+				syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
+		)
+		.map(({ text }) => text)
+	return `${imports.join('\n')}\n${opener}\n${suite.text}\nexport { DistributionSuite, existsSync }\n`
+}
+
+/**
  * Extracts the named top-level declarations of a module into one module that exports each.
  *
  * One module carrying the named top-level declarations of another, in source order
@@ -5219,10 +5242,10 @@ export function answerWhoami(
  * @returns The running registry with its recorded requests, which the caller destroys in a `finally`.
  */
 export async function createWhoamiRegistry(user: string | undefined): Promise<TestWhoamiInterface> {
-	const requests: string[] = []
+	const requests = createRecorder<readonly [string]>()
 	const loopback = await createLoopback(
 		createServer((request, response) => {
-			requests.push(`${request.method ?? ''} ${request.url ?? ''}`)
+			requests.handler(`${request.method ?? ''} ${request.url ?? ''}`)
 			request.resume()
 			request.on('end', () => {
 				answerWhoami(user, request, response)
@@ -5233,7 +5256,7 @@ export async function createWhoamiRegistry(user: string | undefined): Promise<Te
 		url: `${loopback.url}/`,
 		port: loopback.port,
 		get requests() {
-			return [...requests]
+			return requests.calls.map(([request]) => request)
 		},
 		destroy: loopback.destroy,
 	}

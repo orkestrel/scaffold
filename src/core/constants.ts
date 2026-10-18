@@ -454,8 +454,9 @@ export const SERVICE_TEST_INCLUDE = 'tests/service/**/*.test.ts'
  * Names the include the study project covers, a directory whose test files make a workspace `studies`.
  *
  * @remarks
- * The selector and the emitted include read one population: an exact-case file beneath
- * `tests/studies`, nested or direct, whose name ends in `.test.ts`.
+ * The selector reads the include's population less Vitest's default exclude: an exact-case file
+ * beneath `tests/studies`, nested or direct, whose name ends in `.test.ts`, outside any
+ * `node_modules` or `.git` directory, which Vitest's default exclude never collects.
  */
 export const STUDIES_TEST_INCLUDE = 'tests/studies/**/*.test.ts'
 

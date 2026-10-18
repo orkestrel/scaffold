@@ -123,6 +123,12 @@ export class GitQuery implements GitQueryInterface {
 
 	// A chunk may end inside a record or inside a UTF-8 sequence, so the unfinished tail carries into
 	// the next chunk; a chunk arriving after a refusal is ignored.
+	//
+	// Unproven: that a sequence split across two chunks decodes whole. The process transport leaves
+	// chunk boundaries to the host, `read` is the only door to this method, and the intake stays
+	// private, so no test can force a split. The multi-byte inventory test fails without `stream: true`
+	// on a host that splits a sequence and passes on one that does not. A transport that takes a chunk
+	// size, or a decoder the constructor accepts, would make the split drivable.
 	#collect(bytes: Uint8Array): void {
 		if (this.#controller.signal.aborted) return
 		const chunk = splitGitRecords(

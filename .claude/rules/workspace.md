@@ -175,7 +175,8 @@ one environment, so each is its own project:
   its `test:setup` or `test:setup:browser` script and run it from `test`; otherwise emit neither its
   project nor its script.
 - Define the `studies` project when at least one exact-case `*.test.ts` file sits beneath
-  `tests/studies`, nested or direct. Give it `tests/setup.ts` alone: `tests/setupStudy.ts` is the
+  `tests/studies`, nested or direct, outside any `node_modules` or `.git` directory, which Vitest's
+  default exclude never collects. Give it `tests/setup.ts` alone: `tests/setupStudy.ts` is the
   harness module those tests import, and it is no project's setup file. Scaffold plans no
   `tests/setupStudy.ts`, and the root `studies/` directory is no test-project input.
 - When `tests/setupGlobal.ts` exists, give `src:browser`, `setup:browser`, and `integration` that

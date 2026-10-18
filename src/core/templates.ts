@@ -2126,11 +2126,11 @@ function readOutput(result: SpawnSyncReturns<string>): string {
 	return \`\${result.stdout ?? ''}\${result.stderr ?? ''}\`.trim()
 }
 
-function runNpm(args: readonly string[], cwd: string): SpawnSyncReturns<string> {
+function runNpm(args: readonly string[], cwd: string, scratch: string): SpawnSyncReturns<string> {
 	return spawnSync(NPM, [...args], {
 		cwd,
 		encoding: 'utf8',
-		env: { ...process.env, npm_config_cache: join(DISTRIBUTION_SUITE.scratch, 'cache') },
+		env: { ...process.env, npm_config_cache: join(scratch, 'cache') },
 		shell: SHELL,
 		windowsHide: true,
 	})
@@ -2491,11 +2491,11 @@ function driveRuntime(stage: Stage, specifier: string, driver: string): readonly
 // Pack this workspace, install the archive into an isolated consumer, and read the
 // published surface back off the installed tree. Every later claim reads this
 // result, so a failure here is raised where it happens rather than once per entry.
-function buildStage(): Stage {
-	const packed = join(DISTRIBUTION_SUITE.scratch, 'packed')
-	const consumer = join(DISTRIBUTION_SUITE.scratch, 'consumer')
+function buildStage(scratch: string): Stage {
+	const packed = join(scratch, 'packed')
+	const consumer = join(scratch, 'consumer')
 	mkdirSync(packed, { recursive: true })
-	const pack = runNpm(['pack', '--ignore-scripts', '--pack-destination', packed], ROOT)
+	const pack = runNpm(['pack', '--ignore-scripts', '--pack-destination', packed], ROOT, scratch)
 	if (pack.status !== 0) throw new Error(\`npm pack refused this workspace: \${readOutput(pack)}\`)
 	const archives = readdirSync(packed).filter((name) => name.endsWith('.tgz'))
 	const archive = archives[0]
@@ -2508,6 +2508,7 @@ function buildStage(): Stage {
 	const install = runNpm(
 		['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
 		consumer,
+		scratch,
 	)
 	if (install.status !== 0) {
 		throw new Error(\`Installing the packed archive failed: \${readOutput(install)}\`)
@@ -2568,39 +2569,41 @@ function buildStage(): Stage {
 	return { consumer, installed, archives, entries, subpaths, undeclared, excluded, targets }
 }
 
-// The scratch directory and the staged consumer, which the start hook fills once for this
-// file's run and the stop hook removes.
+// One file's run: the scratch directory and the staged consumer, which is absent when the
+// registry could not be reached.
+interface DistributionRun {
+	readonly scratch: string
+	readonly stage: Stage | undefined
+}
+
+// The run the start hook binds once for this file and the stop hook releases.
 class DistributionSuite {
-	#scratch: string | undefined
-	#stage: Stage | undefined
+	#run: DistributionRun | undefined
 
 	get scratch(): string {
-		if (this.#scratch === undefined) {
+		if (this.#run === undefined) {
 			throw new Error('The distribution setup has not allocated its scratch directory')
 		}
-		return this.#scratch
+		return this.#run.scratch
 	}
 
 	get stage(): Stage | undefined {
-		return this.#stage
+		return this.#run?.stage
 	}
 
 	start(): void {
-		if (this.#scratch !== undefined) {
+		if (this.#run !== undefined) {
 			throw new Error('The distribution setup has already allocated its scratch directory')
 		}
 		const scratch = mkdtempSync(join(tmpdir(), 'distribution-'))
-		this.#scratch = scratch
-		mkdirSync(join(scratch, 'cache'), { recursive: true })
-		this.#stage = openStage()
+		this.#run = { scratch, stage: openStage(scratch) }
 	}
 
 	destroy(): void {
-		if (this.#scratch !== undefined) {
-			rmSync(this.#scratch, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
+		if (this.#run !== undefined) {
+			rmSync(this.#run.scratch, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
 		}
-		this.#scratch = undefined
-		this.#stage = undefined
+		this.#run = undefined
 	}
 }
 
@@ -2613,17 +2616,18 @@ afterAll(() => DISTRIBUTION_SUITE.destroy())
 // Installing the packed archive resolves its own runtime dependencies, so an
 // unreachable registry leaves nothing to measure. Under release that is the gate
 // failing; anywhere else the suite skips and names the mechanism it wanted.
-function openStage(): Stage | undefined {
+function openStage(scratch: string): Stage | undefined {
 	try {
-		if (runNpm(PING, ROOT).status !== 0) {
+		mkdirSync(join(scratch, 'cache'), { recursive: true })
+		if (runNpm(PING, ROOT, scratch).status !== 0) {
 			if (!RELEASE) return undefined
 			throw new Error(
 				'The release gate requires a reachable npm registry, and npm ping did not answer',
 			)
 		}
-		return buildStage()
+		return buildStage(scratch)
 	} catch (error) {
-		rmSync(DISTRIBUTION_SUITE.scratch, {
+		rmSync(scratch, {
 			force: true,
 			recursive: true,
 			maxRetries: 3,

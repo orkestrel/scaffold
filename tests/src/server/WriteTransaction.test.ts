@@ -14,6 +14,7 @@ import { Worker } from 'node:worker_threads'
 import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
+import { buildSparse } from '../../setup.js'
 import { captureScaffoldCode, SCRATCH_PREFIX } from '../../setupServer.js'
 import { captureError } from '@orkestrel/test'
 import { createScratch, supportsMode } from '@orkestrel/test/server'
@@ -29,6 +30,19 @@ describe('WriteTransaction construction', () => {
 			expect(captureScaffoldCode(() => new WriteTransaction(workspace.path, ['a', 'a']))).toBe(
 				'INVALID',
 			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a hole in the paths as a path that is off contract', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.ensure('project')
+			const paths = buildSparse(2, new Map([[1, 'names.md']]))
+			expect(
+				captureScaffoldCode(() => new WriteTransaction(join(workspace.path, 'project'), paths)),
+			).toBe('INVALID')
 		} finally {
 			workspace.destroy()
 		}
@@ -324,10 +338,7 @@ for (;;) {
 			)
 			try {
 				Atomics.wait(state, 0, 0, 10_000)
-				const observations: boolean[] = []
 				for (const attempt of Array.from({ length: 4_096 }).keys()) {
-					// One reading is recorded per earlier attempt, so the loop never skips one.
-					expect(observations).toHaveLength(attempt)
 					const transaction = new WriteTransaction(target, ['a'])
 					Atomics.store(state, 0, 2)
 					Atomics.notify(state, 0)
@@ -345,15 +356,16 @@ for (;;) {
 					transaction.discard()
 					expect(existsSync(segment)).toBe(false)
 					const observed = refusal !== undefined
-					observations.push(observed)
-					expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe(
-						observed ? 'WRITE' : undefined,
-					)
+					expect(
+						isScaffoldError(refusal) ? refusal.code : undefined,
+						`attempt ${String(attempt)}`,
+					).toBe(observed ? 'WRITE' : undefined)
 					Atomics.store(state, 0, 1)
 					Atomics.notify(state, 0)
-					if (observed) break
+					// The refusal is the claim, so the first attempt that observes it ends the test.
+					if (observed) return
 				}
-				expect(observations.at(-1)).toBe(true)
+				expect.unreachable('no attempt observed the anchor read refusing the replaced segment')
 			} finally {
 				Atomics.store(state, 0, 4)
 				Atomics.notify(state, 0)

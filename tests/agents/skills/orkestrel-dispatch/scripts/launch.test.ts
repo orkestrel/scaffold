@@ -337,4 +337,34 @@ describe('launch.ts', () => {
 			scratch.destroy()
 		}
 	})
+
+	it('runs a command under a cap whose milliseconds are fractional', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-fraction-' })
+		try {
+			scratch.write('fraction.cjs', "process.stdout.write('fractional\\n')")
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				[
+					'--journal',
+					'tmp/units/fraction.jsonl',
+					'--errors',
+					'tmp/units/fraction.err',
+					'--cap',
+					'30.0001',
+					'--',
+					process.execPath,
+					'fraction.cjs',
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(scratch.read('tmp/units/fraction.jsonl')).toBe('fractional\n')
+			expect(scratch.read('tmp/units/fraction.err')).toMatch(
+				/\nexit=0 signal=none capped=false duration_ms=\d+\n$/u,
+			)
+			expect(run.json?.capped).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
 })

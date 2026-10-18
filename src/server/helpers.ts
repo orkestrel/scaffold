@@ -1033,8 +1033,9 @@ export function pruneEmptiedDirectories(
 	removed: readonly string[],
 ): readonly string[] {
 	// Every ancestor of a removed path except the path itself and the root of its form
-	// (`.` or a filesystem root), which stands whatever was removed beneath it.
-	const candidates = new Set(removed.flatMap((path) => listAncestors(path).slice(1, -1)))
+	// (`.` or a filesystem root), which stands whatever was removed beneath it. The spread reads a
+	// hole as an `undefined` path, as a `for…of` over the list would.
+	const candidates = new Set([...removed].flatMap((path) => listAncestors(path).slice(1, -1)))
 	const ordered = [...candidates].sort(
 		(left, right) =>
 			compareValues(right.split('/').length, left.split('/').length) || compareValues(left, right),
@@ -1200,8 +1201,9 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
 		})
 	}
 	// Each path reads with what the earlier ones left of the total budget, so the fold carries the
-	// bytes spent beside the entries read. `paths` is bounded by `isCollection` above.
-	const read = paths.reduce<{
+	// bytes spent beside the entries read. `paths` is bounded by `isCollection` above, and the spread
+	// reads a hole the `every` above skipped as an `undefined` path, as a `for…of` over the list would.
+	const read = [...paths].reduce<{
 		readonly entries: ReadonlyArray<readonly [string, string]>
 		readonly spent: readonly number[]
 	}>(
@@ -1441,10 +1443,13 @@ export function readManifestEntry(destination: string, source: string): Manifest
  */
 export function filesToHost(files: readonly HostFile[], floor: Host): Host | undefined {
 	const declared = new Set(floor.manifest.entries.map((entry) => entry.destination))
-	if (files.some((file) => file.lookup !== 'found' || !declared.has(file.path))) return undefined
+	// The spread reads a hole as an `undefined` row, which the lookup read refuses, as a `for…of`
+	// over the files would.
+	const listed = [...files]
+	if (listed.some((file) => file.lookup !== 'found' || !declared.has(file.path))) return undefined
 	// A later row of one path replaces an earlier one, as a keyed write does.
 	const held = new Map(
-		files.flatMap((file): ReadonlyArray<readonly [string, string]> =>
+		listed.flatMap((file): ReadonlyArray<readonly [string, string]> =>
 			file.lookup === 'found' && !isFloorPath(file.path) ? [[file.path, file.hex]] : [],
 		),
 	)
@@ -1521,7 +1526,8 @@ export function stageBytes(
 		throw new ScaffoldError('INVALID', 'Staging host root is not a host path', { host: root })
 	}
 	const declared = new Map(host.manifest.entries.map((entry) => [entry.destination, entry]))
-	return destinations.map((destination): ManifestEntry => {
+	// A hole reads as an `undefined` destination, which the host carries no bytes for.
+	return Array.from(destinations, (destination): ManifestEntry => {
 		const entry = declared.get(destination)
 		const hex = host.bytes[destination]
 		if (entry === undefined || hex === undefined) {

@@ -647,7 +647,8 @@ export function statementToPolicyBindings(node: PolicyExpression): readonly Poli
 		return [{ node, name: identifierToPolicyName(node.id) }]
 	}
 	if (node.type !== 'VariableDeclaration') return []
-	return (node.declarations ?? []).flatMap((declarator) => {
+	// The spread reads a hole as an `undefined` declarator, as a `for…of` over the list would.
+	return [...(node.declarations ?? [])].flatMap((declarator) => {
 		const init = declarator.init
 		if (init === undefined || init === null || !isPolicyFunction(init)) return []
 		const name = identifierToPolicyName(declarator.id)
@@ -788,11 +789,13 @@ export function programToPolicyDocs(
 	node: PolicyExpression,
 	sourceCode: PolicySourceCode,
 ): readonly PolicyDoc[] {
-	const comments = sourceCode.getAllComments()
-	return programToPolicyStatements(node).flatMap((statement) => {
+	// Each spread reads a hole as an `undefined` entry, as a `for…of` over the list would, and the
+	// filter reads every comment where a `findLast` would stop at the nearest one.
+	const comments = [...sourceCode.getAllComments()]
+	return [...programToPolicyStatements(node)].flatMap((statement) => {
 		if (!statement.type.startsWith('Export')) return []
 		const start = statement.range[0]
-		const previous = comments.findLast((comment) => comment.range[1] <= start)
+		const previous = comments.filter((comment) => comment.range[1] <= start).at(-1)
 		if (previous === undefined || previous.type !== 'Block') return []
 		if (!previous.value.startsWith('*')) return []
 		if (sourceCode.text.slice(previous.range[1], start).trim() !== '') return []
@@ -1051,7 +1054,8 @@ export function reportDomain(context: PolicyContext, node: PolicyExpression): vo
 	}
 	if (!isPolicyDomain(context.filename, context.cwd)) return
 	const expected = fileToPolicyStem(file)
-	const members = programToPolicyStatements(node)
+	// The spread reads a hole as an `undefined` statement, as a `for…of` over the body would.
+	const members = [...programToPolicyStatements(node)]
 		.filter((statement) => statement.type !== 'ImportDeclaration')
 		.map((statement) => ({ statement, declaration: statementToPolicyDeclaration(statement) }))
 	const implementations = members.filter(

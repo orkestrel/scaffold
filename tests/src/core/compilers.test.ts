@@ -1,4 +1,4 @@
-import type { Axis } from '@src/core'
+import type { Axis, Environment } from '@src/core'
 import type { PluginOption, UserConfig } from 'vite'
 import { requireValue } from '@orkestrel/test'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { posix, resolve } from 'node:path'
 import {
+	artifactsToQuestions,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToExports,
@@ -30,15 +31,20 @@ import {
 	CONFIG_TEMPLATES,
 	Compiler,
 	createBlueprint,
+	DEPENDENCY_NAME_PATTERN,
+	dependenciesToQuestions,
 	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
 	FRAMEWORK_MATRIX,
 	HOST_PATHS,
 	insertManifestDependencies,
 	insertManifestSection,
+	INTEGRATION_TEST_PATH,
 	isCanonPath,
 	manifestToDependencies,
 	ORKESTREL_RANGE_PATTERN,
+	overridesToQuestions,
+	planToFindings,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestOverride,
 	replaceManifestRanges,
@@ -51,6 +57,12 @@ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js
 import { mergeOverride, srcServer } from '../../../vite.config.js'
 import {
 	buildBlueprint,
+	buildContentArtifact,
+	buildDependency,
+	buildOverride,
+	buildPlan,
+	buildSparse,
+	buildTrailingHole,
 	collectWrappers,
 	ENTRY_AUTHORED_TEST,
 	ENTRY_AUTHORED_VITE,
@@ -4634,5 +4646,114 @@ describe('the generated configuration under its own hazards', () => {
 		const merged = mergeOverride({ build: { sourcemap: true } }, override)
 		expect(merged.build?.sourcemap).toBe(false)
 		expect(Object.getOwnPropertyDescriptor(merged, 'command')?.value).toBe('caller-command')
+	})
+})
+
+// A `for…of` loop and a spread read a hole as `undefined`, where `map`, `filter`, and `flatMap` skip
+// it, so each case pins the answer the loop the compiler replaced gave: a refusal where the loop
+// read a field of the missing entry, and a planned `undefined` entry where it only named it.
+describe('compilers over a caller-supplied list with a hole', () => {
+	const extension = { surface: 'browser', name: 'vue', axes: ['src'] } as const
+
+	it('refuses a hole in the peers the development dependencies read', () => {
+		const peers = buildTrailingHole(buildDependency({ name: 'vue', range: '^3.5.0' }))
+
+		expect(() => blueprintToDevDependencies(buildBlueprint({ peers }))).toThrow(TypeError)
+	})
+
+	it('refuses a hole in src when planning the config artifacts', () => {
+		const src = buildTrailingHole<Environment>('core')
+
+		expect(() => blueprintToConfigArtifacts(buildBlueprint({ src }))).toThrow(TypeError)
+	})
+
+	it('refuses a hole in app when planning the config artifacts', () => {
+		const app = buildTrailingHole<Environment>('core')
+
+		expect(() => blueprintToConfigArtifacts(buildBlueprint({ app }))).toThrow(TypeError)
+	})
+
+	it('plans a hole in src as an undefined environment among the source artifacts', () => {
+		const src = buildTrailingHole<Environment>('core')
+		const paths = blueprintToSourceArtifacts(buildBlueprint({ src })).map(({ path }) => path)
+
+		expect(paths).toContain('src/undefined/index.ts')
+		expect(paths).toContain('src/core/index.ts')
+	})
+
+	it('plans a hole in app as an undefined environment among the source artifacts', () => {
+		const app = buildTrailingHole<Environment>('core')
+		const paths = blueprintToSourceArtifacts(buildBlueprint({ app })).map(({ path }) => path)
+
+		expect(paths).toContain('app/undefined/index.ts')
+		expect(paths).toContain('app/core/index.ts')
+	})
+
+	it('plans a hole in src as an undefined environment among the test artifacts', () => {
+		const src = buildTrailingHole<Environment>('core')
+		const artifacts = blueprintToTestArtifacts(buildBlueprint({ src, integration: true }))
+		const integration = artifacts.find(({ path }) => path === INTEGRATION_TEST_PATH)
+
+		expect(artifacts.map(({ path }) => path)).toContain('tests/src/undefined/index.test.ts')
+		expect(integration?.content).toContain("import * as srcServer from '@src/undefined'")
+	})
+
+	it('plans a hole in app as an undefined environment among the test artifacts', () => {
+		const app = buildTrailingHole<Environment>('core')
+		const artifacts = blueprintToTestArtifacts(buildBlueprint({ app, integration: true }))
+		const integration = artifacts.find(({ path }) => path === INTEGRATION_TEST_PATH)
+
+		expect(artifacts.map(({ path }) => path)).toContain('tests/app/undefined/index.test.ts')
+		expect(integration?.content).toContain("import * as appServer from '@app/undefined'")
+	})
+
+	it.each([
+		['extensions', () => buildBlueprint({ extensions: buildTrailingHole(extension) })],
+		[
+			'axes of an extension',
+			() =>
+				buildBlueprint({ extensions: [{ ...extension, axes: buildTrailingHole<Axis>('src') }] }),
+		],
+		['dependencies', () => buildBlueprint({ dependencies: buildTrailingHole(buildDependency()) })],
+		['peers', () => buildBlueprint({ peers: buildTrailingHole(buildDependency()) })],
+		['extras', () => buildBlueprint({ extras: buildTrailingHole(buildDependency()) })],
+	])('refuses a hole in the %s a blueprint declares', (_label, build) => {
+		expect(() => blueprintToQuestions(build())).toThrow(TypeError)
+	})
+
+	it('reads two holes in vendors as one vendor declared twice', () => {
+		const vendors = buildSparse(2, new Map<number, string>())
+		const questions = blueprintToQuestions(buildBlueprint({ vendors }))
+
+		expect(questions.map(({ message }) => message)).toContain(
+			'undefined is declared more than once on vendors.',
+		)
+	})
+
+	it('refuses a hole in the declarations a package list is measured over', () => {
+		expect(() =>
+			dependenciesToQuestions(
+				buildTrailingHole(buildDependency()),
+				'dependencies',
+				DEPENDENCY_NAME_PATTERN,
+				ORKESTREL_RANGE_PATTERN,
+			),
+		).toThrow(TypeError)
+	})
+
+	it('refuses a hole in the artifacts a drafted list is measured over', () => {
+		expect(() => artifactsToQuestions(buildTrailingHole(buildContentArtifact()))).toThrow(TypeError)
+	})
+
+	it('refuses a hole in the overrides a draft is measured against', () => {
+		expect(() =>
+			overridesToQuestions(buildTrailingHole(buildOverride()), [buildContentArtifact()]),
+		).toThrow(TypeError)
+	})
+
+	it('refuses a hole in the artifacts a plan carries when reading its findings', () => {
+		const plan = buildPlan({ artifacts: buildTrailingHole(buildContentArtifact()) })
+
+		expect(() => planToFindings(plan, {})).toThrow(TypeError)
 	})
 })

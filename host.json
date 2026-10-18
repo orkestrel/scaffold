@@ -196,7 +196,7 @@
 			"storage": "agents/skills/orkestrel-dispatch/scripts/launch.ts",
 			"destination": ".agents/skills/orkestrel-dispatch/scripts/launch.ts",
 			"executable": false,
-			"digest": "f067e6e2ff7fe716444a62be0e21cc96a6e8f5bb138742fd488c9ea20d3ff56c"
+			"digest": "814d9884a07e850d9518972d6aa9eb57a409c125242c8274cfc11d732d489974"
 		},
 		{
 			"storage": "agents/skills/orkestrel-dispatch/scripts/login.ts",
@@ -598,7 +598,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "42fa69b6fd5d3f4f5556d39167f9f0bcff3e034cc534023a696bb0d53affa912"
+			"digest": "31694c43a9ffa165147c77ce8982ec2092684db0bd52b6cb4b44fbd6d6fbf28f"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -772,7 +772,7 @@
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "56876d7a2ae5ecc4daf7404f7956ecad71795cfddcda97e8d1b6632953ca83f6"
+			"digest": "60350ded550d78a27554f211ff0280e3479279f082f6ee951b4a25f2657fa4a4"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -1042,7 +1042,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "862180744097467a87c82dc8e8b69c09de8cec27e8812b67f7af65356ef504a9"
+			"digest": "f7e906343c48ed0bb50c31b98459bc12597c9d243cc8951c8c5d721974849501"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1180,7 +1180,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "8fbbaccb74fcae5395006be1ba6004cd05cd412c58f2233483e609a09c43fa33"
+			"digest": "8a11d2f47174d147b735f01708dd56e0722764e5fcb9a0854e0c48b1cc5976bf"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1192,7 +1192,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "7acddb5e47ab92e5646ad8a89c15ce751c3cc7c695fd03995cf50a37085e8d1f"
+			"digest": "7b188a88122d276363dbd462126254509956a2c13c9fe2be1098bc56ffc15b00"
 		}
 	],
 	"roots": [
@@ -2120,5 +2120,5 @@
 			]
 		}
 	],
-	"digest": "44d1faa8d5ce32ffcfedaf7bf14085e2d9ce4aed2dfbc430a8f7a6508e4e6fd3"
+	"digest": "cfd8c1d10b8edb01ba8097036df1b8a963c2245cecdf3c8d77dabd43b8162f4f"
 }

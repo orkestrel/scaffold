@@ -2,7 +2,8 @@
 //   node .agents/skills/orkestrel-dispatch/scripts/launch.ts --journal tmp/codex/UNIT.jsonl --errors tmp/codex/UNIT.err --cap 1500 [--status] -- codex exec --json ...
 // The command's stdout goes to --journal and its stderr to --errors; stdin is closed. Arguments after
 // `--` pass to the command verbatim, so no shell quoting is involved. --cap is in seconds: when it
-// expires the process tree is killed and the errors file records `capped=true`. --status records
+// expires the process tree is killed and the errors file records `capped=true`. A fractional cap
+// truncates to whole milliseconds, with 1 ms the least. --status records
 // `git status --porcelain` before and after beside the journal, which is how a read-only lane's
 // containment is checked. Stdout carries up to two JSON lines. The spawn line
 // `{"pid","journal","errors"}` prints as soon as the command starts, and the pid, as decimal digits
@@ -22,6 +23,12 @@ import { readMissingFlags, readOption } from './helpers.ts'
 // The longest wait a Node timer holds is 2147483647 ms; floored to whole seconds, a longer cap would
 // throw from `AbortSignal.timeout` after the spawn or clamp to 1 ms and kill the command at once.
 const MAX_CAP_SECONDS = 2_147_483
+
+// `AbortSignal.timeout` throws on a fractional delay, which `setTimeout` truncates and raises to 1 ms
+// from below, so the cap takes that form before the command starts.
+function computeCapMilliseconds(cap: number): number {
+	return Math.max(1, Math.trunc(cap * 1000))
+}
 
 function readStatus(): string {
 	const result = spawnSync('git', ['status', '--porcelain'], { encoding: 'utf8' })
@@ -79,6 +86,7 @@ async function main(argv: readonly string[]): Promise<number> {
 		return 64
 	}
 	const status = own.includes('--status')
+	const capMilliseconds = cap > 0 ? computeCapMilliseconds(cap) : undefined
 	mkdirSync(dirname(journal), { recursive: true })
 	mkdirSync(dirname(errors), { recursive: true })
 	if (status) writeFileSync(`${journal}.status-before.txt`, readStatus())
@@ -94,7 +102,7 @@ async function main(argv: readonly string[]): Promise<number> {
 	// The signal aborts once the cap elapses, so whether it aborted is whether the cap ended the run.
 	// The timer cannot be cleared, so a cap that elapses after the child exited kills nothing: a
 	// reused pid is not this command's.
-	const deadline = cap > 0 ? AbortSignal.timeout(cap * 1000) : undefined
+	const deadline = capMilliseconds === undefined ? undefined : AbortSignal.timeout(capMilliseconds)
 	deadline?.addEventListener(
 		'abort',
 		() => {

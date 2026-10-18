@@ -547,7 +547,8 @@ export function dependenciesToFleet(dependencies: readonly Dependency[]): readon
 export function dependenciesToFloors(
 	dependencies: readonly Dependency[],
 ): readonly Release[] | undefined {
-	const floors = dependencies.map((dependency) => ({
+	// A hole reads as an `undefined` declaration, which the range read refuses.
+	const floors = Array.from(dependencies, (dependency) => ({
 		dependency,
 		version:
 			dependency.range.startsWith('^') || dependency.range.startsWith('~')
@@ -589,7 +590,8 @@ export function releasesToQuestions(
 	releases: readonly Release[],
 	served: readonly Release[] = releases,
 ): readonly Question[] {
-	return releases.flatMap((release): readonly Question[] => {
+	// The spread reads a hole as an `undefined` release, which the name read refuses.
+	return [...releases].flatMap((release): readonly Question[] => {
 		if (release.name.startsWith('@orkestrel/')) return []
 		const declared = extractRangeMajor(release.range)
 		const current = release.lookup === 'found' ? release.latest : undefined
@@ -930,9 +932,11 @@ export function releasesToPins(
 		)
 	}
 	const dependencies = [...declared.runtime, ...declared.development]
-	const pins = releases.map((release, index): Dependency => {
+	// The keys name a hole too, so a release the answer lacks reads as one with no declaration.
+	const pins = Array.from(releases.keys(), (index): Dependency => {
+		const release = releases[index]
 		const dependency = dependencies[index]
-		if (dependency === undefined) {
+		if (release === undefined || dependency === undefined) {
 			throw new ScaffoldError('FETCH', 'The release answer has no matching declaration.')
 		}
 		if (release.lookup !== 'found') {

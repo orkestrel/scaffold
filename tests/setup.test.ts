@@ -25,6 +25,8 @@ import {
 	buildSelections,
 	buildSetupQuestion,
 	buildSnapshot,
+	buildSparse,
+	buildTrailingHole,
 	buildUnionCases,
 	CLASSIFIER_CASES,
 	CLASSIFIER_DECLARATIONS,
@@ -142,6 +144,25 @@ describe('buildBlueprint', () => {
 })
 
 describe('the inert value builders', () => {
+	it('builds a list whose holes are absent rather than undefined', () => {
+		const list = buildSparse(3, new Map([[1, 'b']]))
+		expect(list).toHaveLength(3)
+		expect(Object.keys(list)).toStrictEqual(['1'])
+		expect(Array.from(list)).toStrictEqual([undefined, 'b', undefined])
+		expect([...list]).toStrictEqual([undefined, 'b', undefined])
+		expect(list.map((entry) => entry)).toStrictEqual(list)
+		expect(buildSparse(2, new Map<number, string>())).toHaveLength(2)
+		expect(Object.keys(buildSparse(2, new Map<number, string>()))).toStrictEqual([])
+	})
+
+	it('builds a list that holds one entry and a hole after it', () => {
+		const list = buildTrailingHole('a')
+		expect(list).toHaveLength(2)
+		expect(Object.keys(list)).toStrictEqual(['0'])
+		expect(list.indexOf('a')).toBe(0)
+		expect(Array.from(list)).toStrictEqual(['a', undefined])
+	})
+
 	it('replaces only the named fields on the dependency, override, and question builders', () => {
 		expect(buildDependency()).toStrictEqual({ name: '@orkestrel/emitter', range: '^0.0.5' })
 		expect(buildDependency({ optional: true })).toStrictEqual({

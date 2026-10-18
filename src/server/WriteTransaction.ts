@@ -151,8 +151,9 @@ export class WriteTransaction {
 			throw new ScaffoldError('INVALID', 'The write paths repeat a destination.', { target, paths })
 		}
 		this.#target = resolve(target)
+		// A hole in `paths` reads as an `undefined` path, which the destination read refuses.
 		this.#expectations = new Map(
-			paths.map((path): readonly [string, WriteExpectation] => {
+			Array.from(paths, (path): readonly [string, WriteExpectation] => {
 				const destination = this.#resolve(this.#target, path)
 				const expectation = readExpectation(destination)
 				if (expectation === undefined) {

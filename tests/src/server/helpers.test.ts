@@ -79,7 +79,7 @@ import {
 	stageInventory,
 } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { buildHostArtifact, buildHostileCases, buildPlan } from '../../setup.js'
+import { buildHostArtifact, buildHostileCases, buildPlan, buildSparse } from '../../setup.js'
 import {
 	buildCheckoutManifest,
 	buildVendoredPlan,
@@ -1514,6 +1514,18 @@ describe('listAncestors', () => {
 })
 
 describe('pruneEmptiedDirectories', () => {
+	it('refuses a hole in the removed paths as the path it reads as', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.ensure('notes')
+			const removed = buildSparse(2, new Map([[1, 'notes/entry.md']]))
+			expect(() => pruneEmptiedDirectories(workspace.path, removed)).toThrow(TypeError)
+			expect(listDirectories(workspace.path)).toEqual(['notes'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('takes an emptied chain deepest first', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -1680,6 +1692,17 @@ describe('readFileHex and readFileText', () => {
 })
 
 describe('readSnapshot', () => {
+	it('refuses a hole in the paths as a path that leaves the target', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('AGENTS.md', 'hi\n')
+			const paths = buildSparse(2, new Map([[1, 'AGENTS.md']]))
+			expect(captureScaffoldCode(() => readSnapshot(workspace.path, paths))).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('maps a file to its bytes, a directory to presence, and omits what is absent', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -2012,6 +2035,17 @@ describe('filesToHost', () => {
 		),
 	}
 
+	it('refuses a hole in the files as the row it reads as', () => {
+		const files = buildSparse<HostFile>(
+			2,
+			new Map([
+				[1, { path: 'scripts/codex.sh', lookup: 'found', hex: contentToHex('live script\n') }],
+			]),
+		)
+
+		expect(() => filesToHost(files, floor)).toThrow(TypeError)
+	})
+
 	it('overlays host-owned live files while keeping deferred and canon floor bytes', () => {
 		const files: readonly HostFile[] = [
 			{ path: 'AGENTS.md', lookup: 'found', hex: contentToHex('live agents\n') },
@@ -2155,6 +2189,27 @@ describe('filesToHost', () => {
 })
 
 describe('stageBytes', () => {
+	it('refuses a hole in the destinations as a destination the host declares no bytes for', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const host = {
+				manifest,
+				bytes: Object.fromEntries(
+					manifest.entries.map((entry) => [
+						entry.destination,
+						contentToHex(`${entry.destination}\n`),
+					]),
+				),
+			}
+			const root = workspace.ensure('filled')
+			const destinations = buildSparse(2, new Map([[1, 'AGENTS.md']]))
+			expect(captureScaffoldCode(() => stageBytes(host, root, destinations))).toBe('TARGET')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('fills a root under the storage names the manifest declares', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

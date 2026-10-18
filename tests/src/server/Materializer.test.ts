@@ -10,6 +10,7 @@ import {
 	createBlueprint,
 	insertManifestDependencies,
 	isFinding,
+	isScaffoldError,
 	RELEASE_PROOF_COMMAND,
 	renderSkillPointer,
 	TARGET_SKILL_NAMES,
@@ -512,7 +513,14 @@ describe('Materializer materialize', () => {
 						),
 					),
 				).toBe('INVALID')
-				expect(errors.count).toBe(2)
+				expect(
+					errors.calls.map(([error]) =>
+						isScaffoldError(error) ? { code: error.code, context: error.context } : undefined,
+					),
+				).toEqual([
+					{ code: 'INVALID', context: { field: 'target' } },
+					{ code: 'INVALID', context: { field: 'plan' } },
+				])
 			} finally {
 				materializer.destroy()
 			}
@@ -585,7 +593,7 @@ describe('Materializer materialize', () => {
 			const materializer = new Materializer({ host, on: { destroy: destroys.handler } })
 			materializer.destroy()
 			materializer.destroy()
-			expect(destroys.count).toBe(1)
+			expect(destroys.calls).toEqual([[]])
 			expect(materializer.emitter.destroyed).toBe(true)
 			expect(
 				captureScaffoldCode(() => materializer.materialize(buildVendoredPlan(), workspace.path)),

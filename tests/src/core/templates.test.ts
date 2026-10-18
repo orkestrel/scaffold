@@ -47,6 +47,7 @@ import {
 	buildDistributionClassification,
 	buildDistributionClassifier,
 	buildDistributionProof,
+	buildDistributionSuite,
 	checkTypes,
 	driveModule,
 	ensureTmpRoot,
@@ -2031,38 +2032,67 @@ describe('emitted distribution classifier', () => {
 		])
 	})
 
-	// The emitted suite binds a scratch directory and a stage for one file's run. The class is lifted
-	// whole and driven, with an inert `openStage` standing where packing and installing would be.
-	it('refuses a second start while bound and releases both fields on destroy', async () => {
-		const statements = readStatements(buildDistributionProof(), 'proof.ts')
-		const suite = requireValue(statements.find(({ syntax }) => syntax === 'ClassDeclaration'))
-		const imports = statements
-			.filter(
-				({ syntax, specifier }) =>
-					syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
-			)
-			.map(({ text }) => text)
-		const source = `${imports.join('\n')}\nfunction openStage() { return undefined }\n${suite.text}\nexport { DistributionSuite }\n`
-		const [answer] = await driveClassifier(source, [
-			`(() => {
+	// The emitted suite binds one run, a scratch directory and the stage built in it, for one file.
+	// The class is lifted whole and driven, with a stand-in `openStage` where packing and
+	// installing would be.
+	it('binds one run, refuses a second start while it is bound, and releases it on destroy', async () => {
+		const [answer] = await driveClassifier(
+			buildDistributionSuite('function openStage(scratch) { return { scratch } }'),
+			[
+				`(() => {
 				const suite = new classifier.DistributionSuite()
 				suite.start()
 				const first = suite.scratch
+				const allocated = classifier.existsSync(first)
+				const staged = suite.stage?.scratch === first
 				const second = (() => { try { suite.start(); return 'started' } catch (error) { return error.message } })()
+				const kept = suite.scratch === first && suite.stage?.scratch === first
 				suite.destroy()
+				const removed = !classifier.existsSync(first)
 				const released = (() => { try { return suite.scratch } catch (error) { return error.message } })()
 				suite.start()
 				const rebound = suite.scratch !== first
 				suite.destroy()
-				return { second, released, stage: suite.stage, rebound }
+				return { allocated, staged, second, kept, removed, released, stage: suite.stage, rebound }
 			})()`,
-		])
+			],
+		)
 
 		expect(answer).toStrictEqual({
+			allocated: true,
+			staged: true,
 			second: 'The distribution setup has already allocated its scratch directory',
+			kept: true,
+			removed: true,
 			released: 'The distribution setup has not allocated its scratch directory',
 			stage: undefined,
 			rebound: true,
+		})
+	})
+
+	// A start whose stage fails publishes nothing, so a later start is not refused as a second one.
+	it('binds no run when the stage refuses, and starts again afterward', async () => {
+		const [answer] = await driveClassifier(
+			buildDistributionSuite(
+				"function openStage(scratch) { rmSync(scratch, { force: true, recursive: true }); throw new Error('the registry refused') }",
+			),
+			[
+				`(() => {
+				const suite = new classifier.DistributionSuite()
+				const attempt = () => { try { suite.start(); return 'started' } catch (error) { return error.message } }
+				const first = attempt()
+				const unbound = (() => { try { return suite.scratch } catch (error) { return error.message } })()
+				const second = attempt()
+				suite.destroy()
+				return { first, unbound, second }
+			})()`,
+			],
+		)
+
+		expect(answer).toStrictEqual({
+			first: 'the registry refused',
+			unbound: 'The distribution setup has not allocated its scratch directory',
+			second: 'the registry refused',
 		})
 	})
 

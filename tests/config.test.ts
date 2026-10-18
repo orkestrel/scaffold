@@ -2,7 +2,13 @@
 // P2: Required items are checked strictly; extra items are ignored before their shape is read.
 
 import type { InlineConfig, UserConfig } from 'vite'
-import type { PolicyExpression } from '../configs/policy.js'
+import type {
+	PolicyComment,
+	PolicyContext,
+	PolicyDiagnostic,
+	PolicyExpression,
+	PolicySourceCode,
+} from '../configs/policy.js'
 import type { PolicyProject } from './setupPolicy.js'
 import { spawnSync } from 'node:child_process'
 import {
@@ -54,6 +60,9 @@ import policyPlugin, {
 	isPolicyVoiced,
 	nodeToPolicyOuter,
 	paragraphToPolicyOpener,
+	programToPolicyDocs,
+	reportDomain,
+	statementToPolicyBindings,
 	stripPolicyCode,
 	textToPolicyHits,
 } from '../configs/policy.js'
@@ -74,6 +83,7 @@ import {
 	SHEET_POLICY_ORDER_PATTERN,
 	readImportDiagnostics,
 	createPolicyScratch,
+	createPolicySparse,
 	inspectPolicyConfiguration,
 	inspectPolicyWiring,
 	normalizePolicyFilename,
@@ -656,8 +666,9 @@ describe('root configuration', () => {
 					]
 				: []),
 			// The study project covers a directory too, and the exact-case test files beneath
-			// `tests/studies` select it. `tests/setupStudy.ts` is a harness module those tests import and
-			// no project loads it as a setup file, so the setup list names `tests/setup.ts` alone.
+			// `tests/studies` select it, outside any `node_modules` or `.git` directory, which Vitest's
+			// default exclude never collects. `tests/setupStudy.ts` is a harness module those tests import
+			// and no project loads it as a setup file, so the setup list names `tests/setup.ts` alone.
 			...(collectStudies(POLICY_ROOT).length > 0
 				? [
 						[
@@ -2599,6 +2610,85 @@ createSomething({
 		expect(commentToPolicyParagraph({ type: 'Block', value: '* ', range: [0, 0] })).toBe('')
 	})
 
+	describe('readers over a caller-supplied list with a hole', () => {
+		// A `for…of` loop and a spread read a hole as `undefined`, where `map`, `filter`, `flatMap`, and
+		// `findLast` skip it or stop before it, so each case puts the hole where the reader would not
+		// reach it and pins the refusal the loop gave.
+		const name: PolicyExpression = { type: 'Identifier', range: [0, 0], name: 'run' }
+		const exported: PolicyExpression = {
+			type: 'ExportNamedDeclaration',
+			range: [47, 63],
+			declaration: { type: 'FunctionDeclaration', range: [0, 0], id: name },
+		}
+		const source: PolicySourceCode = { text: '', getAllComments: () => [] }
+
+		it('refuses a hole in the declarators of a statement as the declarator it reads as', () => {
+			const declarator: PolicyExpression = {
+				type: 'VariableDeclarator',
+				range: [0, 0],
+				id: name,
+				init: { type: 'ArrowFunctionExpression', range: [0, 0] },
+			}
+
+			expect(
+				statementToPolicyBindings({
+					type: 'VariableDeclaration',
+					range: [0, 0],
+					declarations: [declarator],
+				}),
+			).toHaveLength(1)
+			expect(() =>
+				statementToPolicyBindings({
+					type: 'VariableDeclaration',
+					range: [0, 0],
+					declarations: createPolicySparse(2, new Map([[0, declarator]])),
+				}),
+			).toThrow(TypeError)
+		})
+
+		it('refuses a hole in the statements of a program as the statement it reads as', () => {
+			const program: PolicyExpression = {
+				type: 'Program',
+				range: [0, 0],
+				body: createPolicySparse(2, new Map([[0, exported]])),
+			}
+
+			expect(() => programToPolicyDocs(program, source)).toThrow(TypeError)
+		})
+
+		it('refuses a hole in the comments of a source as the comment it reads as', () => {
+			const comment: PolicyComment = { type: 'Block', value: '* One.', range: [0, 11] }
+			const comments = createPolicySparse(2, new Map([[1, comment]]))
+			const program: PolicyExpression = { type: 'Program', range: [0, 0], body: [exported] }
+
+			expect(() =>
+				programToPolicyDocs(program, { text: '/** One. */\n', getAllComments: () => comments }),
+			).toThrow(TypeError)
+		})
+
+		it('refuses a hole in the body of a function-domain module as the statement it reads as', () => {
+			const reports: PolicyDiagnostic[] = []
+			const context: PolicyContext = {
+				filename: '/ws/src/server/execution/run.ts',
+				cwd: '/ws',
+				sourceCode: source,
+				report: (diagnostic) => {
+					reports.push(diagnostic)
+				},
+			}
+			const dense: PolicyExpression = { type: 'Program', range: [0, 0], body: [exported] }
+			const sparse: PolicyExpression = {
+				type: 'Program',
+				range: [0, 0],
+				body: createPolicySparse(2, new Map([[0, exported]])),
+			}
+
+			reportDomain(context, dense)
+			expect(reports).toStrictEqual([])
+			expect(() => reportDomain(context, sparse)).toThrow(TypeError)
+		})
+	})
+
 	it('reads the opening word of a paragraph as its letters alone', () => {
 		expect(paragraphToPolicyOpener('Creates a control.')).toBe('Creates')
 		expect(paragraphToPolicyOpener('"Creates" a control.')).toBe('Creates')
@@ -3911,7 +4001,7 @@ describe('configuration helpers', () => {
 	it('reads the refusals, guards, overrides, and rewrites a declaration roll-up requires from every workspace', () => {
 		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
 		// Any project path resolves these, because each reading is refused by the text before the
-		// path is read. The POLICY_ROOT project is the one file every workspace carries.
+		// path is read. The root project is the one file every workspace carries.
 		const project = resolve(POLICY_ROOT, 'tsconfig.json')
 		expect(configHelpers.parseProjectScope('not a configuration', project)).toBeUndefined()
 		expect(

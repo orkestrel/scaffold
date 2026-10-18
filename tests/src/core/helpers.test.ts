@@ -56,6 +56,7 @@ import {
 	buildHydratedArtifact,
 	buildPlan,
 	buildPurityCases,
+	buildSparse,
 	DIFFERING_HEX,
 	MANIFEST_SAMPLE,
 	MATCHING_HEX,
@@ -575,6 +576,26 @@ describe('catalogToLayers', () => {
 	it('answers with no layer for no catalog', () => {
 		expect(catalogToLayers([])).toStrictEqual([])
 	})
+
+	it('refuses a hole in the entries as the entry it reads as', () => {
+		const entries = buildSparse<CatalogEntry>(
+			2,
+			new Map([
+				[
+					1,
+					{
+						name: '@orkestrel/free',
+						lookup: 'found',
+						version: '1.0.0',
+						dependencies: [],
+						peers: [],
+					},
+				],
+			]),
+		)
+
+		expect(() => catalogToLayers(entries)).toThrow(TypeError)
+	})
 })
 
 describe('planToSummary', () => {
@@ -598,6 +619,12 @@ describe('planToSummary', () => {
 			template: 1,
 			computed: 1,
 		})
+	})
+
+	it('refuses a hole in the artifacts as the artifact it reads as', () => {
+		const plan = buildPlan({ artifacts: buildSparse(2, new Map([[1, buildContentArtifact()]])) })
+
+		expect(() => planToSummary(plan)).toThrow(TypeError)
 	})
 })
 

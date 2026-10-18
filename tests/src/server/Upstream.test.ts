@@ -1,6 +1,6 @@
 import type { HostFile, Mirror, Release, Snapshot } from '@src/core'
 import { gzipSync } from 'node:zlib'
-import { contentToHex, MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
+import { contentToHex, MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS, ScaffoldError } from '@src/core'
 import {
 	computeDigest,
 	computeManifestDigest,
@@ -65,7 +65,7 @@ describe('Upstream construction', () => {
 		upstream.destroy()
 		upstream.destroy()
 		expect(upstream.emitter.destroyed).toBe(true)
-		expect(recorder.count).toBe(1)
+		expect(recorder.calls).toStrictEqual([[]])
 	})
 
 	it('refuses every call after teardown', async () => {
@@ -279,7 +279,18 @@ describe('Upstream lookup', () => {
 			expect(releases[2]?.latest).toBe('0.0.8')
 			// The definite absence is an answer, so only the transport fault is
 			// published as a fault.
-			expect(recorder.count).toBe(1)
+			expect(recorder.calls).toStrictEqual([
+				[
+					new ScaffoldError(
+						'FETCH',
+						`The upstream read at ${server.base}${UPSTREAM_PATHS.console} produced no answer.`,
+						{
+							url: `${server.base}${UPSTREAM_PATHS.console}`,
+							note: 'HTTP 500',
+						},
+					),
+				],
+			])
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -336,7 +347,11 @@ describe('Upstream lookup', () => {
 			// The claim is falsifiable only because the reads genuinely overlapped:
 			// the deliberately slow first name settles last on the channel while it
 			// still leads the answer.
-			expect(recorder.calls.at(-1)?.[0].name).toBe('@orkestrel/console')
+			expect(recorder.calls.map(([release]) => release)).toStrictEqual([
+				releases[1],
+				releases[2],
+				releases[0],
+			])
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -438,7 +453,7 @@ describe('Upstream fetch', () => {
 				},
 			])
 			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.guide])
-			expect(recorder.count).toBe(1)
+			expect(recorder.calls).toStrictEqual(mirrors.map((mirror) => [mirror]))
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -607,7 +622,7 @@ describe('Upstream read', () => {
 			// would be answered rather than refused. The fixture's arrival list is
 			// what proves the aligned rows cost nothing: only the inventory arrived.
 			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
-			expect(recorder.count).toBe(files.length)
+			expect(recorder.calls).toStrictEqual(files.map((file) => [file]))
 		} finally {
 			upstream.destroy()
 			await server.destroy()

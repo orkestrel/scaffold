@@ -228,6 +228,50 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 }
 
 /**
+ * Builds a list with holes, which an array literal cannot express.
+ *
+ * @remarks
+ * The list is sized first and then written once per index, so every other index stays a hole. A
+ * `for…of` loop and a spread visit a hole as `undefined`, where `map`, `filter`, `flatMap`, `some`,
+ * `every`, and `reduce` skip it, so a caller-supplied list built here separates a loop from the
+ * method that replaced it.
+ *
+ * @param length - The length of the list, holes included.
+ * @param entries - The entry to write at each index.
+ * @returns The sparse list.
+ *
+ * @example
+ * ```ts
+ * buildSparse(3, new Map([[1, 'b']])) // a list of length 3 whose indexes 0 and 2 are absent
+ * ```
+ */
+export function buildSparse<T>(length: number, entries: ReadonlyMap<number, T>): T[] {
+	const list: T[] = []
+	list.length = length
+	for (const [index, entry] of entries) list[index] = entry
+	return list
+}
+
+/**
+ * Builds a list that holds one entry and a hole after it.
+ *
+ * @remarks
+ * The entry comes first, so a read that stops at the entry, as a `findIndex` or a search does,
+ * never reaches the hole, where a `for…of` loop does. A case built here separates the two.
+ *
+ * @param entry - The entry at index 0.
+ * @returns A list of length 2 whose index 1 is absent.
+ *
+ * @example
+ * ```ts
+ * buildTrailingHole('a') // a list of length 2 holding 'a' and a hole
+ * ```
+ */
+export function buildTrailingHole<T>(entry: T): T[] {
+	return buildSparse(2, new Map([[0, entry]]))
+}
+
+/**
  * Builds a valid inert runtime dependency, with focused field replacements.
  *
  * @param fields - The dependency fields to replace on the returned value.

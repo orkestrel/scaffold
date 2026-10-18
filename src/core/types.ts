@@ -289,8 +289,9 @@ export interface Override {
  * does not start.
  *
  * `studies` says the workspace holds at least one exact-case `*.test.ts` file
- * beneath `tests/studies`, nested or direct, and it alone registers the `studies`
- * Vitest project over that directory. The harness module the study tests import,
+ * beneath `tests/studies`, nested or direct, outside any `node_modules` or `.git`
+ * directory, which Vitest's default exclude never collects, and it alone registers
+ * the `studies` Vitest project over that directory. The harness module the study tests import,
  * `tests/setupStudy.ts`, selects nothing and is not planned.
  */
 export interface Blueprint {

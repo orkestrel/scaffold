@@ -1,4 +1,4 @@
-import type { Audit } from '@src/core'
+import type { Audit, Release } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
 import { resolve } from 'node:path'
@@ -71,7 +71,7 @@ import {
 	verbToSyntax,
 	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
-import { DOCUMENTED_OPTIONS, UNDOCUMENTED_OPTIONS } from '../../setup.js'
+import { buildSparse, DOCUMENTED_OPTIONS, UNDOCUMENTED_OPTIONS } from '../../setup.js'
 import {
 	AUDIT_EXIT_CASES,
 	buildOptionArgv,
@@ -478,6 +478,12 @@ describe('release evidence', () => {
 		expect(dependenciesToFloors([{ name: 'vite', range: '^8' }])).toBeUndefined()
 	})
 
+	it('refuses a hole in the declarations as the declaration it reads as', () => {
+		const dependencies = buildSparse(2, new Map([[1, { name: 'vite', range: '~8.2.0' }]]))
+
+		expect(() => dependenciesToFloors(dependencies)).toThrow(TypeError)
+	})
+
 	it('reports exact fleet drift and failed lookups as drift', () => {
 		expect(
 			releasesToExit([
@@ -539,6 +545,16 @@ describe('release evidence', () => {
 				blocking: false,
 			},
 		])
+	})
+
+	it('refuses a hole in the releases as the release it reads as', () => {
+		// The release comes first, so a search that stops at the release never reaches the hole after it.
+		const releases = buildSparse<Release>(
+			2,
+			new Map([[0, { name: 'vite', range: '^8.2.2', lookup: 'found', latest: '8.2.2' }]]),
+		)
+
+		expect(() => releasesToQuestions(releases)).toThrow(TypeError)
 	})
 
 	it('reads writable fleet rows and planned foreign tools without peers', () => {
@@ -1013,6 +1029,25 @@ describe('releasesToPins', () => {
 				{ runtime: [], development: [] },
 			),
 		).toThrow(ScaffoldError)
+	})
+
+	it('refuses a hole in the verdicts as a verdict with no declaration', () => {
+		const releases = buildSparse<Release>(
+			2,
+			new Map([
+				[1, { name: '@orkestrel/test', range: '^0.0.8', lookup: 'found', latest: '0.0.9' }],
+			]),
+		)
+		const declared = {
+			runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+			development: [{ name: '@orkestrel/test', range: '^0.0.8' }],
+		}
+		const refusal = captureError(() => releasesToPins(releases, declared))
+
+		expect(refusal).toBeInstanceOf(ScaffoldError)
+		expect(refusal instanceof Error ? refusal.message : '').toBe(
+			'The release answer has no matching declaration.',
+		)
 	})
 })
 

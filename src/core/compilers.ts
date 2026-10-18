@@ -350,15 +350,17 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 	}
 	// A peer keeps the pin of a development tool already selected, and the first of two peers
-	// naming one package wins, because its floor was the one the workspace declared first.
+	// naming one package wins, because its floor was the one the workspace declared first. The spread
+	// reads a hole as an `undefined` peer, which the name read refuses.
+	const peers = [...blueprint.peers]
 	const merged: Readonly<Record<string, string>> = {
 		...prior,
 		...Object.fromEntries(
-			blueprint.peers
+			peers
 				.filter(
 					(peer, index) =>
 						!Object.hasOwn(prior, peer.name) &&
-						blueprint.peers.findIndex((other) => other.name === peer.name) === index,
+						peers.findIndex((other) => other.name === peer.name) === index,
 				)
 				.map((peer) => [peer.name, peer.range]),
 		),
@@ -1629,7 +1631,8 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 					},
 				]
 	})
-	const sources: readonly Artifact[] = blueprint.src.flatMap((environment) =>
+	// The spread reads a hole in `src` or `app` as an `undefined` environment, which the matrix refuses.
+	const sources: readonly Artifact[] = [...blueprint.src].flatMap((environment) =>
 		SRC_MATRIX[environment].configs.map((path): Artifact => ({
 			path,
 			group: 'configs',
@@ -1697,7 +1700,7 @@ ${paths.join('\n')}
 			)
 			.join('\n'),
 	)
-	const applications: readonly Artifact[] = blueprint.app.flatMap((environment) =>
+	const applications: readonly Artifact[] = [...blueprint.app].flatMap((environment) =>
 		APP_MATRIX[environment].configs.map((path): Artifact => ({
 			path,
 			group: 'configs',
@@ -1874,15 +1877,19 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 			content,
 		})),
 	)
-	const sources: readonly ContentArtifact[] = blueprint.src.map((environment): ContentArtifact => ({
-		path: `src/${environment}/index.ts`,
-		group: 'source',
-		ownership: 'birth',
-		origin: 'template',
-		environment,
-		content: ARTIFACT_TEMPLATES.source.empty,
-	}))
-	const applications: readonly ContentArtifact[] = blueprint.app.flatMap(
+	// A hole in `src` or `app` reads as an `undefined` environment, as a `for…of` over it would.
+	const sources: readonly ContentArtifact[] = Array.from(
+		blueprint.src,
+		(environment): ContentArtifact => ({
+			path: `src/${environment}/index.ts`,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: ARTIFACT_TEMPLATES.source.empty,
+		}),
+	)
+	const applications: readonly ContentArtifact[] = [...blueprint.app].flatMap(
 		(environment): readonly ContentArtifact[] => {
 			const entry: ContentArtifact = {
 				path: `app/${environment}/index.ts`,
@@ -2170,17 +2177,21 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 					}),
 				}))
 			: []
-	const sources: readonly ContentArtifact[] = blueprint.src.map((environment): ContentArtifact => ({
-		path: `tests/src/${environment}/index.test.ts`,
-		group: 'tests',
-		ownership: 'birth',
-		origin: 'template',
-		environment,
-		content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
-			specifier: serializeTypeScriptString(`@src/${environment}`),
-			label: serializeTypeScriptString(`src ${environment} entry`),
+	// A hole in `src` or `app` reads as an `undefined` environment, as a `for…of` over it would.
+	const sources: readonly ContentArtifact[] = Array.from(
+		blueprint.src,
+		(environment): ContentArtifact => ({
+			path: `tests/src/${environment}/index.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+				specifier: serializeTypeScriptString(`@src/${environment}`),
+				label: serializeTypeScriptString(`src ${environment} entry`),
+			}),
 		}),
-	}))
+	)
 	const binSpecifier = serializeTypeScriptString('../../../src/bin/main.js')
 	const joinedImport = `\t\tconst entry = await import(${binSpecifier})`
 	const bins: readonly ContentArtifact[] = blueprint.bin
@@ -2198,7 +2209,8 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				},
 			]
 		: []
-	const applications: readonly ContentArtifact[] = blueprint.app.map(
+	const applications: readonly ContentArtifact[] = Array.from(
+		blueprint.app,
 		(environment): ContentArtifact => ({
 			path: `tests/app/${environment}/index.test.ts`,
 			group: 'tests',
@@ -2251,12 +2263,12 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				]
 			: []
 	const modules = [
-		...blueprint.src.map((environment) => ({
+		...Array.from(blueprint.src, (environment) => ({
 			entry:
 				environment === 'core' ? 'srcCore' : environment === 'browser' ? 'srcBrowser' : 'srcServer',
 			specifier: `@src/${environment}`,
 		})),
-		...blueprint.app.map((environment) => ({
+		...Array.from(blueprint.app, (environment) => ({
 			entry:
 				environment === 'core' ? 'appCore' : environment === 'browser' ? 'appBrowser' : 'appServer',
 			specifier: `@app/${environment}`,
@@ -3212,9 +3224,11 @@ export function planToHash(plan: Plan): string | undefined {
  * ```
  */
 export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
-	const planned = new Set(plan.artifacts.map((artifact) => artifact.path))
+	// The spread reads a hole as an `undefined` artifact, as a `for…of` over the list would.
+	const artifacts = [...plan.artifacts]
+	const planned = new Set(artifacts.map((artifact) => artifact.path))
 	return [
-		...plan.artifacts.map((artifact) => artifactToFinding(artifact, current[artifact.path])),
+		...artifacts.map((artifact) => artifactToFinding(artifact, current[artifact.path])),
 		...Object.entries(current).flatMap(([path, observed]): readonly Finding[] => {
 			if (planned.has(path)) return []
 			const group = inferGroup(path)
@@ -3263,7 +3277,9 @@ export function dependenciesToQuestions(
 	name: RegExp,
 	range: RegExp,
 ): readonly Question[] {
-	return dependencies.flatMap((dependency, index): readonly Question[] => [
+	// The spread reads a hole as an `undefined` entry, as a `for…of` over the list would.
+	const listed = [...dependencies]
+	return listed.flatMap((dependency, index): readonly Question[] => [
 		...(!name.test(dependency.name)
 			? [
 					{
@@ -3272,7 +3288,7 @@ export function dependenciesToQuestions(
 						blocking: true,
 					},
 				]
-			: dependencies.findIndex((other) => other.name === dependency.name) < index
+			: listed.findIndex((other) => other.name === dependency.name) < index
 				? [
 						{
 							field,
@@ -3339,10 +3355,14 @@ export function dependenciesToQuestions(
  * ```
  */
 export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
+	// Each spread reads a hole in a list as an `undefined` entry, as a `for…of` over it would.
+	const extensions = [...blueprint.extensions]
+	const vendors = [...blueprint.vendors]
+	const extras = [...blueprint.extras]
 	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
 		['dependencies', blueprint.dependencies],
-		['peers', blueprint.peers],
-		['extras', blueprint.extras],
+		['peers', [...blueprint.peers]],
+		['extras', extras],
 	]
 	// The field that first declared a name, in the order the lists are measured: the pairs are
 	// reversed so the first declaration is the one a `Map` keeps.
@@ -3428,12 +3448,10 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					]
 				: []),
 		]),
-		...blueprint.extensions.flatMap((extension, index): readonly Question[] => {
+		...extensions.flatMap((extension, index): readonly Question[] => {
 			const selection = `${extension.surface}:${extension.name}`
 			return [
-				...(blueprint.extensions.findIndex(
-					(other) => `${other.surface}:${other.name}` === selection,
-				) < index
+				...(extensions.findIndex((other) => `${other.surface}:${other.name}` === selection) < index
 					? [
 							{
 								field: 'extensions',
@@ -3453,7 +3471,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 										},
 									]
 								: []),
-							...extension.axes
+							...[...extension.axes]
 								.filter((axis) => !blueprint[axis].includes('browser'))
 								.map((axis) => ({
 									field: 'extensions',
@@ -3482,7 +3500,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 					},
 				]
 			: []),
-		...blueprint.vendors.flatMap((vendor, index): readonly Question[] =>
+		...vendors.flatMap((vendor, index): readonly Question[] =>
 			!NAME_PATTERN.test(vendor)
 				? [
 						{
@@ -3491,7 +3509,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 							blocking: true,
 						},
 					]
-				: blueprint.vendors.indexOf(vendor) < index
+				: vendors.indexOf(vendor) < index
 					? [
 							{
 								field: 'vendors',
@@ -3539,12 +3557,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			FOREIGN_NAME_PATTERN,
 			FLOOR_RANGE_PATTERN,
 		),
-		...dependenciesToQuestions(
-			blueprint.extras,
-			'extras',
-			FOREIGN_NAME_PATTERN,
-			EXTRA_RANGE_PATTERN,
-		),
+		...dependenciesToQuestions(extras, 'extras', FOREIGN_NAME_PATTERN, EXTRA_RANGE_PATTERN),
 		...lists.flatMap(([field, list]) =>
 			list.flatMap((dependency): readonly Question[] => {
 				const first = firstField.get(dependency.name)
@@ -3570,7 +3583,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 				]
 			}),
 		),
-		...blueprint.extras
+		...extras
 			.filter((extra) => Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name))
 			.map((extra) => ({
 				field: 'extras',
@@ -3607,7 +3620,9 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
  * ```
  */
 export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Question[] {
-	const sizes = artifacts.map((artifact) =>
+	// The spread reads a hole as an `undefined` artifact, as a `for…of` over the list would.
+	const listed = [...artifacts]
+	const sizes = listed.map((artifact) =>
 		artifact.origin === 'host'
 			? artifact.hex === undefined
 				? 0
@@ -3616,10 +3631,10 @@ export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Q
 	)
 	const total = computeTotal(sizes)
 	return [
-		...artifacts.flatMap((artifact, index): readonly Question[] => {
+		...listed.flatMap((artifact, index): readonly Question[] => {
 			const bytes = sizes[index] ?? 0
 			return [
-				...(artifacts.findIndex((other) => other.path === artifact.path) < index
+				...(listed.findIndex((other) => other.path === artifact.path) < index
 					? [
 							{
 								field: 'artifacts',
@@ -3690,14 +3705,16 @@ export function overridesToQuestions(
 	artifacts: readonly Artifact[],
 ): readonly Question[] {
 	// The first artifact planned at a path is the one an override addresses, so the pairs are
-	// reversed for a `Map` to keep it.
+	// reversed for a `Map` to keep it. The spread reads a hole in the overrides as an `undefined`
+	// override, as a `for…of` over the list would.
 	const planned = new Map(
 		artifacts.map((artifact): readonly [string, Artifact] => [artifact.path, artifact]).reverse(),
 	)
-	return overrides.flatMap((override, index): readonly Question[] => {
+	const listed = [...overrides]
+	return listed.flatMap((override, index): readonly Question[] => {
 		const artifact = planned.get(override.path)
 		return [
-			...(overrides.findIndex((other) => other.path === override.path) < index
+			...(listed.findIndex((other) => other.path === override.path) < index
 				? [
 						{
 							field: 'overrides',

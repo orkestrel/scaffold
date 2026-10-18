@@ -708,7 +708,8 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
 export function catalogToLayers(
 	entries: readonly CatalogEntry[],
 ): ReadonlyArray<readonly string[]> {
-	const found = entries.filter((entry) => entry.lookup === 'found')
+	// The spread reads a hole as an `undefined` entry, as a `for…of` over the list would.
+	const found = [...entries].filter((entry) => entry.lookup === 'found')
 	const published = new Set(found.map((entry) => entry.name))
 	// A later entry of one name replaces an earlier one at the earlier position, as a keyed
 	// write does, and an edge to a name that is not published constrains nothing.
@@ -764,8 +765,10 @@ export function catalogToLayers(
  * ```
  */
 export function planToSummary(plan: Plan): PlanSummary {
-	const host = plan.artifacts.filter((artifact) => artifact.origin === 'host').length
-	const template = plan.artifacts.filter((artifact) => artifact.origin === 'template').length
+	// The spread reads a hole as an `undefined` artifact, as a `for…of` over the list would.
+	const origins = Array.from(plan.artifacts, (artifact) => artifact.origin)
+	const host = origins.filter((origin) => origin === 'host').length
+	const template = origins.filter((origin) => origin === 'template').length
 	return {
 		name: plan.blueprint.name,
 		src: plan.blueprint.src,

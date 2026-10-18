@@ -685,8 +685,9 @@ read from the markers Surfaces and extensions lists. The remaining facts come fr
 files: `src/bin/main.ts` selects `bin`, each root `tests/setup*.test.ts` match selects `setup`,
 `tests/guides.test.ts` selects `guides`, `tests/integration.test.ts` selects `integration`,
 `tests/conformance.test.ts` selects `conformance`, `tests/setupService.ts` selects `service`,
-any exact-case `*.test.ts` file beneath `tests/studies`, nested or direct, selects `studies`,
-`tests/setupGlobal.ts` selects `global`, `configs/app/vite.journey.config.ts` selects `journey`,
+any exact-case `*.test.ts` file beneath `tests/studies`, nested or direct, outside any
+`node_modules` or `.git` directory, which Vitest's default exclude never collects, selects
+`studies`, `tests/setupGlobal.ts` selects `global`, `configs/app/vite.journey.config.ts` selects `journey`,
 and `configs/agents/tsconfig.skills.json` selects `skills`. A containing directory does not select
 any of those facts by itself: `tests/studies/types.ts`, a case-folded `tests/Studies` directory, and
 the harness module `tests/setupStudy.ts` select no `studies`. `tests/distribution.test.ts` selects nothing: the published `src`
@@ -1099,7 +1100,8 @@ vendor inventory and live-service setup are independent: a workspace may declare
 writes a suite, and a suite may drive a service the skeleton does not start.
 
 `studies` says the workspace holds at least one exact-case `*.test.ts` file beneath `tests/studies`,
-nested or direct, and it alone registers the `studies` Vitest project over that directory and its
+nested or direct, outside any `node_modules` or `.git` directory, which Vitest's default exclude
+never collects, and it alone registers the `studies` Vitest project over that directory and its
 `test:studies` script. The project loads `tests/setup.ts` alone. The tests import
 `tests/setupStudy.ts`, a harness module the package owns, so scaffold plans no such file and no
 project loads it as a setup file. A publishing workspace invokes the project from `prepublishOnly`,

@@ -18,7 +18,13 @@ import {
 import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
 import { computeDigest, pathToStorage, readHostFloor } from '@src/server'
 import packageManifest from '../package.json' with { type: 'json' }
-import { buildBlueprint, buildSnapshot, ENTRY_FILES, PLANNED_SETUP_SEED } from './setup.js'
+import {
+	buildBlueprint,
+	buildSnapshot,
+	buildSparse,
+	ENTRY_FILES,
+	PLANNED_SETUP_SEED,
+} from './setup.js'
 import {
 	ALIGNED_MANIFEST_TEXT,
 	AUDIT_EXIT_CASES,
@@ -34,6 +40,7 @@ import {
 	buildDistributionClassification,
 	buildDistributionClassifier,
 	buildDistributionProof,
+	buildDistributionSuite,
 	buildEntryWorkspace,
 	buildEnvironment,
 	buildFleetManifest,
@@ -865,6 +872,19 @@ describe('the target fixtures', () => {
 		}
 	})
 
+	it('refuses a hole in the paths as a path off contract', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const target = workspace.ensure('target')
+			workspace.write('target/AGENTS.md', '# Agents\n')
+			const paths = buildSparse(2, new Map([[1, 'AGENTS.md']]))
+
+			expect(captureScaffoldCode(() => buildTargetAudit(target, paths, []))).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('replaces only the named sections of a target manifest', () => {
 		expect(JSON.parse(buildTargetManifest())).toMatchObject({
 			name: '@orkestrel/sample',
@@ -1005,6 +1025,17 @@ describe('the upstream fixtures', () => {
 		}
 	})
 
+	it('refuses a hole in the floor entries as the entry it reads as', () => {
+		const entries = buildSparse(2, new Map([[1, requireValue(buildStagedManifest().entries[0])]]))
+
+		expect(() =>
+			buildInstalledHostReplies({
+				manifest: { ...buildStagedManifest(), entries },
+				bytes: {},
+			}),
+		).toThrow(TypeError)
+	})
+
 	it('answers a listed path with its scripted status, body, headers, and declared length', async () => {
 		const packument = buildPackument('0.0.8')
 		const server = await createUpstreamServer({
@@ -1081,6 +1112,9 @@ describe('the upstream fixtures', () => {
 			await (await fetch(`${server.base}/second`)).text()
 			expect(server.paths).toStrictEqual(['/first', '/second'])
 			expect(server.accepts).toStrictEqual(['application/vnd.npm.install-v1+json', '*/*'])
+			// A copy per read, so a caller holding an earlier list cannot rewrite what the next read sees.
+			expect(server.paths).not.toBe(server.paths)
+			expect(server.accepts).not.toBe(server.accepts)
 		} finally {
 			await server.destroy()
 		}
@@ -1705,6 +1739,7 @@ describe.skipIf(process.platform !== 'win32')('Ollama Windows setup', () => {
 				'/api/show',
 				'/api/chat',
 			])
+			expect(server.requests).not.toBe(server.requests)
 		} finally {
 			await server.destroy()
 			workspace.destroy()
@@ -2174,6 +2209,17 @@ describe('the emitted-template staging', () => {
 		expect(classification).toContain('return { entries, targets, subpaths, undeclared, excluded }')
 	})
 
+	it('lifts the emitted distribution suite beside the stage opener the drive writes', () => {
+		const opener = 'function openStage(scratch) { return { scratch } }'
+		const suite = buildDistributionSuite(opener)
+		expect(suite).toContain("from 'node:fs'")
+		expect(suite).toContain(opener)
+		expect(suite).toContain('class DistributionSuite {')
+		expect(suite.indexOf(opener)).toBeLessThan(suite.indexOf('class DistributionSuite {'))
+		expect(suite).toContain('export { DistributionSuite, existsSync }')
+		expect(suite).not.toContain('function buildStage')
+	})
+
 	it('finds a project row whose parameters differ from the signature the sweep demands', () => {
 		const content = [
 			'export function good(override?: UserConfig): UserConfig {',
@@ -2356,6 +2402,7 @@ describe('the whoami registry', () => {
 				'PUT /some-package',
 			])
 			expect(registry.port).toBe(Number(new URL(registry.url).port))
+			expect(registry.requests).not.toBe(registry.requests)
 		} finally {
 			await registry.destroy()
 		}

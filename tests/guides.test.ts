@@ -394,6 +394,15 @@ await new GuideCommand({
 			expect(proof?.ownership).toBe('presence')
 		})
 
+		it('states the exclusions of the studies selector wherever the guide states its population', () => {
+			const markdown = requireValue(files['guides/scaffold.md']).replaceAll(/\s+/gu, ' ')
+			// `tests/src/bin/CLI.test.ts` executes the selector against a `node_modules` and a `.git`
+			// directory; this guards that each sentence stating the population carries the exclusion.
+			const phrase =
+				"outside any `node_modules` or `.git` directory, which Vitest's default exclude never collects"
+			expect(markdown.split(phrase)).toHaveLength(3)
+		})
+
 		it('derives every structural fact and extension from its own markers', () => {
 			const markdown = requireValue(files['guides/scaffold.md'])
 			expect(markdown).toContain(

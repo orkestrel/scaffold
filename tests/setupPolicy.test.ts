@@ -27,8 +27,14 @@ import {
 	readImportDiagnostics,
 	collectPolicyDeclarations,
 	createPolicyScratch,
+	createPolicySparse,
 	createPolicySurfaceFixture,
+	denyPolicyRead,
 	inspectBridge,
+	inspectPolicyConfiguration,
+	inspectPolicyFilenamePaths,
+	inspectPolicyMirrorPaths,
+	inspectPolicyWiring,
 	inspectSkill,
 	inspectSkillBridges,
 	inspectSkillImports,
@@ -47,8 +53,11 @@ import {
 	POLICY_ROOT,
 	POLICY_SURFACE_HOST,
 	POLICY_SURFACE_EXPORT_CASES,
+	POLICY_WIRING_RULES,
 	createPolicySurfaceGuide,
 	readPolicyDeclarations,
+	readPolicyJSON,
+	readPolicyPackage,
 	readPolicySurface,
 	readSkillExports,
 	readSkillDeclarations,
@@ -1319,6 +1328,12 @@ describe('the policy readers', () => {
 		expect(matchesSkillToken('Use demo', 'demo')).toBe(false)
 	})
 
+	it('matches a token at every occurrence, one that overlaps another included', () => {
+		// A name carrying `$` makes the token overlap itself: `$a$` occurs at index 0 and at index 2.
+		expect(matchesSkillToken('$a$a$', 'a$')).toBe(true)
+		expect(matchesSkillToken('$a$a', 'a$')).toBe(false)
+	})
+
 	it('reports each template TODO outside code spans and fences, in line order', () => {
 		const content = [
 			'# Title',
@@ -1342,6 +1357,156 @@ describe('the policy readers', () => {
 			),
 		).toStrictEqual([2, 3, 7, 13, 14, 14])
 		expect(inspectSkillTemplateTODOs('bridge', 'path', 'clean\n`TODO`\n')).toStrictEqual([])
+	})
+})
+
+describe('the inspectors over caller-supplied lists with holes', () => {
+	const enabled = Object.fromEntries(POLICY_WIRING_RULES.map((rule) => [rule, 'error']))
+	const malformed = ['override entries must be records']
+
+	it('builds a list whose holes are absent rather than undefined', () => {
+		const list = createPolicySparse(3, new Map([[1, 'x']]))
+		expect(list.length).toBe(3)
+		expect(Object.keys(list)).toStrictEqual(['1'])
+		expect(0 in list).toBe(false)
+		expect(createPolicySparse(2, new Map<number, string>()).length).toBe(2)
+	})
+
+	it('reports a hole among the overrides as it reports an undefined entry', () => {
+		expect(
+			inspectPolicyConfiguration({
+				rules: enabled,
+				overrides: createPolicySparse(1, new Map<number, unknown>()),
+			}),
+		).toStrictEqual(malformed)
+		expect(
+			inspectPolicyConfiguration({
+				rules: enabled,
+				overrides: createPolicySparse(2, new Map([[1, {}]])),
+			}),
+		).toStrictEqual(malformed)
+		expect(
+			inspectPolicyConfiguration({
+				rules: enabled,
+				overrides: createPolicySparse(
+					3,
+					new Map([
+						[0, 7],
+						[2, 8],
+					]),
+				),
+			}),
+		).toStrictEqual([...malformed, ...malformed, ...malformed])
+		// The controls: an undefined entry reports the same, and an empty list and a record report none.
+		expect(inspectPolicyConfiguration({ rules: enabled, overrides: [undefined] })).toStrictEqual(
+			malformed,
+		)
+		expect(inspectPolicyConfiguration({ rules: enabled, overrides: [] })).toStrictEqual([])
+		expect(inspectPolicyConfiguration({ rules: enabled, overrides: [{}] })).toStrictEqual([])
+	})
+
+	it('skips a hole among the ignore patterns as it skips a pattern that is no string', () => {
+		expect(
+			inspectPolicyConfiguration({
+				rules: enabled,
+				ignorePatterns: createPolicySparse(2, new Map([[1, 'src']])),
+			}),
+		).toStrictEqual(['ignorePatterns must not reach src'])
+		expect(
+			inspectPolicyConfiguration({ rules: enabled, ignorePatterns: [undefined, 'src'] }),
+		).toStrictEqual(['ignorePatterns must not reach src'])
+	})
+
+	it('names a hole among the rules the way it names an undefined rule', () => {
+		const sparse = createPolicySparse(2, new Map([[1, 'absent-rule']]))
+		expect(inspectPolicyWiring({ rules: enabled }, sparse, [])).toStrictEqual([
+			'undefined is enabled by no top-level or override rules record',
+			'absent-rule is enabled by no top-level or override rules record',
+		])
+		// The control: a dense list names each rule once and names none that is enabled.
+		expect(
+			inspectPolicyWiring({ rules: enabled }, ['absent-rule', ...POLICY_WIRING_RULES], []),
+		).toStrictEqual(['absent-rule is enabled by no top-level or override rules record'])
+	})
+
+	it('refuses a hole among the populations as it refuses an entry that is no list', () => {
+		const sparse = createPolicySparse(2, new Map([[1, ['a']]]))
+		expect(() => inspectPolicyWiring({ rules: enabled }, [], sparse)).toThrow(/join/u)
+		// The control: the entry after the hole alone reports its population.
+		expect(inspectPolicyWiring({ rules: enabled }, [], [['a']])).toStrictEqual([
+			'no override files list declares the population exactly: a',
+		])
+	})
+
+	it('normalizes a hole among the mirror paths, which refuses it', () => {
+		const sparse = createPolicySparse(2, new Map([[0, 'tests/src/core/A.test.ts']]))
+		expect(() => inspectPolicyMirrorPaths(sparse, new Set())).toThrow(/replaceAll/u)
+		// The control: the dense list reports the missing module.
+		expect(
+			inspectPolicyMirrorPaths(['tests/src/core/A.test.ts'], new Set()).map(({ path }) => path),
+		).toStrictEqual(['tests/src/core/A.test.ts'])
+	})
+
+	it('normalizes a hole among the filename paths, which refuses it', () => {
+		expect(() =>
+			inspectPolicyFilenamePaths(createPolicySparse(1, new Map<number, string>())),
+		).toThrow(/replaceAll/u)
+		expect(() =>
+			inspectPolicyFilenamePaths(createPolicySparse(2, new Map([[1, 'a/B.ts']]))),
+		).toThrow(/replaceAll/u)
+		// The control: the dense list reports the case collision.
+		expect(inspectPolicyFilenamePaths(['a/b.ts', 'a/B.ts']).map(({ path }) => path)).toStrictEqual([
+			'a/B.ts',
+		])
+	})
+})
+
+describe('readPolicyPackage', () => {
+	it('answers undefined for a manifest the host refuses to read and its name once it may', (context) => {
+		context.skip(
+			process.getuid?.() === 0,
+			'a POSIX root user reads a file whose mode withholds read, so no denial reaches the read',
+		)
+		const scratch = createScratch({ prefix: 'policy-package-' })
+		try {
+			const manifest = scratch.write('package.json', '{"name":"@orkestrel/control"}')
+			expect(readPolicyPackage(scratch.path)).toBe('control')
+			const restore = denyPolicyRead(manifest)
+			try {
+				// The host refuses the open, so the regular-file check above the read is the only gate left.
+				expect(() => readFileSync(manifest, 'utf8')).toThrow(/EPERM|EACCES/u)
+				expect(readPolicyPackage(scratch.path)).toBe(undefined)
+			} finally {
+				restore()
+			}
+			expect(readPolicyPackage(scratch.path)).toBe('control')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('answers undefined for malformed manifest text, a directory, and an absent file', () => {
+		const scratch = createScratch({ prefix: 'policy-package-' })
+		const directory = createScratch({ prefix: 'policy-package-directory-' })
+		try {
+			expect(readPolicyPackage(scratch.path)).toBe(undefined)
+			scratch.write('package.json', '{')
+			expect(readPolicyPackage(scratch.path)).toBe(undefined)
+			scratch.write('package.json', '{"name":7}')
+			expect(readPolicyPackage(scratch.path)).toBe(undefined)
+			scratch.write('package.json', '{"name":"plain"}')
+			expect(readPolicyPackage(scratch.path)).toBe('plain')
+			directory.ensure('package.json')
+			expect(readPolicyPackage(directory.path)).toBe(undefined)
+			expect(readPolicyJSON(join(scratch.path, 'package.json'))).toStrictEqual({ name: 'plain' })
+			expect(readPolicyJSON(join(scratch.path, 'absent.json'))).toBe(undefined)
+			expect(readPolicyJSON(join(directory.path, 'package.json'))).toBe(undefined)
+			scratch.write('malformed.json', '{')
+			expect(readPolicyJSON(join(scratch.path, 'malformed.json'))).toBe(undefined)
+		} finally {
+			scratch.destroy()
+			directory.destroy()
+		}
 	})
 })
 
