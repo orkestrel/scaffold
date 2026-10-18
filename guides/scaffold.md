@@ -355,26 +355,27 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 
 #### Interfaces
 
-| Name                    | Kind      | Summary                                                                                           |
-| ----------------------- | --------- | ------------------------------------------------------------------------------------------------- |
-| `BytesReadResult`       | interface | Reports the outcome of one bounded read whose body is taken as exact bytes.                       |
-| `Host`                  | interface | Represents a whole vendored host supplied as a value: the membership beside the bytes filling it. |
-| `HostInventory`         | interface | Represents the committed vendored-file inventory as one call's reads are decided against.         |
-| `HostManifest`          | interface | Represents the complete vendored-host inventory.                                                  |
-| `HostStageOptions`      | interface | Configures the committed inventory baseline and staging reports.                                  |
-| `ManifestEntry`         | interface | Represents one file record of the vendored host's manifest.                                       |
-| `MaterializeResult`     | interface | Reports the outcome of one mutation of a target.                                                  |
-| `MaterializerInterface` | interface | Describes the mutation contract: the package's only filesystem writer.                            |
-| `MaterializerOptions`   | interface | Represents the options for the materializer.                                                      |
-| `SurfaceCollision`      | interface | Represents a Surface name claimed by distinct package guides.                                     |
-| `TextReadResult`        | interface | Reports the outcome of one bounded read whose body is taken as text.                              |
-| `Worktree`              | interface | Describes what git reports about a target's working tree.                                         |
-| `UpstreamInterface`     | interface | Describes the upstream contract: the package's only network reader, and it never writes.          |
-| `UpstreamOptions`       | interface | Represents the options for the upstream reader.                                                   |
-| `WriteAnchor`           | interface | Represents one physical directory identity captured across a write transaction.                   |
-| `WriteDirectoryResult`  | interface | Reports the final directory anchor of a write transaction and the subset one call created.        |
-| `WriteExpectation`      | interface | Represents one destination snapshot captured before a write and required to survive it.           |
-| `WritePrecondition`     | interface | Describes the narrower caller-observed destination state a write transaction must still match.    |
+| Name                     | Kind      | Summary                                                                                           |
+| ------------------------ | --------- | ------------------------------------------------------------------------------------------------- |
+| `BytesReadResult`        | interface | Reports the outcome of one bounded read whose body is taken as exact bytes.                       |
+| `Host`                   | interface | Represents a whole vendored host supplied as a value: the membership beside the bytes filling it. |
+| `HostInventory`          | interface | Represents the committed vendored-file inventory as one call's reads are decided against.         |
+| `HostManifest`           | interface | Represents the complete vendored-host inventory.                                                  |
+| `HostStageOptions`       | interface | Configures the committed inventory baseline and staging reports.                                  |
+| `ManifestEntry`          | interface | Represents one file record of the vendored host's manifest.                                       |
+| `MaterializeResult`      | interface | Reports the outcome of one mutation of a target.                                                  |
+| `MaterializerInterface`  | interface | Describes the mutation contract: the package's only filesystem writer.                            |
+| `MaterializerOptions`    | interface | Represents the options for the materializer.                                                      |
+| `ReadAllowanceInterface` | interface | Describes the byte allowance one upstream call spends across every read it makes.                 |
+| `SurfaceCollision`       | interface | Represents a Surface name claimed by distinct package guides.                                     |
+| `TextReadResult`         | interface | Reports the outcome of one bounded read whose body is taken as text.                              |
+| `Worktree`               | interface | Describes what git reports about a target's working tree.                                         |
+| `UpstreamInterface`      | interface | Describes the upstream contract: the package's only network reader, and it never writes.          |
+| `UpstreamOptions`        | interface | Represents the options for the upstream reader.                                                   |
+| `WriteAnchor`            | interface | Represents one physical directory identity captured across a write transaction.                   |
+| `WriteDirectoryResult`   | interface | Reports the final directory anchor of a write transaction and the subset one call created.        |
+| `WriteExpectation`       | interface | Represents one destination snapshot captured before a write and required to survive it.           |
+| `WritePrecondition`      | interface | Describes the narrower caller-observed destination state a write transaction must still match.    |
 
 The inventory contracts carry these data members.
 
@@ -441,60 +442,64 @@ The inventory contracts carry these data members.
 
 #### Helpers
 
-| Name                      | Kind     | Summary                                                                                |
-| ------------------------- | -------- | -------------------------------------------------------------------------------------- |
-| `computeDigest`           | function | Computes the SHA-256 digest of text.                                                   |
-| `computeFileDigest`       | function | Computes the SHA-256 digest of one file's exact bytes.                                 |
-| `computeManifestDigest`   | function | Computes the digest of a vendored host's declared membership.                          |
-| `decodeHexText`           | function | Decodes exact bytes stated in hexadecimal as strict UTF-8 text.                        |
-| `filesToHost`             | function | Assembles a whole vendored host from live files and the installed floor.               |
-| `hexToDigest`             | function | Projects exact bytes stated in hexadecimal to their SHA-256 digest.                    |
-| `isExactCaseFile`         | function | Tests whether a path is a physical file with exact on-disk casing.                     |
-| `isPhysicalDirectory`     | function | Tests whether a path is a physical directory this package will read or write into.     |
-| `isPhysicalFile`          | function | Tests whether a path is a physical file this package will read or replace.             |
-| `isVacant`                | function | Tests whether a target is safe to write a fresh workspace into.                        |
-| `listAncestors`           | function | Lists a path followed by each directory above it, nearest first.                       |
-| `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                     |
-| `listDirectories`         | function | Lists a directory's descendant directories as sorted root-relative paths.              |
-| `listFiles`               | function | Lists a directory's files as sorted root-relative paths.                               |
-| `matchesAnchor`           | function | Tests whether a path still holds the captured directory identity.                      |
-| `matchesExecutablePath`   | function | Tests whether a vendored path is one a target receives executable.                     |
-| `matchesExpectation`      | function | Tests whether a destination still holds what was captured of it.                       |
-| `matchesGitPath`          | function | Tests whether a path addresses a target's own repository metadata.                     |
-| `matchesMissingPath`      | function | Tests whether a caught filesystem error reports an absent path.                        |
-| `matchesPrecondition`     | function | Tests whether a destination still matches the narrower state a caller observed.        |
-| `matchesProtectedPath`    | function | Tests whether a target-relative path is one no verb may delete.                        |
-| `matchesSensitivePath`    | function | Tests whether a path names local configuration or a credential.                        |
-| `pathToStorage`           | function | Projects a target-relative path to the storage name a vendored host holds it under.    |
-| `pruneEmptiedDirectories` | function | Removes every directory one set of deletions emptied.                                  |
-| `readAnchor`              | function | Captures one directory's physical identity.                                            |
-| `readExpectation`         | function | Captures what one destination holds before a write.                                    |
-| `readFileHex`             | function | Reads one contained file as its exact bytes in lowercase hexadecimal.                  |
-| `readFileText`            | function | Reads one contained file as bounded UTF-8 text.                                        |
-| `readHostFloor`           | function | Reads the installed vendored host floor as a value.                                    |
-| `readHostManifest`        | function | Reads a vendored host's manifest, when it carries one.                                 |
-| `readManifestEntry`       | function | Derives one vendored-host manifest entry from a file in a checkout.                    |
-| `readSnapshot`            | function | Reads a target's current bytes at the paths a plan claims.                             |
-| `readSurfaceBaseline`     | function | Reads the Surface collision baseline from a committed inventory.                       |
-| `readSurfaceCollisions`   | function | Reads bare Surface names claimed by distinct package guides.                           |
-| `resolveContainedPath`    | function | Resolves a root-relative path and refuses one that leaves its root.                    |
-| `resolveRealPath`         | function | Resolves a path through the real filesystem, keeping the part that does not exist yet. |
-| `stageBytes`              | function | Stages the named destinations of a value host into a private root.                     |
-| `stageHost`               | function | Stages a vendored host root from a real checkout.                                      |
-| `stageInventory`          | function | Stages the committed inventory of the files a vendored host carries.                   |
+| Name                      | Kind     | Summary                                                                                           |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
+| `climbRealPath`           | function | Climbs from an absolute path to its deepest existing ancestor and resolves it through every link. |
+| `collectIndexed`          | function | Places each result at the index its entry names, in a fresh array.                                |
+| `computeDigest`           | function | Computes the SHA-256 digest of text.                                                              |
+| `computeFileDigest`       | function | Computes the SHA-256 digest of one file's exact bytes.                                            |
+| `computeManifestDigest`   | function | Computes the digest of a vendored host's declared membership.                                     |
+| `decodeHexText`           | function | Decodes exact bytes stated in hexadecimal as strict UTF-8 text.                                   |
+| `filesToHost`             | function | Assembles a whole vendored host from live files and the installed floor.                          |
+| `hexToDigest`             | function | Projects exact bytes stated in hexadecimal to their SHA-256 digest.                               |
+| `isExactCaseFile`         | function | Tests whether a path is a physical file with exact on-disk casing.                                |
+| `isPhysicalDirectory`     | function | Tests whether a path is a physical directory this package will read or write into.                |
+| `isPhysicalFile`          | function | Tests whether a path is a physical file this package will read or replace.                        |
+| `isVacant`                | function | Tests whether a target is safe to write a fresh workspace into.                                   |
+| `listAncestors`           | function | Lists a path followed by each directory above it, nearest first.                                  |
+| `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                                |
+| `listDirectories`         | function | Lists a directory's descendant directories as sorted root-relative paths.                         |
+| `listFiles`               | function | Lists a directory's files as sorted root-relative paths.                                          |
+| `matchesAnchor`           | function | Tests whether a path still holds the captured directory identity.                                 |
+| `matchesExecutablePath`   | function | Tests whether a vendored path is one a target receives executable.                                |
+| `matchesExpectation`      | function | Tests whether a destination still holds what was captured of it.                                  |
+| `matchesGitPath`          | function | Tests whether a path addresses a target's own repository metadata.                                |
+| `matchesMissingPath`      | function | Tests whether a caught filesystem error reports an absent path.                                   |
+| `matchesPrecondition`     | function | Tests whether a destination still matches the narrower state a caller observed.                   |
+| `matchesProtectedPath`    | function | Tests whether a target-relative path is one no verb may delete.                                   |
+| `matchesSensitivePath`    | function | Tests whether a path names local configuration or a credential.                                   |
+| `pathToStorage`           | function | Projects a target-relative path to the storage name a vendored host holds it under.               |
+| `pruneEmptiedDirectories` | function | Removes every directory one set of deletions emptied.                                             |
+| `readAnchor`              | function | Captures one directory's physical identity.                                                       |
+| `readExpectation`         | function | Captures what one destination holds before a write.                                               |
+| `readFileHex`             | function | Reads one contained file as its exact bytes in lowercase hexadecimal.                             |
+| `readFileText`            | function | Reads one contained file as bounded UTF-8 text.                                                   |
+| `readHostFloor`           | function | Reads the installed vendored host floor as a value.                                               |
+| `readHostManifest`        | function | Reads a vendored host's manifest, when it carries one.                                            |
+| `readManifestEntry`       | function | Derives one vendored-host manifest entry from a file in a checkout.                               |
+| `readSnapshot`            | function | Reads a target's current bytes at the paths a plan claims.                                        |
+| `readSurfaceBaseline`     | function | Reads the Surface collision baseline from a committed inventory.                                  |
+| `readSurfaceCollisions`   | function | Reads bare Surface names claimed by distinct package guides.                                      |
+| `resolveContainedPath`    | function | Resolves a root-relative path and refuses one that leaves its root.                               |
+| `resolveRealPath`         | function | Resolves a path through the real filesystem, keeping the part that does not exist yet.            |
+| `stageBytes`              | function | Stages the named destinations of a value host into a private root.                                |
+| `stageHost`               | function | Stages a vendored host root from a real checkout.                                                 |
+| `stageInventory`          | function | Stages the committed inventory of the files a vendored host carries.                              |
 
 #### Classes
 
 | Name               | Kind  | Summary                                                                                       |
 | ------------------ | ----- | --------------------------------------------------------------------------------------------- |
 | `Materializer`     | class | Represents the mutation spine: read the vendored host, re-derive the target, stage, swap.     |
+| `ReadAllowance`    | class | Represents the byte allowance one upstream call spends across every read it makes.            |
 | `Upstream`         | class | Represents the reading spine: one bounded, unauthenticated, redirect-free request per answer. |
 | `WriteTransaction` | class | Represents one staged, reversible mutation of one target directory.                           |
 
 ## Methods
 
-`Compiler` implements `CompilerInterface`, `Materializer` implements `MaterializerInterface`, and
-`Upstream` implements `UpstreamInterface`. Each class exposes exactly its interface's members and
+`Compiler` implements `CompilerInterface`, `Materializer` implements `MaterializerInterface`,
+`ReadAllowance` implements `ReadAllowanceInterface`, and `Upstream` implements
+`UpstreamInterface`. Each class exposes exactly its interface's members and
 nothing more, so the following interface tables describe the classes too. `WriteTransaction`
 publishes no interface and is documented directly.
 
@@ -518,6 +523,12 @@ publishes no interface and is documented directly.
 | `declare`     | Rewrites the manifest regions the caller names in the target's manifest.          |
 | `remove`      | Re-derives and deletes the tracked files the plan does not own.                   |
 | `destroy`     | Tears the materializer down. Every later call throws, and teardown is idempotent. |
+
+#### `ReadAllowanceInterface`
+
+| Method  | Summary                                          |
+| ------- | ------------------------------------------------ |
+| `spend` | Spends bytes a read consumed from the allowance. |
 
 #### `UpstreamInterface`
 
@@ -2310,7 +2321,8 @@ upstream.destroy()
 ```
 
 Every request is unauthenticated, follows no redirect, and is bounded twice: `limit` refuses one
-oversized answer and `budget` refuses many small ones. A per-package failure is collected as a
+oversized answer and `budget` refuses many small ones. A read that lands exactly on the budget is
+accepted, and the call's next read is refused before it is requested. A per-package failure is collected as a
 verdict carrying its cause rather than thrown, so one unreachable package never costs the caller the
 rest of the answer. The organization package list is the exception, because without it there is no
 fleet to report.
@@ -2686,6 +2698,8 @@ The generated guide index lists each occupied Vue face with its source, tests, a
   staging, promotion, and rollback after a driven failure.
 - [`tests/src/server/Upstream.test.ts`](../tests/src/server/Upstream.test.ts) — the bounds, the
   verdicts, and cancellation, against a protocol-faithful loopback server.
+- [`tests/src/server/ReadAllowance.test.ts`](../tests/src/server/ReadAllowance.test.ts) — the
+  per-call byte allowance, its overshoot, and its refusals.
 - [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — path containment,
   digests, inventories, and the staging producer.
 - [`tests/src/server/validators.test.ts`](../tests/src/server/validators.test.ts) — the host-path

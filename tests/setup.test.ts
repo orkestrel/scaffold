@@ -629,7 +629,7 @@ describe('the holder', () => {
 		expect(holder.clear()).toBe('first')
 		expect(holder.clear()).toBe(undefined)
 		expect(() => holder.value).toThrow('The holder holds no value')
-		// The control: a cleared holder holds again.
+		// A cleared holder binds again, because `clear` released the first value.
 		expect(holder.hold('third')).toBe('third')
 		expect(holder.value).toBe('third')
 	})

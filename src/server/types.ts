@@ -377,6 +377,26 @@ export interface UpstreamOptions {
 }
 
 /**
+ * Describes the byte allowance one upstream call spends across every read it makes.
+ *
+ * @remarks
+ * `remaining` is the budget less every byte spent, and it goes negative once a
+ * read overshoots, so a caller tells a call that has nothing left (`remaining`
+ * at or below zero) from one that spent past its budget (`remaining` below zero).
+ */
+export interface ReadAllowanceInterface {
+	/** The bytes the call has left; negative once a read overshoots the budget. */
+	readonly remaining: number
+	/**
+	 * Spends bytes a read consumed from the allowance.
+	 *
+	 * @param bytes - The decoded bytes the read consumed.
+	 * @returns Nothing.
+	 */
+	spend(bytes: number): void
+}
+
+/**
  * Represents the committed vendored-file inventory as one call's reads are decided against.
  *
  * @remarks

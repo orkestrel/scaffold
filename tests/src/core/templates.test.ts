@@ -1176,6 +1176,36 @@ describe('emitted browser resolver', () => {
 		}
 	}, 20_000)
 
+	it('reads the Windows roots in order, and nothing off Windows', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-resolver-reads-',
+		})
+		try {
+			const file = stageResolver(workspace)
+			// A recording environment answers every key with absence, so the module probes no path and
+			// the log is the order in which it read the environment.
+			const [win32, linux, darwin] = driveModule(
+				file,
+				'resolver',
+				['win32', 'linux', 'darwin'].map(
+					(platform) =>
+						`(() => { const reads = []; const environment = new Proxy({}, { get: (_target, key) => { reads.push(key); return undefined } }); resolver.resolveSystemBrowser(${JSON.stringify(platform)}, environment); return reads })()`,
+				),
+			)
+			expect(win32).toStrictEqual([
+				'LOCALAPPDATA',
+				'PROGRAMFILES',
+				'PROGRAMFILES(X86)',
+				'HOMEDRIVE',
+			])
+			expect(linux).toStrictEqual([])
+			expect(darwin).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
 	it('ranks an operator override above every browser it could discover', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
@@ -1999,6 +2029,41 @@ describe('emitted distribution classifier', () => {
 			'./x//missing.cjs',
 			'./x%2fmissing.cjs',
 		])
+	})
+
+	// The emitted suite binds a scratch directory and a stage for one file's run. The class is lifted
+	// whole and driven, with an inert `openStage` standing where packing and installing would be.
+	it('refuses a second start while bound and releases both fields on destroy', async () => {
+		const statements = readStatements(buildDistributionProof(), 'proof.ts')
+		const suite = requireValue(statements.find(({ syntax }) => syntax === 'ClassDeclaration'))
+		const imports = statements
+			.filter(
+				({ syntax, specifier }) =>
+					syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
+			)
+			.map(({ text }) => text)
+		const source = `${imports.join('\n')}\nfunction openStage() { return undefined }\n${suite.text}\nexport { DistributionSuite }\n`
+		const [answer] = await driveClassifier(source, [
+			`(() => {
+				const suite = new classifier.DistributionSuite()
+				suite.start()
+				const first = suite.scratch
+				const second = (() => { try { suite.start(); return 'started' } catch (error) { return error.message } })()
+				suite.destroy()
+				const released = (() => { try { return suite.scratch } catch (error) { return error.message } })()
+				suite.start()
+				const rebound = suite.scratch !== first
+				suite.destroy()
+				return { second, released, stage: suite.stage, rebound }
+			})()`,
+		])
+
+		expect(answer).toStrictEqual({
+			second: 'The distribution setup has already allocated its scratch directory',
+			released: 'The distribution setup has not allocated its scratch directory',
+			stage: undefined,
+			rebound: true,
+		})
 	})
 
 	// The control on the lift itself: a name the proof does not declare stops the

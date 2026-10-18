@@ -2056,8 +2056,8 @@ export function sealParameter(content: string): string {
  * @remarks
  * A suite that allocates in `beforeAll` and clears in `afterAll` needs state that outlives one
  * call, so the state lives in this holder's `#` field instead of in a reassigned binding. The
- * holder holds one value at a time: it refuses a second value rather than replacing the first, so
- * it never becomes a cell that carries the latest value of a loop.
+ * holder holds one value at a time: `hold` refuses while the holder holds a value rather than
+ * replacing it, and only `clear`, a later call, gives the value up.
  */
 export class TestHolder<TValue> {
 	#value: TValue | undefined

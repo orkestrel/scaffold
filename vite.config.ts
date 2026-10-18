@@ -96,8 +96,8 @@ export function mergeOverride(base: UserConfig, override?: UserConfig): UserConf
 				}
 			: merged
 	if (named.plugins === undefined || effective === undefined) return named
-	const candidates = effective.plugins ?? []
-	const bases = base.plugins ?? []
+	const candidates = [...(effective.plugins ?? [])]
+	const bases = [...(base.plugins ?? [])]
 	// A base plugin takes the first candidate of its own name that no earlier base plugin took, and
 	// candidates of other names never compete for it, so its pick is the candidate whose rank among
 	// its name equals the number of earlier base plugins sharing that name.

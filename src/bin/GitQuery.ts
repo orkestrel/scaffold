@@ -1,8 +1,8 @@
 import type { GitQueryInterface } from './types.js'
 import { attempt } from '@orkestrel/contract'
 import { createSession } from '@orkestrel/process/server'
-import { isScaffoldError, MAX_PATH_LENGTH, ScaffoldError } from '@src/core'
-import { MAX_INVENTORY_PATHS } from '@src/server'
+import { isScaffoldError, ScaffoldError } from '@src/core'
+import { findGitRefusal, splitGitRecords } from './helpers.js'
 
 /**
  * Represents one git query read as its NUL-separated records.
@@ -14,7 +14,8 @@ import { MAX_INVENTORY_PATHS } from '@src/server'
  * before the eager spawn, so no output or child fault can precede its observer.
  *
  * A query is created for one run: the unfinished record, the retained records, and the abort
- * signal all belong to that run, and a second `read` is refused rather than reset.
+ * signal all belong to that run, and a second `read` is refused rather than reset. Only `read`
+ * drives the intake, so no caller feeds a run its output.
  *
  * @example
  * ```ts
@@ -44,59 +45,6 @@ export class GitQuery implements GitQueryInterface {
 		this.#args = [...args]
 	}
 
-	/** Reports the abort signal the query raises on its first refusal. */
-	get signal(): AbortSignal {
-		return this.#controller.signal
-	}
-
-	/** Lists the complete records collected so far, in arrival order. */
-	get records(): readonly string[] {
-		return [...this.#records]
-	}
-
-	/**
-	 * Collects the complete NUL-delimited records from one raw git output chunk.
-	 *
-	 * @param chunk - The next owned output bytes.
-	 * @returns Nothing.
-	 *
-	 * @remarks
-	 * A chunk may end inside a record or inside a UTF-8 sequence, so the unfinished tail carries
-	 * into the next chunk. A chunk arriving after a refusal is ignored.
-	 */
-	collect(chunk: Uint8Array): void {
-		if (this.#controller.signal.aborted) return
-		const parts = `${this.#pending}${this.#decoder.decode(chunk, { stream: true })}`.split('\0')
-		this.#pending = parts.pop() ?? ''
-		for (const record of parts) {
-			if (record.length === 0) continue
-			if (this.#records.length >= MAX_INVENTORY_PATHS) {
-				this.refuse(
-					`The git query for target at ${this.#target} exceeded the working-tree inventory limit.`,
-				)
-				return
-			}
-			this.#records.push(record)
-		}
-		if (this.#pending.length > MAX_PATH_LENGTH + 3) {
-			this.refuse(
-				`The git query for target at ${this.#target} returned an unfinished record beyond the supported path limit.`,
-			)
-		}
-	}
-
-	/**
-	 * Aborts the query with its first target refusal.
-	 *
-	 * @param message - The refusal message.
-	 * @returns Nothing.
-	 */
-	refuse(message: string): void {
-		if (!this.#controller.signal.aborted) {
-			this.#controller.abort(new ScaffoldError('TARGET', message, { target: this.#target }))
-		}
-	}
-
 	/**
 	 * Runs the query and reads its records.
 	 *
@@ -115,12 +63,12 @@ export class GitQuery implements GitQueryInterface {
 				workspace: '.',
 				signal: this.#controller.signal,
 				on: {
-					stdout: (chunk) => this.collect(chunk),
+					stdout: (chunk) => this.#collect(chunk),
 					error: () =>
-						this.refuse(`The git query for target at ${target} failed before it completed.`),
+						this.#refuse(`The git query for target at ${target} failed before it completed.`),
 				},
 				error: () =>
-					this.refuse(`The git query for target at ${target} failed while reading its output.`),
+					this.#refuse(`The git query for target at ${target} failed while reading its output.`),
 			}),
 		)
 		if (!created.success) {
@@ -162,7 +110,7 @@ export class GitQuery implements GitQueryInterface {
 					{ target },
 				)
 			}
-			return this.records
+			return [...this.#records]
 		} catch (error) {
 			if (isScaffoldError(error)) throw error
 			throw new ScaffoldError('TARGET', `The git query for target at ${target} could not start.`, {
@@ -170,6 +118,29 @@ export class GitQuery implements GitQueryInterface {
 			})
 		} finally {
 			await session.destroy()
+		}
+	}
+
+	// A chunk may end inside a record or inside a UTF-8 sequence, so the unfinished tail carries into
+	// the next chunk; a chunk arriving after a refusal is ignored.
+	#collect(bytes: Uint8Array): void {
+		if (this.#controller.signal.aborted) return
+		const chunk = splitGitRecords(
+			`${this.#pending}${this.#decoder.decode(bytes, { stream: true })}`,
+		)
+		const refusal = findGitRefusal(this.#target, this.#records.length, chunk)
+		if (refusal !== undefined) {
+			this.#refuse(refusal)
+			return
+		}
+		for (const record of chunk.records) this.#records.push(record)
+		this.#pending = chunk.pending
+	}
+
+	// A later refusal is ignored, so the signal's reason stays the first one.
+	#refuse(message: string): void {
+		if (!this.#controller.signal.aborted) {
+			this.#controller.abort(new ScaffoldError('TARGET', message, { target: this.#target }))
 		}
 	}
 }

@@ -203,8 +203,8 @@ Store child managers in `#` fields and expose readonly getters typed as their in
 
 - Middleware is behavior `(context, next) => ...`, never a class with one `handle` method.
 - Place middleware factories in `middlewares.ts` as `createX(options): Middleware`; keep them distinct from entity/value factories.
-- Keep middleware-local state closure-private.
-- If consumers must address, share, inspect, or replace that state, extract the state to a pluggable class supplied as an option, with an in-memory default.
+- Keep the values a middleware never changes, such as its resolved options and what its factory derives from them, closure-private, and apply `.claude/rules/typescript.md` § Bindings to the state one request changes.
+- Keep the state a middleware changes across requests, such as a per-key count, a cache, or a session table, in a pluggable class supplied as an option, with an in-memory default.
 - Extract reusable cross-middleware machinery to helpers/classes.
 - `MiddlewareManager` is the sole manager of the middleware composition chain; do not create one manager per middleware.
 

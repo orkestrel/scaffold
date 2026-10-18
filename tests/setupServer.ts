@@ -4984,42 +4984,6 @@ export const AUDIT_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object
 })
 
 /**
- * Serves the upstream fixture the audit suites read, started and stopped by the suite's own hooks.
- *
- * @remarks
- * The fixture holds an open server, so it starts in `beforeAll` and stops in `afterAll` rather than
- * at module load, and the server lives in this class's `#` field instead of a module-scope binding.
- */
-export class TestAuditRegistry {
-	#server: TestUpstreamInterface | undefined
-
-	/** The CLI options that route registry and repository reads to the fixture. */
-	get options(): CLIOptions {
-		if (this.#server === undefined) throw new Error('The audit registry is not started')
-		return {
-			upstream: {
-				registry: { base: this.#server.base },
-				repository: { base: this.#server.base },
-			},
-		}
-	}
-
-	/** Starts the fixture serving {@link AUDIT_REPLIES}; a started fixture is left running. */
-	async start(): Promise<void> {
-		this.#server ??= await createUpstreamServer(AUDIT_REPLIES)
-	}
-
-	/** Stops the fixture and releases its port; a stopped fixture is left stopped. */
-	async stop(): Promise<void> {
-		const server = this.#server
-		this.#server = undefined
-		await server?.destroy()
-	}
-}
-
-/** Holds the audit registry the CLI suites share, stopped until a suite starts it. */
-export const AUDIT_REGISTRY = Object.freeze(new TestAuditRegistry())
-/**
  * Reads the checkout manifest as text from disk and parses it.
  *
  * The manifest is read from disk as text here. The tables derive from the same

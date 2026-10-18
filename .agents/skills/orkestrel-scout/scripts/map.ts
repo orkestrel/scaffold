@@ -59,9 +59,23 @@ interface TomlState {
 	readonly rows: readonly LineRow[]
 }
 
+interface YamlLine {
+	readonly line: number
+	readonly indent: number
+	readonly content: string
+	readonly key: string | undefined
+	readonly value: string
+}
+
+interface YamlHead {
+	readonly position: number
+	readonly line: YamlLine
+	readonly key: string
+}
+
 interface YamlState {
 	readonly stack: ReadonlyArray<{ readonly indent: number; readonly key: string }>
-	readonly rows: readonly LineRow[]
+	readonly heads: readonly YamlHead[]
 }
 
 interface Report {
@@ -181,38 +195,55 @@ function mapRefs(target: string, roots: readonly string[]): readonly LineRow[] {
 		)
 }
 
-function stepYamlState(state: YamlState, text: string, path: string, line: number): YamlState {
-	const content = text.trimStart()
-	if (content === '' || content.startsWith('#')) return state
-	const indent = text.length - content.length
-	const match = content.match(/^([A-Za-z_][\w-]*)\s*:(?:\s+(.*))?$/u)
-	if (match?.[1] === undefined) {
-		// A list item, a block scalar line, or a wrapped value extends the key before it.
-		const last = state.rows.at(-1)
-		return last !== undefined && indent >= (state.stack.at(-1)?.indent ?? 0)
-			? {
-					...state,
-					rows: state.rows.with(-1, {
-						...last,
-						text: `${last.text} ${content.trim()}`.trimEnd(),
-					}),
-				}
-			: state
-	}
+function classifyYamlLines(lines: readonly string[], offset: number): readonly YamlLine[] {
+	return lines.flatMap((text, index): readonly YamlLine[] => {
+		const content = text.trimStart()
+		if (content === '' || content.startsWith('#')) return []
+		const match = content.match(/^([A-Za-z_][\w-]*)\s*:(?:\s+(.*))?$/u)
+		return [
+			{
+				line: index + offset,
+				indent: text.length - content.length,
+				content,
+				key: match?.[1],
+				value: (match?.[2] ?? '').trim(),
+			},
+		]
+	})
+}
+
+function stepYamlState(state: YamlState, line: YamlLine, position: number): YamlState {
+	if (line.key === undefined) return state
 	// Indents strictly increase along the stack, so the entries at or past this indent are the tail.
-	const stack = state.stack.filter((entry) => entry.indent < indent)
-	const key = [...stack.map((entry) => entry.key), match[1]].join('.')
+	const stack = state.stack.filter((entry) => entry.indent < line.indent)
+	const key = [...stack.map((entry) => entry.key), line.key].join('.')
 	return {
-		stack: [...stack, { indent, key: match[1] }],
-		rows: [...state.rows, { path, line, text: `${key}: ${(match[2] ?? '').trim()}`.trimEnd() }],
+		stack: [...stack, { indent: line.indent, key: line.key }],
+		heads: [...state.heads, { position, line, key }],
 	}
 }
 
 function readYamlKeys(path: string, lines: readonly string[], offset: number): readonly LineRow[] {
-	return lines.reduce<YamlState>(
-		(state, text, index) => stepYamlState(state, text, path, index + offset),
-		{ stack: [], rows: [] },
-	).rows
+	const classified = classifyYamlLines(lines, offset)
+	const { heads } = classified.reduce<YamlState>(
+		(state, line, position) => stepYamlState(state, line, position),
+		{ stack: [], heads: [] },
+	)
+	// A list item, a block scalar line, or a wrapped value extends the key line before it when it is
+	// indented at least as far; between two key lines every classified line is a non-key line.
+	return heads.map((head, rank) => ({
+		path,
+		line: head.line.line,
+		text: [
+			`${head.key}: ${head.line.value}`.trimEnd(),
+			...classified
+				.slice(head.position + 1, heads[rank + 1]?.position ?? classified.length)
+				.filter((line) => line.indent >= head.line.indent)
+				.map((line) => line.content.trim()),
+		]
+			.join(' ')
+			.trimEnd(),
+	}))
 }
 
 function stepTomlState(state: TomlState, text: string, path: string, line: number): TomlState {

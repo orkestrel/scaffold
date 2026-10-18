@@ -12,6 +12,7 @@ import type {
 import type {
 	BytesReadResult,
 	HostInventory,
+	ReadAllowanceInterface,
 	TextReadResult,
 	UpstreamEventMap,
 	UpstreamInterface,
@@ -59,7 +60,7 @@ import {
 	SCAFFOLD_REPOSITORY,
 	UNREADABLE_VERSION_NOTE,
 } from './constants.js'
-import { computeManifestDigest, hexToDigest } from './helpers.js'
+import { collectIndexed, computeManifestDigest, hexToDigest } from './helpers.js'
 import {
 	isDependencies,
 	isDependencyNames,
@@ -67,6 +68,7 @@ import {
 	isPaths,
 	isUpstreamOptions,
 } from './validators.js'
+import { ReadAllowance } from './ReadAllowance.js'
 
 /**
  * Represents the reading spine: one bounded, unauthenticated, redirect-free request per answer.
@@ -97,9 +99,9 @@ import {
  * reader's own abort signal, so {@link Upstream.destroy} cancels what is in
  * flight instead of waiting for it.
  *
- * The bytes a call has read are logged in a list the call owns and threads through the private
- * reads rather than held on the instance, because concurrent calls each own their own budget
- * and must not spend each other's. The budget left is the allowance less that list's total.
+ * Each call constructs its own {@link ReadAllowance} from the reader's budget and passes it
+ * through the private reads rather than holding it on the instance, because concurrent calls
+ * each own a budget and must not spend each other's.
  *
  * @example
  * ```ts
@@ -207,8 +209,8 @@ export class Upstream implements UpstreamInterface {
 	async lookup(dependencies: readonly Dependency[]): Promise<readonly Release[]> {
 		this.#assertAlive()
 		const accepted = this.#accept(dependencies, isDependencies, 'dependencies')
-		const spent: number[] = []
-		return this.#gather(accepted, (dependency) => this.#release(dependency, spent))
+		const allowance = new ReadAllowance(this.#budget)
+		return this.#gather(accepted, (dependency) => this.#release(dependency, allowance))
 	}
 
 	/**
@@ -242,8 +244,8 @@ export class Upstream implements UpstreamInterface {
 		this.#assertAlive()
 		const accepted = this.#accept(names, isDependencyNames, 'names')
 		const observed = this.#accept(current, isSnapshot, 'current')
-		const spent: number[] = []
-		return this.#gather(accepted, (name) => this.#mirror(name, observed, spent))
+		const allowance = new ReadAllowance(this.#budget)
+		return this.#gather(accepted, (name) => this.#mirror(name, observed, allowance))
 	}
 
 	/**
@@ -290,9 +292,9 @@ export class Upstream implements UpstreamInterface {
 		const accepted = this.#accept(paths, isPaths, 'paths')
 		const observed = this.#accept(current, isSnapshot, 'current')
 		if (accepted.length === 0) return []
-		const spent: number[] = []
-		const inventory = await this.#inventory(spent)
-		return this.#gather(accepted, (path) => this.#file(path, inventory, observed, spent))
+		const allowance = new ReadAllowance(this.#budget)
+		const inventory = await this.#inventory(allowance)
+		return this.#gather(accepted, (path) => this.#file(path, inventory, observed, allowance))
 	}
 
 	/**
@@ -324,9 +326,9 @@ export class Upstream implements UpstreamInterface {
 	 */
 	async catalog(): Promise<readonly CatalogEntry[]> {
 		this.#assertAlive()
-		const spent: number[] = []
-		const names = await this.#packages(spent)
-		return this.#gather(names, (name) => this.#entry(name, spent))
+		const allowance = new ReadAllowance(this.#budget)
+		const names = await this.#packages(allowance)
+		return this.#gather(names, (name) => this.#entry(name, allowance))
 	}
 
 	/**
@@ -392,11 +394,11 @@ export class Upstream implements UpstreamInterface {
 	// One dependency, read and projected into the verdict its row carries. A
 	// found answer that states no admitted version is unmatched rather than a
 	// found one carrying nothing, because an empty version is not an answer.
-	async #release(dependency: Dependency, spent: number[]): Promise<Release> {
+	async #release(dependency: Dependency, allowance: ReadAllowanceInterface): Promise<Release> {
 		const outcome = await this.#readWithRetries(
 			this.#registryURL(dependency.name),
 			this.#registryTimeout,
-			spent,
+			allowance,
 			PACKUMENT_MEDIA_TYPE,
 		)
 		const latest =
@@ -426,12 +428,16 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// One guide, read and projected beside the local bytes it answers for.
-	async #mirror(name: string, current: Snapshot, spent: number[]): Promise<Mirror> {
+	async #mirror(
+		name: string,
+		current: Snapshot,
+		allowance: ReadAllowanceInterface,
+	): Promise<Mirror> {
 		const path = nameToGuide(name)
 		const outcome = await this.#readWithRetries(
 			this.#guideURL(name),
 			this.#repositoryTimeout,
-			spent,
+			allowance,
 		)
 		const observed = current[path]
 		const mirror: Mirror =
@@ -461,9 +467,9 @@ export class Upstream implements UpstreamInterface {
 		path: string,
 		inventory: HostInventory,
 		current: Snapshot,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 	): Promise<HostFile> {
-		const file = await this.#answer(path, inventory, current[path], spent)
+		const file = await this.#answer(path, inventory, current[path], allowance)
 		this.#emitter.emit('file', file)
 		return file
 	}
@@ -486,7 +492,7 @@ export class Upstream implements UpstreamInterface {
 		path: string,
 		inventory: HostInventory,
 		observed: string | undefined,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 	): Promise<HostFile> {
 		const carried = observed === undefined ? {} : { observed }
 		if (inventory.lookup !== 'found') {
@@ -518,7 +524,7 @@ export class Upstream implements UpstreamInterface {
 		const outcome = await this.#readWithRetries(
 			this.#vendorURL(path),
 			this.#repositoryTimeout,
-			spent,
+			allowance,
 			undefined,
 			true,
 		)
@@ -543,10 +549,10 @@ export class Upstream implements UpstreamInterface {
 	// to fall back to. The membership digest is recomputed rather than trusted, so
 	// a membership edit that did not update the manifest's own claim is refused
 	// here instead of authorizing bytes downstream.
-	async #inventory(spent: number[]): Promise<HostInventory> {
+	async #inventory(allowance: ReadAllowanceInterface): Promise<HostInventory> {
 		const url = this.#vendorURL(HOST_INVENTORY_PATH)
 		const empty = { digests: new Map<string, string>(), duplicates: new Set<string>() }
-		const outcome = await this.#readWithRetries(url, this.#repositoryTimeout, spent)
+		const outcome = await this.#readWithRetries(url, this.#repositoryTimeout, allowance)
 		if (outcome.lookup !== 'found') {
 			return {
 				...empty,
@@ -589,11 +595,11 @@ export class Upstream implements UpstreamInterface {
 	// One catalog row. It publishes nothing on the observation channel: the
 	// channel carries the verdicts the writer binds to, and a catalog row is
 	// not one of them, so the whole sorted list is the answer instead.
-	async #entry(name: string, spent: number[]): Promise<CatalogEntry> {
+	async #entry(name: string, allowance: ReadAllowanceInterface): Promise<CatalogEntry> {
 		const outcome = await this.#readWithRetries(
 			this.#registryURL(name),
 			this.#registryTimeout,
-			spent,
+			allowance,
 			PACKUMENT_MEDIA_TYPE,
 		)
 		const version = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
@@ -653,9 +659,9 @@ export class Upstream implements UpstreamInterface {
 	// map rather than a search. Every refusal here is coded rather than collected,
 	// because a caller that received an empty or partial fleet could not tell it
 	// from a fleet that shrank.
-	async #packages(spent: number[]): Promise<readonly string[]> {
+	async #packages(allowance: ReadAllowanceInterface): Promise<readonly string[]> {
 		const url = `${this.#registryBase}/-/org/${ORKESTREL_SCOPE}/package`
-		const outcome = await this.#readWithRetries(url, this.#registryTimeout, spent)
+		const outcome = await this.#readWithRetries(url, this.#registryTimeout, allowance)
 		if (outcome.lookup !== 'found') {
 			throw this.#error('FETCH', `The organization package list at ${url} produced no answer.`, {
 				url,
@@ -774,9 +780,12 @@ export class Upstream implements UpstreamInterface {
 
 	// One read, plus the retries a transport fault is given. A `404` is a definite
 	// answer and is never retried; an exhausted allowance short-circuits the next
-	// attempt rather than spending a request to be refused again. The fault is
-	// published here, at the one place that knows the cause, which is what lets
-	// every projection downstream stay a plain value.
+	// attempt rather than spending a request to be refused again. Each failed
+	// attempt recurses with the next attempt number, and `#retries` bounds that
+	// number, so the last attempt's note is the one published and returned and no
+	// note is carried between attempts. The fault is published here, at the one place that
+	// knows the cause, which is what lets every projection downstream stay a plain
+	// value.
 	//
 	// `accept` is stated only where an endpoint publishes more than one form of
 	// the same answer, which is the packument alone. Every other read takes what
@@ -784,34 +793,38 @@ export class Upstream implements UpstreamInterface {
 	async #readWithRetries(
 		url: string,
 		timeout: number,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 		accept: string | undefined,
 		binary: true,
+		attempt?: number,
 	): Promise<BytesReadResult>
 	async #readWithRetries(
 		url: string,
 		timeout: number,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 		accept?: string,
 		binary?: false,
+		attempt?: number,
 	): Promise<TextReadResult>
 	async #readWithRetries(
 		url: string,
 		timeout: number,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 		accept?: string,
 		binary = false,
+		attempt = 0,
 	): Promise<TextReadResult | BytesReadResult> {
-		const notes = new Map<number, string>()
-		for (const round of Array.from({ length: this.#retries + 1 }).keys()) {
-			this.#assertAlive()
-			const outcome = binary
-				? await this.#request(url, timeout, spent, accept, true)
-				: await this.#request(url, timeout, spent, accept)
-			if (outcome.lookup !== 'failed') return outcome
-			notes.set(round, outcome.note)
+		this.#assertAlive()
+		const outcome = binary
+			? await this.#request(url, timeout, allowance, accept, true)
+			: await this.#request(url, timeout, allowance, accept)
+		if (outcome.lookup !== 'failed') return outcome
+		if (attempt < this.#retries) {
+			return binary
+				? this.#readWithRetries(url, timeout, allowance, accept, true, attempt + 1)
+				: this.#readWithRetries(url, timeout, allowance, accept, false, attempt + 1)
 		}
-		const note = notes.get(this.#retries) ?? ''
+		const note = outcome.note
 		this.#error('FETCH', `The upstream read at ${url} produced no answer.`, { url, note })
 		return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 	}
@@ -822,25 +835,25 @@ export class Upstream implements UpstreamInterface {
 	async #request(
 		url: string,
 		timeout: number,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 		accept: string | undefined,
 		binary: true,
 	): Promise<BytesReadResult>
 	async #request(
 		url: string,
 		timeout: number,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 		accept?: string,
 		binary?: false,
 	): Promise<TextReadResult>
 	async #request(
 		url: string,
 		timeout: number,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
 		accept?: string,
 		binary = false,
 	): Promise<TextReadResult | BytesReadResult> {
-		if (this.#budget - computeTotal(spent) <= 0) {
+		if (allowance.remaining <= 0) {
 			const note = `the call spent its ${String(this.#budget)}-byte allowance`
 			return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 		}
@@ -870,7 +883,9 @@ export class Upstream implements UpstreamInterface {
 					? { lookup: 'failed', hex: '', note }
 					: { lookup: 'failed', content: '', note }
 			}
-			return binary ? await this.#body(response, spent, true) : await this.#body(response, spent)
+			return binary
+				? await this.#body(response, allowance, true)
+				: await this.#body(response, allowance)
 		} catch (error) {
 			this.#assertAlive()
 			const note = this.#note(error)
@@ -890,11 +905,19 @@ export class Upstream implements UpstreamInterface {
 	// covers the whole 2xx range. It is a verdict rather than an empty answer: a
 	// zero-byte file arrives as a `200` with an empty stream and still reads as
 	// found.
-	async #body(response: Response, spent: number[], binary: true): Promise<BytesReadResult>
-	async #body(response: Response, spent: number[], binary?: false): Promise<TextReadResult>
 	async #body(
 		response: Response,
-		spent: number[],
+		allowance: ReadAllowanceInterface,
+		binary: true,
+	): Promise<BytesReadResult>
+	async #body(
+		response: Response,
+		allowance: ReadAllowanceInterface,
+		binary?: false,
+	): Promise<TextReadResult>
+	async #body(
+		response: Response,
+		allowance: ReadAllowanceInterface,
 		binary = false,
 	): Promise<TextReadResult | BytesReadResult> {
 		const body = response.body
@@ -911,7 +934,7 @@ export class Upstream implements UpstreamInterface {
 				const chunk = await reader.read()
 				if (chunk.done) break
 				sizes.push(chunk.value.byteLength)
-				spent.push(chunk.value.byteLength)
+				allowance.spend(chunk.value.byteLength)
 				if (computeTotal(sizes) > this.#limit) {
 					await reader.cancel()
 					const note = `the response passed the ${String(this.#limit)}-byte response limit`
@@ -919,7 +942,7 @@ export class Upstream implements UpstreamInterface {
 						? { lookup: 'failed', hex: '', note }
 						: { lookup: 'failed', content: '', note }
 				}
-				if (this.#budget - computeTotal(spent) < 0) {
+				if (allowance.remaining < 0) {
 					await reader.cancel()
 					const note = `the call spent its ${String(this.#budget)}-byte allowance`
 					return binary
@@ -958,8 +981,9 @@ export class Upstream implements UpstreamInterface {
 
 	// A bounded worker pool, never an unbounded parallel start. The workers share
 	// one entries iterator for the call, so each item is pulled once, and each
-	// worker logs the results it produced with their original index, so the
-	// answer is in input order however the reads interleaved. The call's abort
+	// worker logs the results it produced with their original index. Every result
+	// lands at that index, so the answer is in input order however the reads
+	// interleaved, and an index a worker skipped stays a hole. The call's abort
 	// controller keeps the first failure and stops the workers from starting more
 	// items. Every worker is awaited whatever it did, so a sibling's later
 	// rejection is observed rather than escaping as an unhandled one, and the
@@ -976,10 +1000,9 @@ export class Upstream implements UpstreamInterface {
 			const reason: unknown = failed.signal.reason
 			throw isRecord(reason) ? reason.error : reason
 		}
-		return settled
-			.flatMap((worker) => (worker.status === 'fulfilled' ? worker.value : []))
-			.sort((first, second) => first.index - second.index)
-			.map(({ result }) => result)
+		return collectIndexed(
+			settled.flatMap((worker) => (worker.status === 'fulfilled' ? worker.value : [])),
+		)
 	}
 
 	// One worker's pull-and-run loop over the call's shared entries iterator. An
@@ -989,12 +1012,12 @@ export class Upstream implements UpstreamInterface {
 		entries: IterableIterator<[number, T]>,
 		run: (item: T) => Promise<R>,
 		failed: AbortController,
-	): Promise<ReadonlyArray<{ readonly index: number; readonly result: R }>> {
-		const produced: Array<{ readonly index: number; readonly result: R }> = []
+	): Promise<ReadonlyArray<readonly [number, R]>> {
+		const produced: Array<readonly [number, R]> = []
 		for (const [index, item] of entries) {
 			if (failed.signal.aborted || item === undefined) break
 			try {
-				produced.push({ index, result: await run(item) })
+				produced.push([index, await run(item)])
 			} catch (error) {
 				failed.abort(Object.freeze({ error }))
 				break

@@ -1469,6 +1469,32 @@ describe('Upstream bounds', () => {
 		}
 	})
 
+	it('spends the allowance to its last byte and refuses the next read before requesting it', async () => {
+		const body = buildPackument('0.0.8')
+		const budget = Buffer.byteLength(body) * 2
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.console]: { status: 200, body },
+			[UPSTREAM_PATHS.emitter]: { status: 200, body },
+			[UPSTREAM_PATHS.router]: { status: 200, body },
+		})
+		const upstream = new Upstream({ registry: { base: server.base }, concurrency: 1, budget })
+		try {
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/console', range: '*' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
+			])
+			// The second body lands exactly on the budget and is accepted; the third read is
+			// refused by the empty allowance rather than by an overshooting body.
+			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'found', 'failed'])
+			expect(releases[2]?.note).toBe(`the call spent its ${String(budget)}-byte allowance`)
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.console, UPSTREAM_PATHS.emitter])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
 	it('bounds the requests it holds in flight', async () => {
 		const replies = {
 			[UPSTREAM_PATHS.console]: { status: 200, body: buildPackument('0.0.4'), delay: 30 },
@@ -1532,12 +1558,15 @@ describe('Upstream transport', () => {
 		})
 		const upstream = new Upstream({ registry: { base: server.base }, retries: 2, concurrency: 1 })
 		try {
-			await upstream.lookup([
+			const [release] = await upstream.lookup([
 				buildDependency({ name: '@orkestrel/router', range: '*' }),
 				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
 			])
 			expect(server.paths.filter((path) => path === UPSTREAM_PATHS.router)).toHaveLength(3)
 			expect(server.paths.filter((path) => path === UPSTREAM_PATHS.emitter)).toHaveLength(1)
+			// The last attempt's note is the one the verdict carries.
+			expect(release?.lookup).toBe('failed')
+			expect(release?.note).toBe('HTTP 500')
 		} finally {
 			upstream.destroy()
 			await server.destroy()

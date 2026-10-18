@@ -9,8 +9,10 @@ import {
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	createBlueprint,
+	MAX_PATH_LENGTH,
 	ScaffoldError,
 } from '@src/core'
+import { MAX_INVENTORY_PATHS } from '@src/server'
 import { captureError, requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 
@@ -43,6 +45,7 @@ import {
 	environmentToUpstream,
 	errorToEnvelope,
 	fetchToRefusal,
+	findGitRefusal,
 	manifestToAdditions,
 	manifestToWritableDependencies,
 	manifestToWritableScripts,
@@ -61,6 +64,7 @@ import {
 	selectionToGroups,
 	selectionToPackages,
 	sheetTestToQuestion,
+	splitGitRecords,
 	targetToEnvironments,
 	targetToExtensions,
 	targetToFacts,
@@ -1423,5 +1427,63 @@ describe('collectScriptChain', () => {
 		)
 
 		expect([...chain.projects]).toStrictEqual(['src:core'])
+	})
+})
+
+describe('splitGitRecords', () => {
+	it('splits complete records from the unfinished tail', () => {
+		expect(splitGitRecords('alpha\0br')).toStrictEqual({ records: ['alpha'], pending: 'br' })
+		expect(splitGitRecords('alpha\0')).toStrictEqual({ records: ['alpha'], pending: '' })
+	})
+
+	it('drops empty records and keeps a multi-byte record whole', () => {
+		expect(splitGitRecords('br\u00fbl\u00e9e\0\0omega')).toStrictEqual({
+			records: ['br\u00fbl\u00e9e'],
+			pending: 'omega',
+		})
+	})
+
+	it('answers no record and no tail for no text', () => {
+		expect(splitGitRecords('')).toStrictEqual({ records: [], pending: '' })
+		expect(splitGitRecords('\0\0')).toStrictEqual({ records: [], pending: '' })
+	})
+})
+
+describe('findGitRefusal', () => {
+	const inventory = 'The git query for target at target exceeded the working-tree inventory limit.'
+	const unfinished =
+		'The git query for target at target returned an unfinished record beyond the supported path limit.'
+
+	it('accepts the record that reaches the inventory limit and refuses the next', () => {
+		expect(
+			findGitRefusal('target', MAX_INVENTORY_PATHS - 1, { records: ['last'], pending: '' }),
+		).toBeUndefined()
+		expect(
+			findGitRefusal('target', MAX_INVENTORY_PATHS - 1, { records: ['last', 'over'], pending: '' }),
+		).toBe(inventory)
+		expect(
+			findGitRefusal('target', 0, {
+				records: Array.from({ length: MAX_INVENTORY_PATHS }, () => 'kept'),
+				pending: '',
+			}),
+		).toBeUndefined()
+	})
+
+	it('accepts the unfinished-path boundary and refuses the next character', () => {
+		expect(
+			findGitRefusal('target', 0, { records: [], pending: 'p'.repeat(MAX_PATH_LENGTH + 3) }),
+		).toBeUndefined()
+		expect(
+			findGitRefusal('target', 0, { records: [], pending: 'p'.repeat(MAX_PATH_LENGTH + 4) }),
+		).toBe(unfinished)
+	})
+
+	it('names the inventory limit when both limits are passed', () => {
+		expect(
+			findGitRefusal('target', MAX_INVENTORY_PATHS, {
+				records: ['over'],
+				pending: 'p'.repeat(MAX_PATH_LENGTH + 4),
+			}),
+		).toBe(inventory)
 	})
 })

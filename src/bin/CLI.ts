@@ -1146,6 +1146,10 @@ export class CLI implements CLIInterface {
 			if (tests === undefined || !path.startsWith('studies/') || !path.endsWith('.test.ts')) {
 				return false
 			}
+			// Vitest's default exclude collects nothing beneath these directories.
+			if (path.split('/').some((segment) => segment === 'node_modules' || segment === '.git')) {
+				return false
+			}
 			const study = resolveContainedPath(tests, path)
 			return study !== undefined && isExactCaseFile(study)
 		})

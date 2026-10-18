@@ -5,7 +5,7 @@ import { basename, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
-import { captureError, createTeardown, requireValue } from '@orkestrel/test'
+import { createTeardown, requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import {
 	CONFIG_TEMPLATES,
@@ -22,7 +22,6 @@ import { buildBlueprint, buildSnapshot, ENTRY_FILES, PLANNED_SETUP_SEED } from '
 import {
 	ALIGNED_MANIFEST_TEXT,
 	AUDIT_EXIT_CASES,
-	AUDIT_REGISTRY,
 	AUDIT_REPLIES,
 	BENCH_SCRIPT,
 	BRIEF_SCRIPT,
@@ -165,7 +164,6 @@ import {
 	SWEEP_SCRIPT,
 	TARGET_DEV_DEPENDENCIES,
 	TARGET_MANIFEST_TEXT,
-	TestAuditRegistry,
 	TestRegistry,
 	trackFiles,
 	UPSTREAM_ENDPOINT_CASES,
@@ -2229,24 +2227,14 @@ describe('the command fixtures served from a registry', () => {
 		)
 	})
 
-	it('serves the audit replies only while the shared fixture is started', async () => {
+	it('freezes the audit replies and serves them', async () => {
 		expect(Object.isFrozen(AUDIT_REPLIES)).toBe(true)
-		expect(Object.isFrozen(AUDIT_REGISTRY)).toBe(true)
-		const registry = new TestAuditRegistry()
-		expect(captureError(() => registry.options)).toBeInstanceOf(Error)
-		await registry.start()
+		const server = await createUpstreamServer(AUDIT_REPLIES)
 		try {
-			const { upstream } = registry.options
-			const base = requireValue(upstream?.registry?.base)
-			expect(upstream?.repository?.base).toBe(base)
-			expect((await fetch(`${base}/vite`)).status).toBe(200)
-			await registry.start()
-			expect(registry.options.upstream?.registry?.base).toBe(base)
+			expect((await fetch(`${server.base}/vite`)).status).toBe(200)
 		} finally {
-			await registry.stop()
+			await server.destroy()
 		}
-		expect(captureError(() => registry.options)).toBeInstanceOf(Error)
-		await registry.stop()
 	})
 })
 

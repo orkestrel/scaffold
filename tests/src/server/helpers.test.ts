@@ -7,6 +7,7 @@ import {
 	linkSync,
 	lstatSync,
 	readFileSync,
+	realpathSync,
 	renameSync,
 	rmSync,
 	writeFileSync,
@@ -32,6 +33,8 @@ import {
 	MAX_COLLECTION_ITEMS,
 } from '@src/core'
 import {
+	climbRealPath,
+	collectIndexed,
 	computeDigest,
 	computeFileDigest,
 	computeManifestDigest,
@@ -1011,6 +1014,60 @@ describe('resolveRealPath', () => {
 		expect(resolveRealPath('')).toBeUndefined()
 		expect(resolveRealPath('project/nul')).toBeUndefined()
 		expect(resolveRealPath('project/a>b')).toBeUndefined()
+	})
+})
+
+describe('climbRealPath', () => {
+	it('climbs at every depth through the ceiling and refuses the next', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const real = realpathSync(workspace.path)
+			expect(climbRealPath(workspace.path, [], 0)).toBe(real)
+			expect(climbRealPath(workspace.path, [], MAX_PATH_DEPTH)).toBe(real)
+			expect(climbRealPath(workspace.path, [], MAX_PATH_DEPTH + 1)).toBeUndefined()
+			// Each absent segment is one step, so two absent segments need two steps of depth left.
+			const absent = join(workspace.path, 'a', 'b')
+			expect(climbRealPath(absent, [], MAX_PATH_DEPTH - 2)).toBe(join(real, 'a', 'b'))
+			expect(climbRealPath(absent, [], MAX_PATH_DEPTH - 1)).toBeUndefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('joins the absent segments it climbs past and the pending ones it was given', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const real = realpathSync(workspace.path)
+			expect(climbRealPath(join(workspace.path, 'a', 'b'), [], 0)).toBe(join(real, 'a', 'b'))
+			expect(climbRealPath(workspace.path, ['x', 'y'], 0)).toBe(join(real, 'x', 'y'))
+			expect(climbRealPath(join(workspace.path, 'a'), ['y'], 0)).toBe(join(real, 'a', 'y'))
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a depth that is not a safe integer from 0 through the ceiling', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(climbRealPath(workspace.path, [], -1)).toBeUndefined()
+			expect(climbRealPath(workspace.path, [], 0.5)).toBeUndefined()
+			expect(climbRealPath(workspace.path, [], Number.NaN)).toBeUndefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('collectIndexed', () => {
+	it('places each result at its index and leaves an index no entry names a hole', () => {
+		const result = collectIndexed([
+			[2, 'C'],
+			[0, 'A'],
+		])
+		expect(result).toStrictEqual(Object.assign([], { 0: 'A', 2: 'C' }))
+		expect(result).toHaveLength(3)
+		expect(1 in result).toBe(false)
+		expect(collectIndexed([])).toStrictEqual([])
 	})
 })
 

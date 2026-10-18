@@ -17,6 +17,7 @@ import type {
 import type {
 	CLICommand,
 	ErrorEnvelope,
+	GitChunk,
 	ScriptChain,
 	ScriptInvocations,
 	ScriptStep,
@@ -45,6 +46,7 @@ import {
 	isScaffoldError,
 	isSheetName,
 	manifestToDependencies,
+	MAX_PATH_LENGTH,
 	parseExtension,
 	RESERVED_SHEET_NAMES,
 	ScaffoldError,
@@ -1462,4 +1464,50 @@ export function mergeResults(
  */
 export function resultToTally(result: MaterializeResult): string {
 	return `${String(result.written.length)} written, ${String(result.skipped.length)} unchanged, ${String(result.removed.length)} removed in ${result.target}.`
+}
+
+/**
+ * Splits decoded git output into its complete records and its unfinished tail.
+ *
+ * @param text - The decoded output, led by the tail the previous chunk left.
+ * @returns The non-empty records ended by a NUL, and the text after the last NUL.
+ *
+ * @example
+ * ```ts
+ * import { splitGitRecords } from './helpers.js'
+ *
+ * splitGitRecords('alpha\0\0br') // { records: ['alpha'], pending: 'br' }
+ * ```
+ */
+export function splitGitRecords(text: string): GitChunk {
+	const parts = text.split('\0')
+	return {
+		records: parts.slice(0, -1).filter((record) => record.length > 0),
+		pending: parts.at(-1) ?? '',
+	}
+}
+
+/**
+ * Finds the refusal one git output chunk earns.
+ *
+ * @param target - The repository the query runs in.
+ * @param count - The records collected before the chunk.
+ * @param chunk - The next split output.
+ * @returns The inventory message when the records pass the working-tree inventory limit, else the
+ * unfinished-record message when the tail passes the supported path limit, else `undefined`.
+ *
+ * @example
+ * ```ts
+ * import { findGitRefusal } from './helpers.js'
+ *
+ * findGitRefusal('./packages/router', 0, { records: ['package.json'], pending: '' }) // undefined
+ * ```
+ */
+export function findGitRefusal(target: string, count: number, chunk: GitChunk): string | undefined {
+	if (count + chunk.records.length > MAX_INVENTORY_PATHS) {
+		return `The git query for target at ${target} exceeded the working-tree inventory limit.`
+	}
+	return chunk.pending.length > MAX_PATH_LENGTH + 3
+		? `The git query for target at ${target} returned an unfinished record beyond the supported path limit.`
+		: undefined
 }

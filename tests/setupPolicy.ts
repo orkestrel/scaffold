@@ -847,25 +847,20 @@ export function parseSkillFrontmatter(content: string): SkillFrontmatter | undef
 			const folded = block.map((continuation) =>
 				continuation.trim() === '' ? '' : continuation.slice(2),
 			)
+			// Each kept line joins to the one before it by a space, or by one newline per blank line between.
+			const kept = folded.flatMap((continuation, position) =>
+				continuation === '' ? [] : [{ continuation, position }],
+			)
 			const value =
 				initial === '>-'
-					? folded.reduce(
-							(running, foldedLine) =>
-								foldedLine === ''
-									? { text: running.text, blanks: running.blanks + 1 }
-									: {
-											text:
-												running.text +
-												(running.text === ''
-													? ''
-													: running.blanks === 0
-														? ' '
-														: '\n'.repeat(running.blanks)) +
-												foldedLine,
-											blanks: 0,
-										},
-							{ text: '', blanks: 0 },
-						).text
+					? kept
+							.map((entry, rank) => {
+								const before = kept[rank - 1]
+								if (before === undefined) return entry.continuation
+								const blanks = entry.position - before.position - 1
+								return `${blanks === 0 ? ' ' : '\n'.repeat(blanks)}${entry.continuation}`
+							})
+							.join('')
 					: initial
 			const source = initial === '>-' ? [own, ...rawBlock].join('\n') : own
 			return {
@@ -3937,8 +3932,10 @@ export function collectStudies(directory: string): readonly string[] {
 		const current = pending.pop() ?? ''
 		for (const entry of readdirSync(resolve(directory, current), { withFileTypes: true })) {
 			const path = `${current}/${entry.name}`
-			if (entry.isDirectory()) pending.push(path)
-			else if (
+			// Vitest's default exclude collects nothing beneath these directories.
+			if (entry.isDirectory()) {
+				if (entry.name !== 'node_modules' && entry.name !== '.git') pending.push(path)
+			} else if (
 				entry.isFile() &&
 				entry.name.endsWith('.test.ts') &&
 				lstatSync(resolve(directory, path)).nlink === 1

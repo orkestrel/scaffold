@@ -171,6 +171,11 @@ describe('selected faces', () => {
 			['a case-folded directory', ['tests/Studies/adapter.test.ts']],
 			['a test of another suffix', ['tests/studies/adapter.test.js']],
 			['a studies entry that is a file', ['tests/studies']],
+			[
+				'a test inside a nested node_modules',
+				['tests/studies/fixture/node_modules/kit/index.test.ts'],
+			],
+			['a test inside a .git directory', ['tests/studies/fixture/.git/hooks/index.test.ts']],
 		] as const
 		for (const [label, paths] of lookalikes) {
 			const fixture = createPolicyScratch({ prefix: 'config-studies-lookalike-' })
@@ -3434,7 +3439,6 @@ describe('configuration helpers', () => {
 			'readCompilerOutput',
 			'rewriteCoreSpecifier',
 			'sourceFallback',
-			'trustedPackageRootFor',
 			'workspacePath',
 		]
 		const found = Object.keys(configHelpers)
@@ -3524,9 +3528,6 @@ describe('configuration helpers', () => {
 				realpathSync.native(packageRoot),
 			)
 			expect(configHelpers.packageRootForResolved(source)).toBe(realpathSync.native(packageRoot))
-			expect(
-				configHelpers.trustedPackageRootFor(source, new Set([realpathSync.native(packageRoot)])),
-			).toBe(realpathSync.native(packageRoot))
 		} finally {
 			scratch.destroy()
 		}
@@ -3608,7 +3609,6 @@ describe('configuration helpers', () => {
 			expect(fresh.output).toBe(configHelpers.WORKSPACE_ROOT)
 			expect(fresh.root).toBe(configHelpers.WORKSPACE_ROOT)
 			expect(fresh.source).toBe('')
-			expect(fresh.trusted.size).toBe(0)
 			expect(new configHelpers.BuildState('C:/output').output).toBe('C:/output')
 
 			const entry = resolve(scratch.path, 'index.ts')
@@ -3635,16 +3635,44 @@ describe('configuration helpers', () => {
 		}
 	})
 
-	it('admits each physical package root once and keeps the admitted set per state', () => {
-		const state = new configHelpers.BuildState()
-		state.trust('C:/workspace/node_modules/a')
-		state.trust('C:/workspace/node_modules/a')
-		state.trust('C:/workspace/node_modules/b')
-		expect([...state.trusted]).toEqual([
-			'C:/workspace/node_modules/a',
-			'C:/workspace/node_modules/b',
-		])
-		expect(new configHelpers.BuildState().trusted.size).toBe(0)
+	it('admits each physical package root once and locates the first admitted root containing a path', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-locate-' })
+		try {
+			scratch.write('modules/outer/inner/index.ts', '')
+			scratch.write('modules/other/index.ts', '')
+			const outer = realpathSync.native(resolve(scratch.path, 'modules/outer'))
+			const inner = realpathSync.native(resolve(scratch.path, 'modules/outer/inner'))
+			const inside = resolve(scratch.path, 'modules/outer/inner/index.ts')
+			const beside = resolve(scratch.path, 'modules/other/index.ts')
+
+			const state = new configHelpers.BuildState()
+			// A fresh state admits nothing, so it locates nothing.
+			expect(state.locate(inside)).toBeUndefined()
+			state.trust(outer)
+			state.trust(outer)
+			state.trust(inner)
+			expect(state.locate(inside)).toBe(outer)
+			expect(state.locate(beside)).toBeUndefined()
+			// Admission order decides which of two containing roots answers.
+			const reversed = new configHelpers.BuildState()
+			reversed.trust(inner)
+			reversed.trust(outer)
+			expect(reversed.locate(inside)).toBe(inner)
+			expect(new configHelpers.BuildState().locate(inside)).toBeUndefined()
+			// The admitted roots are never returned, so the class publishes no member that lists them.
+			expect(Object.getOwnPropertyNames(configHelpers.BuildState.prototype).sort()).toEqual([
+				'building',
+				'constructor',
+				'locate',
+				'output',
+				'resolve',
+				'root',
+				'source',
+				'trust',
+			])
+		} finally {
+			scratch.destroy()
+		}
 	})
 
 	it('climbs from a policy node through its enclosing parentheses alone', () => {

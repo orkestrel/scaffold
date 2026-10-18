@@ -288,43 +288,24 @@ export interface ScriptStep extends ScriptInvocations {
 }
 
 /**
- * Describes one git query: the streaming intake of its NUL-delimited output and the read that
- * runs it.
+ * Represents the NUL-delimited git output of one decoded chunk.
  *
  * @remarks
- * A query is created for one run and reads once. `collect` takes the next owned output bytes,
- * `refuse` aborts the run with the first refusal, and `read` runs the query to completion. The
- * intake is part of the contract so a caller that already holds the output can feed it without a
- * process.
+ * `records` are the complete non-empty records and `pending` is the unfinished tail after the
+ * last NUL, which the next chunk continues.
+ */
+export interface GitChunk {
+	readonly records: readonly string[]
+	readonly pending: string
+}
+
+/**
+ * Describes one git query: the read that runs it and answers its NUL-delimited records.
+ *
+ * @remarks
+ * A query is created for one run and reads once.
  */
 export interface GitQueryInterface {
-	/** Reports the abort signal the query raises on its first refusal. */
-	readonly signal: AbortSignal
-	/** Lists the complete records collected so far, in arrival order. */
-	readonly records: readonly string[]
-	/**
-	 * Collects the complete NUL-delimited records from one raw git output chunk.
-	 *
-	 * @param chunk - The next owned output bytes.
-	 * @returns Nothing.
-	 *
-	 * @remarks
-	 * A chunk may end inside a record or inside a UTF-8 sequence, so the unfinished tail carries
-	 * into the next chunk. A chunk arriving after a refusal is ignored. The record beyond the
-	 * working-tree inventory limit, and an unfinished record beyond the supported path limit,
-	 * each refuse the query.
-	 */
-	collect(chunk: Uint8Array): void
-	/**
-	 * Aborts the query with its first target refusal.
-	 *
-	 * @param message - The refusal message.
-	 * @returns Nothing.
-	 *
-	 * @remarks
-	 * A later refusal is ignored, so the signal's reason stays the first one.
-	 */
-	refuse(message: string): void
 	/**
 	 * Runs the query and reads its records.
 	 *

@@ -12,11 +12,16 @@
 // Windows kills the process tree; any other host kills the command alone, not its descendants.
 // The launcher's own flags are read before `--` alone. Exit: the command's code; 124 when capped;
 // 127 when the command could not start (the errors file names why); 64 on usage, including a
-// journal and errors path that are the same file and a cap that is not a number of seconds.
+// journal and errors path that are the same file and a cap that is not a number of seconds from 0
+// to 2147483.
 import { spawn, spawnSync } from 'node:child_process'
 import { appendFileSync, closeSync, mkdirSync, openSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { readMissingFlags, readOption } from './helpers.ts'
+
+// The longest wait a Node timer holds is 2147483647 ms; floored to whole seconds, a longer cap would
+// throw from `AbortSignal.timeout` after the spawn or clamp to 1 ms and kill the command at once.
+const MAX_CAP_SECONDS = 2_147_483
 
 function readStatus(): string {
 	const result = spawnSync('git', ['status', '--porcelain'], { encoding: 'utf8' })
@@ -64,11 +69,12 @@ async function main(argv: readonly string[]): Promise<number> {
 		journal === errors ||
 		!Number.isFinite(cap) ||
 		cap < 0 ||
+		cap > MAX_CAP_SECONDS ||
 		command === undefined ||
 		command === ''
 	) {
 		console.error(
-			'usage: launch.ts --journal PATH --errors PATH --cap SECONDS [--status] -- COMMAND [ARGS...]; the journal and the errors file differ, and the cap is a number of seconds (0 for none)',
+			`usage: launch.ts --journal PATH --errors PATH --cap SECONDS [--status] -- COMMAND [ARGS...]; the journal and the errors file differ, and the cap is a number of seconds from 0 to ${String(MAX_CAP_SECONDS)} (0 for none)`,
 		)
 		return 64
 	}

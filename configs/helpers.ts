@@ -389,17 +389,6 @@ export function packageRootForResolved(resolvedPath: string): string | undefined
 		: undefined
 }
 
-export function trustedPackageRootFor(
-	target: string,
-	trustedPackageRoots: ReadonlySet<string>,
-): string | undefined {
-	const physical = physicalPath(target)
-	for (const root of trustedPackageRoots) {
-		if (containedPath(root, physical)) return root
-	}
-	return undefined
-}
-
 export function isStylesheetPath(path: string): boolean {
 	return /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:[?#]|$)/.test(path)
 }
@@ -522,7 +511,8 @@ export function environmentSourceError(owner: string, source: string): string | 
  * Vite runs a plugin hook with its own context as `this`, so a plugin cannot keep this state on
  * itself. Each plugin factory owns one instance and fills it from `configResolved`; before that hook
  * runs, the instance holds the workspace defaults. The environment boundary plugin also keeps the
- * physical package roots it has admitted here, because they outlive each hook call.
+ * physical package roots it has admitted here, because they outlive each hook call. The admitted
+ * roots are read through `locate` and never returned.
  */
 export class BuildState {
 	#building = false
@@ -555,11 +545,6 @@ export class BuildState {
 		return this.#source
 	}
 
-	/** Lists the physical package roots the boundary has admitted. */
-	get trusted(): ReadonlySet<string> {
-		return this.#trusted
-	}
-
 	/**
 	 * Admits one physical package root.
 	 *
@@ -567,6 +552,18 @@ export class BuildState {
 	 */
 	trust(root: string): void {
 		this.#trusted.add(root)
+	}
+
+	/**
+	 * Finds the admitted package root that contains a path.
+	 *
+	 * @param target - The path to place, followed through links to its physical location.
+	 * @returns The first admitted root, in admission order, that contains the path, or `undefined`
+	 * when none does.
+	 */
+	locate(target: string): string | undefined {
+		const physical = physicalPath(target)
+		return [...this.#trusted].find((root) => containedPath(root, physical))
 	}
 
 	/**
@@ -1093,7 +1090,7 @@ export function environmentBoundary(
 			if (sourceError !== undefined) this.error(sourceError)
 			const importerPath = workspacePath(importer)
 			const physicalImporter = physicalPath(importer)
-			const importerPackageRoot = trustedPackageRootFor(physicalImporter, state.trusted)
+			const importerPackageRoot = state.locate(physicalImporter)
 			if (importerPath === undefined && importerPackageRoot === undefined) return null
 			const [layer, environment] = importerPath?.split('/') ?? []
 			if (
@@ -1169,7 +1166,7 @@ export function environmentBoundary(
 		async load(id) {
 			if (!isWorkspaceBoundaryModule(id)) return null
 			const physicalImporter = physicalPath(id)
-			const trustedPackageRoot = trustedPackageRootFor(physicalImporter, state.trusted)
+			const trustedPackageRoot = state.locate(physicalImporter)
 			const inferredPackageRoot =
 				trustedPackageRoot === undefined ? packageRootForResolved(physicalImporter) : undefined
 			const packageRoot =
@@ -1228,7 +1225,7 @@ export function environmentBoundary(
 					if (isBoundaryExemptModule(original) || isBoundaryExemptModule(physical)) continue
 					const target = workspacePath(physical)
 					if (target === undefined) {
-						if (trustedPackageRootFor(physical, state.trusted) === undefined) {
+						if (state.locate(physical) === undefined) {
 							this.error('Environment modules cannot import files outside the workspace')
 						}
 						continue
@@ -1244,10 +1241,7 @@ export function environmentBoundary(
 				if (!isWorkspaceBoundaryModule(id)) continue
 				const target = workspacePath(id)
 				if (target === undefined) {
-					if (
-						isOutsideWorkspacePath(id) &&
-						trustedPackageRootFor(physicalPath(id), state.trusted) === undefined
-					) {
+					if (isOutsideWorkspacePath(id) && state.locate(physicalPath(id)) === undefined) {
 						this.error('Environment modules cannot import files outside the workspace')
 					}
 					continue
@@ -1262,7 +1256,7 @@ export function environmentBoundary(
 				if (!isWorkspaceBoundaryModule(id)) return null
 				const target = workspacePath(id)
 				const physicalImporter = physicalPath(id)
-				const importerPackageRoot = trustedPackageRootFor(physicalImporter, state.trusted)
+				const importerPackageRoot = state.locate(physicalImporter)
 				if (target === undefined) {
 					if (isOutsideWorkspacePath(id) && importerPackageRoot === undefined) {
 						this.error('Environment modules cannot import files outside the workspace')

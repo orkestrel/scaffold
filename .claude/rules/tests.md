@@ -205,8 +205,8 @@ Place helpers by environment:
 - `tests/setupStyles.ts`: the CSSOM and sheet helpers `.claude/rules/styles.md` places there; every
   sheet-face project loads it after `tests/setupBrowser.ts`.
 - `tests/setupStudy.ts`: the harness module the study tests import and, in a study-engine package,
-  its source tests too. It sits in no project's `setupFiles`, apart from `tests/setup.ts` and
-  `tests/setupServer.ts`, as `tests/setupPolicy.ts` does.
+  its source tests too. Name it in no project's `setupFiles`; tests import it, as the policy proof
+  imports `tests/setupPolicy.ts`.
 
 ### Recorder
 

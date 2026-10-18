@@ -1155,6 +1155,20 @@ describe('replaceManifestRanges', () => {
 		expect(replaced).toContain('"overrides": {\n\t\t"typescript": "6.0.3"')
 		expect(replaced).toContain('"resolutions": {\n\t\t"typescript": "6.0.2"')
 	})
+
+	it('never reads a replaced value as a key', () => {
+		// Text that is not JSON can present the literal after a replaced value as a key. The guard on
+		// the previous edit skips it, so the second pin finds no entry and the whole write refuses.
+		expect(
+			replaceManifestRanges('{"dependencies":{"a":"b":"c"}}', {
+				runtime: [
+					{ name: 'a', range: '^2' },
+					{ name: 'b', range: '^3' },
+				],
+				development: [],
+			}),
+		).toBeUndefined()
+	})
 })
 
 describe('insertManifestDependencies', () => {
@@ -1530,6 +1544,14 @@ describe('blueprintToWritableScripts', () => {
 })
 
 describe('replaceManifestScripts', () => {
+	it('reads a value that spells another script name as a value', () => {
+		expect(
+			replaceManifestScripts('{"scripts":{"test":"build","build":"vite build"}}', [
+				{ name: 'build', command: 'vite build --x', accepted: ['vite build'] },
+			]),
+		).toBe('{"scripts":{"test":"build","build":"vite build --x"}}')
+	})
+
 	it('replaces a recognized predecessor and appends an absent script, moving no other byte', () => {
 		const written = replaceManifestScripts(SCRIPT_MANIFEST, SCRIPT_REGION)
 
@@ -3339,8 +3361,8 @@ export default defineConfig(({ mode }) => appShowcase(mode))
 				}
 			: merged
 	if (named.plugins === undefined || effective === undefined) return named
-	const candidates = effective.plugins ?? []
-	const bases = base.plugins ?? []
+	const candidates = [...(effective.plugins ?? [])]
+	const bases = [...(base.plugins ?? [])]
 	// A base plugin takes the first candidate of its own name that no earlier base plugin took, and
 	// candidates of other names never compete for it, so its pick is the candidate whose rank among
 	// its name equals the number of earlier base plugins sharing that name.
@@ -4516,6 +4538,22 @@ describe('the generated configuration under its own hazards', () => {
 		// replaces, so the workspace runs a third plugin under the same name.
 		const bare: UserConfig = mergeConfig({ plugins: [declared] }, { plugins })
 		expect(bare.plugins).toStrictEqual([declared, leading, trailing])
+	})
+
+	it('keeps a hole in either plugin list as an undefined entry at its position', () => {
+		const declared = outputBoundary('dist/src/server')
+		const replacement = outputBoundary('showcase')
+		// A hole reads as an undefined entry through the iterator, so every later step sees a dense
+		// list: the base hole stays where it is and the candidate hole appends as an entry.
+		const merged = mergeOverride(
+			{ plugins: Object.assign<PluginOption[], Record<number, PluginOption>>([], { 1: declared }) },
+			{
+				plugins: Object.assign<PluginOption[], Record<number, PluginOption>>([], {
+					1: replacement,
+				}),
+			},
+		)
+		expect(merged.plugins).toStrictEqual([undefined, replacement, undefined])
 	})
 
 	it('preserves opaque plugin entries on each side', () => {

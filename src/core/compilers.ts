@@ -2648,9 +2648,9 @@ export function replaceManifestRanges(
 		const close = tokens.slice(at + 1).find((next) => next.text === '}' && next.depth === 1)
 		return close === undefined ? [] : [{ name: key, start: token.value, end: close.index + 1 }]
 	})
-	// Each section reads its own entries in text order. A step that replaces a value consumes the
-	// literal after its key, so that literal is never read as a key of its own: the log's last
-	// edit names it. A value with no literal after it refuses the whole write.
+	// Each section reads its own entries in text order. The guard on the log's last edit skips the
+	// literal the previous edit replaced, which only text that is not JSON can present as a key. A
+	// value with no literal after it refuses the whole write.
 	const readings = sections.map((bounds) => {
 		const replacements = new Map(
 			(bounds.name === 'dependencies' ? pins.runtime : pins.development).map(({ name, range }) => [
@@ -2998,10 +2998,8 @@ export function replaceManifestScripts(
 	// Read the section's own entries for their byte ranges, and remember where the
 	// first key sits: that column is the indentation an appended script copies.
 	// Each string-valued entry also records where it ends, because that offset is
-	// the anchor an appended sibling of the same key family inserts after. An entry
-	// whose value is a string consumes the literal after its key, so that literal is
-	// never read as a key of its own: the log's last entry names it. A string value
-	// with no literal after it refuses the write.
+	// the anchor an appended sibling of the same key family inserts after. A string
+	// value with no literal after it refuses the write.
 	const entries = tokens.reduce<
 		| ReadonlyArray<{
 				readonly token: ManifestToken
@@ -3012,7 +3010,6 @@ export function replaceManifestScripts(
 	>((log, token, at) => {
 		if (log === undefined) return undefined
 		if (token.index < start || token.index >= end) return log
-		if (log.at(-1)?.literal?.index === token.index) return log
 		if (token.depth !== 2 || token.value === undefined) return log
 		if (manifest.charAt(token.value) !== '"') {
 			return [...log, { token, value: token.value, literal: undefined }]

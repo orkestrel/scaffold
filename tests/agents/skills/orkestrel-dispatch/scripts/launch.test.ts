@@ -251,7 +251,7 @@ describe('launch.ts', () => {
 		}
 	})
 
-	it('refuses a missing separator, a flag with no value, a shared journal path, an empty command, and a cap that is not a number', () => {
+	it('refuses a missing separator, a flag with no value, a shared journal path, an empty command, and a cap that is not a number of seconds from 0 to 2147483', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-launch-usage-' })
 		try {
 			expect(
@@ -293,7 +293,46 @@ describe('launch.ts', () => {
 					{ cwd: scratch.path },
 				).status,
 			).toBe(64)
+			// One second past the longest whole-second wait a Node timer holds.
+			const beyond = runSkillScript(
+				LAUNCH_SCRIPT,
+				['--journal', 'a', '--errors', 'b', '--cap', '2147484', '--', process.execPath, '-v'],
+				{ cwd: scratch.path },
+			)
+			expect(beyond.status).toBe(64)
+			expect(beyond.stderr).toContain('from 0 to 2147483')
 			expect(scratch.has('a')).toBe(false)
+			expect(scratch.has('b')).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('runs a command under the longest cap a Node timer holds', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-launch-bound-' })
+		try {
+			scratch.write('bound.cjs', "process.stdout.write('bounded\\n')")
+			const run = runSkillScript(
+				LAUNCH_SCRIPT,
+				[
+					'--journal',
+					'tmp/units/bound.jsonl',
+					'--errors',
+					'tmp/units/bound.err',
+					'--cap',
+					'2147483',
+					'--',
+					process.execPath,
+					'bound.cjs',
+				],
+				{ cwd: scratch.path },
+			)
+			expect(run.status).toBe(0)
+			expect(scratch.read('tmp/units/bound.jsonl')).toBe('bounded\n')
+			expect(scratch.read('tmp/units/bound.err')).toMatch(
+				/\nexit=0 signal=none capped=false duration_ms=\d+\n$/u,
+			)
+			expect(run.json?.capped).toBe(false)
 		} finally {
 			scratch.destroy()
 		}

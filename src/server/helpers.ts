@@ -418,6 +418,35 @@ export function isExactCaseFile(path: string): boolean {
 }
 
 /**
+ * Places each result at the index its entry names, in a fresh array.
+ *
+ * @param entries - The index and result pairs, in any order; each index a non-negative integer.
+ * @returns An array holding each result at its index, whose length is the highest index plus one,
+ * and where an index no entry names stays a hole.
+ *
+ * @remarks
+ * A worker pool finishes its items out of order and can skip one, so its answer is merged by
+ * position rather than by arrival: each index is written once into a fresh array, which needs no
+ * sort and keeps a skipped index absent instead of closing the gap. A repeated index keeps its last
+ * result.
+ *
+ * @example
+ * ```ts
+ * import { collectIndexed } from '@orkestrel/scaffold/server'
+ *
+ * collectIndexed([[0, 'first'], [2, 'third']]).length // 3
+ * ```
+ */
+export function collectIndexed<TResult>(
+	entries: ReadonlyArray<readonly [number, TResult]>,
+): readonly TResult[] {
+	return Object.assign<TResult[], Readonly<Record<string, TResult>>>(
+		[],
+		Object.fromEntries(entries),
+	)
+}
+
+/**
  * Lists a path followed by each directory above it, nearest first.
  *
  * @param path - The host path to climb from.
@@ -534,8 +563,8 @@ export function computeFileDigest(path: string): string | undefined {
  * yet, and a lexical answer is not enough: a link anywhere in the existing
  * prefix moves the destination somewhere the text never named. So the deepest
  * existing ancestor is resolved and the remaining segments are re-joined onto
- * it. The climb is bounded by the path-depth ceiling, so an adversarial path
- * cannot make it walk indefinitely.
+ * it. {@link climbRealPath} performs the climb and bounds it by the path-depth
+ * ceiling, so an adversarial path cannot make it walk indefinitely.
  *
  * The caller's own text is collapsed first, which is what `resolve` does with a
  * `..` the caller wrote: it cancels the segment before it as text, before any
@@ -569,34 +598,57 @@ export function computeFileDigest(path: string): string | undefined {
  * ```
  */
 export function resolveRealPath(path: string): string | undefined {
-	if (!isFilesystemPath(path)) return undefined
-	// Each step appends the path to read next, and an array iterator reads what the
-	// array grows by, so the climb is one loop over the paths it has reached.
-	const trail = [resolve(path)]
-	const pending: string[] = []
-	for (const [depth, current] of trail.entries()) {
-		if (depth > MAX_PATH_DEPTH) break
-		const real = attempt(() => realpathSync(current))
-		if (real.success) {
-			return pending.reduce((physical, segment) => join(physical, segment), real.value)
-		}
-		if (!matchesMissingPath(real.error)) return undefined
-		const status = attempt(() => lstatSync(current))
-		if (status.success) {
-			if (!status.value.isSymbolicLink()) return undefined
-			const target = attempt(() => readlinkSync(current))
-			if (!target.success) return undefined
-			if (target.value.split(/[\\/]/u).includes('..')) return undefined
-			trail.push(resolve(dirname(current), target.value))
-			continue
-		}
-		if (!matchesMissingPath(status.error)) return undefined
-		const parent = dirname(current)
-		if (parent === current) return undefined
-		pending.unshift(relative(parent, current))
-		trail.push(parent)
+	return isFilesystemPath(path) ? climbRealPath(resolve(path), [], 0) : undefined
+}
+
+/**
+ * Climbs from an absolute path to its deepest existing ancestor and resolves it through every link.
+ *
+ * @param current - The absolute host path the climb reads at this depth.
+ * @param pending - The absent segments already climbed past, outermost first.
+ * @param depth - The steps already taken, from 0 through `MAX_PATH_DEPTH`.
+ * @returns The real path of the first existing ancestor joined with `pending` and every segment the
+ * climb passes, or `undefined` when `depth` is not a safe integer from 0 through `MAX_PATH_DEPTH`,
+ * the climb reaches the root, a link target cannot be read or carries a `..` segment, an existing
+ * entry is not a link, or an entry cannot be read.
+ *
+ * @remarks
+ * Each step reads one path and moves the climb to one other: a dangling link redirects it to the
+ * link's target with the same suffix, and an absent name moves it to the parent with that name added
+ * to the suffix. One successor per step makes the climb a bounded recursion rather than a worklist,
+ * and the depth argument is its bound, so an adversarial path or a link cycle answers `undefined`
+ * after `MAX_PATH_DEPTH` steps instead of walking indefinitely. {@link resolveRealPath} starts the
+ * climb at depth 0 with nothing pending.
+ *
+ * @example
+ * ```ts
+ * import { resolve } from 'node:path'
+ * import { climbRealPath } from '@orkestrel/scaffold/server'
+ *
+ * climbRealPath(resolve('./packages/new/src'), [], 0) // the real path of packages, plus new/src
+ * ```
+ */
+export function climbRealPath(
+	current: string,
+	pending: readonly string[],
+	depth: number,
+): string | undefined {
+	if (!Number.isSafeInteger(depth) || depth < 0 || depth > MAX_PATH_DEPTH) return undefined
+	const real = attempt(() => realpathSync(current))
+	if (real.success) return pending.length === 0 ? real.value : join(real.value, ...pending)
+	if (!matchesMissingPath(real.error)) return undefined
+	const status = attempt(() => lstatSync(current))
+	if (status.success) {
+		if (!status.value.isSymbolicLink()) return undefined
+		const target = attempt(() => readlinkSync(current))
+		if (!target.success || target.value.split(/[\\/]/u).includes('..')) return undefined
+		return climbRealPath(resolve(dirname(current), target.value), pending, depth + 1)
 	}
-	return undefined
+	if (!matchesMissingPath(status.error)) return undefined
+	const parent = dirname(current)
+	return parent === current
+		? undefined
+		: climbRealPath(parent, [relative(parent, current), ...pending], depth + 1)
 }
 
 /**

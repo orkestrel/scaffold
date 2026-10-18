@@ -147,6 +147,27 @@ describe('map.ts', () => {
 		}
 	})
 
+	it('extends a key with the lines indented under it and drops the rest', () => {
+		const scratch = createScratch({ prefix: 'orkestrel-map-yaml-' })
+		try {
+			scratch.write(
+				'list.yaml',
+				'  orphan\nitems:\n  - first\n  - second\nparent:\n    child: x\n  stray\n',
+			)
+			const run = runSkillScript(MAP_SCRIPT, ['--frontmatter', 'list.yaml', '--json'], {
+				cwd: scratch.path,
+			})
+			expect(run.status).toBe(0)
+			const rows = run.json?.frontmatter
+			if (!isArray(rows)) throw new Error('The map carries no frontmatter')
+			const texts = rows.map((row) => (isRecord(row) ? String(row.text) : ''))
+			expect(texts).toStrictEqual(['items: - first - second', 'parent:', 'parent.child: x'])
+			expect(texts.some((text) => text.includes('orphan') || text.includes('stray'))).toBe(false)
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('refuses a call with no mode or a flag with no value', () => {
 		const scratch = createScratch({ prefix: 'orkestrel-map-usage-' })
 		try {

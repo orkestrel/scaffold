@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { executeSync } from '@orkestrel/process/server'
-import { MAX_MANIFEST_BYTES, MAX_PATH_LENGTH, ScaffoldError } from '@src/core'
+import { MAX_MANIFEST_BYTES, ScaffoldError } from '@src/core'
 import { MAX_INVENTORY_PATHS } from '@src/server'
 import { createScratch } from '@orkestrel/test/server'
 
@@ -141,74 +141,6 @@ describe('GitQuery', () => {
 				code: 'INVALID',
 				message: 'A git query reads once.',
 			})
-			expect(query.records).toContain('package.json')
-		})
-	})
-
-	describe('collect', () => {
-		it('collects ordered records across UTF-8 and NUL boundaries and ignores empty records', () => {
-			const query = new GitQuery('target', ['ls-files', '-z'])
-			const encoder = new TextEncoder()
-			query.collect(encoder.encode('alpha\0br'))
-			const remainder = encoder.encode('ûlée\0\0omega')
-			query.collect(remainder.subarray(0, 1))
-			query.collect(remainder.subarray(1))
-			query.collect(encoder.encode('\0'))
-
-			expect(query.records).toStrictEqual(['alpha', 'brûlée', 'omega'])
-			expect(query.signal.aborted).toBe(false)
-		})
-
-		it('refuses the record beyond the inventory boundary and ignores later input', () => {
-			const query = new GitQuery('target', ['ls-files', '-z'])
-			const encoder = new TextEncoder()
-			query.collect(encoder.encode('kept\0'.repeat(MAX_INVENTORY_PATHS - 1)))
-			query.collect(encoder.encode('last\0overflow\0'))
-			const reason = query.signal.reason
-			query.collect(encoder.encode('ignored\0'))
-
-			expect(query.records).toHaveLength(MAX_INVENTORY_PATHS)
-			expect(query.records.at(-1)).toBe('last')
-			expect(reason).toMatchObject({ code: 'TARGET' })
-			expect(query.signal.reason).toBe(reason)
-		})
-
-		it('accepts the unfinished-path boundary and refuses the next character', () => {
-			const query = new GitQuery('target', ['ls-files', '-z'])
-			const encoder = new TextEncoder()
-			query.collect(encoder.encode('p'.repeat(MAX_PATH_LENGTH + 3)))
-			expect(query.signal.aborted).toBe(false)
-			query.collect(encoder.encode('p'))
-
-			expect(query.records).toStrictEqual([])
-			expect(query.signal.reason).toMatchObject({ code: 'TARGET' })
-		})
-
-		it('keeps the records of a query that has not read', () => {
-			const query = new GitQuery('target', ['ls-files', '-z'])
-			expect(query.records).toStrictEqual([])
-			query.collect(new TextEncoder().encode('one\0'))
-			const taken = query.records
-			query.collect(new TextEncoder().encode('two\0'))
-
-			expect(taken).toStrictEqual(['one'])
-			expect(query.records).toStrictEqual(['one', 'two'])
-		})
-	})
-
-	describe('refuse', () => {
-		it('retains its initial target refusal', () => {
-			const query = new GitQuery('target', ['ls-files', '-z'])
-			query.refuse('initial refusal')
-			const reason = query.signal.reason
-			query.refuse('later refusal')
-
-			expect(reason).toMatchObject({
-				code: 'TARGET',
-				message: 'initial refusal',
-				context: { target: 'target' },
-			})
-			expect(query.signal.reason).toBe(reason)
 		})
 	})
 })

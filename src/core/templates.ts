@@ -151,8 +151,8 @@ export function mergeOverride(base: UserConfig, override?: UserConfig): UserConf
 				}
 			: merged
 	if (named.plugins === undefined || effective === undefined) return named
-	const candidates = effective.plugins ?? []
-	const bases = base.plugins ?? []
+	const candidates = [...(effective.plugins ?? [])]
+	const bases = [...(base.plugins ?? [])]
 	// A base plugin takes the first candidate of its own name that no earlier base plugin took, and
 	// candidates of other names never compete for it, so its pick is the candidate whose rank among
 	// its name equals the number of earlier base plugins sharing that name.
@@ -1450,7 +1450,6 @@ export function resolveSystemBrowser(
 	environment: NodeJS.ProcessEnv,
 ): string | undefined {
 	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
-	const homeDrive = environment.HOMEDRIVE
 	const roots = new Set(
 		platform === 'win32'
 			? [
@@ -1459,9 +1458,11 @@ export function resolveSystemBrowser(
 						environment.PROGRAMFILES,
 						environment['PROGRAMFILES(X86)'],
 					].flatMap((root) => (root !== undefined && root.length > 0 ? [root] : [])),
-					...(homeDrive !== undefined && homeDrive.length > 0
-						? [join(homeDrive, 'Program Files'), join(homeDrive, 'Program Files (x86)')]
-						: []),
+					...[environment.HOMEDRIVE].flatMap((homeDrive) =>
+						homeDrive !== undefined && homeDrive.length > 0
+							? [join(homeDrive, 'Program Files'), join(homeDrive, 'Program Files (x86)')]
+							: [],
+					),
 				]
 			: [],
 	)
@@ -2585,6 +2586,9 @@ class DistributionSuite {
 	}
 
 	start(): void {
+		if (this.#scratch !== undefined) {
+			throw new Error('The distribution setup has already allocated its scratch directory')
+		}
 		const scratch = mkdtempSync(join(tmpdir(), 'distribution-'))
 		this.#scratch = scratch
 		mkdirSync(join(scratch, 'cache'), { recursive: true })
@@ -2595,6 +2599,8 @@ class DistributionSuite {
 		if (this.#scratch !== undefined) {
 			rmSync(this.#scratch, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 })
 		}
+		this.#scratch = undefined
+		this.#stage = undefined
 	}
 }
 

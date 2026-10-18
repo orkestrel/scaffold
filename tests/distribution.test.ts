@@ -751,6 +751,7 @@ describe('installed package consumer', () => {
 				'dist/src/core/index.d.ts: selectGroups() // every group, in plan order',
 				"dist/src/core/index.d.ts: serializeTypeScriptString(\"it's\") // `'it\\\\'s'`",
 				"dist/src/core/index.d.ts: SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // the showcase plugin range",
+				"dist/src/server/index.d.ts: climbRealPath(resolve('./packages/new/src'), [], 0) // the real path of packages, plus new/src",
 				"dist/src/server/index.d.ts: computeFileDigest('/tmp/project/AGENTS.md') // the file's SHA-256",
 				'dist/src/server/index.d.ts: computeManifestDigest([], [], []) // the digest of the empty membership',
 				"dist/src/server/index.d.ts: isExactCaseFile('/tmp/project/src/bin/main.ts') // true only for that exact spelling",
